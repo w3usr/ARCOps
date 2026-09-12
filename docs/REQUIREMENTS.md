@@ -90,7 +90,8 @@ reusing its number.
 ### 3.4 Public-facing content
 
 - **FR-n** {{TBD}}
-- {{TBD: The club's public web presence is at scranton.edu/w3usr, and w3usr.org redirects
+- {{TBD: The club's public web presence is the University page at
+  www.scranton.edu/academics/cas/physics-engineering/w3usr/, and w3usr.org redirects
   there. Decide what, if anything, ops.w3usr.org shows to a visitor who is not logged in, and
   how that avoids duplicating the University page.}}
 
@@ -187,7 +188,7 @@ Carried forward so the session has an agenda:
 1. Authentication: University SSO, club-managed accounts, or a third party? (§2.1)
 2. Does this application log QSOs, or consume logs from existing software? (§3.2)
 3. What is the single most valuable thing it could do in v1? (§1.4)
-4. What is the relationship between ops.w3usr.org and scranton.edu/w3usr? (§3.4)
+4. What is the relationship between ops.w3usr.org and the University club page? (§3.4)
 5. Who maintains this after the current students graduate? (§5.6)
 6. {{TBD: add to this list as questions surface.}}
 

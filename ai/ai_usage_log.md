@@ -73,3 +73,16 @@ carries the actual running model ID.
   browser, and if it redirects, the landing URL should replace it here and in the redirect
   rule.
 - **Git Hash**: ab23403
+
+## [2026-09-12 15:52 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Correct the University club page URL. The previous value was a guess
+  taken from the w3usr GitHub organisation profile and was wrong; W2NAF supplied the real one.
+- **Sections/Files Affected**: `web/index.html` (the club page button),
+  `docs/REQUIREMENTS.md` §3.4 and §8 (references to the club's public web presence)
+- **Nature of Contribution**: Edit
+- **Human Review Status**: Reviewed and verified. The URL
+  `https://www.scranton.edu/academics/cas/physics-engineering/w3usr/index.shtml` was supplied
+  by W2NAF from his browser on 2026-09-12. It remains unverifiable from this network, because
+  scranton.edu refuses connections from the machines available to this session.
+- **Git Hash**: [filled in after committing]
