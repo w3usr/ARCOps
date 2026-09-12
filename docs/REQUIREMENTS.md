@@ -90,10 +90,9 @@ reusing its number.
 ### 3.4 Public-facing content
 
 - **FR-n** {{TBD}}
-- {{TBD: The club's public web presence is the University page at
-  www.scranton.edu/academics/cas/physics-engineering/w3usr/, and w3usr.org redirects
-  there. Decide what, if anything, ops.w3usr.org shows to a visitor who is not logged in, and
-  how that avoids duplicating the University page.}}
+- {{TBD: The club's public web presence is the University page at scranton.edu/w3usr, and
+  w3usr.org redirects there. Decide what, if anything, ops.w3usr.org shows to a visitor who is
+  not logged in, and how that avoids duplicating the University page.}}
 
 ### 3.5 Integrations
 

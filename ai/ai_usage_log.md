@@ -86,3 +86,18 @@ carries the actual running model ID.
   by W2NAF from his browser on 2026-09-12. It remains unverifiable from this network, because
   scranton.edu refuses connections from the machines available to this session.
 - **Git Hash**: f3e3e59
+
+## [2026-09-12 15:58 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Point the club page link at the University's vanity URL,
+  `https://scranton.edu/w3usr`, rather than the department page it resolves to. The
+  University maintains the vanity mapping, so it survives a site reorganisation that would
+  break a deep path.
+- **Sections/Files Affected**: `web/index.html` (the club page button),
+  `docs/REQUIREMENTS.md` §3.4
+- **Nature of Contribution**: Edit
+- **Human Review Status**: Reviewed and verified. W2NAF confirmed on 2026-09-12 that
+  `scranton.edu/w3usr` redirects to
+  `https://www.scranton.edu/academics/cas/physics-engineering/w3usr/index.shtml`. Neither URL
+  is reachable from this network, so his browser is the source.
+- **Git Hash**: [filled in after committing]
