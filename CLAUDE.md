@@ -8,9 +8,10 @@ New to this club's repositories? Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md)
 
 Web application to support W3USR contests and club operations, served at `ops.w3usr.org`. The
 club runs contests and operating events and currently coordinates them by hand; this
-application is intended to carry that work. **What it will actually do is not yet decided**:
-[`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) is a skeleton awaiting a dedicated requirements
-session, and the technology stack is deliberately unchosen until it is filled in.
+application is intended to carry that work. **Functional requirements are drafted and awaiting
+adoption**: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) holds numbered requirements (FR-1
+onward) with open questions for the advisor in its section 8. The technology stack is
+deliberately unchosen until the requirements are adopted and the technical phase begins.
 
 **Project type**: Software build (web application)
 **Project lead**: {{TBD: NAME, CALLSIGN}}
@@ -74,7 +75,7 @@ ops.w3usr.org/
 |-- ai/
 |   `-- ai_usage_log.md           <- mandatory AI session log
 |-- docs/
-|   |-- REQUIREMENTS.md           <- the requirements skeleton
+|   |-- REQUIREMENTS.md           <- functional requirements (draft, FR-numbered)
 |   |-- ONBOARDING.md             <- read this first
 |   `-- ai_policy_agreement/      <- sign before using AI tools
 `-- web/                          <- served at ops.w3usr.org; currently a holding page

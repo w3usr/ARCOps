@@ -101,3 +101,22 @@ carries the actual running model ID.
   `https://www.scranton.edu/academics/cas/physics-engineering/w3usr/index.shtml`. Neither URL
   is reachable from this network, so his browser is the source.
 - **Git Hash**: 644db55
+
+## [2026-09-12 23:04 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Turn the faculty advisor's dictated first-pass description of the
+  application into the functional requirements document: 101 numbered requirements (FR-1 to
+  FR-101) with v1 priorities, a permission matrix, a guardian model for minors, a credential
+  mechanism generalising license, station access, and IT access, slot viability rules including
+  a named control operator and a chaperone check, and 15 open questions for the advisor.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md` (rewritten from the shell; all sections),
+  `CLAUDE.md` (project overview and tree entry now say requirements are drafted, awaiting
+  adoption)
+- **Nature of Contribution**: Draft and analysis. The requirements' content is the advisor's
+  dictation, quoted verbatim where it decides something; additions are marked "(added)" in the
+  text and tabulated with reasons in section 9. Contest rules (PA QSO Party, School Club
+  Roundup) and the contest calendar's field list were verified against their sources on
+  2026-09-12; the Part 97 section numbers cited in FR-63 were not and are flagged for
+  verification.
+- **Human Review Status**: Pending review; the document's own status is "Draft; not adopted".
+- **Git Hash**: [after commit]
