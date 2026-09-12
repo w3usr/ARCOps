@@ -1,114 +1,97 @@
-# {{PROJECT_NAME}}
+# ops.w3usr.org
 
 A project of the **University of Scranton Amateur Radio Club (W3USR)**.
 
 New to this club's repositories? Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md) first.
 
 ## Project Overview
-{{ONE-PARAGRAPH DESCRIPTION: what is being built or written, who it serves, and why the club is doing it.}}
 
-**Project type**: {{Station documentation / Club website / Outreach or demo material / Event or contest operation / Software build / Hardware or antenna build / Grant application / Newsletter, poster, or presentation / Other}}
-**Project lead**: {{NAME, CALLSIGN}}
-**Faculty advisor**: {{NAME, CALLSIGN}}
-**Club license trustee**: {{NAME, CALLSIGN}}
-**Other contributors**: {{NAMES AND CALLSIGNS}}
-**Funder**: {{FUNDER, or "Unfunded / club-internal"}}
-**Project period**: {{START to END}}
+Web application to support W3USR contests and club operations, served at `ops.w3usr.org`. The
+club runs contests and operating events and currently coordinates them by hand; this
+application is intended to carry that work. **What it will actually do is not yet decided**:
+[`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) is a skeleton awaiting a dedicated requirements
+session, and the technology stack is deliberately unchosen until it is filled in.
+
+**Project type**: Software build (web application)
+**Project lead**: {{TBD: NAME, CALLSIGN}}
+**Faculty advisor**: Nathaniel A. Frissell, W2NAF
+**Club license trustee**: {{TBD: NAME, CALLSIGN}}
+**Other contributors**: {{TBD}}
+**Funder**: {{TBD: unfunded / club-internal unless an award is named here}}
+**Project period**: 2026-09-12 to {{TBD}}
 
 ## Project Goal
-{{1 to 3 sentences. What does "done" look like?}}
+
+Give W3USR one place to plan an operating event, see who is on the air, and keep the club's
+operational record. "Done" for v1 is defined in `docs/REQUIREMENTS.md` §1.4, which is
+currently `{{TBD}}`.
 
 ## Repository Visibility
 
-**This repository is: {{PUBLIC | PRIVATE}}**, decided by {{NAME}} on {{YYYY-MM-DD}}.
-**Reason**: {{REASON}}
+**This repository is: PUBLIC**, decided by Nathaniel A. Frissell (W2NAF) on 2026-09-12.
+**Reason**: The application is released as free software under GPL-3.0-or-later so that other
+clubs can reuse it, and so that students can point at their work.
 
-This template sets no default. Decide deliberately at instantiation and record the decision
-above, because the answer changes what may be committed.
-
-| Choose **public** when | Choose **private** when |
-|---|---|
-| The work is meant to be shared: club website source, station how-to guides, outreach material, open-source tools | The repo holds unpublished research data, an in-progress grant application, or draft material the club is not ready to stand behind |
-| Other clubs or HamSCI could reuse it | It must hold the keys, tokens, or host details a deploy or development setup needs |
-| It is a build log or design the club wants to publish | Member contact information beyond a callsign is unavoidable in the work |
+Because this repository is public, the rules below are absolute.
 
 **Never commit, at any visibility:**
 - Student records, grades, rosters tied to student IDs, or anything else covered by FERPA
 - Member home addresses, phone numbers, personal email addresses, or dates of birth
 - **Personal credentials**: anyone's university login, personal account password, or personal
-  API key. A person's credential is theirs, and it opens doors well beyond this project.
+  API key
 - Photographs of identifiable people without their permission
 
-**Never commit to a public repository:**
+**Never commit here, because this repository is public:**
 - Credentials, keys, tokens, or access information of any kind
+- Server host names, IP addresses, file paths on the server, or deploy configuration
 - Building access details, alarm codes, or rooftop and tower access procedures
 
-**A private repository may hold the access information a project needs to deploy and
-develop**, where that has been carefully and deliberately decided. Deploy keys, service
-tokens, host names and paths, and a `.env` for a staging environment are legitimate contents
-of a private orchestrator repository, and pretending otherwise pushes them somewhere worse.
-
-Carefully and deliberately means:
-
-- **The project lead and a W3USR faculty advisor decide together, in advance.** A member does
-  not add a credential on their own judgement mid-task.
-- **The credential belongs to the project.** A deploy key or service account scoped to one
-  target, never a person's own login.
-- **Scope it to what the deploy needs** and no further. A key that can push to one host beats
-  one that can administer the account.
-- **Record what is in there**, in the repository, so the next person can find every credential
-  when it is time to rotate them.
-- **Rotate on turnover.** Members graduate. Rotate when someone with access leaves the
-  project, and on any suspicion of exposure.
-- **The repository stays private until you rotate.** Git history keeps a committed secret
-  after the file is deleted, so this repository cannot simply be flipped to public later:
-  rotate everything first, then flip.
+**Where deploy configuration lives instead.** The club's private orchestration repository,
+`w3usr/w3usr.org-PRIVATE`, owns server provisioning, DNS, TLS, and any credential the deploy
+needs. It carries this repository as a submodule. Nothing in that direction ever flows back
+into this one. If a task here seems to need a host name or a key, it belongs in the private
+repo; say so rather than inventing a workaround.
 
 Callsigns and names are public information in the FCC ULS database, so publishing a callsign
 is fine. Aggregating a member's callsign with their address, schedule, or dorm is not.
 
 ## Repository Structure
 
-This project starts from the W3USR `ai_project_template` scaffold. Add or remove top-level
-directories to match the project. The scaffold expects:
-
 ```
-{{REPO_NAME}}/
+ops.w3usr.org/
 |-- CLAUDE.md
 |-- README.md
-|-- LICENSE                       <- replace with the project's own; see README
-|-- NOTICE                        <- copyright and attribution
+|-- LICENSE                       <- GNU GPL v3
+|-- NOTICE                        <- copyright, trademark, and attribution
 |-- .gitignore
-|-- .gitmodules                   <- present only if you add submodules
 |-- .claude/
 |   |-- settings.json
 |   |-- commands/commit.md        <- /commit workflow
 |   `-- rules/
 |       |-- ai-governance.md          <- always applies
-|       |-- web-development.md        <- delete if no web work
-|       |-- latex-writing.md          <- delete if no LaTeX
-|       `-- python-code.md            <- delete if no Python
+|       |-- web-development.md
+|       `-- python-code.md
 |-- ai/
 |   `-- ai_usage_log.md           <- mandatory AI session log
 |-- docs/
+|   |-- REQUIREMENTS.md           <- the requirements skeleton
 |   |-- ONBOARDING.md             <- read this first
 |   `-- ai_policy_agreement/      <- sign before using AI tools
-`-- {{PROJECT-SPECIFIC FOLDERS}}  <- e.g. src/, station/, web/, outreach/, logs/, hardware/
+`-- web/                          <- served at ops.w3usr.org; currently a holding page
 ```
 
-## Submodules (optional)
+The application's own source directories get added once the requirements session picks a
+stack. Do not scaffold a framework before that decision is recorded in `docs/REQUIREMENTS.md`
+§6.
 
-If the project includes a submodule (an Overleaf document, the club website repo, a separate
-code repo):
+## Deployment
 
-1. Make changes and commit **inside** the submodule first.
-2. Then commit the updated submodule pointer in this repo.
-3. Push the submodule **before** pushing this repo. A parent pushed ahead of its submodule
-   works on your laptop and breaks for everyone who clones it.
-4. Use the `[AI-assisted]` prefix on commits whose content was produced with AI assistance.
-5. Ask the project lead before pushing to any remote.
+The server serves `web/` from a checkout of this repository's `main` branch. A push to `main`
+goes live only when someone runs the deployment from the private orchestration repo, so
+**`main` should always be in a state that is safe to serve**.
 
-The `/commit` workflow auto-detects submodules via `git submodule status`.
+`python-code.md` is present because Python is a likely choice, not a decided one. Delete it if
+the stack lands elsewhere.
 
 ## AI Governance
 
@@ -121,11 +104,13 @@ One thing is non-negotiable: **every substantive AI session is logged in
 `ai/ai_usage_log.md` before the work is committed.** Use the `/commit` command, which does the
 logging and committing in the right order.
 
-{{If this project has constraints of its own that AI work must respect, write them into a
-rule file under `.claude/rules/` and name it here.}}
+Because this repository is public, its AI usage log is public too. Write entries that are
+accurate and that you are content to have read by the University, by a funder, and by the
+wider amateur radio community.
 
 ## Getting Help
 
-- Club questions, station access, on-air activity: {{ADVISOR OR TRUSTEE NAME, CALLSIGN, CONTACT}}
-- This repository: {{PROJECT LEAD NAME, CALLSIGN}}
-- Club meeting time and place: {{WHEN AND WHERE}}
+- Club questions, station access, on-air activity: {{TBD: ADVISOR OR TRUSTEE, CALLSIGN, CONTACT}}
+- This repository: {{TBD: PROJECT LEAD, CALLSIGN}}
+- Club meeting time and place: {{TBD}}
+- General club contact: w3usr@scranton.edu

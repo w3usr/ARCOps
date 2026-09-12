@@ -55,17 +55,15 @@ Applies to club work connected to an NSF-funded effort.
 - Do not submit confidential or unpublished data to AI tools
 
 ### 5. Grant Funders (ARDC and others)
-{{If this project is supported by a grant, name the funder and the grant number here, and
-record any AI-use terms the award carries. Amateur Radio Digital Communications (ARDC) is the
-most common source for club equipment and project grants; university sources include
-{{STUDENT GOVERNMENT / DEPARTMENT / OFFICE}}.
+**No external funder is named for this project as of 2026-09-12.** The standing institutional
+policies above govern it.
 
-Whatever the source: acknowledge the funder by name and grant number in every deliverable,
-report honestly on what was accomplished, and disclose AI-assisted content per the award's
-terms. If the award says nothing about AI, disclose anyway.
-
-If the project is unfunded, replace this section with: "This project has no external funder
-beyond the standing institutional policies above."}}
+If the project later receives an award, name the funder and the grant number here and record
+any AI-use terms the award carries. Amateur Radio Digital Communications (ARDC) is the most
+common source for club equipment and project grants. Whatever the source: acknowledge the
+funder by name and grant number in every deliverable, report honestly on what was
+accomplished, and disclose AI-assisted content per the award's terms. If the award says
+nothing about AI, disclose anyway.
 
 ### 6. Student Privacy (FERPA)
 Never send student records to an AI tool or commit them to a repository: grades, evaluations,
@@ -74,9 +72,19 @@ student ID to a name. A club membership list with names and callsigns is ordinar
 business; a list that pulls in student IDs, addresses, or class schedules is not.
 
 ### 7. Project-Specific Constraints
-{{A project may carry obligations this file does not cover. Where it does, write them into
-their own rule file under `.claude/rules/` and name it in the project's `CLAUDE.md`. Delete
-this section if there are none.}}
+
+**This repository is public.** Everything committed here, including this AI usage log, is
+world-readable and stays in git history after deletion. Two consequences bind AI-assisted
+work specifically:
+
+- **No credential, host name, IP address, server path, or deploy configuration is ever
+  written into this repository**, not in code, not in a comment, not in a log entry, and not
+  in a commit message. Those belong in the club's private orchestration repository. If a task
+  appears to need one, stop and say so.
+- **Do not paste server output, error logs, or configuration dumps into committed files**
+  without reading them first for host details and secrets.
+
+See `CLAUDE.md` for the full never-commit list.
 
 ## AI Usage Logging Requirements
 

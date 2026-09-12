@@ -1,20 +1,37 @@
-W3USR AI Project Template
+ops.w3usr.org
 Copyright (c) 2026 University of Scranton Amateur Radio Club (W3USR)
 
-Licensed under the Creative Commons Attribution 4.0 International License
-(CC BY 4.0). See LICENSE for the full text, or
-https://creativecommons.org/licenses/by/4.0/
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
 
-You are free to share and adapt this scaffold, including for other clubs
-and institutions, provided you give appropriate credit.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
 
-Attribute as:
-  W3USR AI Project Template, University of Scranton Amateur Radio Club,
-  https://github.com/w3usr/ai_project_template
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>.
 
-This license covers the template scaffold itself. A project instantiated
-from this template chooses its own license and replaces LICENSE and NOTICE
-accordingly (see README step 4).
+See LICENSE for the full license text.
 
-Portions of this scaffold derive from the W2NAF academic project template
-by Nathaniel A. Frissell (W2NAF), University of Scranton.
+---
+
+Trademarks and artwork
+
+The W3USR club seal in web/assets/ is the artwork of the University of
+Scranton Amateur Radio Club, included here with the club's permission. The
+GPL covers the software in this repository; it does not grant rights to the
+club seal beyond its use in this project.
+
+The University of Scranton's name, seal, and logos are marks of the
+University of Scranton and are not licensed by this repository.
+
+---
+
+Scaffolding
+
+Portions of this repository's governance and onboarding scaffolding derive
+from the W3USR AI Project Template,
+https://github.com/w3usr/ai_project_template, used under CC BY 4.0.

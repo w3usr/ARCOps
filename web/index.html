@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>W3USR Operations</title>
+<meta name="description" content="Operations and contest support for W3USR, the amateur radio club of the University of Scranton. This site is under construction.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/assets/favicon-64.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<style>
+  :root {
+    --purple: #46166B;
+    --purple-light: #893494;
+    --gold: #FDBA4D;
+    --ink: #1A1020;
+    --paper: #FFFFFF;
+    --muted: #4A4055;
+    --rule: #E2DCE8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #F2EEF6;
+      --paper: #170D22;
+      --muted: #C3B8CF;
+      --rule: #3A2C49;
+      --purple: #C9A6E8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #F2EEF6;
+    --paper: #170D22;
+    --muted: #C3B8CF;
+    --rule: #3A2C49;
+    --purple: #C9A6E8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  a { color: var(--purple); }
+  /* Focus ring uses --purple, which clears WCAG 2.1 SC 1.4.11 (3:1 non-text contrast)
+     against the page background in both themes. Gold does not: 1.71:1 on white. */
+  a:focus-visible, :focus-visible {
+    outline: 3px solid var(--purple);
+    outline-offset: 3px;
+  }
+
+  .banner {
+    height: 6px;
+    background: linear-gradient(90deg, #46166B 0%, #893494 55%, #FDBA4D 100%);
+  }
+
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 3rem 16px 4rem;
+    text-align: center;
+  }
+
+  .logo {
+    width: min(220px, 55vw);
+    height: auto;
+    display: block;
+    margin: 0 auto 1.75rem;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.25rem);
+    line-height: 1.2;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  .callsign {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.9rem;
+  }
+
+  .status {
+    display: inline-block;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 1.75rem;
+  }
+
+  .status::before {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-right: 0.5rem;
+    vertical-align: 0.05rem;
+  }
+
+  p { margin: 0 0 1.1rem; color: var(--muted); }
+  main > p { font-size: 1.05rem; }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.7rem 1.35rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid var(--purple);
+  }
+  .btn-primary { background: #46166B; color: #FFFFFF; border-color: #46166B; }
+  .btn-primary:hover { background: #5A1E87; }
+  .btn-secondary { color: var(--purple); background: transparent; }
+  .btn-secondary:hover { background: rgba(137, 52, 148, 0.10); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 1.5rem 16px 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer p { margin: 0.25rem 0; font-size: 0.85rem; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn { transition: background-color 120ms ease; }
+  }
+</style>
+</head>
+<body>
+<div class="banner" role="presentation"></div>
+
+<main>
+  <img class="logo" src="/assets/w3usr-logo.png" width="512" height="512"
+       alt="W3USR club seal: a radio tower radiating signals, ringed by the words The University of Scranton Amateur Radio">
+
+  <span class="callsign">W3USR</span>
+  <h1>Club Operations</h1>
+
+  <p class="status">Under construction</p>
+
+  <p>
+    This will become the operations and contest support site for the University of Scranton
+    Amateur Radio Club. It is not ready yet.
+  </p>
+  <p>
+    For information about the club, visit the University page.
+  </p>
+
+  <div class="actions">
+    <a class="btn btn-primary" href="https://www.scranton.edu/w3usr">University of Scranton club page</a>
+    <a class="btn btn-secondary" href="https://github.com/w3usr/ops.w3usr.org">Source on GitHub</a>
+  </div>
+</main>
+
+<footer>
+  <p>W3USR &middot; The University of Scranton Amateur Radio Club</p>
+  <p>Site source is free software under the GNU General Public License, version 3 or later.</p>
+</footer>
+</body>
+</html>
