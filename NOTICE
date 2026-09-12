@@ -1,0 +1,20 @@
+W3USR AI Project Template
+Copyright (c) 2026 University of Scranton Amateur Radio Club (W3USR)
+
+Licensed under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0). See LICENSE for the full text, or
+https://creativecommons.org/licenses/by/4.0/
+
+You are free to share and adapt this scaffold, including for other clubs
+and institutions, provided you give appropriate credit.
+
+Attribute as:
+  W3USR AI Project Template, University of Scranton Amateur Radio Club,
+  https://github.com/w3usr/ai_project_template
+
+This license covers the template scaffold itself. A project instantiated
+from this template chooses its own license and replaces LICENSE and NOTICE
+accordingly (see README step 4).
+
+Portions of this scaffold derive from the W2NAF academic project template
+by Nathaniel A. Frissell (W2NAF), University of Scranton.
