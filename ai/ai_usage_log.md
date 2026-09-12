@@ -120,3 +120,19 @@ carries the actual running model ID.
   verification.
 - **Human Review Status**: Pending review; the document's own status is "Draft; not adopted".
 - **Git Hash**: 3a7ca46
+
+## [2026-09-12 23:25 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's correction that members must be able to change their own
+  callsign (vanity grant, new sequential call on upgrade). The first draft had made the
+  callsign sysadmin-only alongside the FCC-sourced license fields.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-8 callsign row; FR-14 (lookup also
+  fires on callsign entry or change); new FR-102 (change flow: immediate FCC lookup, name-
+  mismatch flag, unverified state until ULS knows the call, callsign history, audit, override
+  re-confirmation); permission matrix row; section 9 "Decisions taken after the first draft"
+  with NAF's words verbatim.
+- **Nature of Contribution**: Edit. The decision is NAF's; the change-flow detail in FR-102 is
+  the assistant's and is marked as such.
+- **Human Review Status**: Partially reviewed. NAF stated the decision and saw the summary of
+  the applied changes; FR-102's full text is pending his read.
+- **Git Hash**: [after commit]

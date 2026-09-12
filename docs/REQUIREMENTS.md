@@ -208,7 +208,7 @@ The draft models this as follows:
 | Reset another user's password | ✓ | · | · | · | · |
 | Change access level or club position | ✓ | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · |
-| Edit own name, emails, phone, preferences | ✓ | ✓ | ✓ | own | for minor |
+| Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | own | for minor |
 | Sign an access agreement | ✓ | ✓ | ✓ | own | for minor |
 | Approve an access agreement | approver position only | | | | |
 | Set or rotate the computer password | ✓ | · | · | · | · |
@@ -300,7 +300,7 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   | Middle name | no | yes | |
   | Last name | yes | yes | |
   | Preferred name | no | yes | **(added)** Shown on rosters where set; people are addressed by the name they use |
-  | Callsign | no | no; set at application, then via FCC sync or sysadmin | Uppercase, validated as a plausible callsign |
+  | Callsign | no | yes | Uppercase, validated as a plausible callsign. A change triggers FR-102 |
   | License class | no | no | From FCC lookup (FR-14) or sysadmin override |
   | License expiration | no | no | From FCC lookup or sysadmin override |
   | License status | no | no | **(added)** Active / expired / cancelled / not found, from FCC lookup; the health check needs status, not only class |
@@ -335,12 +335,12 @@ Verbatim:
 > License Class and Expiration Date (Do by FCC lookup at time of account creation; cronjob to
 > batch-check this information on a daily basis. Allow for sysadmin overrides.)
 
-- **FR-14 [Must]** When an account with a callsign is admitted, and daily thereafter for every
-  account with a callsign, the system retrieves license class, expiration date, status, and the
-  licensee name from FCC ULS data and records the result with its source and retrieval time.
-  The mechanism (direct ULS download, a public ULS mirror API, or another source) is a technical
-  decision for section 6; the requirement is that the data are FCC data and are no more than a
-  day stale.
+- **FR-14 [Must]** When an account with a callsign is admitted, when a callsign is entered or
+  changed (FR-102), and daily thereafter for every account with a callsign, the system
+  retrieves license class, expiration date, status, and the licensee name from FCC ULS data
+  and records the result with its source and retrieval time. The mechanism (direct ULS
+  download, a public ULS mirror API, or another source) is a technical decision for section 6;
+  the requirement is that the data are FCC data and are no more than a day stale.
 - **FR-15 [Must]** A sysadmin can override class, expiration, or status, with a required reason.
   An override is shown as such wherever the value appears and is never silently replaced by the
   next sync. A sysadmin can lift the override.
@@ -362,6 +362,14 @@ Verbatim:
   use this order.
 - **FR-20 [Should]** A non-US license (a Canadian community member, for example) is recorded by
   sysadmin override with the issuing country and an equivalent class for comparison purposes.
+- **FR-102 [Must]** A member can change their own callsign, since a vanity grant or a new
+  sequential call on upgrade replaces it. The change runs the FCC lookup immediately; the
+  license fields update from the result, a licensee-name mismatch is flagged per FR-16, and a
+  callsign that ULS does not know is held as *unverified* until the daily sync finds it. The
+  previous callsign is kept in the account's callsign history with the change date, so past
+  rosters and participation reports still read correctly, and the change is written to the
+  audit log. A sysadmin override on the license fields (FR-15) survives a callsign change only
+  if the sysadmin re-confirms it.
 
 ### 3.3 Access agreements and the shared computer password
 
@@ -1002,6 +1010,13 @@ accept, amend, or strike.
 | Positions (FR-51) | Cheap to design in, expensive to retrofit; flagged as Should pending Q12. |
 | PWA and an API-first server (FR-96, FR-97) | The dictation asks for a path to native apps; this is the path that costs least and keeps the option open. |
 | Operating-time limits are advisory, never enforced (FR-39) | The club may schedule non-counting time (setup, listening). A system that refuses to schedule is wrong more often than one that warns. |
+
+**Decisions taken after the first draft.**
+
+- 2026-09-12, NAF: *"members should be able to change their call sign. this might happen if
+  they get a vanity call or request a new sequential call on upgrade"*. Applied as FR-102 and
+  the callsign row of FR-8; the first draft had made the callsign sysadmin-only alongside the
+  license fields, which remain so because they come from the FCC.
 
 **Where the draft chose a reading of the dictation.** "Club officers can only send invitations"
 was read as *relative to sysadmins' account powers*: officers cannot create or edit accounts
