@@ -59,3 +59,17 @@ carries the actual running model ID.
   requirements, and it is to be revised in a dedicated session. Placeholders marked `{{TBD}}`
   in `CLAUDE.md` (project lead, trustee, meeting time, project period) await club input.
 - **Git Hash**: 58c1332
+
+## [2026-09-12 15:47 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Make the club-page link on the holding page use the same URL form as
+  the Cloudflare redirect target, so a visitor and a redirected visitor land in the same
+  place.
+- **Sections/Files Affected**: `web/index.html` (one href)
+- **Nature of Contribution**: Edit
+- **Human Review Status**: Pending review. The URL `https://scranton.edu/w3usr` is taken from
+  the w3usr GitHub organisation profile and could NOT be verified: scranton.edu refuses
+  connections from the machines available to this session. W2NAF is to confirm it in a
+  browser, and if it redirects, the landing URL should replace it here and in the redirect
+  rule.
+- **Git Hash**: [filled in after committing]
