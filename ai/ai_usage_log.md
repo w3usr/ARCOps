@@ -85,4 +85,4 @@ carries the actual running model ID.
   `https://www.scranton.edu/academics/cas/physics-engineering/w3usr/index.shtml` was supplied
   by W2NAF from his browser on 2026-09-12. It remains unverifiable from this network, because
   scranton.edu refuses connections from the machines available to this session.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: f3e3e59
