@@ -58,4 +58,4 @@ carries the actual running model ID.
   reviewed or adopted: it is a skeleton of headings and open questions, it contains no decided
   requirements, and it is to be revised in a dedicated session. Placeholders marked `{{TBD}}`
   in `CLAUDE.md` (project lead, trustee, meeting time, project period) await club input.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 58c1332
