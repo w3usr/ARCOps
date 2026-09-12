@@ -100,4 +100,4 @@ carries the actual running model ID.
   `scranton.edu/w3usr` redirects to
   `https://www.scranton.edu/academics/cas/physics-engineering/w3usr/index.shtml`. Neither URL
   is reachable from this network, so his browser is the source.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 644db55
