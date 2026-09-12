@@ -135,4 +135,4 @@ carries the actual running model ID.
   the assistant's and is marked as such.
 - **Human Review Status**: Partially reviewed. NAF stated the decision and saw the summary of
   the applied changes; FR-102's full text is pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: baafc34
