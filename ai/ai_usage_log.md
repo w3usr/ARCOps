@@ -72,4 +72,4 @@ carries the actual running model ID.
   connections from the machines available to this session. W2NAF is to confirm it in a
   browser, and if it redirects, the landing URL should replace it here and in the redirect
   rule.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: ab23403
