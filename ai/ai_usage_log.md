@@ -119,4 +119,4 @@ carries the actual running model ID.
   2026-09-12; the Part 97 section numbers cited in FR-63 were not and are flagged for
   verification.
 - **Human Review Status**: Pending review; the document's own status is "Draft; not adopted".
-- **Git Hash**: [after commit]
+- **Git Hash**: 3a7ca46
