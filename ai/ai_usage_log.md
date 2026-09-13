@@ -478,4 +478,4 @@ carries the actual running model ID.
   at FR-63. Memory figures in TR-30 are estimates and marked so.
 - **Human Review Status**: Partially reviewed. NAF answered each decision; the document's full
   text is pending his read, and both documents say adoption is pending.
-- **Git Hash**: [after commit]
+- **Git Hash**: d4b5616
