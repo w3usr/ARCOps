@@ -277,7 +277,9 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
 2. The system creates a single-use invitation link that expires (default 14 days), shows it to
    the inviter with a ready-to-send text (FR-104), and emails it if email delivery is on. The
    inviter can resend or revoke it.
-3. The invitee completes the application: the profile fields of FR-8, a password, and consent
+3. The invitee completes the application, callsign first: the system looks the callsign up in
+   FCC ULS at once and fills in the name and license fields (FR-4); an invitee with no callsign
+   enters their name by hand. Then the remaining profile fields of FR-8, a password, and consent
    to the privacy notice (FR-101).
 4. The application lands in a review queue. An officer or sysadmin admits the applicant, which
    sets the access level to Member, or declines with a reason. Until then the account is
@@ -299,8 +301,22 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   shows the issuer the state of each invitation (created, emailed or not, opened, completed,
   expired, revoked). **(added)**: the dictation does not mention expiry; an unexpiring invite in
   a mailbox is a standing door.
-- **FR-4 [Must]** The invitee completes an application that collects the FR-8 fields, sets a
-  password, and records consent to the privacy notice.
+- **FR-4 [Must]** The application opens by asking for a callsign. On entry, the system looks it
+  up in FCC ULS immediately (FR-14) and fills in the licensee's first, middle, and last name,
+  license class, expiration, and status; the applicant confirms it is them and continues. The
+  ULS name is shown as read-only. An applicant with no callsign chooses "I do not have a
+  callsign" and enters their name by hand. If the lookup fails or the callsign is not yet in
+  the ULS data (a fresh grant), the applicant may enter their name by hand and the license
+  record is held as *unverified* until the daily sync finds it. The application then collects
+  the remaining FR-8 fields, a password, and consent to the privacy notice. The reviewing
+  officer (FR-5) sees the ULS name beside the invitation's email address, which is where a
+  callsign entered by the wrong person is caught.
+
+  > I think the registration path should be for the person to enter their call sign first, and
+  > have it do an immediate automated lookup and fill in the name and license info. A person
+  > cannot edit their ULS name, but they can edit their preferred name. There needs to be an
+  > option for someone with no callsign to just enter a name. — NAF, 2026-09-13
+
 - **FR-5 [Must] (interpretation)** Completed applications enter a review queue. An officer or
   sysadmin admits or declines each one. Until admitted, the account has access level No access.
 - **FR-6 [Must]** Sysadmins can create and edit any account manually, including every privilege
@@ -315,10 +331,10 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
 
   | Field | Required | Editable by member | Notes |
   |---|---|---|---|
-  | First name | yes | yes | |
-  | Middle name | no | yes | |
-  | Last name | yes | yes | |
-  | Preferred name | no | yes | **(added)** Shown on rosters where set; people are addressed by the name they use |
+  | First name | yes | only if no callsign | With a callsign, this is the ULS licensee name, filled by lookup (FR-4), refreshed by sync and on callsign change (FR-102), and read-only to the member; a sysadmin can override it with a reason (FR-15). Without a callsign, entered and edited by the member |
+  | Middle name | no | only if no callsign | As first name |
+  | Last name | yes | only if no callsign | As first name |
+  | Preferred name | no | yes | Always the member's to set. Used in the short name (FR-67) and in salutations where set; people are addressed by the name they use |
   | Callsign | no | yes | Uppercase, validated as a plausible callsign. A change triggers FR-102 |
   | License class | no | no | From FCC lookup (FR-14) or sysadmin override |
   | License expiration | no | no | From FCC lookup or sysadmin override |
@@ -362,12 +378,23 @@ Verbatim:
   and records the result with its source and retrieval time. The mechanism (direct ULS
   download, a public ULS mirror API, or another source) is a technical decision for section 6;
   the requirement is that the data are FCC data and are no more than a day stale.
-- **FR-15 [Must]** A sysadmin can override class, expiration, or status, with a required reason.
+- **FR-15 [Must]** A sysadmin can override class, expiration, status, or the ULS name (where
+  ULS is out of date or wrong), with a required reason.
   An override is shown as such wherever the value appears and is never silently replaced by the
   next sync. A sysadmin can lift the override.
-- **FR-16 [Should]** If the licensee name returned by ULS does not match the profile name, flag
-  it for a sysadmin. **(added)**: catches typos in callsigns and a callsign entered by the wrong
-  person.
+- **FR-16 [Should]** When a callsign is added to an account that already has a name (a member
+  without a callsign gets licensed, or a callsign change under FR-102), and the ULS name differs
+  from the name on file beyond a middle name or initial, the system shows the member both names
+  and asks them to confirm that the ULS name is theirs; on confirmation it replaces the name on
+  file. If the member says it is not theirs, the callsign is rejected as mistyped or someone
+  else's. No sysadmin is involved; the replacement is written to the audit log (FR-92) like any
+  other name change, and that is the whole record.
+
+  > FR-16: The user can also approve the ULS name to replace their input name.
+  > — NAF, 2026-09-13
+
+  > We want to keep the sysadmin out of this if we can. — NAF, 2026-09-13
+
 - **FR-17 [Should]** Notify a member (and guardian) when their license is within 90 and 30 days
   of expiration, and when it has expired. **(added)**: cheap once FR-14 exists, and a lapsed
   license silently breaks slot viability.
@@ -385,7 +412,8 @@ Verbatim:
   sysadmin override with the issuing country and an equivalent class for comparison purposes.
 - **FR-102 [Must]** A member can change their own callsign, since a vanity grant or a new
   sequential call on upgrade replaces it. The change runs the FCC lookup immediately; the
-  license fields update from the result, a licensee-name mismatch is flagged per FR-16, and a
+  license fields and the ULS name update from the result, a name mismatch goes through the
+  member's confirmation per FR-16 before the name is replaced, and a
   callsign that ULS does not know is held as *unverified* until the daily sync finds it. The
   previous callsign is kept in the account's callsign history with the change date, so past
   rosters and participation reports still read correctly, and the change is written to the
@@ -1200,6 +1228,12 @@ accept, amend, or strike.
   Summer, Fall, or Spring. Spring is the default."* Two Student-only fields added to FR-8,
   member-editable since neither grants a privilege; both shown on the officers' member roster
   (FR-87), with a past-graduation filter added there as the natural use.
+- 2026-09-13, NAF (quoted at FR-4): registration is callsign-first with an immediate ULS
+  lookup filling name and license; the ULS name is read-only to the member, the preferred
+  name is theirs; a no-callsign path enters a name by hand. Applied to §2.7, FR-4, FR-8's name
+  rows, FR-15 (name override), FR-16 (repurposed to the add-or-change-callsign case), FR-102.
+  Then, on FR-16: the member confirms the ULS name themselves, with no sysadmin flag; the
+  audit log is the record. The assistant had proposed a sysadmin second look and NAF removed it.
 - 2026-09-13, NAF: *"We will not be pursuing University SSO at this time. We leave the option
   open for a future version."* Section 2.6 updated. Resolves Q9.
 

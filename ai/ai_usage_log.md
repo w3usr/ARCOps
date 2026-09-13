@@ -223,3 +223,23 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rules and saw the summaries of
   the applied text.
 - **Git Hash**: 0b858f9
+
+## [2026-09-13 03:55 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's direction that registration is callsign-first: an immediate
+  FCC ULS lookup fills the name and license fields, the ULS name is read-only to the member
+  while the preferred name is theirs, and an applicant with no callsign enters a name by hand.
+  Then, on the name-mismatch check (FR-16): the member confirms the ULS name replacing their
+  entered name themselves, with no sysadmin involved.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: §2.7 step 3, FR-4 (rewritten), FR-8
+  name rows, FR-15 (ULS name override added), FR-16 (repurposed to the add-or-change-callsign
+  case; member self-confirmation; no sysadmin), FR-102 wording; §9 decision record with NAF's
+  three statements verbatim.
+- **Nature of Contribution**: Edit and draft. The decisions are NAF's. The assistant's
+  additions: the unverified state when the lookup fails or the call is too new for ULS data;
+  the reviewing officer catching a wrong-person callsign via the ULS name; the "beyond a middle
+  name or initial" threshold in FR-16. The assistant proposed a sysadmin second look on FR-16
+  and NAF removed it.
+- **Human Review Status**: Partially reviewed. NAF read the FR-16 text closely enough to
+  correct it twice; FR-4's full text is pending his read.
+- **Git Hash**: [after commit]
