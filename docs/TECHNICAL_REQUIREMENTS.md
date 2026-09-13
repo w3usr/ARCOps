@@ -8,7 +8,7 @@ and the constraints of the club's server.
 
 | | |
 |---|---|
-| **Document status** | Decisions taken 2026-09-13; adoption of the document pending the advisor's read |
+| **Document status** | Decisions taken 2026-09-13; first build deployed the same day on the advisor's instruction; adoption pending his read |
 | **Last revised** | 2026-09-13 |
 | **Owner** | Nathaniel A. Frissell, W2NAF (faculty advisor), pending a project lead |
 | **Adopted by** | {{NAME, CALLSIGN}} on {{YYYY-MM-DD}} |

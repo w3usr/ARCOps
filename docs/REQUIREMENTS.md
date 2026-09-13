@@ -18,7 +18,7 @@ with a date and the name of the person who adopted them.
 
 | | |
 |---|---|
-| **Document status** | Draft; all section 8 questions answered by the advisor 2026-09-13; not yet formally adopted |
+| **Document status** | Draft; all section 8 questions answered 2026-09-13; the build began the same day on the advisor's instruction; formal adoption pending his read |
 | **Last revised** | 2026-09-13 |
 | **Owner** | Nathaniel A. Frissell, W2NAF (faculty advisor), pending a project lead |
 | **Adopted by** | {{NAME, CALLSIGN}} on {{YYYY-MM-DD}} |

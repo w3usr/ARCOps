@@ -22,4 +22,6 @@ CSRF_COOKIE_SECURE = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 X_FRAME_OPTIONS = "DENY"
-# HSTS is set by nginx (deploy/nginx/security-headers.conf), so it is not repeated here.
+# HSTS and the HTTP-to-HTTPS redirect are nginx's job (deploy/nginx/ in the private repository),
+# so Django's two checks for them are silenced deliberately rather than duplicated here.
+SILENCED_SYSTEM_CHECKS = ["security.W004", "security.W008"]

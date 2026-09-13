@@ -178,3 +178,33 @@ def test_every_page_has_one_h1_and_labelled_inputs():
             assert f'for="{idm.group(1)}"' in body or "aria-label" in tag, (
                 f"{p}: unlabelled input {idm.group(1)}"
             )
+
+
+def test_real_login_post_works_behind_a_proxy_with_empty_remote_addr():
+    """Production runs gunicorn on a unix socket: REMOTE_ADDR is empty and the visitor's address
+    arrives in X-Real-IP from nginx. allauth's rate limiter must still find an IP (it raised
+    PermissionDenied on the first live sign-in attempt, 2026-09-13)."""
+    User.objects.create_user(
+        "real@example.org",
+        "a-long-password-123",
+        first_name="R",
+        last_name="L",
+        access_level=AccessLevel.MEMBER,
+    )
+    c = Client()
+    page = c.get("/accounts/login/", REMOTE_ADDR="", HTTP_X_REAL_IP="203.0.113.5")
+    token = c.cookies["csrftoken"].value
+    r = c.post(
+        "/accounts/login/",
+        {
+            "csrfmiddlewaretoken": token,
+            "login": "real@example.org",
+            "password": "a-long-password-123",
+        },
+        REMOTE_ADDR="",
+        HTTP_X_REAL_IP="203.0.113.5",
+        HTTP_REFERER="http://testserver/accounts/login/",
+    )
+    assert r.status_code == 302, r.status_code
+    assert c.get("/", REMOTE_ADDR="", HTTP_X_REAL_IP="203.0.113.5").status_code == 200
+    assert page.status_code == 200

@@ -542,3 +542,15 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and analysis. Every fix is pinned by a test.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 7569b81
+
+## [2026-09-13 13:04 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Fix the first live sign-in failure found by an end-to-end probe through
+  Cloudflare: allauth's rate limiter could not determine the client IP behind the unix socket
+  and refused every login POST with 403. The adapter now reads nginx's X-Real-IP. Also silence
+  Django's two deployment checks that nginx satisfies, with the reason recorded.
+- **Sections/Files Affected**: apps/accounts/adapter.py, apps/accounts/tests/test_flows.py (a test
+  that reproduces the empty REMOTE_ADDR), config/settings/prod.py.
+- **Nature of Contribution**: Code generation; diagnosed from the server's journal.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
