@@ -183,3 +183,24 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the summary of the
   applied wording.
 - **Git Hash**: 4b542b1
+
+## [2026-09-13 03:36 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply three of NAF's decisions to the requirements: (1) an explicit,
+  recorded publish action for events and a rule that a published event can return to draft
+  only before the first sign-up; (2) the minors model: responsible adults are designated per
+  slot by the guardian and take no place in the slot, the roster shows them and the guardians
+  with contact details behind the minor's name, more than one guardian may be linked, no
+  dates of birth are stored, and conversion at 18 is manual by a faculty advisor; (3)
+  University SSO is not pursued in this version, option left open.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-44 (publish/unpublish); §2.4,
+  permission matrix, FR-8 rows, FR-64 (rewritten), FR-67 (minor detail panel), new FR-109
+  (manual conversion), §4.1, §4.2, §4.3, Q7 and Q14 wording; §2.6 and Q9 (SSO); §9 table row
+  and decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit and draft. The decisions are NAF's, quoted in place. The
+  assistant's choices: responsible-adult records may belong to non-members and are retained
+  one year after the event; the minor detail panel is visible to captains, officers, and
+  sysadmins, matching FR-67's existing contact-detail rule (flagged to NAF as widenable).
+- **Human Review Status**: Partially reviewed. NAF stated the rules and saw the summary of
+  the applied text; the full wording of FR-64, FR-67, and FR-109 is pending his read.
+- **Git Hash**: [after commit]

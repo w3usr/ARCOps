@@ -189,16 +189,20 @@ The draft models this as follows:
 
 - A **guardian** is an account that is linked to one or more minor member accounts and acts for
   them: completes the application, edits the profile, signs agreements, signs up for slots, and
-  receives every message. A guardian need not be a member; if the guardian is also a member,
-  one account holds both.
+  receives every message. A minor may have **more than one guardian account** linked; every
+  linked guardian can act and every one receives every message. A guardian need not be a
+  member; if the guardian is also a member, one account holds both.
 - The minor's own account has access level **No access** until the club decides otherwise, so
   the minor never signs in. (Whether a minor may sign in at all, read-only, is Q6.)
 - The guardian record holds the guardian's name, relationship, email(s), and phone. The minor's
   own email and phone are optional.
-- The guardian designates **authorized chaperones**: adult members who may supervise the minor
-  at events. The schedule-health check (FR-64) uses this list.
-- On the member's 18th birthday, the system notifies the guardian and a sysadmin, and a
-  sysadmin converts the account to self-managed. Nothing changes automatically.
+- When a guardian signs the minor up for a slot, the guardian designates the **responsible
+  adult(s)** who will accompany the minor for that slot (FR-64). A responsible adult takes no
+  place in the slot and need not be a member; the guardian may name themselves. The system
+  keeps the adults a guardian has named before, so a repeat designation is a pick from a list.
+- **No date of birth is stored.** Under-18 is a flag set at invitation. When the member turns
+  18, they or the guardian tell a faculty advisor, who converts the account by hand (FR-109).
+  Nothing changes automatically, because the system has no date to change it on.
 
 ### 2.5 Permission matrix
 
@@ -215,6 +219,9 @@ The draft models this as follows:
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | own | for minor |
 | Sign an access agreement | ✓ | ✓ | ✓ | own | for minor |
 | Approve an access agreement | approver position only | | | | |
+| Convert a minor's account to an adult's (FR-109) | approver position only | | | | |
+| Designate responsible adults for a minor's slot | ✓ | ✓ | E | · | for minor |
+| View a minor's responsible adults and guardians, with contact details | ✓ | ✓ | E | · | for minor |
 | Set or rotate the computer password | ✓ | · | · | · | · |
 | View the computer password | with current IT agreement | | | | · |
 | Create event, import from calendar | ✓ | ✓ | · | · | · |
@@ -245,7 +252,10 @@ passwords and sysadmin resets directly. Specifics:
   The application displays a shared password to eligible members (FR-33), which raises the value
   of any compromised account.
 - Sessions expire; "remember this device" is allowed on members' own devices.
-- University SSO as an *additional* sign-in method for `@scranton.edu` accounts: **Later**, Q9.
+- University SSO as an *additional* sign-in method for `@scranton.edu` accounts: **not pursued
+  in this version**, by NAF's decision of 2026-09-13; the option stays open for a future
+  version. Nothing in the account model may assume its absence is permanent: a user record
+  can later carry a University identity beside its password.
 
 ### 2.7 Invitations and applications
 
@@ -317,12 +327,12 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   | Personal email | one of the two | yes | |
   | Email delivery preference | yes | yes | Scranton, personal, or both |
   | Cell phone | no for adults; no for minors | yes | Guardian phone is required for a minor instead |
-  | Under 18 | yes | no | Set at invitation; drives the guardian rules. **(added)** Store date of birth only if the club wants automatic 18th-birthday handling (Q7); otherwise a boolean set by the inviter |
+  | Under 18 | yes | no | A flag set at invitation; drives the guardian rules. No date of birth is stored (NAF, 2026-09-13); conversion at 18 is by hand (FR-109) |
   | Member category | yes | no | Faculty / Staff / Student / Community Member; set at invitation, changed by officer or sysadmin |
   | Club position | no | no | From the configured list; set by sysadmin |
   | Access level | yes | no | Section 2.1; set by sysadmin |
-  | Guardian(s) | required if under 18 | guardian edits own | Section 2.4 |
-  | Authorized chaperones | for minors | guardian | Section 2.4 |
+  | Guardian(s) | required if under 18; more than one allowed | guardian edits own | Section 2.4 |
+  | Responsible adults previously named | for minors | guardian | Section 2.4; picked from when signing up for a slot (FR-64) |
 
 - **FR-9 [Must]** Members can edit their own non-privilege fields. Privilege fields (category,
   license data, access approvals, club position, access level) are read-only to the member and
@@ -514,6 +524,13 @@ Verbatim:
 - **FR-44 [Must]** An event has a lifecycle: *draft* (visible to officers and captains only),
   *published* (visible to members; sign-ups open per FR-54), *locked* (visible; no member
   changes to sign-ups), *completed*, *cancelled*. Cancelling notifies everyone signed up.
+  Publishing is an explicit action by an officer or captain, recorded with who and when, and
+  offers an announcement to members at that moment (the FR-80 opening announcements cover each
+  role's opening, and this one covers the event becoming visible). Visibility and sign-up are
+  separate switches: a published event may have every role still closed, so members can see
+  what is coming before anything opens. A published event can return to *draft* only while
+  no one has signed up; once anyone has, the only way off the schedule is *cancelled*, so no
+  member's commitment disappears without notice.
 - **FR-45 [Should]** Events can be marked as recurring for display purposes (the club's weekly
   net, monthly meeting) without slots; these appear on the calendar and have no roster.
 
@@ -630,9 +647,27 @@ Verbatim:
   highest-class licensee signed up in an on-air role; a captain can change it; the person
   named is told in their reminder. This makes the dictation's "minimum license class" concrete:
   it is the class the control operator needs for the bands and modes the event uses.
-- **FR-64 [Must] (added; from the chaperone rule in section 2.4)** If a minor is signed up in a
-  slot, the slot is *not viable* unless one of the minor's authorized chaperones is also signed
-  up in that slot, in any role. The missing-credential text says whose chaperone is absent.
+- **FR-64 [Must]** When a guardian signs a minor up for a slot, they designate one or more
+  **responsible adults** who will accompany the minor for that slot: name, email, and phone,
+  picked from adults the guardian has named before or entered fresh; a member can be picked by
+  name. A responsible adult occupies no place in the slot and is not counted toward its
+  capacity or its viability rule. A minor's sign-up with no responsible adult designated makes
+  the slot *not viable*, and the status text names the minor. Captains can edit the
+  designation on the guardian's behalf.
+
+  > I don't think the responsible adult accompanying the minor needs to take up a "slot".
+  > Instead, […] the guardian should be able to designate responsible adult(s) that will be
+  > accompanying the minor for each slot. — NAF, 2026-09-13
+
+- **FR-109 [Must]** Converting a minor's account to an adult's is a manual action by a faculty
+  advisor (an approver position, section 2.3), taken when the member or a guardian reports that
+  the member has turned 18. It clears the under-18 flag, ends the guardian links (kept in
+  history), makes the account self-managed, and issues a one-time temporary password (FR-7) or
+  a reset link so the member sets their own credentials. Guardians are notified. Audited.
+
+  > We are not storing any DOBs in this system. So, when the minor turns 18, they need to talk
+  > to a faculty advisor who can then manually convert the minor account into an adult
+  > account. — NAF, 2026-09-13
 - **FR-65 [Must]** The **roster page** for an event shows every slot in time order, grouped by
   day, with position columns where FR-51 applies, each person's name, callsign, role, and
   compact credential badges (license class, station access, IT access, control operator), the
@@ -642,7 +677,15 @@ Verbatim:
   slots total, viable, at risk, not viable, empty; hours scheduled against each FR-39 limit;
   and the number of unconfirmed sign-ups in the next 48 hours.
 - **FR-67 [Must]** Members see names, callsigns, and roles on the roster. Phone numbers and
-  email addresses are visible to captains of that event, officers, and sysadmins only.
+  email addresses are visible to captains of that event, officers, and sysadmins only. For a
+  minor on the roster, those same people can open the minor's name to see the responsible
+  adult(s) designated for that slot with their email and phone, and the minor's guardian(s)
+  with name and contact details.
+
+  > On the roster, we should be able to click the minors name and see who is accompanying,
+  > along with their email and telephone number. That display should also show the guardians
+  > name and contact info. — NAF, 2026-09-13
+
 - **FR-68 [Should]** A cross-event view for officers: every event in the next N weeks with its
   health summary, so that a quiet Tuesday-evening problem is seen on Tuesday.
 
@@ -853,8 +896,8 @@ Recorded so a later session does not re-derive them.
 
 ### 4.1 What the application stores
 
-Entities implied by section 3: club configuration; users (with guardian links and chaperone
-authorizations); invitations; applications; credentials (license records with sync history and
+Entities implied by section 3: club configuration; users (with guardian links and the
+responsible adults a guardian has named); invitations; applications; credentials (license records with sync history and
 overrides; agreement templates and versions; signed agreements with rendered PDFs; approvals
 with state history); the computer password (encrypted) and its rotation history; events;
 operating periods; operating-time limits; positions; slots; role capacities and eligibility
@@ -878,7 +921,10 @@ following are binding:
 - Phone numbers and email addresses are shown to captains, officers, and sysadmins only
   (FR-67), and are exported only by a deliberate action that is audited (FR-87).
 - Data about minors and their guardians are the most sensitive the system holds. They are
-  visible on the same terms as adult contact data and no wider.
+  visible on the same terms as adult contact data and no wider. Responsible adults named for a
+  slot (FR-64) may be people with no account; their name, email, and phone are held only for
+  the slots they were named for and are visible on the same terms.
+- No date of birth is stored for anyone. Under-18 is a flag (section 2.4).
 - The IP address recorded with a signature (FR-22) exists to make the signature evidentially
   useful and is shown only on the rendered agreement.
 
@@ -887,7 +933,8 @@ following are binding:
 | Data | Retain | Then |
 |---|---|---|
 | Profile of a member set to No access | 2 years from the change | Delete contact details and phone; keep name, callsign, and participation history as club record, or delete entirely on request |
-| Guardian records | Until the minor's account is converted or closed | Delete |
+| Guardian records | Until the minor's account is converted (FR-109) or closed | Delete contact details; keep the link in history |
+| Responsible adults named for a slot | 1 year after the event | Delete |
 | Signed agreements and approval history | Per the University's record-retention requirement for the paper equivalents, once established | Archive outside the application or delete |
 | Audit log | Indefinitely | Nothing; it is small and it is the record |
 | Messages sent | 1 year | Delete bodies; keep the fact and recipient count |
@@ -1034,7 +1081,7 @@ recommendation is acceptable.
    *Recommend yes.* The dictation describes a complete, coherent v1 without them.
 2. **Priorities.** Accept the Must / Should / Could tags as drafted, or re-tag? The Musts are
    the dictation's content plus the minimum the draft found necessary to make it safe (expiry,
-   review, audit, control operator, chaperone check, R-number exclusion).
+   review, audit, control operator, responsible-adult check, R-number exclusion).
 3. **Application review.** Is an application reviewed by an officer before access is granted
    (FR-5), or does completing the form admit the person? *Recommend review.* The inviter knows
    the person; the review is one click, and it is where the category is confirmed.
@@ -1049,13 +1096,12 @@ recommendation is acceptable.
    ID and would need the repository's privacy rules amended.
 6. **Can a minor sign in at all?** *Recommend no in v1* (section 2.4). A read-only view for the
    minor is possible later.
-7. **Date of birth or a boolean?** Automatic handling of the 18th birthday (section 2.4) needs
-   the date. *Recommend the boolean plus an optional "turns 18 on" date entered by the inviter*,
-   which drives the notification without storing a full birth date for adults.
+7. ~~**Date of birth or a boolean?**~~ **Resolved 2026-09-13 by NAF: no dates of birth are
+   stored; under-18 is a flag and conversion at 18 is manual by a faculty advisor (FR-109).**
 8. **Retention.** Accept section 4.3, and does the University specify a retention period for
    signed access agreements?
-9. **University SSO** as an extra sign-in path for `@scranton.edu` users: worth asking IT now,
-   or leave for later? *Recommend later*; the club-managed path is required regardless.
+9. ~~**University SSO**~~ **Resolved 2026-09-13 by NAF: not pursued at this time; the option is
+   left open for a future version (section 2.6).**
 10. **Member directory** (FR-13): wanted, or is the roster enough?
 11. **Contest calendar import.** Seek WA7BNM's permission for page retrieval, rely on the
     iCalendar feed plus manual entry of the detail fields, or both? *Recommend writing to
@@ -1066,7 +1112,7 @@ recommendation is acceptable.
     or nothing?
 14. **Minors on campus.** Does the University have a policy governing minors participating in
     campus programs (background checks or training for chaperones, sign-in requirements)? If so,
-    it constrains who may be an authorized chaperone (section 2.4) and may add a credential type
+    it constrains who may be a responsible adult (FR-64) and may add a credential type
     (FR-18). The draft does not know and has not assumed.
 15. **Contact for issues.** The reminder names the captains (FR-72). Should it also name the
     faculty advisor as a fallback, given the agreements route equipment problems to the advisor?
@@ -1091,7 +1137,7 @@ accept, amend, or strike.
 | Credentials as a general mechanism (FR-18) with the viability rule expressed over them (FR-61) | The dictation's three requirements (license, swipe access, IT agreement) are three instances of one pattern. Naming the pattern is what makes the application usable by another club, which the dictation asks for. |
 | Approved versus active station access (FR-26) | An approved agreement does not open the door; the University does. The viability check has to test the fact that matters. |
 | Control operator named per slot (FR-63) | Part 97 makes one licensed person responsible for every transmission and limits the station to that person's privileges. "At least one licensed person" is necessary but does not say who, and "minimum license class" is a statement about the control operator. |
-| Chaperone check in slot viability (FR-64) | The dictation states the chaperone rule as a policy; making it a viability condition is how the roster enforces it. |
+| Responsible-adult designation in slot viability (FR-64) | The dictation states the chaperone rule as a policy; requiring a designation at sign-up is how the roster enforces it. First drafted as "a chaperone must hold a place in the slot"; NAF corrected this on 2026-09-13 to a designation that takes no place. |
 | No R number (FR-24) | The paper forms collect it; the repository's rules forbid storing student IDs. The two conflicted and one had to yield. |
 | Password never emailed (FR-32) | The agreement being signed forbids writing the password down or sharing it. Emailing it does both. |
 | Invitation expiry and application review (FR-3, FR-5) | Standard hygiene for an invitation-only system; the dictation is silent. |
@@ -1120,6 +1166,18 @@ accept, amend, or strike.
   up for a mentor slot or observer slot. Later, I may allow anyone to sign up for an open
   operator slot."* Openings are per role (FR-53, FR-54 already modelled them so); §1.4 and
   the FR-54 example now say it the same way.
+- 2026-09-13, NAF, asked whether events can be drafted hidden from members and published
+  later; FR-44 already provided the lifecycle. On his *"do it"*, FR-44 gained an explicit,
+  recorded publish action with an optional announcement, and the rule that unpublishing is
+  allowed only before the first sign-up.
+- 2026-09-13, NAF, on minors (quoted at FR-64, FR-67, FR-109): responsible adults are
+  designated per slot by the guardian and take no place in the slot; the roster exposes them
+  and the guardians, with contact details, behind the minor's name; more than one guardian may
+  be linked; no dates of birth are stored, so conversion at 18 is manual by a faculty advisor.
+  Replaced the first draft's "authorized chaperones must sign up for the slot" and its
+  automatic 18th-birthday handling. Resolves Q7.
+- 2026-09-13, NAF: *"We will not be pursuing University SSO at this time. We leave the option
+  open for a future version."* Section 2.6 updated. Resolves Q9.
 
 **Where the draft chose a reading of the dictation.** "Club officers can only send invitations"
 was read as *relative to sysadmins' account powers*: officers cannot create or edit accounts
