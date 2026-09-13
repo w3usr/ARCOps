@@ -494,4 +494,4 @@ carries the actual running model ID.
   the overlay mechanism, the example agreement texts (written as illustrations, not reviewed by
   any institution, and so labelled), the placeholder SVG, and the CI grep are the assistant's.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [after commit]
+- **Git Hash**: 6ca9cd3
