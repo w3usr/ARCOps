@@ -359,3 +359,24 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rule, answered the assistant's
   question on the viability case, and saw the applied text summarised.
 - **Git Hash**: fbc9be9
+
+## [2026-09-13 04:54 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply three of NAF's decisions on notifications and attendance:
+  (1) browser notifications mirroring email, on by default per device, subject to the
+  browser's own permission; (2) notification preferences on the profile page by category
+  and channel, with a named set that always goes out, cancellations first among them;
+  (3) one-tap check-in on arrival, available from 30 minutes before a slot.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-71 (rewritten as preferences with
+  a mandatory set), new FR-112 (browser notifications), FR-83 (narrowed to SMS), new FR-113
+  (check-in) and FR-114 (check-in nudge, Could), FR-86 (actual attendance), FR-8 row, §1.3,
+  FR-103 table; §9 decision record with NAF's five statements verbatim.
+- **Nature of Contribution**: Edit and draft. The decisions are NAF's. The assistant's
+  additions: the mandatory categories beyond cancellations (moves by others, account security,
+  agreement decisions and expiry); the *reminders off* roster state; the iOS home-screen
+  constraint on push; the roster's checked-in state, late-arrival notice to captains, the
+  minor's check-in recording the responsible adult present, and the feed into the
+  participation report.
+- **Human Review Status**: Partially reviewed. NAF corrected the push default and added the
+  ease requirement for check-in; the remaining text is summarised to him and pending his read.
+- **Git Hash**: [after commit]

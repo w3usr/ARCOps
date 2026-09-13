@@ -105,7 +105,8 @@ mentioned in the dictation. The draft proposes deferring them so that v1 is fini
   nothing that names a member (FR-98).
 - **Native mobile apps.** The v1 web application must work well on phone browsers and be
   installable as a progressive web app; a native app is a later path (section 5.4).
-- **SMS and push notifications.** Designed for (FR-83), built later.
+- **SMS notifications.** Designed for (FR-83), built later. Browser notifications are in v1
+  (FR-112).
 - **Membership dues, finances, meeting minutes, inventory of club property.**
 
 ### 1.4 Definition of done for v1 (proposed)
@@ -342,6 +343,7 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   | Scranton email | one of the two | yes | Validated as `@scranton.edu` |
   | Personal email | one of the two | yes | |
   | Email delivery preference | yes | yes | Scranton, personal, or both |
+  | Notification preferences | yes | yes | Per category and channel (FR-71); browser notification subscriptions per device (FR-112) |
   | Cell phone | no for adults; no for minors | yes | Guardian phone is required for a minor instead |
   | Under 18 | yes | no | A flag set at invitation; drives the guardian rules. No date of birth is stored (NAF, 2026-09-13); conversion at 18 is by hand (FR-109) |
   | Member category | yes | no | Faculty / Staff / Student / Community Member; set at invitation, changed by officer or sysadmin |
@@ -727,6 +729,29 @@ Verbatim:
 
   > If this happens, you could warn the user before they make that switch. Then they might
   > decide to stay as an operator. — NAF, 2026-09-13
+
+- **FR-113 [Must]** **Check-in.** A member checks in when they arrive for a slot, from "my
+  schedule" (FR-59) on their phone or any signed-in browser, from 30 minutes before the slot
+  starts (configurable per event) until it ends. **Checking in must be very easy**: when a
+  member is inside the window for a slot they hold, the first thing they see on signing in, and
+  the top of "my schedule", is a single large **Check in** button for that slot; one tap, no
+  further page, no confirmation dialog. The same button appears on the browser notification
+  (FR-114) where the platform allows an action there. A check-in records the time. The roster shows
+  a sign-up's state as *signed up*, *confirmed* (FR-72), or *checked in*, so during the event
+  the roster is also the attendance board. Captains can check a member in on their behalf; for
+  a minor, a guardian or a captain checks them in, and the check-in records which designated
+  responsible adult (FR-64) is present. If a slot has started and a confirmed person has not
+  checked in within 15 minutes (configurable), the captains get one notice naming them. Check-in
+  times feed the participation report (FR-86), which then distinguishes scheduled from actual
+  attendance. There is no check-out; the slot's end is taken as the departure unless the member
+  cancels the rest of a run of slots.
+
+  > Members should check in when they arrive at their time slot. They can check-in up to
+  > 30 minutes early. — NAF, 2026-09-13
+
+  > The checkin mechanism must be very easy to do. — NAF, 2026-09-13
+- **FR-114 [Could]** A browser notification (FR-112) 30 minutes before each slot the member
+  holds, opening the check-in.
 - **FR-110 [Must]** A sign-up carries an optional free-text **note to the captains** ("I will
   be running 10 minutes late", "I need to leave 15 minutes early", "first time on CW"),
   entered at sign-up and editable by the member afterwards. Notes are visible to the event's
@@ -891,6 +916,7 @@ made it likely that reliable delivery would take time to establish:
   | Computer password rotated | Notice (FR-34) | Banner for eligible members on sign-in |
   | License expiring | Notice (FR-17) | Banner on the member's profile |
   | Cancellation of a slot, event, or sign-up | Notice (FR-74) | "My schedule" and the roster reflect it immediately; notification (FR-108) |
+  | Check-in (FR-113) | none; it is an in-application action | "My schedule", or a captain on the member's behalf |
 
 - **FR-104 [Must]** When an invitation is created, the issuer is shown the invitation link and
   a ready-to-send text (who is inviting, to what, the link, its expiry, and the club contact),
@@ -931,10 +957,24 @@ made it likely that reliable delivery would take time to establish:
   selects. Every message to a minor is delivered to the guardian's address(es), with the
   minor's own address included only if one is on file. There is no path by which a minor is
   messaged without the guardian.
-- **FR-71 [Must]** Members can opt out of announcements and of the digest (FR-79). Members
-  cannot opt out of messages about slots they hold (reminders, warnings, cancellations) or
-  about their own account and credentials, since those messages exist to protect the club and
-  the member.
+- **FR-71 [Must]** **Notification preferences** live on the member's profile page: one row per
+  message category, with a switch for email and, where enabled (FR-112), for browser
+  notifications. The in-application copy (FR-82) is always kept. Categories a member controls:
+  automated slot reminders (FR-72); at-risk warnings for slots they hold (FR-73); role-opening
+  announcements (FR-80); general announcements (FR-75); the weekly digest (FR-79); license
+  expiry notices (FR-17). Categories that **go out no matter what**, because they change
+  something the member is relying on or protect their account: cancellation of a slot, event,
+  or sign-up they hold (FR-74); a sign-up moved, removed, or re-timed by someone else (FR-58);
+  account security messages (password reset, temporary password, sign-in lockout); and
+  agreement decisions and expiry (FR-25, FR-28), since losing access silently is worse than an
+  unwanted message. For a minor, the guardian sets the preferences and the mandatory messages
+  always reach every guardian (FR-70). A member who turns reminders off is shown on the roster
+  as *reminders off*, distinct from *unconfirmed*, so captains read the confirmation column
+  correctly; they can still confirm from "my schedule" (FR-59).
+
+  > Members should be able to control on their profile page what notifications they get,
+  > particularly automated reminders. Some emails, such as cancellations, should go out no
+  > matter what. — NAF, 2026-09-13
 - **FR-72 [Must]** **Reminder**: 24 hours before each slot (configurable per event), each
   person signed up receives a message with the slot time in UTC and local, the location and
   position, their role, the
@@ -984,10 +1024,28 @@ made it likely that reliable delivery would take time to establish:
   to that person in the application ("my messages"), so a lost or undelivered email is
   recoverable and a guardian can see what a minor was sent. (Promoted from Should on
   2026-09-13; it is the in-application half of FR-103.)
-- **FR-83 [Later]** SMS and push notifications. The notification layer is designed so that a
-  channel is an implementation of one interface and a member preference; v1 implements email
-  only. Web push from an installed progressive web app (section 5.4) is the likely first
-  additional channel, ahead of SMS, because it has no per-message cost.
+- **FR-83 [Later]** SMS notifications. The notification layer is designed so that a channel is
+  an implementation of one interface and a member preference; v1 implements email and browser
+  notifications (FR-112). SMS waits on a budget for per-message cost.
+- **FR-112 [Should]** **Browser notifications.** The application's browser-notification
+  (web push) setting is **on by default**. A browser will only deliver notifications once the
+  person has granted permission on that device, so at first sign-in on each device the site
+  asks for it; granting activates the subscription, declining leaves the setting shown as
+  *blocked by this browser* with how to allow it. One subscription per device, each revocable
+  from the profile page, where the member can also turn the setting off entirely. When on,
+  every message the member would receive by email under their preferences (FR-71) is also
+  delivered as a browser notification, with the mandatory categories included, and tapping it
+  opens the relevant page. Browser notifications never carry the computer password or
+  contact details. Push works from the ordinary browser on desktop and Android; on iOS it works
+  only when the application has been installed to the home screen as a PWA (FR-96), and the
+  profile page says so. Delivery is best effort: a failed push is not retried and never blocks
+  the email or the in-application copy.
+
+  > Can we also have this site show notifications through the browser? So if an email
+  > notification goes out, a browser notification is also enabled? This should be an optional
+  > setting. — NAF, 2026-09-13
+
+  > Make on by default — NAF, 2026-09-13
 
 ### 3.9 Reports and exports
 
@@ -996,7 +1054,8 @@ made it likely that reliable delivery would take time to establish:
   filterable by expiring-within-N-days. Officers and sysadmins; downloadable as CSV.
 - **FR-85 [Must]** **Event roster export**: the FR-65 roster as CSV and as a printable page.
 - **FR-86 [Should]** **Participation report** per event and per period: hours scheduled, hours
-  covered, hours viable, people who participated, first-time participants. This is what the
+  covered, hours viable, people scheduled and people who checked in (FR-113), first-time
+  participants. This is what the
   club reports to the University and puts in a grant application, so it should be right.
 - **FR-87 [Should]** **Member roster** for officers: name, callsign, category, position,
   student level and anticipated graduation (semester and year), license class and expiry,
@@ -1368,6 +1427,18 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at FR-113): members check in on arrival, up to 30 minutes early.
+  New FR-113; the roster's checked-in state, the late-arrival notice to captains, the minor's
+  check-in recording the responsible adult present, and the feed into the participation report
+  are the assistant's; FR-114 (a check-in nudge) is a Could. NAF added that check-in must be
+  very easy: one tap from the sign-in landing or the top of "my schedule".
+- 2026-09-13, NAF (quoted at FR-112 and FR-71): browser notifications as an optional per-device
+  setting mirroring email, on by default (the browser's own permission prompt still governs
+  each device); notification preferences on the profile page, with cancellations
+  always sent. FR-71 rewritten as a category-by-channel preference model with a named
+  mandatory set; new FR-112; FR-83 narrowed to SMS. The assistant's additions: the mandatory
+  set beyond cancellations (moves by others, account security, agreement decisions and
+  expiry), the *reminders off* roster state, and the iOS home-screen constraint.
 - 2026-09-13, NAF (quoted at FR-111): a member may change role within a slot when eligible.
   New FR-111; the cutoff behaviour and the no-gap guarantee are the assistant's. On the
   assistant's question of what to do when a role change breaks viability, NAF chose to warn
