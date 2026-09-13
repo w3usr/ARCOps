@@ -412,3 +412,17 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the requirement and saw the applied
   text summarised.
 - **Git Hash**: e3da986
+
+## [2026-09-13 05:07 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's requirement that a sysadmin can delete a user account.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: new FR-118 (deletion distinct from No
+  access and from member-requested closure; future sign-ups cancelled with captains told;
+  personal data removed; past rosters and participation anonymised; agreements kept for the
+  retention period then purged; audit log intact; last-sysadmin guard; guardian ordering
+  rule); permission matrix row; §9 decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit and draft. The requirement is NAF's; the anonymise-and-
+  retain behaviour and the two guards are the assistant's.
+- **Human Review Status**: Partially reviewed. NAF stated the requirement and saw the applied
+  text summarised.
+- **Git Hash**: [after commit]

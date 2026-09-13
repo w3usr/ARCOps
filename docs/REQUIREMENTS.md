@@ -216,6 +216,7 @@ The draft models this as follows:
 | Create or edit account manually | ✓ | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · |
 | Change access level or club position | ✓ | · | · | · | · |
+| Delete a user account (FR-118) | ✓ | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · |
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | own | for minor |
 | Sign an access agreement | ✓ | ✓ | ✓ | own | own only, never for the minor (FR-22) |
@@ -1096,6 +1097,23 @@ made it likely that reliable delivery would take time to establish:
 - **FR-91 [Must]** Sysadmins can set an account's access level to No access with a reason, and
   restore it. Doing so removes the person from future slots and notifies the captains of those
   events.
+- **FR-118 [Must]** A sysadmin can **delete a user account**, with a required reason and a
+  confirmation that names what will happen, since the action is irreversible. Deletion is
+  distinct from setting No access (FR-91), which keeps everything, and from member-requested
+  closure (FR-11), which starts the retention clock. On deletion the system: cancels the
+  person's future sign-ups and tells the captains of those events (FR-74); removes name,
+  callsign, emails, phone, preferences, browser-notification subscriptions, guardian links, and
+  responsible-adult designations; and replaces the person on past rosters and in participation
+  history with an anonymous marker ("deleted member"), so counts and hours stay right while
+  nothing identifies them. Signed agreements and their PDFs are kept for the retention period
+  in section 4.3 and then purged automatically; the audit log (FR-92) keeps its entries, with
+  the deleted account's identifier and the deletion itself recorded. A sysadmin cannot delete
+  the last remaining sysadmin account. Deleting a minor's account also deletes the
+  responsible-adult records attached to their sign-ups; a guardian account is deleted only
+  after every linked minor has been converted (FR-109), re-linked to another guardian, or
+  deleted.
+
+  > There needs to be a mechanism for a sysadmin to delete a user account. — NAF, 2026-09-13
 - **FR-92 [Must]** An **audit log**, append-only and readable by sysadmins, records: access
   level and club position changes, category changes, license overrides, agreement approvals,
   revocations and declines, computer password sets and every view, invitations
@@ -1477,6 +1495,10 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at FR-118): sysadmins can delete accounts. New FR-118; the
+  anonymise-and-retain behaviour (history kept without identity, agreements purged at the end
+  of retention, audit log intact), the last-sysadmin guard, and the guardian ordering rule are
+  the assistant's.
 - 2026-09-13, NAF (quoted at §5.3): the system must be accessible, especially to screen reader
   users. §5.3 promoted from a paragraph to FR-116 (specific commitments) and FR-117
   (verification as a release gate); the itemised commitments are the assistant's reading of
