@@ -75,6 +75,7 @@ ops.w3usr.org/
 |       `-- python-code.md
 |-- ai/
 |   `-- ai_usage_log.md           <- mandatory AI session log
+|-- config/                       <- generic club defaults: club.example.yaml, assets/, agreements/ (TR-40)
 |-- docs/
 |   |-- REQUIREMENTS.md           <- functional requirements (draft, FR-numbered)
 |   |-- TECHNICAL_REQUIREMENTS.md <- proposed stack and technical decisions (draft, TR-numbered)

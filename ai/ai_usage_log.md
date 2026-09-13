@@ -479,3 +479,19 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF answered each decision; the document's full
   text is pending his read, and both documents say adoption is pending.
 - **Git Hash**: d4b5616
+
+## [2026-09-13 12:24 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Make the open-source release work for any club out of the box, per NAF:
+  generic, swappable club defaults in the public repository, and an overlay mechanism by which
+  a club's own assets replace them at deploy.
+- **Sections/Files Affected**: `config/` (new: `README.md`, `club.example.yaml` with every
+  configuration key and neutral values, `assets/club-logo.svg` placeholder mark,
+  `agreements/*.example.html` marked as illustrations to replace); `docs/TECHNICAL_REQUIREMENTS.md`
+  (new TR-40 generic defaults and CI club-neutrality grep, TR-41 overlay; TR-32, TR-38, layout,
+  §10 updated); `README.md` and `CLAUDE.md` trees.
+- **Nature of Contribution**: Draft and code generation. The principle is NAF's, quoted in TR-40;
+  the overlay mechanism, the example agreement texts (written as illustrations, not reviewed by
+  any institution, and so labelled), the placeholder SVG, and the CI grep are the assistant's.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

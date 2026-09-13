@@ -17,6 +17,7 @@ Live at **https://ops.w3usr.org**.
 ops.w3usr.org/
 |-- docs/REQUIREMENTS.md      <- functional requirements; start here
 |-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
+|-- config/                   <- generic club configuration, logo, and example agreements (works out of the box)
 |-- docs/ONBOARDING.md        <- for new club members
 |-- web/                      <- what nginx serves today: the holding page
 |   |-- index.html

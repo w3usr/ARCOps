@@ -1,0 +1,100 @@
+# Club configuration: generic example values.
+#
+# Copy to club.yaml and edit, or supply an overlay directory with the same keys (see
+# config/README.md). Every key here is read by `manage.py club_import`; a missing key takes
+# the value shown. Values a sysadmin later changes in the interface win over this file unless
+# the import is run with --reset.
+#
+# No secrets in this file. It is committed and public.
+
+club:
+  name: "Example Amateur Radio Club"
+  short_name: "Example ARC"
+  callsign: "N0CALL"
+  university: null                            # or the institution's name
+  department: null
+  public_page: "https://example.org/"
+  contact_email: "club@example.org"           # general contact; Reply-To fallback (FR-69)
+  sending_address: "ops@example.org"          # From: on all system mail (FR-69)
+  sending_display_name: "Example ARC Operations"
+  timezone: "UTC"                             # default event display zone (FR-36)
+  station_location_name: "Club station"
+
+branding:
+  logo: "assets/club-logo.svg"
+  logo_monochrome: "assets/club-logo.svg"
+  favicon: "assets/club-logo.svg"
+  apple_touch_icon: "assets/club-logo.svg"
+  qsl_card: null
+  accent: null                                # optional accent colour; checked for AA contrast
+
+member_categories:                            # FR-8, FR-12; edit freely
+  - { key: student,   label: "Student" }
+  - { key: faculty,   label: "Faculty" }
+  - { key: staff,     label: "Staff" }
+  - { key: community, label: "Community Member" }
+
+club_positions:                               # §2.3; approver: true may approve agreements
+  - { key: advisor,        label: "Advisor",        approver: true }
+  - { key: trustee,        label: "License Trustee" }
+  - { key: president,      label: "President" }
+  - { key: vice_president, label: "Vice President" }
+  - { key: secretary,      label: "Secretary" }
+  - { key: treasurer,      label: "Treasurer" }
+
+license_ladder: ["Novice", "Technician", "General", "Advanced", "Extra"]   # FR-19; US default
+
+slot_roles:                                   # FR-49, FR-50
+  - { key: operator, label: "Operator", on_air: true }
+  - { key: mentor,   label: "Mentor",   on_air: true }
+  - { key: observer, label: "Observer", on_air: false }
+
+non_operating_slot_kinds:                     # FR-47
+  - { key: setup,     label: "Setup",               viability: [station_access] }
+  - { key: breakdown, label: "Breakdown",           viability: [station_access] }
+  - { key: training,  label: "Training",            viability: [station_access] }
+  - { key: precheck,  label: "Equipment pre-check", viability: [station_access] }
+  - { key: debrief,   label: "Post-event analysis", viability: [] }
+
+credential_types:                             # FR-18; add your own
+  - key: amateur_license
+    label: "Amateur radio license"
+    established_by: fcc_uls
+    graded: true
+  - key: station_access
+    label: "Station access"
+    established_by: agreement
+    default_expiry: one_year                  # or next_september_1_skip_august (FR-25)
+  - key: it_access
+    label: "Computer access"
+    established_by: agreement
+    default_expiry: one_year
+
+viability_rule_default:                       # FR-61
+  require_all_of:
+    - { credential: amateur_license, min_class_from_event: true }
+    - { credential: station_access }
+
+agreements:                                   # FR-21; example templates, replace before use
+  - key: station_access.example
+    credential: station_access
+    audience: [student, faculty, staff, community]
+    file: "agreements/station-access.example.html"
+    title: "Station Access Agreement (example)"
+  - key: it_access.example
+    credential: it_access
+    audience: [student, faculty, staff, community]
+    file: "agreements/it-access.example.html"
+    title: "Computer Use Agreement (example)"
+
+defaults:
+  slot_length_minutes: 60                     # FR-46
+  cancellation_cutoff_hours: 24               # FR-56
+  reminder_hours_before: 24                   # FR-72
+  at_risk_horizon_hours: 72                   # FR-73
+  checkin_opens_minutes_before: 30            # FR-113
+  late_arrival_notice_minutes: 15             # FR-113
+  invitation_expiry_days: 14                  # FR-3
+  temporary_password_expiry_hours: 72         # FR-7
+  agreement_expiry_notice_days: 30            # FR-28
+  email_delivery: "off"                       # FR-105; turn on when your mail path works

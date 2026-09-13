@@ -320,12 +320,10 @@ has a decade of documentation.
   lines. Bootstrap gains the `ops-web.service` unit, the timers, the env file (TR-19), the
   `backup/` directory, and the `age` and `sqlite3` packages. Serves: the private repository's
   "server is configured only from this repository" rule.
-- **TR-32 Configuration**: everything club-specific is a `ClubSetting` row (§1.5), seeded from
-  `config/club.yaml` in the public repository on first run and edited in the sysadmin interface
-  afterwards (FR-89); the W3USR agreement texts are **not** in the public repository and are
-  loaded at deploy from the private repository's `docs/w3usr_access_agreements/` by a step in
-  `deploy.sh`. Another club forks the public repository, edits `club.yaml`, and supplies its
-  own agreements.
+- **TR-32 Configuration**: everything club-specific is a `ClubSetting` row (§1.5), seeded by
+  `manage.py club_import` from a configuration directory (TR-40) and edited in the sysadmin
+  interface afterwards (FR-89); interface edits win over the file unless the import is run with
+  `--reset`, so officers work in the interface and the file stays the seed and the record.
 - **TR-33 Logging and health**: application logs to journald through gunicorn (structured
   one-line JSON per request and per job); no personal data in log lines beyond the user id;
   `/healthz` returns the database's reachability, the last `uls:sync` time, and the outbox
@@ -342,6 +340,31 @@ has a decade of documentation.
 
   > Use healthchecks.io. I already use it for hamsci.org — NAF, 2026-09-13
 
+- **TR-40 Generic defaults: the public repository ships a fully working club.** `config/`
+  holds `club.example.yaml` (every configuration key with neutral values), `assets/` (a
+  text-free placeholder logo usable as favicon and icon), and `agreements/` (example station-
+  access and computer-use templates, clearly marked as illustrations for the adopting club's
+  advisor to replace; the application shows a banner while a template key ends in
+  `.example`). A fresh checkout with `seed_demo` therefore runs, signs, approves, schedules,
+  and reminds as "Example Amateur Radio Club" with nothing edited. **The code never names a
+  club**: CI greps `apps/`, `templates/`, and `static/` for the string `w3usr` and fails on a
+  hit (TR-38). Another club adopts the application by editing `club.yaml` and replacing the
+  two directories, or by supplying an overlay (TR-41). *Why (the advisor's direction,
+  2026-09-13):* the open-source release must work for another club at once, with the W3USR
+  assets kept separate but deployable. Serves: §1.5, §7, FR-12, FR-18, FR-21, FR-89.
+- **TR-41 Club overlay: W3USR's assets are tracked privately and laid over the defaults at
+  deploy.** The application reads an **overlay directory** (`CLUB_OVERLAY_DIR`, on the server
+  `/srv/ops.w3usr.org/club/`) with the same layout as `config/` (`club.yaml`, `static/club/…`,
+  `agreements/…`) before the shipped defaults, for every club-specific thing: configuration,
+  logo and icons, QSL card, agreement texts, message-template overrides. `club_import` loads
+  the overlay's `club.yaml` and agreement files, versioning each agreement by content hash
+  (FR-21, FR-30); `collectstatic` places `static/club/` ahead of the defaults. Removing the
+  overlay yields the generic club, which is how the public repository is tested. The W3USR
+  overlay is held in the club's private orchestration repository with a **manifest** that
+  traces every asset to its master (the club's image library, the paper agreements), records
+  the derivation command, the approval for public use, and the date regenerated; the deploy
+  copies the overlay to the server and runs the import on every `deploy`. An asset not in the
+  manifest is not deployed. Serves: §1.5, §7, TR-32.
 - **TR-34 Environments**: `prod` on the Nanode and `dev` on a student's laptop, the only
   difference being the env file and the email backend (console in dev). No staging server; the
   club has one box. A `manage.py seed_demo` command fills a dev database with fictitious
@@ -366,8 +389,8 @@ has a decade of documentation.
   pre-commit locally and by CI. Type hints on the service layer, checked with `mypy` in
   non-strict mode.
 - **TR-38 CI: GitHub Actions on the public repository** (free for public repositories): lint,
-  tests, accessibility checks, and a `pip-audit` dependency scan on every push and pull
-  request. CI never deploys; deployment stays a human action from the private repository.
+  tests, accessibility checks, a `pip-audit` dependency scan, and the club-neutrality grep
+  (TR-40) on every push and pull request. CI never deploys; deployment stays a human action from the private repository.
 - **TR-39 Definition of done for a change**: tests pass, accessibility checks pass, the
   requirement ID it implements is in the commit message, and if the change sends a message it
   has a row in the FR-103 table.
@@ -379,7 +402,10 @@ has a decade of documentation.
 ```
 ops.w3usr.org/
 |-- manage.py
-|-- config/                 <- Django settings (base, dev, prod), urls, wsgi; club.yaml seed
+|-- config/                 <- Django settings (base, dev, prod), urls, wsgi
+|   |-- club.example.yaml   <- generic configuration seed (TR-40); club.yaml in a fork, or an overlay (TR-41)
+|   |-- assets/             <- neutral placeholder logo and icons
+|   `-- agreements/         <- example agreement templates, marked for replacement
 |-- apps/
 |   |-- accounts/  credentials/  events/  comms/  ops/      <- TR-26; each: models, services, api, views, templates, tests
 |-- templates/              <- base layout, components (roster table, slot card, status badge)
@@ -428,6 +454,9 @@ Asked one at a time in session and answered as recorded here; three answers amen
 | 6 | Second factor required for officers as well as sysadmins? | **TOTP and passkeys both built now, optional by default; a per-level "required" setting; passwordless sign-in by passkey** | TR-15, TR-16 (rewritten); REQUIREMENTS §2.6 |
 | 7 | External uptime monitor? | **healthchecks.io**, which the advisor already uses for hamsci.org | TR-33 (rewritten) |
 | 8 | Restrict origin ports 80/443 to Cloudflare's ranges at go-live? | Agree | TR-23 |
+
+**Added 2026-09-13, on the advisor's direction:** TR-40 (generic defaults so the release works
+for any club) and TR-41 (the W3USR overlay, tracked privately and deployed).
 
 **Open after these decisions:** the healthchecks.io
 project and check names (private repository's credential inventory); formal adoption of this

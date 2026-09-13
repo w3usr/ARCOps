@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="t d">
+  <title id="t">Generic club mark</title>
+  <desc id="d">A neutral placeholder logo: a circle enclosing a stylised antenna with radiating arcs. Replace with the club's own artwork.</desc>
+  <!-- Colours use currentColor-friendly fills so the mark reads in light and dark themes and
+       in monochrome. No text, so it needs no localisation and stays legible at 16 px. -->
+  <circle cx="256" cy="256" r="232" fill="none" stroke="#1f3a5f" stroke-width="24"/>
+  <!-- mast -->
+  <rect x="244" y="200" width="24" height="200" rx="6" fill="#1f3a5f"/>
+  <!-- base -->
+  <rect x="176" y="392" width="160" height="24" rx="8" fill="#1f3a5f"/>
+  <!-- elements -->
+  <rect x="152" y="216" width="208" height="20" rx="6" fill="#1f3a5f"/>
+  <rect x="184" y="262" width="144" height="20" rx="6" fill="#1f3a5f"/>
+  <!-- radiating arcs -->
+  <path d="M176 152a112 112 0 0 1 160 0" fill="none" stroke="#e0a100" stroke-width="20" stroke-linecap="round"/>
+  <path d="M136 112a168 168 0 0 1 240 0" fill="none" stroke="#e0a100" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="256" cy="190" r="22" fill="#e0a100"/>
+</svg>
