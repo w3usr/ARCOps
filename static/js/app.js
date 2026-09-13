@@ -66,3 +66,48 @@ document.querySelectorAll("[data-reveal-when]").forEach((el) => {
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/static/sw.js").catch(() => {});
 }
+
+// Roster: a slot opens in a dialog (the same page, fetched as a fragment); the checkboxes drive
+// a bulk bar; a day heading's box selects its whole day. Without JavaScript the slot link is a
+// page and the bar is simply always shown.
+(() => {
+  const dlg = document.getElementById("slot-dialog");
+  if (dlg && typeof dlg.showModal === "function" && window.fetch) {
+    const body = dlg.querySelector(".dialog-body");
+    let opener = null;
+    document.addEventListener("click", async (ev) => {
+      const a = ev.target.closest("a[data-slot]");
+      if (!a) return;
+      ev.preventDefault();
+      opener = a;
+      try {
+        const res = await fetch(a.href + (a.href.includes("?") ? "&" : "?") + "partial=1", { credentials: "same-origin" });
+        if (!res.ok) { window.location = a.href; return; }
+        body.innerHTML = await res.text();
+        dlg.showModal();
+        const h = body.querySelector("h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
+      } catch (e) { window.location = a.href; }
+    });
+    dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
+    dlg.addEventListener("close", () => { body.innerHTML = ""; if (opener) opener.focus(); });
+  }
+
+  const bar = document.getElementById("bulk-bar");
+  const form = document.getElementById("roster-form");
+  if (bar && form) {
+    const boxes = () => form.querySelectorAll('input[name="slots"]');
+    const update = () => {
+      const n = [...boxes()].filter((b) => b.checked).length;
+      bar.classList.toggle("active", n > 0);
+      const c = bar.querySelector("[data-count]"); if (c) c.textContent = String(n);
+    };
+    form.addEventListener("change", (ev) => {
+      const t = ev.target;
+      if (t.matches("[data-select-day]")) {
+        form.querySelectorAll(`input[name="slots"][data-day="${t.dataset.selectDay}"]`).forEach((b) => { b.checked = t.checked; });
+      }
+      update();
+    });
+    update();
+  }
+})();

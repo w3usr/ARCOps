@@ -11,12 +11,12 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.ops.audit import record
-from apps.ops.config import setting
 
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
+from .services.roster import build as build_roster
 from .services.slots import health
-from .services.viability import checkin_window_open, evaluate, would_break
+from .services.viability import checkin_window_open, would_break
 
 
 def _visible(user, event: Event) -> bool:
@@ -43,44 +43,17 @@ def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if not _visible(request.user, event):
         raise Http404
-    is_captain = request.user.can_captain(event)
-    slots = (
-        Slot.objects.filter(position__location__event=event, cancelled=False)
-        .select_related("position", "position__location", "control_operator")
-        .prefetch_related(
-            "signups__user", "signups__user__license", "signups__responsible_adults", "capacities"
-        )
-        .order_by("start", "position__location__order", "position__order")
-    )
-    my_slot_ids = set(
-        SignUp.objects.filter(user=request.user, slot__in=slots).values_list("slot_id", flat=True)
-    )
-    rows = []
-    for s in slots:
-        st = evaluate(s)
-        caps = {c.role: c.capacity for c in s.capacities.all()}
-        taken = {}
-        for su in s.signups.all():
-            taken[su.role] = taken.get(su.role, 0) + 1
-        open_roles = [r for r, c in caps.items() if taken.get(r, 0) < c]
-        rows.append(
-            {
-                "slot": s,
-                "status": st,
-                "signups": list(s.signups.all()),
-                "open_roles": open_roles,
-                "mine": s.pk in my_slot_ids,
-            }
-        )
+    lead = request.session.get("roster_tz", "local")
+    roster = build_roster(event, request.user, lead)
     return render(
         request,
         "events/detail.html",
         {
             "event": event,
-            "rows": rows,
-            "health": health(event),
-            "is_captain": is_captain,
-            "roles": setting("slot_roles", []),
+            "roster": roster,
+            "health": health(event) if roster["is_captain"] else None,
+            "is_captain": roster["is_captain"],
+            "roles": roster["roles"],
         },
     )
 

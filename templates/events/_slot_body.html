@@ -1,0 +1,65 @@
+{% load dicts %}
+{# One slot: the same content on its own page and inside the roster's dialog. #}
+<h1 class="slot-title">{{ row.lead_range }} <small class="muted">{{ row.other_range }}</small></h1>
+<p class="muted">{{ event.title }} · {{ slot.position.location.name }} · {{ slot.position.name }}{% if slot.kind != 'operating' %} · {{ slot.kind }}{% endif %}{% if slot.closed %} · <strong>closed</strong>{% endif %}</p>
+
+<p class="slot-state tone-{{ cell.shown.tone }}"><span class="word">{{ cell.shown.word }}</span>{% if cell.shown.detail %} <span class="muted">{{ cell.shown.detail }}</span>{% endif %}</p>
+
+<h2>Who is on it</h2>
+{% if cell.signups %}
+<ul class="list">
+{% for s in cell.signups %}
+  <li>{% if is_captain %}{{ s.user.full_name }}{% if s.user.callsign %} {{ s.user.callsign }}{% endif %}{% else %}{{ s.user.short_name }}{% endif %}
+    <span class="tag">{{ s.role }}</span>
+    {% if cell.control_operator and cell.control_operator.pk == s.user.pk %}<span class="tag ok" title="Control operator">control operator</span>{% endif %}
+    {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
+    {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
+    {% if is_captain and s.user != user %}<form method="post" action="{% url 'cancel_signup' s.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="confirmed" value="yes"><button class="linklike">remove</button></form>{% endif %}
+  </li>
+{% endfor %}
+</ul>
+{% else %}<p class="muted">Nobody yet.</p>{% endif %}
+{% if cell.open_roles and published %}<p class="muted">Seats open: {{ cell.open_roles|join:", " }}.</p>{% endif %}
+
+{% if cell.mine %}
+<h2>You hold this slot</h2>
+<p>As <strong>{{ cell.mine.role }}</strong>{% if cell.mine.confirmed_at %}, confirmed{% endif %}.</p>
+<form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>
+{% elif published and not slot.closed %}
+<h2>Sign up</h2>
+{% if eligible_roles %}
+<form method="post" action="{% url 'sign_up' slot.pk %}" class="stack">{% csrf_token %}
+  <div class="field"><label for="role-{{ slot.pk }}">Role</label><select id="role-{{ slot.pk }}" name="role">{% for r in eligible_roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="note-{{ slot.pk }}">Note to the captains (optional)</label><input id="note-{{ slot.pk }}" name="note" maxlength="500" placeholder="First contest, happy to be paired with a mentor"></div>
+  <div><button type="submit">Sign up</button></div>
+</form>
+{% elif cell.open_roles %}<p class="muted">Seats are open in this slot, but none of them in a role you are eligible for. Ask a captain if you think that is wrong.</p>
+{% else %}<p class="muted">Full.</p>{% endif %}
+{% elif not published %}<p class="muted">Sign-ups open when the event is published.</p>{% endif %}
+
+{% if is_captain %}
+<h2>Captain</h2>
+<div class="stack">
+  <form method="post" action="{% url 'slot_capacities' event.pk slot.pk %}" class="stack">{% csrf_token %}
+    <div class="row">{% for r in roles %}<div class="field"><label for="cap-{{ slot.pk }}-{{ r.key }}">{{ r.label }} seats</label><input id="cap-{{ slot.pk }}-{{ r.key }}" type="number" min="0" max="20" name="cap_{{ r.key }}" value="{{ capacities|default_if_none:''|dictkey:r.key|default:0 }}"></div>{% endfor %}</div>
+    <div><button type="submit" class="secondary">Save seats</button></div>
+  </form>
+  {% if cell.signups %}
+  <form method="post" action="{% url 'slot_control_operator' event.pk slot.pk %}" class="inline">{% csrf_token %}
+    <label for="co-{{ slot.pk }}">Control operator</label>
+    <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.signups %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select>
+    <button type="submit" class="secondary">Set</button>
+  </form>
+  {% endif %}
+  <form method="post" action="{% url 'slot_assign' event.pk slot.pk %}" class="inline">{% csrf_token %}
+    <label for="assign-{{ slot.pk }}">Sign someone up</label>
+    <select id="assign-{{ slot.pk }}" name="user">{% for m in members %}<option value="{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</option>{% endfor %}</select>
+    <select name="role" aria-label="Role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select>
+    <button type="submit" class="secondary">Add</button>
+  </form>
+  <form method="post" action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}
+    <button name="what" value="close" class="secondary">{% if slot.closed %}Reopen slot{% else %}Close slot{% endif %}</button>
+    {% if not cell.signups %}<button name="what" value="cancel" class="danger">Cancel slot</button>{% endif %}
+  </form>
+</div>
+{% endif %}

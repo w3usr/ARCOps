@@ -617,3 +617,22 @@ carries the actual running model ID.
   notes/2026-09-13_management-audit.md), code generation, tests.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 4b19387
+
+## [2026-09-13 16:41 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Roster rebuilt to the advisor's direction and the recommendations he
+  accepted: day-grouped rows with local and UTC times, a grid with one column per position,
+  status phrased as what a slot needs, a slot page that also opens as a dialog with every edit
+  a captain makes (seats, control operator, sign-up on behalf, close, cancel, remove), and bulk
+  actions from checkboxes (multi-slot sign-up with per-slot answers; captain close, reopen,
+  cancel). Event dates and a draft banner on the event page; member summary in place of the
+  health card; print stylesheet.
+- **Sections/Files Affected**: apps/events/services/roster.py (new), apps/events/views_slots.py
+  (new), apps/events/views.py (event_detail), apps/events/urls.py, templates/events/detail.html
+  (rewritten), templates/events/slot.html and _slot_body.html (new), static/css/app.css,
+  static/js/app.js, tests apps/events/tests/test_roster.py (new) and test_manage.py.
+- **Nature of Contribution**: Design (recommendations put to the advisor first, recorded in the
+  private repository's notes/2026-09-13_design.md), code generation, tests.
+- **Human Review Status**: Pending review; the advisor chose the direction, has not yet seen the
+  rendered result.
+- **Git Hash**: [pending]

@@ -44,7 +44,7 @@ def test_officer_builds_an_event_end_to_end(officer):
     assert slots.count() == 2 * (24 + 2)  # two positions, 24 operating hours, setup and breakdown
     assert slots.filter(kind="operating").first().capacities.count() == 2
     body = c.get(f"/events/{ev.pk}/").content.decode()
-    assert "Manage</a>" in body and "48.0 operating hours" in body
+    assert "Manage</a>" in body and "48 operating hours" in body
 
 
 def test_members_are_kept_out_and_captains_let_in(officer):

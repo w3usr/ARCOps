@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, views_manage
+from . import views, views_manage, views_slots
 
 urlpatterns = [
     path("", views.event_list, name="event_list"),
@@ -20,6 +20,12 @@ urlpatterns = [
     path("<int:pk>/duplicate/", views_manage.event_duplicate, name="event_duplicate"),
     path("<int:pk>/cancel/", views_manage.event_cancel, name="event_cancel"),
     path("slot/<int:slot_id>/toggle/", views_manage.slot_toggle, name="slot_toggle"),
+    path("<int:pk>/tz/", views_slots.roster_tz, name="roster_tz"),
+    path("<int:pk>/slot/<int:slot_id>/", views_slots.slot_detail, name="slot_detail"),
+    path("<int:pk>/slot/<int:slot_id>/seats/", views_slots.slot_capacities, name="slot_capacities"),
+    path("<int:pk>/slot/<int:slot_id>/control-operator/", views_slots.slot_control_operator, name="slot_control_operator"),
+    path("<int:pk>/slot/<int:slot_id>/assign/", views_slots.slot_assign, name="slot_assign"),
+    path("<int:pk>/bulk/", views_slots.event_bulk, name="event_bulk"),
     path("slot/<int:slot_id>/signup/", views.sign_up, name="sign_up"),
     path("signup/<int:signup_id>/cancel/", views.cancel_signup, name="cancel_signup"),
     path("signup/<int:signup_id>/checkin/", views.check_in, name="check_in"),
