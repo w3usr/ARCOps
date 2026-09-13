@@ -242,4 +242,4 @@ carries the actual running model ID.
   and NAF removed it.
 - **Human Review Status**: Partially reviewed. NAF read the FR-16 text closely enough to
   correct it twice; FR-4's full text is pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: a977acc
