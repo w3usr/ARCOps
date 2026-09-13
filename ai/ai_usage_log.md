@@ -222,4 +222,4 @@ carries the actual running model ID.
   filter on FR-87 as the retention hook.
 - **Human Review Status**: Partially reviewed. NAF stated the rules and saw the summaries of
   the applied text.
-- **Git Hash**: [after commit]
+- **Git Hash**: 0b858f9
