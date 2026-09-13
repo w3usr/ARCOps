@@ -298,4 +298,4 @@ carries the actual running model ID.
   to NAF.
 - **Human Review Status**: Partially reviewed. NAF read FR-26 and FR-27 closely enough to
   correct each; the propagated wording elsewhere is pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: 3e3f20a
