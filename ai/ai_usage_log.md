@@ -243,3 +243,18 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF read the FR-16 text closely enough to
   correct it twice; FR-4's full text is pending his read.
 - **Git Hash**: a977acc
+
+## [2026-09-13 04:01 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's correction that the background check behind the Community
+  Member agreement is administered by University HR and its type is not known to the club, so
+  the requirements must not name a specific check.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: §3.3 (source-documents paragraph), FR-27
+  (checklist now records HR's confirmation only, never the kind or result of the check), §9
+  decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit. The specific name had been quoted from clause 1 of the
+  2024-08-19 agreement text; the assistant pointed this out (H4) and noted it as a candidate
+  correction for the agreement's next revision. The agreement document itself was not changed.
+- **Human Review Status**: Partially reviewed. NAF stated the correction and saw the applied
+  wording summarised.
+- **Git Hash**: [after commit]

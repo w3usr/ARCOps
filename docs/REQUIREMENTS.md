@@ -439,8 +439,10 @@ The source agreements are the three documents in the private repository's
 Community Member Station Access Agreement (2024-08-19), and the Student Station Access
 Agreement (2025-09-08). The paper forms collect printed name, R number, email, phone, signature
 and date, and the faculty advisor's signature and date. The Community Member agreement also
-requires a University Non-Employee Affiliate Application with a Pennsylvania State Criminal
-Background Check.
+requires a University Non-Employee Affiliate Application, which carries a background check
+administered by University Human Resources; the club does not run or see the check. (The
+2024-08-19 agreement text names a specific check; the advisor does not vouch for that detail,
+and the next revision of the agreement should say only what HR actually does.)
 
 - **FR-21 [Must]** The system stores agreement **templates**, each with a type (station access
   or IT access for W3USR), an audience rule (which member categories see it: the student
@@ -471,8 +473,14 @@ Background Check.
   date. The viability check (FR-61) uses *active*, since an approved agreement does not open the
   door.
 - **FR-27 [Must]** For the Community Member agreement, the record carries a checklist the
-  approver ticks: Non-Employee Affiliate Application submitted, background check cleared. The
-  agreement cannot move to *active* until both are ticked.
+  approver ticks: Non-Employee Affiliate Application submitted; HR has confirmed the affiliate
+  application, including its background check, is complete. The agreement cannot move to
+  *active* until both are ticked. The system records only that HR confirmed completion, never
+  the kind or result of the check.
+
+  > This requires a background check that HR takes care of. I do not know exactly what
+  > background check is run, so you do not need to specify PA State Criminal Background Check.
+  > — NAF, 2026-09-13
 - **FR-28 [Must]** Approvals expire on their date. The member (and guardian) and the approvers
   are notified 30 days before and on expiry, and the member is prompted to re-sign the current
   version. An expired credential no longer satisfies slot viability.
@@ -1234,6 +1242,10 @@ accept, amend, or strike.
   rows, FR-15 (name override), FR-16 (repurposed to the add-or-change-callsign case), FR-102.
   Then, on FR-16: the member confirms the ULS name themselves, with no sysadmin flag; the
   audit log is the record. The assistant had proposed a sysadmin second look and NAF removed it.
+- 2026-09-13, NAF (quoted at FR-27): the background check is HR's and its type is not known to
+  the club. §3.3 and FR-27 no longer name a specific check; they record only HR's confirmation.
+  The specific name had been taken from clause 1 of the 2024-08-19 agreement, which is noted
+  as a candidate correction for the agreement's next revision.
 - 2026-09-13, NAF: *"We will not be pursuing University SSO at this time. We leave the option
   open for a future version."* Section 2.6 updated. Resolves Q9.
 
