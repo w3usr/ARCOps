@@ -329,6 +329,8 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   | Cell phone | no for adults; no for minors | yes | Guardian phone is required for a minor instead |
   | Under 18 | yes | no | A flag set at invitation; drives the guardian rules. No date of birth is stored (NAF, 2026-09-13); conversion at 18 is by hand (FR-109) |
   | Member category | yes | no | Faculty / Staff / Student / Community Member; set at invitation, changed by officer or sysadmin |
+  | Anticipated graduation | for Students | yes | Semester (Spring, Summer, or Fall; Spring is the default) and four-digit year. Students only; blank for other categories. NAF, 2026-09-13 |
+  | Student level | for Students | yes | Undergraduate or graduate. Students only. NAF, 2026-09-13 |
   | Club position | no | no | From the configured list; set by sysadmin |
   | Access level | yes | no | Section 2.1; set by sysadmin |
   | Guardian(s) | required if under 18; more than one allowed | guardian edits own | Section 2.4 |
@@ -669,18 +671,27 @@ Verbatim:
   > to a faculty advisor who can then manually convert the minor account into an adult
   > account. — NAF, 2026-09-13
 - **FR-65 [Must]** The **roster page** for an event shows every slot in time order, grouped by
-  day, with position columns where FR-51 applies, each person's name, callsign, role, and
-  compact credential badges (license class, station access, IT access, control operator), the
-  slot's status, and a filter for "problems only". Times show in UTC and the event's display
-  zone. The page works at phone width and has a print layout.
+  day, with position columns where FR-51 applies, each person's name (in the form FR-67
+  allows the viewer to see), role, and compact credential badges (license class, station
+  access, IT access, control operator), the slot's status, and a filter for "problems only".
+  Times show in UTC and the event's display zone. The page works at phone width and has a
+  print layout.
 - **FR-66 [Must]** An **event health summary** at the top of the roster and on the event list:
   slots total, viable, at risk, not viable, empty; hours scheduled against each FR-39 limit;
   and the number of unconfirmed sign-ups in the next 48 hours.
-- **FR-67 [Must]** Members see names, callsigns, and roles on the roster. Phone numbers and
-  email addresses are visible to captains of that event, officers, and sysadmins only. For a
+- **FR-67 [Must]** On rosters, members see each person's **short name**: first name (the
+  preferred name where one is set) and callsign, or first name and last initial for a person
+  with no callsign; and their role. Full names, phone numbers, and email addresses are visible
+  to captains of that event, officers, and sysadmins only. The short name is the form used
+  wherever a member sees another member: the roster, the control operator's name (FR-63),
+  the list of slot-mates in a reminder (FR-72), and any directory (FR-13). For a
   minor on the roster, those same people can open the minor's name to see the responsible
   adult(s) designated for that slot with their email and phone, and the minor's guardian(s)
   with name and contact details.
+
+  > On Rosters, only event captains, officers, and above can see full names and contact
+  > details. Members can only see First Name and Call Sign (Or last initial if no call sign).
+  > — NAF, 2026-09-13
 
   > On the roster, we should be able to click the minors name and see who is accompanying,
   > along with their email and telephone number. That display should also show the guardians
@@ -787,7 +798,8 @@ made it likely that reliable delivery would take time to establish:
   the member.
 - **FR-72 [Must]** **Reminder**: 24 hours before each slot (configurable per event), each
   person signed up receives a message with the slot time in UTC and local, their role, the
-  control operator's name, the other people in the slot, the know-before-you-go text, the
+  control operator's name, the other people in the slot (short names, FR-67), the
+  know-before-you-go text, the
   captains' names and contact details, and a one-click **confirm** link that works without
   signing in (a signed, single-use token) plus a **cannot make it** link that opens the
   cancellation flow. The same confirm and cannot-make-it actions are on the member's "my
@@ -845,7 +857,10 @@ made it likely that reliable delivery would take time to establish:
   covered, hours viable, people who participated, first-time participants. This is what the
   club reports to the University and puts in a grant application, so it should be right.
 - **FR-87 [Should]** **Member roster** for officers: name, callsign, category, position,
-  license class and expiry, access credentials and their expiry, access level, last sign-in.
+  student level and anticipated graduation (semester and year), license class and expiry,
+  access credentials and their expiry, access level, last sign-in. A filter for Students
+  whose anticipated graduation semester has passed gives officers the list, three times a
+  year, of accounts to review for category change or No access (section 4.3).
   Contact details are a separate, deliberately clicked export.
 - **FR-88 [Could]** Per-member participation history, visible to the member.
 
@@ -1176,6 +1191,15 @@ accept, amend, or strike.
   be linked; no dates of birth are stored, so conversion at 18 is manual by a faculty advisor.
   Replaced the first draft's "authorized chaperones must sign up for the slot" and its
   automatic 18th-birthday handling. Resolves Q7.
+- 2026-09-13, NAF (quoted at FR-67): members see first name and callsign (or last initial)
+  on rosters; full names and contact details are for captains, officers, and sysadmins. The
+  first draft had shown full names to all members. Applied to FR-65, FR-67, and by reference
+  to FR-63, FR-72, and FR-13.
+- 2026-09-13, NAF: *"For students, I also want to keep track of anticipated graduation year,
+  and undergrad or grad student."* Then: *"It should be graduation semester and year, really.
+  Summer, Fall, or Spring. Spring is the default."* Two Student-only fields added to FR-8,
+  member-editable since neither grants a privilege; both shown on the officers' member roster
+  (FR-87), with a past-graduation filter added there as the natural use.
 - 2026-09-13, NAF: *"We will not be pursuing University SSO at this time. We leave the option
   open for a future version."* Section 2.6 updated. Resolves Q9.
 

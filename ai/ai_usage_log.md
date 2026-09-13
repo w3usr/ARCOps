@@ -204,3 +204,22 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rules and saw the summary of
   the applied text; the full wording of FR-64, FR-67, and FR-109 is pending his read.
 - **Git Hash**: 1d9ab7e
+
+## [2026-09-13 03:40 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply two of NAF's decisions: (1) on rosters, members see only a
+  short name (first name and callsign, or first name and last initial), with full names and
+  contact details reserved to captains, officers, and sysadmins; (2) Student profiles carry
+  anticipated graduation (semester: Spring, Summer, or Fall, Spring default; plus year) and
+  student level (undergraduate or graduate).
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-67 (short name defined, applied by
+  reference to FR-63, FR-72, FR-13), FR-65 and FR-72 wording; FR-8 (two Student-only fields),
+  FR-87 (fields on the member roster plus a past-graduation filter); §9 decision record with
+  NAF's words verbatim, including the semester refinement.
+- **Nature of Contribution**: Edit. The decisions are NAF's. The assistant's additions: the
+  short-name rule extended beyond the roster to every place a member sees another member; the
+  graduation fields made member-editable since they grant no privilege; the past-graduation
+  filter on FR-87 as the retention hook.
+- **Human Review Status**: Partially reviewed. NAF stated the rules and saw the summaries of
+  the applied text.
+- **Git Hash**: [after commit]
