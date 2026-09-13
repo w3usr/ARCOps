@@ -342,4 +342,4 @@ carries the actual running model ID.
   in the captains' at-risk digest when added inside 48 hours.
 - **Human Review Status**: Partially reviewed. NAF stated both rules and saw the applied text
   summarised; the full wording of FR-51 and FR-110 is pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: d20d6aa
