@@ -394,4 +394,4 @@ carries the actual running model ID.
   the seeded outline.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied text
   summarised.
-- **Git Hash**: [after commit]
+- **Git Hash**: 26fb55f
