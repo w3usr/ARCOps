@@ -709,6 +709,24 @@ Verbatim:
   sends the announcement of each opening (FR-80) automatically if the captain enables it.
 - **FR-55 [Must]** An eligible member signs up for a slot in a role in one action, and can
   select a run of consecutive slots at once. A guardian does the same for a minor.
+- **FR-111 [Must]** A member holding a slot can change their role in it (operator to mentor,
+  mentor to observer, and back) at any time before the cancellation cutoff (FR-56), provided
+  they are eligible for the new role (FR-53) and it has capacity (FR-49); inside the cutoff,
+  the change goes through with the captains notified, as a late cancellation does. The change
+  is one action, with no gap in which the member holds no place; the roster and the slot's
+  viability and control-operator designation (FR-61, FR-63) update at once. **Before the
+  change is made**, the system evaluates what it would do to the slot and, if the slot would
+  become *not viable* or *at risk* (FR-62), tells the member so in plain terms ("you are the
+  only licensed operator in this slot; if you switch to observer it cannot run") and asks them
+  to confirm or stay. The same warning applies to cancelling a sign-up (FR-56). If they go
+  ahead, a captain is told. Captains can change a member's role on their behalf (FR-58). A
+  guardian does the same for a minor.
+
+  > People should be able to change from operator to mentor to observer, if they are eligible
+  > to do so. — NAF, 2026-09-13
+
+  > If this happens, you could warn the user before they make that switch. Then they might
+  > decide to stay as an operator. — NAF, 2026-09-13
 - **FR-110 [Must]** A sign-up carries an optional free-text **note to the captains** ("I will
   be running 10 minutes late", "I need to leave 15 minutes early", "first time on CW"),
   entered at sign-up and editable by the member afterwards. Notes are visible to the event's
@@ -1350,6 +1368,11 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at FR-111): a member may change role within a slot when eligible.
+  New FR-111; the cutoff behaviour and the no-gap guarantee are the assistant's. On the
+  assistant's question of what to do when a role change breaks viability, NAF chose to warn
+  the member before the change and let them decide; applied to FR-111 and, by the same logic,
+  to cancellation (FR-56).
 - 2026-09-13, NAF (quoted at FR-110): sign-ups carry a note to the captains. New FR-110; the
   roster marker and the inclusion of late notes in the captains' digest are the assistant's.
 - 2026-09-13, NAF (quoted at FR-51): multiple positions and multiple locations are supported.

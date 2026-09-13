@@ -343,3 +343,19 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated both rules and saw the applied text
   summarised; the full wording of FR-51 and FR-110 is pending his read.
 - **Git Hash**: d20d6aa
+
+## [2026-09-13 04:41 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's decision that a member may change role within a slot
+  (operator, mentor, observer) when eligible, and his follow-up that a change which would
+  break the slot's viability warns the member beforehand so they can decide to stay.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: new FR-111 (role change; eligibility
+  and capacity checks; cutoff behaviour; no-gap guarantee; pre-change viability warning with
+  confirm-or-stay; captain notified if they proceed), the same warning extended to
+  cancellation (FR-56); §9 decision record with NAF's two statements verbatim.
+- **Nature of Contribution**: Edit and draft. The decisions are NAF's. The assistant's
+  additions: the cutoff behaviour and the no-gap guarantee; the extension of the pre-change
+  warning to cancellation, which follows from NAF's answer.
+- **Human Review Status**: Partially reviewed. NAF stated the rule, answered the assistant's
+  question on the viability case, and saw the applied text summarised.
+- **Git Hash**: [after commit]
