@@ -635,4 +635,4 @@ carries the actual running model ID.
   private repository's notes/2026-09-13_design.md), code generation, tests.
 - **Human Review Status**: Pending review; the advisor chose the direction, has not yet seen the
   rendered result.
-- **Git Hash**: [pending]
+- **Git Hash**: 682f094
