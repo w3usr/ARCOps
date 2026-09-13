@@ -257,4 +257,4 @@ carries the actual running model ID.
   correction for the agreement's next revision. The agreement document itself was not changed.
 - **Human Review Status**: Partially reviewed. NAF stated the correction and saw the applied
   wording summarised.
-- **Git Hash**: [after commit]
+- **Git Hash**: 00867e5
