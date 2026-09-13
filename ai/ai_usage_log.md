@@ -203,4 +203,4 @@ carries the actual running model ID.
   sysadmins, matching FR-67's existing contact-detail rule (flagged to NAF as widenable).
 - **Human Review Status**: Partially reviewed. NAF stated the rules and saw the summary of
   the applied text; the full wording of FR-64, FR-67, and FR-109 is pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: 1d9ab7e
