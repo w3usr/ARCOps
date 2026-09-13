@@ -119,6 +119,9 @@ there. The roster page shows, for every slot, whether it can legally and physica
 the captains and the people signed up have received a warning for any slot that cannot. Every
 person signed up received a reminder 24 hours before their slot and confirmed by clicking a
 link. The advisor can print a roster of who currently holds station and computer access.
+Every step of this also works with outbound email switched off: the officer hands the
+invitation links over by other means, and members see their reminders and warnings in the
+application (FR-103).
 
 ### 1.5 Portability principle
 
@@ -234,9 +237,9 @@ passwords and sysadmin resets directly. Specifics:
 
 - Sign-in by email address (either on file) and password.
 - Password strength enforced; breached-password check **Should**.
-- Self-service password reset by emailed link **(added, Should)**: the dictation gives sysadmins
-  a temporary-password reset; a self-service path removes the routine case from the sysadmin's
-  queue. The sysadmin path stays for the cases it was meant for.
+- Self-service reset from a "Forgot username or password?" link on the sign-in page (FR-107),
+  which needs working email. The sysadmin temporary-password path (FR-7) is the fallback and
+  never depends on email.
 - Second factor (TOTP or passkey) **Should** for sysadmins and officers, **Could** for members.
   The application displays a shared password to eligible members (FR-33), which raises the value
   of any compromised account.
@@ -260,8 +263,9 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
    hold (Faculty / Staff / Student / Community Member), since the dictation says category is
    "set in initial invitation". For an applicant under 18, the inviter marks the invitation as
    a minor's and enters the guardian's email instead.
-2. The system emails a single-use invitation link that expires (default 14 days). The inviter
-   can resend or revoke it.
+2. The system creates a single-use invitation link that expires (default 14 days), shows it to
+   the inviter with a ready-to-send text (FR-104), and emails it if email delivery is on. The
+   inviter can resend or revoke it.
 3. The invitee completes the application: the profile fields of FR-8, a password, and consent
    to the privacy notice (FR-101).
 4. The application lands in a review queue. An officer or sysadmin admits the applicant, which
@@ -280,7 +284,8 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
 - **FR-2 [Must]** Sysadmins and officers can issue an invitation to an email address, choosing
   the member category the invitee will hold and whether the invitee is a minor.
 - **FR-3 [Must]** An invitation is a single-use link that expires; the issuer can resend it or
-  revoke it. The system shows the issuer the state of each invitation (sent, opened, completed,
+  revoke it, and always sees the link itself and a text to send by hand (FR-104). The system
+  shows the issuer the state of each invitation (created, emailed or not, opened, completed,
   expired, revoked). **(added)**: the dictation does not mention expiry; an unexpiring invite in
   a mailbox is a standing door.
 - **FR-4 [Must]** The invitee completes an application that collects the FR-8 fields, sets a
@@ -289,9 +294,12 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   sysadmin admits or declines each one. Until admitted, the account has access level No access.
 - **FR-6 [Must]** Sysadmins can create and edit any account manually, including every privilege
   field.
-- **FR-7 [Must]** Sysadmins can reset any account's password to a generated temporary password
-  that must be changed at next sign-in. Temporary passwords are shown once to the sysadmin and
-  are never emailed by the system.
+- **FR-7 [Must]** Sysadmins can reset any account's password to a generated temporary,
+  one-time password. It works for exactly one sign-in, which must set a new password before
+  anything else; it expires unused after a configurable period (default 72 hours); and it is
+  shown once to the sysadmin, who passes it to the member by whatever means they choose. The
+  system never emails it. This is the password-reset path that does not depend on email
+  (FR-103).
 - **FR-8 [Must]** The profile holds the following fields. Editability follows section 2.5.
 
   | Field | Required | Editable by member | Notes |
@@ -653,6 +661,71 @@ Verbatim:
 > The server must be able to send email notifications from ops@w3usr.org. Possibly also text
 > messages and push notifications. Push notifications definintely when we develop a mobile app.
 
+#### 3.8.1 Email independence
+
+Added 2026-09-13 at the advisor's direction, after the decision to self-host outbound mail
+made it likely that reliable delivery would take time to establish:
+
+> Let's add to the requirements some route that the system is still useful even if email
+> breaks. I can see getting the outbound email going could possibly take some time if I have
+> to deal with waiting for domains to get white listed or otherwise figuring out how to make
+> sure things don't show up as spam.
+>
+> So, no action should absolutely require email. For instance, For the invite process, the
+> system can show the officer creating the invite an invite link and text that could be
+> manually mailed to a person.
+>
+> Also, there should be a "forgot username or password" link on the front page. That will of
+> course require email to work.
+
+- **FR-103 [Must]** No action in the system requires an email to be delivered. Every flow that
+  sends a message also has a path inside the application that reaches the same end, and a new
+  feature that sends a message adds its own row to this table before it ships.
+
+  | Flow | The message | The email-free path |
+  |---|---|---|
+  | Invitation | Invitation link | Issuer sees the link and a ready-to-send text (FR-104) |
+  | Application admitted or declined | Notice | Status shown on the applicant's next sign-in attempt; issuer can tell them |
+  | Forgotten password | Reset link (FR-107) | Sysadmin issues a temporary password in the interface (FR-7) |
+  | Slot reminder and confirmation | Reminder with confirm link (FR-72) | "My schedule" shows the slot, its details, and confirm / cannot-make-it buttons (FR-59) |
+  | At-risk warning | Warning (FR-73) | Roster status and health summary (FR-62, FR-66); in-application notifications (FR-108) |
+  | Announcement | Bulk message (FR-75) | Visible in each recipient's "my messages" (FR-82); officer can export the recipients and body to send from their own mail client (FR-106) |
+  | Agreement submitted, approved, declined, activated, expiring | Notices (FR-76) | Approver queue and the member's agreements page show the state; expiry countdown on the profile |
+  | Computer password rotated | Notice (FR-34) | Banner for eligible members on sign-in |
+  | License expiring | Notice (FR-17) | Banner on the member's profile |
+  | Cancellation of a slot, event, or sign-up | Notice (FR-74) | "My schedule" and the roster reflect it immediately; notification (FR-108) |
+
+- **FR-104 [Must]** When an invitation is created, the issuer is shown the invitation link and
+  a ready-to-send text (who is inviting, to what, the link, its expiry, and the club contact),
+  each with a copy button, so the issuer can deliver it by their own email, a message, or in
+  person. The link is the same single-use, expiring token whether the system or the issuer
+  delivers it. The invitation record shows whether the system's own email went out, so the
+  issuer knows when delivery is theirs to do.
+- **FR-105 [Must]** A sysadmin setting, **email delivery: on / off**, audited. When off, the
+  application composes and records every message exactly as it otherwise would, marks it
+  *not sent (email off)*, and shows it in the recipient's "my messages" and in an officer-visible
+  outbox. Nothing is held for later sending: a reminder delivered a day late is worse than
+  none, and the in-application copy is already there. When on, each message's state (sent,
+  failed) is recorded and failures appear in the outbox. The current mode is visible to
+  officers on the dashboard, so they know when delivery is theirs to do.
+- **FR-106 [Must]** When composing an announcement, an officer or captain can, before sending or
+  without sending it, copy the resolved recipient list as a comma-separated address list
+  (for the BCC field of their own mail client) and the message body. The announcement is still
+  recorded per FR-75, marked *sent outside the system*. This shows addresses to people who may
+  already see them (section 2.5) and to no one else.
+- **FR-107 [Must]** The sign-in page carries a **"Forgot username or password?"** link. The
+  member enters one identifier they know: either email address on file, or their callsign. If it
+  matches an account, reset instructions go to every email address on that account (the
+  guardian's, for a minor). The page's response is the same whether or not a match exists, so
+  the form cannot be used to discover who has an account. This path needs working email; when
+  email delivery is off (FR-105), the link leads to a page saying that resets are done by a club
+  officer, with the club contact, and the sysadmin uses FR-7.
+- **FR-108 [Should]** In-application notifications: an unread-messages indicator and a dashboard
+  banner for anything that would otherwise be a warning email (a slot at risk, an agreement
+  expiring, a rotated computer password). The in-application half of FR-73 and FR-76.
+
+#### 3.8.2 Sending
+
 - **FR-69 [Must]** All system mail is sent from `ops@w3usr.org` (configurable, **portability**)
   with a display name naming the club. Transactional mail (invitations, resets, reminders,
   warnings) has `Reply-To` set to the club address; announcements have `Reply-To` set to the
@@ -670,7 +743,9 @@ Verbatim:
   control operator's name, the other people in the slot, the know-before-you-go text, the
   captains' names and contact details, and a one-click **confirm** link that works without
   signing in (a signed, single-use token) plus a **cannot make it** link that opens the
-  cancellation flow. Confirmation state shows on the roster.
+  cancellation flow. The same confirm and cannot-make-it actions are on the member's "my
+  schedule" page (FR-59), so confirming never depends on the message arriving. Confirmation
+  state shows on the roster.
 - **FR-73 [Must]** **At-risk warning**: when a slot inside a configurable horizon (default
   72 hours) is *not viable*, *at risk*, or has an unconfirmed sign-up within 24 hours, the
   captains receive a warning, and the people signed up receive a message saying what is
@@ -704,9 +779,10 @@ Verbatim:
   provides for. **[Should]** The application records delivery failures (bounces) against the
   address and shows them to officers, since an unread reminder is the same as no reminder; in
   v1 bounces are readable in the club mailbox (section 6).
-- **FR-82 [Should]** Every message the system sends to a person is visible to that person in
-  the application ("my messages"), so a lost email is recoverable and a guardian can see what
-  a minor was sent.
+- **FR-82 [Must]** Every message the system sends, or would have sent, to a person is visible
+  to that person in the application ("my messages"), so a lost or undelivered email is
+  recoverable and a guardian can see what a minor was sent. (Promoted from Should on
+  2026-09-13; it is the in-application half of FR-103.)
 - **FR-83 [Later]** SMS and push notifications. The notification layer is designed so that a
   channel is an implementation of one interface and a member preference; v1 implements email
   only. Web push from an installed progressive web app (section 5.4) is the likely first
@@ -745,7 +821,9 @@ Verbatim:
   carries actor, subject, action, timestamp, and the before and after values where they exist.
 - **FR-93 [Should]** Scheduled jobs (FCC sync, reminders, warnings, expiry notices, digest)
   report their last run and outcome on a status page for sysadmins, and a job that has not run
-  on schedule raises an alert. A reminder system that silently stops is worse than none.
+  on schedule raises an alert. A reminder system that silently stops is worse than none. The
+  same page shows email delivery health: the delivery mode (FR-105), messages sent and failed
+  in the last 24 hours, and the last successful delivery time.
 - **FR-94 [Must]** Sysadmins can impersonate a member's *view* (read-only) to reproduce what
   the member reports seeing. Impersonation is audited and never permits actions.
 
@@ -1026,6 +1104,13 @@ accept, amend, or strike.
   they get a vanity call or request a new sequential call on upgrade"*. Applied as FR-102 and
   the callsign row of FR-8; the first draft had made the callsign sysadmin-only alongside the
   license fields, which remain so because they come from the FCC.
+- 2026-09-13, NAF: the system must stay useful if email breaks (quoted in full in section
+  3.8.1). Applied as FR-103 to FR-108, with FR-82 promoted to Must, in-application confirmation
+  added to FR-72, mail health added to FR-93, and the invitation flow in section 2.7 and FR-3
+  showing the link to the issuer.
+- 2026-09-13, NAF: *"Sysadmins should be able to reset passwords for accounts and set a
+  temporary, one-time use password. This would enable password reset without email."* Already
+  FR-7 from the dictation; its text now says one-time use and unused-expiry explicitly.
 
 **Where the draft chose a reading of the dictation.** "Club officers can only send invitations"
 was read as *relative to sysadmins' account powers*: officers cannot create or edit accounts

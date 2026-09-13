@@ -148,3 +148,24 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit. The decision is the faculty advisor's.
 - **Human Review Status**: Pending review
 - **Git Hash**: b1acfe6
+
+## [2026-09-13 03:05 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's direction that the system stay useful if email breaks: no
+  action may require an email to be delivered, invitations show the issuer a link and text to
+  send by hand, and the sign-in page carries a "Forgot username or password?" link. Also
+  restate FR-7 (sysadmin temporary password) as explicitly one-time use with unused-expiry,
+  per his second instruction.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: new §3.8.1 "Email independence" with
+  NAF's words verbatim and FR-103 to FR-108 (flow-by-flow email-free paths table; invitation
+  link and text shown to issuer; email delivery on/off mode with an outbox; recipient export
+  for announcements; forgot-username-or-password link with non-enumerating response and
+  email-off fallback; in-application notifications); FR-7 sharpened; FR-82 promoted to Must;
+  FR-72, FR-93, FR-3, §1.4, §2.6, §2.7 amended; §9 decision record.
+- **Nature of Contribution**: Edit and draft. The principle and the two examples are NAF's;
+  the table of email-free paths, the delivery-mode design (drop, never queue, while off),
+  and the anti-enumeration behaviour of FR-107 are the assistant's and are marked as such.
+- **Human Review Status**: Partially reviewed. NAF saw the summary of the applied changes;
+  the full text of FR-103 to FR-108 is pending his read, and the drop-versus-queue choice in
+  FR-105 was flagged for his decision.
+- **Git Hash**: [after commit]
