@@ -1006,7 +1006,27 @@ made it likely that reliable delivery would take time to establish:
   exchange, the logging setup, the rules link. Where an event has more than one location, each
   location has its own section (how to get in differs by place) and the reminder includes the
   one for the recipient's slot. A duplicated event carries it forward, so it becomes a living
-  document per contest.
+  document per contest. It is rich text (FR-115), and a new event's text starts from a
+  template with the headings already in place (Getting in, Parking, What to bring, Exchange,
+  Logging, Who to contact), so the structure is there before the first word is written.
+- **FR-115 [Must]** **Rich text.** Every long text a person authors in the application is HTML,
+  edited in a WYSIWYG editor: the know-before-you-go text and its per-location sections
+  (FR-77), event descriptions (FR-36), location directions (FR-51), announcement bodies (FR-75),
+  message templates (FR-78), agreement templates (FR-21), and the privacy notice (FR-101). The
+  editor offers headings at three levels, paragraphs, bold and italic, bulleted and numbered
+  lists, links, and simple tables, and it **encourages structure**: headings are prominent in
+  the toolbar, the templates that seed new texts carry a heading outline, and the editor warns
+  when heading levels are skipped. Because each text is rendered inside a page that already has
+  its own title, the editor's first heading level renders as the page's next level down, so the
+  rendered page keeps one H1 and an unbroken heading order (WCAG, section 5.3). Saved HTML is
+  sanitised on the way in and on the way out to the allowed elements only: no scripts, frames,
+  forms, or inline styles. When a rich text goes out by email it is sent as HTML with a
+  generated plain-text alternative, so it reads in any client and passes spam filters that
+  penalise HTML-only mail.
+
+  > This and other text should be HTML rich text editable with a WYSIWYG editor. Good
+  > structure using appropriate H1, H2, H3, headers, etc should be encouraged.
+  > — NAF, 2026-09-13, on FR-77
 - **FR-78 [Must]** All messages are rendered from templates that a sysadmin can edit in the
   interface, with the variables each template may use documented beside it **(portability)**.
 - **FR-79 [Should]** A weekly digest to members: upcoming events, slots still needing people,
@@ -1427,6 +1447,10 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at FR-115): long texts are HTML edited in a WYSIWYG editor with
+  good heading structure encouraged. New FR-115 listing the fields; the sanitisation rule, the
+  heading-level offset that keeps one H1 per page, the plain-text alternative for email, and
+  the seeded heading outline in FR-77 are the assistant's.
 - 2026-09-13, NAF (quoted at FR-113): members check in on arrival, up to 30 minutes early.
   New FR-113; the roster's checked-in state, the late-arrival notice to captains, the minor's
   check-in recording the responsible adult present, and the feed into the participation report

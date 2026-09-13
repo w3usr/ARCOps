@@ -380,3 +380,18 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF corrected the push default and added the
   ease requirement for check-in; the remaining text is summarised to him and pending his read.
 - **Git Hash**: d4274e9
+
+## [2026-09-13 05:00 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's direction that the know-before-you-go text and other long
+  texts are HTML edited in a WYSIWYG editor, with good heading structure encouraged.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: new FR-115 (rich text: the fields it
+  covers, the editor's feature set, structure encouragement, heading-level offset for one H1
+  per page, sanitisation, HTML email with plain-text alternative); FR-77 (seeded heading
+  outline); §9 decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit and draft. The decision is NAF's. The assistant's additions:
+  the sanitisation rule, the heading-level offset, the plain-text alternative for email, and
+  the seeded outline.
+- **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied text
+  summarised.
+- **Git Hash**: [after commit]
