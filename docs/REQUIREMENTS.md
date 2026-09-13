@@ -641,10 +641,20 @@ Verbatim:
   start, filling each period, with a final short slot if the period length is not a multiple.
   The officer can accept, edit, or skip the offer. Slots can be added, removed, split, merged,
   and re-timed by hand afterwards.
-- **FR-47 [Must]** The generator can add **setup** slots before the first period and
-  **breakdown** slots after the last, of chosen length and count, marked as non-operating.
-  Non-operating slots do not count toward FR-39 limits and have their own viability rule (they
-  need someone who can open the station and nothing else).
+- **FR-47 [Must]** An event can carry **non-operating slots** alongside its operating ones:
+  setup, breakdown, training, equipment pre-check, post-event analysis, and whatever else the
+  club needs, from a configurable list of kinds **(portability)**. They can sit before the
+  first operating period, after the last, or in a gap between periods (a training session in
+  the overnight break of a two-period contest, for example). The generator offers setup before
+  and breakdown after by default, of chosen length and count; a captain adds the others by
+  hand. Non-operating slots do not count toward FR-39 operating-time limits, and each kind has
+  its own viability rule (FR-61): the default requires one person with station access and
+  nothing else, a kind that meets away from the station can require nothing at all, and the
+  rule is editable per kind.
+
+  > For FR-47, setup and breakdown are only two types of pre- or post- event slots. There
+  > might also be training, equipment pre-checks, post-event analysis, etc.
+  > — NAF, 2026-09-13
 - **FR-48 [Must]** For events with a per-day operating limit (FR-39), the generator asks the
   officer which hours on each day the club intends to operate (School Club Roundup runs
   Monday 1300Z to Friday 2359Z; the club will pick perhaps 1500Z to 2100Z each weekday) and
@@ -1312,6 +1322,9 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at FR-47): setup and breakdown are two kinds of non-operating slot
+  among several. FR-47 generalised to a configurable list of kinds, placeable before, after,
+  or between operating periods, each with its own viability rule.
 - 2026-09-13, NAF (quoted at FR-27): a Community Member agreement needs a `@scranton.edu`
   address on file to be approved, since the University issues one only after HR's process;
   the approver may add the address at approval. Replaces the two-item checklist.

@@ -312,3 +312,17 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied wording
   summarised.
 - **Git Hash**: 0d53c02
+
+## [2026-09-13 04:30 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Generalise FR-47 from setup and breakdown slots to a configurable list
+  of non-operating slot kinds (training, equipment pre-check, post-event analysis, and
+  others), per NAF.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-47 (kinds configurable; placeable
+  before, after, or between operating periods; generator still offers setup and breakdown by
+  default; each kind has its own viability rule); §9 decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit. The generalisation is NAF's; the per-kind viability rule
+  and the placement in gaps between periods are the assistant's additions.
+- **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied wording
+  summarised.
+- **Git Hash**: [after commit]
