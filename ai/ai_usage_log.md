@@ -325,4 +325,4 @@ carries the actual running model ID.
   and the placement in gaps between periods are the assistant's additions.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied wording
   summarised.
-- **Git Hash**: [after commit]
+- **Git Hash**: 83fec12
