@@ -136,3 +136,15 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the decision and saw the summary of
   the applied changes; FR-102's full text is pending his read.
 - **Git Hash**: baafc34
+
+## [2026-09-13 02:58 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Record the outbound-mail decision in the requirements without host
+  details, and adjust FR-81 to what v1 can deliver under it.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md` §6 (outbound mail: decided, Postfix on
+  the origin, application submits to localhost; reason and consequences), FR-81 (list mail
+  carries unsubscribe link and List-Unsubscribe header; in-application bounce record demoted
+  to Should for v1, bounces readable in the club mailbox)
+- **Nature of Contribution**: Edit. The decision is the faculty advisor's.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

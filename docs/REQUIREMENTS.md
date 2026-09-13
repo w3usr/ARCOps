@@ -699,8 +699,11 @@ Verbatim:
   the newly eligible audience, if the captain enabled it.
 - **FR-81 [Must]** Outbound mail carries proper authentication for the sending domain so it is
   delivered to the inbox; the private orchestration repository owns the DNS records this
-  requires. The application records delivery failures (bounces) against the address and shows
-  them to officers, since an unread reminder is the same as no reminder.
+  requires. Announcements to a list carry a working unsubscribe link and a `List-Unsubscribe`
+  header, which large receivers expect from any sender of list mail and which FR-71 already
+  provides for. **[Should]** The application records delivery failures (bounces) against the
+  address and shows them to officers, since an unread reminder is the same as no reminder; in
+  v1 bounces are readable in the club mailbox (section 6).
 - **FR-82 [Should]** Every message the system sends to a person is visible to that person in
   the application ("my messages"), so a lost email is recoverable and a guardian can see what
   a minor was sent.
@@ -900,7 +903,13 @@ technical-requirements phase. Record the decision here with its reasoning when i
 - **Language and framework**: {{TBD}}
 - **Datastore**: {{TBD}}
 - **Front end**: {{TBD}}
-- **Outbound mail**: {{TBD: the server sends directly, or a transactional mail provider}}
+- **Outbound mail**: **decided 2026-09-13 by the faculty advisor**: a Postfix instance on the
+  origin server, listening on the loopback interface only, DKIM-signing and delivering
+  directly. The application sends over plain SMTP to `localhost` with no credential. Reason:
+  the club has no budget for a transactional provider. Consequences: the SMTP endpoint is a
+  configuration value, so a provider can be substituted by changing the server's relay with
+  no application change; and in v1 bounces arrive in the club mailbox via the domain's inbound
+  routing, so FR-81's in-application bounce record waits on an inbound hook.
 - **Scheduler**: {{TBD}}
 - **FCC ULS access**: {{TBD: direct ULS data download, a public mirror API, or other; see FR-14}}
 - **Build and deploy**: {{TBD}}
