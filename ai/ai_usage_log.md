@@ -575,7 +575,7 @@ carries the actual running model ID.
   the text of NAME.md is pending his read.
 - **Git Hash**: 1bae1e1
 
-## [2026-09-13 15:39 UTC]
+## [2026-09-13 15:34 UTC]
 - **Tool**: Claude (Anthropic), claude-fable-5-1
 - **Session Purpose**: Design run after the advisor's first look at the deployed application:
   a sidebar shell (collapsible rail, drawer on small screens), a split sign-in page with the
