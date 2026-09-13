@@ -188,7 +188,7 @@ A member under 18 cannot manage their own account. The dictation:
 The draft models this as follows:
 
 - A **guardian** is an account that is linked to one or more minor member accounts and acts for
-  them: completes the application, edits the profile, signs agreements, signs up for slots, and
+  them: completes the application, edits the profile, signs up for slots, and
   receives every message. A minor may have **more than one guardian account** linked; every
   linked guardian can act and every one receives every message. A guardian need not be a
   member; if the guardian is also a member, one account holds both.
@@ -217,7 +217,7 @@ The draft models this as follows:
 | Change access level or club position | ✓ | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · |
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | own | for minor |
-| Sign an access agreement | ✓ | ✓ | ✓ | own | for minor |
+| Sign an access agreement | ✓ | ✓ | ✓ | own | own only, never for the minor (FR-22) |
 | Approve an access agreement | approver position only | | | | |
 | Convert a minor's account to an adult's (FR-109) | approver position only | | | | |
 | Designate responsible adults for a minor's slot | ✓ | ✓ | E | · | for minor |
@@ -356,7 +356,8 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   license data, access approvals, club position, access level) are read-only to the member and
   show where the value came from and when.
 - **FR-10 [Must]** A guardian account can do everything on behalf of a linked minor that the
-  minor could do if self-managed, and the minor's account cannot sign in.
+  minor could do if self-managed, except sign access agreements (FR-22), and the minor's
+  account cannot sign in.
 - **FR-11 [Should]** A member can ask for their account to be closed. Closure sets No access and
   starts the retention clock (section 4.3); it does not delete signed agreements before their
   retention period ends.
@@ -450,23 +451,44 @@ and the next revision of the agreement should say only what HR actually does.)
   Faculty and Staff), the full text, a version identifier, and an effective date. Publishing a
   new version never alters or deletes an earlier one, because signed records point at the
   version signed.
-- **FR-22 [Must]** A member (or guardian, for a minor) can read the agreement applicable to them
-  and sign it digitally. A signature consists of: the signer's typed full name, an explicit
-  affirmation checkbox, the timestamp, the signer's account identity, the IP address, and the
-  agreement version's content hash. For a minor, the guardian signs and the record says so.
+- **FR-22 [Must]** A member signs their access agreements in **one workflow**: the system
+  presents every agreement applicable to them (the station access agreement for their category
+  and the IT access agreement) in one sitting, and each is read and signed in turn. Each
+  agreement remains its own record with its own approval and expiry (FR-25, FR-26), so the
+  workflow is a single visit, and the records stay per document. A signature consists of: the
+  signer's typed full name, an explicit affirmation checkbox, the timestamp, the signer's account
+  identity, the IP address, and the agreement version's content hash. **Minors do not sign
+  access agreements, and guardians do not sign them on a minor's behalf.** A minor therefore
+  never holds station access or IT access, and is never the person satisfying those parts of a
+  slot's viability rule (FR-61) or eligible to view the computer password (FR-33). A guardian
+  who holds their own member account signs the agreements for themselves, as any member does.
+
+  > Yes, everyone should sign station access and IT agreements as a single workflow. Minors
+  > should not sign these, and their guardians should not sign them for minors. Instead,
+  > guardians who have their own accounts may sign them for themselves. — NAF, 2026-09-13
 - **FR-23 [Must]** The system renders each signed agreement to a PDF that reproduces the text as
   signed plus the signature block, stores it immutably, and lets the signer and approvers
   download it.
-- **FR-24 [Must] (added; resolves a conflict with the repository's privacy rules)** The digital
-  agreement does **not** collect or store the University R number. The paper forms do, and the
-  swipe-card request to University facilities presumably needs it, but this repository's rules
-  forbid storing rosters tied to student IDs. The advisor obtains the R number from University
-  systems at the moment of requesting access, outside this application. If that is unworkable,
-  Q5 records the alternative.
+- **FR-24 [Must] (added; confirmed by NAF 2026-09-13)** The digital agreement does **not**
+  collect or store the University R number. The paper forms do, and the swipe-card request to
+  University facilities needs it, but this repository's rules forbid storing rosters tied to
+  student IDs. The advisor obtains the R number from University systems at the moment of
+  requesting access, outside this application.
 - **FR-25 [Must]** A signed agreement enters an approval queue visible to approver positions
-  (section 2.3). The approver can approve, setting an expiration date (default: one year from
-  approval, configurable per agreement type), or decline with a reason that is sent to the
-  signer. Approval is itself recorded with the approver's identity and timestamp.
+  (section 2.3). The approver can approve, setting an expiration date, or decline with a reason
+  that is sent to the signer. The default expiration is **the next 1 September**, except that
+  an approval dated in August is set to the 1 September of the following year, so no one signs
+  in August and expires within weeks. Examples: approved 15 October 2026 or 1 March 2027,
+  expires 1 September 2027; approved 20 August 2027, expires 1 September 2028. Configurable per
+  agreement type. The shared date means the whole club renews together at the start of each
+  academic year. Approval is itself recorded with the approver's identity and timestamp.
+
+  > Let's change it from a default of 1 year to a default of expires Sept 1 of the following
+  > year. This will help use to renew everyone at the same time. — NAF, 2026-09-13
+
+  > Anything signed in August should be set for Sept 1 of the next year. I don't want someone
+  > signing something in August and only having it be good for less than 30 days.
+  > — NAF, 2026-09-13
 - **FR-26 [Must] (added)** Approval and physical access are two facts. A station-access record
   has the states *signed*, *approved*, *active*, *expired*, *revoked*, *declined*. *Active*
   means the University has actually enabled the swipe card, and is set by an approver with the
@@ -481,9 +503,17 @@ and the next revision of the agreement should say only what HR actually does.)
   > This requires a background check that HR takes care of. I do not know exactly what
   > background check is run, so you do not need to specify PA State Criminal Background Check.
   > — NAF, 2026-09-13
-- **FR-28 [Must]** Approvals expire on their date. The member (and guardian) and the approvers
-  are notified 30 days before and on expiry, and the member is prompted to re-sign the current
-  version. An expired credential no longer satisfies slot viability.
+- **FR-28 [Must]** Approvals expire on their date. Thirty days before, the member (and guardian)
+  receives one notice covering every agreement of theirs that is about to expire, encouraging
+  them to sign in and re-sign all of their agreements in one visit, with a link to the page
+  where they do it; a second notice goes on the expiry date itself. Because the default expiry
+  puts the whole club on the same date, the approvers receive a single summary listing everyone
+  due, at 30 days and again at expiry, and the re-sign queue is built to be worked through in
+  bulk. An expired credential no longer satisfies slot viability.
+
+  > The system should automatically notify people 30 days before their IT and Station Access
+  > agreements expire. They should be encouraged to log into the system and re-sign all of the
+  > agreements. — NAF, 2026-09-13
 - **FR-29 [Should]** An approver can revoke an active approval at any time with a reason. The
   system notifies the member and flags every future slot whose viability depended on it.
 - **FR-30 [Should]** When a new agreement version is published, the publisher chooses whether
@@ -1140,11 +1170,8 @@ recommendation is acceptable.
    for Community Members only. *Recommend: Faculty and Staff sign the Community Member
    agreement's text with the affiliate-application clause removed*, or a third template. The
    application supports any answer (FR-21).
-5. **R numbers.** Confirm FR-24: the digital agreement does not collect the R number, and the
-   advisor obtains it from University systems when submitting the swipe-card request. If the
-   University's process requires it on the signed form itself, the alternative is to collect it
-   into the rendered PDF only and never into a queryable field; that is still a stored student
-   ID and would need the repository's privacy rules amended.
+5. ~~**R numbers.**~~ **Resolved 2026-09-13 by NAF: FR-24 stands; the system does not store R
+   numbers. The advisor obtains them from University systems when requesting swipe access.**
 6. **Can a minor sign in at all?** *Recommend no in v1* (section 2.4). A read-only view for the
    minor is possible later.
 7. ~~**Date of birth or a boolean?**~~ **Resolved 2026-09-13 by NAF: no dates of birth are
@@ -1246,6 +1273,15 @@ accept, amend, or strike.
   the club. §3.3 and FR-27 no longer name a specific check; they record only HR's confirmation.
   The specific name had been taken from clause 1 of the 2024-08-19 agreement, which is noted
   as a candidate correction for the agreement's next revision.
+- 2026-09-13, NAF: *"It is fine that the digital system does not store R numbers."* FR-24
+  confirmed as written. Resolves Q5.
+- 2026-09-13, NAF (quoted at FR-25 and FR-28): agreement approvals default to expiring on the
+  next 1 September, with August approvals carried to the September after, so the club renews
+  together and nobody gets a term of weeks; the two agreements are signed in one workflow, and
+  minors do not sign them (nor guardians for them), so a minor never holds station or IT
+  access; 30-day notices ask
+  members to re-sign every agreement in one visit. The assistant added the single summary to
+  approvers and the bulk re-sign queue, since a shared date means everyone comes due at once.
 - 2026-09-13, NAF: *"We will not be pursuing University SSO at this time. We leave the option
   open for a future version."* Section 2.6 updated. Resolves Q9.
 

@@ -258,3 +258,24 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the correction and saw the applied
   wording summarised.
 - **Git Hash**: 00867e5
+
+## [2026-09-13 04:11 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply four of NAF's decisions on access agreements: (1) the system does
+  not store R numbers (FR-24 confirmed; Q5 resolved); (2) approvals expire by default on the
+  next 1 September, with August approvals carried to the September after, so the club renews
+  together and no one gets a term of weeks; (3) 30-day notices ask members to sign in and
+  re-sign every agreement in one visit; (4) station and IT agreements are signed in a single
+  workflow, and minors do not sign them, nor guardians on their behalf.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-24 and Q5; FR-25 (default expiry
+  rule with worked examples); FR-28 (single notice per member, summary to approvers, bulk
+  re-sign queue); FR-22 (rewritten: one workflow, per-document records, minors excluded, with
+  the consequences for FR-61 and FR-33 stated); FR-10, §2.4, and the permission matrix
+  (guardians sign only for themselves); §9 decision record with NAF's five statements verbatim.
+- **Nature of Contribution**: Edit. The decisions are NAF's. The assistant's additions: the
+  worked examples in FR-25; the single summary to approvers and the bulk queue in FR-28, which
+  follow from a shared expiry date; the stated consequence that a minor never holds station or
+  IT access.
+- **Human Review Status**: Partially reviewed. NAF read and corrected the expiry rule once;
+  the rest was stated by him and summarised back.
+- **Git Hash**: [after commit]
