@@ -598,7 +598,7 @@ carries the actual running model ID.
   design from mock-ups; he has not yet seen the rendered result.
 - **Git Hash**: 337b960
 
-## [2026-09-13 16:12 UTC]
+## [2026-09-13 16:07 UTC]
 - **Tool**: Claude (Anthropic), claude-fable-5-1
 - **Session Purpose**: Management audit and the pages it called for, so no officer or sysadmin
   needs the Django admin: a member directory and per-member management page (privilege fields,
