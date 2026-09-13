@@ -596,4 +596,4 @@ carries the actual running model ID.
   sampled from the club's own artwork.
 - **Human Review Status**: Pending review. The advisor chose the layout, colour, and sign-in
   design from mock-ups; he has not yet seen the rendered result.
-- **Git Hash**: [pending]
+- **Git Hash**: 337b960
