@@ -565,7 +565,8 @@ Verbatim:
 - **FR-36 [Must]** Officers and sysadmins can create an event by hand or by import. An event
   has a type (contest, special event, outreach, work party, other; configurable), a title, a
   description, one or more **operating periods** (FR-38), a time zone for display (default the
-  club's, `America/New_York`), a location, one or more captains, an optional link to rules, and
+  club's, `America/New_York`), one or more locations and positions (FR-51), one or more
+  captains, an optional link to rules, and
   the contest fields of FR-37 where relevant.
 - **FR-37 [Should]** Contest events carry the fields the WA7BNM Contest Calendar publishes for
   each contest, verified against the site on 2026-09-12: status, geographic focus,
@@ -669,11 +670,21 @@ Verbatim:
 
 - **FR-50 [Should] (portability)** The role list is configuration; W3USR ships with the three
   above. Roles carry a flag for whether they count as "on the air" for the viability rule.
-- **FR-51 [Should] (added)** A slot can belong to a **position** (a named operating station,
-  such as *Run* and *Multiplier*). An event has one position by default. Multi-transmitter
-  contests, or an event that puts a satellite station and an HF station on the air at once,
-  add positions, and the roster shows them as parallel columns. This costs little if designed
-  in and is expensive to retrofit; the advisor confirms whether W3USR needs it (Q12).
+- **FR-51 [Must]** An event has one or more **locations**, and each location has one or more
+  **positions**; every slot belongs to a position. A location is a place (the club station, a
+  field site, a scout camp for JOTA, a member's home station in a distributed multi-operator
+  entry) with its own name, directions, and know-before-you-go text (FR-77). A position is an
+  operating station at that location (*Run*, *Multiplier*, *Satellite*, *VHF*). The default
+  event has one location, the club station, with one position, and a captain adds more.
+  Because the credentials a slot needs depend on where it is, **each location carries its own
+  viability rule** (FR-61): the club station requires station access and IT access; a field
+  site or a member's home requires neither, and may require something of its own (a key
+  holder, a site lead) expressed as a credential type (FR-18). The roster (FR-65) groups by
+  location and shows positions as parallel columns; reminders (FR-72) name the slot's location.
+  A location that is a private residence shows its address only to people signed up there and
+  to captains, officers, and sysadmins, per section 4.2.
+
+  > Q12: Yes, we should support multiple positions and even locations. — NAF, 2026-09-13
 - **FR-52 [Should]** A captain can mark a slot as *closed* (not bookable, shown greyed) and as
   *cancelled* (removed from the schedule with notice to anyone signed up).
 
@@ -698,6 +709,18 @@ Verbatim:
   sends the announcement of each opening (FR-80) automatically if the captain enables it.
 - **FR-55 [Must]** An eligible member signs up for a slot in a role in one action, and can
   select a run of consecutive slots at once. A guardian does the same for a minor.
+- **FR-110 [Must]** A sign-up carries an optional free-text **note to the captains** ("I will
+  be running 10 minutes late", "I need to leave 15 minutes early", "first time on CW"),
+  entered at sign-up and editable by the member afterwards. Notes are visible to the event's
+  captains, officers, and sysadmins, on the roster beside the sign-up and in the slot's
+  detail; other members do not see them. A slot with a note shows a marker on the roster so
+  captains notice without opening each one, and a note added or changed inside the 48 hours
+  before the slot is included in the captains' at-risk digest (FR-73) so a late arrival is
+  known before it happens.
+
+  > People should be able to add notes visible to team captains when they sign up for slots,
+  > so they can say things like "I will be running 10 minutes late" or "I need to leave 15
+  > minutes early", etc. — NAF, 2026-09-13
 - **FR-56 [Must]** A member can cancel their own sign-up up to a configurable cutoff before the
   slot (default 24 hours). Inside the cutoff, cancellation still works but is flagged *late*
   and the captains are notified immediately. Cancellation always tells the captains.
@@ -730,7 +753,8 @@ Verbatim:
   valid amateur license of at least the event's minimum class; at least one person holds an
   *approved* station access agreement; at least one person holds an *approved* IT access
   agreement (FR-26). One person may satisfy
-  all three. The rule is expressed over credential types (FR-18) and is editable per event
+  all three. The rule is expressed over credential types (FR-18), is set per location (FR-51)
+  with the club station's rule as the default, and is editable per event
   **(portability)**.
 - **FR-62 [Must]** Each slot displays one of: *empty* (no one signed up), *not viable* (people
   signed up but the rule fails, with the specific missing credential named), *viable*, and
@@ -767,7 +791,8 @@ Verbatim:
   > to a faculty advisor who can then manually convert the minor account into an adult
   > account. — NAF, 2026-09-13
 - **FR-65 [Must]** The **roster page** for an event shows every slot in time order, grouped by
-  day, with position columns where FR-51 applies, each person's name (in the form FR-67
+  day and, where an event has more than one location, by location, with position columns
+  (FR-51), each person's name (in the form FR-67
   allows the viewer to see), role, and compact credential badges (license class, station
   access, IT access, control operator), the slot's status, and a filter for "problems only".
   Times show in UTC and the event's display zone. The page works at phone width and has a
@@ -893,7 +918,8 @@ made it likely that reliable delivery would take time to establish:
   about their own account and credentials, since those messages exist to protect the club and
   the member.
 - **FR-72 [Must]** **Reminder**: 24 hours before each slot (configurable per event), each
-  person signed up receives a message with the slot time in UTC and local, their role, the
+  person signed up receives a message with the slot time in UTC and local, the location and
+  position, their role, the
   control operator's name, the other people in the slot (short names, FR-67), the
   know-before-you-go text, the
   captains' names and contact details, and a one-click **confirm** link that works without
@@ -919,8 +945,10 @@ made it likely that reliable delivery would take time to establish:
   rotated (FR-34), license expiring (FR-17).
 - **FR-77 [Must]** Each event has a **know-before-you-go** text, edited by captains, included
   in every reminder: where the station is and how to get in, parking, what to bring, the
-  exchange, the logging setup, the rules link. A duplicated event carries it forward, so it
-  becomes a living document per contest.
+  exchange, the logging setup, the rules link. Where an event has more than one location, each
+  location has its own section (how to get in differs by place) and the reminder includes the
+  one for the recipient's slot. A duplicated event carries it forward, so it becomes a living
+  document per contest.
 - **FR-78 [Must]** All messages are rendered from templates that a sysadmin can edit in the
   interface, with the variables each template may use documented beside it **(portability)**.
 - **FR-79 [Should]** A weekly digest to members: upcoming events, slots still needing people,
@@ -1214,8 +1242,8 @@ recommendation is acceptable.
 11. **Contest calendar import.** Seek WA7BNM's permission for page retrieval, rely on the
     iCalendar feed plus manual entry of the detail fields, or both? *Recommend writing to
     WA7BNM*; the use is modest and the courtesy is cheap, and the answer settles FR-40.
-12. **Positions** (FR-51): does W3USR run more than one station at once in any event it
-    schedules? If never, drop FR-51 to Could.
+12. ~~**Positions** (FR-51)~~ **Resolved 2026-09-13 by NAF: yes, multiple positions and
+    multiple locations. FR-51 is Must and now models both.**
 13. **Visitors** (FR-98): show a bare list of upcoming event names and dates without sign-in,
     or nothing?
 14. **Minors on campus.** Does the University have a policy governing minors participating in
@@ -1252,7 +1280,7 @@ accept, amend, or strike.
 | Self-service password reset (section 2.6) | Removes routine work from the sysadmin; the sysadmin path the dictation asked for remains. |
 | Audit log (FR-92) | The system approves access to a room and displays a shared password; who did what and when has to be recoverable. |
 | Waitlist (FR-57), calendar feed (FR-59), digest (FR-79), messages page (FR-82) | Cheap once the core exists; each closes a way a slot goes uncovered or a message goes unread. |
-| Positions (FR-51) | Cheap to design in, expensive to retrofit; flagged as Should pending Q12. |
+| Positions and locations (FR-51) | Proposed as Should pending Q12; NAF confirmed both positions and locations on 2026-09-13, and FR-51 became Must with a per-location viability rule. |
 | PWA and an API-first server (FR-96, FR-97) | The dictation asks for a path to native apps; this is the path that costs least and keeps the option open. |
 | Operating-time limits are advisory, never enforced (FR-39) | The club may schedule non-counting time (setup, listening). A system that refuses to schedule is wrong more often than one that warns. |
 
@@ -1322,6 +1350,12 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at FR-110): sign-ups carry a note to the captains. New FR-110; the
+  roster marker and the inclusion of late notes in the captains' digest are the assistant's.
+- 2026-09-13, NAF (quoted at FR-51): multiple positions and multiple locations are supported.
+  FR-51 to Must, modelling location → position → slot; viability rule per location (FR-61);
+  roster grouped by location (FR-65); location in reminders (FR-72); know-before-you-go per
+  location (FR-77); FR-36 updated. Resolves Q12.
 - 2026-09-13, NAF (quoted at FR-47): setup and breakdown are two kinds of non-operating slot
   among several. FR-47 generalised to a configurable list of kinds, placeable before, after,
   or between operating periods, each with its own viability rule.

@@ -326,3 +326,20 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied wording
   summarised.
 - **Git Hash**: 83fec12
+
+## [2026-09-13 04:37 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply two of NAF's decisions: (1) events support multiple positions and
+  multiple locations (Q12 resolved), with a viability rule per location; (2) sign-ups carry a
+  member's note to the captains.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-51 (Should to Must; location →
+  position → slot model; per-location viability; residence-address visibility), FR-36, FR-61,
+  FR-65, FR-72, FR-77 (propagation); new FR-110 (sign-up note to captains); Q12 struck as
+  resolved; §9 table row and decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit and draft. The decisions are NAF's. The assistant's
+  additions: the per-location viability rule, without which a field site could never be
+  viable; the private-residence address rule; the roster marker for notes and their inclusion
+  in the captains' at-risk digest when added inside 48 hours.
+- **Human Review Status**: Partially reviewed. NAF stated both rules and saw the applied text
+  summarised; the full wording of FR-51 and FR-110 is pending his read.
+- **Git Hash**: [after commit]
