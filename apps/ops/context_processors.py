@@ -1,6 +1,12 @@
-"""Makes the club's identity available to every template as `club` (TR-40)."""
+"""Makes the club's identity (`club`, TR-40) and the product's (`product`, NAME.md) available
+to every template."""
 
+from .branding import product_context
 from .config import branding, setting
+
+
+def product(request):
+    return product_context()
 
 
 def club(request):

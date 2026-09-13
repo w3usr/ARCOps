@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}{{ club.short_name }} Ops{% endblock %}</title>
+<title>{% block title %}{{ club.short_name }} · {{ product.name }}{% endblock %}</title>
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#1f3a5f">
 <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
@@ -24,7 +24,7 @@
     {% if user.is_authenticated %}
       <li><a href="{% url 'dashboard' %}">Home</a></li>
       <li><a href="{% url 'event_list' %}">Events</a></li>
-      <li><a href="{% url 'my_schedule' %}">My schedule</a></li>
+      <li><a href="{% url 'my_schedule' %}">My {{ product.sked }}</a></li>
       <li><a href="{% url 'agreements' %}">Agreements</a></li>
       <li><a href="{% url 'profile' %}">Profile</a></li>
       {% if user.is_officer %}<li><a href="{% url 'invitations' %}">Invite</a></li><li><a href="{% url 'approvals' %}">Approvals</a></li>{% endif %}
@@ -43,6 +43,7 @@
 <footer class="site wrap">
   <p>{{ club.name }}{% if club.callsign %} · {{ club.callsign }}{% endif %}{% if club.contact_email %} · <a href="mailto:{{ club.contact_email }}">{{ club.contact_email }}</a>{% endif %}{% if club.public_page %} · <a href="{{ club.public_page }}">Club page</a>{% endif %}</p>
   <p class="muted">Times are shown in UTC and in {{ club.timezone }}.</p>
+  <p class="muted">Powered by <a href="{{ product.url }}">{{ product.name }}</a>, {{ product.credit }}.</p>
 </footer>
 <script src="{% static 'js/app.js' %}" defer></script>
 {% block extra_body %}{% endblock %}

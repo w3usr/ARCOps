@@ -1,9 +1,11 @@
-# ops.w3usr.org
+# ARCOps
 
-Web application to support contests and operations for **W3USR**, the amateur radio club of
-the University of Scranton.
-
-Live at **https://ops.w3usr.org**.
+**Operations software for amateur radio clubs**: scheduling members into operating slots with a
+roster that knows who may legally and physically run the station, access agreements with approval
+and expiry, the shared station-computer password, FCC license sync, and the reports a club owes
+its institution. Free software (GPL-3.0-or-later) from **W3USR**, the amateur radio club of the
+University of Scranton, whose installation runs at **https://ops.w3usr.org**. Any club can run it:
+see [`config/README.md`](config/README.md). The name is explained in [`docs/NAME.md`](docs/NAME.md).
 
 > **Status: first build, 2026-09-13.** A Django application on the decided stack
 > ([`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md)) implementing the core
@@ -15,7 +17,7 @@ Live at **https://ops.w3usr.org**.
 ## Run it locally
 
 ```bash
-git clone https://github.com/w3usr/ops.w3usr.org.git && cd ops.w3usr.org
+git clone https://github.com/w3usr/arcops.git && cd arcops
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
 python manage.py migrate && python manage.py club_import && python manage.py seed_demo
@@ -29,7 +31,7 @@ is `config/`; a real club supplies its own (see `config/README.md`).
 ## Repository layout
 
 ```
-ops.w3usr.org/
+arcops/
 |-- docs/REQUIREMENTS.md      <- functional requirements; start here
 |-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
 |-- manage.py, config/        <- Django project: settings (base/dev/test/prod), urls; club.example.yaml, assets/, agreements/
@@ -48,7 +50,7 @@ ops.w3usr.org/
 
 ## Deployment
 
-This repository holds the application. It holds **no credentials, host details, or deploy
+This repository holds the application (W3USR's installation is at `ops.w3usr.org`). It holds **no credentials, host details, or deploy
 configuration**; those live in the club's private orchestration repository, which carries this
 repository as a submodule and owns the server setup.
 

@@ -75,6 +75,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.ops.context_processors.club",
+                "apps.ops.context_processors.product",
             ],
         },
     },
@@ -131,7 +132,7 @@ ACCOUNT_PREVENT_ENUMERATION = True  # FR-107
 ACCOUNT_RATE_LIMITS = {"login_failed": "5/5m/ip,10/5m/key", "reset_password": "5/5m/ip"}
 MFA_SUPPORTED_TYPES = ["totp", "recovery_codes", "webauthn"]
 MFA_PASSKEY_LOGIN_ENABLED = True
-MFA_TOTP_ISSUER = "Club Ops"
+MFA_TOTP_ISSUER = "ARCOps"
 
 SESSION_COOKIE_AGE = 14 * 24 * 3600  # "remember this device" (TR-17)
 SESSION_COOKIE_HTTPONLY = True

@@ -554,3 +554,23 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation; diagnosed from the server's journal.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 7d92c0a
+
+## [2026-09-13 14:19 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Name the product ARCOps at NAF's decision, after a namespace check he
+  asked for (ClubOps rejected as a live commercial product in the same category; ARCOps has one
+  sound-alike, arcOS, and no ham-radio product of its name). Rename the repository to
+  w3usr/arcops; add the footer attribution "Powered by ARCOps, free software from W3USR" on
+  every installation; name the schedule feature "Sked".
+- **Sections/Files Affected**: docs/NAME.md (new: decision, verbatim reasoning, collision table,
+  rules), apps/ops/branding.py (new: the one file allowed to name W3USR), apps/ops/context_processors.py,
+  config/settings/base.py (product context processor; TOTP issuer), templates/base.html and
+  templates/allauth/layouts/base.html (footer, titles, "My Sked"), static/manifest.webmanifest,
+  tools/check_club_neutral.sh (branding.py exempted, with the reason), README.md, CLAUDE.md,
+  docs/REQUIREMENTS.md and docs/TECHNICAL_REQUIREMENTS.md (titles, clone URL, tree root).
+  GitHub repository renamed from ops.w3usr.org to arcops (redirect confirmed).
+- **Nature of Contribution**: Research (the collision check), draft, and edit. The name and the
+  Sked/hostname reasoning are NAF's, quoted in NAME.md; the attribution mechanism is the assistant's.
+- **Human Review Status**: Partially reviewed. NAF chose the name and the rules in conversation;
+  the text of NAME.md is pending his read.
+- **Git Hash**: [after commit]

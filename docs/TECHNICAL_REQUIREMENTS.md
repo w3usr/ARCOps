@@ -1,4 +1,4 @@
-# ops.w3usr.org: Technical Requirements
+# ARCOps: Technical Requirements
 
 **Status: the eight decisions in section 10 were taken by the faculty advisor on 2026-09-13,
 three of them amending the draft (TR-13, TR-16, TR-33); formal adoption of the whole document
@@ -400,7 +400,7 @@ has a decade of documentation.
 ## 8. Repository layout (public application repository)
 
 ```
-ops.w3usr.org/
+arcops/
 |-- manage.py
 |-- config/                 <- Django settings (base, dev, prod), urls, wsgi
 |   |-- club.example.yaml   <- generic configuration seed (TR-40); club.yaml in a fork, or an overlay (TR-41)
@@ -426,7 +426,7 @@ document, with the TR it supersedes.
 ## 9. Development environment
 
 ```bash
-git clone https://github.com/w3usr/ops.w3usr.org.git && cd ops.w3usr.org
+git clone https://github.com/w3usr/arcops.git && cd arcops
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
 cp config/env.example .env            # dev secrets, gitignored

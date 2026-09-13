@@ -1,4 +1,4 @@
-# ops.w3usr.org
+# ARCOps (repository `w3usr/arcops`)
 
 A project of the **University of Scranton Amateur Radio Club (W3USR)**.
 
@@ -6,8 +6,8 @@ New to this club's repositories? Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md)
 
 ## Project Overview
 
-Web application to support W3USR contests and club operations, served at `ops.w3usr.org`. The
-club runs contests and operating events and currently coordinates them by hand; this
+**ARCOps** is operations software for amateur radio clubs (see `docs/NAME.md`). W3USR's
+installation is served at `ops.w3usr.org`. The club runs contests and operating events and currently coordinates them by hand; this
 application is intended to carry that work. **Functional requirements are drafted and awaiting
 adoption**: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) holds numbered requirements (FR-1
 onward), all open questions answered, adoption pending. The technology stack is proposed in
@@ -60,7 +60,7 @@ is fine. Aggregating a member's callsign with their address, schedule, or dorm i
 ## Repository Structure
 
 ```
-ops.w3usr.org/
+arcops/
 |-- CLAUDE.md
 |-- README.md
 |-- LICENSE                       <- GNU GPL v3
@@ -77,6 +77,7 @@ ops.w3usr.org/
 |   `-- ai_usage_log.md           <- mandatory AI session log
 |-- config/                       <- generic club defaults: club.example.yaml, assets/, agreements/ (TR-40)
 |-- docs/
+|   |-- NAME.md                   <- why it is called ARCOps; the attribution rule
 |   |-- REQUIREMENTS.md           <- functional requirements (draft, FR-numbered)
 |   |-- TECHNICAL_REQUIREMENTS.md <- proposed stack and technical decisions (draft, TR-numbered)
 |   |-- ONBOARDING.md             <- read this first

@@ -5,7 +5,7 @@ inside the application's own layout. allauth's default layout also prints a menu
 "Sign Up" link; this one does not (FR-1: invitation only). The extra_head and extra_body
 blocks must survive, because the passkey pages put their scripts there.
 {% endcomment %}
-{% block title %}{% block head_title %}Account{% endblock %} · {{ club.short_name }} Ops{% endblock %}
+{% block title %}{% block head_title %}Account{% endblock %} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <section class="card narrow">
 {% block body %}{% block content_inner %}{% endblock %}{% endblock %}

@@ -1,4 +1,6 @@
-# ops.w3usr.org: Requirements
+# ARCOps: Requirements
+
+*ARCOps is the product; `ops.w3usr.org` is W3USR's installation of it. See `NAME.md`.*
 
 **Status: DRAFT FUNCTIONAL REQUIREMENTS, awaiting review and adoption.**
 
