@@ -18,8 +18,8 @@ with a date and the name of the person who adopted them.
 
 | | |
 |---|---|
-| **Document status** | Draft; not adopted |
-| **Last revised** | 2026-09-12 |
+| **Document status** | Draft; all section 8 questions answered by the advisor 2026-09-13; not yet formally adopted |
+| **Last revised** | 2026-09-13 |
 | **Owner** | Nathaniel A. Frissell, W2NAF (faculty advisor), pending a project lead |
 | **Adopted by** | {{NAME, CALLSIGN}} on {{YYYY-MM-DD}} |
 
@@ -91,7 +91,7 @@ The advisor's framing, verbatim:
    warnings, announcements), with guardians copied on everything sent to a minor.
 6. **Reports**: who currently holds station access and computer access; per-event rosters.
 
-### 1.3 Out of scope for v1 (proposed; the advisor's call per section 8, Q1)
+### 1.3 Out of scope for v1 (adopted by the advisor 2026-09-13, Q1)
 
 The requirements skeleton that preceded this draft listed several candidate areas. None were
 mentioned in the dictation. The draft proposes deferring them so that v1 is finite:
@@ -193,14 +193,23 @@ The draft models this as follows:
   receives every message. A minor may have **more than one guardian account** linked; every
   linked guardian can act and every one receives every message. A guardian need not be a
   member; if the guardian is also a member, one account holds both.
-- The minor's own account has access level **No access** until the club decides otherwise, so
-  the minor never signs in. (Whether a minor may sign in at all, read-only, is Q6.)
+- The minor's own account **can sign in, read-only** (NAF, Q6): the minor sees their own
+  schedule, the rosters of events they are in (short names, FR-67), and the messages sent to
+  them, and can change their own password. They cannot sign up, cancel, change role, check in,
+  sign anything, or edit the profile; those are the guardian's. The guardian sets the minor's
+  initial password and can reset it (as FR-7, from the guardian's account). Read-only is a
+  restriction that follows from the under-18 flag, and no fifth access level is introduced.
 - The guardian record holds the guardian's name, relationship, email(s), and phone. The minor's
   own email and phone are optional.
 - When a guardian signs the minor up for a slot, the guardian designates the **responsible
   adult(s)** who will accompany the minor for that slot (FR-64). A responsible adult takes no
   place in the slot and need not be a member; the guardian may name themselves. The system
   keeps the adults a guardian has named before, so a repeat designation is a pick from a list.
+  This is how the University's policy on minors in campus programs is met: the advisor's
+  statement (Q14) is that the policy is satisfied so long as a guardian-approved responsible
+  adult chaperones the minor at all times, and that is the rule the application enforces. The
+  responsible adult is expected for the whole slot, and the minor's check-in records who is
+  present (FR-113).
 - **No date of birth is stored.** Under-18 is a flag set at invitation. When the member turns
   18, they or the guardian tell a faculty advisor, who converts the account by hand (FR-109).
   Nothing changes automatically, because the system has no date to change it on.
@@ -212,7 +221,7 @@ The draft models this as follows:
 | Action | Sysadmin | Officer | Captain | Member | Guardian (for linked minor) |
 |---|---|---|---|---|---|
 | Send invitation | ✓ | ✓ | · | · | · |
-| Approve application, set member category | ✓ | ✓ | · | · | · |
+| Set member category (on the invitation) | ✓ | ✓ | · | · | · |
 | Create or edit account manually | ✓ | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · |
 | Change access level or club position | ✓ | · | · | · | · |
@@ -283,11 +292,12 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
    FCC ULS at once and fills in the name and license fields (FR-4); an invitee with no callsign
    enters their name by hand. Then the remaining profile fields of FR-8, a password, and consent
    to the privacy notice (FR-101).
-4. The application lands in a review queue. An officer or sysadmin admits the applicant, which
-   sets the access level to Member, or declines with a reason. Until then the account is
-   **No access**. (The dictation does not say whether an application is reviewed before access
-   is granted; the draft assumes yes, Q3.)
-5. On admission, the system performs the FCC lookup (FR-14) and sends a welcome message.
+4. Completing the application admits the person: the account becomes a **Member** with the
+   category the invitation carried, at once, with no review step (NAF, Q3). The inviter and the
+   officers are told who joined, with the callsign and ULS name, and an officer or sysadmin can
+   set the account to No access if something is wrong (FR-91).
+5. On completion, the system sends a welcome message; the FCC lookup already ran during the
+   application (FR-4).
 
 ---
 
@@ -310,17 +320,21 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   callsign" and enters their name by hand. If the lookup fails or the callsign is not yet in
   the ULS data (a fresh grant), the applicant may enter their name by hand and the license
   record is held as *unverified* until the daily sync finds it. The application then collects
-  the remaining FR-8 fields, a password, and consent to the privacy notice. The reviewing
-  officer (FR-5) sees the ULS name beside the invitation's email address, which is where a
-  callsign entered by the wrong person is caught.
+  the remaining FR-8 fields, a password, and consent to the privacy notice. The inviter is told
+  who completed the invitation, with the callsign and ULS name beside the invitation's email
+  address (FR-5), which is where a callsign entered by the wrong person is noticed.
 
   > I think the registration path should be for the person to enter their call sign first, and
   > have it do an immediate automated lookup and fill in the name and license info. A person
   > cannot edit their ULS name, but they can edit their preferred name. There needs to be an
   > option for someone with no callsign to just enter a name. — NAF, 2026-09-13
 
-- **FR-5 [Must] (interpretation)** Completed applications enter a review queue. An officer or
-  sysadmin admits or declines each one. Until admitted, the account has access level No access.
+- **FR-5 [Must]** Completing the application admits the applicant as a Member with the category
+  set on the invitation; there is no review queue. The inviter and the officers receive a notice
+  naming who joined, with callsign and ULS name, so a wrong person or a mistyped callsign is
+  caught by a human after the fact and answered with No access (FR-91) if need be.
+
+  > completing the form admits — NAF, 2026-09-13, Q3
 - **FR-6 [Must]** Sysadmins can create and edit any account manually, including every privilege
   field.
 - **FR-7 [Must]** Sysadmins can reset any account's password to a generated temporary,
@@ -359,15 +373,20 @@ Flow as drafted (the review step and expiry are the draft's additions; see FR-3 
   license data, access approvals, club position, access level) are read-only to the member and
   show where the value came from and when.
 - **FR-10 [Must]** A guardian account can do everything on behalf of a linked minor that the
-  minor could do if self-managed, except sign access agreements (FR-22), and the minor's
-  account cannot sign in.
+  minor could do if self-managed, except sign access agreements (FR-22). The minor's own
+  account signs in read-only (section 2.4).
+
+  > Yes, read only — NAF, 2026-09-13, Q6
 - **FR-11 [Should]** A member can ask for their account to be closed. Closure sets No access and
   starts the retention clock (section 4.3); it does not delete signed agreements before their
   retention period ends.
 - **FR-12 [Should] (portability)** Member categories and club positions are configurable lists.
   W3USR ships with the values in FR-8.
-- **FR-13 [Could]** A member directory, visible to members, showing name, callsign, category,
-  and club position only. No contact details. (Whether the club wants this at all is Q10.)
+- **FR-13 [Must]** A member directory, visible to members, showing each member's short name
+  (FR-67), callsign, category, and club position, searchable by name and callsign. No contact
+  details; officers and sysadmins reach those through the member roster (FR-87).
+
+  > Yes, I want this. — NAF, 2026-09-13, Q10
 
 ### 3.2 Licenses and credentials
 
@@ -449,9 +468,11 @@ administered by University Human Resources; the club does not run or see the che
 and the next revision of the agreement should say only what HR actually does.)
 
 - **FR-21 [Must]** The system stores agreement **templates**, each with a type (station access
-  or IT access for W3USR), an audience rule (which member categories see it: the student
-  station agreement to Students, the community one to Community Members and, pending Q4,
-  Faculty and Staff), the full text, a version identifier, and an effective date. Publishing a
+  or IT access for W3USR), an audience rule (which member categories see it: the Student
+  station agreement to Students; the Community Member agreement to Community Members; and,
+  for Faculty and Staff, the Community Member agreement's text with its affiliate-application
+  clause removed, kept as its own template so the signed record shows exactly what was signed;
+  NAF, Q4), the full text, a version identifier, and an effective date. Publishing a
   new version never alters or deletes an earlier one, because signed records point at the
   version signed.
 - **FR-22 [Must]** A member signs their access agreements in **one workflow**: the system
@@ -599,7 +620,14 @@ Verbatim:
   the import is a starting point, never authoritative. The record keeps the source URL and
   retrieval time. **Constraint**: retrieval is user-initiated, one page per import, and cached;
   the calendar publishes an iCalendar feed as its machine-readable surface and its detail
-  pages are copyrighted. Q11 asks whether to seek WA7BNM's permission or to prefer the feed.
+  pages are copyrighted. The advisor is writing to WA7BNM (Q11); meanwhile a lightweight
+  prototype of the retrieval and parsing may be built ahead of the stack decision, tested
+  against the club's 2026–27 events (CQ WW RTTY, CQ WW SSB, ARRL DX SSB, November
+  Sweepstakes, CQ WPX RTTY and SSB, ARRL Rookie Roundup), so that FR-37's field list and
+  FR-38's period parsing are grounded in real pages before anything is built on them.
+
+  > I will write to him, but you can still prototype a lightweight mechanism of retrieving
+  > contest details now. — NAF, 2026-09-13, Q11
 - **FR-41 [Should]** Import can also read the calendar's iCalendar feed to offer a pick-list of
   upcoming contests, so the officer does not have to find the reference number by hand.
 - **FR-42 [Must]** Any event can be **duplicated**. The copy carries every field and the slot
@@ -852,7 +880,10 @@ Verbatim:
   the list of slot-mates in a reminder (FR-72), and any directory (FR-13). For a
   minor on the roster, those same people can open the minor's name to see the responsible
   adult(s) designated for that slot with their email and phone, and the minor's guardian(s)
-  with name and contact details.
+  with name and contact details. Members signed up in the same slot as the minor see the
+  responsible adults' names and phone numbers too, so the people on site know who is
+  accompanying the minor; guardian details stay with captains, officers, and sysadmins
+  (NAF, Q17).
 
   > On Rosters, only event captains, officers, and above can see full names and contact
   > details. Members can only see First Name and Call Sign (Or last initial if no call sign).
@@ -908,7 +939,7 @@ made it likely that reliable delivery would take time to establish:
   | Flow | The message | The email-free path |
   |---|---|---|
   | Invitation | Invitation link | Issuer sees the link and a ready-to-send text (FR-104) |
-  | Application admitted or declined | Notice | Status shown on the applicant's next sign-in attempt; issuer can tell them |
+  | Application completed | Welcome to the member; notice to inviter and officers | The member is simply in; officers see new members on the member roster (FR-87) |
   | Forgotten password | Reset link (FR-107) | Sysadmin issues a temporary password in the interface (FR-7) |
   | Slot reminder and confirmation | Reminder with confirm link (FR-72) | "My schedule" shows the slot, its details, and confirm / cannot-make-it buttons (FR-59) |
   | At-risk warning | Warning (FR-73) | Roster status and health summary (FR-62, FR-66); in-application notifications (FR-108) |
@@ -981,7 +1012,8 @@ made it likely that reliable delivery would take time to establish:
   position, their role, the
   control operator's name, the other people in the slot (short names, FR-67), the
   know-before-you-go text, the
-  captains' names and contact details, and a one-click **confirm** link that works without
+  captains' names and contact details with the faculty advisor's as a second line after them
+  (NAF, Q15), and a one-click **confirm** link that works without
   signing in (a signed, single-use token) plus a **cannot make it** link that opens the
   cancellation flow. The same confirm and cannot-make-it actions are on the member's "my
   schedule" page (FR-59), so confirming never depends on the message arriving. Confirmation
@@ -999,7 +1031,7 @@ made it likely that reliable delivery would take time to establish:
   sees the recipient count before sending. Every announcement is recorded (sender, audience
   definition, resolved recipient list, body, time) and is visible to officers afterwards.
 - **FR-76 [Must]** Account and credential messages: invitation, application received,
-  admitted or declined, welcome, password reset, agreement submitted (to approvers), agreement
+  completed (to inviter and officers), welcome, password reset, agreement submitted (to approvers), agreement
   approved, declined, expiring, expired, revoked (to signer), computer password
   rotated (FR-34), license expiring (FR-17).
 - **FR-77 [Must]** Each event has a **know-before-you-go** text, edited by captains, included
@@ -1117,7 +1149,7 @@ made it likely that reliable delivery would take time to establish:
 - **FR-92 [Must]** An **audit log**, append-only and readable by sysadmins, records: access
   level and club position changes, category changes, license overrides, agreement approvals,
   revocations and declines, computer password sets and every view, invitations
-  issued, applications admitted or declined, announcements sent, sign-ups moved or removed by
+  issued, applications completed, accounts set to No access, announcements sent, sign-ups moved or removed by
   someone other than the member, configuration changes, and sign-ins by sysadmins. Each entry
   carries actor, subject, action, timestamp, and the before and after values where they exist.
 - **FR-93 [Should]** Scheduled jobs (FCC sync, reminders, warnings, expiry notices, digest)
@@ -1189,7 +1221,7 @@ following are binding:
 | Profile of a member set to No access | 2 years from the change | Delete contact details and phone; keep name, callsign, and participation history as club record, or delete entirely on request |
 | Guardian records | Until the minor's account is converted (FR-109) or closed | Delete contact details; keep the link in history |
 | Responsible adults named for a slot | 1 year after the event | Delete |
-| Signed agreements and approval history | Per the University's record-retention requirement for the paper equivalents, once established | Archive outside the application or delete |
+| Signed agreements and approval history | 3 years after expiry (proposed default, configurable). The University's own period for the paper equivalents is not known to the advisor (Q8); if one is found, it replaces this | Delete |
 | Audit log | Indefinitely | Nothing; it is small and it is the record |
 | Messages sent | 1 year | Delete bodies; keep the fact and recipient count |
 | Invitations never completed | 90 days after expiry | Delete |
@@ -1270,8 +1302,8 @@ See also `.claude/rules/web-development.md`.
 **5.5 Visitors.**
 
 - **FR-98 [Must]** A visitor who is not signed in sees a sign-in page with the club's name and
-  a link to the University club page, and nothing else. No event details, no names, no rosters.
-  Whether to show a bare list of upcoming event names and dates to visitors is Q13.
+  a link to the University club page, and nothing else. No event details, no names, no rosters
+  (NAF, Q13).
 
 **5.6 Availability.** The application is a coordination tool. If it is down during a contest,
 the contest continues from the last printed or emailed roster; FR-72's reminders and FR-59's
@@ -1358,71 +1390,41 @@ impose:
 
 ## 8. Open questions for the advisor
 
-Each has the draft's recommendation, so that a one-word answer suffices where the
-recommendation is acceptable. Resolved questions stay in the list, struck through, with the
-decision and date. **Reviewed 2026-09-13**: Q5, Q7, Q9, and Q12 resolved during the day's
-review; Q16 to Q19 added from choices the assistant made in applying the day's decisions and
-flagged at the time. Fifteen remain open. A copy of the open questions with space for answers
-is kept in the private repository for the advisor to fill in.
+**All nineteen questions were answered by the advisor on 2026-09-13**, on an answer sheet kept in
+the private repository (`prompts/20260913_open_questions_answers.md`), and the answers are applied
+in the requirements above, quoted where they decide something. The list stays here as the record.
+New questions are appended with the next number; a resolved question is never renumbered.
 
-1. **v1 scope.** Adopt section 1.3's deferrals (no logging, equipment, or public content in v1)?
-   *Recommend yes.* The dictation describes a complete, coherent v1 without them.
-2. **Priorities.** Accept the Must / Should / Could tags as drafted, or re-tag? The Musts are
-   the dictation's content, the advisor's decisions of 2026-09-13, and the minimum the draft
-   found necessary to make the system safe (expiry, review, audit, control operator,
-   responsible-adult designation, R-number exclusion). The Shoulds worth a look are FR-112
-   (browser notifications) and FR-96 (installable PWA), which it depends on; both could be
-   Must if the club regards phone notifications as essential to v1.
-3. **Application review.** Is an application reviewed by an officer before access is granted
-   (FR-5), or does completing the form admit the person? *Recommend review.* The inviter knows
-   the person; the review is one click, and it is where the category is confirmed.
-4. **Which station agreement do Faculty and Staff sign?** The paper forms exist for Students and
-   for Community Members only. *Recommend: Faculty and Staff sign the Community Member
-   agreement's text with the affiliate-application clause removed*, or a third template. The
-   application supports any answer (FR-21).
-5. ~~**R numbers.**~~ **Resolved 2026-09-13 by NAF: FR-24 stands; the system does not store R
-   numbers. The advisor obtains them from University systems when requesting swipe access.**
-6. **Can a minor sign in at all?** The guardian model is settled (section 2.4); this asks only
-   whether the minor themselves should ever have a read-only view of their own schedule.
-   *Recommend no in v1*, possible later.
-7. ~~**Date of birth or a boolean?**~~ **Resolved 2026-09-13 by NAF: no dates of birth are
-   stored; under-18 is a flag and conversion at 18 is manual by a faculty advisor (FR-109).**
-8. **Retention.** Accept section 4.3, and does the University specify a retention period for
-   signed access agreements?
-9. ~~**University SSO**~~ **Resolved 2026-09-13 by NAF: not pursued at this time; the option is
-   left open for a future version (section 2.6).**
-10. **Member directory** (FR-13): wanted, or is the roster enough?
-11. **Contest calendar import.** Seek WA7BNM's permission for page retrieval, rely on the
-    iCalendar feed plus manual entry of the detail fields, or both? *Recommend writing to
-    WA7BNM*; the use is modest and the courtesy is cheap, and the answer settles FR-40.
-12. ~~**Positions** (FR-51)~~ **Resolved 2026-09-13 by NAF: yes, multiple positions and
-    multiple locations. FR-51 is Must and now models both.**
-13. **Visitors** (FR-98): show a bare list of upcoming event names and dates without sign-in,
-    or nothing?
-14. **Minors on campus.** Does the University have a policy governing minors participating in
-    campus programs (background checks or training for chaperones, sign-in requirements)? If so,
-    it constrains who may be a responsible adult (FR-64) and may add a credential type
-    (FR-18). The draft does not know and has not assumed.
-15. **Contact for issues.** The reminder names the captains (FR-72). Should it also name the
-    faculty advisor as a fallback, given the agreements route equipment problems to the advisor?
-16. **Messages composed while email is off** (FR-105): the draft records and shows them in the
-    application and never sends them later, on the view that a late reminder is worse than
-    none. Accept, or hold non-time-sensitive classes (agreement notices, announcements) in a
-    queue and send them when email comes back on? *Recommend accept as drafted*; simpler, and
-    the in-application copy is already there.
-17. **Who sees a minor's responsible adults and guardians** (FR-67): captains, officers, and
-    sysadmins, matching the rule for all contact details. Widen to everyone signed up in the
-    same slot, so the people on site know who is accompanying the minor? *Recommend widening
-    to slot-mates for the responsible adults' names and phones only*, keeping guardian details
-    to captains and officers.
-18. **The `@scranton.edu` address an approver enters at approval** (FR-27) is vouched for by
-    the approver and not confirmed by mail. Accept, or require the member to confirm it by
-    clicking a link before it counts? *Recommend accept*; it keeps approval independent of
-    email (FR-103) and the approver is the advisor.
-19. **`Reply-To` on announcements** (FR-69) names the sender, the event's captains, and the club
-    address, so every recipient sees the captains' email addresses. Accept (they are officers'
-    addresses), or set `Reply-To` to the club address only and let the club mailbox forward?
-    *Recommend accept*; replies reaching the captains directly is the point of the rule.
+| # | Question | Decision (2026-09-13) | Applied at |
+|---|---|---|---|
+| 1 | v1 scope: adopt section 1.3's deferrals? | Agree | §1.3 |
+| 2 | Accept the Must/Should/Could tags as drafted? | Agree | throughout |
+| 3 | Is an application reviewed before access is granted? | "completing the form admits" | §2.7, FR-4, FR-5 |
+| 4 | Which station agreement do Faculty and Staff sign? | The Community Member text with the affiliate clause removed | FR-21 |
+| 5 | Store R numbers? | No; FR-24 stands | FR-24 |
+| 6 | Can a minor sign in? | "Yes, read only" | §2.4, FR-10 |
+| 7 | Date of birth or a flag? | Flag only; conversion at 18 is manual | §2.4, FR-109 |
+| 8 | Retention table; University period for agreements? | Agree; University period unknown, 3 years after expiry proposed | §4.3 |
+| 9 | University SSO? | Not at this time; option open | §2.6 |
+| 10 | Member directory? | "Yes, I want this." | FR-13 (Must) |
+| 11 | Contest calendar import: permission, feed, or both? | Advisor writes to WA7BNM; prototype retrieval now against the 2026–27 events | FR-40 |
+| 12 | Multiple positions? | Yes, and locations | FR-51 |
+| 13 | Anything for visitors? | Nothing | FR-98 |
+| 14 | University policy on minors on campus? | Exists; satisfied by a guardian-approved responsible adult chaperoning at all times | §2.4, FR-64 |
+| 15 | Name the advisor in reminders as a fallback? | Yes | FR-72 |
+| 16 | Messages composed while email is off: drop or queue? | Accept as drafted (drop) | FR-105 |
+| 17 | Who sees a minor's responsible adults? | Widen to slot-mates (names and phones); guardians stay with captains | FR-67 |
+| 18 | Mail-confirm an approver-entered `@scranton.edu` address? | Accept as drafted (no) | FR-27 |
+| 19 | `Reply-To` exposing captains' addresses? | Accept as drafted | FR-69 |
+
+**Follow-ups that are not questions for the advisor:**
+
+- Q8: find out whether the University sets a retention period for signed access agreements; until
+  then the default is 3 years after expiry.
+- Q11: the letter to WA7BNM (advisor); the retrieval prototype (assistant), in the application
+  repository, ahead of the stack decision and without committing to one.
+- FR-63: the Part 97 section numbers cited (§97.7, §97.105, §97.115) are from memory and must be
+  checked against eCFR before adoption.
 
 ---
 
@@ -1521,6 +1523,13 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF, answer sheet (`prompts/20260913_open_questions_answers.md`, private
+  repository): all nineteen section 8 questions answered. The five that changed the draft:
+  Q3 (no application review; completing the form admits, with the inviter told who joined),
+  Q6 (minors sign in read-only), Q10 (member directory wanted, FR-13 to Must), Q14 (the
+  University's minors policy is met by the responsible-adult rule), Q17 (slot-mates see a
+  minor's responsible adults). Q4, Q8, Q11, Q15 accepted the recommendation with a refinement;
+  the rest accepted it as drafted. Section 8 is now a table of decisions.
 - 2026-09-13, NAF (quoted at FR-118): sysadmins can delete accounts. New FR-118; the
   anonymise-and-retain behaviour (history kept without identity, agreements purged at the end
   of retention, audit log intact), the last-sysadmin guard, and the guardian ordering rule are

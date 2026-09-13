@@ -438,3 +438,24 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; NAF requested the review and has answered the
   questions on the answer sheet in the private repository, to be applied next.
 - **Git Hash**: e459084
+
+## [2026-09-13 05:28 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's answers to all nineteen section 8 questions, from the answer
+  sheet in the private repository, and turn section 8 into a table of decisions.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: status table; §1.3 (adopted); §2.4 and
+  FR-10 (minors sign in read-only); §2.7, FR-4, FR-5, permission matrix, FR-76, FR-92, FR-103
+  table (no application review; completing the form admits); FR-13 (Could to Must, directory);
+  FR-21 (Faculty/Staff template); FR-40 (WA7BNM letter and retrieval prototype authorised);
+  FR-67 (slot-mates see a minor's responsible adults); FR-72 (advisor named after captains);
+  FR-98 (visitors: nothing); §2.4 (University minors policy met by the responsible-adult rule);
+  §4.3 (3 years after expiry for agreements, pending the University's period); §8 rewritten as
+  a decisions table with follow-ups; §9 record.
+- **Nature of Contribution**: Edit. Every decision is NAF's, quoted where it changed the draft.
+  The assistant's additions: the notice to inviter and officers that replaces the review step;
+  the read-only scope for minors and the guardian setting the minor's password; the 3-year
+  agreement retention default; the test set for the retrieval prototype drawn from the FRC
+  proposal's Appendix B.
+- **Human Review Status**: Partially reviewed. NAF wrote the answers; the applied wording is
+  summarised to him and pending his read.
+- **Git Hash**: [after commit]
