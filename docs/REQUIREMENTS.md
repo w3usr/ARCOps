@@ -1197,9 +1197,39 @@ application also needs a scheduler for daily and hourly jobs (FR-14, FR-72, FR-7
 an outbound mail path; both must fit in the same box or be delegated to a service the club can
 afford.
 
-**5.3 Accessibility.** WCAG 2.1 AA. Slot status is never conveyed by colour alone (FR-62). The
-roster and sign-up flows work by keyboard and with a screen reader. See
-`.claude/rules/web-development.md`.
+**5.3 Accessibility.**
+
+> The system must be accessible, especially for visually impaired people who use screen
+> readers. — NAF, 2026-09-13
+
+- **FR-116 [Must]** The application meets **WCAG 2.1 AA**, and is built and tested for screen
+  reader users as a primary audience. Concretely:
+  - Semantic HTML throughout: landmarks, one H1 per page and an unbroken heading order
+    (FR-115), real buttons and links, every form field labelled, every image with meaningful
+    alternative text or marked decorative.
+  - The roster (FR-65) is a real table with row and column headers, so a screen reader announces
+    the slot, position, and person for each cell; slot status (FR-62) has a text name read out
+    alongside its icon and colour; a change of status while the page is open is announced
+    through a live region.
+  - Everything works by keyboard alone, with a visible focus indicator, and the most important
+    action on each page (the check-in button when inside its window, FR-113; the confirm action
+    on a reminder) is first in the tab order.
+  - The WYSIWYG editor (FR-115) is itself operable by keyboard and screen reader, which
+    constrains the choice of editor component in section 6.
+  - Rendered agreement PDFs (FR-23) are tagged, so the document a member signed is readable to
+    them afterwards.
+  - Email and browser notifications (FR-69, FR-112) use plain, well-structured HTML with a
+    plain-text alternative.
+  - Colour is never the only carrier of information (FR-62), and text contrast meets AA.
+- **FR-117 [Must]** Accessibility is verified: automated checks (an axe-core class
+  of tool) run on every page in the build pipeline and a failure blocks the deploy; and before
+  each release the core member flows (sign in, find an event, sign up, confirm, check in, read
+  the roster, sign an agreement, view the computer password) are walked with a screen reader
+  (NVDA or VoiceOver) by a person, and the result recorded. v1 is not released until that walk
+  passes. If a club member who uses a screen reader is willing, their testing is sought and
+  weighted above the automated results.
+
+See also `.claude/rules/web-development.md`.
 
 **5.4 Responsive design and the mobile path.** Verbatim:
 
@@ -1447,6 +1477,10 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF (quoted at §5.3): the system must be accessible, especially to screen reader
+  users. §5.3 promoted from a paragraph to FR-116 (specific commitments) and FR-117
+  (verification as a release gate); the itemised commitments are the assistant's reading of
+  what that requires of this particular application.
 - 2026-09-13, NAF (quoted at FR-115): long texts are HTML edited in a WYSIWYG editor with
   good heading structure encouraged. New FR-115 listing the fields; the sanitisation rule, the
   heading-level offset that keeps one H1 per page, the plain-text alternative for email, and

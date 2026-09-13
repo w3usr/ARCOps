@@ -395,3 +395,20 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied text
   summarised.
 - **Git Hash**: 26fb55f
+
+## [2026-09-13 05:03 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's requirement that the system be accessible, especially to
+  visually impaired people using screen readers, by promoting §5.3 from a one-line statement
+  to numbered, testable requirements.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: §5.3 (NAF's words verbatim), new FR-116
+  (WCAG 2.1 AA with screen-reader-specific commitments: semantic structure, the roster as a
+  real table with a live region, keyboard order, an accessible editor, tagged PDFs, plain HTML
+  mail) and FR-117 (automated checks in the build pipeline and a screen-reader walk of the core
+  flows as a release gate); §9 decision record.
+- **Nature of Contribution**: Edit and draft. The requirement is NAF's; the itemised
+  commitments and the release gate are the assistant's reading of what it demands of this
+  application.
+- **Human Review Status**: Partially reviewed. NAF stated the requirement and saw the applied
+  text summarised.
+- **Git Hash**: [after commit]
