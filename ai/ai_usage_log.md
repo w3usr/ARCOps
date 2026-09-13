@@ -437,4 +437,4 @@ carries the actual running model ID.
   assistant's; the decisions they ask for are NAF's to make.
 - **Human Review Status**: Pending review; NAF requested the review and has answered the
   questions on the answer sheet in the private repository, to be applied next.
-- **Git Hash**: [after commit]
+- **Git Hash**: e459084
