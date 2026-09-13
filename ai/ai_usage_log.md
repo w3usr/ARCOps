@@ -425,4 +425,4 @@ carries the actual running model ID.
   retain behaviour and the two guards are the assistant's.
 - **Human Review Status**: Partially reviewed. NAF stated the requirement and saw the applied
   text summarised.
-- **Git Hash**: [after commit]
+- **Git Hash**: a9801df
