@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ member.full_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
+<h1>{{ member.full_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
+{% if member.access_level == 'none' %}<p class="msg warning">This account has no access.</p>{% endif %}
+
+{% if temp_password %}
+<section class="card highlight secret" aria-labelledby="tp">
+  <h2 id="tp">Temporary password for {{ member.display_first }}</h2>
+  <p><code id="tpv">{{ temp_password }}</code> <button type="button" class="secondary" data-copy="#tpv">Copy</button></p>
+  <p class="muted">Hand it over in person or by any means you trust. It signs in once and must be replaced at that sign-in; it is not stored and will not be shown again.</p>
+</section>
+{% endif %}
+
+<div class="cols">
+<section class="card" aria-labelledby="d">
+  <h2 id="d">Details</h2>
+  <dl class="dl">
+    <dt>Sign-in email</dt><dd><a href="mailto:{{ member.email }}">{{ member.email }}</a></dd>
+    {% if member.institution_email %}<dt>{{ club.institution_email_domain|default:"Institution" }} email</dt><dd>{{ member.institution_email }}{% if not member.institution_email_delivery %} <span class="tag">delivery off</span>{% endif %}</dd>{% endif %}
+    {% if member.personal_email %}<dt>Personal email</dt><dd>{{ member.personal_email }}{% if not member.personal_email_delivery %} <span class="tag">delivery off</span>{% endif %}</dd>{% endif %}
+    {% if member.cell_phone %}<dt>Cell phone</dt><dd>{{ member.cell_phone }}</dd>{% endif %}
+    {% if member.preferred_name %}<dt>Preferred name</dt><dd>{{ member.preferred_name }}</dd>{% endif %}
+    {% if member.category == 'student' %}<dt>Student</dt><dd>{{ member.get_student_level_display|default:"level not set" }}{% if member.graduation_year %} · graduating {{ member.get_graduation_semester_display }} {{ member.graduation_year }}{% endif %}</dd>{% endif %}
+    <dt>Joined</dt><dd>{{ member.date_joined|date:"d M Y" }}</dd>
+  </dl>
+  <h2>Standing</h2>
+  <dl class="dl">
+    <dt>License</dt><dd>{% if standing.licence %}{{ standing.licence.callsign }} · {{ standing.licence.effective_class|default:"class unknown" }} · {{ standing.licence.effective_status }}{% else %}none on file{% endif %}</dd>
+    {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt><dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %}</dd>{% empty %}<dt>Agreements</dt><dd>none signed</dd>{% endfor %}
+  </dl>
+</section>
+
+<section class="card" aria-labelledby="m">
+  <h2 id="m">{% if user.is_sysadmin %}Manage{% else %}Club position{% endif %}</h2>
+  <form method="post" class="stack">{% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    {{ form.non_field_errors }}
+    {% for f in form %}
+      {% if f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
+      {% else %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endif %}
+    {% endfor %}
+    {% if member.name_from_uls and user.is_sysadmin %}<p class="helptext">The name comes from the FCC record for {{ member.callsign }} and is not edited here (FR-4).</p>{% endif %}
+    <div><button type="submit">Save</button></div>
+  </form>
+  {% if user.is_sysadmin and not is_self %}
+  <h2>Sign-in</h2>
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
+  <p class="helptext">For a member who cannot get in. Shown once, works once, replaces their password.</p>
+  <h2>Access</h2>
+  {% if member.access_level != 'none' %}
+  <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="close">
+    <div class="field"><label for="reason">Reason (kept in the audit log)</label><input id="reason" name="reason" placeholder="graduated, lapsed, suspended…"></div>
+    <div><button type="submit" class="danger">Remove access</button></div>
+  </form>
+  <p class="helptext">The account and its history stay; sign-in is refused (§2.1). Deletion is a separate, later step (FR-11).</p>
+  {% else %}
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Restore access as a member</button></form>
+  {% endif %}
+  {% endif %}
+</section>
+</div>
+{% endblock %}

@@ -41,6 +41,7 @@
       <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' %}>{% icon 'calendar' %}<span>Events</span></a></li>
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
+      <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' %}>{% icon 'users' %}<span>Members</span></a></li>
       <li><a href="{% url 'profile' %}"{% nav_active 'profile' %}>{% icon 'user' %}<span>Profile</span></a></li>
       {% if user.is_officer %}
       <li class="navsep" aria-hidden="true"></li>

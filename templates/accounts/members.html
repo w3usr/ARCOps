@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load dicts %}
+{% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Members</h1>
+<form method="get" class="searchrow" role="search">
+  <label class="sr-only" for="q">Search members</label>
+  <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}">
+  <button type="submit" class="secondary">Search</button>
+  {% if q %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
+</form>
+{% if full %}
+<table class="table">
+<thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Category</th><th scope="col">Position</th><th scope="col">Access</th><th scope="col">Contact</th></tr></thead>
+<tbody>
+{% for m in members %}
+<tr>
+  <th scope="row"><a href="{% url 'member_detail' m.pk %}">{{ m.full_name }}</a>{% if m.preferred_name %} <span class="muted">({{ m.preferred_name }})</span>{% endif %}{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</th>
+  <td>{{ m.callsign|default:"—" }}</td>
+  <td>{{ categories|default_if_none:""|dictkey:m.category|default:m.category|capfirst }}</td>
+  <td>{{ positions|dictkey:m.club_position|default:"—" }}</td>
+  <td>{{ m.get_access_level_display }}</td>
+  <td><a href="mailto:{{ m.email }}">{{ m.email }}</a>{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
+</tr>
+{% empty %}<tr><td colspan="6">No one matches.</td></tr>{% endfor %}
+</tbody></table>
+{% else %}
+<ul class="directory">
+{% for m in members %}<li>{{ m.short_name }}{% if m.club_position %} <span class="muted">· {{ positions|dictkey:m.club_position }}</span>{% endif %}</li>{% empty %}<li class="muted">No one matches.</li>{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}New event · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
+<h1>New event</h1>
+<p>It starts as a draft only officers and captains can see. Add the location and generate the slots on the next page, then publish when it is ready.</p>
+<form method="post" class="card stack">{% csrf_token %}
+  {{ form.non_field_errors }}{{ period.non_field_errors }}
+  {% for f in form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}
+  <fieldset>
+    <legend>First operating period</legend>
+    <p class="helptext">Times are UTC, as on the roster. More periods can be added on the next page.</p>
+    <div class="row">
+      <div class="field">{{ period.start.label_tag }}{{ period.start }}{{ period.start.errors }}</div>
+      <div class="field">{{ period.end.label_tag }}{{ period.end }}{{ period.end.errors }}</div>
+    </div>
+  </fieldset>
+  <div><button type="submit">Create draft</button></div>
+</form>
+{% endblock %}

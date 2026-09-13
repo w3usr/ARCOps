@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Manage · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
+<div class="titlerow"><h1>Manage: {{ event.title }}</h1><span class="tag">{{ event.get_state_display }}</span></div>
+
+<div class="cols">
+<section class="card" aria-labelledby="det">
+  <h2 id="det">Details</h2>
+  <form method="post" class="stack">{% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for f in form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}
+    <div><button type="submit">Save details</button></div>
+  </form>
+</section>
+
+<div class="stack">
+<section class="card" aria-labelledby="per">
+  <h2 id="per">Operating periods</h2>
+  <ul class="list">
+    {% for p in periods %}<li>{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC
+      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>
+    {% empty %}<li class="muted">None yet; the slots are generated from these.</li>{% endfor %}
+  </ul>
+  <form method="post" action="{% url 'period_add' event.pk %}" class="stack">{% csrf_token %}
+    <div class="row">
+      <div class="field">{{ period_form.start.label_tag }}{{ period_form.start }}</div>
+      <div class="field">{{ period_form.end.label_tag }}{{ period_form.end }}</div>
+    </div>
+    <div><button type="submit" class="secondary">Add period</button></div>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="loc">
+  <h2 id="loc">Locations and positions</h2>
+  {% for l in locations %}
+  <p><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %} · {{ l.address }}{% endif %}</p>
+  <ul class="list">
+    {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>{% endfor %}
+  </ul>
+  <form method="post" action="{% url 'position_add' event.pk l.pk %}" class="inline">{% csrf_token %}
+    <label class="sr-only" for="pos-{{ l.pk }}">Position name</label><input id="pos-{{ l.pk }}" name="name" placeholder="Position name (Run, Mult, VHF…)"> <button type="submit" class="secondary">Add position</button>
+  </form>
+  {% empty %}<p class="muted">No location yet. A position is one operating seat at a location; each gets its own column of slots.</p>{% endfor %}
+  <h3>Add a location</h3>
+  <form method="post" action="{% url 'location_add' event.pk %}" class="stack">{% csrf_token %}
+    <div class="field"><label for="lname">Name</label><input id="lname" name="name" required placeholder="{{ club.short_name }} station"></div>
+    <div class="field"><label for="laddr">Address (optional)</label><input id="laddr" name="address"></div>
+    <div class="field"><label for="lpos">First position</label><input id="lpos" name="position" placeholder="Run"></div>
+    <div class="check"><input type="checkbox" id="lclub" name="is_club_station" checked><label for="lclub">This is the club station</label></div>
+    <div><button type="submit" class="secondary">Add location</button></div>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="cap">
+  <h2 id="cap">Captains</h2>
+  <ul class="list">
+    {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
+      {% if c.user != user %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form>{% endif %}</li>{% endfor %}
+  </ul>
+  <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only (§2.2).</p>
+  <form method="post" action="{% url 'captain_add' event.pk %}" class="inline">{% csrf_token %}
+    <label class="sr-only" for="cand">Member</label>
+    <select id="cand" name="user">{% for u in candidates %}<option value="{{ u.pk }}">{{ u.full_name }}{% if u.callsign %} {{ u.callsign }}{% endif %}</option>{% endfor %}</select>
+    <button type="submit" class="secondary">Appoint captain</button>
+  </form>
+</section>
+</div>
+</div>
+
+<section class="card" aria-labelledby="gen">
+  <h2 id="gen">Slots</h2>
+  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid is fixed; close or cancel individual slots from the roster instead.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends (FR-46, FR-47).{% endif %}</p>
+  {% if not signups_exist %}
+  <form method="post" action="{% url 'slots_generate' event.pk %}" class="stack">{% csrf_token %}
+    <div class="row">{% for f in generate_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
+    <div><button type="submit">{% if slot_count %}Regenerate{% else %}Generate{% endif %} slots</button></div>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card" aria-labelledby="more">
+  <h2 id="more">Copy or cancel</h2>
+  <div class="row">
+    <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button><span class="helptext">A draft copy with the same periods, locations, and slot grid, and no sign-ups (FR-42). For next year's running, or a similar event.</span></form>
+    {% if event.state != 'cancelled' %}
+    <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
+      <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I want to cancel this event</label></div>
+      <div><button type="submit" class="danger">Cancel event</button></div>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

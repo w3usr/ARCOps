@@ -8,7 +8,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from apps.ops.audit import record
-from apps.ops.config import setting
+from apps.ops.config import institution_email_domain, setting
 
 from .models import AccessLevel, Invitation, User
 
@@ -68,6 +68,41 @@ def set_access_level(actor: User, user: User, level: str, reason: str = "") -> N
     )
 
 
+def place_sign_in_email(user: User) -> bool:
+    """The sign-in address is also a contact address. It goes into the institution slot when its
+    domain is the one the club configures for its institution, otherwise into the personal slot,
+    and only when that slot is empty. Returns True if a field was set (the caller saves).
+    NAF, 2026-09-13: "The sign-in email never got populated into one of the email address
+    locations." """
+    if not user.email:
+        return False
+    domain = user.email.rsplit("@", 1)[-1].lower()
+    inst = institution_email_domain().lower()
+    if inst and domain == inst:
+        if not user.institution_email:
+            user.institution_email = user.email
+            return True
+        return False
+    if not user.personal_email:
+        user.personal_email = user.email
+        return True
+    return False
+
+
+def revoke_invitation(actor: User, inv: Invitation) -> None:
+    """FR-3: the issuer (or any officer) can withdraw an invitation that has not been used."""
+    if inv.state == Invitation.State.CREATED:
+        inv.state = Invitation.State.REVOKED
+        inv.save(update_fields=["state"])
+        record(actor, "invitation.revoked", inv)
+
+
+def reissue_invitation(actor: User, inv: Invitation) -> Invitation:
+    """FR-3: a fresh link for the same person; the old one stops working."""
+    revoke_invitation(actor, inv)
+    return create_invitation(actor, inv.email, inv.category, inv.is_minor, inv.guardian_email)
+
+
 def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     """FR-5: completing the form admits the person as a Member with the invitation's category."""
     user = User.objects.create_user(
@@ -78,6 +113,8 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
         under_18=inv.is_minor,
         **profile,
     )
+    if place_sign_in_email(user):
+        user.save(update_fields=["institution_email", "personal_email"])
     inv.state = Invitation.State.COMPLETED
     inv.completed_at = timezone.now()
     inv.accepted_by = user

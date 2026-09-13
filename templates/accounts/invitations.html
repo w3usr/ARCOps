@@ -22,7 +22,8 @@
   <div><button type="submit">Create invitation</button></div>
 </form>
 <h2>Recent</h2>
-<table class="table"><thead><tr><th scope="col">Email</th><th scope="col">Category</th><th scope="col">State</th><th scope="col">Expires</th><th scope="col">Issued by</th></tr></thead><tbody>
-{% for i in recent %}<tr><td>{{ i.email }}</td><td>{{ i.category }}</td><td>{{ i.get_state_display }}{% if i.opened_at %} (opened){% endif %}</td><td>{{ i.expires_at|date:"d M Y" }}</td><td>{{ i.issued_by.short_name }}</td></tr>{% empty %}<tr><td colspan="5">None yet.</td></tr>{% endfor %}
+<table class="table"><thead><tr><th scope="col">Email</th><th scope="col">Category</th><th scope="col">State</th><th scope="col">Expires</th><th scope="col">Issued by</th><th scope="col">Actions</th></tr></thead><tbody>
+{% for i in recent %}<tr><td>{{ i.email }}</td><td>{{ i.category }}</td><td>{{ i.get_state_display }}{% if i.opened_at and i.state == 'created' %} (opened){% endif %}</td><td>{{ i.expires_at|date:"d M Y" }}</td><td>{{ i.issued_by.short_name }}</td>
+<td>{% if i.state == 'created' %}<form method="post" action="{% url 'invitation_action' i.pk %}" class="inline">{% csrf_token %}<button name="action" value="reissue" class="secondary">New link</button> <button name="action" value="revoke" class="secondary">Revoke</button></form>{% elif i.accepted_by %}<a href="{% url 'member_detail' i.accepted_by.pk %}">Member</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="6">None yet.</td></tr>{% endfor %}
 </tbody></table>
 {% endblock %}

@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
+from apps.accounts import views_members
 from apps.ops.api import api
 from apps.ops.views import healthz
 
@@ -25,5 +26,7 @@ urlpatterns = [
     path("events/", include("apps.events.urls")),
     path("credentials/", include("apps.credentials.urls")),
     path("me/", include("apps.accounts.urls")),
+    path("members/", views_members.members, name="members"),
+    path("members/<int:pk>/", views_members.member_detail, name="member_detail"),
     path("", include("apps.ops.urls")),
 ]

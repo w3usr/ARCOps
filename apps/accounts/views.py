@@ -14,7 +14,13 @@ from apps.credentials.models import LicenseRecord
 from apps.ops.config import institution_email_domain, setting
 
 from .models import Invitation, User
-from .services import admit_from_invitation, create_invitation, invitation_text
+from .services import (
+    admit_from_invitation,
+    create_invitation,
+    invitation_text,
+    reissue_invitation,
+    revoke_invitation,
+)
 
 
 class ProfileForm(forms.ModelForm):
@@ -186,3 +192,35 @@ def accept_invitation(request, token):
     else:
         form = AcceptForm()
     return render(request, "accounts/accept_invitation.html", {"form": form, "invitation": inv})
+
+
+@login_required
+@require_http_methods(["POST"])
+def invitation_action(request, pk):
+    """FR-3: revoke an unused invitation, or reissue it as a fresh link."""
+    if not request.user.is_officer:
+        raise Http404
+    inv = get_object_or_404(Invitation, pk=pk)
+    action = request.POST.get("action")
+    if action == "revoke":
+        revoke_invitation(request.user, inv)
+        messages.success(request, f"Invitation to {inv.email} revoked.")
+    elif action == "reissue":
+        new = reissue_invitation(request.user, inv)
+        base = f"{request.scheme}://{request.get_host()}"
+        recent = Invitation.objects.order_by("-created")[:25]
+        messages.success(request, f"New invitation issued to {new.email}; the old link no longer works.")
+        return render(
+            request,
+            "accounts/invitations.html",
+            {
+                "form": InviteForm(),
+                "created": new,
+                "created_text": invitation_text(new, base),
+                "created_link": f"{base}/me/invite/{new.token}/",
+                "recent": recent,
+            },
+        )
+    else:
+        raise Http404
+    return redirect("invitations")

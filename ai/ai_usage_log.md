@@ -597,3 +597,23 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review. The advisor chose the layout, colour, and sign-in
   design from mock-ups; he has not yet seen the rendered result.
 - **Git Hash**: 337b960
+
+## [2026-09-13 16:12 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Management audit and the pages it called for, so no officer or sysadmin
+  needs the Django admin: a member directory and per-member management page (privilege fields,
+  club position, one-time temporary password, access removal and restoration), invitation revoke
+  and reissue, event creation and a manage page (details, operating periods, locations and
+  positions, captains, slot generation with per-role seats, duplicate, cancel), captain controls
+  on the roster (close, reopen, cancel a slot, remove a sign-up), and the sign-in address placed
+  into a contact slot on acceptance with a backfill for existing accounts.
+- **Sections/Files Affected**: apps/accounts/{views_members.py (new), views.py, services.py,
+  urls.py}, migration 0003_place_sign_in_email, apps/events/{views_manage.py (new),
+  services/manage.py (new), urls.py}, apps/ops/templatetags/{nav.py, dicts.py (new)},
+  config/urls.py, templates/base.html, templates/accounts/{members,member_detail,invitations}.html,
+  templates/events/{form,manage,list,detail}.html, static/css/app.css, tests
+  apps/accounts/tests/test_members.py and apps/events/tests/test_manage.py (new).
+- **Nature of Contribution**: Analysis (the audit, recorded in the private repository's
+  notes/2026-09-13_management-audit.md), code generation, tests.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]
