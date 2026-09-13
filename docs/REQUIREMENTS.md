@@ -607,6 +607,10 @@ Verbatim:
 - **FR-44 [Must]** An event has a lifecycle: *draft* (visible to officers and captains only),
   *published* (visible to members; sign-ups open per FR-54), *locked* (visible; no member
   changes to sign-ups), *completed*, *cancelled*. Cancelling notifies everyone signed up.
+  **Locking is optional.** A captain locks an event when they want the roster frozen (the
+  night before a contest, say, so that a late cancellation goes through them); an event that
+  is never locked goes from *published* to *completed* directly. *Completed* is set by a
+  captain or officer, or automatically once the last slot has ended, whichever comes first.
   Publishing is an explicit action by an officer or captain, recorded with who and when, and
   offers an announcement to members at that moment (the FR-80 opening announcements cover each
   role's opening, and this one covers the event becoming visible). Visibility and sign-up are
@@ -1305,6 +1309,9 @@ accept, amend, or strike.
   declined, expired, or revoked, and "holds access" means approved and unexpired. Applied to
   FR-26, FR-27, FR-29, FR-31, FR-33, FR-34, FR-61, FR-76, FR-84, FR-92, and the FR-103 table;
   the section 9 row proposing the state is struck.
+- 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
+  The text had not said; it now does. The automatic completion after the last slot is the
+  assistant's addition so that events do not linger as published.
 - 2026-09-13, NAF (quoted at FR-27): a Community Member agreement needs a `@scranton.edu`
   address on file to be approved, since the University issues one only after HR's process;
   the approver may add the address at approval. Replaces the two-item checklist.

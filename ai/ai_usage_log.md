@@ -299,3 +299,16 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF read FR-26 and FR-27 closely enough to
   correct each; the propagated wording elsewhere is pending his read.
 - **Git Hash**: 3e3f20a
+
+## [2026-09-13 04:27 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Make the *locked* event state explicitly optional in FR-44, per NAF, and
+  define how *completed* is reached.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-44 (locking optional; published may
+  go straight to completed; completed set by a captain or officer, or automatically after the
+  last slot ends); §9 decision record with NAF's words verbatim.
+- **Nature of Contribution**: Edit. The decision is NAF's; the automatic completion after the
+  last slot is the assistant's addition, marked as such.
+- **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied wording
+  summarised.
+- **Git Hash**: [after commit]
