@@ -279,3 +279,23 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF read and corrected the expiry rule once;
   the rest was stated by him and summarised back.
 - **Git Hash**: 29ee97c
+
+## [2026-09-13 04:18 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply three of NAF's decisions on agreement states: (1) drop the
+  *active* state; agreements are signed, approved, declined, expired, or revoked; (2) the
+  slot-viability check uses *approved*; (3) a Community Member agreement can be approved only
+  when a @scranton.edu address is on file, since the University issues one only after HR's
+  process, and the approver may add the address at approval.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: FR-26 (rewritten), FR-27 (checklist
+  replaced by the scranton.edu precondition), FR-61 (approved agreements), and the removal of
+  "active"/"activated" from FR-29, FR-31, FR-33, FR-34, FR-76, FR-84, FR-92, and the FR-103
+  table; §9 table row for the withdrawn active state struck; §9 decision record with NAF's
+  three statements verbatim.
+- **Nature of Contribution**: Edit. The decisions are NAF's. The assistant's additions: the
+  note that an expired approval is *expired* so "approved" already means current; the choice
+  that an approver-entered scranton.edu address is vouched for and not mail-verified, flagged
+  to NAF.
+- **Human Review Status**: Partially reviewed. NAF read FR-26 and FR-27 closely enough to
+  correct each; the propagated wording elsewhere is pending his read.
+- **Git Hash**: [after commit]

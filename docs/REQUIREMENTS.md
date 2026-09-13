@@ -489,16 +489,31 @@ and the next revision of the agreement should say only what HR actually does.)
   > Anything signed in August should be set for Sept 1 of the next year. I don't want someone
   > signing something in August and only having it be good for less than 30 days.
   > — NAF, 2026-09-13
-- **FR-26 [Must] (added)** Approval and physical access are two facts. A station-access record
-  has the states *signed*, *approved*, *active*, *expired*, *revoked*, *declined*. *Active*
-  means the University has actually enabled the swipe card, and is set by an approver with the
-  date. The viability check (FR-61) uses *active*, since an approved agreement does not open the
-  door.
-- **FR-27 [Must]** For the Community Member agreement, the record carries a checklist the
-  approver ticks: Non-Employee Affiliate Application submitted; HR has confirmed the affiliate
-  application, including its background check, is complete. The agreement cannot move to
-  *active* until both are ticked. The system records only that HR confirmed completion, never
-  the kind or result of the check.
+- **FR-26 [Must]** A signed agreement has the states *signed* (awaiting review), *approved*,
+  *declined*, *expired*, and *revoked*. **The viability check (FR-61) uses *approved*.** An
+  approval that has reached its expiry date is *expired*, so "approved" already means current;
+  the same test serves the reports (FR-31, FR-84) and the computer-password view (FR-33). The system does not track
+  whether the University has physically enabled a swipe card; that step is the advisor's, and
+  the approval is taken as the record that it was requested.
+
+  > FR-26: Let's not keep track of active, just signed, approved, expired, revoked, declined.
+  > It's going to be too much trouble to correctly keep track of active here.
+  > — NAF, 2026-09-13
+
+  > The viability check of FR-26 should therefore use "approved" — NAF, 2026-09-13
+- **FR-27 [Must]** The Community Member agreement cannot be approved unless the member has a
+  `@scranton.edu` email address on file. The University issues that address when the
+  Non-Employee Affiliate Application, including HR's background check, has gone through, so
+  its existence is the evidence that HR is done, and the system needs no separate checklist
+  and records nothing about the check itself. If no `@scranton.edu` address is on file when
+  the approver reaches the agreement, the approval form lets the approver enter one there, and
+  it is saved to the member's profile as their Scranton email (FR-8) as part of the approval.
+  The address is not verified by sending mail to it; the approver is vouching for it.
+
+  > We will know the HR's confirmation is active once the community member gets a
+  > scranton.edu email address. So, require a scranton.edu address for community member
+  > agreement approval. If one is not already on file, let the approver add one at the time of
+  > approval. — NAF, 2026-09-13
 
   > This requires a background check that HR takes care of. I do not know exactly what
   > background check is run, so you do not need to specify PA State Criminal Background Check.
@@ -514,21 +529,21 @@ and the next revision of the agreement should say only what HR actually does.)
   > The system should automatically notify people 30 days before their IT and Station Access
   > agreements expire. They should be encouraged to log into the system and re-sign all of the
   > agreements. — NAF, 2026-09-13
-- **FR-29 [Should]** An approver can revoke an active approval at any time with a reason. The
+- **FR-29 [Should]** An approver can revoke an approval at any time with a reason. The
   system notifies the member and flags every future slot whose viability depended on it.
 - **FR-30 [Should]** When a new agreement version is published, the publisher chooses whether
   existing approvals remain valid until their own expiry or all signers must re-sign by a date.
-- **FR-31 [Must]** Reports (section 3.9) list who currently holds active station access and
-  active IT access, with expiry dates, and who is approaching expiry.
+- **FR-31 [Must]** Reports (section 3.9) list who currently holds station access and IT
+  access (approved and unexpired), with expiry dates, and who is approaching expiry.
 - **FR-32 [Must]** A sysadmin can set the shared W3USR computer account password and its
   effective date. The system stores it encrypted at rest and shows it in the interface only.
   It is **never** included in an email or other message: the agreement the viewer signed says
   "I will not share the password with others or write the password down on paper," and mail is
   both.
-- **FR-33 [Must]** A member whose IT-access credential is *active* can view the current
+- **FR-33 [Must]** A member whose IT-access agreement is approved and unexpired can view the current
   password after re-entering their own password. Each view is written to the audit log (FR-92)
   with the viewer and time.
-- **FR-34 [Should]** On rotation, the system notifies every member with active IT access that
+- **FR-34 [Should]** On rotation, the system notifies every member with current IT access that
   a new password is in effect and that they must view it in the application. When the previous
   password's holders include people whose IT access has since expired, the rotation notice to
   the sysadmin lists them, since the point of rotating is to cut those people off.
@@ -698,8 +713,9 @@ Verbatim:
 
 - **FR-61 [Must]** A slot is **viable** when, among the people signed up in on-air roles, the
   event's viability rule is satisfied. W3USR's default rule: at least one person holds an
-  active amateur license of at least the event's minimum class; at least one person holds
-  active station access; at least one person holds active IT access. One person may satisfy
+  valid amateur license of at least the event's minimum class; at least one person holds an
+  *approved* station access agreement; at least one person holds an *approved* IT access
+  agreement (FR-26). One person may satisfy
   all three. The rule is expressed over credential types (FR-18) and is editable per event
   **(portability)**.
 - **FR-62 [Must]** Each slot displays one of: *empty* (no one signed up), *not viable* (people
@@ -814,7 +830,7 @@ made it likely that reliable delivery would take time to establish:
   | Slot reminder and confirmation | Reminder with confirm link (FR-72) | "My schedule" shows the slot, its details, and confirm / cannot-make-it buttons (FR-59) |
   | At-risk warning | Warning (FR-73) | Roster status and health summary (FR-62, FR-66); in-application notifications (FR-108) |
   | Announcement | Bulk message (FR-75) | Visible in each recipient's "my messages" (FR-82); officer can export the recipients and body to send from their own mail client (FR-106) |
-  | Agreement submitted, approved, declined, activated, expiring | Notices (FR-76) | Approver queue and the member's agreements page show the state; expiry countdown on the profile |
+  | Agreement submitted, approved, declined, expiring | Notices (FR-76) | Approver queue and the member's agreements page show the state; expiry countdown on the profile |
   | Computer password rotated | Notice (FR-34) | Banner for eligible members on sign-in |
   | License expiring | Notice (FR-17) | Banner on the member's profile |
   | Cancellation of a slot, event, or sign-up | Notice (FR-74) | "My schedule" and the roster reflect it immediately; notification (FR-108) |
@@ -885,7 +901,7 @@ made it likely that reliable delivery would take time to establish:
   definition, resolved recipient list, body, time) and is visible to officers afterwards.
 - **FR-76 [Must]** Account and credential messages: invitation, application received,
   admitted or declined, welcome, password reset, agreement submitted (to approvers), agreement
-  approved, declined, activated, expiring, expired, revoked (to signer), computer password
+  approved, declined, expiring, expired, revoked (to signer), computer password
   rotated (FR-34), license expiring (FR-17).
 - **FR-77 [Must]** Each event has a **know-before-you-go** text, edited by captains, included
   in every reminder: where the station is and how to get in, parking, what to bring, the
@@ -915,7 +931,7 @@ made it likely that reliable delivery would take time to establish:
 
 ### 3.9 Reports and exports
 
-- **FR-84 [Must]** **Access rosters**: who currently holds active station access and active IT
+- **FR-84 [Must]** **Access rosters**: who currently holds station access and IT
   access, with category, approval date, approver, expiry, and days remaining; sortable and
   filterable by expiring-within-N-days. Officers and sysadmins; downloadable as CSV.
 - **FR-85 [Must]** **Event roster export**: the FR-65 roster as CSV and as a printable page.
@@ -943,7 +959,7 @@ made it likely that reliable delivery would take time to establish:
   events.
 - **FR-92 [Must]** An **audit log**, append-only and readable by sysadmins, records: access
   level and club position changes, category changes, license overrides, agreement approvals,
-  activations, revocations and declines, computer password sets and every view, invitations
+  revocations and declines, computer password sets and every view, invitations
   issued, applications admitted or declined, announcements sent, sign-ups moved or removed by
   someone other than the member, configuration changes, and sign-ins by sysadmins. Each entry
   carries actor, subject, action, timestamp, and the before and after values where they exist.
@@ -1213,7 +1229,7 @@ accept, amend, or strike.
 | Addition | Why |
 |---|---|
 | Credentials as a general mechanism (FR-18) with the viability rule expressed over them (FR-61) | The dictation's three requirements (license, swipe access, IT agreement) are three instances of one pattern. Naming the pattern is what makes the application usable by another club, which the dictation asks for. |
-| Approved versus active station access (FR-26) | An approved agreement does not open the door; the University does. The viability check has to test the fact that matters. |
+| ~~Approved versus active station access (FR-26)~~ | Withdrawn 2026-09-13 at NAF's direction: tracking whether the University has enabled the card is more bookkeeping than it is worth. *Approved and unexpired* is the tested fact. |
 | Control operator named per slot (FR-63) | Part 97 makes one licensed person responsible for every transmission and limits the station to that person's privileges. "At least one licensed person" is necessary but does not say who, and "minimum license class" is a statement about the control operator. |
 | Responsible-adult designation in slot viability (FR-64) | The dictation states the chaperone rule as a policy; requiring a designation at sign-up is how the roster enforces it. First drafted as "a chaperone must hold a place in the slot"; NAF corrected this on 2026-09-13 to a designation that takes no place. |
 | No R number (FR-24) | The paper forms collect it; the repository's rules forbid storing student IDs. The two conflicted and one had to yield. |
@@ -1284,6 +1300,14 @@ accept, amend, or strike.
   approvers and the bulk re-sign queue, since a shared date means everyone comes due at once.
 - 2026-09-13, NAF: *"We will not be pursuing University SSO at this time. We leave the option
   open for a future version."* Section 2.6 updated. Resolves Q9.
+
+- 2026-09-13, NAF (quoted at FR-26): no *active* state; agreements are signed, approved,
+  declined, expired, or revoked, and "holds access" means approved and unexpired. Applied to
+  FR-26, FR-27, FR-29, FR-31, FR-33, FR-34, FR-61, FR-76, FR-84, FR-92, and the FR-103 table;
+  the section 9 row proposing the state is struck.
+- 2026-09-13, NAF (quoted at FR-27): a Community Member agreement needs a `@scranton.edu`
+  address on file to be approved, since the University issues one only after HR's process;
+  the approver may add the address at approval. Replaces the two-item checklist.
 
 **Where the draft chose a reading of the dictation.** "Club officers can only send invitations"
 was read as *relative to sysadmins' account powers*: officers cannot create or edit accounts
