@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} · {{ club.short_name }} Ops{% endblock %}
+{% block content %}
+<h1>{{ event.title }}</h1>
+<p class="muted">{{ event.get_type_display|default:event.type|capfirst }} · {{ event.get_state_display }}{% if event.min_license_class %} · minimum class {{ event.min_license_class }}{% endif %}{% if event.rules_url %} · <a href="{{ event.rules_url }}">Rules</a>{% endif %}</p>
+{% if event.description_html %}<div class="prose">{{ event.description_html|safe }}</div>{% endif %}
+
+<section class="card" aria-labelledby="h">
+  <h2 id="h">Schedule health</h2>
+  <p>{{ health.counts.total }} slots: <span class="tag ok">{{ health.counts.viable }} viable</span> <span class="tag warn">{{ health.counts.at_risk }} at risk</span> <span class="tag bad">{{ health.counts.not_viable }} not viable</span> <span class="tag">{{ health.counts.empty }} empty</span> · {{ health.scheduled_hours }} operating hours scheduled{% if health.over_total_limit %} <strong>(over the event's limit)</strong>{% endif %}</p>
+  {% if is_captain %}<form method="post" action="{% url 'event_publish' event.pk %}">{% csrf_token %}<button type="submit">{% if event.state == 'draft' %}Publish{% else %}Return to draft (only if no one has signed up){% endif %}</button></form>{% endif %}
+</section>
+
+<h2>Roster</h2>
+<p class="muted">Times in UTC. Status is also shown in words for every slot.</p>
+<table class="table roster">
+<thead><tr><th scope="col">Slot (UTC)</th><th scope="col">Position</th><th scope="col">Kind</th><th scope="col">Signed up</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead>
+<tbody>
+{% for r in rows %}
+<tr class="st-{{ r.status.status }}">
+  <th scope="row">{{ r.slot.start|date:"D d M H:i" }}–{{ r.slot.end|date:"H:i" }}</th>
+  <td>{{ r.slot.position.location.name }} / {{ r.slot.position.name }}</td>
+  <td>{{ r.slot.kind }}</td>
+  <td>
+    {% for s in r.signups %}
+      <span class="person">{% if is_captain %}{{ s.user.full_name }}{% if s.user.callsign %} {{ s.user.callsign }}{% endif %}{% else %}{{ s.user.short_name }}{% endif %} <em>({{ s.role }})</em>
+      {% if r.status.control_operator and r.status.control_operator.pk == s.user.pk %}<span class="tag" title="Control operator">CO</span>{% endif %}
+      {% if s.checked_in_at %}<span class="tag ok">in</span>{% elif s.confirmed_at %}<span class="tag">✓</span>{% endif %}
+      {% if is_captain and s.note %}<span class="tag note" title="{{ s.note }}">note</span>{% endif %}</span>{% if not forloop.last %}, {% endif %}
+    {% empty %}<span class="muted">nobody yet</span>{% endfor %}
+  </td>
+  <td><span class="status {{ r.status.status }}">{{ r.status.label }}</span>{% if r.status.reasons %}<br><small>{{ r.status.reasons|join:"; " }}</small>{% endif %}</td>
+  <td>
+    {% if r.mine %}<span class="muted">you hold this</span>
+    {% elif event.state == 'published' and r.open_roles and not r.slot.closed %}
+    <form method="post" action="{% url 'sign_up' r.slot.pk %}" class="inline">{% csrf_token %}
+      <label class="sr-only" for="role-{{ r.slot.pk }}">Role</label>
+      <select id="role-{{ r.slot.pk }}" name="role">{% for role in r.open_roles %}<option value="{{ role }}">{{ role }}</option>{% endfor %}</select>
+      <button type="submit">Sign up</button>
+    </form>
+    {% else %}<span class="muted">full</span>{% endif %}
+  </td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% if event.kbyg_html %}<section class="prose"><h2>Know before you go</h2>{{ event.kbyg_html|safe }}</section>{% endif %}
+{% endblock %}

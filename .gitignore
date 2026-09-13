@@ -67,3 +67,10 @@ _site/
 # Claude Code local state
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Application runtime (TR-2, TR-31)
+.venv/
+var/
+media/
+staticfiles/
+db.sqlite3

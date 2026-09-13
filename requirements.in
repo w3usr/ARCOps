@@ -1,0 +1,12 @@
+# Top-level dependencies (TR-24). Pin with: pip-compile requirements.in  (or pip freeze after install)
+django>=5.2,<5.3
+django-allauth[mfa]
+django-ninja
+pyyaml
+gunicorn
+whitenoise
+nh3
+pywebpush
+html2text
+cryptography
+argon2-cffi

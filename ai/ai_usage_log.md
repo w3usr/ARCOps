@@ -495,3 +495,27 @@ carries the actual running model ID.
   any institution, and so labelled), the placeholder SVG, and the CI grep are the assistant's.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 6ca9cd3
+
+## [2026-09-13 12:58 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: First build of the application on the decided stack, done autonomously
+  while NAF was away on his instruction ("make a plan to build and deploy the best you can
+  with what we have without me there"). Scaffold Django per TR-1 to TR-8; models for accounts,
+  credentials, events, comms, ops; services for viability (FR-61 to FR-64), slot generation
+  (FR-46 to FR-48), expiry (FR-25), calendar date lines (FR-38); club_import, seed_demo,
+  bootstrap_sysadmin; server-rendered templates with a roster, check-in, agreements signing and
+  approval, invitations with copyable link and text (FR-104), computer-password view (FR-33);
+  allauth with TOTP and passkeys optional; PWA manifest and service worker; tests; CI.
+- **Sections/Files Affected**: `manage.py`, `config/` (settings base/dev/test/prod, urls, wsgi,
+  env.example), `apps/ops`, `apps/accounts`, `apps/credentials`, `apps/events`, `apps/comms`
+  (models, migrations, services, views, urls, admin, management commands, tests), `templates/`,
+  `static/`, `requirements*.txt`, `pyproject.toml`, `.github/workflows/ci.yml`,
+  `tools/check_club_neutral.sh`, `.gitignore`, `README.md`, `CLAUDE.md`.
+- **Nature of Contribution**: Code generation and draft, unreviewed by a human at commit time.
+  26 tests pass locally (Python 3.13, Django 5.2.17); ruff clean under the policy in
+  pyproject.toml (E501, DJ008, DJ012 ignored for now); every page answers 200 to a signed-in
+  demo sysadmin and the anonymous paths behave; the club-neutrality grep passes. Not yet built:
+  the ULS bulk import job, notifications and reminders jobs, WeasyPrint PDFs, TinyMCE, the
+  member directory, reports, waitlists, guardian sign-up flows, the API beyond two endpoints.
+- **Human Review Status**: Pending review. NAF was not present; he reviews and tests after.
+- **Git Hash**: [after commit]

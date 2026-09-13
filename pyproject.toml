@@ -1,0 +1,18 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["apps/*/migrations", "prototypes"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "DJ"]
+ignore = ["S101", "E501", "DJ008", "DJ012"]  # asserts in tests; long data tuples; __str__ on small models: to revisit
+
+[tool.ruff.lint.per-file-ignores]
+"apps/*/tests/*" = ["S", "DJ"]
+"config/settings/*" = ["S105"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+testpaths = ["apps"]
+addopts = "-q"

@@ -84,9 +84,11 @@ ops.w3usr.org/
 `-- web/                          <- served at ops.w3usr.org; currently a holding page
 ```
 
-The application's own source directories get added once the advisor adopts the technical
-requirements. Do not scaffold a framework before that adoption is recorded in
-`docs/TECHNICAL_REQUIREMENTS.md` and `docs/REQUIREMENTS.md` §6.
+The application was scaffolded on 2026-09-13 on the advisor's instruction ("build and deploy the
+best you can"), against the decided stack in `docs/TECHNICAL_REQUIREMENTS.md`. Layout: `config/`
+(settings, urls, generic club defaults), `apps/{ops,accounts,credentials,events,comms}/` each with
+models, services, views, and tests, `templates/`, `static/`. Run `pytest` and `ruff check .`
+before committing; CI runs both plus the club-neutrality grep (`tools/check_club_neutral.sh`).
 
 ## Deployment
 

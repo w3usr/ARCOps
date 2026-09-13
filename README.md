@@ -5,11 +5,26 @@ the University of Scranton.
 
 Live at **https://ops.w3usr.org**.
 
-> **Status: requirements drafted, nothing built yet.** The site currently serves a holding
-> page. What the application will do is in [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
-> (FR-1 to FR-118, every open question answered, adoption pending). How it will be built is
-> proposed in [`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md) (TR-1 to
-> TR-39), awaiting the advisor's decisions in its section 10.
+> **Status: first build, 2026-09-13.** A Django application on the decided stack
+> ([`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md)) implementing the core
+> of [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md): accounts and invitations, credentials and
+> agreements, events with slots and a viability-checked roster, check-in, the club overlay.
+> Formal adoption of both documents is pending the advisor's read; the build began on his
+> instruction.
+
+## Run it locally
+
+```bash
+git clone https://github.com/w3usr/ops.w3usr.org.git && cd ops.w3usr.org
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.txt
+python manage.py migrate && python manage.py club_import && python manage.py seed_demo
+python manage.py runserver        # http://localhost:8000, sign in as ada@example.org / demo-password-please-change
+pytest && ruff check .            # what CI runs
+```
+
+No Node, no Docker. Email goes to the console in development. The generic club's configuration
+is `config/`; a real club supplies its own (see `config/README.md`).
 
 ## Repository layout
 
@@ -17,7 +32,9 @@ Live at **https://ops.w3usr.org**.
 ops.w3usr.org/
 |-- docs/REQUIREMENTS.md      <- functional requirements; start here
 |-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
-|-- config/                   <- generic club configuration, logo, and example agreements (works out of the box)
+|-- manage.py, config/        <- Django project: settings (base/dev/test/prod), urls; club.example.yaml, assets/, agreements/
+|-- apps/                     <- ops, accounts, credentials, events, comms: models, services, views, tests
+|-- templates/, static/       <- server-rendered pages, CSS, service worker, manifest
 |-- docs/ONBOARDING.md        <- for new club members
 |-- web/                      <- what nginx serves today: the holding page
 |   |-- index.html

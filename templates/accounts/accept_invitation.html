@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Join · {{ club.short_name }} Ops{% endblock %}
+{% block content %}
+<h1>Join {{ club.name }}</h1>
+<p>This invitation is for <strong>{{ invitation.email }}</strong> as a {{ invitation.category }}. Start with your callsign if you have one; your name and license details are filled from the FCC record.</p>
+<form method="post" class="card">{% csrf_token %}
+{{ form.as_div }}
+<p class="muted">By joining you agree to the privacy notice: we hold the details above so the club can schedule and contact you, we show other members only your first name and callsign, and you can ask to close your account at any time.</p>
+<button type="submit">Create my account</button>
+</form>
+{% endblock %}

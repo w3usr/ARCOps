@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Cancel? · {{ club.short_name }} Ops{% endblock %}
+{% block content %}
+<h1>Before you cancel</h1>
+<p>If you leave this slot it becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>
+<form method="post" action="{% url 'cancel_signup' signup.pk %}">{% csrf_token %}<input type="hidden" name="confirmed" value="yes">
+<button type="submit" class="secondary">Cancel anyway</button> <a class="button" href="{% url 'my_schedule' %}">Stay in the slot</a></form>
+{% endblock %}

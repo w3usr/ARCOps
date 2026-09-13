@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Events · {{ club.short_name }} Ops{% endblock %}
+{% block content %}
+<h1>Events</h1>
+<section aria-labelledby="u"><h2 id="u">Upcoming</h2>
+{% if upcoming %}
+<table class="table"><thead><tr><th scope="col">Event</th><th scope="col">Starts (UTC)</th><th scope="col">Ends (UTC)</th><th scope="col">State</th></tr></thead>
+<tbody>{% for e in upcoming %}<tr><td><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></td><td>{{ e.starts_at|date:"D d M Y H:i" }}</td><td>{{ e.ends_at|date:"D d M Y H:i" }}</td><td>{{ e.get_state_display }}</td></tr>{% endfor %}</tbody></table>
+{% else %}<p>No upcoming events.</p>{% endif %}
+</section>
+{% if past %}<section aria-labelledby="p"><h2 id="p">Past</h2><ul class="list">{% for e in past %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a> · {{ e.starts_at|date:"d M Y" }}</li>{% endfor %}</ul></section>{% endif %}
+{% endblock %}

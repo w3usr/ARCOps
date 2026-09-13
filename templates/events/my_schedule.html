@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}My schedule · {{ club.short_name }} Ops{% endblock %}
+{% block content %}
+<h1>My schedule</h1>
+{% for s in ready %}
+<section class="card highlight"><h2>Check in: {{ s.slot.event.title }}</h2>
+<p>{{ s.slot.position }} · {{ s.slot.start|date:"D d M H:i" }}–{{ s.slot.end|date:"H:i" }}Z</p>
+<form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}<button class="big" type="submit">Check in</button></form></section>
+{% endfor %}
+{% if upcoming %}
+<table class="table"><thead><tr><th scope="col">When (UTC)</th><th scope="col">Event</th><th scope="col">Position</th><th scope="col">Role</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
+{% for s in upcoming %}<tr>
+<th scope="row">{{ s.slot.start|date:"D d M H:i" }}–{{ s.slot.end|date:"H:i" }}</th>
+<td><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a></td><td>{{ s.slot.position }}</td><td>{{ s.role }}</td>
+<td>{% if s.checked_in_at %}checked in{% elif s.confirmed_at %}confirmed{% else %}signed up{% endif %}</td>
+<td>{% if not s.confirmed_at and not s.checked_in_at %}<form class="inline" method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm</button></form>{% endif %}
+<form class="inline" method="post" action="{% url 'cancel_signup' s.pk %}">{% csrf_token %}<button type="submit" class="secondary">Cannot make it</button></form></td>
+</tr>{% endfor %}</tbody></table>
+{% else %}<p>No upcoming slots. <a href="{% url 'event_list' %}">Find an event.</a></p>{% endif %}
+{% endblock %}

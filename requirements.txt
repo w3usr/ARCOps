@@ -1,0 +1,13 @@
+# Pinned from a clean install on 2026-09-13 (Python 3.13). Regenerate deliberately; Dependabot proposes bumps.
+Django==5.2.17
+django-allauth[mfa]==65.19.3
+django-ninja==1.7.0
+PyYAML==6.0.3
+gunicorn==26.2.0
+whitenoise==6.12.0
+nh3==0.3.7
+pywebpush==2.5.0
+html2text==2025.4.15
+cryptography==50.0.1
+argon2-cffi==25.1.0
+fido2==2.2.1
