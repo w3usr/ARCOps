@@ -426,3 +426,15 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF stated the requirement and saw the applied
   text summarised.
 - **Git Hash**: a9801df
+
+## [2026-09-13 05:10 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Review section 8 (open questions) against the day's decisions: record
+  the four resolved (Q5, Q7, Q9, Q12), reword Q2 and Q6 to the current state, and add Q16 to
+  Q19 from choices the assistant made while applying decisions and flagged at the time.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md` §8 (header, Q2, Q6, new Q16–Q19).
+- **Nature of Contribution**: Edit. The new questions and their recommendations are the
+  assistant's; the decisions they ask for are NAF's to make.
+- **Human Review Status**: Pending review; NAF requested the review and has answered the
+  questions on the answer sheet in the private repository, to be applied next.
+- **Git Hash**: [after commit]

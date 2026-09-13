@@ -1359,13 +1359,20 @@ impose:
 ## 8. Open questions for the advisor
 
 Each has the draft's recommendation, so that a one-word answer suffices where the
-recommendation is acceptable.
+recommendation is acceptable. Resolved questions stay in the list, struck through, with the
+decision and date. **Reviewed 2026-09-13**: Q5, Q7, Q9, and Q12 resolved during the day's
+review; Q16 to Q19 added from choices the assistant made in applying the day's decisions and
+flagged at the time. Fifteen remain open. A copy of the open questions with space for answers
+is kept in the private repository for the advisor to fill in.
 
 1. **v1 scope.** Adopt section 1.3's deferrals (no logging, equipment, or public content in v1)?
    *Recommend yes.* The dictation describes a complete, coherent v1 without them.
 2. **Priorities.** Accept the Must / Should / Could tags as drafted, or re-tag? The Musts are
-   the dictation's content plus the minimum the draft found necessary to make it safe (expiry,
-   review, audit, control operator, responsible-adult check, R-number exclusion).
+   the dictation's content, the advisor's decisions of 2026-09-13, and the minimum the draft
+   found necessary to make the system safe (expiry, review, audit, control operator,
+   responsible-adult designation, R-number exclusion). The Shoulds worth a look are FR-112
+   (browser notifications) and FR-96 (installable PWA), which it depends on; both could be
+   Must if the club regards phone notifications as essential to v1.
 3. **Application review.** Is an application reviewed by an officer before access is granted
    (FR-5), or does completing the form admit the person? *Recommend review.* The inviter knows
    the person; the review is one click, and it is where the category is confirmed.
@@ -1375,8 +1382,9 @@ recommendation is acceptable.
    application supports any answer (FR-21).
 5. ~~**R numbers.**~~ **Resolved 2026-09-13 by NAF: FR-24 stands; the system does not store R
    numbers. The advisor obtains them from University systems when requesting swipe access.**
-6. **Can a minor sign in at all?** *Recommend no in v1* (section 2.4). A read-only view for the
-   minor is possible later.
+6. **Can a minor sign in at all?** The guardian model is settled (section 2.4); this asks only
+   whether the minor themselves should ever have a read-only view of their own schedule.
+   *Recommend no in v1*, possible later.
 7. ~~**Date of birth or a boolean?**~~ **Resolved 2026-09-13 by NAF: no dates of birth are
    stored; under-18 is a flag and conversion at 18 is manual by a faculty advisor (FR-109).**
 8. **Retention.** Accept section 4.3, and does the University specify a retention period for
@@ -1397,6 +1405,24 @@ recommendation is acceptable.
     (FR-18). The draft does not know and has not assumed.
 15. **Contact for issues.** The reminder names the captains (FR-72). Should it also name the
     faculty advisor as a fallback, given the agreements route equipment problems to the advisor?
+16. **Messages composed while email is off** (FR-105): the draft records and shows them in the
+    application and never sends them later, on the view that a late reminder is worse than
+    none. Accept, or hold non-time-sensitive classes (agreement notices, announcements) in a
+    queue and send them when email comes back on? *Recommend accept as drafted*; simpler, and
+    the in-application copy is already there.
+17. **Who sees a minor's responsible adults and guardians** (FR-67): captains, officers, and
+    sysadmins, matching the rule for all contact details. Widen to everyone signed up in the
+    same slot, so the people on site know who is accompanying the minor? *Recommend widening
+    to slot-mates for the responsible adults' names and phones only*, keeping guardian details
+    to captains and officers.
+18. **The `@scranton.edu` address an approver enters at approval** (FR-27) is vouched for by
+    the approver and not confirmed by mail. Accept, or require the member to confirm it by
+    clicking a link before it counts? *Recommend accept*; it keeps approval independent of
+    email (FR-103) and the approver is the advisor.
+19. **`Reply-To` on announcements** (FR-69) names the sender, the event's captains, and the club
+    address, so every recipient sees the captains' email addresses. Accept (they are officers'
+    addresses), or set `Reply-To` to the club address only and let the club mailbox forward?
+    *Recommend accept*; replies reaching the captains directly is the point of the rule.
 
 ---
 
