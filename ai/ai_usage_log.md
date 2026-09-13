@@ -311,4 +311,4 @@ carries the actual running model ID.
   last slot is the assistant's addition, marked as such.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the applied wording
   summarised.
-- **Git Hash**: [after commit]
+- **Git Hash**: 0d53c02
