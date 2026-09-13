@@ -616,4 +616,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis (the audit, recorded in the private repository's
   notes/2026-09-13_management-audit.md), code generation, tests.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: 4b19387
