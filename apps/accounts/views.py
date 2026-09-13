@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from apps.credentials.models import LicenseRecord
-from apps.ops.config import setting
+from apps.ops.config import institution_email_domain, setting
 
 from .models import Invitation, User
 from .services import admit_from_invitation, create_invitation, invitation_text
@@ -24,8 +24,9 @@ class ProfileForm(forms.ModelForm):
             "preferred_name",
             "callsign",
             "institution_email",
+            "institution_email_delivery",
             "personal_email",
-            "email_preference",
+            "personal_email_delivery",
             "cell_phone",
             "student_level",
             "graduation_semester",
@@ -33,7 +34,13 @@ class ProfileForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
+        domain = institution_email_domain()
+        self.fields["institution_email"].label = f"{domain} email" if domain else "Institution email"
+        self.fields["personal_email"].label = "Personal email"
+        for f in ("institution_email_delivery", "personal_email_delivery"):
+            self.fields[f].label = "Send club email here"
         if self.instance.category != "student":
             for f in ("student_level", "graduation_semester", "graduation_year"):
                 self.fields.pop(f)
@@ -64,12 +71,28 @@ class InviteForm(forms.Form):
     email = forms.EmailField()
     category = forms.ChoiceField()
     is_minor = forms.BooleanField(required=False, label="The invitee is under 18")
-    guardian_email = forms.EmailField(required=False)
+    guardian_email = forms.EmailField(
+        required=False,
+        label="Guardian's email",
+        help_text="Required for a minor; the guardian receives the invitation and every message.",
+    )
 
     def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         cats = setting("member_categories", []) or []
         self.fields["category"].choices = [(c["key"], c["label"]) for c in cats]
+
+    def clean(self):
+        # The guardian field is shown only once "under 18" is ticked (templates/accounts/
+        # invitations.html); the rule is enforced here regardless of what the page showed.
+        data = super().clean()
+        if data.get("is_minor"):
+            if not data.get("guardian_email"):
+                self.add_error("guardian_email", "A guardian's email is required for a minor.")
+        else:
+            data["guardian_email"] = ""
+        return data
 
 
 @login_required

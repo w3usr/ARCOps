@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Invitation not valid · {{ club.short_name }} Ops{% endblock %}
+{% block title %}Invitation not valid · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>This invitation is no longer valid</h1>
 <p>It has {% if invitation.state == 'completed' %}already been used{% elif invitation.state == 'revoked' %}been withdrawn{% else %}expired{% endif %}. Ask the person who invited you for a new one{% if club.contact_email %}, or write to <a href="mailto:{{ club.contact_email }}">{{ club.contact_email }}</a>{% endif %}.</p>

@@ -57,7 +57,13 @@ class UserAdmin(DjangoUserAdmin):
         ),
         (
             "Contact",
-            {"fields": ("institution_email", "personal_email", "email_preference", "cell_phone")},
+            {
+                "fields": (
+                    ("institution_email", "institution_email_delivery"),
+                    ("personal_email", "personal_email_delivery"),
+                    "cell_phone",
+                )
+            },
         ),
         ("Club", {"fields": ("callsign", "category", "club_position", "access_level", "under_18")}),
         ("Student", {"fields": ("student_level", "graduation_semester", "graduation_year")}),

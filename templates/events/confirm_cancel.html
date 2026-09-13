@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Cancel? · {{ club.short_name }} Ops{% endblock %}
+{% block title %}Cancel? · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Before you cancel</h1>
 <p>If you leave this slot it becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>

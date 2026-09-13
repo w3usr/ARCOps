@@ -49,5 +49,6 @@ class AccountGateMiddleware:
                 messages.info(
                     request, "You signed in with a temporary password. Set your own to continue."
                 )
+                request.session["forced_password_change"] = True
                 return redirect("/accounts/password/change/")
         return self.get_response(request)

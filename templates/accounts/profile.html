@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Profile · {{ club.short_name }} Ops{% endblock %}
+{% block title %}Profile · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Your profile</h1>
 <section class="card"><h2>Fixed details</h2>
@@ -10,10 +10,35 @@
 <dt>Access level</dt><dd>{{ user.get_access_level_display }}</dd>
 {% if licence %}<dt>License</dt><dd>{{ licence.callsign }} · {{ licence.effective_class|default:"class unknown" }} · {{ licence.effective_status }}{% if licence.effective_expiry %} · expires {{ licence.effective_expiry }}{% endif %} <small class="muted">({{ licence.source }})</small></dd>{% endif %}
 </dl></section>
-<form method="post" class="card">{% csrf_token %}
+<form method="post" class="card stack">{% csrf_token %}
 <h2>Details you manage</h2>
-{{ form.as_div }}
-<button type="submit">Save</button>
+{{ form.non_field_errors }}
+<div class="field">{{ form.preferred_name.label_tag }}{{ form.preferred_name }}{{ form.preferred_name.errors }}</div>
+<div class="field">{{ form.callsign.label_tag }}{{ form.callsign }}{{ form.callsign.errors }}</div>
+<fieldset class="addresses">
+  <legend>Email addresses</legend>
+  <p class="helptext">Club email goes to every address with its switch on. With both off, it goes to your sign-in address.</p>
+  <div class="addr">
+    <div class="field">{{ form.institution_email.label_tag }}{{ form.institution_email }}{{ form.institution_email.errors }}</div>
+    <div class="check">{{ form.institution_email_delivery }}<label for="{{ form.institution_email_delivery.id_for_label }}">{{ form.institution_email_delivery.label }}</label></div>
+  </div>
+  <div class="addr">
+    <div class="field">{{ form.personal_email.label_tag }}{{ form.personal_email }}{{ form.personal_email.errors }}</div>
+    <div class="check">{{ form.personal_email_delivery }}<label for="{{ form.personal_email_delivery.id_for_label }}">{{ form.personal_email_delivery.label }}</label></div>
+  </div>
+</fieldset>
+<div class="field">{{ form.cell_phone.label_tag }}{{ form.cell_phone }}{{ form.cell_phone.errors }}</div>
+{% if form.student_level %}
+<fieldset>
+  <legend>Student details</legend>
+  <div class="field">{{ form.student_level.label_tag }}{{ form.student_level }}{{ form.student_level.errors }}</div>
+  <div class="row">
+    <div class="field">{{ form.graduation_semester.label_tag }}{{ form.graduation_semester }}{{ form.graduation_semester.errors }}</div>
+    <div class="field">{{ form.graduation_year.label_tag }}{{ form.graduation_year }}{{ form.graduation_year.errors }}</div>
+  </div>
+</fieldset>
+{% endif %}
+<div><button type="submit">Save</button></div>
 </form>
 <section class="card"><h2>Security</h2>
 <ul class="list"><li><a href="{% url 'account_change_password' %}">Change password</a></li><li><a href="{% url 'mfa_index' %}">Two-step verification and passkeys</a></li></ul></section>

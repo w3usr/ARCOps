@@ -3,17 +3,27 @@
 {% block head_title %}Sign in{% endblock %}
 {% block body %}
 <h1>Sign in</h1>
-<p class="muted">Accounts are created by invitation from a club officer. There is no sign-up here.</p>
-<form method="post" action="{% url 'account_login' %}">
+<form method="post" action="{% url 'account_login' %}" class="stack">
   {% csrf_token %}
-  {{ form.as_div }}
+  {{ form.non_field_errors }}
+  <div class="field">
+    <label for="{{ form.login.id_for_label }}">Email</label>
+    {{ form.login }}{{ form.login.errors }}
+  </div>
+  <div class="field">
+    <label for="{{ form.password.id_for_label }}">Password</label>
+    {{ form.password }}{{ form.password.errors }}
+  </div>
+  {% if form.remember %}
+  <div class="check">{{ form.remember }}<label for="{{ form.remember.id_for_label }}">Remember me on this device</label></div>
+  {% endif %}
   {{ redirect_field }}
-  <button type="submit">Sign in</button>
+  <button type="submit" class="wide">Sign in</button>
 </form>
 {% if PASSKEY_LOGIN_ENABLED %}
-<p><button type="submit" form="mfa_login" id="passkey_login" class="secondary">Sign in with a passkey</button></p>
+<button type="submit" form="mfa_login" id="passkey_login" class="secondary wide">Sign in with a passkey</button>
 {% endif %}
-<p><a href="{% url 'account_reset_password' %}">Forgot your username or password?</a></p>
+<p class="auth-links"><a href="{% url 'account_reset_password' %}">Forgot your username or password?</a></p>
 {% endblock %}
 {% block extra_body %}
 {{ block.super }}

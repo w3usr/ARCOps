@@ -1,49 +1,72 @@
-{% load static %}<!DOCTYPE html>
-<html lang="en">
+{% load static nav %}<!DOCTYPE html>
+<html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ club.short_name }} · {{ product.name }}{% endblock %}</title>
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#1f3a5f">
+<meta name="theme-color" content="{{ club.branding.accent }}">
 <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
 {% if club.branding.favicon %}<link rel="icon" href="{% static club.branding.favicon %}">{% endif %}
 {% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{% static club.branding.apple_touch_icon %}">{% endif %}
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
+{# The club's colour, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
+<style>:root { --brand: {{ club.branding.accent }}; }</style>
+{# Restores the remembered sidebar state before first paint, so it never flashes open. #}
+<script src="{% static 'js/nav-state.js' %}"></script>
 {% block extra_head %}{% endblock %}
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="site">
-  <a class="brand" href="{% url 'dashboard' %}">
-    {% if club.branding.logo %}<img src="{% static club.branding.logo %}" alt="" width="40" height="40">{% endif %}
-    <span>{{ club.short_name }} Operations</span>
-  </a>
-  <nav aria-label="Main">
-    <ul>
-    {% if user.is_authenticated %}
-      <li><a href="{% url 'dashboard' %}">Home</a></li>
-      <li><a href="{% url 'event_list' %}">Events</a></li>
-      <li><a href="{% url 'my_schedule' %}">My {{ product.sked }}</a></li>
-      <li><a href="{% url 'agreements' %}">Agreements</a></li>
-      <li><a href="{% url 'profile' %}">Profile</a></li>
-      {% if user.is_officer %}<li><a href="{% url 'invitations' %}">Invite</a></li><li><a href="{% url 'approvals' %}">Approvals</a></li>{% endif %}
-      {% if user.is_sysadmin %}<li><a href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
-      <li><form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="linklike" type="submit">Sign out</button></form></li>
-    {% else %}
-      <li><a href="{% url 'account_login' %}">Sign in</a></li>
-    {% endif %}
+{% if user.is_authenticated %}
+<div class="shell">
+  <header class="topbar">
+    <button class="iconbtn" type="button" id="menu-open" aria-controls="sidenav" aria-expanded="false" aria-label="Open menu">{% icon 'menu' %}</button>
+    <a class="brand" href="{% url 'dashboard' %}">
+      {% if club.branding.logo %}<img src="{% static club.branding.logo %}" alt="" width="36" height="36">{% endif %}
+      <span class="brand-name">{{ club.short_name }}</span>
+    </a>
+  </header>
+  <div class="backdrop" id="backdrop" hidden></div>
+  <nav class="sidenav" id="sidenav" aria-label="Main">
+    <div class="sidenav-head">
+      <a class="brand" href="{% url 'dashboard' %}">
+        {% if club.branding.logo %}<img src="{% static club.branding.logo %}" alt="" width="56" height="56">{% endif %}
+        <span class="brand-text"><span class="brand-name">{{ club.short_name }}</span><span class="brand-sub">Operations</span></span>
+      </a>
+      <button class="iconbtn only-drawer" type="button" id="menu-close" aria-label="Close menu">{% icon 'close' %}</button>
+    </div>
+    <ul class="navlist">
+      <li><a href="{% url 'dashboard' %}"{% nav_active 'dashboard' %}>{% icon 'home' %}<span>Home</span></a></li>
+      <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' %}>{% icon 'calendar' %}<span>Events</span></a></li>
+      <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
+      <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
+      <li><a href="{% url 'profile' %}"{% nav_active 'profile' %}>{% icon 'user' %}<span>Profile</span></a></li>
+      {% if user.is_officer %}
+      <li class="navsep" aria-hidden="true"></li>
+      <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
+      <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
+      {% endif %}
+      {% if user.is_sysadmin %}
+      <li><a href="{% url 'admin:index' %}">{% icon 'settings' %}<span>Admin</span></a></li>
+      {% endif %}
     </ul>
+    <div class="sidenav-foot">
+      <p class="whoami" title="{{ user.email }}">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}</span></p>
+      <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>
+      <button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>
+    </div>
   </nav>
-</header>
-<main id="main" class="wrap">
+{% endif %}
+<main id="main" class="{% if user.is_authenticated %}content{% else %}plain{% endif %}">
   {% if messages %}<ul class="messages" role="status" aria-live="polite">{% for m in messages %}<li class="msg {{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
-  {% block content %}{% endblock %}
+  {# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
+  {% block main %}{% block content %}{% endblock %}{% endblock %}
 </main>
-<footer class="site wrap">
-  <p>{{ club.name }}{% if club.callsign %} · {{ club.callsign }}{% endif %}{% if club.contact_email %} · <a href="mailto:{{ club.contact_email }}">{{ club.contact_email }}</a>{% endif %}{% if club.public_page %} · <a href="{{ club.public_page }}">Club page</a>{% endif %}</p>
-  <p class="muted">Times are shown in UTC and in {{ club.timezone }}.</p>
-  <p class="muted">Powered by <a href="{{ product.url }}">{{ product.name }}</a>, {{ product.credit }}.</p>
+{% if user.is_authenticated %}</div>{% endif %}
+<footer class="site">
+  <p class="club">{% if club.public_page %}<a href="{{ club.public_page }}">{% endif %}{% if club.callsign %}{{ club.callsign }} {% endif %}{{ club.name }}{% if club.public_page %}</a>{% endif %}</p>
+  <p class="credit">Powered by <a href="{{ product.url }}">{{ product.name }}</a>, {{ product.credit }}.</p>
 </footer>
 <script src="{% static 'js/app.js' %}" defer></script>
 {% block extra_body %}{% endblock %}

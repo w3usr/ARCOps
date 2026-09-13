@@ -24,12 +24,13 @@ def recipient_addresses(user) -> list[str]:
         if user.email:
             addrs.append(user.email)
         return sorted(set(addrs))
-    addrs.append(user.email)
-    if user.email_preference == "both":
-        for a in (user.institution_email, user.personal_email):
-            if a and a.lower() != user.email.lower():
-                addrs.append(a)
-    return sorted(set(a for a in addrs if a))
+    if user.institution_email and user.institution_email_delivery:
+        addrs.append(user.institution_email)
+    if user.personal_email and user.personal_email_delivery:
+        addrs.append(user.personal_email)
+    if not addrs:
+        addrs.append(user.email)  # the sign-in address: the fallback, never unreachable
+    return sorted({a.lower() for a in addrs if a})
 
 
 def compose(user, category: str, subject: str, body_html: str, deliver_now: bool = True) -> Outbox:

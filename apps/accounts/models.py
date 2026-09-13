@@ -38,13 +38,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     """A person with an account. The login identifier is the email address (§2.6)."""
 
     email = models.EmailField(unique=True)
-    institution_email = models.EmailField(blank=True)  # e.g. the university address
+    # Two contact addresses of equal standing, each with its own delivery switch (FR-70). When
+    # neither is switched on, club mail falls back to the sign-in address so no member is
+    # unreachable. NAF, 2026-09-13: "Neither should be considered primary."
+    institution_email = models.EmailField(blank=True)  # the university address, in practice
+    institution_email_delivery = models.BooleanField(default=True)
     personal_email = models.EmailField(blank=True)
-    email_preference = models.CharField(
-        max_length=12,
-        default="primary",
-        choices=[("primary", "Primary only"), ("both", "Both addresses")],
-    )
+    personal_email_delivery = models.BooleanField(default=True)
     first_name = models.CharField(max_length=80)
     middle_name = models.CharField(max_length=80, blank=True)
     last_name = models.CharField(max_length=80)

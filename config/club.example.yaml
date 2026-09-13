@@ -26,7 +26,10 @@ branding:
   favicon: "assets/club-logo.svg"
   apple_touch_icon: "assets/club-logo.svg"
   qsl_card: null
-  accent: null                                # optional accent colour; checked for AA contrast
+  # The club's colour: footer, sign-in panel, buttons, links, and the active menu entry. A
+  # six-digit hex; it must carry white text at WCAG AA (4.5:1) or the application's own
+  # colour is used instead (FR-116). null keeps the default.
+  accent: null
 
 member_categories:                            # FR-8, FR-12; edit freely
   - { key: student,   label: "Student" }

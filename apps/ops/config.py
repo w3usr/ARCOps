@@ -8,11 +8,15 @@ sysadmins edit afterwards). Code asks `setting("club.name")` and never cares whi
 
 from __future__ import annotations
 
+import logging
+import re
 from pathlib import Path
 from typing import Any
 
 import yaml
 from django.conf import settings as dj
+
+log = logging.getLogger(__name__)
 
 
 def config_dir() -> Path:
@@ -73,6 +77,39 @@ def setting(key: str, default: Any = None) -> Any:
         return default
 
 
+DEFAULT_ACCENT = "#1f3a5f"
+_HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _relative_luminance(hex_colour: str) -> float:
+    def channel(v: int) -> float:
+        c = v / 255
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    r, g, b = (int(hex_colour[i : i + 2], 16) for i in (1, 3, 5))
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+
+
+def contrast_with_white(hex_colour: str) -> float:
+    """WCAG contrast ratio of white text on the colour."""
+    return 1.05 / (_relative_luminance(hex_colour) + 0.05)
+
+
+def accent_colour() -> str:
+    """The club's accent (branding.accent) if it is a six-digit hex colour that carries white
+    text at AA (4.5:1, FR-116); otherwise the application's default. The accent is used as a
+    background for the footer, buttons, and the sign-in panel, and as link text on white, so
+    the same threshold covers both uses."""
+    value = setting("branding.accent")
+    if not value or not _HEX.match(str(value)):
+        return DEFAULT_ACCENT
+    value = str(value).lower()
+    if contrast_with_white(value) < 4.5:
+        log.warning("branding.accent %s fails AA contrast with white; using the default", value)
+        return DEFAULT_ACCENT
+    return value
+
+
 def branding() -> dict[str, str | None]:
     return {
         "logo": normalise_static_path(setting("branding.logo")),
@@ -80,4 +117,14 @@ def branding() -> dict[str, str | None]:
         "favicon": normalise_static_path(setting("branding.favicon")),
         "apple_touch_icon": normalise_static_path(setting("branding.apple_touch_icon")),
         "qsl_card": normalise_static_path(setting("branding.qsl_card")),
+        "accent": accent_colour(),
     }
+
+
+def institution_email_domain() -> str:
+    """The email domain of the first member category that declares one (the university's, in
+    practice), used to label the institution-address field in the member's own terms."""
+    for c in setting("member_categories", []) or []:
+        if isinstance(c, dict) and c.get("email_domain"):
+            return str(c["email_domain"])
+    return ""

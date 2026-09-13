@@ -574,3 +574,26 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF chose the name and the rules in conversation;
   the text of NAME.md is pending his read.
 - **Git Hash**: 1bae1e1
+
+## [2026-09-13 15:39 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Design run after the advisor's first look at the deployed application:
+  a sidebar shell (collapsible rail, drawer on small screens), a split sign-in page with the
+  club's mark, a footer in the club's colour, the club colour taken from configuration with an
+  AA contrast check; and four fixes he asked for while testing (password-change landing page,
+  guardian field shown only for a minor, two email addresses of equal standing with delivery
+  switches, page titles).
+- **Sections/Files Affected**: templates/base.html, templates/allauth/layouts/base.html,
+  templates/account/login.html, templates/accounts/{invitations,profile}.html, all page titles;
+  static/css/app.css (rewritten), static/js/app.js, static/js/nav-state.js (new);
+  apps/ops/templatetags/nav.py (new), apps/ops/config.py (accent_colour, contrast check,
+  institution_email_domain), apps/ops/context_processors.py; apps/accounts/{models,admin,
+  views,adapter,middleware}.py and migration 0002_email_delivery_switches;
+  apps/comms/services.py (recipient_addresses); config/club.example.yaml; tests
+  apps/ops/tests/test_shell.py and apps/accounts/tests/test_profile_and_invites.py (new).
+- **Nature of Contribution**: Design (options put to the advisor, his choices recorded in the
+  private repository's notes/2026-09-13_design.md), code generation, tests. The colour was
+  sampled from the club's own artwork.
+- **Human Review Status**: Pending review. The advisor chose the layout, colour, and sign-in
+  design from mock-ups; he has not yet seen the rendered result.
+- **Git Hash**: [pending]

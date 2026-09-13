@@ -2,7 +2,7 @@
 to every template."""
 
 from .branding import product_context
-from .config import branding, setting
+from .config import branding, institution_email_domain, setting
 
 
 def product(request):
@@ -19,6 +19,7 @@ def club(request):
             "contact_email": setting("club.contact_email", ""),
             "public_page": setting("club.public_page", ""),
             "timezone": setting("club.timezone", "UTC"),
+            "institution_email_domain": institution_email_domain(),
             "branding": branding(),
         },
     }

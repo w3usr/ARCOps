@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load richtext %}
-{% block title %}{{ event.title }} · {{ club.short_name }} Ops{% endblock %}
+{% block title %}{{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>{{ event.title }}</h1>
 <p class="muted">{{ event.get_type_display|default:event.type|capfirst }} · {{ event.get_state_display }}{% if event.min_license_class %} · minimum class {{ event.min_license_class }}{% endif %}{% if event.rules_url %} · <a href="{{ event.rules_url }}">Rules</a>{% endif %}</p>

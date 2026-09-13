@@ -1,13 +1,25 @@
 {% extends "base.html" %}
+{% load static %}
 {% comment %}
 allauth's pages (sign in, password change and reset, two-step verification, passkeys) render
-inside the application's own layout. allauth's default layout also prints a menu with a
-"Sign Up" link; this one does not (FR-1: invitation only). The extra_head and extra_body
-blocks must survive, because the passkey pages put their scripts there.
+inside the application's own layout. Signed out, they sit beside a panel in the club's colour
+carrying the club's mark: the first thing a member sees. Signed in (password change, MFA setup)
+they are an ordinary narrow card inside the shell. allauth's default layout also prints a
+"Sign Up" link; this one does not (FR-1: invitation only). The extra_head and extra_body blocks
+must survive, because the passkey pages put their scripts there.
 {% endcomment %}
 {% block title %}{% block head_title %}Account{% endblock %} · {{ club.short_name }} · {{ product.name }}{% endblock %}
-{% block content %}
-<section class="card narrow">
-{% block body %}{% block content_inner %}{% endblock %}{% endblock %}
-</section>
+{% block main %}
+<div class="{% if user.is_authenticated %}authed{% else %}auth{% endif %}">
+  {% if not user.is_authenticated %}
+  <aside class="auth-hero">
+    {% if club.branding.logo %}<img class="auth-logo" src="{% static club.branding.logo %}" alt="" width="220" height="220">{% endif %}
+    <p class="auth-callsign">{{ club.callsign|default:club.short_name }}</p>
+    <p class="auth-clubname">{{ club.name }}</p>
+  </aside>
+  {% endif %}
+  <section class="auth-card">
+    {% block content %}{% block body %}{% block content_inner %}{% endblock %}{% endblock %}{% endblock %}
+  </section>
+</div>
 {% endblock %}
