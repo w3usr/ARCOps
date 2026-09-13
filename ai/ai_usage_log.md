@@ -518,4 +518,4 @@ carries the actual running model ID.
   the ULS bulk import job, notifications and reminders jobs, WeasyPrint PDFs, TinyMCE, the
   member directory, reports, waitlists, guardian sign-up flows, the API beyond two endpoints.
 - **Human Review Status**: Pending review. NAF was not present; he reviews and tests after.
-- **Git Hash**: [after commit]
+- **Git Hash**: bcd8f5c
