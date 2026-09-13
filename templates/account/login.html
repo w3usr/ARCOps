@@ -1,0 +1,23 @@
+{% extends "allauth/layouts/base.html" %}
+{% load i18n %}
+{% block head_title %}Sign in{% endblock %}
+{% block body %}
+<h1>Sign in</h1>
+<p class="muted">Accounts are created by invitation from a club officer. There is no sign-up here.</p>
+<form method="post" action="{% url 'account_login' %}">
+  {% csrf_token %}
+  {{ form.as_div }}
+  {{ redirect_field }}
+  <button type="submit">Sign in</button>
+</form>
+{% if PASSKEY_LOGIN_ENABLED %}
+<p><button type="submit" form="mfa_login" id="passkey_login" class="secondary">Sign in with a passkey</button></p>
+{% endif %}
+<p><a href="{% url 'account_reset_password' %}">Forgot your username or password?</a></p>
+{% endblock %}
+{% block extra_body %}
+{{ block.super }}
+{% if PASSKEY_LOGIN_ENABLED %}
+  {% include "mfa/webauthn/snippets/login_script.html" with button_id="passkey_login" %}
+{% endif %}
+{% endblock %}

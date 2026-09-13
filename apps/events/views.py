@@ -14,6 +14,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 
 from .models import Event, RoleCapacity, SignUp, Slot
+from .services.eligibility import can_sign_up
 from .services.slots import health
 from .services.viability import checkin_window_open, evaluate, would_break
 
@@ -99,8 +100,9 @@ def sign_up(request, slot_id):
     if slot.signups.filter(role=role).count() >= cap.capacity:
         messages.error(request, "That role is full.")
         return redirect("event_detail", pk=event.pk)
-    if request.user.under_18:
-        messages.error(request, "A guardian signs up on a minor's behalf.")
+    allowed, reason = can_sign_up(request.user, slot, role)
+    if not allowed:
+        messages.error(request, f"You cannot take that role: {reason}.")
         return redirect("event_detail", pk=event.pk)
     su, created = SignUp.objects.get_or_create(
         slot=slot,

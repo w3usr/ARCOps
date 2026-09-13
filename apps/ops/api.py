@@ -1,11 +1,14 @@
 """The JSON API (TR-8): a thin client of the same service layer as the templates."""
 
+from django.contrib.auth.decorators import login_required
 from ninja import NinjaAPI, Schema
 from ninja.security import django_auth
 
 from apps.events.models import Event
 
-api = NinjaAPI(title="Club Operations API", version="1", urls_namespace="api")
+api = NinjaAPI(
+    title="Club Operations API", version="1", urls_namespace="api", docs_decorator=login_required
+)
 
 
 class EventOut(Schema):

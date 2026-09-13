@@ -32,11 +32,7 @@ class Command(BaseCommand):
         parser.add_argument("--force", action="store_true")
 
     def handle(self, *args, **opts):
-        if (
-            User.objects.filter(email__endswith="@example.org").count() == 0
-            and User.objects.count() > 1
-            and not opts["force"]
-        ):
+        if User.objects.exclude(email__endswith="@example.org").exists() and not opts["force"]:
             raise CommandError("database has non-demo users; pass --force to seed anyway")
 
         people = [

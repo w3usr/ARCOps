@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load richtext %}
 {% block title %}{{ event.title }} · {{ club.short_name }} Ops{% endblock %}
 {% block content %}
 <h1>{{ event.title }}</h1>
 <p class="muted">{{ event.get_type_display|default:event.type|capfirst }} · {{ event.get_state_display }}{% if event.min_license_class %} · minimum class {{ event.min_license_class }}{% endif %}{% if event.rules_url %} · <a href="{{ event.rules_url }}">Rules</a>{% endif %}</p>
-{% if event.description_html %}<div class="prose">{{ event.description_html|safe }}</div>{% endif %}
+{% if event.description_html %}<div class="prose">{{ event.description_html|richtext }}</div>{% endif %}
 
 <section class="card" aria-labelledby="h">
   <h2 id="h">Schedule health</h2>
@@ -43,5 +44,5 @@
 </tr>
 {% endfor %}
 </tbody></table>
-{% if event.kbyg_html %}<section class="prose"><h2>Know before you go</h2>{{ event.kbyg_html|safe }}</section>{% endif %}
+{% if event.kbyg_html %}<section class="prose"><h2>Know before you go</h2>{{ event.kbyg_html|richtext }}</section>{% endif %}
 {% endblock %}

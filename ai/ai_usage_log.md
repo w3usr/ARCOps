@@ -519,3 +519,26 @@ carries the actual running model ID.
   member directory, reports, waitlists, guardian sign-up flows, the API beyond two endpoints.
 - **Human Review Status**: Pending review. NAF was not present; he reviews and tests after.
 - **Git Hash**: bcd8f5c
+
+## [2026-09-13 13:01 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Review and audit of the first build at NAF's request, with fixes: no
+  sign-up option anywhere (his correction: "the front page should not even show an option to
+  create an account"); allauth pages re-laid over the application's own layout with the
+  passkey script blocks kept; admin sign-in routed through allauth so second-factor rules
+  apply; API docs behind login; a gated email backend so nothing can send while delivery is
+  off; the account gate middleware moved after the messages middleware (it posted messages
+  before that middleware ran) and made to expire temporary passwords; admin forms bound to the
+  custom user model (the stock ones point at Django's); eligibility and openings enforced on
+  sign-up (FR-53, FR-54); minors' invitations held for the guardian flow; a rich-text filter
+  that sanitises and shifts heading levels so pages keep one H1 (FR-115, FR-116); demo seed
+  refuses to run beside real accounts.
+- **Sections/Files Affected**: templates/account/{login,password_reset,signup_closed}.html,
+  templates/allauth/layouts/base.html, templates/base.html, templates/accounts/invitation_minor.html,
+  templates/credentials/agreements.html, templates/events/detail.html; apps/comms/backends.py,
+  apps/events/services/eligibility.py, apps/ops/templatetags/richtext.py (new); config/settings/base.py,
+  config/urls.py, apps/ops/{api,context_processors}.py, apps/accounts/{middleware,admin,views}.py,
+  apps/events/views.py, apps/ops/management/commands/seed_demo.py; 18 new tests (44 total).
+- **Nature of Contribution**: Code generation and analysis. Every fix is pinned by a test.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

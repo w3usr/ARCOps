@@ -50,10 +50,11 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "apps.accounts.middleware.AccountGateMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # After messages and allauth, because it posts a message and may sign the user out.
+    "apps.accounts.middleware.AccountGateMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -161,7 +162,7 @@ MEDIA_URL = "/media/"
 
 # ------------------------------------------------------------------ email ---
 # The outbox (FR-105) decides whether anything is actually sent; this is only the transport.
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "apps.comms.backends.GatedSMTPBackend"  # honours defaults.email_delivery
 EMAIL_HOST = "localhost"
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False

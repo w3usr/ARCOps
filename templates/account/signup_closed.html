@@ -1,0 +1,8 @@
+{% extends "allauth/layouts/base.html" %}
+{% block head_title %}Invitation only{% endblock %}
+{% block body %}
+<h1>Accounts are by invitation</h1>
+<p>A club officer creates your account by sending you an invitation link. If you are a member and
+have not received one, ask an officer{% if club.contact_email %} or write to <a href="mailto:{{ club.contact_email }}">{{ club.contact_email }}</a>{% endif %}.</p>
+<p><a href="{% url 'account_login' %}">Sign in</a></p>
+{% endblock %}

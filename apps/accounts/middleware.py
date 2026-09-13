@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import AccessLevel
 
@@ -32,6 +33,16 @@ class AccountGateMiddleware:
                 logout(request)
                 messages.error(
                     request, "This account does not currently have access. Contact a club officer."
+                )
+                return redirect(reverse("account_login"))
+            if (
+                user.password_is_temporary
+                and user.temporary_password_expires
+                and user.temporary_password_expires < timezone.now()
+            ):
+                logout(request)
+                messages.error(
+                    request, "That temporary password has expired. Ask a sysadmin for a new one."
                 )
                 return redirect(reverse("account_login"))
             if user.password_is_temporary and not request.path.startswith(ALLOWED_WHILE_TEMPORARY):

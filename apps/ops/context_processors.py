@@ -5,6 +5,7 @@ from .config import branding, setting
 
 def club(request):
     return {
+        "email_delivery_on": str(setting("defaults.email_delivery", "off")).lower() == "on",
         "club": {
             "name": setting("club.name", "Amateur Radio Club"),
             "short_name": setting("club.short_name", "Club"),
@@ -13,5 +14,5 @@ def club(request):
             "public_page": setting("club.public_page", ""),
             "timezone": setting("club.timezone", "UTC"),
             "branding": branding(),
-        }
+        },
     }

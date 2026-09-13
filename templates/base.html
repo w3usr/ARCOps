@@ -10,6 +10,7 @@
 {% if club.branding.favicon %}<link rel="icon" href="{% static club.branding.favicon %}">{% endif %}
 {% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{% static club.branding.apple_touch_icon %}">{% endif %}
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
+{% block extra_head %}{% endblock %}
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -44,5 +45,6 @@
   <p class="muted">Times are shown in UTC and in {{ club.timezone }}.</p>
 </footer>
 <script src="{% static 'js/app.js' %}" defer></script>
+{% block extra_body %}{% endblock %}
 </body>
 </html>

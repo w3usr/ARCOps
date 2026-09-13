@@ -133,6 +133,9 @@ def accept_invitation(request, token):
     inv = get_object_or_404(Invitation, token=token)
     if not inv.is_valid():
         return render(request, "accounts/invitation_invalid.html", {"invitation": inv}, status=410)
+    if inv.is_minor:
+        # The guardian flow (§2.4) is not built yet; a minor must not self-register.
+        return render(request, "accounts/invitation_minor.html", {"invitation": inv}, status=200)
     if not inv.opened_at:
         inv.opened_at = timezone.now()
         inv.save(update_fields=["opened_at"])

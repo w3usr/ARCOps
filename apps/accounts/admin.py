@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.forms import UserChangeForm as DjangoUserChangeForm
+from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 
 from .models import (
     CallsignHistory,
@@ -11,8 +13,22 @@ from .models import (
 )
 
 
+class UserCreationForm(DjangoUserCreationForm):
+    class Meta(DjangoUserCreationForm.Meta):
+        model = User
+        fields = ("email", "first_name", "last_name", "category", "access_level")
+
+
+class UserChangeForm(DjangoUserChangeForm):
+    class Meta(DjangoUserChangeForm.Meta):
+        model = User
+        fields = "__all__"
+
+
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
+    add_form = UserCreationForm
+    form = UserChangeForm
     ordering = ("last_name", "first_name")
     list_display = (
         "email",
