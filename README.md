@@ -5,17 +5,18 @@ the University of Scranton.
 
 Live at **https://ops.w3usr.org**.
 
-> **Status: pre-requirements.** Nothing is built yet. The site currently serves a holding page.
-> What this application will actually do is being worked out in
-> [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md), which is a skeleton with no decided
-> requirements in it. The technology stack is deliberately undecided until those requirements
-> exist.
+> **Status: requirements drafted, nothing built yet.** The site currently serves a holding
+> page. What the application will do is in [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
+> (FR-1 to FR-118, every open question answered, adoption pending). How it will be built is
+> proposed in [`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md) (TR-1 to
+> TR-39), awaiting the advisor's decisions in its section 10.
 
 ## Repository layout
 
 ```
 ops.w3usr.org/
-|-- docs/REQUIREMENTS.md      <- the requirements skeleton; start here
+|-- docs/REQUIREMENTS.md      <- functional requirements; start here
+|-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
 |-- docs/ONBOARDING.md        <- for new club members
 |-- web/                      <- what nginx serves today: the holding page
 |   |-- index.html

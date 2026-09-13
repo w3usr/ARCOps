@@ -459,3 +459,23 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF wrote the answers; the applied wording is
   summarised to him and pending his read.
 - **Git Hash**: af21c70
+
+## [2026-09-13 12:00 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Draft the technical requirements (TR-1 to TR-39) against the functional
+  requirements and the server as found; put the eight open technical choices to NAF one at a
+  time and apply his answers; verify the Part 97 citations in FR-63.
+- **Sections/Files Affected**: `docs/TECHNICAL_REQUIREMENTS.md` (new: constraints, architecture,
+  platform, security, data, operations, quality, layout, dev environment, decisions table,
+  verification table); `docs/REQUIREMENTS.md` (§6 decided stack, §4.4 storage and backup, §2.6
+  second factor to Must, FR-14 mechanism, FR-97 amended, FR-63 citations verified, §8 follow-ups,
+  §9 record); `README.md` and `CLAUDE.md` (status and tree).
+- **Nature of Contribution**: Draft, analysis, and edit. The recommendations are the assistant's;
+  the eight decisions are NAF's, three of which amended the draft (FCC bulk files as the primary
+  license source; TOTP and passkeys both built, optional by default, requirable per level, with
+  passwordless passkey sign-in; healthchecks.io). Versions, licences, PyPI availability, FCC file
+  sizes, server facts, and the CFR text were verified on 2026-09-13 and are tabulated in §11 and
+  at FR-63. Memory figures in TR-30 are estimates and marked so.
+- **Human Review Status**: Partially reviewed. NAF answered each decision; the document's full
+  text is pending his read, and both documents say adoption is pending.
+- **Git Hash**: [after commit]

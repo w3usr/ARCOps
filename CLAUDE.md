@@ -10,8 +10,9 @@ Web application to support W3USR contests and club operations, served at `ops.w3
 club runs contests and operating events and currently coordinates them by hand; this
 application is intended to carry that work. **Functional requirements are drafted and awaiting
 adoption**: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) holds numbered requirements (FR-1
-onward) with open questions for the advisor in its section 8. The technology stack is
-deliberately unchosen until the requirements are adopted and the technical phase begins.
+onward), all open questions answered, adoption pending. The technology stack is proposed in
+[`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md) (TR-1 onward) and awaits
+the advisor's decisions in its section 10; do not scaffold it before those are recorded.
 
 **Project type**: Software build (web application)
 **Project lead**: {{TBD: NAME, CALLSIGN}}
@@ -76,14 +77,15 @@ ops.w3usr.org/
 |   `-- ai_usage_log.md           <- mandatory AI session log
 |-- docs/
 |   |-- REQUIREMENTS.md           <- functional requirements (draft, FR-numbered)
+|   |-- TECHNICAL_REQUIREMENTS.md <- proposed stack and technical decisions (draft, TR-numbered)
 |   |-- ONBOARDING.md             <- read this first
 |   `-- ai_policy_agreement/      <- sign before using AI tools
 `-- web/                          <- served at ops.w3usr.org; currently a holding page
 ```
 
-The application's own source directories get added once the requirements session picks a
-stack. Do not scaffold a framework before that decision is recorded in `docs/REQUIREMENTS.md`
-§6.
+The application's own source directories get added once the advisor adopts the technical
+requirements. Do not scaffold a framework before that adoption is recorded in
+`docs/TECHNICAL_REQUIREMENTS.md` and `docs/REQUIREMENTS.md` §6.
 
 ## Deployment
 
@@ -91,8 +93,8 @@ The server serves `web/` from a checkout of this repository's `main` branch. A p
 goes live only when someone runs the deployment from the private orchestration repo, so
 **`main` should always be in a state that is safe to serve**.
 
-`python-code.md` is present because Python is a likely choice, not a decided one. Delete it if
-the stack lands elsewhere.
+`python-code.md` applies: Python is the proposed language (TR-1). Delete it only if the
+advisor's decision lands elsewhere.
 
 ## AI Governance
 

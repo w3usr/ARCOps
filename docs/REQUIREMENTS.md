@@ -259,9 +259,11 @@ passwords and sysadmin resets directly. Specifics:
 - Self-service reset from a "Forgot username or password?" link on the sign-in page (FR-107),
   which needs working email. The sysadmin temporary-password path (FR-7) is the fallback and
   never depends on email.
-- Second factor (TOTP or passkey) **Should** for sysadmins and officers, **Could** for members.
-  The application displays a shared password to eligible members (FR-33), which raises the value
-  of any compromised account.
+- Second factor: **TOTP and passkeys are both built in v1 (Must)**, optional for every member by
+  default, with a sysadmin setting that makes a second factor required for a given access level
+  (sysadmin, officer, member); a passkey can also sign a member in with no password at all
+  (NAF, 2026-09-13; TR-16). The application displays a shared password to eligible members
+  (FR-33), which raises the value of any compromised account.
 - Sessions expire; "remember this device" is allowed on members' own devices.
 - University SSO as an *additional* sign-in method for `@scranton.edu` accounts: **not pursued
   in this version**, by NAF's decision of 2026-09-13; the option stays open for a future
@@ -398,9 +400,10 @@ Verbatim:
 - **FR-14 [Must]** When an account with a callsign is admitted, when a callsign is entered or
   changed (FR-102), and daily thereafter for every account with a callsign, the system
   retrieves license class, expiration date, status, and the licensee name from FCC ULS data
-  and records the result with its source and retrieval time. The mechanism (direct ULS
-  download, a public ULS mirror API, or another source) is a technical decision for section 6;
-  the requirement is that the data are FCC data and are no more than a day stale.
+  and records the result with its source and retrieval time. The mechanism is decided
+  (TR-13, 2026-09-13): the FCC's own bulk ULS files imported daily into a local table, so every
+  lookup is local and instant; the requirement is that the data are FCC data and are no more
+  than a day stale.
 - **FR-15 [Must]** A sysadmin can override class, expiration, status, or the ULS name (where
   ULS is out of date or wrong), with a required reason.
   An override is shown as such wherever the value appears and is never silently replaced by the
@@ -836,8 +839,9 @@ Verbatim:
 - **FR-63 [Must] (added; FCC Part 97)** For each viable slot, the roster names the **control
   operator**: the licensed person whose license class governs what the station may do during
   that slot. Part 97 requires a control operator for every transmission and limits the station
-  to the control operator's privileges (§97.7, §97.105); unlicensed participants may speak
-  under the control operator's supervision as third parties (§97.115). The default is the
+  to the control operator's privileges (§97.7, §97.105(b)); unlicensed participants may speak
+  under the control operator's supervision as third parties (§97.115(b)(1)). (Citations
+  verified against the current CFR text on 2026-09-13.) The default is the
   highest-class licensee signed up in an on-air role; a captain can change it; the person
   named is told in their reminder. This makes the dictation's "minimum license class" concrete:
   it is the class the control operator needs for the bands and modes the event uses.
@@ -1228,10 +1232,11 @@ following are binding:
 
 ### 4.4 Storage, backup, and recovery
 
-Technical decisions for the next phase. The requirement they must meet: a nightly backup of
-the datastore and the signed-agreement PDFs to a location other than the server, encrypted,
-with a restore rehearsed and dated before the first live event. The club runs a 1 GB Nanode;
-pick accordingly.
+Storage: SQLite in WAL mode, proposed 2026-09-13 (TR-2 in `TECHNICAL_REQUIREMENTS.md`), with
+the schema sketched per domain in TR-26. Backup: a nightly copy of the datastore and the
+signed-agreement PDFs to a location other than the server, encrypted, with a restore rehearsed
+and dated before the first live event; the proposed mechanism is TR-22, an `age`-encrypted
+nightly archive pulled off the box by a campus machine, at no cost.
 
 ---
 
@@ -1295,9 +1300,12 @@ See also `.claude/rules/web-development.md`.
   offline reading. This gives a home-screen icon on Android and iOS today, and is the
   prerequisite for web push (FR-83), with no app-store dependency.
 - **FR-97 [Later]** A native app, if the club still wants one after the PWA is in use, talks
-  to the same API the web front end uses. **Design consequence for section 6**: the server
-  exposes its functionality through a documented API from the start, and the web interface is
-  a client of it, so that a second client is an addition.
+  to the same API the web front end shares its logic with. **Design consequence for section
+  6**: the server exposes its functionality through a documented API from the start, and both
+  the web interface and the API are thin clients of one service layer, so that a second client
+  is an addition. (Amended 2026-09-13 with the advisor's agreement, TR-4 and TR-8; the first
+  draft had made the web interface a client of the API, which would have forced a single-page
+  front end.)
 
 **5.5 Visitors.**
 
@@ -1342,12 +1350,17 @@ Sweepstakes weekends can include the change). Slot boundaries never move when th
 
 ## 6. Technology
 
-**Undecided, deliberately.** The stack follows from sections 3 through 5 and gets chosen in the
-technical-requirements phase. Record the decision here with its reasoning when it is made.
+**Decided 2026-09-13; formal adoption pending the advisor's read.** The technical requirements are a separate document,
+[`TECHNICAL_REQUIREMENTS.md`](TECHNICAL_REQUIREMENTS.md) (TR-1 to TR-39), with the reasoning
+for each choice; the advisor took its eight decisions on 2026-09-13 (its section 10). The headline proposals,
+for the reader who needs only the shape:
 
-- **Language and framework**: {{TBD}}
-- **Datastore**: {{TBD}}
-- **Front end**: {{TBD}}
+- **Language and framework**: Python 3.12+ and Django 5.2 LTS (TR-1); decided 2026-09-13
+- **Datastore**: SQLite in WAL mode, one file, nightly encrypted backup pulled off the box by
+  a campus machine (TR-2, TR-22); decided 2026-09-13
+- **Front end**: server-rendered Django templates with htmx, a small semantic CSS base, a
+  hand-written service worker for the PWA, TinyMCE under GPL for rich text (TR-4 to TR-9);
+  decided 2026-09-13
 - **Outbound mail**: **decided 2026-09-13 by the faculty advisor**: a Postfix instance on the
   origin server, listening on the loopback interface only, DKIM-signing and delivering
   directly. The application sends over plain SMTP to `localhost` with no credential. Reason:
@@ -1355,10 +1368,14 @@ technical-requirements phase. Record the decision here with its reasoning when i
   configuration value, so a provider can be substituted by changing the server's relay with
   no application change; and in v1 bounces arrive in the club mailbox via the domain's inbound
   routing, so FR-81's in-application bounce record waits on an inbound hook.
-- **Scheduler**: {{TBD}}
-- **FCC ULS access**: {{TBD: direct ULS data download, a public mirror API, or other; see FR-14}}
-- **Build and deploy**: {{TBD}}
-- **Testing**: {{TBD}}
+- **Scheduler**: systemd timers running management commands, with a job-run table and
+  healthchecks.io pings (TR-11, TR-33); decided 2026-09-13
+- **FCC ULS access**: the FCC's bulk ULS files imported daily into a local table (TR-13);
+  decided 2026-09-13
+- **Build and deploy**: gunicorn as a systemd service behind the existing nginx; the private
+  repository's `deploy.sh` runs migrations and restarts it (TR-3, TR-31); decided 2026-09-13
+- **Testing**: pytest, Playwright with axe-core for accessibility, ruff, GitHub Actions on the
+  public repository (TR-35 to TR-38); decided 2026-09-13
 
 Constraints any candidate stack must satisfy, now including those the functional requirements
 impose:
@@ -1423,8 +1440,13 @@ New questions are appended with the next number; a resolved question is never re
   then the default is 3 years after expiry.
 - Q11: the letter to WA7BNM (advisor); the retrieval prototype (assistant), in the application
   repository, ahead of the stack decision and without committing to one.
-- FR-63: the Part 97 section numbers cited (§97.7, §97.105, §97.115) are from memory and must be
-  checked against eCFR before adoption.
+- ~~FR-63: the Part 97 section numbers cited (§97.7, §97.105, §97.115) are from memory and must be
+  checked against eCFR before adoption.~~ **Verified 2026-09-13** against 47 CFR as published
+  (Cornell LII mirror of eCFR; eCFR itself refused automated access): §97.7 "Control operator
+  required"; §97.105(b) "A station may only be operated in the manner and to the extent
+  permitted by the privileges authorized for the class of operator license held by the control
+  operator"; §97.115(b)(1) third-party participation where "the control operator is present at
+  the control point and is continuously monitoring and supervising". All three cited correctly.
 
 ---
 
@@ -1523,6 +1545,13 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"For FR-44, is the locked step optional? I think it should be optional."*
   The text had not said; it now does. The automatic completion after the last slot is the
   assistant's addition so that events do not linger as published.
+- 2026-09-13, NAF, technical decisions (asked one at a time in session; recorded in
+  `TECHNICAL_REQUIREMENTS.md` §10): Django/SQLite/gunicorn; server-rendered with htmx, with
+  FR-97 amended; TinyMCE; **FCC bulk files as the primary license source** (the draft had
+  proposed callook.info); campus-machine backup pull; *"Implement totp and passkey now, but make
+  optional. Add the ability to turn on required for certain permission levels. Also allow for
+  password less login using passkeys."* (§2.6 rewritten to Must); *"Use healthchecks.io. I
+  already use it for hamsci.org"*; origin ports restricted to Cloudflare at go-live.
 - 2026-09-13, NAF, answer sheet (`prompts/20260913_open_questions_answers.md`, private
   repository): all nineteen section 8 questions answered. The five that changed the draft:
   Q3 (no application review; completing the form admits, with the inviter told who joined),
