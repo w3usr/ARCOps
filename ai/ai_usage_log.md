@@ -169,3 +169,17 @@ carries the actual running model ID.
   the full text of FR-103 to FR-108 is pending his read, and the drop-versus-queue choice in
   FR-105 was flagged for his decision.
 - **Git Hash**: 6d9f1e2
+
+## [2026-09-13 03:17 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Apply NAF's correction that sign-up openings are per role: mentor and
+  observer roles open to anyone available at once; operator roles to students first and to
+  everyone later, if at all.
+- **Sections/Files Affected**: `docs/REQUIREMENTS.md`: §1.4 definition of done (the "students
+  first, then everyone" sentence now distinguishes roles), FR-54 (opening schedule stated as
+  belonging to a role, with NAF's case as the example), §9 decision record (his words
+  verbatim). FR-53 unchanged; it already modelled eligibility per role.
+- **Nature of Contribution**: Edit. The decision is NAF's.
+- **Human Review Status**: Partially reviewed. NAF stated the rule and saw the summary of the
+  applied wording.
+- **Git Hash**: [after commit]

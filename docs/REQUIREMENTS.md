@@ -112,8 +112,9 @@ mentioned in the dictation. The draft proposes deferring them so that v1 is fini
 
 An officer imports the next School Club Roundup and the next Pennsylvania QSO Party from the
 contest calendar, accepts the offered slot schedule (which respects each contest's operating
-periods and hour limits), names a captain for each, and opens sign-ups to students first and
-then to everyone. Members sign up from their phones. Every member who will open the station has
+periods and hour limits), names a captain for each, and opens sign-ups: mentor and observer
+roles to anyone available at once, operator roles to students first and to everyone later.
+Members sign up from their phones. Every member who will open the station has
 signed the current station access agreement in the application and the advisor has approved it
 there. The roster page shows, for every slot, whether it can legally and physically run, and
 the captains and the people signed up have received a warning for any slot that cannot. Every
@@ -575,9 +576,12 @@ Verbatim:
   none); required credentials (from FR-18, any combination); whether minors may sign up; and
   an **opening schedule** (FR-54). A member sees only the roles they are eligible for, with the
   reason shown for roles they are not.
-- **FR-54 [Must]** The opening schedule is a list of (date-time, audience) pairs: for example,
-  operator slots open to Students on 1 October, and to everyone on 8 October. The system sends
-  the announcement of each opening (FR-80) automatically if the captain enables it.
+- **FR-54 [Must]** The opening schedule belongs to a role, so each role in an event opens on
+  its own terms: for example, mentor and observer roles open to every member as soon as the
+  event is published, while operator roles open to Students first and to everyone on a later
+  date the captain sets (or never, if the captain prefers to hand out the remaining operator
+  slots by hand). The schedule is a list of (date-time, audience) pairs per role. The system
+  sends the announcement of each opening (FR-80) automatically if the captain enables it.
 - **FR-55 [Must]** An eligible member signs up for a slot in a role in one action, and can
   select a run of consecutive slots at once. A guardian does the same for a minor.
 - **FR-56 [Must]** A member can cancel their own sign-up up to a configurable cutoff before the
@@ -1111,6 +1115,11 @@ accept, amend, or strike.
 - 2026-09-13, NAF: *"Sysadmins should be able to reset passwords for accounts and set a
   temporary, one-time use password. This would enable password reset without email."* Already
   FR-7 from the dictation; its text now says one-time use and unused-expiry explicitly.
+- 2026-09-13, NAF, on the definition of done's "opens sign-ups to students first and then to
+  everyone": *"I may offer operator sign-ups to students first, but anyone available can sign
+  up for a mentor slot or observer slot. Later, I may allow anyone to sign up for an open
+  operator slot."* Openings are per role (FR-53, FR-54 already modelled them so); §1.4 and
+  the FR-54 example now say it the same way.
 
 **Where the draft chose a reading of the dictation.** "Club officers can only send invitations"
 was read as *relative to sysadmins' account powers*: officers cannot create or edit accounts
