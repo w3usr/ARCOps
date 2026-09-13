@@ -168,4 +168,4 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. NAF saw the summary of the applied changes;
   the full text of FR-103 to FR-108 is pending his read, and the drop-versus-queue choice in
   FR-105 was flagged for his decision.
-- **Git Hash**: [after commit]
+- **Git Hash**: 6d9f1e2
