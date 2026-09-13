@@ -182,4 +182,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit. The decision is NAF's.
 - **Human Review Status**: Partially reviewed. NAF stated the rule and saw the summary of the
   applied wording.
-- **Git Hash**: [after commit]
+- **Git Hash**: 4b542b1
