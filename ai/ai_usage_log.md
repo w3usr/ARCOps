@@ -358,4 +358,4 @@ carries the actual running model ID.
   warning to cancellation, which follows from NAF's answer.
 - **Human Review Status**: Partially reviewed. NAF stated the rule, answered the assistant's
   question on the viability case, and saw the applied text summarised.
-- **Git Hash**: [after commit]
+- **Git Hash**: fbc9be9
