@@ -458,4 +458,4 @@ carries the actual running model ID.
   proposal's Appendix B.
 - **Human Review Status**: Partially reviewed. NAF wrote the answers; the applied wording is
   summarised to him and pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: af21c70
