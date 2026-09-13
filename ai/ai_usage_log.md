@@ -573,4 +573,4 @@ carries the actual running model ID.
   Sked/hostname reasoning are NAF's, quoted in NAME.md; the attribution mechanism is the assistant's.
 - **Human Review Status**: Partially reviewed. NAF chose the name and the rules in conversation;
   the text of NAME.md is pending his read.
-- **Git Hash**: [after commit]
+- **Git Hash**: 1bae1e1
