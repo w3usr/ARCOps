@@ -154,9 +154,10 @@ def test_events_list_and_home_show_both_zones(world):
     """Issue #23 on the private tracker: no bare times anywhere a member reads a schedule."""
     c = _as(world["mem"])
     body = c.get("/events/").content.decode()
-    assert "Fri 25 Sep 2026 19:00 – Sat 26 Sep 2026 00:00 EDT" in body  # 23:00Z setup to 04:00Z
-    assert "Fri 25 Sep 2026 23:00 – Sat 26 Sep 2026 04:00 UTC" in body
+    # The operating period runs 00:00Z to 04:00Z on Saturday 26th: Friday evening locally.
+    assert "Fri 25 Sep 2026 20:00 – Sat 26 Sep 2026 00:00 EDT" in body
+    assert "Sat 26 Sep 2026 00:00–04:00 UTC" in body
     assert "00:00</td>" not in body and "Z<" not in body
     c.get(f"/events/{world['ev'].pk}/tz/?tz=utc")
     body = c.get("/").content.decode()
-    assert 'class="when1">Fri 25 Sep 2026 23:00' in body
+    assert 'class="when1">Sat 26 Sep 2026 00:00–04:00 UTC' in body

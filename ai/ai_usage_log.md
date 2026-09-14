@@ -637,7 +637,7 @@ carries the actual running model ID.
   rendered result.
 - **Git Hash**: 682f094
 
-## [2026-09-14 18:52 UTC]
+## [2026-09-14 18:47 UTC]
 - **Tool**: Claude (Anthropic), claude-fable-5-1
 - **Session Purpose**: First finding of the acceptance walk-through (private tracker #23): times
   on Events, Home, and My Sked were UTC-only with no zone, and the Events table lost its headings
