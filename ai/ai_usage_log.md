@@ -636,3 +636,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; the advisor chose the direction, has not yet seen the
   rendered result.
 - **Git Hash**: 682f094
+
+## [2026-09-14 18:52 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: First finding of the acceptance walk-through (private tracker #23): times
+  on Events, Home, and My Sked were UTC-only with no zone, and the Events table lost its headings
+  on a phone. One `{% when %}` tag now renders every span in the event's zone with UTC beneath,
+  following the member's roster preference; the Events list is cards.
+- **Sections/Files Affected**: apps/events/templatetags/times.py (new), templates/events/
+  {list,my_schedule}.html, templates/ops/dashboard.html, static/css/app.css, test in
+  apps/events/tests/test_roster.py.
+- **Nature of Contribution**: Code generation, test. The finding is the advisor's.
+- **Human Review Status**: Pending review; the advisor verifies on the live site.
+- **Git Hash**: [pending]

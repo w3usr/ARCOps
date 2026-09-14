@@ -337,3 +337,13 @@ html.js .bulkbar:not(.active) { display: none; }
   .roster .r-head, .roster .r-dayhead { position: static; }
   a { color: inherit; text-decoration: none; }
 }
+
+/* ---------------------------------------------- times in two zones */
+.when1, .when2 { display: block; line-height: 1.3; }
+.when2 { font-size: .85rem; }
+td .when1, th .when1 { font-weight: 600; }
+.eventcards { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
+.eventcard { border: 1px solid var(--line); border-radius: var(--radius); padding: .85rem 1rem; background: var(--card); }
+.eventcard-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.eventcard-title { font-weight: 600; font-size: 1.05rem; }
+.eventcard .when { margin: .35rem 0 0; font-size: 1rem; }

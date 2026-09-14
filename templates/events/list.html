@@ -1,12 +1,20 @@
 {% extends "base.html" %}
+{% load times %}
 {% block title %}Events · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Events</h1>{% if user.is_officer %}<a class="button" href="{% url 'event_create' %}">New event</a>{% endif %}</div>
 <section aria-labelledby="u"><h2 id="u">Upcoming</h2>
 {% if upcoming %}
-<table class="table"><thead><tr><th scope="col">Event</th><th scope="col">Starts (UTC)</th><th scope="col">Ends (UTC)</th><th scope="col">State</th></tr></thead>
-<tbody>{% for e in upcoming %}<tr><td><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></td><td>{{ e.starts_at|date:"D d M Y H:i" }}</td><td>{{ e.ends_at|date:"D d M Y H:i" }}</td><td>{{ e.get_state_display }}</td></tr>{% endfor %}</tbody></table>
+<ul class="eventcards">
+{% for e in upcoming %}
+  <li class="eventcard">
+    <div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag">{{ e.get_state_display }}</span>{% endif %}</div>
+    <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
+  </li>
+{% endfor %}
+</ul>
 {% else %}<p>No upcoming events.</p>{% endif %}
 </section>
-{% if past %}<section aria-labelledby="p"><h2 id="p">Past</h2><ul class="list">{% for e in past %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a> · {{ e.starts_at|date:"d M Y" }}</li>{% endfor %}</ul></section>{% endif %}
+{% if past %}<section aria-labelledby="p"><h2 id="p">Past</h2>
+<ul class="eventcards">{% for e in past %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag">Cancelled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></li>{% endfor %}</ul></section>{% endif %}
 {% endblock %}

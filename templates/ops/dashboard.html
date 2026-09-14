@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load times %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Hello, {{ user.display_first }}</h1>
@@ -8,7 +9,7 @@
   <h2 id="ci">You can check in now</h2>
   {% for s in checkin_ready %}
   <form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}
-    <p>{{ s.slot.event.title }} · {{ s.slot.position }} · {{ s.slot.start|date:"D H:i" }}Z</p>
+    <p>{{ s.slot.event.title }} · {{ s.slot.position }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
     <button class="big" type="submit">Check in</button>
   </form>
   {% endfor %}
@@ -20,7 +21,7 @@
   {% if my_signups %}
   <ul class="list">
     {% for s in my_signups %}
-    <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a> · {{ s.slot.position }} · {{ s.slot.start|date:"D d M H:i" }}–{{ s.slot.end|date:"H:i" }}Z as {{ s.role }}
+    <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a> · {{ s.slot.position }} as {{ s.role }}<br>{% when s.slot.start s.slot.end s.slot.event %}
       {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
     {% endfor %}
   </ul>
@@ -30,7 +31,7 @@
 <section aria-labelledby="up">
   <h2 id="up">Upcoming events</h2>
   {% if upcoming_events %}
-  <ul class="list">{% for e in upcoming_events %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.starts_at %} · {{ e.starts_at|date:"d M Y H:i" }}Z{% endif %}</li>{% endfor %}</ul>
+  <ul class="list">{% for e in upcoming_events %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.starts_at %}<br>{% when e.starts_at e.ends_at e year=True %}{% endif %}</li>{% endfor %}</ul>
   {% else %}<p>Nothing published yet.</p>{% endif %}
 </section>
 {% endblock %}
