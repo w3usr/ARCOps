@@ -78,7 +78,16 @@ def _needs_from_reasons(reasons: list[str]) -> list[str]:
     return out
 
 
-def present(slot: Slot, status, signups: list[SignUp], open_roles: list[str], *, published: bool, is_captain: bool, now: datetime) -> Presentation:
+def present(
+    slot: Slot,
+    status,
+    signups: list[SignUp],
+    open_roles: list[str],
+    *,
+    published: bool,
+    is_captain: bool,
+    now: datetime,
+) -> Presentation:
     if slot.closed:
         return Presentation("closed", "Closed")
     if not signups:
@@ -168,7 +177,9 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
     slots = list(
         Slot.objects.filter(position__location__event=event, cancelled=False)
         .select_related("position", "position__location", "control_operator")
-        .prefetch_related("signups__user", "signups__user__license", "signups__responsible_adults", "capacities")
+        .prefetch_related(
+            "signups__user", "signups__user__license", "signups__responsible_adults", "capacities"
+        )
         .order_by("start", "position__location__order", "position__order")
     )
     mine = {su.slot_id: su for su in SignUp.objects.filter(user=viewer, slot__in=slots)}
@@ -183,11 +194,24 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
         for su in signups:
             taken[su.role] = taken.get(su.role, 0) + 1
         open_roles = [r for r, c in caps.items() if taken.get(r, 0) < c]
-        shown = present(s, st, signups, open_roles, published=published, is_captain=is_captain, now=now)
-        cells[s.pk] = Cell(s, signups, open_roles, mine.get(s.pk), st, shown, getattr(st, "control_operator", None))
+        shown = present(
+            s, st, signups, open_roles, published=published, is_captain=is_captain, now=now
+        )
+        cells[s.pk] = Cell(
+            s, signups, open_roles, mine.get(s.pk), st, shown, getattr(st, "control_operator", None)
+        )
         counts["total"] += 1
-        bucket = {"open": "open", "not_open": "open", "covered": "covered", "thin": "covered", "low": "covered", "full": "covered",
-                  "needs": "needs", "problem": "needs", "closed": "closed"}[shown.key]
+        bucket = {
+            "open": "open",
+            "not_open": "open",
+            "covered": "covered",
+            "thin": "covered",
+            "low": "covered",
+            "full": "covered",
+            "needs": "needs",
+            "problem": "needs",
+            "closed": "closed",
+        }[shown.key]
         counts[bucket] += 1
 
     layout = "grid" if 1 <= len(positions) <= GRID_MAX_POSITIONS else "list"
@@ -230,8 +254,12 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
         "lead_label": zone_label(now, lead_zone),
         "other_label": zone_label(now, other_zone),
         "span": {
-            "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}" if starts and ends else "",
-            "other": f"{starts.astimezone(other_zone):%a %-d %b %H:%M} – {ends.astimezone(other_zone):%a %-d %b %H:%M} {zone_label(starts, other_zone)}" if starts and ends else "",
+            "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
+            if starts and ends
+            else "",
+            "other": f"{starts.astimezone(other_zone):%a %-d %b %H:%M} – {ends.astimezone(other_zone):%a %-d %b %H:%M} {zone_label(starts, other_zone)}"
+            if starts and ends
+            else "",
         },
         "roles": setting("slot_roles", []) or [],
         "is_captain": is_captain,

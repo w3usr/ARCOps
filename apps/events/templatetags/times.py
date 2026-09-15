@@ -34,7 +34,11 @@ def when(context, start, end=None, event=None, year=False):
     if not start:
         return ""
     request = context.get("request")
-    lead = request.session.get("roster_tz", "local") if request and hasattr(request, "session") else "local"
+    lead = (
+        request.session.get("roster_tz", "local")
+        if request and hasattr(request, "session")
+        else "local"
+    )
     local = display_zone(event) if event is not None else UTC
     if local == UTC:
         return format_html('<span class="when1">{}</span>', _one(start, end, UTC, year))

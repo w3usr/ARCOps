@@ -695,3 +695,14 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit.
 - **Human Review Status**: Pending review; T12 step 1 of the private test plan is the check.
 - **Git Hash**: 9766b46
+
+## [2026-09-15 18:00 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Make CI green before the build resumes: the last three commits failed the
+  `ruff format --check` step on 23 files formatted before the check existed. `ruff format .`
+  applied; one lambda whose `noqa` comment the formatter moved off its line rewritten as a def.
+- **Sections/Files Affected**: 23 files under apps/ (formatting only; no logic change) and
+  apps/accounts/tests/test_members.py (helper `mk` as a def).
+- **Nature of Contribution**: Edit (mechanical formatting; one three-line rewrite).
+- **Human Review Status**: Reviewed by the tools: ruff check and format clean, 83 tests pass.
+- **Git Hash**: [fill in after committing]

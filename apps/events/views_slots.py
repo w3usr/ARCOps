@@ -66,7 +66,11 @@ def slot_detail(request, pk, slot_id):
         "eligible_roles": eligible_roles,
         "capacities": {c.role: c.capacity for c in slot.capacities.all()},
         "on_air": [s for s in cell.signups],
-        "members": User.objects.exclude(access_level=AccessLevel.NONE).order_by("last_name", "first_name") if is_captain else [],
+        "members": User.objects.exclude(access_level=AccessLevel.NONE).order_by(
+            "last_name", "first_name"
+        )
+        if is_captain
+        else [],
         "partial": request.GET.get("partial") == "1",
     }
     template = "events/_slot_body.html" if ctx["partial"] else "events/slot.html"
@@ -112,7 +116,9 @@ def slot_control_operator(request, pk, slot_id):
     slot.control_operator_id = uid
     slot.save(update_fields=["control_operator"])
     record(request.user, "slot.control_operator", slot, after={"user": uid})
-    messages.success(request, "Control operator set." if uid else "Control operator left to the default rule.")
+    messages.success(
+        request, "Control operator set." if uid else "Control operator left to the default rule."
+    )
     return redirect("slot_detail", pk=pk, slot_id=slot_id)
 
 
@@ -131,7 +137,9 @@ def slot_assign(request, pk, slot_id):
     if not ok:
         messages.error(request, f"{member.short_name} cannot take that role: {reason}.")
         return redirect("slot_detail", pk=pk, slot_id=slot_id)
-    su, created = SignUp.objects.get_or_create(slot=slot, user=member, defaults={"role": role, "note": ""})
+    su, created = SignUp.objects.get_or_create(
+        slot=slot, user=member, defaults={"role": role, "note": ""}
+    )
     if created:
         record(request.user, "signup.assigned", su, after={"role": role, "user": member.pk})
         messages.success(request, f"{member.short_name} signed up as {role}.")
@@ -147,7 +155,11 @@ def event_bulk(request, pk):
     if not _visible(request.user, event):
         raise Http404
     ids = request.POST.getlist("slots")
-    slots = list(Slot.objects.filter(pk__in=ids, position__location__event=event, cancelled=False).order_by("start"))
+    slots = list(
+        Slot.objects.filter(pk__in=ids, position__location__event=event, cancelled=False).order_by(
+            "start"
+        )
+    )
     action = request.POST.get("action")
     if not slots:
         messages.error(request, "Tick at least one slot first.")
@@ -179,7 +191,9 @@ def event_bulk(request, pk):
             record(request.user, "signup.created", su, after={"role": role, "bulk": True})
             done.append(s)
         if done:
-            messages.success(request, f"Signed up as {role} for {len(done)} slot{'s' if len(done) != 1 else ''}.")
+            messages.success(
+                request, f"Signed up as {role} for {len(done)} slot{'s' if len(done) != 1 else ''}."
+            )
         for r in refused:
             messages.warning(request, "Not taken. " + r)
         return redirect("event_detail", pk=pk)
@@ -189,7 +203,10 @@ def event_bulk(request, pk):
     if action in ("close", "reopen"):
         n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(closed=(action == "close"))
         record(request.user, f"slots.{action}", event, after={"count": n})
-        messages.success(request, f"{n} slot{'s' if n != 1 else ''} {'closed' if action == 'close' else 'reopened'}.")
+        messages.success(
+            request,
+            f"{n} slot{'s' if n != 1 else ''} {'closed' if action == 'close' else 'reopened'}.",
+        )
     elif action == "cancel":
         with_people = [s for s in slots if s.signups.exists()]
         free = [s for s in slots if not s.signups.exists()]
@@ -197,7 +214,10 @@ def event_bulk(request, pk):
         record(request.user, "slots.cancel", event, after={"count": n})
         messages.success(request, f"{n} slot{'s' if n != 1 else ''} cancelled.")
         if with_people:
-            messages.warning(request, f"{len(with_people)} left alone because people are signed up; remove them first.")
+            messages.warning(
+                request,
+                f"{len(with_people)} left alone because people are signed up; remove them first.",
+            )
     else:
         raise Http404
     return redirect("event_detail", pk=pk)
@@ -214,5 +234,10 @@ def signup_no_show(request, signup_id):
     su.no_show = not su.no_show
     su.save(update_fields=["no_show"])
     record(request.user, "signup.no_show" if su.no_show else "signup.no_show_undone", su)
-    messages.success(request, "Marked as a no-show; no hours credited." if su.no_show else "No-show undone; hours credited again.")
+    messages.success(
+        request,
+        "Marked as a no-show; no hours credited."
+        if su.no_show
+        else "No-show undone; hours credited again.",
+    )
     return redirect("slot_detail", pk=event.pk, slot_id=su.slot_id)

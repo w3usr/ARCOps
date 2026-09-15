@@ -47,7 +47,9 @@ class AccountGateMiddleware:
                     request, "That temporary password has expired. Ask a sysadmin for a new one."
                 )
                 return redirect(reverse("account_login"))
-            if user.verification_overdue and not request.path.startswith(("/verify/", "/accounts/logout/", "/static/", "/healthz")):
+            if user.verification_overdue and not request.path.startswith(
+                ("/verify/", "/accounts/logout/", "/static/", "/healthz")
+            ):
                 logout(request)
                 messages.error(
                     request,

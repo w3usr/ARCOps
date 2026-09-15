@@ -29,24 +29,36 @@ def _base(request) -> str:
 
 
 class LinkForm(forms.Form):
-    label = forms.CharField(max_length=80, help_text="The course or the organisation; recorded on every account that joins.")
+    label = forms.CharField(
+        max_length=80,
+        help_text="The course or the organisation; recorded on every account that joins.",
+    )
     kind = forms.ChoiceField(choices=EntryLink.Kind.choices)
     required_domain = forms.ChoiceField(required=False, label="Required email domain (class links)")
     expires_at = forms.DateField(label="Expires on", widget=forms.DateInput(attrs={"type": "date"}))
-    cap = forms.IntegerField(required=False, min_value=1, max_value=500, label="Cap on accounts (optional)")
-    landing_event = forms.ModelChoiceField(queryset=Event.objects.none(), required=False, label="Land on this event (optional)")
+    cap = forms.IntegerField(
+        required=False, min_value=1, max_value=500, label="Cap on accounts (optional)"
+    )
+    landing_event = forms.ModelChoiceField(
+        queryset=Event.objects.none(), required=False, label="Land on this event (optional)"
+    )
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         domains = entry.trusted_domains()
         self.fields["required_domain"].choices = [("", "None")] + [(d, d) for d in domains]
-        self.fields["landing_event"].queryset = Event.objects.exclude(state=Event.State.CANCELLED).order_by("-id")
+        self.fields["landing_event"].queryset = Event.objects.exclude(
+            state=Event.State.CANCELLED
+        ).order_by("-id")
 
     def clean(self):
         d = super().clean()
         if d.get("kind") == EntryLink.Kind.CLASS and not d.get("required_domain"):
-            self.add_error("required_domain", "A class link needs a trusted domain; add one to the club configuration if the list is empty.")
+            self.add_error(
+                "required_domain",
+                "A class link needs a trusted domain; add one to the club configuration if the list is empty.",
+            )
         if d.get("expires_at") and d["expires_at"] <= timezone.now().date():
             self.add_error("expires_at", "Choose a date in the future.")
         return d
@@ -65,16 +77,28 @@ def entry_links(request):
             d = form.cleaned_data
             expires = datetime.combine(d["expires_at"], datetime.max.time()).replace(tzinfo=UTC)
             created = entry.create_link(
-                request.user, label=d["label"], kind=d["kind"], required_domain=d["required_domain"],
-                expires_at=expires, cap=d["cap"], landing_event=d["landing_event"],
+                request.user,
+                label=d["label"],
+                kind=d["kind"],
+                required_domain=d["required_domain"],
+                expires_at=expires,
+                cap=d["cap"],
+                landing_event=d["landing_event"],
             )
             form = LinkForm()
     links = EntryLink.objects.select_related("created_by", "landing_event").all()[:50]
     base = _base(request)
-    return render(request, "accounts/entry_links.html", {
-        "form": form, "links": links, "created": created, "base": base,
-        "created_link": f"{base}/join/{created.token}/" if created else "",
-    })
+    return render(
+        request,
+        "accounts/entry_links.html",
+        {
+            "form": form,
+            "links": links,
+            "created": created,
+            "base": base,
+            "created_link": f"{base}/join/{created.token}/" if created else "",
+        },
+    )
 
 
 @login_required
@@ -103,7 +127,12 @@ def entry_link_action(request, pk):
         raise Http404
     link.save()
     record(request.user, f"entry_link.{action}", link)
-    messages.success(request, f"Link “{link.label}”: {action}d." if action != "extend" else f"Link “{link.label}” now runs to {link.expires_at:%d %b %Y}.")
+    messages.success(
+        request,
+        f"Link “{link.label}”: {action}d."
+        if action != "extend"
+        else f"Link “{link.label}” now runs to {link.expires_at:%d %b %Y}.",
+    )
     return redirect("entry_links")
 
 
@@ -111,7 +140,11 @@ class JoinForm(forms.Form):
     """The invitation's join form plus the address, the category (class links), and the age question."""
 
     email = forms.EmailField(label="Email address")
-    callsign = forms.CharField(max_length=12, required=False, help_text="If you hold one. Your name and license come from the FCC record.")
+    callsign = forms.CharField(
+        max_length=12,
+        required=False,
+        help_text="If you hold one. Your name and license come from the FCC record.",
+    )
     first_name = forms.CharField(max_length=80)
     middle_name = forms.CharField(max_length=80, required=False)
     last_name = forms.CharField(max_length=80)
@@ -128,8 +161,14 @@ class JoinForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.link = link
         if link.kind == EntryLink.Kind.CLASS:
-            cats = [c for c in (setting("member_categories", []) or []) if c.get("key") in ("student", "faculty", "staff")]
-            self.fields["category"].choices = [(c["key"], c["label"]) for c in cats] or [("student", "Student")]
+            cats = [
+                c
+                for c in (setting("member_categories", []) or [])
+                if c.get("key") in ("student", "faculty", "staff")
+            ]
+            self.fields["category"].choices = [(c["key"], c["label"]) for c in cats] or [
+                ("student", "Student")
+            ]
             self.fields["category"].initial = "student"
             self.fields["email"].help_text = f"Your {link.required_domain} address."
         else:
@@ -154,7 +193,9 @@ def _link_or_page(request, token):
     link = get_object_or_404(EntryLink, token=token)
     why = link.why_closed()
     if why:
-        return link, render(request, "accounts/join_closed.html", {"link": link, "why": why}, status=410)
+        return link, render(
+            request, "accounts/join_closed.html", {"link": link, "why": why}, status=410
+        )
     return link, None
 
 
@@ -173,11 +214,15 @@ def mentor_needs_page(request, token):
     if closed:
         return closed
     viewer_is_member = request.user.is_authenticated and request.user.is_member
-    return render(request, "accounts/mentors.html", {
-        "link": link,
-        "needs": mentor_needs(viewer_is_member=viewer_is_member),
-        "viewer_is_member": viewer_is_member,
-    })
+    return render(
+        request,
+        "accounts/mentors.html",
+        {
+            "link": link,
+            "needs": mentor_needs(viewer_is_member=viewer_is_member),
+            "viewer_is_member": viewer_is_member,
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])
@@ -196,14 +241,27 @@ def join_form(request, token):
                 # The same page as success (FR-107); the person is told by email instead.
                 from apps.comms.services import compose
 
-                compose(existing, "account", f"Your {setting('club.short_name', 'club')} account",
-                        "<p>Someone used this address on a join link, but it already has an account. Sign in, or use “Forgot your username or password?” on the sign-in page.</p>")
-                return render(request, "accounts/join_sent.html", {"link": link, "email": d["email"]})
+                compose(
+                    existing,
+                    "account",
+                    f"Your {setting('club.short_name', 'club')} account",
+                    "<p>Someone used this address on a join link, but it already has an account. Sign in, or use “Forgot your username or password?” on the sign-in page.</p>",
+                )
+                return render(
+                    request, "accounts/join_sent.html", {"link": link, "email": d["email"]}
+                )
             user = entry.join_through_link(
-                link, email=d["email"], password=d["password1"], category=d.get("category") or "student",
-                base_url=_base(request), first_name=d["first_name"], middle_name=d["middle_name"],
-                last_name=d["last_name"], preferred_name=d["preferred_name"],
-                callsign=d["callsign"].upper().strip(), cell_phone=d["cell_phone"],
+                link,
+                email=d["email"],
+                password=d["password1"],
+                category=d.get("category") or "student",
+                base_url=_base(request),
+                first_name=d["first_name"],
+                middle_name=d["middle_name"],
+                last_name=d["last_name"],
+                preferred_name=d["preferred_name"],
+                callsign=d["callsign"].upper().strip(),
+                cell_phone=d["cell_phone"],
             )
             if user.callsign:
                 from apps.credentials.services import refresh_license_from_local_table
@@ -211,7 +269,10 @@ def join_form(request, token):
                 refresh_license_from_local_table(user)
             if link.kind == EntryLink.Kind.CLASS:
                 login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-                messages.success(request, f"Welcome. Confirm your address from the email we sent within {entry.verification_days()} days.")
+                messages.success(
+                    request,
+                    f"Welcome. Confirm your address from the email we sent within {entry.verification_days()} days.",
+                )
                 if link.landing_event_id:
                     return redirect("event_detail", pk=link.landing_event_id)
                 return redirect("event_list")

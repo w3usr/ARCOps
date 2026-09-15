@@ -45,7 +45,11 @@ def can_sign_up(user, slot, role: str, now=None) -> tuple[bool, str]:
     )
     if not rule:
         cfg = next((r for r in (setting("slot_roles", []) or []) if r.get("key") == role), None)
-        if cfg and cfg.get("requires_license") and not holds(user, "amateur_license", slot.start.date()):
+        if (
+            cfg
+            and cfg.get("requires_license")
+            and not holds(user, "amateur_license", slot.start.date())
+        ):
             return False, f"{role} needs a valid amateur license"
     if rule:
         if rule.categories and user.category not in rule.categories:

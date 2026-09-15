@@ -37,11 +37,22 @@ def verification_days() -> int:
     return int(setting("defaults.entry_link_verification_days", 7) or 7)
 
 
-def create_link(actor: User, *, label: str, kind: str, required_domain: str = "", expires_at, cap=None, landing_event=None) -> EntryLink:
+def create_link(
+    actor: User,
+    *,
+    label: str,
+    kind: str,
+    required_domain: str = "",
+    expires_at,
+    cap=None,
+    landing_event=None,
+) -> EntryLink:
     link = EntryLink.objects.create(
         label=label.strip()[:80],
         kind=kind,
-        required_domain=(required_domain or "").lower().strip() if kind == EntryLink.Kind.CLASS else "",
+        required_domain=(required_domain or "").lower().strip()
+        if kind == EntryLink.Kind.CLASS
+        else "",
         expires_at=expires_at,
         cap=cap or None,
         landing_event=landing_event,
@@ -83,7 +94,9 @@ def send_verification(user: User, base_url: str) -> None:
     compose(user, "account", f"Confirm your address for {club}", body)
 
 
-def join_through_link(link: EntryLink, *, email: str, password: str, category: str, base_url: str, **profile) -> User:
+def join_through_link(
+    link: EntryLink, *, email: str, password: str, category: str, base_url: str, **profile
+) -> User:
     """Creates the account for a person who completed the join form on an open link."""
     email = email.strip().lower()
     now = timezone.now()
@@ -117,7 +130,12 @@ def complete_verification(user: User, base_url: str) -> str:
     user.email_verified_at = now
     fields = ["email_verified_at"]
     became_provisional = False
-    if not user.is_active and user.access_level == AccessLevel.NONE and user.joined_via and user.joined_via.kind == EntryLink.Kind.COMMUNITY:
+    if (
+        not user.is_active
+        and user.access_level == AccessLevel.NONE
+        and user.joined_via
+        and user.joined_via.kind == EntryLink.Kind.COMMUNITY
+    ):
         user.is_active = True
         user.access_level = AccessLevel.PROVISIONAL
         fields += ["is_active", "access_level"]
@@ -147,7 +165,9 @@ def notify_officers_of_provisional(user: User, base_url: str) -> None:
         f"is waiting for review. Admit them as a member or decline on their page:</p>"
         f'<p><a href="{url}">{url}</a></p>'
     )
-    for officer in User.objects.filter(access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True):
+    for officer in User.objects.filter(
+        access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True
+    ):
         compose(officer, "account", f"New provisional member for {club}: {user.short_name}", body)
 
 
@@ -156,7 +176,12 @@ def admit(actor: User, user: User) -> None:
 
     set_access_level(actor, user, AccessLevel.MEMBER, "admitted after review")
     club = setting("club.short_name", "the club")
-    compose(user, "account", f"Welcome to {club}", f"<p>A club officer has reviewed your account: you are now a member of {club}. Sign in to see the roster and the agreements.</p>")
+    compose(
+        user,
+        "account",
+        f"Welcome to {club}",
+        f"<p>A club officer has reviewed your account: you are now a member of {club}. Sign in to see the roster and the agreements.</p>",
+    )
 
 
 def decline(actor: User, user: User, reason: str) -> None:
@@ -164,8 +189,17 @@ def decline(actor: User, user: User, reason: str) -> None:
 
     set_access_level(actor, user, AccessLevel.NONE, f"declined: {reason}")
     club = setting("club.short_name", "the club")
-    compose(user, "account", f"Your {club} account", f"<p>A club officer has reviewed your request and has not admitted you at this time.{' Reason: ' + reason if reason else ''}</p>")
+    compose(
+        user,
+        "account",
+        f"Your {club} account",
+        f"<p>A club officer has reviewed your request and has not admitted you at this time.{' Reason: ' + reason if reason else ''}</p>",
+    )
 
 
 def pending_review():
-    return User.objects.filter(access_level=AccessLevel.PROVISIONAL, is_active=True).select_related("joined_via").order_by("date_joined")
+    return (
+        User.objects.filter(access_level=AccessLevel.PROVISIONAL, is_active=True)
+        .select_related("joined_via")
+        .order_by("date_joined")
+    )

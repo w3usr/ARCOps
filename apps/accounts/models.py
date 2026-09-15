@@ -14,7 +14,10 @@ class AccessLevel(models.TextChoices):
     SYSADMIN = "sysadmin", "Sysadmin"
     OFFICER = "officer", "Club officer"
     MEMBER = "member", "Member"
-    PROVISIONAL = "provisional", "Provisional"  # joined through a community link, awaiting review (FR-121)
+    PROVISIONAL = (
+        "provisional",
+        "Provisional",
+    )  # joined through a community link, awaiting review (FR-121)
     NONE = "none", "No access"
 
 
@@ -302,7 +305,9 @@ class EntryLink(models.Model):
         if self.state == self.State.REVOKED:
             return "This link has been withdrawn."
         if self.state == self.State.PAUSED:
-            return "This link is paused for the moment; try again later or ask the person who sent it."
+            return (
+                "This link is paused for the moment; try again later or ask the person who sent it."
+            )
         if self.expires_at <= timezone.now():
             return "This link has expired."
         if self.cap is not None and self.joined_count >= self.cap:

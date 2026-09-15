@@ -43,7 +43,9 @@ class ProfileForm(forms.ModelForm):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         domain = institution_email_domain()
-        self.fields["institution_email"].label = f"{domain} email" if domain else "Institution email"
+        self.fields["institution_email"].label = (
+            f"{domain} email" if domain else "Institution email"
+        )
         self.fields["personal_email"].label = "Personal email"
         for f in ("institution_email_delivery", "personal_email_delivery"):
             self.fields[f].label = "Send club email here"
@@ -209,7 +211,9 @@ def invitation_action(request, pk):
         new = reissue_invitation(request.user, inv)
         base = f"{request.scheme}://{request.get_host()}"
         recent = Invitation.objects.order_by("-created")[:25]
-        messages.success(request, f"New invitation issued to {new.email}; the old link no longer works.")
+        messages.success(
+            request, f"New invitation issued to {new.email}; the old link no longer works."
+        )
         return render(
             request,
             "accounts/invitations.html",

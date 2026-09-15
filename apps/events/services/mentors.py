@@ -26,7 +26,13 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
             continue
         zone = display_zone(ev)
         slots = (
-            Slot.objects.filter(position__location__event=ev, cancelled=False, closed=False, kind="operating", end__gte=now)
+            Slot.objects.filter(
+                position__location__event=ev,
+                cancelled=False,
+                closed=False,
+                kind="operating",
+                end__gte=now,
+            )
             .prefetch_related("signups", "capacities")
             .order_by("start")
         )
@@ -38,22 +44,28 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
             open_seats = max(0, cap - taken)
             if open_seats:
                 open_total += open_seats
-                rows.append({
-                    "slot": s,
-                    "open": open_seats,
-                    "lead": f"{s.start.astimezone(zone):%a %-d %b %H:%M}–{s.end.astimezone(zone):%H:%M} {zone_label(s.start, zone)}",
-                    "utc": f"{s.start:%a %H:%M}–{s.end:%H:%M} UTC",
-                })
+                rows.append(
+                    {
+                        "slot": s,
+                        "open": open_seats,
+                        "lead": f"{s.start.astimezone(zone):%a %-d %b %H:%M}–{s.end.astimezone(zone):%H:%M} {zone_label(s.start, zone)}",
+                        "utc": f"{s.start:%a %H:%M}–{s.end:%H:%M} UTC",
+                    }
+                )
         if not rows:
             continue
         loc = ev.locations.order_by("order").first()
-        out.append({
-            "event": ev,
-            "open_total": open_total,
-            "rows": rows,
-            "where": (loc.name if loc else "") if viewer_is_member else f"the {setting('club.short_name', 'club')} station",
-            "preferred_class": ev.min_license_class,
-            "span": f"{ev.starts_at().astimezone(zone):%a %-d %b %H:%M} – {ev.ends_at().astimezone(zone):%a %-d %b %H:%M} {zone_label(ev.starts_at(), zone)}",
-            "span_utc": f"{ev.starts_at():%a %-d %b %H:%M} – {ev.ends_at():%a %-d %b %H:%M} UTC",
-        })
+        out.append(
+            {
+                "event": ev,
+                "open_total": open_total,
+                "rows": rows,
+                "where": (loc.name if loc else "")
+                if viewer_is_member
+                else f"the {setting('club.short_name', 'club')} station",
+                "preferred_class": ev.min_license_class,
+                "span": f"{ev.starts_at().astimezone(zone):%a %-d %b %H:%M} – {ev.ends_at().astimezone(zone):%a %-d %b %H:%M} {zone_label(ev.starts_at(), zone)}",
+                "span_utc": f"{ev.starts_at():%a %-d %b %H:%M} – {ev.ends_at():%a %-d %b %H:%M} UTC",
+            }
+        )
     return out

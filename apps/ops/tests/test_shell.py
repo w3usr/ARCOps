@@ -25,7 +25,9 @@ def test_sign_in_page_is_the_split_layout_without_signup_or_contact_noise(client
     assert "Forgot your username or password?" in body
     # No inline executable script: the CSP allows own-origin files only.
     assert not [
-        t for t in re.findall(r"<script(?![^>]*\bsrc=)[^>]*>", body) if 'type="application/json"' not in t
+        t
+        for t in re.findall(r"<script(?![^>]*\bsrc=)[^>]*>", body)
+        if 'type="application/json"' not in t
     ]
 
 

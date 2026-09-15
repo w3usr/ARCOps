@@ -16,7 +16,9 @@ class AccountAdapter(DefaultAccountAdapter):
         with a welcome; allauth's default left them on the form they had just submitted, which
         read as if nothing had happened. A change made from the profile returns to the profile."""
         if request.session.pop("forced_password_change", False):
-            messages.success(request, f"Your password is set. Welcome, {request.user.display_first}.")
+            messages.success(
+                request, f"Your password is set. Welcome, {request.user.display_first}."
+            )
             return reverse("dashboard")
         return reverse("profile")
 

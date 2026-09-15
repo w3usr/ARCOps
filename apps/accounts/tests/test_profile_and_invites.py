@@ -69,12 +69,20 @@ def test_forced_password_change_lands_on_home_and_a_voluntary_one_on_the_profile
     assert c.get("/events/")["Location"] == "/accounts/password/change/"
     r = c.post(
         "/accounts/password/change/",
-        {"oldpassword": "pw-Testing-123", "password1": "a-New-Long-Password-9", "password2": "a-New-Long-Password-9"},
+        {
+            "oldpassword": "pw-Testing-123",
+            "password1": "a-New-Long-Password-9",
+            "password2": "a-New-Long-Password-9",
+        },
     )
     assert r.status_code == 302 and r["Location"] == "/"
     assert "Welcome, Ann" in c.get("/").content.decode()
     r = c.post(
         "/accounts/password/change/",
-        {"oldpassword": "a-New-Long-Password-9", "password1": "a-New-Long-Password-10", "password2": "a-New-Long-Password-10"},
+        {
+            "oldpassword": "a-New-Long-Password-9",
+            "password1": "a-New-Long-Password-10",
+            "password2": "a-New-Long-Password-10",
+        },
     )
     assert r["Location"] == "/me/"

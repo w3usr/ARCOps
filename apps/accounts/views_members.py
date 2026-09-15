@@ -77,7 +77,9 @@ def members(request):
     users = (
         User.objects.select_related("joined_via", "license")
         if full
-        else User.objects.exclude(access_level__in=[AccessLevel.NONE, AccessLevel.PROVISIONAL]).select_related("license")
+        else User.objects.exclude(
+            access_level__in=[AccessLevel.NONE, AccessLevel.PROVISIONAL]
+        ).select_related("license")
     )
     if not request.user.is_member:
         raise Http404  # FR-121: a Provisional member sees no directory
@@ -89,7 +91,11 @@ def members(request):
             | Q(callsign__icontains=q)
         )
         if full:
-            cond |= Q(email__icontains=q) | Q(institution_email__icontains=q) | Q(personal_email__icontains=q)
+            cond |= (
+                Q(email__icontains=q)
+                | Q(institution_email__icontains=q)
+                | Q(personal_email__icontains=q)
+            )
         users = users.filter(cond)
     users = users.order_by("last_name", "first_name")
     positions = {p["key"]: p["label"] for p in (setting("club_positions", []) or [])}
@@ -203,14 +209,53 @@ def hours(request):
         resp = HttpResponse(content_type="text/csv")
         resp["Content-Disposition"] = f'attachment; filename="hours-{label}.csv"'.replace(" ", "_")
         w = csv.writer(resp)
-        w.writerow(["Last name", "First name", "Callsign", "Sign-in email", "Event", "Slot start (UTC)", "Slot end (UTC)", "Checked in (UTC)", "No-show", "Credited hours"])
+        w.writerow(
+            [
+                "Last name",
+                "First name",
+                "Callsign",
+                "Sign-in email",
+                "Event",
+                "Slot start (UTC)",
+                "Slot end (UTC)",
+                "Checked in (UTC)",
+                "No-show",
+                "Credited hours",
+            ]
+        )
         for r in report["rows"]:
             su = r["signup"]
-            w.writerow([su.user.last_name, su.user.first_name, su.user.callsign, su.user.email, su.slot.event.title,
-                        su.slot.start.strftime("%Y-%m-%d %H:%M"), su.slot.end.strftime("%Y-%m-%d %H:%M"),
-                        su.checked_in_at.strftime("%Y-%m-%d %H:%M") if su.checked_in_at else "", "yes" if su.no_show else "", r["hours"]])
+            w.writerow(
+                [
+                    su.user.last_name,
+                    su.user.first_name,
+                    su.user.callsign,
+                    su.user.email,
+                    su.slot.event.title,
+                    su.slot.start.strftime("%Y-%m-%d %H:%M"),
+                    su.slot.end.strftime("%Y-%m-%d %H:%M"),
+                    su.checked_in_at.strftime("%Y-%m-%d %H:%M") if su.checked_in_at else "",
+                    "yes" if su.no_show else "",
+                    r["hours"],
+                ]
+            )
         w.writerow([])
         for u, total in report["totals"]:
-            w.writerow([u.last_name, u.first_name, u.callsign, u.email, "TOTAL", "", "", "", "", round(total, 2)])
+            w.writerow(
+                [
+                    u.last_name,
+                    u.first_name,
+                    u.callsign,
+                    u.email,
+                    "TOTAL",
+                    "",
+                    "",
+                    "",
+                    "",
+                    round(total, 2),
+                ]
+            )
         return resp
-    return render(request, "accounts/hours.html", {"labels": labels, "label": label, "report": report})
+    return render(
+        request, "accounts/hours.html", {"labels": labels, "label": label, "report": report}
+    )

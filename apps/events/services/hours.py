@@ -23,4 +23,8 @@ def course_report(label: str) -> dict:
         h = credited_hours(su)
         rows.append({"signup": su, "hours": h})
         totals[su.user] = totals.get(su.user, 0.0) + h
-    return {"label": label, "rows": rows, "totals": sorted(totals.items(), key=lambda kv: (kv[0].last_name, kv[0].first_name))}
+    return {
+        "label": label,
+        "rows": rows,
+        "totals": sorted(totals.items(), key=lambda kv: (kv[0].last_name, kv[0].first_name)),
+    }

@@ -20,7 +20,9 @@ class SlotStatus:
     reasons: list[str] = field(default_factory=list)
     control_operator = None  # a User or None
     missing: list[str] = field(default_factory=list)
-    below_preferred: str | None = None  # the best class present when under the event's preferred class
+    below_preferred: str | None = (
+        None  # the best class present when under the event's preferred class
+    )
 
     @property
     def label(self) -> str:

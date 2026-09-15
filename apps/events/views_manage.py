@@ -52,7 +52,14 @@ def _captain_or_404(user, event):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ["title", "type", "description_html", "rules_url", "min_license_class", "kbyg_html"]
+        fields = [
+            "title",
+            "type",
+            "description_html",
+            "rules_url",
+            "min_license_class",
+            "kbyg_html",
+        ]
         labels = {
             "description_html": "Description",
             "rules_url": "Rules link",
@@ -71,8 +78,12 @@ class EventForm(forms.ModelForm):
         self.fields["min_license_class"] = forms.ChoiceField(
             choices=[("", "Any")] + [(c, c) for c in ladder()], required=False
         )
-        self.fields["description_html"].help_text = "Plain text or simple HTML; shown at the top of the event."
-        self.fields["kbyg_html"].help_text = "Shown under the roster: where to go, what to bring, who to call."
+        self.fields[
+            "description_html"
+        ].help_text = "Plain text or simple HTML; shown at the top of the event."
+        self.fields[
+            "kbyg_html"
+        ].help_text = "Shown under the roster: where to go, what to bring, who to call."
 
 
 class PeriodForm(forms.Form):
@@ -100,9 +111,15 @@ class PeriodForm(forms.Form):
 
 
 class GenerateForm(forms.Form):
-    minutes = forms.IntegerField(label="Slot length (minutes)", min_value=15, max_value=720, initial=60)
-    setup_slots = forms.IntegerField(label="Setup slots before", min_value=0, max_value=6, initial=1)
-    breakdown_slots = forms.IntegerField(label="Breakdown slots after", min_value=0, max_value=6, initial=1)
+    minutes = forms.IntegerField(
+        label="Slot length (minutes)", min_value=15, max_value=720, initial=60
+    )
+    setup_slots = forms.IntegerField(
+        label="Setup slots before", min_value=0, max_value=6, initial=1
+    )
+    breakdown_slots = forms.IntegerField(
+        label="Breakdown slots after", min_value=0, max_value=6, initial=1
+    )
 
     def __init__(self, *args, roles, **kwargs):
         kwargs.setdefault("label_suffix", "")
@@ -135,7 +152,9 @@ def event_create(request):
         )
         Captaincy.objects.get_or_create(event=event, user=request.user)
         record(request.user, "event.created", event, after={"title": event.title})
-        messages.success(request, "Event created as a draft. Add its location and generate the slots.")
+        messages.success(
+            request, "Event created as a draft. Add its location and generate the slots."
+        )
         return redirect("event_manage", pk=event.pk)
     return render(request, "events/form.html", {"form": form, "period": period})
 
@@ -152,10 +171,20 @@ def event_manage(request, pk):
         if form.is_valid():
             before = {f: form.initial.get(f) for f in form.changed_data}
             form.save()
-            record(request.user, "event.edited", event, before=before, after={f: getattr(event, f) for f in form.changed_data})
+            record(
+                request.user,
+                "event.edited",
+                event,
+                before=before,
+                after={f: getattr(event, f) for f in form.changed_data},
+            )
             messages.success(request, "Saved.")
             return redirect("event_manage", pk=pk)
-    positions = Position.objects.filter(location__event=event).select_related("location").order_by("location__order", "order")
+    positions = (
+        Position.objects.filter(location__event=event)
+        .select_related("location")
+        .order_by("location__order", "order")
+    )
     slot_count = Slot.objects.filter(position__location__event=event, cancelled=False).count()
     candidates = (
         User.objects.exclude(access_level=AccessLevel.NONE)
@@ -188,7 +217,9 @@ def period_add(request, pk):
     _captain_or_404(request.user, event)
     form = PeriodForm(request.POST)
     if form.is_valid():
-        OperatingPeriod.objects.create(event=event, start=form.cleaned_data["start"], end=form.cleaned_data["end"])
+        OperatingPeriod.objects.create(
+            event=event, start=form.cleaned_data["start"], end=form.cleaned_data["end"]
+        )
         messages.success(request, "Operating period added.")
     else:
         messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
@@ -201,7 +232,9 @@ def period_delete(request, pk, period_id):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     OperatingPeriod.objects.filter(pk=period_id, event=event).delete()
-    messages.success(request, "Operating period removed. Regenerate the slots if they were built from it.")
+    messages.success(
+        request, "Operating period removed. Regenerate the slots if they were built from it."
+    )
     return redirect("event_manage", pk=pk)
 
 
@@ -222,7 +255,9 @@ def location_add(request, pk):
         address=request.POST.get("address", "").strip()[:200],
         order=order,
     )
-    Position.objects.create(location=loc, name=request.POST.get("position", "").strip()[:60] or "Station", order=1)
+    Position.objects.create(
+        location=loc, name=request.POST.get("position", "").strip()[:60] or "Station", order=1
+    )
     messages.success(request, f"Location “{name}” added with its first position.")
     return redirect("event_manage", pk=pk)
 
@@ -304,7 +339,9 @@ def slots_generate(request, pk):
         form.capacities(),
     )
     record(request.user, "slots.generated", event, after={"count": len(created)})
-    messages.success(request, f"{len(created)} slots generated across {len(positions)} position(s).")
+    messages.success(
+        request, f"{len(created)} slots generated across {len(positions)} position(s)."
+    )
     return redirect("event_detail", pk=pk)
 
 
@@ -322,7 +359,10 @@ def slot_toggle(request, slot_id):
         messages.success(request, "Slot closed." if slot.closed else "Slot reopened.")
     elif what == "cancel":
         if slot.signups.exists():
-            messages.error(request, "Remove the sign-ups first; people should hear from you before the slot vanishes.")
+            messages.error(
+                request,
+                "Remove the sign-ups first; people should hear from you before the slot vanishes.",
+            )
         else:
             slot.cancelled = True
             slot.save(update_fields=["cancelled"])
@@ -353,5 +393,7 @@ def event_cancel(request, pk):
     event.state = Event.State.CANCELLED
     event.save(update_fields=["state"])
     record(request.user, "event.cancelled", event)
-    messages.success(request, "Event cancelled. It stays in the record; members no longer see it as upcoming.")
+    messages.success(
+        request, "Event cancelled. It stays in the record; members no longer see it as upcoming."
+    )
     return redirect("event_list")

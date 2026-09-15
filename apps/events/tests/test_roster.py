@@ -25,13 +25,33 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def world():
-    ClubSetting.objects.update_or_create(key="club.timezone", defaults={"value": "America/New_York"})
+    ClubSetting.objects.update_or_create(
+        key="club.timezone", defaults={"value": "America/New_York"}
+    )
     ClubSetting.objects.update_or_create(
         key="slot_roles",
-        defaults={"value": [{"key": "operator", "label": "Operator", "on_air": True}, {"key": "observer", "label": "Observer", "on_air": False}]},
+        defaults={
+            "value": [
+                {"key": "operator", "label": "Operator", "on_air": True},
+                {"key": "observer", "label": "Observer", "on_air": False},
+            ]
+        },
     )
-    off = User.objects.create_user("off@example.org", "pw-Testing-123", access_level=AccessLevel.OFFICER, first_name="Ann", last_name="Officer")
-    mem = User.objects.create_user("mem@example.org", "pw-Testing-123", access_level=AccessLevel.MEMBER, first_name="Mo", last_name="Member", callsign="N0MEM")
+    off = User.objects.create_user(
+        "off@example.org",
+        "pw-Testing-123",
+        access_level=AccessLevel.OFFICER,
+        first_name="Ann",
+        last_name="Officer",
+    )
+    mem = User.objects.create_user(
+        "mem@example.org",
+        "pw-Testing-123",
+        access_level=AccessLevel.MEMBER,
+        first_name="Mo",
+        last_name="Member",
+        callsign="N0MEM",
+    )
     ev = Event.objects.create(title="RTTY", state=Event.State.PUBLISHED, created_by=off)
     start = datetime(2026, 9, 26, 0, 0, tzinfo=UTC)  # Friday 20:00 EDT
     OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
@@ -110,7 +130,10 @@ def test_captain_edits_seats_control_operator_and_assigns(world):
     c.post(f"/events/{ev.pk}/slot/{slot.pk}/control-operator/", {"user": mem.pk})
     slot.refresh_from_db()
     assert slot.control_operator == mem
-    assert _as(mem).post(f"/events/{ev.pk}/slot/{slot.pk}/seats/", {"cap_operator": "9"}).status_code == 404
+    assert (
+        _as(mem).post(f"/events/{ev.pk}/slot/{slot.pk}/seats/", {"cap_operator": "9"}).status_code
+        == 404
+    )
 
 
 def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
@@ -119,17 +142,33 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     run_slots = list(Slot.objects.filter(position=world["run"], kind="operating").order_by("start"))
     run_slots[1].closed = True
     run_slots[1].save()
-    r = c.post(f"/events/{ev.pk}/bulk/", {"action": "signup", "role": "operator", "note": "", "slots": [s.pk for s in run_slots[:3]]}, follow=True)
+    r = c.post(
+        f"/events/{ev.pk}/bulk/",
+        {
+            "action": "signup",
+            "role": "operator",
+            "note": "",
+            "slots": [s.pk for s in run_slots[:3]],
+        },
+        follow=True,
+    )
     body = r.content.decode()
     assert SignUp.objects.filter(user=world["mem"], slot__in=run_slots[:3]).count() == 2
     assert "2 slots" in body and "closed" in body
     co = _as(world["off"])
     co.post(f"/events/{ev.pk}/bulk/", {"action": "close", "slots": [s.pk for s in run_slots]})
-    assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], closed=True).count() == len(run_slots)
+    assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], closed=True).count() == len(
+        run_slots
+    )
     co.post(f"/events/{ev.pk}/bulk/", {"action": "cancel", "slots": [s.pk for s in run_slots]})
     # the two with sign-ups stay
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], cancelled=False).count() == 2
-    assert c.post(f"/events/{ev.pk}/bulk/", {"action": "close", "slots": [run_slots[0].pk]}).status_code == 404
+    assert (
+        c.post(
+            f"/events/{ev.pk}/bulk/", {"action": "close", "slots": [run_slots[0].pk]}
+        ).status_code
+        == 404
+    )
 
 
 def test_present_wording():
@@ -142,11 +181,41 @@ def test_present_wording():
         start = datetime(2030, 1, 1, tzinfo=UTC)
 
     now = datetime(2026, 1, 1, tzinfo=UTC)
-    assert present(Sl(), St("empty", ["no one signed up"]), [], ["operator"], published=True, is_captain=False, now=now).word == "Open"
-    assert present(Sl(), St("empty", []), [], [], published=False, is_captain=False, now=now).word == "Opens when published"
-    p = present(Sl(), St("not_viable", ["nobody with station access (General or higher)"]), [object()], [], published=True, is_captain=False, now=now)
+    assert (
+        present(
+            Sl(),
+            St("empty", ["no one signed up"]),
+            [],
+            ["operator"],
+            published=True,
+            is_captain=False,
+            now=now,
+        ).word
+        == "Open"
+    )
+    assert (
+        present(Sl(), St("empty", []), [], [], published=False, is_captain=False, now=now).word
+        == "Opens when published"
+    )
+    p = present(
+        Sl(),
+        St("not_viable", ["nobody with station access (General or higher)"]),
+        [object()],
+        [],
+        published=True,
+        is_captain=False,
+        now=now,
+    )
     assert p.word == "Needs someone with station access (General or higher)" and p.tone == "warn"
-    p = present(Sl(), St("at_risk", ["depends on Mo N0MEM alone"]), [object()], [], published=True, is_captain=False, now=now)
+    p = present(
+        Sl(),
+        St("at_risk", ["depends on Mo N0MEM alone"]),
+        [object()],
+        [],
+        published=True,
+        is_captain=False,
+        now=now,
+    )
     assert p.word == "Covered" and "one more person alongside Mo N0MEM" in p.detail
 
 
