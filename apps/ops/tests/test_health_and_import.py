@@ -56,3 +56,9 @@ def test_manifest_carries_the_installations_name_not_the_products():
     assert r["Content-Type"].startswith("application/manifest+json")
     assert body["name"] == "Test ARC Operations (testserver)" and body["short_name"] == "Test ARC"
     assert "ARCOps" not in body["name"] and body["start_url"] == "/"
+
+
+def test_service_worker_is_served_at_the_root_uncached(client):
+    r = client.get("/sw.js")
+    assert r.status_code == 200 and b"ops-shell-v" in r.content
+    assert "no-cache" in r["Cache-Control"] and r["Service-Worker-Allowed"] == "/"

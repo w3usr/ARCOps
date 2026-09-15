@@ -981,3 +981,16 @@ carries the actual running model ID.
   screen-reader walk (T49 step 2) is a person's to do. Locally: 7 accessibility tests pass in
   3 min 49 s; 157 unit tests pass; ruff and the neutrality check clean.
 - **Git Hash**: bec7bf3
+
+## [2026-09-15 23:57 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 8 follow-up: the service worker is now served at the site root by
+  a Django view with no-cache headers and registered there. Found while verifying the Phase 8
+  deploy: the live copy under /static/ was two versions old, held by the 30-day immutable cache
+  that is right for hashed static names and wrong for a file whose URL cannot change.
+- **Sections/Files Affected**: apps/ops/views.py (service_worker), config/urls.py,
+  static/js/app.js, apps/ops/tests/test_health_and_import.py.
+- **Nature of Contribution**: Code generation and a test.
+- **Human Review Status**: Pending review; T49 step 3 of the private test plan is the check.
+  158 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [pending]

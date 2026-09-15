@@ -138,3 +138,22 @@ def manifest(request):
         "icons": icons,
     }
     return JsonResponse(body, content_type="application/manifest+json")
+
+
+def service_worker(request):
+    """FR-96: the service worker, served at the site root so its scope is the whole site and
+    with no-cache headers so a new version reaches browsers on their next visit. Under /static/
+    it sat behind a 30-day immutable cache (found 2026-09-15: the live copy was two versions
+    old), and a service worker's URL must not change, so it cannot carry a content hash."""
+    from django.contrib.staticfiles import finders
+    from django.http import Http404, HttpResponse
+
+    path = finders.find("sw.js")
+    if not path:
+        raise Http404
+    with open(path, encoding="utf-8") as fh:
+        body = fh.read()
+    resp = HttpResponse(body, content_type="application/javascript; charset=utf-8")
+    resp["Cache-Control"] = "no-cache, max-age=0, must-revalidate"
+    resp["Service-Worker-Allowed"] = "/"
+    return resp

@@ -7,7 +7,7 @@ from django.views.generic import RedirectView, TemplateView
 from apps.accounts import impersonate, views_entry, views_members
 from apps.ops import views_settings
 from apps.ops.api import api
-from apps.ops.views import healthz, manifest
+from apps.ops.views import healthz, manifest, service_worker
 
 urlpatterns = [
     path("healthz", healthz, name="healthz"),
@@ -43,5 +43,6 @@ urlpatterns = [
     path("mentors/<str:token>/", views_entry.mentor_needs_page, name="mentor_needs"),
     path("verify/<str:token>/", views_entry.verify_email, name="verify_email"),
     path("privacy/", views_settings.privacy, name="privacy"),
+    path("sw.js", service_worker, name="service_worker"),
     path("", include("apps.ops.urls")),
 ]

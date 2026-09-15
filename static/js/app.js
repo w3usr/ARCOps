@@ -64,7 +64,7 @@ document.querySelectorAll("[data-reveal-when]").forEach((el) => {
 });
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+  navigator.serviceWorker.register("/sw.js").catch(() => {});  // served by Django, never cached (FR-96)
 }
 
 // Roster: a slot opens in a dialog (the same page, fetched as a fragment); the checkboxes drive
