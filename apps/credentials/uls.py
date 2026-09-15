@@ -27,6 +27,8 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
 
+from apps.ops.branding import PRODUCT_NAME, PRODUCT_URL
+
 from .models import LicenseRecord, UlsLicense, UlsStaging
 
 log = logging.getLogger(__name__)
@@ -71,7 +73,16 @@ def download(url: str, dest: Path) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if not url.startswith("https://data.fcc.gov/"):
         raise ValueError(f"refusing to fetch {url!r}: only the FCC's server is expected here")
-    req = urllib.request.Request(url, headers={"User-Agent": "ARCOps uls:sync"})  # noqa: S310
+    # The FCC's front end answers 403 to a GET without an Accept header and an explicit
+    # Accept-Encoding (urllib sends neither by default); observed 2026-09-15.
+    req = urllib.request.Request(  # noqa: S310
+        url,
+        headers={
+            "User-Agent": f"{PRODUCT_NAME} uls:sync (+{PRODUCT_URL})",
+            "Accept": "*/*",
+            "Accept-Encoding": "identity",
+        },
+    )
     with urllib.request.urlopen(req, timeout=120) as resp, dest.open("wb") as fh:  # noqa: S310
         shutil.copyfileobj(resp, fh, length=1 << 20)
     return dest
