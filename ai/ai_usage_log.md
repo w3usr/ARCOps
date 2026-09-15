@@ -683,4 +683,4 @@ carries the actual running model ID.
   read; the FR-122 wording change (Mentor: any license class) is the assistant's reconciliation
   of two of his decisions, recorded in the private plan note.
 - **Human Review Status**: Pending review; scenarios T23 to T27 of the test plan are his check.
-- **Git Hash**: [pending]
+- **Git Hash**: a26a26e
