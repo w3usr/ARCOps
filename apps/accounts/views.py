@@ -138,7 +138,11 @@ def notifications(request):
 
 
 class InviteForm(forms.Form):
-    email = forms.EmailField()
+    email = forms.EmailField(
+        required=False,
+        label="Invitee's email",
+        help_text="Required for an adult. Optional for a member under 18, who need not have one (§2.4): with none, they sign in with an address made from the guardian's.",
+    )
     category = forms.ChoiceField()
     is_minor = forms.BooleanField(required=False, label="The invitee is under 18")
     guardian_email = forms.EmailField(
@@ -160,8 +164,15 @@ class InviteForm(forms.Form):
         if data.get("is_minor"):
             if not data.get("guardian_email"):
                 self.add_error("guardian_email", "A guardian's email is required for a minor.")
+            elif (data.get("email") or "").lower() == data["guardian_email"].lower():
+                self.add_error(
+                    "email",
+                    "The minor's address cannot be the guardian's; leave it blank if they have none.",
+                )
         else:
             data["guardian_email"] = ""
+            if not data.get("email"):
+                self.add_error("email", "An adult's invitation needs their email address.")
         return data
 
 
@@ -249,14 +260,20 @@ class GuardianAcceptForm(forms.Form):
     cell_phone = forms.CharField(
         max_length=30, required=False, label="Member's mobile number (optional)"
     )
+    minor_email = forms.EmailField(
+        required=False,
+        label="Member's own email (optional)",
+        help_text="If they have none, they sign in with an address made from yours and receive nothing directly; every message reaches you.",
+    )
     password1 = forms.CharField(widget=forms.PasswordInput, label="Member's initial password")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Member's password, again")
     consent = forms.BooleanField(
         label="I have read the privacy notice and consent on the member's behalf"
     )
 
-    def __init__(self, *args, guardian_exists: bool, **kwargs):
+    def __init__(self, *args, guardian_exists: bool, guardian_email: str = "", **kwargs):
         super().__init__(*args, **kwargs)
+        self.guardian_email = guardian_email.lower()
         if guardian_exists:
             for f in list(self.fields):
                 if f.startswith("guardian_"):
@@ -268,6 +285,13 @@ class GuardianAcceptForm(forms.Form):
             self.add_error("password2", "The member's passwords do not match.")
         elif data.get("password1"):
             validate_password(data["password1"])
+        addr = (data.get("minor_email") or "").lower()
+        if addr and addr == self.guardian_email:
+            self.add_error(
+                "minor_email", "That is your own address; leave it blank if the member has none."
+            )
+        elif addr and User.objects.filter(email=addr).exists():
+            self.add_error("minor_email", "An account already uses that address.")
         if "guardian_password1" in self.fields:
             if data.get("guardian_password1") != data.get("guardian_password2"):
                 self.add_error("guardian_password2", "Your passwords do not match.")
@@ -294,7 +318,12 @@ def _accept_as_guardian(request, inv):
     if not inv.opened_at:
         inv.opened_at = timezone.now()
         inv.save(update_fields=["opened_at"])
-    form = GuardianAcceptForm(request.POST or None, guardian_exists=existing is not None)
+    form = GuardianAcceptForm(
+        request.POST or None,
+        guardian_exists=existing is not None,
+        guardian_email=inv.guardian_email,
+        initial={"minor_email": inv.email},
+    )
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
         guardian = existing
@@ -309,9 +338,14 @@ def _accept_as_guardian(request, inv):
                 access_level=AccessLevel.MEMBER,
             )
             record(guardian, "account.guardian_created", guardian, after={"invitation": inv.pk})
+        from .guardian import sign_in_address
+
+        own = (d.get("minor_email") or "").lower()
         minor = admit_from_invitation(
             inv,
             d["password1"],
+            email=own or sign_in_address(guardian, d["first_name"]),
+            sign_in_only_address=not own,
             first_name=d["first_name"],
             middle_name=d["middle_name"],
             last_name=d["last_name"],

@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, Guardianship, User
+from apps.accounts.models import AccessLevel, Guardianship, Invitation, User
 from apps.accounts.services import create_invitation
 from apps.comms.models import Outbox
 from apps.comms.services import recipient_addresses
@@ -85,6 +85,7 @@ def test_guardian_completes_a_minors_invitation_creating_both_accounts():
             "guardian_password2": "pw-Testing-123!",
             "first_name": "Kim",
             "last_name": "Kid",
+            "minor_email": "kid@example.org",
             "password1": "pw-Kid-Testing-123!",
             "password2": "pw-Kid-Testing-123!",
             "consent": "on",
@@ -121,6 +122,7 @@ def test_existing_member_as_guardian_must_sign_in_first_then_only_the_minor_form
             "relationship": "parent",
             "first_name": "Kim",
             "last_name": "Kid",
+            "minor_email": "kid@example.org",
             "password1": "pw-Kid-Testing-123!",
             "password2": "pw-Kid-Testing-123!",
             "consent": "on",
@@ -277,3 +279,65 @@ def test_sysadmin_links_and_unlinks_guardians():
     c.post(f"/members/{minor.pk}/", {"action": "unlink_guardian", "link": last.pk})
     last.refresh_from_db()
     assert last.active  # the last guardian of a minor stays
+
+
+def test_minor_without_an_address_signs_in_with_a_plus_address_that_is_never_messaged():
+    officer = _user("off@example.org", AccessLevel.OFFICER)
+    c = _as(officer)
+    r = c.post(
+        "/me/invitations/",
+        {
+            "email": "",
+            "category": "student",
+            "is_minor": "on",
+            "guardian_email": "parent@example.org",
+        },
+    )
+    assert r.status_code == 200 and Invitation.objects.filter(email="", is_minor=True).exists()
+    r = c.post(
+        "/me/invitations/",
+        {
+            "email": "parent@example.org",
+            "category": "student",
+            "is_minor": "on",
+            "guardian_email": "parent@example.org",
+        },
+    )
+    assert b"cannot be the guardian" in r.content
+    r = c.post("/me/invitations/", {"email": "", "category": "student"})
+    assert b"needs their email address" in r.content
+    inv = Invitation.objects.get(email="", is_minor=True)
+    g = Client()
+    r = g.post(
+        f"/me/invite/{inv.token}/",
+        {
+            "guardian_first_name": "Pat",
+            "guardian_last_name": "Parent",
+            "guardian_phone": "555-0100",
+            "relationship": "parent",
+            "guardian_password1": "pw-Testing-123!",
+            "guardian_password2": "pw-Testing-123!",
+            "first_name": "Kim",
+            "last_name": "Kid",
+            "password1": "pw-Kid-Testing-123!",
+            "password2": "pw-Kid-Testing-123!",
+            "consent": "on",
+        },
+    )
+    assert r.status_code == 302
+    minor = User.objects.get(first_name="Kim")
+    parent = User.objects.get(email="parent@example.org")
+    assert minor.email == "parent+kim@example.org" and minor.sign_in_only_address
+    assert recipient_addresses(minor) == ["parent@example.org"]
+    assert b"sign-in only" in g.get("/me/").content
+    # the guardian gives the minor their own address later
+    assert (
+        g.post(f"/me/wards/{minor.pk}/email/", {"email": "parent@example.org"}).status_code == 302
+    )
+    minor.refresh_from_db()
+    assert minor.sign_in_only_address  # refused: the guardian's own
+    g.post(f"/me/wards/{minor.pk}/email/", {"email": "kim@example.org"})
+    minor.refresh_from_db()
+    assert minor.email == "kim@example.org" and not minor.sign_in_only_address
+    assert set(recipient_addresses(minor)) == {"parent@example.org", "kim@example.org"}
+    assert AuditLog.objects.filter(action="account.email_changed", actor=parent).exists()

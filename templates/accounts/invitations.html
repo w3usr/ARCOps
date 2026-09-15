@@ -4,7 +4,7 @@
 <div class="titlerow"><h1>Invite a member</h1><a class="button secondary" href="{% url 'entry_links' %}">Entry links</a></div>
 <p class="muted">One person at a time. For a whole class or a neighbouring club, make an <a href="{% url 'entry_links' %}">entry link</a> instead.</p>
 {% if created %}
-<section class="card highlight" aria-labelledby="c"><h2 id="c">Invitation created for {{ created.email }}</h2>
+<section class="card highlight" aria-labelledby="c"><h2 id="c">Invitation created for {{ created.email|default:"a member under 18, via their guardian" }}</h2>
 <p>Email delivery is {% if created.emailed_at %}on and the system sent it{% else %}off, so <strong>send this yourself</strong> by any means{% endif %}.</p>
 <div class="field"><label for="lnk">Link</label><div class="copyrow"><input id="lnk" readonly value="{{ created_link }}"> <button type="button" class="secondary" data-copy="#lnk">Copy link</button></div></div>
 <div class="field"><label for="txt">Ready-to-send text</label><textarea id="txt" rows="7" readonly>{{ created_text }}</textarea> <button type="button" class="secondary" data-copy="#txt">Copy text</button></div>
@@ -24,7 +24,7 @@
 </form>
 <h2>Recent</h2>
 <table class="table"><thead><tr><th scope="col">Email</th><th scope="col">Category</th><th scope="col">State</th><th scope="col">Expires</th><th scope="col">Issued by</th><th scope="col">Actions</th></tr></thead><tbody>
-{% for i in recent %}<tr><td>{{ i.email }}</td><td>{{ i.category }}</td><td>{{ i.get_state_display }}{% if i.opened_at and i.state == 'created' %} (opened){% endif %}</td><td>{{ i.expires_at|date:"d M Y" }}</td><td>{{ i.issued_by.short_name }}</td>
+{% for i in recent %}<tr><td>{{ i.email|default:"—" }}{% if i.is_minor %} <span class="tag">under 18{% if i.guardian_email %} · via {{ i.guardian_email }}{% endif %}</span>{% endif %}</td><td>{{ i.category }}</td><td>{{ i.get_state_display }}{% if i.opened_at and i.state == 'created' %} (opened){% endif %}</td><td>{{ i.expires_at|date:"d M Y" }}</td><td>{{ i.issued_by.short_name }}</td>
 <td>{% if i.state == 'created' %}<form method="post" action="{% url 'invitation_action' i.pk %}" class="inline">{% csrf_token %}<button name="action" value="reissue" class="secondary">New link</button> <button name="action" value="revoke" class="secondary">Revoke</button></form>{% elif i.accepted_by %}<a href="{% url 'member_detail' i.accepted_by.pk %}">Member</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="6">None yet.</td></tr>{% endfor %}
 </tbody></table>
 {% endblock %}

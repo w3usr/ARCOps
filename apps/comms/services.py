@@ -28,7 +28,7 @@ def recipient_addresses(user) -> list[str]:
     if user.under_18:
         for g in user.guardianships.filter(active=True).select_related("guardian"):
             addrs += recipient_addresses(g.guardian)
-        if user.email:
+        if user.email and not user.sign_in_only_address:
             addrs.append(user.email)
         return sorted(set(addrs))
     if user.institution_email and user.institution_email_delivery:

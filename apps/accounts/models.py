@@ -53,6 +53,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     """A person with an account. The login identifier is the email address (§2.6)."""
 
     email = models.EmailField(unique=True)
+    # §2.4: a minor with no address of their own signs in with a generated plus-address derived
+    # from a guardian's; it receives nothing (messages go to the guardians, FR-70).
+    sign_in_only_address = models.BooleanField(default=False)
     # Two contact addresses of equal standing, each with its own delivery switch (FR-70). When
     # neither is switched on, club mail falls back to the sign-in address so no member is
     # unreachable. NAF, 2026-09-13: "Neither should be considered primary."
@@ -216,7 +219,7 @@ class Invitation(models.Model):
         COMPLETED = "completed", "Completed"
         REVOKED = "revoked", "Revoked"
 
-    email = models.EmailField()
+    email = models.EmailField(blank=True)  # blank only for a minor with no address (§2.4)
     category = models.CharField(max_length=30)
     is_minor = models.BooleanField(default=False)
     guardian_email = models.EmailField(blank=True)

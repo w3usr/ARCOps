@@ -33,7 +33,7 @@
 <section class="card" aria-labelledby="d">
   <h2 id="d">Details</h2>
   <dl class="dl">
-    <dt>Sign-in email</dt><dd><a href="mailto:{{ member.email }}">{{ member.email }}</a></dd>
+    <dt>Sign-in email</dt><dd>{% if member.sign_in_only_address %}{{ member.email }} <span class="tag" title="Made from a guardian's address; receives nothing">sign-in only</span>{% else %}<a href="mailto:{{ member.email }}">{{ member.email }}</a>{% endif %}</dd>
     {% if member.institution_email %}<dt>{{ club.institution_email_domain|default:"Institution" }} email</dt><dd>{{ member.institution_email }}{% if not member.institution_email_delivery %} <span class="tag">delivery off</span>{% endif %}</dd>{% endif %}
     {% if member.personal_email %}<dt>Personal email</dt><dd>{{ member.personal_email }}{% if not member.personal_email_delivery %} <span class="tag">delivery off</span>{% endif %}</dd>{% endif %}
     {% if member.cell_phone %}<dt>Cell phone</dt><dd>{{ member.cell_phone }}</dd>{% endif %}

@@ -942,3 +942,19 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenarios T46 to T48 of the private test plan are the
   check. 156 tests pass; ruff, the formatter, and the neutrality check clean.
 - **Git Hash**: dbd43e6
+
+## [2026-09-15 23:18 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 7 follow-up, on the advisor's decision ("I'll take the
+  recommendation"): a minor need not have an email address (§2.4). The invitee's address is
+  optional on the invite form when the invitee is under 18, optional again on the guardian's
+  acceptance form, and with none the minor signs in with a plus-address made from the guardian's
+  (`parent+kim@…`), flagged sign-in-only so it is never messaged; the guardian sets the minor's
+  real address later from Profile; the guardian's own address is refused as the minor's.
+- **Sections/Files Affected**: apps/accounts/{models,views,services,guardian,urls}.py, migration
+  accounts 0008; apps/comms/services.py (recipient_addresses); templates/accounts/{profile,
+  invitations,member_detail}.html; tests apps/accounts/tests/test_phase7.py.
+- **Nature of Contribution**: Code generation and tests.
+- **Human Review Status**: Pending review; T5 step 1 and T46 step 1 of the private test plan are
+  the check. 157 tests pass; ruff, the formatter, and the neutrality check clean.
+- **Git Hash**: [pending]

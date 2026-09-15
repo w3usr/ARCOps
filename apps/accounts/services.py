@@ -140,7 +140,7 @@ def reissue_invitation(actor: User, inv: Invitation, base_url: str = "") -> Invi
 def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     """FR-5: completing the form admits the person as a Member with the invitation's category."""
     user = User.objects.create_user(
-        email=inv.email,
+        email=profile.pop("email", "") or inv.email,  # a minor's may differ (§2.4)
         password=password,
         category=inv.category,
         access_level=AccessLevel.MEMBER,
