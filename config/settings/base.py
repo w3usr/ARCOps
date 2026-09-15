@@ -182,6 +182,7 @@ LOGGING = {
 FIELD_ENCRYPTION_KEY = os.environ.get("FIELD_ENCRYPTION_KEY", "")  # Fernet key, TR-20
 VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+VAPID_CLAIMS_EMAIL = os.environ.get("VAPID_CLAIMS_EMAIL", "")  # the `sub` claim push services may contact
 APP_VERSION = os.environ.get("APP_VERSION", "dev")
 # Scheduled-job pings (TR-11, TR-33): the healthchecks.io project ping key, from the env file.
 # Empty means no pings (development). Checks are created on first ping (?create=1).

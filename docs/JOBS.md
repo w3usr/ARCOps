@@ -23,9 +23,12 @@ not registered is not watched.
 |---|---|---|---|
 | `selfcheck` | `manage.py selfcheck` | every 5 min | runs `/healthz` in-process; fails if the database is unreachable |
 | `jobs:stale` | `manage.py jobs_stale` | hourly | lists registered jobs whose last success is older than period + grace |
+| `notify:reminders` | `manage.py notify_reminders` | every 15 min | the FR-72 reminder for each sign-up entering its event's window, once per sign-up |
+| `notify:warnings` | `manage.py notify_warnings` | every 15 min | FR-73 at-risk warnings to the people in a slot and a digest to the captains, one per state per 12 h; FR-113 no-show notices |
+| `digest:weekly` | `manage.py digest_weekly` | weekly | the FR-79 digest to every member |
 
-Later phases add `notify:reminders`, `notify:warnings`, `uls:sync`, `agreements:expiry`,
-`licenses:expiry`, `events:complete`, `digest:weekly`, `retention:apply`.
+Later phases add `uls:sync`, `agreements:expiry`, `licenses:expiry`, `events:complete`,
+`retention:apply`.
 
 ## Running one by hand
 

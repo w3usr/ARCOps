@@ -76,6 +76,7 @@
   <p class="credit">Powered by <a href="{{ product.url }}">{{ product.name }}</a>, {{ product.credit }}.</p>
 </footer>
 <script src="{% static 'js/app.js' %}" defer></script>
+{% if user.is_authenticated and vapid_public_key %}<script src="{% static 'js/push.js' %}" defer data-vapid="{{ vapid_public_key }}" data-subscribe="{% url 'push_subscribe' %}" data-enabled="{{ user.push_enabled|yesno:'1,0' }}" data-csrf="{{ csrf_token }}"></script>{% endif %}
 {% block extra_body %}{% endblock %}
 </body>
 </html>

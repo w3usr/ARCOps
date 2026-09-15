@@ -86,6 +86,7 @@
     {% if event.state != 'cancelled' %}
     <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
       <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I want to cancel this event</label></div>
+      <div class="field"><label for="cancel-reason">Reason (sent to everyone signed up)</label><input id="cancel-reason" name="reason" maxlength="300"></div>
       <div><button type="submit" class="danger">Cancel event</button></div>
     </form>
     {% endif %}

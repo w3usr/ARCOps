@@ -2,12 +2,15 @@ from django.urls import path
 
 from apps.comms import views as comms_views
 
-from . import views, views_entry
+from . import views, views_entry, views_push
 
 urlpatterns = [
     path("", views.profile, name="profile"),
     path("notifications/", views.notifications, name="notifications"),
     path("messages/", comms_views.my_messages, name="my_messages"),
+    path("push/subscribe/", views_push.push_subscribe, name="push_subscribe"),
+    path("push/<int:pk>/revoke/", views_push.push_revoke, name="push_revoke"),
+    path("push/toggle/", views_push.push_toggle, name="push_toggle"),
     path("invitations/", views.invitations, name="invitations"),
     path("invitations/<int:pk>/", views.invitation_action, name="invitation_action"),
     path("entry-links/", views_entry.entry_links, name="entry_links"),

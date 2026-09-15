@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load times %}
+{% block title %}Cannot make it · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Cannot make it?</h1>
+<p>You hold {{ signup.slot.event.title }}, {{ signup.slot.position }}, as <strong>{{ signup.role }}</strong>.</p>
+<p class="when">{% when signup.slot.start signup.slot.end signup.slot.event %}</p>
+{% if broken %}<p class="banner">If you leave, this slot becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>{% endif %}
+<form method="post">{% csrf_token %}
+<button type="submit" class="secondary">Cancel my sign-up</button> <a class="button" href="{% url 'my_schedule' %}">Keep it</a></form>
+<p class="muted">The captains are told either way.</p>
+{% endblock %}

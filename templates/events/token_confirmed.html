@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load times %}
+{% block title %}Confirmed · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>{% if already %}Already confirmed{% else %}Confirmed, thank you{% endif %}</h1>
+<p>{{ signup.user.display_first }}, you are down as <strong>{{ signup.role }}</strong> for {{ signup.slot.event.title }}, {{ signup.slot.position }}.</p>
+<p class="when">{% when signup.slot.start signup.slot.end signup.slot.event %}</p>
+{% if already %}<p class="muted">This link was already used; nothing changed.</p>{% endif %}
+<p><a class="button" href="{% url 'my_schedule' %}">Open my schedule</a></p>
+{% endblock %}

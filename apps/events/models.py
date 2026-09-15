@@ -26,6 +26,9 @@ class Event(models.Model):
     contest_fields = models.JSONField(default=dict, blank=True)  # FR-37, by page label
     calendar_ref = models.PositiveIntegerField(null=True, blank=True)  # FR-40
     kbyg_html = models.TextField(blank=True)  # know-before-you-go (FR-77)
+    reminder_hours_before = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="Blank uses the club default (FR-72)."
+    )
     published_at = models.DateTimeField(null=True, blank=True)
     published_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -202,6 +205,8 @@ class SignUp(models.Model):
     checked_in_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
+    reminder_sent_at = models.DateTimeField(null=True, blank=True)  # FR-72: once per sign-up
+    no_show_notified_at = models.DateTimeField(null=True, blank=True)  # FR-113: once per sign-up
 
     class Meta:
         unique_together = [("slot", "user")]
@@ -234,3 +239,16 @@ class Captaincy(models.Model):
 
     class Meta:
         unique_together = [("event", "user")]
+
+
+class SlotWarning(models.Model):
+    """One at-risk warning sent for a slot in a given state (FR-73). The state key is the status
+    plus what is missing, so a change of state earns a new warning and the same state does not
+    repeat within the rate limit (12 hours)."""
+
+    slot = models.ForeignKey(Slot, on_delete=models.CASCADE, related_name="warnings")
+    state_key = models.CharField(max_length=200)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-sent_at"]

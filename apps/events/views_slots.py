@@ -14,6 +14,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import AccessLevel, User
@@ -23,6 +24,7 @@ from apps.ops.config import setting
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
 from .services.roster import cell_for
+from .services.viability import checkin_window_open
 
 
 def _lead(request) -> str:
@@ -62,6 +64,7 @@ def slot_detail(request, pk, slot_id):
         "row": data["row"],
         "roles": data["roles"],
         "is_captain": is_captain,
+        "checkin_open": checkin_window_open(slot, timezone.now()),
         "published": data["published"],
         "eligible_roles": eligible_roles,
         "capacities": {c.role: c.capacity for c in slot.capacities.all()},
@@ -142,6 +145,10 @@ def slot_assign(request, pk, slot_id):
     )
     if created:
         record(request.user, "signup.assigned", su, after={"role": role, "user": member.pk})
+        if member != request.user:
+            from .services.notify import assigned_by_captain
+
+            assigned_by_captain(request.user, su)  # FR-58
         messages.success(request, f"{member.short_name} signed up as {role}.")
     else:
         messages.info(request, f"{member.short_name} already holds this slot.")

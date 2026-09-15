@@ -77,7 +77,12 @@ def profile(request):
 
     prefs = {p.category: p for p in request.user.notification_preferences.all()}
     rows = [
-        {"key": k, "label": label, "email": prefs[k].email if k in prefs else True}
+        {
+            "key": k,
+            "label": label,
+            "email": prefs[k].email if k in prefs else True,
+            "push": prefs[k].push if k in prefs else True,
+        }
         for k, label in CONTROLLED.items()
     ]
     return render(
@@ -88,6 +93,7 @@ def profile(request):
             "licence": licence,
             "notification_rows": rows,
             "mandatory_labels": list(MANDATORY.values()),
+            "push_subscriptions": request.user.push_subscriptions.order_by("-created"),
         },
     )
 
@@ -103,9 +109,12 @@ def notifications(request):
     from .models import NotificationPreference
 
     wanted = set(request.POST.getlist("email")) & set(CONTROLLED)
+    pushed = set(request.POST.getlist("push")) & set(CONTROLLED)
     for key in CONTROLLED:
         NotificationPreference.objects.update_or_create(
-            user=request.user, category=key, defaults={"email": key in wanted}
+            user=request.user,
+            category=key,
+            defaults={"email": key in wanted, "push": key in pushed},
         )
     messages.success(request, "Notification settings saved.")
     return redirect(reverse("profile") + "#notifications")

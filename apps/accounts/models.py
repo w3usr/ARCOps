@@ -67,6 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     name_from_uls = models.BooleanField(default=False)  # FR-4: read-only to the member when true
     callsign = models.CharField(max_length=12, blank=True, db_index=True)
     cell_phone = models.CharField(max_length=30, blank=True)
+    push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default
     category = models.CharField(max_length=30, blank=True)  # key from club config (FR-8)
     club_position = models.CharField(max_length=40, blank=True)  # key from club config
     access_level = models.CharField(

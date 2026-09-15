@@ -17,6 +17,7 @@
     {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
     {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
     {% if is_captain and s.user != user %}<form method="post" action="{% url 'cancel_signup' s.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="confirmed" value="yes"><button class="linklike">remove</button></form>{% endif %}
+    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post" action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">check in</button></form>{% endif %}
     {% if is_captain and s.checked_in_at %}<form method="post" action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}undo no-show{% else %}mark no-show{% endif %}</button></form>{% endif %}
     {% if s.no_show %}<span class="tag warn">no-show</span>{% endif %}
   </li>
@@ -65,5 +66,12 @@
     <button name="what" value="close" class="secondary">{% if slot.closed %}Reopen slot{% else %}Close slot{% endif %}</button>
     {% if not cell.signups %}<button name="what" value="cancel" class="danger">Cancel slot</button>{% endif %}
   </form>
+  {% if cell.signups %}
+  <form method="post" action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
+    <label for="cancel-reason-{{ slot.pk }}">Cancel this slot; everyone in it is told. Reason</label>
+    <input id="cancel-reason-{{ slot.pk }}" name="reason" maxlength="300" placeholder="Station closed for the storm">
+    <button class="danger">Cancel slot and tell {{ cell.signups|length }}</button>
+  </form>
+  {% endif %}
 </div>
 {% endif %}

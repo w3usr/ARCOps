@@ -51,6 +51,19 @@ JOBS: dict[str, JobSpec] = {
     for spec in (
         JobSpec("selfcheck", "Self-check of /healthz", timedelta(minutes=5), timedelta(minutes=10)),
         JobSpec("jobs:stale", "Stale-job watchdog", timedelta(hours=1), timedelta(minutes=30)),
+        JobSpec(
+            "notify:reminders",
+            "Slot reminders (FR-72)",
+            timedelta(minutes=15),
+            timedelta(minutes=30),
+        ),
+        JobSpec(
+            "notify:warnings",
+            "At-risk warnings and no-show notices (FR-73, FR-113)",
+            timedelta(minutes=15),
+            timedelta(minutes=30),
+        ),
+        JobSpec("digest:weekly", "Weekly digest (FR-79)", timedelta(days=7), timedelta(days=1)),
     )
 }
 

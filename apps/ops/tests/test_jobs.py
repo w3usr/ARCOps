@@ -74,7 +74,7 @@ def test_stale_detection_uses_period_plus_grace_and_the_watchdog_reports_it():
     assert "selfcheck" in jobs.stale_jobs(now)  # 2 h old against 5 min + 10 min
     call_command("jobs_stale", "--now", now.isoformat())
     watchdog = JobRun.objects.get(name="jobs:stale")
-    assert watchdog.detail["stale"] == ["selfcheck"]
+    assert "selfcheck" in watchdog.detail["stale"] and "jobs:stale" not in watchdog.detail["stale"]
     # a job that has never succeeded becomes stale once the table is older than its allowance
     assert "jobs:stale" in jobs.stale_jobs(now + timedelta(hours=3))
     body = Client().get("/healthz").json()

@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -68,6 +69,20 @@ def sign(request, template_id):
         content_hash=t.content_hash,
     )
     record(request.user, "agreement.signed", a, after={"template": t.key, "version": t.version})
+    from django.conf import settings as dj
+
+    from apps.comms.services import send
+
+    from .services import approvers
+
+    link = (getattr(dj, "SITE_URL", "") or "") + reverse("approvals")
+    for ap in approvers():
+        send(
+            "agreement.submitted",
+            ap,
+            "agreement",
+            {"person": request.user, "title": t.title, "link": link},
+        )
     messages.success(request, f"Signed: {t.title}. It now awaits approval.")
     return redirect("agreements")
 
@@ -122,6 +137,20 @@ def decide(request, pk):
         a.approved_at = timezone.now()
         a.save()
         record(request.user, "agreement.declined", a, after={"reason": a.decision_reason})
+        from django.conf import settings as dj
+
+        from apps.comms.services import send
+
+        send(
+            "agreement.declined",
+            a.user,
+            "agreement",
+            {
+                "title": a.template.title,
+                "reason": a.decision_reason,
+                "link": (getattr(dj, "SITE_URL", "") or "") + reverse("agreements"),
+            },
+        )
         messages.info(request, "Declined.")
     return redirect("approvals")
 

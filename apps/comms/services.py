@@ -79,6 +79,7 @@ def email_enabled() -> bool:
 
 
 def deliver(msg: Outbox) -> Outbox:
+    _push(msg)
     if not email_wanted(msg.user, msg.category):
         msg.state = Outbox.State.SKIPPED
         msg.save(update_fields=["state"])
@@ -104,6 +105,20 @@ def deliver(msg: Outbox) -> Outbox:
         msg.state, msg.error = Outbox.State.FAILED, str(exc)[:500]
     msg.save(update_fields=["state", "sent_at", "error"])
     return msg
+
+
+def _push(msg: Outbox) -> None:
+    """FR-112: the browser copy, best effort, subject and link only."""
+    from .push import push_wanted, send_push
+
+    if msg.user is None or not push_wanted(msg.user, msg.category):
+        return
+    try:
+        send_push(msg.user, msg.subject, f"{getattr(dj, 'SITE_URL', '')}/me/messages/")
+    except Exception as exc:  # noqa: BLE001 - never blocks the email or the copy
+        import logging
+
+        logging.getLogger(__name__).warning("push skipped: %s", exc)
 
 
 # ------------------------------------------------------------------ templates (FR-78) ---

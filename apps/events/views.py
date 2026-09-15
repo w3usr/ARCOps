@@ -105,10 +105,57 @@ def cancel_signup(request, signup_id):
                 f"If you cancel, this slot becomes {broken.label.lower()}: {'; '.join(broken.reasons)}. Cancel anyway?",
             )
             return render(request, "events/confirm_cancel.html", {"signup": su, "broken": broken})
+    from .services import notify
+
+    broken = would_break(slot, su)
     record(request.user, "signup.cancelled", su, before={"role": su.role, "user": su.user_id})
+    if su.user == request.user:
+        notify.member_cancelled(request.user, su, broken)  # FR-56: the captains always hear
+    else:
+        notify.removed_by_captain(request.user, su, request.POST.get("reason", "")[:300])  # FR-58
     su.delete()
     messages.success(request, "Sign-up cancelled.")
     return redirect("event_detail", pk=slot.event.pk)
+
+
+def confirm_by_token(request, token):
+    """FR-72, FR-100: the one-click confirm link in a reminder works without signing in. A used
+    or expired token shows a clear message and a route to sign in."""
+    from .services.notify import signup_from_token
+
+    su = signup_from_token(token)
+    if su is None:
+        return render(request, "events/token_invalid.html", status=410)
+    already = su.confirmed_at is not None
+    if not already:
+        su.confirmed_at = timezone.now()
+        su.save(update_fields=["confirmed_at"])
+        record(su.user, "signup.confirmed", su, after={"via": "token"})
+    return render(request, "events/token_confirmed.html", {"signup": su, "already": already})
+
+
+def cannot_by_token(request, token):
+    """FR-72: the cannot-make-it link opens the cancellation flow, signed in or not, with the
+    same warning a signed-in cancel gives (FR-56)."""
+    from .services import notify
+    from .services.notify import signup_from_token
+
+    su = signup_from_token(token)
+    if su is None:
+        return render(request, "events/token_invalid.html", status=410)
+    broken = would_break(su.slot, su)
+    if request.method == "POST":
+        record(
+            su.user,
+            "signup.cancelled",
+            su,
+            before={"role": su.role, "user": su.user_id, "via": "token"},
+        )
+        notify.member_cancelled(su.user, su, broken)
+        event_pk = su.slot.event.pk
+        su.delete()
+        return render(request, "events/token_cancelled.html", {"event_pk": event_pk})
+    return render(request, "events/token_cannot.html", {"signup": su, "broken": broken})
 
 
 @login_required

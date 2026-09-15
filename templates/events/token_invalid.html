@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Link not valid · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>This link is no longer valid</h1>
+<p>It was for a slot that has ended, a sign-up that no longer exists, or it has been altered. Nothing has changed.</p>
+<p><a class="button" href="{% url 'account_login' %}?next={% url 'my_schedule' %}">Sign in to see your schedule</a></p>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Cancelled · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Sign-up cancelled</h1>
+<p>The captains have been told. Thank you for letting them know in time to find someone.</p>
+<p><a class="button" href="{% url 'event_detail' event_pk %}">Back to the roster</a></p>
+{% endblock %}

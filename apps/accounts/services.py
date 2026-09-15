@@ -94,6 +94,10 @@ def set_access_level(actor: User, user: User, level: str, reason: str = "") -> N
         before={"level": before},
         after={"level": level, "reason": reason},
     )
+    if level == AccessLevel.NONE and before != AccessLevel.NONE:
+        from apps.events.services.notify import access_removed
+
+        access_removed(actor, user)  # FR-91: future sign-ups go, captains are told
 
 
 def place_sign_in_email(user: User) -> bool:
@@ -152,4 +156,41 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     record(
         user, "application.completed", user, after={"invitation": inv.pk, "category": inv.category}
     )
+    _completion_notices(inv, user)
     return user
+
+
+def _completion_notices(inv: Invitation, user: User) -> None:
+    """FR-5, FR-76: the inviter and the officers are told who joined, with callsign and ULS name,
+    so a wrong person or a mistyped callsign is caught after the fact; the member gets a welcome."""
+    from django.conf import settings as dj
+    from django.urls import reverse
+
+    from apps.comms.services import send
+
+    site = getattr(dj, "SITE_URL", "") or ""
+    link = site + reverse("member_detail", args=[user.pk])
+    lic = getattr(user, "license", None)
+    uls_name = getattr(lic, "uls_name", "") if lic else ""
+    recipients = {
+        u.pk: u
+        for u in User.objects.filter(
+            access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True
+        )
+    }
+    if inv.issued_by and inv.issued_by.is_active:
+        recipients[inv.issued_by.pk] = inv.issued_by
+    for r in recipients.values():
+        send(
+            "account.completed",
+            r,
+            "account",
+            {
+                "person": user,
+                "uls_name": uls_name or "",
+                "invited_email": inv.email,
+                "category": inv.category,
+                "link": link,
+            },
+        )
+    send("account.welcome", user, "account")

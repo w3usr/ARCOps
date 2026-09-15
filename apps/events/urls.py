@@ -49,4 +49,6 @@ urlpatterns = [
     path("signup/<int:signup_id>/cancel/", views.cancel_signup, name="cancel_signup"),
     path("signup/<int:signup_id>/checkin/", views.check_in, name="check_in"),
     path("signup/<int:signup_id>/confirm/", views.confirm_signup, name="confirm_signup"),
+    path("confirm/<str:token>/", views.confirm_by_token, name="confirm_by_token"),
+    path("cannot/<str:token>/", views.cannot_by_token, name="cannot_by_token"),
 ]

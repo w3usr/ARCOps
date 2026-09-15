@@ -87,7 +87,31 @@ def approve(
         agreement,
         after={"expires_on": agreement.expires_on.isoformat()},
     )
+    from apps.comms.services import send
+
+    send(
+        "agreement.approved",
+        agreement.user,
+        "agreement",
+        {
+            "title": agreement.template.title,
+            "approver": actor.full_name if actor else "an approver",
+            "expires": agreement.expires_on,
+        },
+    )
     return agreement
+
+
+def approvers():
+    """Sysadmins and members in an approver position (§2.3)."""
+    from apps.accounts.models import AccessLevel, User
+    from apps.ops.config import setting
+
+    keys = {p["key"] for p in (setting("club_positions", []) or []) if p.get("approver")}
+    qs = User.objects.filter(is_active=True).exclude(access_level=AccessLevel.NONE)
+    from django.db.models import Q
+
+    return list(qs.filter(Q(access_level=AccessLevel.SYSADMIN) | Q(club_position__in=keys)))
 
 
 def expire_due() -> int:

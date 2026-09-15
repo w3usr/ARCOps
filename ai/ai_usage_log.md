@@ -731,3 +731,30 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenarios T29 and T30 of the private test plan are
   the check. 98 tests pass; ruff clean.
 - **Git Hash**: f7825bf
+
+## [2026-09-15 18:52 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 1 of the implementation plan kept in the private repository (the
+  notices): the 24-hour reminder with a one-click confirm link that works signed out and a
+  cannot-make-it link into the cancellation flow (FR-72, FR-100); at-risk warnings to the people
+  in a slot and a digest to the captains, one per state per 12 hours, carrying late sign-up notes
+  (FR-73, FR-110); no-show notices and captain check-in on a member's behalf (FR-113);
+  cancellation, removal, and assignment notices, late-cancellation flag, event and slot
+  cancellation with a reason, access removal withdrawing future sign-ups (FR-56, FR-58, FR-74,
+  FR-91); application-completed, welcome, and agreement submitted / approved / declined notices
+  (FR-5, FR-76); browser push with per-device subscriptions and a member switch (FR-112); the
+  weekly digest (FR-79). Sixteen new message templates; three new scheduled jobs registered.
+- **Sections/Files Affected**: apps/events/services/notify.py (new), apps/events/management/
+  commands/{notify_reminders,notify_warnings,digest_weekly}.py (new), apps/events/{models,views,
+  urls,views_manage,views_slots}.py, migration events 0005; apps/comms/{defaults,push}.py,
+  apps/comms/services.py; apps/accounts/{models,services,views,views_push,urls}.py, migration
+  accounts 0005; apps/credentials/{services,views}.py; apps/ops/{jobs,context_processors}.py;
+  templates/events/{token_confirmed,token_cannot,token_cancelled,token_invalid}.html (new),
+  templates/events/{_slot_body,manage}.html, templates/accounts/profile.html, templates/base.html;
+  static/js/push.js (new); config/settings/base.py; docs/JOBS.md; tests apps/events/tests/
+  test_notify.py, apps/comms/tests/test_push.py, apps/credentials/tests/test_notices.py (new).
+- **Nature of Contribution**: Code generation and tests against the requirement text; the
+  template wording is a first draft the sysadmin edits on the Templates page.
+- **Human Review Status**: Pending review; scenarios T31 to T34 of the private test plan are
+  the check. 112 tests pass; ruff clean.
+- **Git Hash**: [fill in after committing]

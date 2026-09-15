@@ -59,11 +59,13 @@ class EventForm(forms.ModelForm):
             "rules_url",
             "min_license_class",
             "kbyg_html",
+            "reminder_hours_before",
         ]
         labels = {
             "description_html": "Description",
             "rules_url": "Rules link",
-            "min_license_class": "Minimum license class",
+            "min_license_class": "Preferred license class",
+            "reminder_hours_before": "Reminder, hours before each slot",
             "kbyg_html": "Know before you go",
         }
         widgets = {
@@ -359,10 +361,18 @@ def slot_toggle(request, slot_id):
         messages.success(request, "Slot closed." if slot.closed else "Slot reopened.")
     elif what == "cancel":
         if slot.signups.exists():
-            messages.error(
-                request,
-                "Remove the sign-ups first; people should hear from you before the slot vanishes.",
-            )
+            if request.POST.get("confirmed") == "yes":
+                from .services.notify import cancel_slot_with_people
+
+                n = cancel_slot_with_people(
+                    request.user, slot, request.POST.get("reason", "")[:300]
+                )
+                messages.success(request, f"Slot cancelled; {n} person(s) told.")
+            else:
+                messages.error(
+                    request,
+                    "This slot has people in it. Cancel it from the slot page with a reason, so they are told; or remove the sign-ups first.",
+                )
         else:
             slot.cancelled = True
             slot.save(update_fields=["cancelled"])
@@ -390,10 +400,15 @@ def event_cancel(request, pk):
     if request.POST.get("confirm") != "yes":
         messages.error(request, "Tick the confirmation to cancel the event.")
         return redirect("event_manage", pk=pk)
+    from .services.notify import event_cancelled
+
+    reason = request.POST.get("reason", "")[:300]
     event.state = Event.State.CANCELLED
     event.save(update_fields=["state"])
-    record(request.user, "event.cancelled", event)
+    told = event_cancelled(request.user, event, reason)
+    record(request.user, "event.cancelled", event, after={"reason": reason, "people_told": told})
     messages.success(
-        request, "Event cancelled. It stays in the record; members no longer see it as upcoming."
+        request,
+        f"Event cancelled; {told} person(s) told. It stays in the record; members no longer see it as upcoming.",
     )
     return redirect("event_list")
