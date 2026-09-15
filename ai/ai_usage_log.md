@@ -906,3 +906,13 @@ carries the actual running model ID.
   check, and the privacy notice text awaits the advisor's edit (D4). 147 tests pass; ruff, the
   formatter, and the neutrality check clean.
 - **Git Hash**: a590ae8
+
+## [2026-09-15 22:41 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 6 follow-up: the legal-hold flag (TR-28) had no control in the
+  interface; it now sits on the sysadmin's member form, audited with the other privilege fields.
+- **Sections/Files Affected**: apps/accounts/views_members.py.
+- **Nature of Contribution**: Code generation.
+- **Human Review Status**: Pending review; T44 step 5 of the private test plan is the check.
+  147 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [pending]

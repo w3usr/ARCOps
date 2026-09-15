@@ -25,7 +25,14 @@ from . import entry
 from .models import AccessLevel, User
 from .services import issue_temporary_password, set_access_level
 
-PRIVILEGE_FIELDS = ("category", "club_position", "access_level", "under_18", "callsign")
+PRIVILEGE_FIELDS = (
+    "category",
+    "club_position",
+    "access_level",
+    "under_18",
+    "callsign",
+    "legal_hold",
+)
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
 
 
@@ -47,6 +54,9 @@ class MemberForm(forms.ModelForm):
         )
         self.fields["access_level"] = forms.ChoiceField(choices=AccessLevel.choices)
         self.fields["under_18"].label = "Under 18"
+        self.fields[
+            "legal_hold"
+        ].label = "Legal hold: the retention job leaves this account's records alone (TR-28)"
         if self.instance.name_from_uls:
             for f in NAME_FIELDS:  # FR-4: the FCC record's name is read-only
                 self.fields.pop(f)
