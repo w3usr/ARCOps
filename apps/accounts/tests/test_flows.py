@@ -93,12 +93,12 @@ def test_invitation_accept_admits_member_at_once():
     assert c.get(f"/me/invite/{inv.token}/").status_code == 410
 
 
-def test_minor_invitation_is_held_for_the_guardian_flow():
+def test_minor_invitation_is_addressed_to_the_guardian():
     inv = create_invitation(
         officer(), "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"
     )
     body = Client().get(f"/me/invite/{inv.token}/").content.decode()
-    assert "under 18" in body and "<form" not in body
+    assert "under 18" in body and "parent@example.org" in body and "Your first name" in body
 
 
 def test_no_access_level_is_signed_out():

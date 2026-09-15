@@ -16,6 +16,23 @@
 <dt>Access level</dt><dd>{{ user.get_access_level_display }}</dd>
 {% if licence %}<dt>License</dt><dd>{{ licence.callsign }} · {{ licence.effective_class|default:"class unknown" }} · {{ licence.effective_status }}{% if licence.effective_expiry %} · expires {{ licence.effective_expiry }}{% endif %} <small class="muted">({{ licence.effective_source }}{% if licence.retrieved_at %}, checked {{ licence.retrieved_at|date:"j M" }}{% endif %})</small></dd>{% endif %}
 </dl></section>
+{% if my_wards %}
+<section class="card highlight" aria-labelledby="wards"><h2 id="wards">Members you act for</h2>
+<p>You are the guardian of the members below (REQUIREMENTS §2.4). <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>
+<ul class="list">{% for w in my_wards %}<li><strong>{{ w.full_name }}</strong>{% if w.callsign %} {{ w.callsign }}{% endif %} · signs in read-only with {{ w.email }}
+  <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit">Act for {{ w.display_first }}</button></form>
+  <form method="post" action="{% url 'ward_password' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Set a temporary password</button></form></li>{% endfor %}</ul>
+</section>
+{% endif %}
+{% if guardians %}
+<section class="card" aria-labelledby="gds"><h2 id="gds">Your guardians</h2>
+<ul class="list">{% for g in guardians %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}</li>{% endfor %}</ul>
+<p class="muted">They sign you up, manage this profile, and receive every message sent to you. When you turn 18, tell a faculty advisor and the account becomes your own.</p>
+</section>
+{% endif %}
+{% if minor_readonly %}
+<section class="card"><h2>Details you manage</h2><dl class="kv"><dt>Preferred name</dt><dd>{{ user.preferred_name|default:"—" }}</dd><dt>Mobile</dt><dd>{{ user.cell_phone|default:"—" }}</dd><dt>Callsign</dt><dd>{{ user.callsign|default:"none" }}</dd></dl><p class="muted">Your guardian edits these while acting for you.</p></section>
+{% else %}
 <form method="post" class="card stack">{% csrf_token %}
 <h2>Details you manage</h2>
 {{ form.non_field_errors }}
@@ -46,6 +63,8 @@
 {% endif %}
 <div><button type="submit">Save</button></div>
 </form>
+{% endif %}
+{% if not minor_readonly %}
 <form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}
 <h2>Notifications</h2>
 <p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>
@@ -75,10 +94,12 @@
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>
 {% endif %}
-<section class="card"><h2>Closing your account</h2>
+{% endif %}
+{% if not minor_readonly %}<section class="card"><h2>Closing your account</h2>
 <p>You can ask for your account to be closed at any time (see the <a href="{% url 'privacy' %}">privacy notice</a>). Access ends at once; the club keeps its records for the stated period and then removes your contact details. Signed agreements are kept for their own retention period.</p>
 <form method="post" action="{% url 'request_closure' %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="confirm" value="yes"> I want to close my account</label> <button type="submit" class="danger">Close my account</button></form>
 </section>
+{% endif %}
 <section class="card"><h2>Security</h2>
 <ul class="list"><li><a href="{% url 'account_change_password' %}">Change password</a></li><li><a href="{% url 'mfa_index' %}">Two-step verification and passkeys</a></li></ul></section>
 {% endblock %}

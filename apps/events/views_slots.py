@@ -165,7 +165,7 @@ def slot_assign(request, pk, slot_id):
     if not cap or slot.signups.filter(role=role).count() >= cap.capacity:
         messages.error(request, "No seat open in that role.")
         return redirect("slot_detail", pk=pk, slot_id=slot_id)
-    ok, reason = can_sign_up(member, slot, role)
+    ok, reason = can_sign_up(member, slot, role, by_captain=True)
     if not ok:
         messages.error(request, f"{member.short_name} cannot take that role: {reason}.")
         return redirect("slot_detail", pk=pk, slot_id=slot_id)

@@ -17,7 +17,14 @@
     {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
     {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
     {% if is_captain and s.user != user %}<form method="post" action="{% url 'cancel_signup' s.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="confirmed" value="yes"><button class="linklike">remove</button></form>{% endif %}
-    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post" action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">check in</button></form>{% endif %}
+    {% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}
+      {% if is_captain or cell.mine or s.user == user %}<details class="inline"><summary>under 18: who accompanies</summary>
+        {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %} · {{ a.phone }}{% endif %}{% if is_captain and a.email %} · {{ a.email }}{% endif %}{% if a.present_at %} · <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
+        {% if is_captain %}<p class="muted">Guardians: {% for g in s.user.guardianships.all %}{% if g.active %}{{ g.guardian.full_name }} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}{% if not forloop.last %}; {% endif %}{% endif %}{% empty %}none linked{% endfor %}</p>
+        <a href="{% url 'signup_adults' s.pk %}">Edit the designation</a>{% elif s.user == user and not minor_readonly %}<a href="{% url 'signup_adults' s.pk %}">Name or change the adult</a>{% endif %}</details>
+      {% else %}<span class="tag" title="A responsible adult accompanies this member">under 18</span>{% endif %}
+    {% endwith %}{% endif %}
+    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post" action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button class="linklike">check in</button></form>{% endif %}
     {% if is_captain and s.checked_in_at %}<form method="post" action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}undo no-show{% else %}mark no-show{% endif %}</button></form>{% endif %}
     {% if s.no_show %}<span class="tag warn">no-show</span>{% endif %}
   </li>
@@ -29,7 +36,8 @@
 {% if cell.mine %}
 <h2>You hold this slot</h2>
 <p>As <strong>{{ cell.mine.role }}</strong>{% if cell.mine.confirmed_at %}, confirmed{% endif %}.</p>
-{% if locked %}<p class="muted">The roster is locked; to change or give up this slot, contact a captain.</p>
+{% if minor_readonly %}<p class="muted">Your guardian changes or gives up this slot from their account.</p>
+{% elif locked %}<p class="muted">The roster is locked; to change or give up this slot, contact a captain.</p>
 {% else %}
 <form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>
 {% if switch_roles %}
@@ -42,7 +50,8 @@
 {% endif %}
 {% elif published and not slot.closed %}
 <h2>Sign up</h2>
-{% if eligible_roles %}
+{% if minor_readonly %}<p class="muted">Your guardian signs you up from their account.</p>
+{% elif eligible_roles %}
 <form method="post" action="{% url 'sign_up' slot.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="role-{{ slot.pk }}">Role</label><select id="role-{{ slot.pk }}" name="role">{% for r in eligible_roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select></div>
   <div class="field"><label for="note-{{ slot.pk }}">Note to the captains (optional)</label><input id="note-{{ slot.pk }}" name="note" maxlength="500" placeholder="First contest, happy to be paired with a mentor"></div>

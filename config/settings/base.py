@@ -79,6 +79,7 @@ MIDDLEWARE = [
     # FR-94: a sysadmin viewing as a member, read-only; after the gate, so the gate sees the
     # sysadmin and this sees the member.
     "apps.accounts.impersonate.ImpersonationMiddleware",
+    "apps.accounts.guardian.ActingForMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -102,6 +103,7 @@ TEMPLATES = [
                 "apps.ops.context_processors.product",
                 "apps.comms.context_processors.unread",
                 "apps.accounts.impersonate.context",
+                "apps.accounts.guardian.context",
             ],
         },
     },

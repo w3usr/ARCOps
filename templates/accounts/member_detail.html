@@ -64,6 +64,17 @@
   {% if user.is_sysadmin and not is_self %}
   <h2>Sign-in</h2>
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
+  {% if member.under_18 or guardian_links %}
+  <section class="card" aria-labelledby="gd"><h2 id="gd">Guardians (§2.4)</h2>
+    {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot (FR-64).</p>{% endif %}
+    <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif user.is_sysadmin %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="linklike">unlink</button></form>{% endif %}</li>{% empty %}<li class="muted">None linked.</li>{% endfor %}</ul>
+    {% if member.under_18 and user.is_sysadmin %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="their sign-in address" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
+    {% if member.under_18 and is_approver %}<details><summary>Convert to an adult account (FR-109)</summary>
+      <p>When the member or a guardian reports that they have turned 18. Clears the under-18 flag, ends the guardian links (kept in history), issues a one-time temporary password for the member to set their own, tells the guardians, and writes an audit row. Nothing changes on its own: no date of birth is stored.</p>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="convert_adult"><button type="submit">Convert to adult account</button></form></details>{% endif %}
+  </section>
+  {% endif %}
+  {% if wards %}<section class="card"><h2>Acts for</h2><ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul></section>{% endif %}
   {% if not member.deleted_at %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member (read-only)</button></form>{% endif %}
   {% if member.deleted_at %}<p class="msg warning">This account was deleted on {{ member.deleted_at|date:"j M Y" }}; the row stays so past rosters keep their shape.</p>{% else %}
   <details class="card"><summary>Delete this account (FR-118)</summary>

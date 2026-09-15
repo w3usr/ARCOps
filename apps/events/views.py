@@ -98,6 +98,12 @@ def sign_up(request, slot_id):
     else:
         record(request.user, "signup.created", su, after={"role": role})
         messages.success(request, f"Signed up as {role} for {slot.start:%a %d %b %H:%M}Z.")
+        if request.user.under_18:  # FR-64: the guardian names who accompanies the minor
+            messages.info(
+                request,
+                f"Now name the responsible adult who will accompany {request.user.display_first}.",
+            )
+            return redirect("signup_adults", signup_id=su.pk)
     return redirect("event_detail", pk=event.pk)
 
 
@@ -189,10 +195,31 @@ def check_in(request, signup_id):
     if not checkin_window_open(su.slot, now):
         messages.error(request, "Check-in opens 30 minutes before the slot.")
         return redirect("my_schedule")
+    present = []
+    if (
+        su.user.under_18
+    ):  # FR-113: a guardian or a captain checks a minor in, naming the adult present
+        adults = list(su.responsible_adults.all())
+        chosen = request.POST.getlist("adult") or ([str(adults[0].pk)] if len(adults) == 1 else [])
+        present = [a for a in adults if str(a.pk) in chosen]
+        if not present:
+            messages.error(
+                request,
+                f"Say which responsible adult is with {su.user.display_first} before checking them in.",
+            )
+            return redirect("slot_detail", pk=su.slot.event.pk, slot_id=su.slot.pk)
+        for a in present:
+            a.present_at = now
+            a.save(update_fields=["present_at"])
     su.checked_in_at = now
-    su.checked_in_by = request.user
+    su.checked_in_by = getattr(request.user, "acting_guardian", None) or request.user
     su.save(update_fields=["checked_in_at", "checked_in_by"])
-    record(request.user, "signup.checked_in", su)
+    record(
+        request.user,
+        "signup.checked_in",
+        su,
+        after={"present": [a.name for a in present]} if present else None,
+    )
     messages.success(request, "Checked in. Have a good shift.")
     return redirect("my_schedule")
 

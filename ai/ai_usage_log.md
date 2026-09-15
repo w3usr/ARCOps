@@ -916,3 +916,29 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T44 step 5 of the private test plan is the check.
   147 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: d6884fe
+
+## [2026-09-15 23:04 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 7 of the implementation plan (guardians and minors, REQUIREMENTS
+  §2.4): a guardian completes a minor's invitation, creating or linking their own account and
+  the minor's read-only one (FR-10); a guardian acts for a linked minor from their own account,
+  with every action rendered as the minor and audited in the guardian's name; a minor's own
+  sign-in refuses every state change except their password; responsible adults are named per
+  slot from a fresh entry, the guardian's saved list, or a member by name, shown to slot-mates
+  and in full to captains, and recorded as present at check-in (FR-64, FR-67, FR-113); every
+  message to a minor reaches every active guardian (FR-70, verified by test); an approver
+  converts the account at 18 with a one-time password and notices to the guardians (FR-109);
+  sysadmins link and unlink guardians on the member page.
+- **Sections/Files Affected**: apps/accounts/guardian.py (new: middleware, context, act-for
+  views, ward password, link/unlink/convert services), apps/accounts/{views,views_members,
+  models,urls}.py, apps/accounts/tests/{test_phase7 (new),test_flows}.py; apps/events/
+  views_adults.py (new), apps/events/{views,views_slots,urls}.py, apps/events/services/
+  eligibility.py; apps/ops/audit.py (guardian attribution); apps/comms/defaults.py (two
+  templates); config/settings/base.py, config/club.example.yaml (guardian category);
+  templates/accounts/{accept_invitation_guardian,invitation_guardian_signin,ward_password}.html
+  (new), templates/accounts/{profile,member_detail}.html, templates/events/{adults (new),
+  my_schedule,_slot_body}.html, templates/{base,ops/dashboard}.html.
+- **Nature of Contribution**: Code generation and tests against the requirement text.
+- **Human Review Status**: Pending review; scenarios T46 to T48 of the private test plan are the
+  check. 156 tests pass; ruff, the formatter, and the neutrality check clean.
+- **Git Hash**: [pending]

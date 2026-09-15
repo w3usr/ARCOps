@@ -10,13 +10,16 @@ from apps.ops.config import setting
 from ..models import EligibilityRule, Opening
 
 
-def can_sign_up(user, slot, role: str, now=None) -> tuple[bool, str]:
+def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tuple[bool, str]:
     """Returns (allowed, reason). Captains and officers are not exempt: the rules describe who
-    the slot is for, and a captain who wants to override does so through the roster tools."""
+    the slot is for, and a captain who wants to override does so through the roster tools.
+    A minor is signed up by a guardian acting for them (§2.4) or by a captain."""
     now = now or timezone.now()
     event = slot.event
-    if user.under_18:
+    if user.under_18 and not by_captain and getattr(user, "acting_guardian", None) is None:
         return False, "a guardian signs up on a minor's behalf"
+    if getattr(user, "is_guardian_only", False):
+        return False, "a guardian account does not operate; ask an officer to admit you as a member"
 
     # Openings: if any opening exists for this role, one of them must have passed for this
     # person's category (an opening with no categories is for everyone).
@@ -52,6 +55,8 @@ def can_sign_up(user, slot, role: str, now=None) -> tuple[bool, str]:
         ):
             return False, f"{role} needs a valid amateur license"
     if rule:
+        if user.under_18 and not rule.minors_allowed:
+            return False, f"{role} in this slot is not open to members under 18"
         if rule.categories and user.category not in rule.categories:
             return False, f"{role} is limited to: {', '.join(rule.categories)}"
         if rule.min_license_class and (

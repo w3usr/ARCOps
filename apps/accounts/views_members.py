@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from apps.credentials.models import LicenseRecord, SignedAgreement
+from apps.credentials.views import _is_approver
 from apps.ops.audit import record
 from apps.ops.config import setting
 
@@ -186,6 +187,43 @@ def member_detail(request, pk):
                     "License override saved; it shows as such wherever the value appears and the nightly import leaves it alone.",
                 )
             return redirect("member_detail", pk=pk)
+        elif action == "convert_adult" and member.under_18 and _is_approver(actor):  # FR-109
+            from .guardian import convert_to_adult
+
+            temp_password = convert_to_adult(actor, member)
+            messages.success(
+                request,
+                f"{member.display_first} now holds their own account; the guardians have been told. Pass on the temporary password below.",
+            )
+        elif action == "link_guardian" and actor.is_sysadmin and member.under_18:  # §2.4
+            from .guardian import link_guardian
+
+            g = User.objects.filter(
+                email=request.POST.get("guardian_email", "").strip().lower()
+            ).first()
+            if g is None or g.under_18 or g == member:
+                messages.error(
+                    request,
+                    "No adult account holds that address. Guardians without an account join through the minor's invitation.",
+                )
+            else:
+                link_guardian(actor, member, g, request.POST.get("relationship", "").strip()[:40])
+                messages.success(request, f"{g.full_name} linked as guardian.")
+        elif action == "unlink_guardian" and actor.is_sysadmin:
+            from .guardian import unlink_guardian
+            from .models import Guardianship
+
+            link = get_object_or_404(
+                Guardianship, pk=request.POST.get("link"), minor=member, active=True
+            )
+            if member.under_18 and member.guardianships.filter(active=True).count() == 1:
+                messages.error(
+                    request,
+                    "A member under 18 keeps at least one guardian; link another first, or convert the account.",
+                )
+            else:
+                unlink_guardian(actor, link)
+                messages.success(request, f"{link.guardian.full_name} unlinked.")
         elif action == "delete" and actor.is_sysadmin:  # FR-118
             from .services import DeletionRefused, delete_account
 
@@ -256,6 +294,11 @@ def member_detail(request, pk):
             )._is_approver(actor),
             "temp_password": temp_password,
             "standing": _standing(member),
+            "guardian_links": list(
+                member.guardianships.select_related("guardian").order_by("-active", "created")
+            ),
+            "wards": list(member.wards.filter(active=True).select_related("minor")),
+            "is_approver": _is_approver(actor),
             "is_self": member == actor,
         },
     )

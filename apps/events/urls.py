@@ -1,8 +1,9 @@
 from django.urls import path
 
-from . import views, views_manage, views_member, views_rules, views_slots
+from . import views, views_adults, views_manage, views_member, views_rules, views_slots
 
 urlpatterns = [
+    path("signup/<int:signup_id>/adults/", views_adults.adults, name="signup_adults"),
     path("", views.event_list, name="event_list"),
     path("mine/", views.my_schedule, name="my_schedule"),
     path("<int:pk>/", views.event_detail, name="event_detail"),

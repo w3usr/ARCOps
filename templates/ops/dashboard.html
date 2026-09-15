@@ -24,6 +24,11 @@
 </section>
 {% endif %}
 
+{% if my_wards %}
+<section class="card" aria-labelledby="wd"><h2 id="wd">Members you act for</h2>
+<ul class="list">{% for w in my_wards %}<li>{{ w.full_name }} <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Act for {{ w.display_first }}</button></form></li>{% endfor %}</ul>
+</section>
+{% endif %}
 {% if checkin_ready %}
 <section class="card highlight" aria-labelledby="ci">
   <h2 id="ci">You can check in now</h2>

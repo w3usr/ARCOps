@@ -431,6 +431,29 @@ DEFAULT_TEMPLATES: list[dict] = [
         ),
         "variables": ["person.full_name", "person.callsign"],
     },
+    {
+        "key": "guardian.converted",
+        "subject": "{{ minor.full_name }}'s account is now their own",
+        "body_html": (
+            "<p>A faculty advisor has converted {{ minor.full_name }}'s account to an adult's. Your "
+            "guardian link has ended and is kept in the club's records; from now on messages go to "
+            "{{ minor.display_first }} directly, and they manage their own account and sign-ups. "
+            "The advisor is passing them a one-time password to set their own.</p>"
+        ),
+        "variables": ["minor.full_name", "minor.display_first"],
+    },
+    {
+        "key": "account.converted",
+        "subject": "Your account is now your own",
+        "body_html": (
+            "<p>{{ advisor.full_name }} has converted your account to an adult's: your guardian no "
+            "longer acts for you, messages come to you directly, and you sign yourself up for "
+            "slots. You will receive a one-time password from the advisor; sign in with it and set "
+            "your own. As an adult member you can now sign the club's access agreements from "
+            "<strong>Agreements</strong>.</p>"
+        ),
+        "variables": ["advisor.full_name", "user.display_first"],
+    },
 ]
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}
