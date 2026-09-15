@@ -176,6 +176,23 @@ def member_detail(request, pk):
                     "License override saved; it shows as such wherever the value appears and the nightly import leaves it alone.",
                 )
             return redirect("member_detail", pk=pk)
+        elif action == "delete" and actor.is_sysadmin:  # FR-118
+            from .services import DeletionRefused, delete_account
+
+            reason = request.POST.get("reason", "").strip()
+            if request.POST.get("confirm") != "yes" or not reason:
+                messages.error(request, "Deletion needs the confirmation ticked and a reason.")
+                return redirect("member_detail", pk=pk)
+            try:
+                result = delete_account(actor, member, reason[:500])
+            except DeletionRefused as exc:
+                messages.error(request, f"Not deleted: {exc}.")
+                return redirect("member_detail", pk=pk)
+            messages.success(
+                request,
+                f"Account deleted. {result['withdrawn']} future sign-up(s) withdrawn; {result['agreements']} signed agreement(s) kept for their retention period.",
+            )
+            return redirect("members")
         elif action == "temporary_password" and actor.is_sysadmin:
             temp_password = issue_temporary_password(actor, member)
             hours = int(setting("defaults.temporary_password_expiry_hours", 72))
@@ -219,6 +236,11 @@ def member_detail(request, pk):
             "member": member,
             "form": form,
             "ladder": ctx_ladder,
+            "deletion": __import__(
+                "apps.accounts.services", fromlist=["deletion_effects"]
+            ).deletion_effects(member)
+            if actor.is_sysadmin
+            else None,
             "can_revoke": __import__(
                 "apps.credentials.views", fromlist=["_is_approver"]
             )._is_approver(actor),

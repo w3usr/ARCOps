@@ -420,6 +420,17 @@ DEFAULT_TEMPLATES: list[dict] = [
         ),
         "variables": ["effective", "notified", "cut_off", "former"],
     },
+    {
+        "key": "account.closure_requested",
+        "subject": "{{ person.full_name }} asked to close their account",
+        "body_html": (
+            "<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} asked to close their "
+            "account. It is now at No access and the retention clock has started; their signed "
+            "agreements stay for their own retention period. Nothing else is needed unless you want "
+            "to delete the account outright from their page.</p>"
+        ),
+        "variables": ["person.full_name", "person.callsign"],
+    },
 ]
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}

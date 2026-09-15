@@ -41,7 +41,28 @@ INSTALLED_APPS = [
     "apps.credentials",
     "apps.events",
     "apps.comms",
+    "tinymce",  # TR-6, FR-115: the WYSIWYG editor, served from this origin
 ]
+
+# FR-115: headings at three levels, paragraphs, bold and italic, lists, links, simple tables; the
+# editor's H1 renders as the page's next level down (the richtext filter shifts headings). No
+# inline scripts: django-tinymce initialises from a data attribute (CSP script-src 'self').
+TINYMCE_DEFAULT_CONFIG = {
+    "height": 320,
+    "menubar": False,
+    "plugins": "lists link table",
+    "toolbar": "blocks | bold italic | bullist numlist | link table | removeformat",
+    "block_formats": "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3",
+    "valid_elements": "h1,h2,h3,p,ol,ul,li,strong/b,em/i,a[href|title],table,thead,tbody,tr,th[scope],td,br,blockquote",
+    "branding": False,
+    "promotion": False,
+    "statusbar": True,
+    "convert_urls": False,
+    "content_style": "body { font-family: system-ui, sans-serif; font-size: 16px; }",
+    "a11y_advanced_options": True,
+}
+TINYMCE_JS_URL = "/static/tinymce/tinymce.min.js"
+TINYMCE_COMPRESSOR = False
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,6 +76,9 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     # After messages and allauth, because it posts a message and may sign the user out.
     "apps.accounts.middleware.AccountGateMiddleware",
+    # FR-94: a sysadmin viewing as a member, read-only; after the gate, so the gate sees the
+    # sysadmin and this sees the member.
+    "apps.accounts.impersonate.ImpersonationMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -77,6 +101,7 @@ TEMPLATES = [
                 "apps.ops.context_processors.club",
                 "apps.ops.context_processors.product",
                 "apps.comms.context_processors.unread",
+                "apps.accounts.impersonate.context",
             ],
         },
     },

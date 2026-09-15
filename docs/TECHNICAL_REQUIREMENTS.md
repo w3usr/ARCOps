@@ -142,6 +142,10 @@ has a decade of documentation.
   repository's licence; nh3 is the maintained successor to bleach. *Considered:* CKEditor 5
   (also GPL-2+, equally capable; the choice between the two is taste, and either satisfies
   FR-115 and FR-116). Serves: FR-115, FR-116.
+  *As built (2026-09-15):* `django-tinymce` 4.1.0, which bundles **TinyMCE 6.8.4 under the MIT
+  licence** (no licence key), self-hosted from the package's static files; the FR-115 feature
+  set as above; the premium accessibility checker is not available, so `static/js/richtext-check.js`
+  warns beneath the editor when a heading level is skipped. The saved HTML goes through nh3.
 - **TR-10 PDF: WeasyPrint** rendering the signed agreement from an HTML template with
   `pdf_variant='pdf/ua-1'` and `pdf_tags=True`, so the document is tagged (FR-116). WeasyPrint
   states that conformance is the author's to verify, so the template is checked once with a

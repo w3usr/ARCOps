@@ -18,11 +18,13 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
+from tinymce.widgets import TinyMCE
 
 from apps.accounts.models import AccessLevel, User
 from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.templatetags.richtext import sanitise
 
 from .models import Captaincy, Event, Location, OperatingPeriod, Position, SignUp, Slot
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
@@ -52,6 +54,12 @@ def _captain_or_404(user, event):
 
 
 class EventForm(forms.ModelForm):
+    def clean_description_html(self):
+        return sanitise(self.cleaned_data.get("description_html") or "")
+
+    def clean_kbyg_html(self):
+        return sanitise(self.cleaned_data.get("kbyg_html") or "")
+
     class Meta:
         model = Event
         fields = [
@@ -75,8 +83,8 @@ class EventForm(forms.ModelForm):
             "kbyg_html": "Know before you go",
         }
         widgets = {
-            "description_html": forms.Textarea(attrs={"rows": 5}),
-            "kbyg_html": forms.Textarea(attrs={"rows": 6}),
+            "description_html": TinyMCE(attrs={"rows": 8}),  # FR-115
+            "kbyg_html": TinyMCE(attrs={"rows": 12}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -166,12 +174,28 @@ class GenerateForm(forms.Form):
         return {k[4:]: v for k, v in self.cleaned_data.items() if k.startswith("cap_")}
 
 
+KBYG_OUTLINE = (
+    "<h2>Where and when</h2><p></p>"
+    "<h2>Getting into the station</h2><p></p>"
+    "<h2>What to bring</h2><p></p>"
+    "<h2>Operating and logging</h2><p></p>"
+    "<h2>If something goes wrong</h2><p></p>"
+    "<h2>Who to contact</h2><p></p>"
+)
+
+
+def kbyg_outline() -> str:
+    """FR-77: the headings a new event's Know-before-you-go starts with. The club can replace
+    the outline in its configuration (`defaults.kbyg_outline_html`)."""
+    return setting("defaults.kbyg_outline_html", None) or KBYG_OUTLINE
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def event_create(request):
     if not request.user.is_officer:
         raise Http404
-    form = EventForm(request.POST or None)
+    form = EventForm(request.POST or None, initial={"kbyg_html": kbyg_outline()})
     period = PeriodForm(request.POST or None)
     if (
         request.method == "POST"

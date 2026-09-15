@@ -9,6 +9,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from tinymce.widgets import TinyMCE
 
 from apps.events.models import Event
 from apps.events.services.roster import display_zone
@@ -21,7 +22,7 @@ from .models import Announcement
 
 class AnnounceForm(forms.Form):
     subject = forms.CharField(max_length=200)
-    body_html = forms.CharField(widget=forms.Textarea(attrs={"rows": 8}), label="Message")
+    body_html = forms.CharField(widget=TinyMCE(attrs={"rows": 10}), label="Message")  # FR-115
     day = forms.CharField(required=False)
     role = forms.CharField(required=False)
     status = forms.CharField(required=False)

@@ -877,3 +877,32 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenario T42 of the private test plan is the check.
   138 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: 5e6100d
+
+## [2026-09-15 22:35 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 6 of the implementation plan (administration, governance, rich
+  text): a sysadmin can view the application as a member, read-only and audited (FR-94); club
+  settings are edited on one grouped page with every change audited (FR-89); a member can close
+  their own account and a sysadmin can delete one, with future sign-ups withdrawn, identifying
+  fields removed, past rosters keeping their shape, and signed agreements kept for retention
+  (FR-11, FR-118); a daily retention job applies §4.3 with a legal-hold flag (TR-28); a privacy
+  notice page linked from every footer, editable in Settings, with a generic default in the
+  shipped configuration (FR-101); the TinyMCE editor on event description and know-before-you-go,
+  announcements, message templates, and the privacy notice, with a heading-order warning
+  (FR-115); a seeded know-before-you-go outline on every new event (FR-77).
+- **Sections/Files Affected**: apps/accounts/impersonate.py (new), apps/accounts/{models,
+  services,views,views_members,urls}.py, migration accounts 0007; apps/ops/{retention,
+  views_settings}.py (new), apps/ops/management/commands/retention_apply.py (new),
+  apps/ops/{jobs,urls}.py; apps/comms/{defaults,views,views_announce}.py;
+  apps/events/views_manage.py; config/{urls}.py, config/settings/base.py,
+  config/club.example.yaml; templates/ops/{settings,privacy,_editor}.html (new),
+  templates/{base,accounts/profile,accounts/member_detail,events/form,events/manage,
+  comms/announce,ops/template_edit}.html; static/js/richtext-check.js (new);
+  requirements.in/.txt (django-tinymce 4.1.0); docs/JOBS.md, docs/TECHNICAL_REQUIREMENTS.md
+  (TR-9 as built); tests apps/accounts/tests/test_phase6.py and
+  apps/ops/tests/test_settings_and_privacy.py (new).
+- **Nature of Contribution**: Code generation and tests against the requirement text.
+- **Human Review Status**: Pending review; scenarios T43 to T45 of the private test plan are the
+  check, and the privacy notice text awaits the advisor's edit (D4). 147 tests pass; ruff, the
+  formatter, and the neutrality check clean.
+- **Git Hash**: [pending]

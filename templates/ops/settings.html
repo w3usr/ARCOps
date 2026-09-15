@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Settings · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
+{% block content %}
+<h1>Club settings</h1>
+<p class="lede">Every fact about the club that the software reads (FR-89). A value changed here is kept through later imports of the configuration file unless the import is run with <code>--reset</code>. Each change is audited.</p>
+<form method="post" class="stack">{% csrf_token %}
+{% for label, rows in groups %}
+<section class="card" aria-labelledby="g{{ forloop.counter }}"><h2 id="g{{ forloop.counter }}">{{ label }}</h2>
+  {% for r in rows %}
+  <div class="field"><label for="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"><code>{{ r.key }}</code>{% if r.interface %} <span class="tag">edited here</span>{% endif %}</label>
+    {% if r.kind == 'json' %}<textarea id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" rows="6" spellcheck="false">{{ r.value }}</textarea>
+    {% elif r.kind == 'int' %}<input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" type="number" value="{{ r.value }}">
+    {% else %}<input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" value="{{ r.value }}">{% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+<section class="card" aria-labelledby="pn"><h2 id="pn">Privacy notice (FR-101)</h2>
+  <p class="helptext">Shown at <a href="{% url 'privacy' %}">/privacy/</a> and linked from every page. The advisor approves the text.</p>
+  <textarea id="privacy_notice_html" name="privacy_notice_html" class="tinymce" data-mce-conf="{{ mce_conf }}">{{ privacy_html }}</textarea>
+</section>
+<div><button type="submit">Save settings</button></div>
+</form>
+{% endblock %}

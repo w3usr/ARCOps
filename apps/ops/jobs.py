@@ -78,6 +78,12 @@ JOBS: dict[str, JobSpec] = {
             timedelta(hours=6),
         ),
         JobSpec(
+            "retention:apply",
+            "Retention schedule (§4.3, TR-28)",
+            timedelta(days=1),
+            timedelta(hours=6),
+        ),
+        JobSpec(
             "events:complete",
             "Complete events whose last slot has ended (FR-44)",
             timedelta(hours=1),

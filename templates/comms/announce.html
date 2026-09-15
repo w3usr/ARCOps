@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Announce · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
 {% if event %}<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>{% endif %}
 <h1>Announce{% if event %}: {{ event.title }}{% else %} to every member{% endif %}</h1>

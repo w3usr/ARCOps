@@ -75,6 +75,10 @@
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>
 {% endif %}
+<section class="card"><h2>Closing your account</h2>
+<p>You can ask for your account to be closed at any time (see the <a href="{% url 'privacy' %}">privacy notice</a>). Access ends at once; the club keeps its records for the stated period and then removes your contact details. Signed agreements are kept for their own retention period.</p>
+<form method="post" action="{% url 'request_closure' %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="confirm" value="yes"> I want to close my account</label> <button type="submit" class="danger">Close my account</button></form>
+</section>
 <section class="card"><h2>Security</h2>
 <ul class="list"><li><a href="{% url 'account_change_password' %}">Change password</a></li><li><a href="{% url 'mfa_index' %}">Two-step verification and passkeys</a></li></ul></section>
 {% endblock %}

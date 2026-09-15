@@ -22,3 +22,5 @@ fonttools==4.65.0
 pillow==12.3.0
 brotli==1.2.0
 zopfli==0.4.3
+# django-tinymce (TR-6, FR-115): the WYSIWYG editor; bundles TinyMCE 6.8.4 (LGPL-2.1).
+django-tinymce==4.1.0

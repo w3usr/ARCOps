@@ -31,6 +31,7 @@ not registered is not watched.
 | `agreements:expiry` | `manage.py agreements_expiry` | daily | expires due approvals; one notice per member covering every agreement expiring on a date at 30 days and on the day; one summary to the approvers at each; expires approvals of a superseded version past its re-sign date (FR-28, FR-30) |
 | `events:complete` | `manage.py events_complete` | hourly | a published or locked event whose last slot has ended becomes *completed* (FR-44) |
 | `openings:announce` | `manage.py openings_announce` | every 15 min | announces role openings that have fired (FR-80); passes lapsed waitlist offers to the next in line (FR-57) |
+| `retention:apply` | `manage.py retention_apply` | daily | the retention schedule of REQUIREMENTS §4.3 (TR-28): contact details of long-closed accounts, responsible-adult records, expired agreements and their PDFs, message bodies, lapsed invitations; skips accounts under legal hold; periods are `defaults.retention_*` |
 
 A later phase adds `retention:apply`.
 

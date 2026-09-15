@@ -56,6 +56,7 @@
       {% if user.is_sysadmin %}
       <li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>
       <li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Templates</span></a></li>
+      <li><a href="{% url 'settings_page' %}"{% nav_active 'settings_page' %}>{% icon 'settings' %}<span>Settings</span></a></li>
       <li><a href="{% url 'admin:index' %}">{% icon 'settings' %}<span>Admin</span></a></li>
       {% endif %}
     </ul>
@@ -66,6 +67,7 @@
     </div>
   </nav>
 {% endif %}
+{% if impersonator %}<div class="banner impersonating" role="status"><p><strong>Viewing as {{ user.full_name }}</strong> ({{ user.get_access_level_display|lower }}). Read-only: nothing can be changed from this view. You are {{ impersonator.short_name }}.</p><form method="post" action="{% url 'impersonate_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop viewing as them</button></form></div>{% endif %}
 <main id="main" class="{% if user.is_authenticated %}content{% else %}plain{% endif %}">
   {% if messages %}<ul class="messages" role="status" aria-live="polite">{% for m in messages %}<li class="msg {{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
   {# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
@@ -74,9 +76,10 @@
 {% if user.is_authenticated %}</div>{% endif %}
 <footer class="site">
   <p class="club">{% if club.public_page %}<a href="{{ club.public_page }}">{% endif %}{% if club.callsign %}{{ club.callsign }} {% endif %}{{ club.name }}{% if club.public_page %}</a>{% endif %}</p>
-  <p class="credit">Powered by <a href="{{ product.url }}">{{ product.name }}</a>, {{ product.credit }}.</p>
+  <p class="credit"><a href="{% url 'privacy' %}">Privacy notice</a> · Powered by <a href="{{ product.url }}">{{ product.name }}</a>, {{ product.credit }}.</p>
 </footer>
 <script src="{% static 'js/app.js' %}" defer></script>
+<script src="{% static 'js/richtext-check.js' %}" defer></script>
 {% if user.is_authenticated and vapid_public_key %}<script src="{% static 'js/push.js' %}" defer data-vapid="{{ vapid_public_key }}" data-subscribe="{% url 'push_subscribe' %}" data-enabled="{{ user.push_enabled|yesno:'1,0' }}" data-csrf="{{ csrf_token }}"></script>{% endif %}
 {% block extra_body %}{% endblock %}
 </body>

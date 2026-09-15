@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from tinymce.widgets import TinyMCE
 
 from apps.ops.audit import record
 from apps.ops.config import setting
@@ -63,7 +64,7 @@ class TemplateForm(forms.ModelForm):
     class Meta:
         model = MessageTemplate
         fields = ["subject", "body_html"]
-        widgets = {"body_html": forms.Textarea(attrs={"rows": 12})}
+        widgets = {"body_html": TinyMCE(attrs={"rows": 14})}  # FR-115
         labels = {"body_html": "Body (HTML)"}
 
     def clean_body_html(self):

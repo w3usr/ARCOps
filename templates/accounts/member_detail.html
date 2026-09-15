@@ -64,6 +64,19 @@
   {% if user.is_sysadmin and not is_self %}
   <h2>Sign-in</h2>
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
+  {% if not member.deleted_at %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member (read-only)</button></form>{% endif %}
+  {% if member.deleted_at %}<p class="msg warning">This account was deleted on {{ member.deleted_at|date:"j M Y" }}; the row stays so past rosters keep their shape.</p>{% else %}
+  <details class="card"><summary>Delete this account (FR-118)</summary>
+    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="delete">
+      <p>Irreversible. Deleting will: cancel <strong>{{ deletion.future_signups }}</strong> future sign-up{{ deletion.future_signups|pluralize }} and tell their captains; remove the name, callsign, emails, phone, preferences, browser subscriptions, guardian links, and responsible-adult designations; replace the person on <strong>{{ deletion.past_signups }}</strong> past sign-up{{ deletion.past_signups|pluralize }} with "Deleted member" so counts stay right; keep <strong>{{ deletion.agreements }}</strong> signed agreement{{ deletion.agreements|pluralize }} and PDFs for the retention period, then purge them; keep the audit log. Setting <em>No access</em> instead keeps everything.</p>
+      {% if deletion.is_last_sysadmin %}<p class="msg error">This is the last sysadmin account; it cannot be deleted.</p>{% endif %}
+      {% if deletion.wards %}<p class="msg error">This guardian has {{ deletion.wards }} linked minor(s); convert, re-link, or delete them first.</p>{% endif %}
+      <div class="field"><label for="del-reason">Reason (required, kept in the audit log)</label><input id="del-reason" name="reason" maxlength="500" required></div>
+      <div class="check"><input type="checkbox" name="confirm" value="yes" id="del-confirm"><label for="del-confirm">I understand this cannot be undone</label></div>
+      <div><button type="submit" class="danger">Delete this account</button></div>
+    </form>
+  </details>
+  {% endif %}
   <details class="card"><summary>License override (FR-15, FR-20)</summary>
     <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="license_override">
       <p class="helptext">Where ULS is out of date or wrong, or for a non-US license: what you set here is shown as an override wherever it appears and the nightly import never replaces it. Blank fields leave the FCC value in force.</p>

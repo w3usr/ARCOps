@@ -11,3 +11,4 @@ html2text
 cryptography
 argon2-cffi
 weasyprint>=70
+django-tinymce==4.1.0

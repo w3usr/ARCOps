@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load richtext %}
 {% block title %}{{ template.key }} · Message templates · {{ club.short_name }}{% endblock %}
+{% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'message_templates' %}">Message templates</a> › {{ template.key }}</p>
 <h1>{{ template.key }}</h1>

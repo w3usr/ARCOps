@@ -2,7 +2,7 @@ from django.urls import path
 
 from apps.comms import views as comms_views
 
-from . import views, views_entry, views_push
+from . import impersonate, views, views_entry, views_push
 
 urlpatterns = [
     path("", views.profile, name="profile"),
@@ -12,6 +12,8 @@ urlpatterns = [
     path("push/subscribe/", views_push.push_subscribe, name="push_subscribe"),
     path("push/<int:pk>/revoke/", views_push.push_revoke, name="push_revoke"),
     path("push/toggle/", views_push.push_toggle, name="push_toggle"),
+    path("view-as/stop/", impersonate.stop, name="impersonate_stop"),
+    path("close/", views.request_closure, name="request_closure"),
     path("invitations/", views.invitations, name="invitations"),
     path("invitations/<int:pk>/", views.invitation_action, name="invitation_action"),
     path("entry-links/", views_entry.entry_links, name="entry_links"),

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}New event · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
 <h1>New event</h1>

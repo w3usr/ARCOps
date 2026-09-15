@@ -4,7 +4,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
-from apps.accounts import views_entry, views_members
+from apps.accounts import impersonate, views_entry, views_members
+from apps.ops import views_settings
 from apps.ops.api import api
 from apps.ops.views import healthz, manifest
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path("me/", include("apps.accounts.urls")),
     path("members/", views_members.members, name="members"),
     path("members/<int:pk>/", views_members.member_detail, name="member_detail"),
+    path("members/<int:pk>/view-as/", impersonate.start, name="impersonate_start"),
     path("members/hours/", views_members.hours, name="hours"),
     path(
         "members/roster/",
@@ -40,5 +42,6 @@ urlpatterns = [
     path("join/<str:token>/form/", views_entry.join_form, name="join_form"),
     path("mentors/<str:token>/", views_entry.mentor_needs_page, name="mentor_needs"),
     path("verify/<str:token>/", views_entry.verify_email, name="verify_email"),
+    path("privacy/", views_settings.privacy, name="privacy"),
     path("", include("apps.ops.urls")),
 ]

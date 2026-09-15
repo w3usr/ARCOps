@@ -71,6 +71,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     callsign = models.CharField(max_length=12, blank=True, db_index=True)
     cell_phone = models.CharField(max_length=30, blank=True)
     push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default
+    # FR-11, FR-118, §4.3: closure and deletion. A closed account is No access with the retention
+    # clock running; a deleted one is anonymised in place so past rosters and counts stay right.
+    closure_requested_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    legal_hold = models.BooleanField(default=False)  # TR-28: retention never touches this account
     category = models.CharField(max_length=30, blank=True)  # key from club config (FR-8)
     club_position = models.CharField(max_length=40, blank=True)  # key from club config
     access_level = models.CharField(

@@ -304,3 +304,23 @@ def uls_name_decide(request):
     elif outcome == "callsign rejected":
         messages.info(request, "That callsign was not kept. Check it and try again.")
     return redirect("profile")
+
+
+@login_required
+@require_http_methods(["POST"])
+def request_closure(request):
+    """FR-11: the member closes their own account (No access; retention clock starts)."""
+    from django.contrib.auth import logout
+
+    from .services import request_closure as close
+
+    if request.POST.get("confirm") != "yes":
+        messages.error(request, "Tick the confirmation to close your account.")
+        return redirect("profile")
+    close(request.user)
+    logout(request)
+    messages.info(
+        request,
+        "Your account is closed. The club keeps its records for the period in the privacy notice, then removes your contact details.",
+    )
+    return redirect("account_login")

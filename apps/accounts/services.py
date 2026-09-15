@@ -302,3 +302,101 @@ def decide_uls_name(user: User, accept: bool) -> str:
     )
     refresh_license_from_local_table(user)
     return "callsign rejected"
+
+
+# ------------------------------------------------------ closure and deletion (FR-11, FR-118) ---
+
+
+def request_closure(user: User) -> None:
+    """FR-11: the member asks for their account to be closed. No access at once; the retention
+    clock of §4.3 starts; signed agreements stay for their own retention period."""
+    user.closure_requested_at = timezone.now()
+    user.save(update_fields=["closure_requested_at"])
+    set_access_level(user, user, AccessLevel.NONE, "closure requested by the member")
+    from apps.comms.services import send
+
+    for s in User.objects.filter(access_level=AccessLevel.SYSADMIN, is_active=True):
+        send("account.closure_requested", s, "account", {"person": user})
+
+
+class DeletionRefused(Exception):
+    pass
+
+
+def deletion_effects(user: User) -> dict:
+    """What deleting this account will do, for the confirmation page (FR-118)."""
+    from apps.credentials.models import SignedAgreement
+    from apps.events.models import SignUp
+
+    now = timezone.now()
+    return {
+        "future_signups": SignUp.objects.filter(
+            user=user, slot__end__gte=now, slot__cancelled=False
+        ).count(),
+        "past_signups": SignUp.objects.filter(user=user, slot__end__lt=now).count(),
+        "agreements": SignedAgreement.objects.filter(user=user).count(),
+        "wards": user.wards.filter(active=True).count() if hasattr(user, "wards") else 0,
+        "is_last_sysadmin": user.is_sysadmin
+        and User.objects.filter(access_level=AccessLevel.SYSADMIN, is_active=True)
+        .exclude(pk=user.pk)
+        .count()
+        == 0,
+    }
+
+
+def delete_account(actor: User, user: User, reason: str) -> dict:
+    """FR-118: irreversible. Future sign-ups are cancelled and their captains told; every
+    identifying field is removed and the row stays as "deleted member" so past rosters and
+    participation counts keep their shape; signed agreements and their PDFs stay for the §4.3
+    period and the retention job purges them; the audit log keeps its entries and records this."""
+    from apps.accounts.models import NotificationPreference, PushSubscription
+    from apps.events.models import ResponsibleAdult
+    from apps.events.services.notify import access_removed
+
+    effects = deletion_effects(user)
+    if effects["is_last_sysadmin"]:
+        raise DeletionRefused("the last remaining sysadmin account cannot be deleted")
+    if effects["wards"]:
+        raise DeletionRefused(
+            "a guardian is deleted only after every linked minor has been converted, re-linked, or deleted"
+        )
+    withdrawn = access_removed(actor, user)  # future sign-ups go, captains told
+    ResponsibleAdult.objects.filter(signup__user=user).delete()
+    ResponsibleAdult.objects.filter(member=user).update(member=None)
+    PushSubscription.objects.filter(user=user).delete()
+    NotificationPreference.objects.filter(user=user).delete()
+    user.guardianships.all().delete()
+    if hasattr(user, "wards"):
+        user.wards.all().delete()
+    CallsignHistory.objects.filter(user=user).delete()
+    before = {"email": user.email, "callsign": user.callsign, "name": user.full_name}
+    user.first_name, user.middle_name, user.last_name, user.preferred_name = (
+        "Deleted",
+        "",
+        "member",
+        "",
+    )
+    user.email = f"deleted-{user.pk}@invalid.example"
+    user.institution_email = user.personal_email = user.cell_phone = user.callsign = ""
+    user.name_from_uls = False
+    user.pending_uls_name = {}
+    user.club_position = ""
+    user.access_level = AccessLevel.NONE
+    user.is_active = False
+    user.deleted_at = timezone.now()
+    user.set_unusable_password()
+    user.save()
+    if hasattr(user, "license"):
+        user.license.delete()
+    record(
+        actor,
+        "account.deleted",
+        user,
+        before=before,
+        after={
+            "reason": reason,
+            "signups_withdrawn": withdrawn,
+            "agreements_kept": effects["agreements"],
+        },
+    )
+    return {"withdrawn": withdrawn, **effects}
