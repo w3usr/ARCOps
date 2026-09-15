@@ -56,6 +56,12 @@ def shift_headings(html: str, levels: int = 1) -> str:
     return html
 
 
+def sanitise(value: str) -> str:
+    """The allow-list clean on its own, for HTML a person saves (message templates, later the
+    editor): no scripts, frames, forms, styles, or event handlers survive."""
+    return nh3.clean(value or "", tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS, link_rel="noopener")
+
+
 @register.filter(name="richtext")
 def richtext(value: str) -> str:
     """Sanitise, shift headings one level, mark safe."""

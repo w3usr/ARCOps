@@ -1,0 +1,49 @@
+# Scheduled jobs
+
+How the application's periodic work runs (TR-11, TR-33, FR-93).
+
+## The shape
+
+A job is a Django management command that subclasses `apps.ops.jobs.ScheduledCommand` and
+implements `run_job(self, now, **options) -> dict`. The base class does the rest:
+
+- writes a `JobRun` row (started, finished, `ok` or `failed`, the dict you return as `detail`);
+- pings the job's healthchecks.io check when `HEALTHCHECKS_PING_KEY` is set: `<slug>?create=1` on
+  success, `<slug>/fail` on failure. The check is created by the first ping; the deployment's
+  owner sets its period and grace in the healthchecks.io dashboard once;
+- accepts `--now <ISO 8601>` so a job can be rehearsed against another instant in tests and in
+  acceptance scenarios (T30, T31);
+- re-raises a failure as `CommandError` after recording it, so the systemd unit fails too.
+
+Every job is registered in `apps.ops.jobs.JOBS` with its period and grace. The registry is what
+the stale-job watchdog (`jobs_stale`) and the status page (`/ops/status/`, sysadmins) read; a job
+not registered is not watched.
+
+| Job (`JobRun.name`) | Command | Timer | Does |
+|---|---|---|---|
+| `selfcheck` | `manage.py selfcheck` | every 5 min | runs `/healthz` in-process; fails if the database is unreachable |
+| `jobs:stale` | `manage.py jobs_stale` | hourly | lists registered jobs whose last success is older than period + grace |
+
+Later phases add `notify:reminders`, `notify:warnings`, `uls:sync`, `agreements:expiry`,
+`licenses:expiry`, `events:complete`, `digest:weekly`, `retention:apply`.
+
+## Running one by hand
+
+```bash
+manage.py selfcheck
+manage.py jobs_stale --now 2026-10-10T16:00:00+00:00
+```
+
+On the server the deployment's `run-remote.sh` has a `job` action for this.
+
+## The timers
+
+The systemd units are not in this repository. The deployment repository holds a templated
+service unit (`ops-job@.service`, one instance per job) and a manifest of job name to
+`OnCalendar` expression; its installer writes one timer per manifest line. Adding a job means:
+the command and its `JobSpec` here; a manifest line there; a row in the healthchecks.io project.
+
+## Health
+
+`/healthz` reports `jobs` (last success per registered job) and `stale_jobs`. The five-minute
+self-check is the heartbeat: if its check goes late, the timers or the application are down.

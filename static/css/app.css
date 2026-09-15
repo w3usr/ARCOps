@@ -347,3 +347,8 @@ td .when1, th .when1 { font-weight: 600; }
 .eventcard-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .eventcard-title { font-weight: 600; font-size: 1.05rem; }
 .eventcard .when { margin: .35rem 0 0; font-size: 1rem; }
+
+/* FR-108: unread count in the sidebar; FR-82: unread rows in My messages */
+.badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: 1em; font-size: .75rem; font-weight: 600; text-align: center; background: var(--brand); color: #fff; margin-left: .35em; }
+.msglist .unread summary strong::before { content: "● "; color: var(--brand); }
+.table-wrap { overflow-x: auto; }

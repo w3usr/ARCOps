@@ -76,6 +76,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "apps.ops.context_processors.club",
                 "apps.ops.context_processors.product",
+                "apps.comms.context_processors.unread",
             ],
         },
     },
@@ -182,3 +183,10 @@ FIELD_ENCRYPTION_KEY = os.environ.get("FIELD_ENCRYPTION_KEY", "")  # Fernet key,
 VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
 APP_VERSION = os.environ.get("APP_VERSION", "dev")
+# Scheduled-job pings (TR-11, TR-33): the healthchecks.io project ping key, from the env file.
+# Empty means no pings (development). Checks are created on first ping (?create=1).
+HEALTHCHECKS_PING_KEY = os.environ.get("HEALTHCHECKS_PING_KEY", "")
+HEALTHCHECKS_PING_URL = os.environ.get("HEALTHCHECKS_PING_URL", "https://hc-ping.com")
+# Absolute origin for links in messages composed outside a request (jobs). ALLOWED_HOSTS' first
+# entry in production; the dev server otherwise.
+SITE_URL = os.environ.get("SITE_URL", "")

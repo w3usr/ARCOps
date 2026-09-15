@@ -131,3 +131,10 @@ class Command(BaseCommand):
             )
             new_versions += 1
         self.stdout.write(f"agreements: {new_versions} new version(s) from {directory}")
+
+        from apps.comms.services import seed_templates
+
+        c, u, k = seed_templates(reset=opts["reset"])
+        self.stdout.write(
+            f"message templates: {c} created, {u} updated, {k} kept (interface edits)"
+        )

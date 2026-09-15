@@ -77,6 +77,20 @@ def setting(key: str, default: Any = None) -> Any:
         return default
 
 
+def set_setting(actor, key: str, value: Any):
+    """Change one value from the interface, audited (FR-89, FR-105). The row is marked as an
+    interface edit so `club_import` keeps it unless run with --reset."""
+    from .audit import record
+    from .models import ClubSetting
+
+    row, _ = ClubSetting.objects.get_or_create(key=key)
+    before = row.value
+    row.value, row.source = value, "interface"
+    row.save(update_fields=["value", "source", "updated"])
+    record(actor, "setting.changed", row, before={"value": before}, after={"value": value})
+    return row
+
+
 DEFAULT_ACCENT = "#1f3a5f"
 _HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 

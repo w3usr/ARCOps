@@ -239,14 +239,9 @@ def join_form(request, token):
             existing = User.objects.filter(email=d["email"]).first()
             if existing:
                 # The same page as success (FR-107); the person is told by email instead.
-                from apps.comms.services import compose
+                from apps.comms.services import send
 
-                compose(
-                    existing,
-                    "account",
-                    f"Your {setting('club.short_name', 'club')} account",
-                    "<p>Someone used this address on a join link, but it already has an account. Sign in, or use “Forgot your username or password?” on the sign-in page.</p>",
-                )
+                send("account.address_in_use", existing, "account")
                 return render(
                     request, "accounts/join_sent.html", {"link": link, "email": d["email"]}
                 )

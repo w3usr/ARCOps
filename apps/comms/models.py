@@ -9,6 +9,10 @@ class MessageTemplate(models.Model):
     subject = models.CharField(max_length=200)
     body_html = models.TextField()
     variables = models.JSONField(default=list, blank=True)  # documented beside the template (FR-78)
+    edited = models.BooleanField(
+        default=False
+    )  # an interface edit survives club_import unless --reset
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return self.key
@@ -23,6 +27,7 @@ class Outbox(models.Model):
         SENT = "sent", "Sent"
         FAILED = "failed", "Failed"
         OUTSIDE = "outside", "Sent outside the system"
+        SKIPPED = "skipped", "Not emailed (preference off)"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="messages"

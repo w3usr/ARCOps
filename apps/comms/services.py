@@ -1,18 +1,25 @@
 """
-Composing and (when allowed) delivering messages. Every message goes through `compose`, which
-records it in the outbox first (FR-82); `deliver` sends it only if email delivery is on
-(FR-105). Nothing else in the application sends mail directly.
+Composing and (when allowed) delivering messages.
+
+Every message goes through `compose`, which records it in the outbox first (FR-82); `deliver`
+sends it only if email delivery is on (FR-105) and the member's preference allows the category
+(FR-71). Nothing else in the application sends mail directly. `render_message` turns a template
+key and a context into a subject and body (FR-78); `send` does both in one call.
 """
 
 from __future__ import annotations
 
 import html2text
+from django.conf import settings as dj
 from django.core.mail import EmailMultiAlternatives
+from django.template import Context, Template
 from django.utils import timezone
 
 from apps.ops.config import setting
 
-from .models import Outbox
+from .categories import CONTROLLED
+from .defaults import DEFAULTS_BY_KEY
+from .models import MessageTemplate, Outbox
 
 
 def recipient_addresses(user) -> list[str]:
@@ -33,12 +40,32 @@ def recipient_addresses(user) -> list[str]:
     return sorted({a.lower() for a in addrs if a})
 
 
-def compose(user, category: str, subject: str, body_html: str, deliver_now: bool = True) -> Outbox:
+def email_wanted(user, category: str) -> bool:
+    """FR-71: mandatory categories always; controlled ones unless the member switched them off.
+    Absence of a preference row means on."""
+    if user is None or category not in CONTROLLED:
+        return True
+    pref = user.notification_preferences.filter(category=category).first()
+    return True if pref is None else bool(pref.email)
+
+
+def compose(
+    user,
+    category: str,
+    subject: str,
+    body_html: str,
+    deliver_now: bool = True,
+    to: list[str] | None = None,
+) -> Outbox:
+    """Record a message for `user` (or for bare addresses `to` when there is no account yet,
+    as with an invitation) and deliver it if allowed."""
+    if to is None:
+        to = recipient_addresses(user) if user else []
     msg = Outbox.objects.create(
         user=user,
-        to_addresses=recipient_addresses(user) if user else [],
+        to_addresses=to,
         category=category,
-        subject=subject,
+        subject=subject[:200],
         body_html=body_html,
         body_text=html2text.html2text(body_html),
     )
@@ -52,6 +79,10 @@ def email_enabled() -> bool:
 
 
 def deliver(msg: Outbox) -> Outbox:
+    if not email_wanted(msg.user, msg.category):
+        msg.state = Outbox.State.SKIPPED
+        msg.save(update_fields=["state"])
+        return msg
     if not email_enabled():
         msg.state = Outbox.State.NOT_SENT
         msg.save(update_fields=["state"])
@@ -73,3 +104,86 @@ def deliver(msg: Outbox) -> Outbox:
         msg.state, msg.error = Outbox.State.FAILED, str(exc)[:500]
     msg.save(update_fields=["state", "sent_at", "error"])
     return msg
+
+
+# ------------------------------------------------------------------ templates (FR-78) ---
+
+
+def base_context() -> dict:
+    return {
+        "club": {
+            "name": setting("club.name", "the club"),
+            "short_name": setting("club.short_name", "the club"),
+            "contact_email": setting("club.contact_email", ""),
+        },
+        "site_url": getattr(dj, "SITE_URL", ""),
+    }
+
+
+def get_template(key: str) -> MessageTemplate:
+    """The row if it exists, else an unsaved instance carrying the shipped default."""
+    row = MessageTemplate.objects.filter(key=key).first()
+    if row:
+        return row
+    default = DEFAULTS_BY_KEY.get(key)
+    if default is None:
+        raise KeyError(f"no message template {key!r}")
+    return MessageTemplate(**default)
+
+
+def render_message(key: str, context: dict | None = None) -> tuple[str, str]:
+    """(subject, body_html) for a template key. Bodies are sanitised on save; the render here
+    trusts them, so the output is safe to mark as HTML."""
+    tpl = get_template(key)
+    ctx = Context({**base_context(), **(context or {})}, autoescape=True)
+    subject = Template(tpl.subject).render(ctx).strip().replace("\n", " ")
+    body = Template(tpl.body_html).render(ctx)
+    return subject, body
+
+
+def send(key: str, user, category: str, context: dict | None = None, to=None) -> Outbox:
+    """Render `key` for `user` and compose it in `category`. `user` is in the context as
+    `user`; pass other names in `context`."""
+    ctx = {"user": user, **(context or {})}
+    subject, body = render_message(key, ctx)
+    return compose(user, category, subject, body, to=to)
+
+
+def seed_templates(reset: bool = False) -> tuple[int, int, int]:
+    """Create missing rows from the defaults; refresh unedited ones; keep edited ones unless
+    reset. Returns (created, updated, kept)."""
+    created = updated = kept = 0
+    for d in DEFAULTS_BY_KEY.values():
+        row, was_created = MessageTemplate.objects.get_or_create(
+            key=d["key"],
+            defaults={
+                "subject": d["subject"],
+                "body_html": d["body_html"],
+                "variables": d["variables"],
+            },
+        )
+        if was_created:
+            created += 1
+            continue
+        if row.edited and not reset:
+            if row.variables != d["variables"]:
+                row.variables = d["variables"]
+                row.save(update_fields=["variables"])
+            kept += 1
+            continue
+        changed = (row.subject, row.body_html, row.variables, row.edited) != (
+            d["subject"],
+            d["body_html"],
+            d["variables"],
+            False,
+        )
+        if changed:
+            row.subject, row.body_html, row.variables, row.edited = (
+                d["subject"],
+                d["body_html"],
+                d["variables"],
+                False,
+            )
+            row.save()
+            updated += 1
+    return created, updated, kept

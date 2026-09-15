@@ -7,10 +7,12 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
+from apps.comms.categories import BANNER
 from apps.comms.models import Outbox
 from apps.events.models import Event, SignUp
 from apps.events.services.viability import checkin_window_open
 
+from . import jobs
 from .config import setting
 from .models import JobRun
 
@@ -30,7 +32,38 @@ def healthz(request):
     since = timezone.now() - timezone.timedelta(hours=24)
     body["outbox_failed_24h"] = Outbox.objects.filter(state="failed", created__gte=since).count()
     body["email_delivery"] = setting("defaults.email_delivery", "off")
+    body["jobs"] = {
+        name: (run.finished.isoformat() if run and run.finished else None)
+        for name, run in ((n, jobs.last_ok(n)) for n in jobs.JOBS)
+    }
+    body["stale_jobs"] = jobs.stale_jobs()
     return JsonResponse(body, status=status)
+
+
+@login_required
+def status(request):
+    """FR-93: every registered job's last run and outcome, and mail health."""
+    if not request.user.is_sysadmin:
+        from django.http import Http404
+
+        raise Http404
+    since = timezone.now() - timezone.timedelta(hours=24)
+    recent = Outbox.objects.filter(created__gte=since)
+    last_sent = Outbox.objects.filter(state="sent").order_by("-sent_at").first()
+    return render(
+        request,
+        "ops/status.html",
+        {
+            "rows": jobs.status_rows(),
+            "mail": {
+                "mode": str(setting("defaults.email_delivery", "off")).lower(),
+                "sent_24h": recent.filter(state="sent").count(),
+                "failed_24h": recent.filter(state="failed").count(),
+                "not_sent_24h": recent.filter(state="not_sent").count(),
+                "last_sent": last_sent.sent_at if last_sent else None,
+            },
+        },
+    )
 
 
 @login_required
@@ -53,6 +86,10 @@ def dashboard(request):
         from apps.accounts.entry import pending_review
 
         pending = list(pending_review()[:20])
+    # FR-108: unread messages that would otherwise have been a warning email.
+    banner_messages = list(
+        Outbox.objects.filter(user=request.user, read_at__isnull=True, category__in=BANNER)[:5]
+    )
     return render(
         request,
         "ops/dashboard.html",
@@ -61,5 +98,7 @@ def dashboard(request):
             "checkin_ready": checkin_ready,
             "upcoming_events": upcoming_events,
             "pending_review": pending,
+            "banner_messages": banner_messages,
+            "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },
     )

@@ -44,13 +44,17 @@
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
       <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' 'hours' %}>{% icon 'users' %}<span>Members</span></a></li>
       {% endif %}
-      <li><a href="{% url 'profile' %}"{% nav_active 'profile' %}>{% icon 'user' %}<span>Profile</span></a></li>
+      <li><a href="{% url 'my_messages' %}"{% nav_active 'my_messages' %}>{% icon 'mail' %}<span>Messages{% if unread_count %} <span class="badge" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</span></a></li>
+      <li><a href="{% url 'profile' %}"{% nav_active 'profile' 'notifications' %}>{% icon 'user' %}<span>Profile</span></a></li>
       {% if user.is_officer %}
       <li class="navsep" aria-hidden="true"></li>
       <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' 'entry_links' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
+      <li><a href="{% url 'outbox' %}"{% nav_active 'outbox' %}>{% icon 'inbox' %}<span>Outbox</span></a></li>
       {% endif %}
       {% if user.is_sysadmin %}
+      <li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>
+      <li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Templates</span></a></li>
       <li><a href="{% url 'admin:index' %}">{% icon 'settings' %}<span>Admin</span></a></li>
       {% endif %}
     </ul>

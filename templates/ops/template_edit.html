@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load richtext %}
+{% block title %}{{ template.key }} · Message templates · {{ club.short_name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'message_templates' %}">Message templates</a> › {{ template.key }}</p>
+<h1>{{ template.key }}</h1>
+<form method="post" class="card stack">{% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="field">{{ form.subject.label_tag }}{{ form.subject }}{{ form.subject.errors }}</div>
+  <div class="field">{{ form.body_html.label_tag }}{{ form.body_html }}{{ form.body_html.errors }}
+    <span class="helptext">HTML from the allowed set (paragraphs, headings, lists, links, tables, bold, italic). Django template syntax: <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code>.</span></div>
+  <p><strong>Variables this template may use:</strong> {% for v in template.variables %}<code>{{ v }}</code>{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">none documented</span>{% endfor %}. Every template also has <code>club.name</code>, <code>club.short_name</code>, <code>club.contact_email</code>, and <code>site_url</code>.</p>
+  <div><button type="submit">Save</button> {% if template.edited %}<button type="submit" name="reset" value="1" class="linklike">Restore the shipped default</button>{% endif %}</div>
+</form>
+<section class="card" aria-labelledby="pv"><h2 id="pv">Preview with sample values</h2>
+<p><strong>Subject:</strong> {{ preview_subject }}</p>
+<div class="prose">{{ preview_body|richtext }}</div></section>
+{% endblock %}

@@ -1,9 +1,13 @@
 from django.urls import path
 
+from apps.comms import views as comms_views
+
 from . import views, views_entry
 
 urlpatterns = [
     path("", views.profile, name="profile"),
+    path("notifications/", views.notifications, name="notifications"),
+    path("messages/", comms_views.my_messages, name="my_messages"),
     path("invitations/", views.invitations, name="invitations"),
     path("invitations/<int:pk>/", views.invitation_action, name="invitation_action"),
     path("entry-links/", views_entry.entry_links, name="entry_links"),

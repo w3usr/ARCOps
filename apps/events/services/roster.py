@@ -178,7 +178,11 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
         Slot.objects.filter(position__location__event=event, cancelled=False)
         .select_related("position", "position__location", "control_operator")
         .prefetch_related(
-            "signups__user", "signups__user__license", "signups__responsible_adults", "capacities"
+            "signups__user",
+            "signups__user__license",
+            "signups__user__notification_preferences",
+            "signups__responsible_adults",
+            "capacities",
         )
         .order_by("start", "position__location__order", "position__order")
     )

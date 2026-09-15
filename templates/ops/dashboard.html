@@ -7,6 +7,16 @@
 <section class="card" aria-labelledby="pv"><h2 id="pv">Your account is provisional</h2>
 <p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p></section>
 {% endif %}
+{% if banner_messages %}
+<div class="banner" role="status">
+  <p><strong>{{ banner_messages|length }} unread notice{{ banner_messages|length|pluralize }}:</strong>
+  {% for m in banner_messages %}{{ m.subject }}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
+  <p><a href="{% url 'my_messages' %}">Read them</a></p>
+</div>
+{% endif %}
+{% if user.is_officer %}
+<p class="muted">Email delivery is <strong>{{ delivery_mode }}</strong>{% if delivery_mode != 'on' %}; invitation links and notices are shown in the application and delivering them is yours to do{% endif %}. <a href="{% url 'outbox' %}">Outbox</a>.</p>
+{% endif %}
 {% if pending_review %}
 <section class="card highlight" aria-labelledby="rev">
   <h2 id="rev">Provisional members waiting for review</h2>

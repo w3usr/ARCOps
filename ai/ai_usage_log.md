@@ -706,3 +706,28 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit (mechanical formatting; one three-line rewrite).
 - **Human Review Status**: Reviewed by the tools: ruff check and format clean, 83 tests pass.
 - **Git Hash**: 7bd2c07
+
+## [2026-09-15 18:31 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 0 of the implementation plan kept in the private repository
+  (foundations every notice depends on): the scheduled-job runner with healthchecks.io pings and
+  the stale-job watchdog (TR-11, TR-33); message templates editable by a sysadmin and seeded by
+  the import (FR-78); notification preferences honoured by the outbox, mandatory categories, the
+  roster's "reminders off" marker (FR-71); the My messages page with unread badge and Home
+  banner (FR-82, FR-108); the officer outbox, the delivery mode on Home, and audited setting
+  changes (FR-105); the sysadmin status page (FR-93). Also found and fixed along the way: the
+  invitation email was never composed (emailed_at was never set); it now goes through the
+  template system to the invitee, or the guardian for a minor.
+- **Sections/Files Affected**: apps/ops/jobs.py (new), apps/ops/management/commands/{selfcheck,
+  jobs_stale}.py (new), apps/ops/{views,urls,admin,config}.py, apps/ops/templatetags/{nav,
+  richtext}.py; apps/comms/{categories,defaults,context_processors,views}.py (new),
+  apps/comms/{services,models}.py, migration 0002; apps/accounts/{views,urls,models,services,
+  entry,views_entry}.py; apps/events/services/roster.py; templates/base.html, ops/{dashboard,
+  outbox,status,templates,template_edit}.html, comms/my_messages.html, accounts/profile.html,
+  events/detail.html; static/css/app.css; config/settings/{base,dev,prod}.py; docs/JOBS.md (new),
+  README.md; tests apps/comms/tests/test_messages.py and apps/ops/tests/test_jobs.py (new).
+- **Nature of Contribution**: Code generation and tests against the requirement text and the
+  technical decisions; the template wording is the first draft for the sysadmin to edit.
+- **Human Review Status**: Pending review; scenarios T29 and T30 of the private test plan are
+  the check. 98 tests pass; ruff clean.
+- **Git Hash**: [fill in after committing]

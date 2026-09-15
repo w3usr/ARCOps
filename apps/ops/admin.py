@@ -9,8 +9,22 @@ class ClubSettingAdmin(admin.ModelAdmin):
     search_fields = ("key",)
 
     def save_model(self, request, obj, form, change):
+        from .audit import record
+
+        before = (
+            ClubSetting.objects.filter(pk=obj.pk).values_list("value", flat=True).first()
+            if change
+            else None
+        )
         obj.source = "interface"  # interface edits win over the file until --reset (TR-32)
         super().save_model(request, obj, form, change)
+        record(
+            request.user,
+            "setting.changed",
+            obj,
+            before={"value": before},
+            after={"value": obj.value},
+        )
 
 
 @admin.register(AuditLog)

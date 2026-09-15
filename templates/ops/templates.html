@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Message templates · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Message templates</h1>
+<p class="lede">Every message the system sends is rendered from one of these. Edit the subject or body; the variables each may use are listed beside it. An edited template keeps your text through later imports unless the import is run with <code>--reset</code>.</p>
+<div class="table-wrap">
+<table class="table">
+<thead><tr><th scope="col">Key</th><th scope="col">Subject</th><th scope="col">Source</th></tr></thead>
+<tbody>
+{% for t in templates %}
+<tr><td><a href="{% url 'message_template_edit' t.key %}">{{ t.key }}</a></td><td>{{ t.subject }}</td><td>{% if t.edited %}<span class="tag">edited here</span>{% else %}<span class="muted">shipped default</span>{% endif %}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

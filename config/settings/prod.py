@@ -13,6 +13,7 @@ if not SECRET_KEY:  # noqa: F405
 
 ALLOWED_HOSTS = [h for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h]
 CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS]
+SITE_URL = os.environ.get("SITE_URL") or (f"https://{ALLOWED_HOSTS[0]}" if ALLOWED_HOSTS else "")
 
 # Behind nginx, behind Cloudflare: TLS terminates in front of us.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

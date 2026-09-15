@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load richtext %}
+{% block title %}My messages · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>My messages</h1>
+<p class="lede">Every message the system has sent you, or would have sent you, newest first. A lost or undelivered email is recoverable here; nothing here depends on email arriving.</p>
+{% if page.object_list %}
+<ul class="list msglist">
+{% for m in page.object_list %}
+<li class="card{% if m.was_unread %} unread{% endif %}">
+  <details{% if forloop.first %} open{% endif %}>
+    <summary><strong>{{ m.subject }}</strong> <small class="muted">· {{ m.created|date:"j M Y H:i" }} UTC · {{ m.get_category_display|default:m.category }} · <span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% endif %}">{{ m.get_state_display }}</span></small></summary>
+    <div class="prose">{{ m.body_html|richtext }}</div>
+    {% if m.to_addresses %}<p class="muted"><small>To: {{ m.to_addresses|join:", " }}{% if m.sent_at %} · sent {{ m.sent_at|date:"j M Y H:i" }} UTC{% endif %}</small></p>{% endif %}
+  </details>
+</li>
+{% endfor %}
+</ul>
+{% if page.has_other_pages %}<p class="muted">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Newer</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Older</a>{% endif %}</p>{% endif %}
+{% else %}
+<p>Nothing yet. Reminders, warnings, and notices will appear here as well as by email.</p>
+{% endif %}
+<p class="muted"><small>Which of these also reach you by email is set under <a href="{% url 'profile' %}#notifications">Notifications</a> on your profile.</small></p>
+{% endblock %}

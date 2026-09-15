@@ -19,7 +19,7 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.comms.services import compose
+from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
 
@@ -77,21 +77,8 @@ def user_from_token(token: str) -> User | None:
 
 def send_verification(user: User, base_url: str) -> None:
     url = base_url + reverse("verify_email", args=[verification_token(user)])
-    club = setting("club.short_name", "the club")
-    days = verification_days()
-    if user.is_active:
-        body = (
-            f"<p>Welcome to {club}. Your account is ready; please confirm this is your address by "
-            f"opening the link below within {days} days, or sign-in will pause until you do.</p>"
-            f'<p><a href="{url}">{url}</a></p>'
-        )
-    else:
-        body = (
-            f"<p>Thank you for offering to help {club}. Open the link below to confirm your address; "
-            f"your account is created the moment you do, and a club officer will then review it.</p>"
-            f'<p><a href="{url}">{url}</a></p>'
-        )
-    compose(user, "account", f"Confirm your address for {club}", body)
+    key = "account.verify_member" if user.is_active else "account.verify_provisional"
+    send(key, user, "account", {"link": url, "days": verification_days()})
 
 
 def join_through_link(
@@ -157,44 +144,31 @@ def mark_verified(actor: User, user: User) -> None:
 
 
 def notify_officers_of_provisional(user: User, base_url: str) -> None:
-    club = setting("club.short_name", "the club")
     url = base_url + reverse("member_detail", args=[user.pk])
     via = user.joined_via.label if user.joined_via else "a community link"
-    body = (
-        f"<p>{user.full_name}{' ' + user.callsign if user.callsign else ''} joined through {via} and "
-        f"is waiting for review. Admit them as a member or decline on their page:</p>"
-        f'<p><a href="{url}">{url}</a></p>'
-    )
     for officer in User.objects.filter(
         access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True
     ):
-        compose(officer, "account", f"New provisional member for {club}: {user.short_name}", body)
+        send(
+            "account.provisional_notice",
+            officer,
+            "account",
+            {"person": user, "via": via, "link": url},
+        )
 
 
 def admit(actor: User, user: User) -> None:
     from .services import set_access_level
 
     set_access_level(actor, user, AccessLevel.MEMBER, "admitted after review")
-    club = setting("club.short_name", "the club")
-    compose(
-        user,
-        "account",
-        f"Welcome to {club}",
-        f"<p>A club officer has reviewed your account: you are now a member of {club}. Sign in to see the roster and the agreements.</p>",
-    )
+    send("account.admitted", user, "account")
 
 
 def decline(actor: User, user: User, reason: str) -> None:
     from .services import set_access_level
 
     set_access_level(actor, user, AccessLevel.NONE, f"declined: {reason}")
-    club = setting("club.short_name", "the club")
-    compose(
-        user,
-        "account",
-        f"Your {club} account",
-        f"<p>A club officer has reviewed your request and has not admitted you at this time.{' Reason: ' + reason if reason else ''}</p>",
-    )
+    send("account.declined", user, "account", {"reason": reason})
 
 
 def pending_review():

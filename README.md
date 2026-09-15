@@ -34,6 +34,7 @@ is `config/`; a real club supplies its own (see `config/README.md`).
 arcops/
 |-- docs/REQUIREMENTS.md      <- functional requirements; start here
 |-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
+|-- docs/JOBS.md              <- scheduled jobs: how they run, how to add one
 |-- manage.py, config/        <- Django project: settings (base/dev/test/prod), urls; club.example.yaml, assets/, agreements/
 |-- apps/                     <- ops, accounts, credentials, events, comms: models, services, views, tests
 |-- templates/, static/       <- server-rendered pages, CSS, service worker, manifest

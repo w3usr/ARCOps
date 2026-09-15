@@ -40,6 +40,15 @@
 {% endif %}
 <div><button type="submit">Save</button></div>
 </form>
+<form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}
+<h2>Notifications</h2>
+<p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>
+{% for row in notification_rows %}
+<div class="check"><input type="checkbox" name="email" value="{{ row.key }}" id="pref-{{ row.key }}"{% if row.email %} checked{% endif %}><label for="pref-{{ row.key }}">{{ row.label }}</label></div>
+{% endfor %}
+<p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
+<div><button type="submit">Save notification settings</button></div>
+</form>
 <section class="card"><h2>Security</h2>
 <ul class="list"><li><a href="{% url 'account_change_password' %}">Change password</a></li><li><a href="{% url 'mfa_index' %}">Two-step verification and passkeys</a></li></ul></section>
 {% endblock %}

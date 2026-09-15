@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
@@ -72,7 +73,42 @@ def profile(request):
     else:
         form = ProfileForm(instance=request.user)
     licence = LicenseRecord.objects.filter(user=request.user).first()
-    return render(request, "accounts/profile.html", {"form": form, "licence": licence})
+    from apps.comms.categories import CONTROLLED, MANDATORY
+
+    prefs = {p.category: p for p in request.user.notification_preferences.all()}
+    rows = [
+        {"key": k, "label": label, "email": prefs[k].email if k in prefs else True}
+        for k, label in CONTROLLED.items()
+    ]
+    return render(
+        request,
+        "accounts/profile.html",
+        {
+            "form": form,
+            "licence": licence,
+            "notification_rows": rows,
+            "mandatory_labels": list(MANDATORY.values()),
+        },
+    )
+
+
+@login_required
+def notifications(request):
+    """FR-71: one switch per controlled category; unticked means email off. Absence of a row
+    means on, so a row is written only when the member turns something off (or back on)."""
+    if request.method != "POST":
+        return redirect("profile")
+    from apps.comms.categories import CONTROLLED
+
+    from .models import NotificationPreference
+
+    wanted = set(request.POST.getlist("email")) & set(CONTROLLED)
+    for key in CONTROLLED:
+        NotificationPreference.objects.update_or_create(
+            user=request.user, category=key, defaults={"email": key in wanted}
+        )
+    messages.success(request, "Notification settings saved.")
+    return redirect(reverse("profile") + "#notifications")
 
 
 class InviteForm(forms.Form):
@@ -118,6 +154,7 @@ def invitations(request):
                 form.cleaned_data["category"],
                 form.cleaned_data["is_minor"],
                 form.cleaned_data["guardian_email"] or "",
+                base_url=f"{request.scheme}://{request.get_host()}",
             )
             form = InviteForm()
     else:
@@ -208,8 +245,8 @@ def invitation_action(request, pk):
         revoke_invitation(request.user, inv)
         messages.success(request, f"Invitation to {inv.email} revoked.")
     elif action == "reissue":
-        new = reissue_invitation(request.user, inv)
         base = f"{request.scheme}://{request.get_host()}"
+        new = reissue_invitation(request.user, inv, base_url=base)
         recent = Invitation.objects.order_by("-created")[:25]
         messages.success(
             request, f"New invitation issued to {new.email}; the old link no longer works."

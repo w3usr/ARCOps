@@ -139,6 +139,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.is_officer or event.captaincies.filter(user=self).exists()
 
     @property
+    def reminders_off(self) -> bool:
+        """FR-71: the member switched reminder email off; shown on the roster to captains so an
+        unconfirmed slot is read correctly. Uses the prefetched preferences when present."""
+        return any(
+            p.category == "reminder" and not p.email for p in self.notification_preferences.all()
+        )
+
+    @property
     def is_provisional(self) -> bool:
         return self.access_level == AccessLevel.PROVISIONAL
 

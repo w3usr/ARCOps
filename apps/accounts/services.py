@@ -14,9 +14,17 @@ from .models import AccessLevel, Invitation, User
 
 
 def create_invitation(
-    issuer: User, email: str, category: str, is_minor: bool = False, guardian_email: str = ""
+    issuer: User,
+    email: str,
+    category: str,
+    is_minor: bool = False,
+    guardian_email: str = "",
+    base_url: str = "",
 ) -> Invitation:
-    """FR-2/FR-3: a single-use link the issuer can also hand over by other means (FR-104)."""
+    """FR-2/FR-3: a single-use link the issuer can also hand over by other means (FR-104). The
+    invitation message goes to the address (the guardian's for a minor) through the outbox
+    (FR-76); `emailed_at` is set only if it was actually sent, so the issuer knows when delivery
+    is theirs to do."""
     days = int(setting("defaults.invitation_expiry_days", 14))
     inv = Invitation.objects.create(
         email=email.lower(),
@@ -27,6 +35,26 @@ def create_invitation(
         expires_at=timezone.now() + timedelta(days=days),
     )
     record(issuer, "invitation.created", inv, after={"email": inv.email, "category": category})
+    from django.conf import settings as dj
+
+    from apps.comms.services import send
+
+    base_url = base_url or getattr(dj, "SITE_URL", "")
+    to = [inv.guardian_email] if inv.is_minor and inv.guardian_email else [inv.email]
+    msg = send(
+        "invitation",
+        None,
+        "account",
+        {
+            "link": f"{base_url}/me/invite/{inv.token}/",
+            "expires": inv.expires_at,
+            "category": category,
+        },
+        to=to,
+    )
+    if msg.state == msg.State.SENT:
+        inv.emailed_at = msg.sent_at
+        inv.save(update_fields=["emailed_at"])
     return inv
 
 
@@ -97,10 +125,12 @@ def revoke_invitation(actor: User, inv: Invitation) -> None:
         record(actor, "invitation.revoked", inv)
 
 
-def reissue_invitation(actor: User, inv: Invitation) -> Invitation:
+def reissue_invitation(actor: User, inv: Invitation, base_url: str = "") -> Invitation:
     """FR-3: a fresh link for the same person; the old one stops working."""
     revoke_invitation(actor, inv)
-    return create_invitation(actor, inv.email, inv.category, inv.is_minor, inv.guardian_email)
+    return create_invitation(
+        actor, inv.email, inv.category, inv.is_minor, inv.guardian_email, base_url=base_url
+    )
 
 
 def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
