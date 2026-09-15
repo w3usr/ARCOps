@@ -251,7 +251,7 @@ def apply_staging(now=None) -> dict:
 
     objs: list[UlsLicense] = []
     for (
-        usi,
+        _usi,
         call,
         status_code,
         grant,
