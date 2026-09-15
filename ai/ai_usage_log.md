@@ -694,4 +694,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/events/detail.html (one string).
 - **Nature of Contribution**: Edit.
 - **Human Review Status**: Pending review; T12 step 1 of the private test plan is the check.
-- **Git Hash**: [fill in after committing]
+- **Git Hash**: 9766b46
