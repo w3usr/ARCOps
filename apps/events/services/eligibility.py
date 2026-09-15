@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.utils import timezone
 
 from apps.credentials.services import class_rank, holds
+from apps.ops.config import setting
 
 from ..models import EligibilityRule, Opening
 
@@ -35,11 +36,17 @@ def can_sign_up(user, slot, role: str, now=None) -> tuple[bool, str]:
                 return False, f"{role} opens to you on {upcoming[0].opens_at:%d %b %Y %H:%M}Z"
             return False, f"{role} is not open to your membership category"
 
-    # Eligibility: the slot's own rule wins over the event's default for the role.
+    # Eligibility: the slot's own rule wins over the event's default for the role; with neither,
+    # the club's configured default applies (FR-122): a role marked requires_license needs a valid
+    # amateur license of any class. The event's preferred class only warns (FR-61).
     rule = (
         EligibilityRule.objects.filter(slot=slot, role=role).first()
         or EligibilityRule.objects.filter(event=event, slot__isnull=True, role=role).first()
     )
+    if not rule:
+        cfg = next((r for r in (setting("slot_roles", []) or []) if r.get("key") == role), None)
+        if cfg and cfg.get("requires_license") and not holds(user, "amateur_license", slot.start.date()):
+            return False, f"{role} needs a valid amateur license"
     if rule:
         if rule.categories and user.category not in rule.categories:
             return False, f"{role} is limited to: {', '.join(rule.categories)}"

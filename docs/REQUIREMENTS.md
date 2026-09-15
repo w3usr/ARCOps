@@ -817,8 +817,9 @@ Verbatim:
   an **opening schedule** (FR-54). A member sees only the roles they are eligible for, with the
   reason shown for roles they are not.
 - **FR-122 [Must] Role defaults.** Club configuration carries a default eligibility per role, used
-  wherever an event has set none: for W3USR, **Mentor** requires an amateur license at the event's
-  preferred class; **Operator** and **Observer** require nothing, so an unlicensed student may take
+  wherever an event has set none: for W3USR, **Mentor** requires a valid amateur license of any
+  class (the event's preferred class is advisory and produces the FR-61 warning, so that a
+  Technician may still mentor); **Operator** and **Observer** require nothing, so an unlicensed student may take
   Operator and operate under the mentor as control operator (FR-63, §97.115(b)). Station and IT
   access are viability requirements on the slot (FR-61), carried by whoever in it holds them,
   never a condition of any role.

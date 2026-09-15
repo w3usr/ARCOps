@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Hours by course · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
+<h1>Hours by course</h1>
+<form method="get" class="searchrow"><label for="course" class="sr-only">Course</label>
+<select id="course" name="course">{% for l in labels %}<option value="{{ l }}"{% if l == label %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+<button type="submit" class="secondary">Show</button>{% if label %}<a class="button secondary" href="?course={{ label|urlencode }}&format=csv">Download CSV</a>{% endif %}</form>
+{% if not labels %}<p>No entry links yet, so no course to report on.</p>{% else %}
+<p>A member checked in to a slot is credited with its full length; a captain can mark a no-show, which removes the credit (FR-124).</p>
+<h2>Totals</h2>
+<table class="table"><thead><tr><th scope="col">Member</th><th scope="col">Credited hours</th></tr></thead><tbody>
+{% for u, total in report.totals %}<tr><th scope="row"><a href="{% url 'member_detail' u.pk %}">{{ u.full_name }}</a>{% if u.callsign %} {{ u.callsign }}{% endif %}</th><td>{{ total|floatformat:"-2" }}</td></tr>{% empty %}<tr><td colspan="2">No sign-ups yet.</td></tr>{% endfor %}
+</tbody></table>
+<h2>Every slot</h2>
+<table class="table"><thead><tr><th scope="col">Member</th><th scope="col">Event</th><th scope="col">Slot (UTC)</th><th scope="col">Checked in</th><th scope="col">Hours</th></tr></thead><tbody>
+{% for r in report.rows %}<tr><td>{{ r.signup.user.full_name }}</td><td>{{ r.signup.slot.event.title }}</td><td>{{ r.signup.slot.start|date:"D d M H:i" }}–{{ r.signup.slot.end|date:"H:i" }}</td><td>{% if r.signup.checked_in_at %}{{ r.signup.checked_in_at|date:"H:i" }}{% if r.signup.no_show %} <span class="tag warn">no-show</span>{% endif %}{% else %}<span class="muted">no</span>{% endif %}</td><td>{{ r.hours|floatformat:"-2" }}</td></tr>{% endfor %}
+</tbody></table>{% endif %}
+{% endblock %}

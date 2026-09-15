@@ -4,6 +4,8 @@ Two small gates on every request:
 * A temporary password (FR-7) works for exactly one sign-in, which must set a new password
   before anything else; the member is sent to the change-password page until they do.
 * An account at access level "none" is signed out and shown a plain explanation (§2.1).
+* A class-link account whose address is unverified past its deadline is signed out until it is
+  verified or an officer waives it (FR-120).
 """
 
 from django.contrib import messages
@@ -43,6 +45,14 @@ class AccountGateMiddleware:
                 logout(request)
                 messages.error(
                     request, "That temporary password has expired. Ask a sysadmin for a new one."
+                )
+                return redirect(reverse("account_login"))
+            if user.verification_overdue and not request.path.startswith(("/verify/", "/accounts/logout/", "/static/", "/healthz")):
+                logout(request)
+                messages.error(
+                    request,
+                    "Please confirm your email address first: open the link in the message we sent "
+                    "you, or ask a club officer to mark it verified.",
                 )
                 return redirect(reverse("account_login"))
             if user.password_is_temporary and not request.path.startswith(ALLOWED_WHILE_TEMPORARY):

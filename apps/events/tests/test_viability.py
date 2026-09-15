@@ -111,12 +111,14 @@ def test_two_people_split_credentials_is_viable():
     assert st.control_operator.first_name == "lic"  # FR-63
 
 
-def test_technician_below_minimum_not_viable():
+def test_technician_below_preferred_is_viable_with_a_warning():
+    # FR-61 as amended 2026-09-15: any class makes the slot viable; below the event's preferred
+    # class is a warning. One person holding everything is still "at risk".
     s = slot_for("General")
     SignUp.objects.create(slot=s, user=person("tec", "Technician", True, True), role="operator")
     st = evaluate(s)
-    assert st.status == "not_viable"
-    assert any("General or higher" in r for r in st.reasons)
+    assert st.status == "at_risk" and st.below_preferred == "Technician"
+    assert not any("General or higher" in r for r in st.reasons)  # no longer a missing credential
 
 
 def test_observer_does_not_count_for_operating_slot():

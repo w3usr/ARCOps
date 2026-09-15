@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Entry links · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'invitations' %}">Invite</a></p>
+<h1>Entry links</h1>
+<p>A link many people can use. A <strong>class</strong> link admits anyone with an address at the club's institution as a member at once; a <strong>community</strong> link admits anyone as a provisional member for an officer to review. Every account records the link it came through. Links expire; pause or revoke one the moment it leaks.</p>
+{% if created %}
+<section class="card highlight" aria-labelledby="c"><h2 id="c">Link created: {{ created.label }}</h2>
+<div class="field"><label for="lnk">Send this</label><div class="copyrow"><input id="lnk" readonly value="{{ created_link }}"> <button type="button" class="secondary" data-copy="#lnk">Copy link</button></div></div>
+<p class="helptext">{% if created.kind == 'class' %}Only {{ created.required_domain }} addresses can use it; each person is a member as soon as they finish the form and has {{ 7 }} days to confirm their address.{% else %}Anyone can use it; each person is provisional until an officer admits them.{% endif %} Expires {{ created.expires_at|date:"d M Y" }}{% if created.cap %}; at most {{ created.cap }} accounts{% endif %}.</p>
+</section>
+{% endif %}
+<form method="post" class="card stack">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for f in form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}
+  <div><button type="submit">Create link</button></div>
+</form>
+<h2>Links</h2>
+<table class="table"><thead><tr><th scope="col">Label</th><th scope="col">Kind</th><th scope="col">Domain</th><th scope="col">Expires</th><th scope="col">Joined</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
+{% for l in links %}<tr>
+<td><strong>{{ l.label }}</strong><br><small class="muted"><code>{{ base }}/join/{{ l.token }}/</code></small></td>
+<td>{{ l.kind }}</td><td>{{ l.required_domain|default:"any" }}</td><td>{{ l.expires_at|date:"d M Y" }}</td>
+<td>{{ l.joined_count }}{% if l.cap %} / {{ l.cap }}{% endif %}</td>
+<td>{% if l.is_open %}<span class="tag ok">open</span>{% else %}<span class="tag">{{ l.get_state_display|lower }}{% if l.state == 'active' %}, closed{% endif %}</span>{% endif %}</td>
+<td><form method="post" action="{% url 'entry_link_action' l.pk %}" class="inline">{% csrf_token %}
+  {% if l.state == 'active' %}<button name="action" value="pause" class="linklike">pause</button>{% elif l.state == 'paused' %}<button name="action" value="resume" class="linklike">resume</button>{% endif %}
+  {% if l.state != 'revoked' %}<button name="action" value="extend" class="linklike">+30 days</button> <button name="action" value="revoke" class="linklike">revoke</button>{% endif %}
+  {% if l.kind == 'class' %}<button name="action" value="verify_all" class="linklike" title="Waive address verification for everyone who joined through this link">mark all verified</button>{% endif %}
+</form></td>
+</tr>{% empty %}<tr><td colspan="7">None yet.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

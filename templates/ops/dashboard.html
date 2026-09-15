@@ -3,6 +3,16 @@
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Hello, {{ user.display_first }}</h1>
+{% if user.is_provisional %}
+<section class="card" aria-labelledby="pv"><h2 id="pv">Your account is provisional</h2>
+<p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p></section>
+{% endif %}
+{% if pending_review %}
+<section class="card highlight" aria-labelledby="rev">
+  <h2 id="rev">Provisional members waiting for review</h2>
+  <ul class="list">{% for p in pending_review %}<li><a href="{% url 'member_detail' p.pk %}">{{ p.full_name }}{% if p.callsign %} {{ p.callsign }} ({{ p.license_letter }}){% endif %}</a> · via {{ p.joined_via.label|default:"a community link" }} · {{ p.date_joined|date:"d M" }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
 
 {% if checkin_ready %}
 <section class="card highlight" aria-labelledby="ci">

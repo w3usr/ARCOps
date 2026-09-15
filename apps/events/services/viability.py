@@ -20,6 +20,7 @@ class SlotStatus:
     reasons: list[str] = field(default_factory=list)
     control_operator = None  # a User or None
     missing: list[str] = field(default_factory=list)
+    below_preferred: str | None = None  # the best class present when under the event's preferred class
 
     @property
     def label(self) -> str:
@@ -63,17 +64,32 @@ def rule_for(slot) -> list[dict]:
 def _satisfied(rule: list[dict], people, slot) -> tuple[bool, list[str]]:
     """Does this set of people satisfy every requirement? Returns (ok, missing labels)."""
     on = slot.start.date()
-    event = slot.event
     missing = []
     for req in rule:
         key = req["credential"]
-        min_class = event.min_license_class if req.get("min_class_from_event") else None
-        if not any(holds(p, key, on, min_class) for p in people):
-            label = key.replace("_", " ")
-            if min_class:
-                label += f" ({min_class} or higher)"
-            missing.append(label)
+        # The event's class is *preferred* (FR-61, 2026-09-15): any class satisfies the requirement;
+        # evaluate() adds a warning when nobody in the slot reaches the preferred class.
+        if not any(holds(p, key, on, None) for p in people):
+            missing.append(key.replace("_", " "))
     return (not missing, missing)
+
+
+def below_preferred(event, people, on) -> str | None:
+    """The best license class present when it is below the event's preferred class, else None."""
+    from apps.credentials.services import class_rank
+
+    pref = event.min_license_class
+    if not pref:
+        return None
+    best, best_rank = None, -1
+    for p in people:
+        if holds(p, "amateur_license", on, None):
+            cls = getattr(getattr(p, "license", None), "effective_class", None) or ""
+            if class_rank(cls) > best_rank:
+                best, best_rank = cls, class_rank(cls)
+    if best is not None and best_rank < class_rank(pref):
+        return best
+    return None
 
 
 def evaluate(slot, signups=None) -> SlotStatus:
@@ -98,13 +114,17 @@ def evaluate(slot, signups=None) -> SlotStatus:
         return SlotStatus("not_viable", reasons, missing=missing)
 
     # At risk: removing any one person breaks it (FR-62).
+    low = below_preferred(slot.event, people, slot.start.date())
     for i in range(len(people)):
         others = people[:i] + people[i + 1 :]
         if not others or not _satisfied(rule, others, slot)[0]:
             status = SlotStatus("at_risk", [f"depends on {people[i].short_name} alone"])
+            status.below_preferred = low
             status.control_operator = control_operator(slot, on_air)
             return status
-    status = SlotStatus("viable")
+    status = SlotStatus("viable", [f"below preferred class ({low})"] if low else [])
+    if low:
+        status.below_preferred = low
     status.control_operator = control_operator(slot, on_air)
     return status
 

@@ -660,3 +660,27 @@ carries the actual running model ID.
 - **Nature of Contribution**: Draft, with the advisor's words quoted at each decision.
 - **Human Review Status**: Pending review; the advisor asked for the text before the code.
 - **Git Hash**: 767da16
+
+## [2026-09-15 15:56 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Build the entry-links plan the advisor approved: class and community
+  links with expiry, cap, pause, revoke, and who-joined; the join flow with the seven-day
+  verification and the officer's waiver; the Provisional access level with its review (Home card,
+  member page, officer email) and its restricted roster view; role defaults from configuration
+  (Mentor needs a license); the event's class as a preferred class with a warning below it;
+  license letters after names; check-in hours per course with CSV; the public mentor-needs page.
+- **Sections/Files Affected**: apps/accounts/{entry.py, views_entry.py (new), models.py,
+  views_members.py, middleware.py, urls.py}, migration 0004_entry_links; apps/events/{models.py,
+  urls.py, views_slots.py, services/{roster,viability,eligibility}.py, services/{mentors,hours}.py
+  (new)}, migration 0002_entry_links; apps/credentials/views.py (guards); apps/ops/views.py;
+  config/urls.py, config/club.example.yaml; templates/accounts/{entry_links, join, join_closed,
+  join_sent, verify_result, mentors, hours}.html (new) and {members, member_detail, invitations,
+  invitation_minor}.html, templates/events/{detail,_slot_body}.html, templates/ops/dashboard.html,
+  templates/base.html; docs/REQUIREMENTS.md (FR-122 wording); tests: apps/accounts/tests/
+  test_entry_links.py, apps/events/tests/test_preferred_and_hours.py (new), test_flows.py and
+  test_viability.py amended for FR-61 and FR-122.
+- **Nature of Contribution**: Code generation and tests against the requirement text the advisor
+  read; the FR-122 wording change (Mentor: any license class) is the assistant's reconciliation
+  of two of his decisions, recorded in the private plan note.
+- **Human Review Status**: Pending review; scenarios T23 to T27 of the test plan are his check.
+- **Git Hash**: [pending]

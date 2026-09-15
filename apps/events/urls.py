@@ -26,6 +26,7 @@ urlpatterns = [
     path("<int:pk>/slot/<int:slot_id>/control-operator/", views_slots.slot_control_operator, name="slot_control_operator"),
     path("<int:pk>/slot/<int:slot_id>/assign/", views_slots.slot_assign, name="slot_assign"),
     path("<int:pk>/bulk/", views_slots.event_bulk, name="event_bulk"),
+    path("signup/<int:signup_id>/no-show/", views_slots.signup_no_show, name="signup_no_show"),
     path("slot/<int:slot_id>/signup/", views.sign_up, name="sign_up"),
     path("signup/<int:signup_id>/cancel/", views.cancel_signup, name="cancel_signup"),
     path("signup/<int:signup_id>/checkin/", views.check_in, name="check_in"),

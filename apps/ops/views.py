@@ -48,6 +48,11 @@ def dashboard(request):
     ]
     upcoming_events = Event.objects.filter(state__in=["published", "locked"]).order_by("id")[:10]
     upcoming_events = [e for e in upcoming_events if e.ends_at() and e.ends_at() >= now]
+    pending = []
+    if request.user.is_officer:
+        from apps.accounts.entry import pending_review
+
+        pending = list(pending_review()[:20])
     return render(
         request,
         "ops/dashboard.html",
@@ -55,5 +60,6 @@ def dashboard(request):
             "my_signups": my_signups,
             "checkin_ready": checkin_ready,
             "upcoming_events": upcoming_events,
+            "pending_review": pending,
         },
     )

@@ -6,15 +6,19 @@
 <p class="slot-state tone-{{ cell.shown.tone }}"><span class="word">{{ cell.shown.word }}</span>{% if cell.shown.detail %} <span class="muted">{{ cell.shown.detail }}</span>{% endif %}</p>
 
 <h2>Who is on it</h2>
-{% if cell.signups %}
+{% if cell.signups and not user.is_member %}
+<p>{{ cell.class_counts }} ({{ cell.signups|length }} signed up{% if cell.mine %}, including you as {{ cell.mine.role }}{% endif %}). Names appear once a club officer has admitted you as a member.</p>
+{% elif cell.signups %}
 <ul class="list">
 {% for s in cell.signups %}
-  <li>{% if is_captain %}{{ s.user.full_name }}{% if s.user.callsign %} {{ s.user.callsign }}{% endif %}{% else %}{{ s.user.short_name }}{% endif %}
+  <li>{% if is_captain %}{{ s.user.full_name_lettered }}{% else %}{{ s.user.short_name_lettered }}{% endif %}
     <span class="tag">{{ s.role }}</span>
     {% if cell.control_operator and cell.control_operator.pk == s.user.pk %}<span class="tag ok" title="Control operator">control operator</span>{% endif %}
     {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
     {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
     {% if is_captain and s.user != user %}<form method="post" action="{% url 'cancel_signup' s.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="confirmed" value="yes"><button class="linklike">remove</button></form>{% endif %}
+    {% if is_captain and s.checked_in_at %}<form method="post" action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}undo no-show{% else %}mark no-show{% endif %}</button></form>{% endif %}
+    {% if s.no_show %}<span class="tag warn">no-show</span>{% endif %}
   </li>
 {% endfor %}
 </ul>

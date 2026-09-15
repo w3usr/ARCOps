@@ -21,6 +21,7 @@ from apps.credentials.models import LicenseRecord, SignedAgreement
 from apps.ops.audit import record
 from apps.ops.config import setting
 
+from . import entry
 from .models import AccessLevel, User
 from .services import issue_temporary_password, set_access_level
 
@@ -73,7 +74,13 @@ def _standing(user) -> dict:
 def members(request):
     full = request.user.is_officer
     q = request.GET.get("q", "").strip()
-    users = User.objects.all() if full else User.objects.exclude(access_level=AccessLevel.NONE)
+    users = (
+        User.objects.select_related("joined_via", "license")
+        if full
+        else User.objects.exclude(access_level__in=[AccessLevel.NONE, AccessLevel.PROVISIONAL]).select_related("license")
+    )
+    if not request.user.is_member:
+        raise Http404  # FR-121: a Provisional member sees no directory
     if q:
         cond = (
             Q(first_name__icontains=q)
@@ -148,6 +155,18 @@ def member_detail(request, pk):
             set_access_level(actor, member, AccessLevel.MEMBER, "reopened")
             messages.success(request, f"{member.short_name} is a member again.")
             return redirect("member_detail", pk=member.pk)
+        elif action == "admit" and member.is_provisional:  # FR-121: any officer reviews
+            entry.admit(actor, member)
+            messages.success(request, f"{member.short_name} is now a member.")
+            return redirect("member_detail", pk=member.pk)
+        elif action == "decline" and member.is_provisional:
+            entry.decline(actor, member, request.POST.get("reason", "").strip()[:300])
+            messages.success(request, f"{member.short_name} declined.")
+            return redirect("member_detail", pk=member.pk)
+        elif action == "mark_verified":  # FR-120: the officer's waiver
+            entry.mark_verified(actor, member)
+            messages.success(request, "Address marked verified.")
+            return redirect("member_detail", pk=member.pk)
         else:
             raise Http404
 
@@ -162,3 +181,36 @@ def member_detail(request, pk):
             "is_self": member == actor,
         },
     )
+
+
+@login_required
+def hours(request):
+    """FR-124: credited hours per member for one entry-link label (a course), with CSV."""
+    if not request.user.is_officer:
+        raise Http404
+    from django.http import HttpResponse
+
+    from apps.events.services.hours import course_report
+
+    from .models import EntryLink
+
+    labels = list(EntryLink.objects.order_by("label").values_list("label", flat=True).distinct())
+    label = request.GET.get("course", "") or (labels[0] if labels else "")
+    report = course_report(label) if label else {"label": "", "rows": [], "totals": []}
+    if request.GET.get("format") == "csv" and label:
+        import csv
+
+        resp = HttpResponse(content_type="text/csv")
+        resp["Content-Disposition"] = f'attachment; filename="hours-{label}.csv"'.replace(" ", "_")
+        w = csv.writer(resp)
+        w.writerow(["Last name", "First name", "Callsign", "Sign-in email", "Event", "Slot start (UTC)", "Slot end (UTC)", "Checked in (UTC)", "No-show", "Credited hours"])
+        for r in report["rows"]:
+            su = r["signup"]
+            w.writerow([su.user.last_name, su.user.first_name, su.user.callsign, su.user.email, su.slot.event.title,
+                        su.slot.start.strftime("%Y-%m-%d %H:%M"), su.slot.end.strftime("%Y-%m-%d %H:%M"),
+                        su.checked_in_at.strftime("%Y-%m-%d %H:%M") if su.checked_in_at else "", "yes" if su.no_show else "", r["hours"]])
+        w.writerow([])
+        for u, total in report["totals"]:
+            w.writerow([u.last_name, u.first_name, u.callsign, u.email, "TOTAL", "", "", "", "", round(total, 2)])
+        return resp
+    return render(request, "accounts/hours.html", {"labels": labels, "label": label, "report": report})

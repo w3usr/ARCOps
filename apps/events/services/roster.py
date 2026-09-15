@@ -50,12 +50,13 @@ class Presentation:
     detail: str = ""
 
     @property
-    def tone(self) -> str:
+    def tone(self) -> str:  # low: covered, but below the event's preferred class (FR-61)
         return {
             "open": "open",
             "needs": "warn",
             "covered": "ok",
             "thin": "ok",
+            "low": "warn",
             "full": "muted",
             "closed": "muted",
             "not_open": "muted",
@@ -89,6 +90,12 @@ def present(slot: Slot, status, signups: list[SignUp], open_roles: list[str], *,
         soon = slot.start - now <= timedelta(hours=48)
         key = "problem" if (is_captain and soon) else "needs"
         return Presentation(key, "Needs " + (needs[0] if needs else "more"), "; ".join(needs[1:]))
+    low = getattr(status, "below_preferred", None)
+    if low:  # FR-61: viable, with the warning; it may also depend on one person
+        detail = f"below preferred class ({low})"
+        if status.status == "at_risk" and needs:
+            detail += "; " + needs[0]
+        return Presentation("low", "Covered", detail)
     if status.status == "at_risk":
         return Presentation("thin", "Covered", needs[0] if needs else "")
     if open_roles and published:
@@ -107,6 +114,16 @@ class Cell:
     status: object
     shown: Presentation
     control_operator: object = None
+
+    @property
+    def class_counts(self) -> str:
+        """FR-121: what a Provisional member sees of a slot's people, e.g. '1 G, 2 U'."""
+        order = "EAGTNU"
+        counts: dict[str, int] = {}
+        for su in self.signups:
+            letter = su.user.license_letter
+            counts[letter] = counts.get(letter, 0) + 1
+        return ", ".join(f"{counts[k]} {k}" for k in order if k in counts)
 
 
 @dataclass
@@ -169,7 +186,7 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
         shown = present(s, st, signups, open_roles, published=published, is_captain=is_captain, now=now)
         cells[s.pk] = Cell(s, signups, open_roles, mine.get(s.pk), st, shown, getattr(st, "control_operator", None))
         counts["total"] += 1
-        bucket = {"open": "open", "not_open": "open", "covered": "covered", "thin": "covered", "full": "covered",
+        bucket = {"open": "open", "not_open": "open", "covered": "covered", "thin": "covered", "low": "covered", "full": "covered",
                   "needs": "needs", "problem": "needs", "closed": "closed"}[shown.key]
         counts[bucket] += 1
 
@@ -203,6 +220,7 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
     single_location = len({p.location_id for p in positions}) == 1
     starts, ends = event.starts_at(), event.ends_at()
     return {
+        "names_visible": viewer.is_member,  # FR-121: Provisional members see counts, not names
         "layout": layout,
         "positions": positions,
         "single_location": positions[0].location if positions and single_location else None,

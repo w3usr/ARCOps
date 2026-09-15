@@ -30,6 +30,8 @@ def _applicable_templates(user):
 
 @login_required
 def agreements(request):
+    if not request.user.is_member:
+        raise Http404  # FR-121: Provisional members neither see nor sign agreements
     if request.user.under_18:
         return render(request, "credentials/minor.html")  # minors do not sign (FR-22)
     templates = _applicable_templates(request.user)
@@ -44,6 +46,8 @@ def agreements(request):
 @login_required
 @require_POST
 def sign(request, template_id):
+    if not request.user.is_member:
+        raise Http404
     if request.user.under_18:
         raise Http404
     t = get_object_or_404(AgreementTemplate, pk=template_id, is_current=True)

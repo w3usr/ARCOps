@@ -201,3 +201,18 @@ def event_bulk(request, pk):
     else:
         raise Http404
     return redirect("event_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def signup_no_show(request, signup_id):
+    """FR-124: a captain removes (or restores) the credit for a checked-in slot."""
+    su = get_object_or_404(SignUp, pk=signup_id)
+    event = su.slot.event
+    if not request.user.can_captain(event):
+        raise Http404
+    su.no_show = not su.no_show
+    su.save(update_fields=["no_show"])
+    record(request.user, "signup.no_show" if su.no_show else "signup.no_show_undone", su)
+    messages.success(request, "Marked as a no-show; no hours credited." if su.no_show else "No-show undone; hours credited again.")
+    return redirect("slot_detail", pk=event.pk, slot_id=su.slot_id)

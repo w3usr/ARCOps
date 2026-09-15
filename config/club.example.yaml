@@ -47,10 +47,16 @@ club_positions:                               # §2.3; approver: true may approv
 
 license_ladder: ["Novice", "Technician", "General", "Advanced", "Extra"]   # FR-19; US default
 
-slot_roles:                                   # FR-49, FR-50
+slot_roles:                                   # FR-49, FR-50, FR-122
+  # requires_license: the role needs a valid amateur license (any class; the event's preferred
+  # class only warns, FR-61). Station and IT access are slot requirements, never a role's.
   - { key: operator, label: "Operator", on_air: true }
-  - { key: mentor,   label: "Mentor",   on_air: true }
+  - { key: mentor,   label: "Mentor",   on_air: true, requires_license: true }
   - { key: observer, label: "Observer", on_air: false }
+
+# Entry links (FR-119): a class link may require an address at one of these domains, and an
+# account that arrives through one is admitted at once. Empty means class links cannot be made.
+trusted_email_domains: []
 
 non_operating_slot_kinds:                     # FR-47
   - { key: setup,     label: "Setup",               viability: [station_access] }
@@ -101,3 +107,4 @@ defaults:
   temporary_password_expiry_hours: 72         # FR-7
   agreement_expiry_notice_days: 30            # FR-28
   email_delivery: "off"                       # FR-105; turn on when your mail path works
+  entry_link_verification_days: 7              # FR-120; an officer can waive it per account or per link

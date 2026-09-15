@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Mentors wanted · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Mentors wanted at {{ club.short_name }}</h1>
+<p>{{ club.name }} runs contests and operating events with student operators, many of them new to the air. A <strong>mentor</strong> sits with them for a shift, is the control operator, and turns a first contact into a good one. Below are the shifts that still need a mentor. Times are in the event's zone, with UTC beside.</p>
+<section class="card" aria-labelledby="req"><h2 id="req">What is asked of a mentor</h2>
+<ul class="list">
+  <li>A valid amateur license. Each event names the class it prefers for the control operator; a lower class still helps and is shown as such on the schedule.</li>
+  <li>Once admitted as a member, the club's station and IT access agreements, which a faculty advisor approves.</li>
+  <li>Patience with beginners.</li>
+</ul></section>
+{% for n in needs %}
+<section class="card" aria-labelledby="e{{ n.event.pk }}">
+  <h2 id="e{{ n.event.pk }}">{{ n.event.title }} <small class="muted">· {{ n.open_total }} mentor seat{{ n.open_total|pluralize }} open</small></h2>
+  <p><strong>{{ n.span }}</strong><br><span class="muted">{{ n.span_utc }}</span></p>
+  <p class="muted">At {{ n.where }}{% if n.preferred_class %} · preferred class {{ n.preferred_class }}{% endif %}{% if n.event.rules_url %} · <a href="{{ n.event.rules_url }}">Rules</a>{% endif %}</p>
+  <ul class="list">{% for r in n.rows %}<li>{{ r.lead }} <span class="muted">({{ r.utc }})</span> · {{ r.open }} open</li>{% endfor %}</ul>
+</section>
+{% empty %}<p>No shifts need a mentor at the moment. Join anyway and we will tell you when one does.</p>{% endfor %}
+<p><a class="button" href="{% url 'join_form' link.token %}">Volunteer: create your account</a></p>
+<p class="muted">Names of the people on each shift are shown to members only.</p>
+{% endblock %}

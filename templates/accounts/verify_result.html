@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Address confirmed · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% if outcome == 'invalid' %}<h1>That link is not valid</h1><p>It may have expired or been used already. Sign in if you already have an account, or ask a club officer for a new link.</p>
+{% elif outcome == 'provisional' %}<h1>Thank you, your address is confirmed</h1><p>Your account is <strong>provisional</strong>: a club officer will review it and admit you as a member. In the meantime you can look at the events and sign up for slots. <a href="{% url 'event_list' %}">See the events.</a></p>
+{% elif outcome == 'already' %}<h1>Already confirmed</h1><p>This address was confirmed earlier. <a href="{% url 'dashboard' %}">Go to Home.</a></p>
+{% else %}<h1>Address confirmed</h1><p>Thank you. <a href="{% url 'dashboard' %}">Go to Home.</a></p>{% endif %}
+{% endblock %}

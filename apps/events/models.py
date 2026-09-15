@@ -19,7 +19,9 @@ class Event(models.Model):
     description_html = models.TextField(blank=True)
     state = models.CharField(max_length=10, choices=State.choices, default=State.DRAFT)
     display_timezone = models.CharField(max_length=60, blank=True)  # falls back to club.timezone
-    min_license_class = models.CharField(max_length=20, blank=True)
+    min_license_class = models.CharField(  # the *preferred* class since 2026-09-15 (FR-36, FR-61)
+        max_length=20, blank=True, verbose_name="preferred license class"
+    )
     rules_url = models.URLField(blank=True)
     contest_fields = models.JSONField(default=dict, blank=True)  # FR-37, by page label
     calendar_ref = models.PositiveIntegerField(null=True, blank=True)  # FR-40
@@ -196,6 +198,7 @@ class SignUp(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)  # FR-72
     checked_in_at = models.DateTimeField(null=True, blank=True)  # FR-113
+    no_show = models.BooleanField(default=False)  # FR-124: a captain removes the slot's credit
     checked_in_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )

@@ -40,12 +40,14 @@
       <li><a href="{% url 'dashboard' %}"{% nav_active 'dashboard' %}>{% icon 'home' %}<span>Home</span></a></li>
       <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' %}>{% icon 'calendar' %}<span>Events</span></a></li>
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
+      {% if user.is_member %}
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
-      <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' %}>{% icon 'users' %}<span>Members</span></a></li>
+      <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' 'hours' %}>{% icon 'users' %}<span>Members</span></a></li>
+      {% endif %}
       <li><a href="{% url 'profile' %}"{% nav_active 'profile' %}>{% icon 'user' %}<span>Profile</span></a></li>
       {% if user.is_officer %}
       <li class="navsep" aria-hidden="true"></li>
-      <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
+      <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' 'entry_links' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
       {% endif %}
       {% if user.is_sysadmin %}
