@@ -55,8 +55,8 @@ TINYMCE_DEFAULT_CONFIG = {
     "block_formats": "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3",
     "valid_elements": "h1,h2,h3,p,ol,ul,li,strong/b,em/i,a[href|title],table,thead,tbody,tr,th[scope],td,br,blockquote",
     "branding": False,
+    "statusbar": False,  # its path items carry ARIA that fails axe (aria-allowed-attr); FR-117
     "promotion": False,
-    "statusbar": True,
     "convert_urls": False,
     "content_style": "body { font-family: system-ui, sans-serif; font-size: 16px; }",
     "a11y_advanced_options": True,

@@ -21,3 +21,17 @@ jobs:
         run: pytest
       - name: Dependency audit
         run: pip install pip-audit && pip-audit -r requirements.txt || true
+  accessibility:
+    # FR-117, TR-36: axe-core over every page of the seeded demo, at desktop and phone width
+    # (FR-95). A serious or critical violation fails the build, and a red build is never deployed.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: playwright install --with-deps chromium
+      - name: Accessibility (axe-core) and phone-width check
+        run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q

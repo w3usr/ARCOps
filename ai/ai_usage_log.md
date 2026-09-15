@@ -958,3 +958,26 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T5 step 1 and T46 step 1 of the private test plan are
   the check. 157 tests pass; ruff, the formatter, and the neutrality check clean.
 - **Git Hash**: 5f28b8a
+
+## [2026-09-15 23:50 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 8 of the implementation plan, the verification gate (FR-117,
+  FR-116, FR-95, FR-96): an accessibility check in CI (Playwright driving headless Chromium with
+  axe-core injected, over every page of the seeded demo as each kind of account, at desktop and
+  phone width; a serious or critical violation or a page that scrolls sideways fails the build;
+  a self-test proves the check can fail); the fixes it found (the roster's day-heading rows had
+  no cell, the editor's status bar carried ARIA axe rejects, long tokens overflowed a phone);
+  seed_demo extended with the states of phases 5 to 7; the service worker keeps My schedule and
+  My messages for offline reading; the screen-reader walk checklist; onboarding names the jobs
+  and the check; NOTICE lists axe-core and TinyMCE.
+- **Sections/Files Affected**: tools/a11y/{test_axe.py,conftest.py,axe.min.js,AXE_LICENSE}
+  (new; axe-core 4.10.3 vendored under MPL-2.0), .github/workflows/ci.yml (accessibility job),
+  requirements-dev.txt (playwright), apps/ops/management/commands/seed_demo.py,
+  templates/events/detail.html, config/settings/base.py (editor statusbar), static/css/app.css,
+  static/sw.js (cache v3, offline pages), docs/ACCESSIBILITY_WALK.md (new), docs/ONBOARDING.md,
+  NOTICE.
+- **Nature of Contribution**: Code generation, test harness, documentation.
+- **Human Review Status**: Pending review; T49 of the private test plan is the check, and the
+  screen-reader walk (T49 step 2) is a person's to do. Locally: 7 accessibility tests pass in
+  3 min 49 s; 157 unit tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [pending]

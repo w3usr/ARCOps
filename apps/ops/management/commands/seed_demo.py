@@ -156,4 +156,82 @@ class Command(BaseCommand):
                 slot=op_slots[2], user=users["Ben"], role="mentor"
             )  # two full holders: viable
             SignUp.objects.create(slot=op_slots[2], user=users["Dee"], role="observer")
+        self._seed_later_phases(users, ev)
         self.stdout.write("demo seeded: sign in as ada@example.org / demo-password-please-change")
+
+    def _seed_later_phases(self, users, ev):
+        """The states phases 0 to 7 added, so every page has something to show and the
+        accessibility check (tools/a11y) can reach it: a guardian and a minor with a responsible
+        adult, a waitlist entry, an entry link, an announcement (so the outbox and My messages
+        have rows), contest fields, and the message templates."""
+        from apps.accounts.entry import create_link
+        from apps.accounts.models import EntryLink, Guardianship
+        from apps.comms.announce import send_announcement
+        from apps.comms.services import seed_templates
+        from apps.events.models import ResponsibleAdult, Waitlist
+
+        seed_templates()
+        pat, _ = User.objects.get_or_create(
+            email="pat@example.org",
+            defaults={
+                "first_name": "Pat",
+                "last_name": "Example",
+                "cell_phone": "555-0100",
+                "category": "guardian",
+                "access_level": AccessLevel.MEMBER,
+            },
+        )
+        kim, kim_new = User.objects.get_or_create(
+            email="kim@example.org",
+            defaults={
+                "first_name": "Kim",
+                "last_name": "Example",
+                "category": "student",
+                "access_level": AccessLevel.MEMBER,
+                "under_18": True,
+            },
+        )
+        for u in (pat, kim):
+            u.set_password("demo-password-please-change")
+            u.save()
+        Guardianship.objects.get_or_create(
+            minor=kim, guardian=pat, defaults={"relationship": "parent"}
+        )
+        op_slots = list(
+            ev.locations.first()
+            .positions.first()
+            .slots.filter(kind="operating", cancelled=False)
+            .order_by("start")
+        )
+        if kim_new and len(op_slots) > 3:
+            su = SignUp.objects.create(slot=op_slots[3], user=kim, role="observer")
+            ResponsibleAdult.objects.create(
+                signup=su, name="Pat Example", phone="555-0100", email="pat@example.org", member=pat
+            )
+            Waitlist.objects.get_or_create(slot=op_slots[0], user=users["Dee"], role="operator")
+        if not EntryLink.objects.exists():
+            create_link(
+                users["Ada"],
+                label="PHYS 101 demo section",
+                kind=EntryLink.Kind.CLASS,
+                required_domain="example.edu",
+                expires_at=timezone.now() + timedelta(days=90),
+                landing_event=ev,
+            )
+        if not ev.contest_fields:
+            ev.contest_fields = {
+                "mode": "SSB",
+                "bands": "160-10m",
+                "exchange": "RS + serial number",
+            }
+            ev.save(update_fields=["contest_fields"])
+        from apps.comms.models import Announcement
+
+        if not Announcement.objects.exists():
+            send_announcement(
+                users["Ben"],
+                ev,
+                {},
+                "Demo: bring a headset",
+                "<p>A fictitious announcement so the outbox and My messages have something to show.</p>",
+            )

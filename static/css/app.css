@@ -352,3 +352,8 @@ td .when1, th .when1 { font-weight: 600; }
 .badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: 1em; font-size: .75rem; font-weight: 600; text-align: center; background: var(--brand); color: #fff; margin-left: .35em; }
 .msglist .unread summary strong::before { content: "● "; color: var(--brand); }
 .table-wrap { overflow-x: auto; }
+
+/* FR-95: nothing forces a phone to scroll sideways. Long tokens (feed URLs, keys, JSON) wrap. */
+code, .copyrow code, .kv dd, .helptext { overflow-wrap: anywhere; }
+textarea, input:not([type="checkbox"]):not([type="radio"]), select { max-width: 100%; }
+pre { overflow-x: auto; max-width: 100%; }

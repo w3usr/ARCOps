@@ -35,3 +35,15 @@ Scaffolding
 Portions of this repository's governance and onboarding scaffolding derive
 from the W3USR AI Project Template,
 https://github.com/w3usr/ai_project_template, used under CC BY 4.0.
+
+---
+
+Third-party components
+
+- axe-core (tools/a11y/axe.min.js), Copyright Deque Systems, Inc., Mozilla Public
+  License 2.0; see tools/a11y/AXE_LICENSE. Used only by the build's accessibility
+  check; not served to members.
+- TinyMCE 6, Copyright Ephox Corporation DBA Tiny Technologies, Inc., MIT License,
+  bundled by the django-tinymce package and served as the rich-text editor (TR-9).
+- Python packages named in requirements.txt carry their own licences; none is
+  redistributed in this repository.

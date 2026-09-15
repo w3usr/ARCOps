@@ -74,7 +74,7 @@
   {% endif %}
   {% for day in roster.days %}
   <div class="r-day" role="rowgroup">
-    <div class="r-dayhead" role="row"><label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label></div>
+    <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.positions|length|add:1 }}"><label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label></div></div>
     {% for row in day.rows %}
     <div class="r-row kind-{{ row.kind }}" role="row">
       <div class="r-time" role="rowheader">

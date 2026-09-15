@@ -163,6 +163,34 @@ A few habits that keep that true:
 
 ---
 
+## The scheduled jobs
+
+Some of what the application does happens on a clock, not on a click: reminders, warnings, the
+weekly digest, the FCC licence sync, expiry notices, retention, a self-check. Each is a
+management command registered in `apps/ops/jobs.py` and listed, with its period and what it
+does, in [`docs/JOBS.md`](JOBS.md). On an installation each one is run by a systemd timer set
+up from the deploying repository; the application never schedules anything itself.
+
+To run one by hand, from the checkout with the virtual environment active:
+
+```bash
+python manage.py notify_reminders --now   # any job name from docs/JOBS.md, underscores for colons
+```
+
+Every run writes a `JobRun` row; the **Status** page in the sidebar (sysadmins) and `/healthz`
+show the last success of each job and flag one that is overdue. If the installation has a
+healthchecks.io project, each run pings its check, so a job that stops running raises an alert
+without anyone watching the page.
+
+## Accessibility is checked by the build
+
+CI runs [`tools/a11y`](../tools/a11y): axe-core over every page of the seeded demo, signed in
+as each kind of account, at desktop and phone width. A serious or critical violation, or a page
+that scrolls sideways on a phone, fails the build (FR-117, FR-95). Run it locally with
+`playwright install chromium` once, then `pytest tools/a11y -o addopts=""`. The human half, a
+screen-reader walk before each release, is recorded in
+[`docs/ACCESSIBILITY_WALK.md`](ACCESSIBILITY_WALK.md).
+
 ## Git commands you will actually use
 
 ```bash
