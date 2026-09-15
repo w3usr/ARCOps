@@ -905,4 +905,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenarios T43 to T45 of the private test plan are the
   check, and the privacy notice text awaits the advisor's edit (D4). 147 tests pass; ruff, the
   formatter, and the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: a590ae8
