@@ -730,4 +730,4 @@ carries the actual running model ID.
   technical decisions; the template wording is the first draft for the sysadmin to edit.
 - **Human Review Status**: Pending review; scenarios T29 and T30 of the private test plan are
   the check. 98 tests pass; ruff clean.
-- **Git Hash**: [fill in after committing]
+- **Git Hash**: f7825bf
