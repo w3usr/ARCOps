@@ -11,7 +11,7 @@ from django.utils import timezone
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from .models import LicenseRecord, SharedSecret, SignedAgreement, UlsLicense
+from .models import AgreementTemplate, LicenseRecord, SharedSecret, SignedAgreement, UlsLicense
 
 
 def default_expiry(approved_on: dt.date, rule: str) -> dt.date:
@@ -99,6 +99,12 @@ def approve(
             "expires": agreement.expires_on,
         },
     )
+    try:
+        store_agreement_pdf(agreement)  # FR-23: the approval block joins the record
+    except Exception:  # noqa: BLE001
+        import logging
+
+        logging.getLogger(__name__).exception("agreement PDF not re-rendered for %s", agreement.pk)
     return agreement
 
 
@@ -276,3 +282,234 @@ def reveal_shared_secret(actor, name: str = "computer_account") -> str | None:
         return None
     record(actor, "shared_secret.viewed", obj)
     return _fernet().decrypt(bytes(obj.ciphertext)).decode("utf-8")
+
+
+# ------------------------------------------------- agreements: expiry, revocation (FR-28, FR-29) ---
+
+
+def agreement_expiry_run(now=None) -> dict:
+    """FR-28: expire what is due; one notice per member covering every agreement expiring on
+    the same date at 30 days and on the day; one summary to the approvers at each; FR-30: an
+    approval of a superseded version past its re-sign date expires."""
+    from django.conf import settings as dj
+    from django.urls import reverse
+
+    from apps.comms.services import send
+
+    now = now or timezone.now()
+    today = now.date()
+    site = getattr(dj, "SITE_URL", "") or ""
+    notice_days = int(setting("defaults.agreement_expiry_notice_days", 30))
+
+    # FR-30: superseded versions with a re-sign date that has passed
+    superseded = 0
+    for a in SignedAgreement.objects.filter(
+        state=SignedAgreement.State.APPROVED, template__is_current=False
+    ).select_related("template"):
+        newer = AgreementTemplate.objects.filter(key=a.template.key, is_current=True).first()
+        if newer and newer.resign_by and newer.resign_by <= today:
+            a.state = SignedAgreement.State.EXPIRED
+            a.decision_reason = (
+                f"superseded by version {newer.version}; re-sign was due {newer.resign_by}"
+            )
+            a.save(update_fields=["state", "decision_reason"])
+            superseded += 1
+    expired_now = expire_due()
+
+    def bundle(qs):
+        by_user: dict = {}
+        for a in qs.select_related("user", "template"):
+            by_user.setdefault(a.user, []).append(a)
+        return by_user
+
+    sent30 = sent0 = 0
+    link = site + reverse("agreements")
+    # 30-day notices: approved, expiring within the window, not yet noticed
+    soon = SignedAgreement.objects.filter(
+        state=SignedAgreement.State.APPROVED,
+        expires_on__gte=today,
+        expires_on__lte=today + dt.timedelta(days=notice_days),
+        notice_30_sent_on__isnull=True,
+    )
+    due_summary = []
+    for user, items in bundle(soon).items():
+        if not user.is_active or user.access_level == "none":
+            continue
+        expires = min(a.expires_on for a in items)
+        send(
+            "agreement.expiring",
+            user,
+            "agreement",
+            {
+                "expires": expires,
+                "titles": [a.template.title if a.template else a.credential.label for a in items],
+                "link": link,
+            },
+        )
+        SignedAgreement.objects.filter(pk__in=[a.pk for a in items]).update(notice_30_sent_on=today)
+        due_summary.append(
+            f"{user.full_name}{' ' + user.callsign if user.callsign else ''}: {expires:%d %b}"
+        )
+        sent30 += 1
+    # day-of notices: expired today (state now expired, expires_on == yesterday or today)
+    just = SignedAgreement.objects.filter(
+        state=SignedAgreement.State.EXPIRED,
+        expires_on__gte=today - dt.timedelta(days=1),
+        expires_on__lte=today,
+        notice_expiry_sent_on__isnull=True,
+    )
+    expired_summary = []
+    for user, items in bundle(just).items():
+        if not user.is_active or user.access_level == "none":
+            continue
+        send(
+            "agreement.expired_notice",
+            user,
+            "agreement",
+            {
+                "expires": max(a.expires_on for a in items),
+                "titles": [a.template.title if a.template else a.credential.label for a in items],
+                "link": link,
+            },
+        )
+        SignedAgreement.objects.filter(pk__in=[a.pk for a in items]).update(
+            notice_expiry_sent_on=today
+        )
+        expired_summary.append(f"{user.full_name}{' ' + user.callsign if user.callsign else ''}")
+        sent0 += 1
+    summaries = 0
+    approvals_link = site + reverse("approvals")
+    for rows, expired in ((due_summary, False), (expired_summary, True)):
+        if not rows:
+            continue
+        for ap in approvers():
+            send(
+                "agreement.expiry_summary",
+                ap,
+                "agreement",
+                {
+                    "count": len(rows),
+                    "expired": expired,
+                    "expires": today + dt.timedelta(days=notice_days),
+                    "members": rows,
+                    "link": approvals_link,
+                },
+            )
+            summaries += 1
+    return {
+        "expired": expired_now,
+        "superseded": superseded,
+        "notices_30": sent30,
+        "notices_expiry": sent0,
+        "summaries": summaries,
+    }
+
+
+def revoke(actor, agreement: SignedAgreement, reason: str) -> SignedAgreement:
+    """FR-29: an approver withdraws an approval; the member is told; the slots that depended on
+    it read *Needs* on the next roster view and the warnings job picks them up."""
+    from django.conf import settings as dj
+    from django.urls import reverse
+
+    from apps.comms.services import send
+
+    agreement.state = SignedAgreement.State.REVOKED
+    agreement.decision_reason = reason
+    agreement.revoked_at = timezone.now()
+    agreement.save(update_fields=["state", "decision_reason", "revoked_at"])
+    record(actor, "agreement.revoked", agreement, after={"reason": reason})
+    send(
+        "agreement.revoked",
+        agreement.user,
+        "agreement",
+        {
+            "title": agreement.template.title if agreement.template else agreement.credential.label,
+            "approver": actor.full_name,
+            "reason": reason,
+            "link": (getattr(dj, "SITE_URL", "") or "") + reverse("agreements"),
+        },
+    )
+    return agreement
+
+
+# ------------------------------------------------------- shared password rotation (FR-34) ---
+
+
+def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict:
+    """FR-32, FR-34: set the password and tell every member with current computer access; tell
+    the sysadmin which former viewers no longer hold access, since cutting them off is the point."""
+    from django.conf import settings as dj
+    from django.urls import reverse
+
+    from apps.accounts.models import AccessLevel, User
+    from apps.comms.services import send
+    from apps.ops.models import AuditLog
+
+    today = timezone.now().date()
+    previous_viewers = set(
+        AuditLog.objects.filter(action="shared_secret.viewed")
+        .exclude(actor__isnull=True)
+        .values_list("actor_id", flat=True)
+    )
+    set_shared_secret(actor, plaintext, effective_date)
+    link = (getattr(dj, "SITE_URL", "") or "") + reverse("computer_password")
+    current = [
+        u
+        for u in User.objects.filter(is_active=True).exclude(access_level=AccessLevel.NONE)
+        if holds(u, "it_access", today)
+    ]
+    for u in current:
+        send("password.rotated", u, "security", {"effective": effective_date, "link": link})
+    former = [
+        u.full_name + (f" {u.callsign}" if u.callsign else "")
+        for u in User.objects.filter(pk__in=previous_viewers)
+        if not holds(u, "it_access", today)
+    ]
+    send(
+        "password.rotation_summary",
+        actor,
+        "security",
+        {
+            "effective": effective_date,
+            "notified": len(current),
+            "cut_off": len(former),
+            "former": former,
+        },
+    )
+    return {"notified": len(current), "former": former}
+
+
+# ------------------------------------------------------------- signed agreement PDF (FR-23) ---
+
+
+def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
+    """FR-23, TR-10: the text as signed plus the signature block, as a tagged PDF (PDF/UA-1).
+    WeasyPrint is imported here so the web worker pays for it only when a PDF is made."""
+    import weasyprint
+    from django.template.loader import render_to_string
+
+    html = render_to_string(
+        "credentials/agreement_pdf.html",
+        {
+            "a": agreement,
+            "template": agreement.template,
+            "club_name": setting("club.name", "the club"),
+            "club_short": setting("club.short_name", "the club"),
+        },
+    )
+    return weasyprint.HTML(string=html, base_url="/").write_pdf(
+        pdf_variant="pdf/ua-1", pdf_tags=True
+    )
+
+
+def store_agreement_pdf(agreement: SignedAgreement) -> None:
+    """Render and attach the PDF; re-rendered on approval so the approval block is in it."""
+    from django.core.files.base import ContentFile
+
+    data = render_agreement_pdf(agreement)
+    name = (
+        f"agreement-{agreement.pk}-v{agreement.template.version if agreement.template else 0}.pdf"
+    )
+    if agreement.pdf:
+        agreement.pdf.delete(save=False)
+    agreement.pdf.save(name, ContentFile(data), save=True)

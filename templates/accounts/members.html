@@ -2,7 +2,7 @@
 {% load dicts %}
 {% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<div class="titlerow"><h1>Members</h1>{% if user.is_officer %}<a class="button secondary" href="{% url 'hours' %}">Hours by course</a>{% endif %}</div>
+<div class="titlerow"><h1>Members</h1>{% if user.is_officer %}<span><a class="button secondary" href="{% url 'member_roster' %}">Roster and credentials</a> <a class="button secondary" href="{% url 'access_rosters' %}">Access rosters</a> <a class="button secondary" href="{% url 'hours' %}">Hours by course</a></span>{% endif %}</div>
 <form method="get" class="searchrow" role="search">
   <label class="sr-only" for="q">Search members</label>
   <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}">

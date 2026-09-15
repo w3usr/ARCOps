@@ -30,6 +30,11 @@ urlpatterns = [
     path("members/", views_members.members, name="members"),
     path("members/<int:pk>/", views_members.member_detail, name="member_detail"),
     path("members/hours/", views_members.hours, name="hours"),
+    path(
+        "members/roster/",
+        __import__("apps.credentials.views_reports", fromlist=["member_roster"]).member_roster,
+        name="member_roster",
+    ),
     # Entry links (FR-119, FR-120, FR-123): public pages, gated by the link's own state.
     path("join/<str:token>/", views_entry.join, name="join"),
     path("join/<str:token>/form/", views_entry.join_form, name="join_form"),

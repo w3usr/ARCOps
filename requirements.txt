@@ -11,3 +11,14 @@ html2text==2025.4.15
 cryptography==50.0.1
 argon2-cffi==25.1.0
 fido2==2.2.1
+# WeasyPrint (TR-10, FR-23): tagged PDFs of signed agreements. Needs pango and fonts on the box (deploy/bootstrap.sh).
+weasyprint==70.0
+pydyf==0.12.1
+tinycss2==1.5.1
+cssselect2==0.10.1
+tinyhtml5==2.1.0
+pyphen==0.18.1
+fonttools==4.65.0
+pillow==12.3.0
+brotli==1.2.0
+zopfli==0.4.3

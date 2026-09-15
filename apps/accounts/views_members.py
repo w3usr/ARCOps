@@ -219,6 +219,9 @@ def member_detail(request, pk):
             "member": member,
             "form": form,
             "ladder": ctx_ladder,
+            "can_revoke": __import__(
+                "apps.credentials.views", fromlist=["_is_approver"]
+            )._is_approver(actor),
             "temp_password": temp_password,
             "standing": _standing(member),
             "is_self": member == actor,

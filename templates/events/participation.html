@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load times %}
+{% block title %}Participation · {{ event.title }} · {{ club.short_name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
+<h1>Participation: {{ event.title }}</h1>
+<p class="lede">Hours scheduled, covered, and viable per operating period; people scheduled and checked in; first-time participants (FR-86). Operating slots only. <a href="?format=csv">Download CSV</a></p>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">Period</th><th scope="col">Slots</th><th scope="col">Hours scheduled</th><th scope="col">Hours covered</th><th scope="col">Hours viable</th><th scope="col">People scheduled</th><th scope="col">People checked in</th></tr></thead>
+<tbody>
+{% for r in report.periods %}<tr><th scope="row">{% when r.period.start r.period.end event %}</th><td>{{ r.slots }}</td><td>{{ r.hours_scheduled }}</td><td>{{ r.hours_covered }}</td><td>{{ r.hours_viable }}</td><td>{{ r.people_scheduled }}</td><td>{{ r.people_checked_in }}</td></tr>{% endfor %}
+<tr><th scope="row"><strong>Event</strong></th><td><strong>{{ report.total.slots }}</strong></td><td><strong>{{ report.total.hours_scheduled }}</strong></td><td><strong>{{ report.total.hours_covered }}</strong></td><td><strong>{{ report.total.hours_viable }}</strong></td><td><strong>{{ report.total.people_scheduled }}</strong></td><td><strong>{{ report.total.people_checked_in }}</strong></td></tr>
+</tbody></table></div>
+<p><strong>{{ report.total.first_timers }}</strong> first-time participant{{ report.total.first_timers|pluralize }}: checked in here with no earlier check-in on record.</p>
+<h2>People</h2>
+<ul class="list">{% for p in report.people %}<li>{{ p.user.full_name_lettered }}: {{ p.scheduled }} slot{{ p.scheduled|pluralize }} scheduled, {{ p.checked_in }} checked in{% if p.user.pk in report.first_timer_ids %} <span class="tag ok">first time</span>{% endif %}</li>{% endfor %}</ul>
+{% endblock %}

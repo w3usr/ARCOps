@@ -58,6 +58,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("directory", nargs="?", help="configuration directory")
         parser.add_argument("--reset", action="store_true", help="overwrite interface edits")
+        parser.add_argument(
+            "--resign-by",
+            help="FR-30: signers of the earlier version of any agreement republished in this run must re-sign by this date (YYYY-MM-DD); default: existing approvals stand until their own expiry",
+        )
 
     def handle(self, *args, **opts):
         directory = Path(opts["directory"]) if opts["directory"] else config_dir()
@@ -118,6 +122,8 @@ class Command(BaseCommand):
             if current:
                 current.is_current = False
                 current.save(update_fields=["is_current"])
+            from django.utils.dateparse import parse_date
+
             AgreementTemplate.objects.create(
                 key=ag["key"],
                 credential=credential,
@@ -128,6 +134,9 @@ class Command(BaseCommand):
                 html=html,
                 effective_date=timezone.now().date(),
                 is_current=True,
+                resign_by=parse_date(opts["resign_by"])
+                if (current and opts.get("resign_by"))
+                else None,
             )
             new_versions += 1
         self.stdout.write(f"agreements: {new_versions} new version(s) from {directory}")

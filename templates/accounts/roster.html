@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Member roster · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
+<h1>Member roster</h1>
+<p class="lede">Every account with access (FR-87): license, credentials and their expiry, student level and graduation, last sign-in. Contact details are not on this page; they are a separate, audited export.</p>
+<p>{% if graduated %}<a class="button secondary" href="?">All members</a>{% else %}<a class="button secondary" href="?graduated=1">Students past their graduation</a>{% endif %} <a class="button secondary" href="?format=csv{% if graduated %}&graduated=1{% endif %}">Download CSV</a> <a class="button secondary" href="?format=csv&contacts=1{% if graduated %}&graduated=1{% endif %}">Download CSV with contact details</a></p>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Class</th><th scope="col">License expires</th><th scope="col">Category</th><th scope="col">Position</th><th scope="col">Student</th><th scope="col">Access</th><th scope="col">Credentials</th><th scope="col">Last sign-in</th></tr></thead>
+<tbody>
+{% for r in rows %}
+<tr{% if r.graduated %} class="muted"{% endif %}>
+  <th scope="row"><a href="{% url 'member_detail' r.u.pk %}">{{ r.u.full_name }}</a></th>
+  <td>{{ r.u.callsign }}</td>
+  <td>{{ r.lic.effective_class|default:"" }}</td>
+  <td>{{ r.lic.effective_expiry|date:"Y-m-d"|default:"" }}</td>
+  <td>{{ r.u.category|capfirst }}</td>
+  <td>{{ r.u.club_position }}</td>
+  <td>{% if r.u.category == 'student' %}{{ r.u.student_level|default:"" }} {{ r.u.graduation_semester|default:"" }} {{ r.u.graduation_year|default:"" }}{% if r.graduated %} <span class="tag warn">past graduation</span>{% endif %}{% endif %}</td>
+  <td>{{ r.u.get_access_level_display }}</td>
+  <td>{{ r.credentials|join:"; " }}</td>
+  <td>{{ r.u.last_login|date:"Y-m-d"|default:"never" }}</td>
+</tr>
+{% empty %}<tr><td colspan="10">Nobody matches.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

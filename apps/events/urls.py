@@ -65,6 +65,7 @@ urlpatterns = [
         name="opening_delete",
     ),
     path("<int:pk>/roster.csv", views_member.roster_csv, name="roster_csv"),
+    path("<int:pk>/participation/", views_member.participation_report, name="participation"),
     path(
         "signup/<int:signup_id>/role/", views_member.signup_change_role, name="signup_change_role"
     ),

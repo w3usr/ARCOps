@@ -822,3 +822,34 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests; the finding is the advisor's.
 - **Human Review Status**: Pending review; T34 step 1 of the private test plan is the check.
 - **Git Hash**: e4388a0
+
+## [2026-09-15 22:16 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 4 of the implementation plan kept in the private repository
+  (credentials and reports): a sysadmin page to set or rotate the shared computer password, with
+  the rotation notice to current holders and a summary naming former viewers without access
+  (FR-32, FR-34, FR-90); the daily agreement-expiry job with one bundled notice per member at 30
+  days and on the day, approver summaries, and expiry of approvals on a superseded version past
+  its re-sign date, set by a `--resign-by` option on the import (FR-28, FR-30); approvers revoke
+  an approval with a reason and the member is told (FR-29); every signed agreement is rendered by
+  WeasyPrint to a tagged PDF (PDF/UA-1) at signing and again at approval, downloadable by the
+  signer and the approvers (FR-23); the access rosters report with an expiring-within filter and
+  CSV (FR-31, FR-84); the participation report per event and period with first-time participants
+  (FR-86); the officers' member roster with the past-graduation filter and a separate, audited
+  contact export (FR-87); the agreements page offers re-signing when an approval is about to
+  expire and says when a newer version must be re-signed.
+- **Sections/Files Affected**: apps/credentials/{models,services,views,urls}.py,
+  apps/credentials/views_reports.py (new), apps/credentials/management/commands/
+  agreements_expiry.py (new), migration credentials 0003; apps/events/services/participation.py
+  (new), apps/events/{views_member,urls}.py; apps/accounts/views_members.py; apps/comms/
+  defaults.py (six templates); apps/ops/jobs.py; apps/ops/management/commands/club_import.py;
+  config/urls.py; templates/credentials/{agreement_pdf,password_manage,access_rosters}.html
+  (new), templates/credentials/{agreements,approvals,password}.html, templates/events/
+  participation.html (new), templates/events/detail.html, templates/accounts/roster.html (new),
+  templates/accounts/{members,member_detail}.html; requirements.{in,txt} (WeasyPrint and its
+  dependencies); docs/JOBS.md; tests apps/credentials/tests/test_phase4.py and
+  apps/events/tests/test_participation.py (new).
+- **Nature of Contribution**: Code generation and tests against the requirement text and TR-10.
+- **Human Review Status**: Pending review; scenarios T39 to T41 of the private test plan are
+  the check. 134 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [fill in after committing]

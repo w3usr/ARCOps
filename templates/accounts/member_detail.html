@@ -45,7 +45,7 @@
   <h2>Standing</h2>
   <dl class="dl">
     <dt>License</dt><dd>{% if standing.licence %}{{ standing.licence.callsign }} · {{ standing.licence.effective_class|default:"class unknown" }} · {{ standing.licence.effective_status }}{% if standing.licence.effective_expiry %} · expires {{ standing.licence.effective_expiry }}{% endif %} <small class="muted">({{ standing.licence.effective_source }})</small>{% if standing.licence.has_override %}<br><small class="muted">Override by {{ standing.licence.override_by.short_name|default:"a sysadmin" }}: {{ standing.licence.override_reason }}</small>{% endif %}{% else %}none on file{% endif %}</dd>
-    {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt><dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %}</dd>{% empty %}<dt>Agreements</dt><dd>none signed</dd>{% endfor %}
+    {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt><dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %} · <a href="{% url 'agreement_pdf' a.pk %}">PDF</a>{% if a.state == 'approved' and can_revoke %}<form method="post" action="{% url 'agreement_revoke' a.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{% url 'member_detail' member.pk %}"><input name="reason" placeholder="reason" aria-label="Reason for revoking" required><button class="linklike">revoke</button></form>{% endif %}</dd>{% empty %}<dt>Agreements</dt><dd>none signed</dd>{% endfor %}
   </dl>
 </section>
 

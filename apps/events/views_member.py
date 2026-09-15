@@ -318,3 +318,59 @@ def health_overview(request):
         )
     rows.sort(key=lambda r: r["start"])
     return render(request, "events/health_overview.html", {"rows": rows, "weeks": weeks})
+
+
+@login_required
+def participation_report(request, pk):
+    """FR-86: hours scheduled, covered, and viable; people scheduled and checked in; first-timers."""
+    from .services.participation import participation
+
+    event = get_object_or_404(Event, pk=pk)
+    if not request.user.can_captain(event):
+        raise Http404
+    report = participation(event)
+    if request.GET.get("format") == "csv":
+        resp = HttpResponse(content_type="text/csv")
+        resp["Content-Disposition"] = f'attachment; filename="participation-{event.pk}.csv"'
+        w = csv.writer(resp)
+        w.writerow(
+            [
+                "period_start_utc",
+                "period_end_utc",
+                "slots",
+                "hours_scheduled",
+                "hours_covered",
+                "hours_viable",
+                "people_scheduled",
+                "people_checked_in",
+            ]
+        )
+        for r in report["periods"]:
+            w.writerow(
+                [
+                    r["period"].start.isoformat(),
+                    r["period"].end.isoformat(),
+                    r["slots"],
+                    r["hours_scheduled"],
+                    r["hours_covered"],
+                    r["hours_viable"],
+                    r["people_scheduled"],
+                    r["people_checked_in"],
+                ]
+            )
+        t = report["total"]
+        w.writerow(
+            [
+                "total",
+                "",
+                t["slots"],
+                t["hours_scheduled"],
+                t["hours_covered"],
+                t["hours_viable"],
+                t["people_scheduled"],
+                t["people_checked_in"],
+            ]
+        )
+        w.writerow(["first_time_participants", t["first_timers"]])
+        return resp
+    return render(request, "events/participation.html", {"report": report, "event": event})

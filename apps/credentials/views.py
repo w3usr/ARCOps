@@ -40,7 +40,27 @@ def agreements(request):
         a.template_id: a
         for a in SignedAgreement.objects.filter(user=request.user).order_by("signed_at")
     }
-    rows = [(t, mine.get(t.pk)) for t in templates]
+    notice_days = int(setting("defaults.agreement_expiry_notice_days", 30))
+    today = timezone.now().date()
+    # the member's latest signature per agreement key, whichever version it was on
+    latest = {}
+    for a in (
+        SignedAgreement.objects.filter(user=request.user)
+        .select_related("template")
+        .order_by("signed_at")
+    ):
+        if a.template:
+            latest[a.template.key] = a
+    rows = []
+    for t in templates:
+        a = mine.get(t.pk) or latest.get(t.key)
+        if a is not None:
+            a.expiring_soon = bool(
+                a.state == SignedAgreement.State.APPROVED
+                and a.expires_on
+                and (a.expires_on - today).days <= notice_days
+            )
+        rows.append((t, a))
     return render(request, "credentials/agreements.html", {"rows": rows})
 
 
@@ -69,6 +89,14 @@ def sign(request, template_id):
         content_hash=t.content_hash,
     )
     record(request.user, "agreement.signed", a, after={"template": t.key, "version": t.version})
+    try:
+        from .services import store_agreement_pdf
+
+        store_agreement_pdf(a)  # FR-23: the text as signed, kept immutably
+    except Exception:  # noqa: BLE001 - the signature stands even if the renderer is unavailable
+        import logging
+
+        logging.getLogger(__name__).exception("agreement PDF not rendered for %s", a.pk)
     from django.conf import settings as dj
 
     from apps.comms.services import send

@@ -72,6 +72,12 @@ JOBS: dict[str, JobSpec] = {
             timedelta(hours=6),
         ),
         JobSpec(
+            "agreements:expiry",
+            "Agreement expiry notices and approver summary (FR-28)",
+            timedelta(days=1),
+            timedelta(hours=6),
+        ),
+        JobSpec(
             "events:complete",
             "Complete events whose last slot has ended (FR-44)",
             timedelta(hours=1),

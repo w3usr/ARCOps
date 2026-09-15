@@ -119,6 +119,9 @@ class AgreementTemplate(models.Model):
     html = models.TextField()
     effective_date = models.DateField()
     is_current = models.BooleanField(default=True)
+    # FR-30: when this version was published, the publisher chose whether approvals of the
+    # earlier versions stand until their own expiry (null) or must be re-signed by a date.
+    resign_by = models.DateField(null=True, blank=True)
 
     class Meta:
         unique_together = [("key", "version")]
@@ -172,6 +175,9 @@ class SignedAgreement(models.Model):
     approved_at = models.DateTimeField(null=True, blank=True)
     decision_reason = models.TextField(blank=True)
     pdf = models.FileField(upload_to="agreements/%Y/", blank=True)
+    notice_30_sent_on = models.DateField(null=True, blank=True)  # FR-28
+    notice_expiry_sent_on = models.DateField(null=True, blank=True)  # FR-28
+    revoked_at = models.DateTimeField(null=True, blank=True)  # FR-29
 
     class Meta:
         ordering = ["-signed_at"]

@@ -357,6 +357,69 @@ DEFAULT_TEMPLATES: list[dict] = [
         ),
         "variables": ["user.display_first", "callsign", "expiry"],
     },
+    {
+        "key": "agreement.expiring",
+        "subject": "Your {{ club.short_name }} access agreements expire {{ expires|date:'j F' }}",
+        "body_html": (
+            "<p>{{ user.display_first }}, these agreements of yours expire on {{ expires|date:'j F Y' }}:</p>"
+            "<ul>{% for t in titles %}<li>{{ t }}</li>{% endfor %}</ul>"
+            "<p>Sign in and re-sign all of them in one visit, so your station and computer access carries "
+            'on without a gap: <a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["user.display_first", "expires", "titles", "link"],
+    },
+    {
+        "key": "agreement.expired_notice",
+        "subject": "Your {{ club.short_name }} access agreements expired today",
+        "body_html": (
+            "<p>{{ user.display_first }}, these agreements expired on {{ expires|date:'j F Y' }} and no longer "
+            "satisfy a slot's requirements:</p><ul>{% for t in titles %}<li>{{ t }}</li>{% endfor %}</ul>"
+            '<p>Re-sign them here: <a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["user.display_first", "expires", "titles", "link"],
+    },
+    {
+        "key": "agreement.expiry_summary",
+        "subject": "{{ count }} member(s) with agreements {% if expired %}expired today{% else %}expiring {{ expires|date:'j F' }}{% endif %}",
+        "body_html": (
+            "<p>{% if expired %}These members' agreements expired today{% else %}These members' agreements expire on {{ expires|date:'j F Y' }}{% endif %}; "
+            "the re-sign queue on Approvals is built to be worked through in bulk:</p>"
+            "<ul>{% for m in members %}<li>{{ m }}</li>{% endfor %}</ul>"
+            '<p><a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["count", "expired", "expires", "members", "link"],
+    },
+    {
+        "key": "agreement.revoked",
+        "subject": "Revoked: {{ title }}",
+        "body_html": (
+            "<p>Your approval for <em>{{ title }}</em> was revoked by {{ approver }}.{% if reason %} Reason: {{ reason }}{% endif %} "
+            "Slots that depended on it are flagged; you can sign again once the reason is addressed: "
+            '<a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["title", "approver", "reason", "link", "user.display_first"],
+    },
+    {
+        "key": "password.rotated",
+        "subject": "The {{ club.short_name }} station computer password has changed",
+        "body_html": (
+            "<p>{{ user.display_first }}, a new password for the shared station computer account is in effect "
+            "from {{ effective|date:'j F Y' }}. View it in the application after re-entering your own password; "
+            'it is never sent by email: <a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["user.display_first", "effective", "link"],
+    },
+    {
+        "key": "password.rotation_summary",
+        "subject": "Computer password rotated: {{ notified }} told, {{ cut_off }} former holder(s) cut off",
+        "body_html": (
+            "<p>The shared computer password was rotated, effective {{ effective|date:'j F Y' }}. "
+            "{{ notified }} member(s) with current computer access were told.</p>"
+            "{% if former %}<p>These people viewed the previous password and no longer hold computer access; "
+            "the rotation cuts them off: </p><ul>{% for f in former %}<li>{{ f }}</li>{% endfor %}</ul>{% endif %}"
+        ),
+        "variables": ["effective", "notified", "cut_off", "former"],
+    },
 ]
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}

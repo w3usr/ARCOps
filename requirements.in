@@ -10,3 +10,4 @@ pywebpush
 html2text
 cryptography
 argon2-cffi
+weasyprint>=70
