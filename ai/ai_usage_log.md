@@ -659,4 +659,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md.
 - **Nature of Contribution**: Draft, with the advisor's words quoted at each decision.
 - **Human Review Status**: Pending review; the advisor asked for the text before the code.
-- **Git Hash**: [pending]
+- **Git Hash**: 767da16
