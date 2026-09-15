@@ -92,6 +92,9 @@ DATABASES = {
         "OPTIONS": {
             "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON;",
             "transaction_mode": "IMMEDIATE",
+            # One writer at a time in SQLite: a long import must wait for a web request's write,
+            # and a request must wait for one import batch, not fail after five seconds.
+            "timeout": 60,
         },
     }
 }

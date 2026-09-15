@@ -24,7 +24,7 @@ import zipfile
 from pathlib import Path
 
 from django.conf import settings
-from django.db import connection, transaction
+from django.db import transaction
 from django.utils import timezone
 
 from apps.ops.branding import PRODUCT_NAME, PRODUCT_URL
@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 BASE = "https://data.fcc.gov/download/pub/uls"
 WEEKLY_URL = f"{BASE}/complete/l_amat.zip"
 DAILY_URL = f"{BASE}/daily/l_am_{{day}}.zip"  # day: sun mon tue wed thu fri sat
-BATCH = 5000
+BATCH = 2000
 
 STATUS = {
     "A": "active",
@@ -71,6 +71,13 @@ def _date(text: str) -> dt.date | None:
 def download(url: str, dest: Path) -> Path:
     """Stream the archive to disk in chunks; never hold it in memory."""
     dest.parent.mkdir(parents=True, exist_ok=True)
+    if (
+        dest.exists()
+        and dest.stat().st_size > 0
+        and (dt.datetime.now(dt.UTC).timestamp() - dest.stat().st_mtime < 12 * 3600)
+    ):
+        log.info("reusing %s downloaded within 12 hours", dest.name)
+        return dest  # a retry after a failed run should not fetch 200 MB again
     if not url.startswith("https://data.fcc.gov/"):
         raise ValueError(f"refusing to fetch {url!r}: only the FCC's server is expected here")
     # The FCC's front end answers 403 to a GET without an Accept header and an explicit
@@ -174,70 +181,106 @@ def stage(zip_path: Path) -> dict:
     return counts
 
 
-def _winner_rows():
-    """One staging row per callsign: the active record, else the latest grant. Done in SQL so
-    the Python side never holds the table."""
-    table = UlsStaging._meta.db_table  # a model's table name, never user input
-    sql = """
-        SELECT s.usi FROM STAGING s
-        WHERE s.usi = (
-            SELECT s2.usi FROM STAGING s2 WHERE s2.callsign = s.callsign
-            ORDER BY CASE WHEN s2.status_code = 'A' THEN 0 ELSE 1 END, s2.grant_date DESC, s2.usi DESC
-            LIMIT 1
-        )
-    """.replace("STAGING", table)
-    with connection.cursor() as cur:
-        cur.execute(sql)
-        while True:
-            chunk = cur.fetchmany(BATCH)
-            if not chunk:
-                break
-            yield [r[0] for r in chunk]
+def _rank(status_code: str, grant) -> tuple:
+    """Active first, then the most recent grant."""
+    return (0 if status_code == "A" else 1, -(grant.toordinal() if grant else 0))
+
+
+def _winners():
+    """Yield the winning staging row per callsign: the active record, else the latest grant.
+    One ordered pass over the staging table in chunks, so memory holds one callsign's records
+    at a time however large the table is."""
+    fields = (
+        "usi",
+        "callsign",
+        "status_code",
+        "grant_date",
+        "expiry_date",
+        "class_code",
+        "entity_name",
+        "first_name",
+        "last_name",
+        "frn",
+    )
+    current = None
+    best = None
+    for row in (
+        UlsStaging.objects.order_by("callsign", "usi")
+        .values_list(*fields)
+        .iterator(chunk_size=BATCH)
+    ):
+        call = row[1]
+        if call != current:
+            if best is not None:
+                yield best
+            current, best = call, row
+        elif _rank(row[2], row[3]) < _rank(best[2], best[3]):
+            best = row
+    if best is not None:
+        yield best
 
 
 def apply_staging(now=None) -> dict:
-    """Write the winners into UlsLicense. Returns counts and the callsigns touched."""
+    """Write the winners into UlsLicense in short transactions. Returns counts and the
+    callsigns touched."""
     now = now or timezone.now()
     written = 0
     touched: set[str] = set()
-    for usis in _winner_rows():
-        rows = UlsStaging.objects.filter(usi__in=usis)
-        objs = []
-        for s in rows:
-            name = s.entity_name or " ".join(p for p in (s.first_name, s.last_name) if p)
-            objs.append(
-                UlsLicense(
-                    callsign=s.callsign,
-                    licensee_name=name[:160],
-                    first_name=s.first_name,
-                    last_name=s.last_name,
-                    operator_class=CLASS.get(s.class_code, ""),
-                    status=STATUS.get(s.status_code, s.status_code.lower() or "unknown"),
-                    grant_date=s.grant_date,
-                    expiry_date=s.expiry_date,
-                    frn=s.frn,
-                    updated=now,
-                )
-            )
-            touched.add(s.callsign)
+    fields = [
+        "licensee_name",
+        "first_name",
+        "last_name",
+        "operator_class",
+        "status",
+        "grant_date",
+        "expiry_date",
+        "frn",
+        "updated",
+    ]
+
+    def flush(objs):
+        nonlocal written
+        if not objs:
+            return
         with transaction.atomic():
             UlsLicense.objects.bulk_create(
-                objs,
-                update_conflicts=True,
-                update_fields=[
-                    "licensee_name",
-                    "first_name",
-                    "last_name",
-                    "operator_class",
-                    "status",
-                    "grant_date",
-                    "expiry_date",
-                    "frn",
-                    "updated",
-                ],
-                unique_fields=["callsign"],
+                objs, update_conflicts=True, update_fields=fields, unique_fields=["callsign"]
             )
         written += len(objs)
+        objs.clear()
+
+    objs: list[UlsLicense] = []
+    for (
+        usi,
+        call,
+        status_code,
+        grant,
+        expiry,
+        class_code,
+        entity_name,
+        first,
+        last,
+        frn,
+    ) in _winners():
+        name = entity_name or " ".join(p for p in (first, last) if p)
+        objs.append(
+            UlsLicense(
+                callsign=call,
+                licensee_name=name[:160],
+                first_name=first,
+                last_name=last,
+                operator_class=CLASS.get(class_code, ""),
+                status=STATUS.get(status_code, status_code.lower() or "unknown"),
+                grant_date=grant,
+                expiry_date=expiry,
+                frn=frn,
+                updated=now,
+            )
+        )
+        touched.add(call)
+        if len(objs) >= BATCH:
+            flush(objs)
+    flush(objs)
     UlsStaging.objects.all().delete()
     return {"written": written, "touched": touched}
 
@@ -266,7 +309,14 @@ def run(now=None, *, full: bool | None = None, file: str | None = None) -> dict:
         path, kind = Path(file), "file"
     else:
         if full is None:
-            full = not UlsLicense.objects.exists() or now.weekday() == 0  # Monday: Sunday's file
+            from apps.ops.models import JobRun
+
+            weekly_done = JobRun.objects.filter(
+                name="uls:sync", outcome="ok", detail__source="weekly"
+            ).exists()
+            full = (
+                not weekly_done or now.weekday() == 0
+            )  # Monday: Sunday's file; or never completed
         if full:
             path, kind = download(WEEKLY_URL, workdir / "l_amat.zip"), "weekly"
         else:
