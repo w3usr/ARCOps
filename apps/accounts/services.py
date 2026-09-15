@@ -10,7 +10,7 @@ from django.utils import timezone
 from apps.ops.audit import record
 from apps.ops.config import institution_email_domain, setting
 
-from .models import AccessLevel, Invitation, User
+from .models import AccessLevel, CallsignHistory, Invitation, User
 
 
 def create_invitation(
@@ -194,3 +194,111 @@ def _completion_notices(inv: Invitation, user: User) -> None:
             },
         )
     send("account.welcome", user, "account")
+
+
+def apply_callsign(user: User, new_callsign: str, previous: str = "") -> dict:
+    """FR-102, FR-16: set a callsign, look it up, and decide what happens to the name.
+
+    Returns {"state": "matched" | "pending" | "unverified" | "none"}. With a ULS row whose name
+    agrees with the name on file (or a member whose name already comes from ULS), the ULS name is
+    applied and marked as such. With a row whose name differs beyond a middle name, nothing is
+    replaced: the ULS name is held in `pending_uls_name` for the member to confirm or refuse.
+    """
+    from apps.credentials.models import UlsLicense
+    from apps.credentials.services import names_match, refresh_license_from_local_table
+
+    new_callsign = (new_callsign or "").upper().strip()
+    if previous and previous != new_callsign:
+        CallsignHistory.objects.create(user=user, callsign=previous)
+        record(
+            user,
+            "callsign.changed",
+            user,
+            before={"callsign": previous},
+            after={"callsign": new_callsign},
+        )
+    user.callsign = new_callsign
+    user.pending_uls_name = {}
+    if not new_callsign:
+        user.name_from_uls = False
+        user.save(update_fields=["callsign", "pending_uls_name", "name_from_uls"])
+        return {"state": "none"}
+    row = UlsLicense.objects.filter(callsign=new_callsign).first()
+    if row is None:
+        user.save(update_fields=["callsign", "pending_uls_name"])
+        refresh_license_from_local_table(user)
+        return {"state": "unverified"}
+    # FR-16: a differing ULS name is confirmed by the member even when the name on file came
+    # from ULS for an earlier callsign; only a member with no name at all takes it unasked.
+    if not (user.first_name or user.last_name) or names_match(
+        user.first_name, user.last_name, row.first_name, row.last_name
+    ):
+        if row.first_name:
+            user.first_name = row.first_name
+        if row.last_name:
+            user.last_name = row.last_name
+        user.name_from_uls = True
+        user.save(
+            update_fields=[
+                "callsign",
+                "pending_uls_name",
+                "first_name",
+                "last_name",
+                "name_from_uls",
+            ]
+        )
+        refresh_license_from_local_table(user)
+        return {"state": "matched"}
+    user.pending_uls_name = {
+        "first": row.first_name,
+        "last": row.last_name,
+        "callsign": new_callsign,
+        "previous": previous,
+    }
+    user.save(update_fields=["callsign", "pending_uls_name"])
+    refresh_license_from_local_table(user)
+    return {"state": "pending", "uls_name": f"{row.first_name} {row.last_name}".strip()}
+
+
+def decide_uls_name(user: User, accept: bool) -> str:
+    """FR-16: the member confirms the ULS name is theirs (it replaces the name on file) or says
+    it is not (the callsign is rejected and the previous one restored). Audited either way."""
+    from apps.credentials.services import refresh_license_from_local_table
+
+    pending = user.pending_uls_name or {}
+    if not pending:
+        return "nothing pending"
+    if accept:
+        before = {"first_name": user.first_name, "last_name": user.last_name}
+        user.first_name = pending.get("first") or user.first_name
+        user.last_name = pending.get("last") or user.last_name
+        user.name_from_uls = True
+        user.pending_uls_name = {}
+        user.save(update_fields=["first_name", "last_name", "name_from_uls", "pending_uls_name"])
+        record(
+            user,
+            "name.replaced_from_uls",
+            user,
+            before=before,
+            after={
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "callsign": pending.get("callsign"),
+            },
+        )
+        refresh_license_from_local_table(user)
+        return "name replaced"
+    rejected = user.callsign
+    user.callsign = pending.get("previous") or ""
+    user.pending_uls_name = {}
+    user.save(update_fields=["callsign", "pending_uls_name"])
+    CallsignHistory.objects.filter(user=user, callsign=user.callsign).delete()
+    record(
+        user,
+        "callsign.rejected",
+        user,
+        before={"callsign": rejected},
+        after={"callsign": user.callsign, "reason": "ULS name is not the member's"},
+    )
+    refresh_license_from_local_table(user)
+    return "callsign rejected"

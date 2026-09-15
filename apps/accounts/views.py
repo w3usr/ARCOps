@@ -62,12 +62,23 @@ def profile(request):
         if form.is_valid():
             old_call = User.objects.get(pk=request.user.pk).callsign
             user = form.save(commit=False)
-            user.callsign = user.callsign.upper().strip()
+            new_call = (user.callsign or "").upper().strip()
+            user.callsign = old_call  # apply_callsign owns the change
             user.save()
-            if user.callsign != old_call and old_call:
-                from .models import CallsignHistory
+            if new_call != old_call:
+                from .services import apply_callsign
 
-                CallsignHistory.objects.create(user=user, callsign=old_call)
+                result = apply_callsign(user, new_call, previous=old_call)  # FR-102, FR-16
+                if result["state"] == "pending":
+                    messages.warning(
+                        request,
+                        f"The FCC lists {new_call} under the name {result['uls_name']}. Confirm below that this is you, or the callsign will not be kept.",
+                    )
+                elif result["state"] == "unverified":
+                    messages.info(
+                        request,
+                        f"{new_call} is not in the FCC table yet; it is held as unverified until the nightly import finds it.",
+                    )
             messages.success(request, "Profile saved.")
             return redirect("profile")
     else:
@@ -227,13 +238,18 @@ def accept_invitation(request, token):
                 middle_name=d["middle_name"],
                 last_name=d["last_name"],
                 preferred_name=d["preferred_name"],
-                callsign=d["callsign"].upper().strip(),
+                callsign="",
                 cell_phone=d["cell_phone"],
             )
-            if user.callsign:
-                from apps.credentials.services import refresh_license_from_local_table
+            if d["callsign"].strip():
+                from .services import apply_callsign
 
-                refresh_license_from_local_table(user)
+                result = apply_callsign(user, d["callsign"])  # FR-4, FR-16
+                if result["state"] == "pending":
+                    messages.warning(
+                        request,
+                        f"The FCC lists {user.callsign} under the name {result['uls_name']}. Confirm on your profile that this is you.",
+                    )
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, "Welcome. Your account is ready.")
             return redirect("dashboard")
@@ -274,3 +290,17 @@ def invitation_action(request, pk):
     else:
         raise Http404
     return redirect("invitations")
+
+
+@login_required
+@require_http_methods(["POST"])
+def uls_name_decide(request):
+    """FR-16: the member confirms the ULS name is theirs, or refuses and loses the callsign."""
+    from .services import decide_uls_name
+
+    outcome = decide_uls_name(request.user, accept=request.POST.get("decision") == "yes")
+    if outcome == "name replaced":
+        messages.success(request, "Your name now matches the FCC record and comes from ULS.")
+    elif outcome == "callsign rejected":
+        messages.info(request, "That callsign was not kept. Check it and try again.")
+    return redirect("profile")

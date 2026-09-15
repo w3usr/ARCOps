@@ -337,6 +337,26 @@ DEFAULT_TEMPLATES: list[dict] = [
         ),
         "variables": ["role", "event.title", "when", "position", "expires", "link"],
     },
+    {
+        "key": "license.expiring",
+        "subject": "Your license {{ callsign }} expires in {{ days }} days",
+        "body_html": (
+            "<p>{{ user.display_first }}, the FCC shows your {{ license_class }} license {{ callsign }} "
+            "expiring on {{ expiry|date:'j F Y' }}. Renew through the FCC's licensing system; the "
+            "roster needs a valid license for the slots you operate.</p>"
+        ),
+        "variables": ["user.display_first", "callsign", "license_class", "expiry", "days"],
+    },
+    {
+        "key": "license.expired",
+        "subject": "Your license {{ callsign }} has expired",
+        "body_html": (
+            "<p>{{ user.display_first }}, the FCC shows your license {{ callsign }} expired on "
+            "{{ expiry|date:'j F Y' }}. Until it is renewed the roster treats you as unlicensed; "
+            "the grace period for renewal is the FCC's, not the club's.</p>"
+        ),
+        "variables": ["user.display_first", "callsign", "expiry"],
+    },
 ]
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}

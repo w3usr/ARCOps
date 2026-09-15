@@ -259,9 +259,11 @@ def join_form(request, token):
                 cell_phone=d["cell_phone"],
             )
             if user.callsign:
-                from apps.credentials.services import refresh_license_from_local_table
+                from .services import apply_callsign
 
-                refresh_license_from_local_table(user)
+                call = user.callsign
+                user.callsign = ""
+                apply_callsign(user, call)  # FR-4, FR-16: lookup, name, or a pending confirmation
             if link.kind == EntryLink.Kind.CLASS:
                 login(request, user, backend="django.contrib.auth.backends.ModelBackend")
                 messages.success(

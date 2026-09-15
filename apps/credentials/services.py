@@ -139,12 +139,113 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
         lic.expiry_date = row.expiry_date
         lic.frn = row.frn
         lic.source = "fcc_uls_local"
+        if lic.expiry_notice_for and lic.expiry_notice_for != row.expiry_date:
+            lic.expiry_notice_stage, lic.expiry_notice_for = 0, None  # renewed: notices start over
+        if user.name_from_uls and not user.pending_uls_name and (row.first_name or row.last_name):
+            # FR-8, FR-14: with a callsign the name is the ULS name, refreshed by the sync
+            changed = []
+            if row.first_name and user.first_name != row.first_name:
+                user.first_name = row.first_name
+                changed.append("first_name")
+            if row.last_name and user.last_name != row.last_name:
+                user.last_name = row.last_name
+                changed.append("last_name")
+            if changed:
+                user.save(update_fields=changed)
     else:
         lic.status = "unverified"  # until the next import finds it
         lic.source = "fcc_uls_local"
     lic.retrieved_at = timezone.now()
     lic.save()
     return lic
+
+
+def names_match(first_a: str, last_a: str, first_b: str, last_b: str) -> bool:
+    """FR-16: the same person beyond a middle name or initial. First names match on their
+    first token so 'Nathaniel A' and 'Nathaniel' agree; last names match whole."""
+    fa = (first_a or "").strip().lower().split()
+    fb = (first_b or "").strip().lower().split()
+    return (
+        bool(fa and fb)
+        and fa[0] == fb[0]
+        and (last_a or "").strip().lower() == (last_b or "").strip().lower()
+    )
+
+
+def apply_override(actor, lic: LicenseRecord, data: dict) -> LicenseRecord:
+    """FR-15, FR-20: a sysadmin's override of class, status, expiry, name, or country, with a
+    reason; shown as such wherever the value appears and never replaced by the sync."""
+    before = {
+        k: str(getattr(lic, k) or "")
+        for k in (
+            "override_class",
+            "override_status",
+            "override_expiry",
+            "override_name",
+            "override_country",
+        )
+    }
+    for k in before:
+        setattr(lic, k, data.get(k) or ("" if k != "override_expiry" else None))
+    lic.override_reason = data.get("override_reason", "")
+    lic.override_by = actor if lic.has_override else None
+    lic.save()
+    record(
+        actor,
+        "license.override",
+        lic,
+        before=before,
+        after={k: str(getattr(lic, k) or "") for k in before} | {"reason": lic.override_reason},
+    )
+    return lic
+
+
+def lift_override(actor, lic: LicenseRecord) -> LicenseRecord:
+    return apply_override(actor, lic, {})
+
+
+def expiry_notices(now=None) -> dict:
+    """FR-17: one notice at 90 days, one at 30, one on expiry, per license per expiry date.
+    Overrides count: the effective expiry is what the member is told."""
+    from apps.comms.services import send
+
+    now = now or timezone.now()
+    today = now.date()
+    sent = {"90": 0, "30": 0, "expired": 0}
+    for lic in LicenseRecord.objects.select_related("user").exclude(status="unverified"):
+        expiry = lic.effective_expiry
+        if not expiry or not lic.user.is_active or lic.user.access_level == "none":
+            continue
+        reset = lic.expiry_notice_for != expiry
+        if reset:
+            lic.expiry_notice_stage, lic.expiry_notice_for = 0, expiry
+        days = (expiry - today).days
+        stage = 1 if days < 0 else 30 if days <= 30 else 90 if days <= 90 else 0
+        already = (
+            stage == lic.expiry_notice_stage
+            or (stage == 90 and lic.expiry_notice_stage in (30, 1))
+            or (stage == 30 and lic.expiry_notice_stage == 1)
+        )
+        if stage == 0 or already:
+            if reset:
+                lic.save(update_fields=["expiry_notice_stage", "expiry_notice_for"])
+            continue
+        key = "license.expired" if stage == 1 else "license.expiring"
+        send(
+            key,
+            lic.user,
+            "license_expiry",
+            {
+                "callsign": lic.callsign,
+                "expiry": expiry,
+                "days": max(days, 0),
+                "license_class": lic.effective_class,
+            },
+        )
+        lic.expiry_notice_stage = stage
+        lic.save(update_fields=["expiry_notice_stage", "expiry_notice_for"])
+        sent["expired" if stage == 1 else str(stage)] += 1
+    return sent
 
 
 # ------------------------------------------------------------ shared secret ---

@@ -64,6 +64,13 @@ JOBS: dict[str, JobSpec] = {
             timedelta(minutes=30),
         ),
         JobSpec("digest:weekly", "Weekly digest (FR-79)", timedelta(days=7), timedelta(days=1)),
+        JobSpec("uls:sync", "FCC ULS import (FR-14, TR-13)", timedelta(days=1), timedelta(hours=6)),
+        JobSpec(
+            "licenses:expiry",
+            "License expiry notices (FR-17)",
+            timedelta(days=1),
+            timedelta(hours=6),
+        ),
         JobSpec(
             "events:complete",
             "Complete events whose last slot has ended (FR-44)",

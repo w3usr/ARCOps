@@ -49,6 +49,27 @@ class LicenseRecord(models.Model):
     override_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
+    override_country = models.CharField(max_length=60, blank=True)  # FR-20: a non-US license
+    # FR-17: which expiry notice has gone out for the expiry currently on record.
+    expiry_notice_stage = models.PositiveSmallIntegerField(default=0)  # 0 none, 90, 30, 1 = expired
+    expiry_notice_for = models.DateField(null=True, blank=True)
+
+    @property
+    def has_override(self) -> bool:
+        return bool(
+            self.override_class
+            or self.override_status
+            or self.override_expiry
+            or self.override_name
+        )
+
+    @property
+    def effective_source(self) -> str:
+        if self.has_override:
+            return "sysadmin override" + (
+                f", {self.override_country}" if self.override_country else ""
+            )
+        return self.source or "unverified"
 
     @property
     def effective_class(self) -> str:
@@ -71,6 +92,8 @@ class UlsLicense(models.Model):
 
     callsign = models.CharField(max_length=12, primary_key=True)
     licensee_name = models.CharField(max_length=160, blank=True)
+    first_name = models.CharField(max_length=80, blank=True)
+    last_name = models.CharField(max_length=80, blank=True)
     operator_class = models.CharField(max_length=20, blank=True)
     status = models.CharField(max_length=20, blank=True)
     grant_date = models.DateField(null=True, blank=True)
@@ -167,3 +190,20 @@ class SharedSecret(models.Model):
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
     set_at = models.DateTimeField(auto_now=True)
+
+
+class UlsStaging(models.Model):
+    """Scratch rows for one import run (TR-13): the HD, AM, and EN records of the FCC file joined
+    on the unique system identifier before the winner per callsign is written to UlsLicense.
+    Emptied at the start of every run; never read by the application."""
+
+    usi = models.CharField(max_length=12, primary_key=True)
+    callsign = models.CharField(max_length=12, db_index=True)
+    status_code = models.CharField(max_length=2, blank=True)
+    grant_date = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    class_code = models.CharField(max_length=2, blank=True)
+    entity_name = models.CharField(max_length=160, blank=True)
+    first_name = models.CharField(max_length=80, blank=True)
+    last_name = models.CharField(max_length=80, blank=True)
+    frn = models.CharField(max_length=20, blank=True)

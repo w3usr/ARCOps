@@ -65,6 +65,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=80)
     preferred_name = models.CharField(max_length=80, blank=True)
     name_from_uls = models.BooleanField(default=False)  # FR-4: read-only to the member when true
+    # FR-16: a ULS name awaiting the member's confirmation after a callsign was added or changed:
+    # {"first": ..., "last": ..., "callsign": ..., "previous": ...}. Empty when nothing is pending.
+    pending_uls_name = models.JSONField(default=dict, blank=True)
     callsign = models.CharField(max_length=12, blank=True, db_index=True)
     cell_phone = models.CharField(max_length=30, blank=True)
     push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default

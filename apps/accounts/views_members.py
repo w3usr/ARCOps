@@ -143,6 +143,39 @@ def member_detail(request, pk):
                         )
                     messages.success(request, "Saved.")
                     return redirect("member_detail", pk=member.pk)
+        elif action == "license_override" and actor.is_sysadmin:  # FR-15, FR-20
+            from apps.credentials.models import LicenseRecord
+            from apps.credentials.services import apply_override, lift_override
+
+            lic, _ = LicenseRecord.objects.get_or_create(
+                user=member, defaults={"callsign": member.callsign}
+            )
+            if request.POST.get("lift"):
+                lift_override(actor, lic)
+                messages.success(request, "Override lifted; the FCC record applies.")
+            elif not request.POST.get("override_reason", "").strip():
+                messages.error(request, "An override needs a reason.")
+            else:
+                from django.utils.dateparse import parse_date
+
+                apply_override(
+                    actor,
+                    lic,
+                    {
+                        "override_class": request.POST.get("override_class", "")[:20],
+                        "override_status": request.POST.get("override_status", "")[:20],
+                        "override_expiry": parse_date(request.POST.get("override_expiry", "") or "")
+                        or None,
+                        "override_name": request.POST.get("override_name", "")[:120],
+                        "override_country": request.POST.get("override_country", "")[:60],
+                        "override_reason": request.POST.get("override_reason", "")[:500],
+                    },
+                )
+                messages.success(
+                    request,
+                    "License override saved; it shows as such wherever the value appears and the nightly import leaves it alone.",
+                )
+            return redirect("member_detail", pk=pk)
         elif action == "temporary_password" and actor.is_sysadmin:
             temp_password = issue_temporary_password(actor, member)
             hours = int(setting("defaults.temporary_password_expiry_hours", 72))
@@ -176,12 +209,16 @@ def member_detail(request, pk):
         else:
             raise Http404
 
+    from apps.credentials.services import ladder
+
+    ctx_ladder = ladder()
     return render(
         request,
         "accounts/member_detail.html",
         {
             "member": member,
             "form": form,
+            "ladder": ctx_ladder,
             "temp_password": temp_password,
             "standing": _standing(member),
             "is_self": member == actor,

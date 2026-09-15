@@ -782,3 +782,27 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenarios T35 to T37 of the private test plan are
   the check. 120 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: 3e1d693
+
+## [2026-09-15 20:48 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 3 of the implementation plan kept in the private repository (the FCC
+  ULS sync): the `uls_sync` job streaming the FCC's weekly complete Amateur file or the daily
+  transaction file to disk, staging HD, AM, and EN records in a scratch table, keeping the active
+  or latest record per callsign, and refreshing every member's license record and ULS-sourced
+  name (FR-14, TR-13); name confirmation when a callsign is added or changed and the ULS name
+  differs beyond a middle name, with the callsign rejected on refusal (FR-16, FR-102); license
+  expiry notices at 90 and 30 days and on expiry, once each, reset on renewal (FR-17); a sysadmin
+  license override on the member page with class, status, expiry, name, issuing country, and a
+  required reason, shown as an override and untouched by the sync (FR-15, FR-20).
+- **Sections/Files Affected**: apps/credentials/uls.py (new), apps/credentials/management/
+  commands/{uls_sync,licenses_expiry}.py (new), apps/credentials/{models,services}.py, migration
+  credentials 0002; apps/accounts/{models,services,views,views_entry,views_members,urls}.py,
+  migration accounts 0006; apps/comms/defaults.py (two templates); apps/ops/jobs.py;
+  templates/accounts/{profile,member_detail}.html; docs/JOBS.md; tests
+  apps/credentials/tests/test_uls.py (new, with a synthetic ULS archive).
+- **Nature of Contribution**: Code generation and tests against the requirement text and the
+  FCC's public-access field definitions (HD, AM, EN record layouts).
+- **Human Review Status**: Pending review; scenario T38 of the private test plan is the check,
+  and the first full import on the server is the memory measurement NAF asked for (D6). 125 tests
+  pass; ruff and the neutrality check clean.
+- **Git Hash**: [fill in after committing]

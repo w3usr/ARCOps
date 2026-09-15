@@ -2,13 +2,19 @@
 {% block title %}Profile · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Your profile</h1>
+{% if user.pending_uls_name %}
+<div class="banner" role="status">
+  <p><strong>Is this you?</strong> The FCC lists <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which differs from the name on your account. If it is you, your name becomes the FCC's; if not, the callsign is not kept.</p>
+  <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
+</div>
+{% endif %}
 <section class="card"><h2>Fixed details</h2>
 <dl class="dl">
 <dt>Name</dt><dd>{{ user.full_name }}{% if user.name_from_uls %} <small class="muted">(from FCC ULS)</small>{% endif %}</dd>
 <dt>Sign-in email</dt><dd>{{ user.email }}</dd>
 <dt>Category</dt><dd>{{ user.category|capfirst }}</dd>
 <dt>Access level</dt><dd>{{ user.get_access_level_display }}</dd>
-{% if licence %}<dt>License</dt><dd>{{ licence.callsign }} · {{ licence.effective_class|default:"class unknown" }} · {{ licence.effective_status }}{% if licence.effective_expiry %} · expires {{ licence.effective_expiry }}{% endif %} <small class="muted">({{ licence.source }})</small></dd>{% endif %}
+{% if licence %}<dt>License</dt><dd>{{ licence.callsign }} · {{ licence.effective_class|default:"class unknown" }} · {{ licence.effective_status }}{% if licence.effective_expiry %} · expires {{ licence.effective_expiry }}{% endif %} <small class="muted">({{ licence.effective_source }}{% if licence.retrieved_at %}, checked {{ licence.retrieved_at|date:"j M" }}{% endif %})</small></dd>{% endif %}
 </dl></section>
 <form method="post" class="card stack">{% csrf_token %}
 <h2>Details you manage</h2>

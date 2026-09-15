@@ -26,10 +26,12 @@ not registered is not watched.
 | `notify:reminders` | `manage.py notify_reminders` | every 15 min | the FR-72 reminder for each sign-up entering its event's window, once per sign-up |
 | `notify:warnings` | `manage.py notify_warnings` | every 15 min | FR-73 at-risk warnings to the people in a slot and a digest to the captains, one per state per 12 h; FR-113 no-show notices |
 | `digest:weekly` | `manage.py digest_weekly` | weekly | the FR-79 digest to every member |
+| `uls:sync` | `manage.py uls_sync [--full] [--file X.zip]` | daily | the FCC ULS import (FR-14, TR-13): the complete weekly file on Mondays or when the table is empty, else yesterday's daily transaction file; then every member's license record is refreshed |
+| `licenses:expiry` | `manage.py licenses_expiry` | daily | notices at 90 and 30 days before a license expires and when it has (FR-17) |
 | `events:complete` | `manage.py events_complete` | hourly | a published or locked event whose last slot has ended becomes *completed* (FR-44) |
 | `openings:announce` | `manage.py openings_announce` | every 15 min | announces role openings that have fired (FR-80); passes lapsed waitlist offers to the next in line (FR-57) |
 
-Later phases add `uls:sync`, `agreements:expiry`, `licenses:expiry`, `retention:apply`.
+Later phases add `agreements:expiry` and `retention:apply`.
 
 ## Running one by hand
 
