@@ -21,9 +21,11 @@ from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 
+from apps.credentials.services import holds
 from apps.ops.config import setting
 
 from ..models import Event, Position, SignUp, Slot
+from .slots import limit_report
 from .viability import evaluate
 
 GRID_MAX_POSITIONS = 4
@@ -87,10 +89,13 @@ def present(
     published: bool,
     is_captain: bool,
     now: datetime,
+    locked: bool = False,
 ) -> Presentation:
     if slot.closed:
         return Presentation("closed", "Closed")
     if not signups:
+        if locked:
+            return Presentation("not_open", "Locked", "ask a captain")
         if not published:
             return Presentation("not_open", "Opens when published")
         return Presentation("open", "Open", "sign up")
@@ -123,6 +128,8 @@ class Cell:
     status: object
     shown: Presentation
     control_operator: object = None
+    over_limit: bool = False  # FR-39, FR-62: pushes a day or the event past an operating limit
+    badges: dict = field(default_factory=dict)  # FR-65: signup pk -> compact credential badges
 
     @property
     def class_counts(self) -> str:
@@ -160,7 +167,9 @@ def _hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -> st
     return f"{text} {zone_label(start, zone)}"
 
 
-def build(event: Event, viewer, lead: str = "local", now: datetime | None = None) -> dict:
+def build(
+    event: Event, viewer, lead: str = "local", now: datetime | None = None, filter: str = ""
+) -> dict:
     now = now or timezone.now()
     local = display_zone(event)
     lead_zone, other_zone = (local, UTC) if lead == "local" or local == UTC else (UTC, local)
@@ -168,6 +177,8 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
         lead_zone, other_zone = UTC, local
     is_captain = viewer.can_captain(event)
     published = event.state == Event.State.PUBLISHED
+    locked = event.state == Event.State.LOCKED
+    report = limit_report(event)
 
     positions = list(
         Position.objects.filter(location__event=event)
@@ -199,10 +210,34 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
             taken[su.role] = taken.get(su.role, 0) + 1
         open_roles = [r for r, c in caps.items() if taken.get(r, 0) < c]
         shown = present(
-            s, st, signups, open_roles, published=published, is_captain=is_captain, now=now
+            s,
+            st,
+            signups,
+            open_roles,
+            published=published,
+            is_captain=is_captain,
+            now=now,
+            locked=locked,
         )
+        on = s.start.date()
+        badges = {}
+        for su in signups:
+            b = []
+            if holds(su.user, "station_access", on):
+                b.append("S")
+            if holds(su.user, "it_access", on):
+                b.append("I")
+            badges[su.pk] = b
         cells[s.pk] = Cell(
-            s, signups, open_roles, mine.get(s.pk), st, shown, getattr(st, "control_operator", None)
+            s,
+            signups,
+            open_roles,
+            mine.get(s.pk),
+            st,
+            shown,
+            getattr(st, "control_operator", None),
+            over_limit=s.pk in report["over_slot_ids"],
+            badges=badges,
         )
         counts["total"] += 1
         bucket = {
@@ -220,6 +255,11 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
 
     layout = "grid" if 1 <= len(positions) <= GRID_MAX_POSITIONS else "list"
     pos_index = {p.pk: i for i, p in enumerate(positions)}
+    if filter == "problems":  # FR-65: only what needs attention
+        keep = {
+            pk for pk, c in cells.items() if c.shown.key in ("needs", "problem") or c.over_limit
+        }
+        slots = [s for s in slots if s.pk in keep]
 
     days: dict[str, Day] = {}
     rows_by_span: dict[tuple, Row] = {}
@@ -249,6 +289,10 @@ def build(event: Event, viewer, lead: str = "local", now: datetime | None = None
     starts, ends = event.starts_at(), event.ends_at()
     return {
         "names_visible": viewer.is_member,  # FR-121: Provisional members see counts, not names
+        "locked": locked,
+        "bookable": published,
+        "filter": filter,
+        "limits": report,
         "layout": layout,
         "positions": positions,
         "single_location": positions[0].location if positions and single_location else None,

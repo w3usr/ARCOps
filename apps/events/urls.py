@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, views_manage, views_slots
+from . import views, views_manage, views_member, views_rules, views_slots
 
 urlpatterns = [
     path("", views.event_list, name="event_list"),
@@ -50,5 +50,28 @@ urlpatterns = [
     path("signup/<int:signup_id>/checkin/", views.check_in, name="check_in"),
     path("signup/<int:signup_id>/confirm/", views.confirm_signup, name="confirm_signup"),
     path("confirm/<str:token>/", views.confirm_by_token, name="confirm_by_token"),
+    path("<int:pk>/state/", views_rules.event_state, name="event_state"),
+    path("<int:pk>/limits/", views_rules.limits_save, name="limits_save"),
+    path("<int:pk>/eligibility/", views_rules.eligibility_save, name="eligibility_save"),
+    path(
+        "<int:pk>/slot/<int:slot_id>/eligibility/",
+        views_rules.slot_eligibility,
+        name="slot_eligibility",
+    ),
+    path("<int:pk>/openings/add/", views_rules.opening_add, name="opening_add"),
+    path(
+        "<int:pk>/openings/<int:opening_id>/delete/",
+        views_rules.opening_delete,
+        name="opening_delete",
+    ),
+    path("<int:pk>/roster.csv", views_member.roster_csv, name="roster_csv"),
+    path(
+        "signup/<int:signup_id>/role/", views_member.signup_change_role, name="signup_change_role"
+    ),
+    path("slot/<int:slot_id>/waitlist/", views_member.waitlist_join, name="waitlist_join"),
+    path("waitlist/<int:pk>/withdraw/", views_member.waitlist_withdraw, name="waitlist_withdraw"),
+    path("waitlist/<int:pk>/accept/", views_member.waitlist_accept, name="waitlist_accept"),
+    path("feed/<str:token>.ics", views_member.ical_feed, name="ical_feed"),
+    path("health/", views_member.health_overview, name="health_overview"),
     path("cannot/<str:token>/", views.cannot_by_token, name="cannot_by_token"),
 ]

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load times %}
+{% block title %}Waitlist offer · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>A {{ entry.role }} place opened</h1>
+<p>{{ slot.event.title }}, {{ slot.position }}.</p>
+<p class="when">{% when slot.start slot.end slot.event %}</p>
+{% if entry.state == 'offered' and open and entry.offer_expires_at > now %}
+<p>It is yours until {{ entry.offer_expires_at|date:"j M H:i" }} UTC.</p>
+<form method="post">{% csrf_token %}<button type="submit">Take the place</button> <a class="button secondary" href="{% url 'slot_detail' slot.event.pk slot.pk %}">Leave it</a></form>
+{% elif entry.state == 'accepted' %}<p>You already took it. <a href="{% url 'slot_detail' slot.event.pk slot.pk %}">Open the slot.</a></p>
+{% else %}<p class="muted">This offer has lapsed or the place is gone. <a href="{% url 'slot_detail' slot.event.pk slot.pk %}">Open the slot</a> to see what is there now.</p>{% endif %}
+{% endblock %}

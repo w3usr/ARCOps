@@ -29,7 +29,17 @@
 {% if cell.mine %}
 <h2>You hold this slot</h2>
 <p>As <strong>{{ cell.mine.role }}</strong>{% if cell.mine.confirmed_at %}, confirmed{% endif %}.</p>
+{% if locked %}<p class="muted">The roster is locked; to change or give up this slot, contact a captain.</p>
+{% else %}
 <form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>
+{% if switch_roles %}
+<form method="post" action="{% url 'signup_change_role' cell.mine.pk %}" class="inline">{% csrf_token %}
+  <label for="switch-{{ slot.pk }}">Change role to</label>
+  <select id="switch-{{ slot.pk }}" name="role">{% for r in switch_roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select>
+  <button type="submit" class="secondary">Change</button>
+</form>
+{% endif %}
+{% endif %}
 {% elif published and not slot.closed %}
 <h2>Sign up</h2>
 {% if eligible_roles %}
@@ -40,6 +50,17 @@
 </form>
 {% elif cell.open_roles %}<p class="muted">Seats are open in this slot, but none of them in a role you are eligible for. Ask a captain if you think that is wrong.</p>
 {% else %}<p class="muted">Full.</p>{% endif %}
+{% if my_wait %}
+<p>You are on the waitlist for <strong>{{ my_wait.role }}</strong>{% if my_wait.state == 'offered' %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|date:"j M H:i" }} UTC{% endif %}.
+<form method="post" action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button class="linklike">leave the waitlist</button></form></p>
+{% elif waitable %}
+<form method="post" action="{% url 'waitlist_join' slot.pk %}" class="inline">{% csrf_token %}
+  <label for="wait-{{ slot.pk }}">Full for now. Join the waitlist as</label>
+  <select id="wait-{{ slot.pk }}" name="role">{% for r in waitable %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select>
+  <button type="submit" class="secondary">Join the waitlist</button>
+</form>
+{% endif %}
+{% elif locked %}<p class="muted">The roster is locked; sign-ups go through a captain.</p>
 {% elif not published %}<p class="muted">Sign-ups open when the event is published.</p>{% endif %}
 
 {% if is_captain %}
@@ -66,6 +87,20 @@
     <button name="what" value="close" class="secondary">{% if slot.closed %}Reopen slot{% else %}Close slot{% endif %}</button>
     {% if not cell.signups %}<button name="what" value="cancel" class="danger">Cancel slot</button>{% endif %}
   </form>
+  {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
+  <details><summary>Who may sign up for this slot (override, FR-53)</summary>
+    {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role }}</strong>: {{ r.categories|join:", "|default:"any category" }}{% if r.min_license_class %} · {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %} · needs {{ r.required_credentials|join:", " }}{% endif %}{% if not r.minors_allowed %} · no minors{% endif %}
+      <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike">clear</button></form></li>{% endfor %}</ul>{% endif %}
+    <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
+      <div class="row">
+        <div class="field"><label for="se-role-{{ slot.pk }}">Role</label><select id="se-role-{{ slot.pk }}" name="role" onchange="this.form.querySelectorAll('[data-role-field]').forEach(function(e){e.name=e.dataset.roleField+'_'+this.value},this)">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
+        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ roles.0.key }}" data-role-field="cat" value="{{ c.key }}" id="se-cat-{{ slot.pk }}-{{ c.key }}"><label for="se-cat-{{ slot.pk }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}</div>
+        <div class="field"><label for="se-class-{{ slot.pk }}">Minimum class</label><select id="se-class-{{ slot.pk }}" name="class_{{ roles.0.key }}" data-role-field="class"><option value="">none</option>{% for l in ladder %}<option value="{{ l }}">{{ l }}</option>{% endfor %}</select></div>
+        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ roles.0.key }}" data-role-field="minors" id="se-minors-{{ slot.pk }}" checked><label for="se-minors-{{ slot.pk }}">Minors may sign up</label></div></div>
+      </div>
+      <div><button type="submit" class="secondary">Save override</button></div>
+    </form>
+  </details>
   {% if cell.signups %}
   <form method="post" action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
     <label for="cancel-reason-{{ slot.pk }}">Cancel this slot; everyone in it is told. Reason</label>

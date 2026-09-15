@@ -26,9 +26,10 @@ not registered is not watched.
 | `notify:reminders` | `manage.py notify_reminders` | every 15 min | the FR-72 reminder for each sign-up entering its event's window, once per sign-up |
 | `notify:warnings` | `manage.py notify_warnings` | every 15 min | FR-73 at-risk warnings to the people in a slot and a digest to the captains, one per state per 12 h; FR-113 no-show notices |
 | `digest:weekly` | `manage.py digest_weekly` | weekly | the FR-79 digest to every member |
+| `events:complete` | `manage.py events_complete` | hourly | a published or locked event whose last slot has ended becomes *completed* (FR-44) |
+| `openings:announce` | `manage.py openings_announce` | every 15 min | announces role openings that have fired (FR-80); passes lapsed waitlist offers to the next in line (FR-57) |
 
-Later phases add `uls:sync`, `agreements:expiry`, `licenses:expiry`, `events:complete`,
-`retention:apply`.
+Later phases add `uls:sync`, `agreements:expiry`, `licenses:expiry`, `retention:apply`.
 
 ## Running one by hand
 

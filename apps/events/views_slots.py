@@ -57,6 +57,25 @@ def slot_detail(request, pk, slot_id):
             ok, _ = can_sign_up(request.user, slot, role)
             if ok:
                 eligible_roles.append(role)
+    # FR-111: roles the holder could switch to (open seat, eligible); FR-57: full roles they
+    # are eligible for, to wait on.
+    switch_roles, waitable = [], []
+    caps = {c.role: c.capacity for c in slot.capacities.all()}
+    if data["published"] and not slot.closed:
+        for role in caps:
+            ok, _ = can_sign_up(request.user, slot, role)
+            if not ok:
+                continue
+            if cell.mine and role != cell.mine.role and role in cell.open_roles:
+                switch_roles.append(role)
+            if not cell.mine and role not in cell.open_roles:
+                waitable.append(role)
+    from .models import EligibilityRule, Waitlist
+
+    my_wait = Waitlist.objects.filter(
+        slot=slot, user=request.user, state__in=["pending", "offered"]
+    ).first()
+    slot_rules = list(EligibilityRule.objects.filter(slot=slot)) if is_captain else []
     ctx = {
         "event": event,
         "slot": slot,
@@ -66,7 +85,17 @@ def slot_detail(request, pk, slot_id):
         "is_captain": is_captain,
         "checkin_open": checkin_window_open(slot, timezone.now()),
         "published": data["published"],
+        "locked": event.state == Event.State.LOCKED,
         "eligible_roles": eligible_roles,
+        "switch_roles": switch_roles,
+        "waitable": waitable,
+        "my_wait": my_wait,
+        "slot_rules": slot_rules,
+        "waiting_count": slot.waitlist.filter(state__in=["pending", "offered"]).count()
+        if is_captain
+        else 0,
+        "categories": setting("member_categories", []) or [],
+        "ladder": __import__("apps.credentials.services", fromlist=["ladder"]).ladder(),
         "capacities": {c.role: c.capacity for c in slot.capacities.all()},
         "on_air": [s for s in cell.signups],
         "members": User.objects.exclude(access_level=AccessLevel.NONE).order_by(

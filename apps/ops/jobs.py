@@ -64,6 +64,18 @@ JOBS: dict[str, JobSpec] = {
             timedelta(minutes=30),
         ),
         JobSpec("digest:weekly", "Weekly digest (FR-79)", timedelta(days=7), timedelta(days=1)),
+        JobSpec(
+            "events:complete",
+            "Complete events whose last slot has ended (FR-44)",
+            timedelta(hours=1),
+            timedelta(hours=1),
+        ),
+        JobSpec(
+            "openings:announce",
+            "Announce role openings that have fired (FR-80); lapse waitlist offers (FR-57)",
+            timedelta(minutes=15),
+            timedelta(minutes=30),
+        ),
     )
 }
 

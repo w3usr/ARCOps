@@ -26,6 +26,8 @@ from apps.ops.config import setting
 
 from .models import Captaincy, Event, Location, OperatingPeriod, Position, SignUp, Slot
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
+from .services.slots import limit_report
+from .views_rules import rules_context
 
 DEFAULT_EVENT_TYPES = [
     ("contest", "Contest"),
@@ -60,12 +62,16 @@ class EventForm(forms.ModelForm):
             "min_license_class",
             "kbyg_html",
             "reminder_hours_before",
+            "display_only",
+            "recurrence_text",
         ]
         labels = {
             "description_html": "Description",
             "rules_url": "Rules link",
             "min_license_class": "Preferred license class",
             "reminder_hours_before": "Reminder, hours before each slot",
+            "display_only": "Display only: on the calendar, no roster (a net, a meeting)",
+            "recurrence_text": "When it recurs, in words",
             "kbyg_html": "Know before you go",
         }
         widgets = {
@@ -123,6 +129,28 @@ class GenerateForm(forms.Form):
         label="Breakdown slots after", min_value=0, max_value=6, initial=1
     )
 
+    windows = forms.CharField(
+        label="Hours to operate each day (FR-48), one range per line, e.g. 15:00-21:00; blank fills the whole period",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
+    def clean_windows(self):
+        out = []
+        for line in (self.cleaned_data.get("windows") or "").splitlines():
+            line = line.strip().replace(" ", "")
+            if not line:
+                continue
+            try:
+                a, b = line.split("-")
+                for t in (a, b):
+                    h, m = t.split(":")
+                    assert 0 <= int(h) < 24 and 0 <= int(m) < 60
+            except (ValueError, AssertionError) as exc:
+                raise forms.ValidationError(f"{line!r} is not HH:MM-HH:MM") from exc
+            out.append((a, b))
+        return out
+
     def __init__(self, *args, roles, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
@@ -145,13 +173,18 @@ def event_create(request):
         raise Http404
     form = EventForm(request.POST or None)
     period = PeriodForm(request.POST or None)
-    if request.method == "POST" and form.is_valid() and period.is_valid():
+    if (
+        request.method == "POST"
+        and form.is_valid()
+        and (form.cleaned_data.get("display_only") or period.is_valid())
+    ):
         event = form.save(commit=False)
         event.created_by = request.user
         event.save()
-        OperatingPeriod.objects.create(
-            event=event, start=period.cleaned_data["start"], end=period.cleaned_data["end"]
-        )
+        if period.is_valid():
+            OperatingPeriod.objects.create(
+                event=event, start=period.cleaned_data["start"], end=period.cleaned_data["end"]
+            )
         Captaincy.objects.get_or_create(event=event, user=request.user)
         record(request.user, "event.created", event, after={"title": event.title})
         messages.success(
@@ -208,6 +241,8 @@ def event_manage(request, pk):
             "generate_form": GenerateForm(roles=roles),
             "slot_count": slot_count,
             "signups_exist": has_signups(event),
+            "limits": limit_report(event),
+            **rules_context(event),
         },
     )
 
@@ -332,6 +367,16 @@ def slots_generate(request, pk):
         messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
         return redirect("event_manage", pk=pk)
     Slot.objects.filter(position__location__event=event).delete()
+    windows = None
+    if form.cleaned_data.get("windows"):
+        from .services.slots import windows_from_daily
+
+        windows = windows_from_daily(event, form.cleaned_data["windows"])
+        if not windows:
+            messages.error(
+                request, "Those hours fall outside every operating period; nothing generated."
+            )
+            return redirect("event_manage", pk=pk)
     created = generate_with_capacities(
         event,
         positions,
@@ -339,6 +384,7 @@ def slots_generate(request, pk):
         form.cleaned_data["setup_slots"],
         form.cleaned_data["breakdown_slots"],
         form.capacities(),
+        windows=windows,
     )
     record(request.user, "slots.generated", event, after={"count": len(created)})
     messages.success(

@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -31,11 +32,18 @@ def event_list(request):
         events = events.filter(state__in=["published", "locked", "completed"]) | events.filter(
             captaincies__user=request.user
         )
-    upcoming, past = [], []
+    upcoming, past, regular = [], [], []
     for e in events.distinct():
-        (upcoming if (e.ends_at() or now) >= now else past).append(e)
+        if e.display_only:
+            regular.append(e)  # FR-45: on the calendar, no roster
+        else:
+            (upcoming if (e.ends_at() or now) >= now else past).append(e)
     upcoming.sort(key=lambda e: e.starts_at() or now)
-    return render(request, "events/list.html", {"upcoming": upcoming, "past": past[:20]})
+    return render(
+        request,
+        "events/list.html",
+        {"upcoming": upcoming, "past": past[:20], "regular": regular},
+    )
 
 
 @login_required
@@ -44,7 +52,7 @@ def event_detail(request, pk):
     if not _visible(request.user, event):
         raise Http404
     lead = request.session.get("roster_tz", "local")
-    roster = build_roster(event, request.user, lead)
+    roster = build_roster(event, request.user, lead, filter=request.GET.get("filter", ""))
     return render(
         request,
         "events/detail.html",
@@ -71,8 +79,8 @@ def sign_up(request, slot_id):
         messages.error(request, "That role is not open in this slot.")
         return redirect("event_detail", pk=event.pk)
     if slot.signups.filter(role=role).count() >= cap.capacity:
-        messages.error(request, "That role is full.")
-        return redirect("event_detail", pk=event.pk)
+        messages.error(request, "That role is full. You can join the waitlist from the slot.")
+        return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     allowed, reason = can_sign_up(request.user, slot, role)
     if not allowed:
         messages.error(request, f"You cannot take that role: {reason}.")
@@ -97,6 +105,9 @@ def cancel_signup(request, signup_id):
     slot = su.slot
     if su.user != request.user and not request.user.can_captain(slot.event):
         raise Http404
+    if slot.event.state == Event.State.LOCKED and not request.user.can_captain(slot.event):
+        messages.error(request, "The roster is locked; ask a captain to change your sign-up.")
+        return redirect("event_detail", pk=slot.event.pk)  # FR-44
     if request.POST.get("confirmed") != "yes":
         broken = would_break(slot, su)
         if broken:
@@ -113,7 +124,11 @@ def cancel_signup(request, signup_id):
         notify.member_cancelled(request.user, su, broken)  # FR-56: the captains always hear
     else:
         notify.removed_by_captain(request.user, su, request.POST.get("reason", "")[:300])  # FR-58
+    role = su.role
     su.delete()
+    from .services import waitlist
+
+    waitlist.on_place_opened(slot, role)  # FR-57
     messages.success(request, "Sign-up cancelled.")
     return redirect("event_detail", pk=slot.event.pk)
 
@@ -152,8 +167,11 @@ def cannot_by_token(request, token):
             before={"role": su.role, "user": su.user_id, "via": "token"},
         )
         notify.member_cancelled(su.user, su, broken)
-        event_pk = su.slot.event.pk
+        event_pk, slot, role = su.slot.event.pk, su.slot, su.role
         su.delete()
+        from .services import waitlist
+
+        waitlist.on_place_opened(slot, role)
         return render(request, "events/token_cancelled.html", {"event_pk": event_pk})
     return render(request, "events/token_cannot.html", {"signup": su, "broken": broken})
 
@@ -187,12 +205,17 @@ def my_schedule(request):
         .order_by("slot__start")
     )
     upcoming = [s for s in signups if s.slot.end >= now]
+    from .views_member import feed_token
+
     return render(
         request,
         "events/my_schedule.html",
         {
             "upcoming": upcoming,
             "now": now,
+            "feed_url": request.build_absolute_uri(
+                reverse("ical_feed", args=[feed_token(request.user)])
+            ),
             "ready": [
                 s for s in upcoming if checkin_window_open(s.slot, now) and not s.checked_in_at
             ],
@@ -222,7 +245,13 @@ def publish(request, pk):
         event.published_by = request.user
         event.save()
         record(request.user, "event.published", event)
-        messages.success(request, "Published. Members can see it now.")
+        if request.POST.get("announce") == "yes":
+            from .services.lifecycle import announce_published
+
+            n = announce_published(request.user, event)
+            messages.success(request, f"Published and announced to {n} member(s).")
+        else:
+            messages.success(request, "Published. Members can see it now.")
     elif (
         event.state == Event.State.PUBLISHED
         and not SignUp.objects.filter(slot__position__location__event=event).exists()

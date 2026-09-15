@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Change role? · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Before you switch</h1>
+<p>If you change from <strong>{{ signup.role }}</strong> to <strong>{{ new_role }}</strong>, this slot becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>
+<form method="post" action="{% url 'signup_change_role' signup.pk %}">{% csrf_token %}<input type="hidden" name="role" value="{{ new_role }}"><input type="hidden" name="confirmed" value="yes">
+<button type="submit" class="secondary">Switch anyway</button> <a class="button" href="{% url 'slot_detail' signup.slot.event.pk signup.slot.pk %}">Stay as {{ signup.role }}</a></form>
+{% endblock %}

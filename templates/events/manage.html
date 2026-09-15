@@ -79,6 +79,61 @@
   {% endif %}
 </section>
 
+<section class="card" aria-labelledby="lim">
+  <h2 id="lim">Operating limits</h2>
+  <p class="helptext">Advisory (FR-39): the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
+  <form method="post" action="{% url 'limits_save' event.pk %}" class="stack">{% csrf_token %}
+    <div class="row">{% for f in limit_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
+    <div><button type="submit" class="secondary">Save limits</button></div>
+  </form>
+  {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total }} h{% if limits.total_limit %} of {{ limits.total_limit }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="who">
+  <h2 id="who">Who may sign up</h2>
+  <p class="helptext">Per role (FR-53). Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing (FR-122). A slot can override this from its own page.</p>
+  <form method="post" action="{% url 'eligibility_save' event.pk %}" class="stack">{% csrf_token %}
+    {% for r in rule_roles %}
+    <fieldset>
+      <legend>{{ r.label }}</legend>
+      <div class="row">
+        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ r.key }}" value="{{ c.key }}" id="cat-{{ r.key }}-{{ c.key }}"{% if r.rule and c.key in r.rule.categories %} checked{% endif %}><label for="cat-{{ r.key }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: any category.</span></div>
+        <div class="field"><label for="class-{{ r.key }}">Minimum license class</label><select id="class-{{ r.key }}" name="class_{{ r.key }}"><option value="">none</option>{% for l in ladder %}<option value="{{ l }}"{% if r.rule and r.rule.min_license_class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="field"><span class="label">Required credentials</span>{% for ct in credential_types %}<div class="check"><input type="checkbox" name="cred_{{ r.key }}" value="{{ ct.key }}" id="cred-{{ r.key }}-{{ ct.key }}"{% if r.rule and ct.key in r.rule.required_credentials %} checked{% endif %}><label for="cred-{{ r.key }}-{{ ct.key }}">{{ ct.label }}</label></div>{% endfor %}</div>
+        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ r.key }}" id="minors-{{ r.key }}"{% if not r.rule or r.rule.minors_allowed %} checked{% endif %}><label for="minors-{{ r.key }}">Minors may sign up</label></div></div>
+      </div>
+    </fieldset>
+    {% endfor %}
+    <div><button type="submit" class="secondary">Save who may sign up</button></div>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="opn">
+  <h2 id="opn">Openings</h2>
+  <p class="helptext">When each role opens, and to whom (FR-54). With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
+  {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {{ o.categories|join:", "|default:"everyone" }}{% if o.announce %} · announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
+    <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>{% endfor %}</ul>{% endif %}
+  <form method="post" action="{% url 'opening_add' event.pk %}" class="stack">{% csrf_token %}
+    <div class="row">
+      <div class="field"><label for="op-role">Role</label><select id="op-role" name="role">{% for r in rule_roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="op-at">Opens at (UTC)</label><input id="op-at" type="datetime-local" name="opens_at" required></div>
+      <div class="field"><span class="label">To</span>{% for c in categories %}<div class="check"><input type="checkbox" name="categories" value="{{ c.key }}" id="op-cat-{{ c.key }}"><label for="op-cat-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: everyone.</span></div>
+      <div class="field"><div class="check"><input type="checkbox" name="announce" id="op-ann"><label for="op-ann">Announce when it opens (FR-80)</label></div></div>
+    </div>
+    <div><button type="submit" class="secondary">Add opening</button></div>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="st">
+  <h2 id="st">State: {{ event.get_state_display }}</h2>
+  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members see it, changes to sign-ups go through a captain (FR-44). Completed is set here or automatically once the last slot has ended.</p>
+  <form method="post" action="{% url 'event_state' event.pk %}" class="inline">{% csrf_token %}
+    {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">Lock the roster</button>{% endif %}
+    {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
+    {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">Mark completed</button>{% endif %}
+  </form>
+</section>
+
 <section class="card" aria-labelledby="more">
   <h2 id="more">Copy or cancel</h2>
   <div class="row">

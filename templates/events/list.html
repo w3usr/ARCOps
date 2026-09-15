@@ -2,7 +2,7 @@
 {% load times %}
 {% block title %}Events · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<div class="titlerow"><h1>Events</h1>{% if user.is_officer %}<a class="button" href="{% url 'event_create' %}">New event</a>{% endif %}</div>
+<div class="titlerow"><h1>Events</h1>{% if user.is_officer %}<span><a class="button secondary" href="{% url 'health_overview' %}">Upcoming health</a> <a class="button" href="{% url 'event_create' %}">New event</a></span>{% endif %}</div>
 <section aria-labelledby="u"><h2 id="u">Upcoming</h2>
 {% if upcoming %}
 <ul class="eventcards">
@@ -15,6 +15,8 @@
 </ul>
 {% else %}<p>No upcoming events.</p>{% endif %}
 </section>
+{% if regular %}<section aria-labelledby="r"><h2 id="r">Regular meetings and nets</h2>
+<ul class="eventcards">{% for e in regular %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e.recurrence_text }}</p></li>{% endfor %}</ul></section>{% endif %}
 {% if past %}<section aria-labelledby="p"><h2 id="p">Past</h2>
 <ul class="eventcards">{% for e in past %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag">Cancelled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></li>{% endfor %}</ul></section>{% endif %}
 {% endblock %}

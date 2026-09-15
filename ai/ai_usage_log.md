@@ -758,3 +758,27 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenarios T31 to T34 of the private test plan are
   the check. 112 tests pass; ruff clean.
 - **Git Hash**: e5c36d6
+
+## [2026-09-15 20:25 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 2 of the implementation plan kept in the private repository (events
+  completeness): lock, unlock, and complete, with automatic completion once the last slot has
+  ended and an optional announcement at publish (FR-44); role change within a held slot with the
+  viability warning and a captains' notice inside the cutoff (FR-111); operating limits and
+  per-day windows on the manage page, "over limit" on the roster and per-day hours on the health
+  card (FR-39, FR-48, FR-62, FR-66); an eligibility editor per role with a per-slot override, and
+  openings per role with an announcement when they fire (FR-53, FR-54, FR-80); roster CSV
+  (FR-85); a problems-only filter and credential badges (FR-65); a waitlist with offers that
+  lapse to the next in line (FR-57); a signed per-member calendar feed (FR-59); an officers'
+  cross-event health view (FR-68); display-only recurring events (FR-45). Two new jobs.
+- **Sections/Files Affected**: apps/events/{models,views,views_manage,views_slots,urls}.py,
+  apps/events/views_rules.py (new), apps/events/views_member.py (new), apps/events/services/
+  {slots,roster,manage}.py, apps/events/services/{lifecycle,waitlist}.py (new), apps/events/
+  management/commands/{events_complete,openings_announce}.py (new), migration events 0004;
+  apps/comms/defaults.py (four templates); apps/ops/jobs.py; templates/events/{manage,detail,
+  _slot_body,list,my_schedule}.html, templates/events/{confirm_role,waitlist_accept,
+  health_overview}.html (new); docs/JOBS.md; tests apps/events/tests/test_phase2.py (new).
+- **Nature of Contribution**: Code generation and tests against the requirement text.
+- **Human Review Status**: Pending review; scenarios T35 to T37 of the private test plan are
+  the check. 120 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [fill in after committing]

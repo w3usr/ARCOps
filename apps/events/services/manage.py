@@ -61,10 +61,16 @@ def generate_with_capacities(
     setup_slots: int,
     breakdown_slots: int,
     capacities: dict[str, int],
+    windows=None,
 ) -> list[Slot]:
     """Slots for the positions given, then a capacity row per role with a non-zero count."""
     created = generate_slots(
-        event, positions, minutes=minutes, setup_slots=setup_slots, breakdown_slots=breakdown_slots
+        event,
+        positions,
+        minutes=minutes,
+        setup_slots=setup_slots,
+        breakdown_slots=breakdown_slots,
+        windows=windows,
     )
     rows = [
         RoleCapacity(slot=s, role=role, capacity=n)

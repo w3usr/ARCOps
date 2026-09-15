@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load times %}
+{% block title %}Upcoming health · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
+<h1>Upcoming events, at a glance</h1>
+<p class="lede">Every published event in the next {{ weeks }} weeks with its schedule health (FR-68). <a href="?weeks=12">12 weeks</a> · <a href="?weeks=4">4 weeks</a></p>
+<div class="table-wrap"><table class="table">
+<thead><tr><th scope="col">Event</th><th scope="col">When</th><th scope="col">Slots</th><th scope="col">Open</th><th scope="col">Needs someone</th><th scope="col">Covered</th><th scope="col">Hours</th><th scope="col">Unconfirmed, next 48 h</th></tr></thead>
+<tbody>
+{% for r in rows %}
+<tr>
+  <th scope="row"><a href="{% url 'event_detail' r.event.pk %}">{{ r.event.title }}</a>{% if r.event.state == 'locked' %} <span class="tag">locked</span>{% endif %}</th>
+  <td>{% when r.start r.end r.event %}</td>
+  <td>{{ r.health.counts.total }}</td>
+  <td>{% if r.health.counts.empty %}<span class="tag open">{{ r.health.counts.empty }}</span>{% else %}0{% endif %}</td>
+  <td>{% if r.health.counts.not_viable %}<span class="tag warn">{{ r.health.counts.not_viable }}</span>{% else %}0{% endif %}{% if r.health.counts.at_risk %} <small class="muted">+{{ r.health.counts.at_risk }} thin</small>{% endif %}</td>
+  <td>{{ r.health.counts.viable }}</td>
+  <td>{{ r.health.scheduled_hours }}{% if r.health.over_total_limit %} <span class="tag bad">over limit</span>{% endif %}</td>
+  <td>{% if r.unconfirmed_48h %}<span class="tag warn">{{ r.unconfirmed_48h }}</span>{% else %}0{% endif %}</td>
+</tr>
+{% empty %}<tr><td colspan="8">Nothing published in that window.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

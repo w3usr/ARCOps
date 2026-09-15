@@ -286,6 +286,57 @@ DEFAULT_TEMPLATES: list[dict] = [
         ),
         "variables": ["user.display_first", "events", "open_slots", "mine"],
     },
+    {
+        "key": "event.published",
+        "subject": "New on the calendar: {{ event.title }}",
+        "body_html": (
+            "<p>{{ event.title }} is published{% if when %}, {{ when }}{% endif %}. Roles open on the "
+            "schedule the captains set; have a look at the roster.</p>"
+            '<p><a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["event.title", "when", "link"],
+    },
+    {
+        "key": "captain.role_changed",
+        "subject": "Role change inside the cutoff: {{ person }}, {{ when }}, {{ event.title }}",
+        "body_html": (
+            "<p>{{ person }} changed from {{ old_role }} to {{ new_role }} in {{ event.title }}, "
+            "{{ when }}, {{ position }}, inside the {{ cutoff }}-hour cutoff."
+            "{% if broken %} The slot now reads <strong>{{ broken }}</strong>.{% endif %}</p>"
+            '<p><a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": [
+            "person",
+            "old_role",
+            "new_role",
+            "event.title",
+            "when",
+            "position",
+            "cutoff",
+            "broken",
+            "link",
+        ],
+    },
+    {
+        "key": "opening.announced",
+        "subject": "{{ role|capfirst }} slots now open: {{ event.title }}",
+        "body_html": (
+            "<p>{{ role|capfirst }} sign-ups for {{ event.title }} are open to you as of now. "
+            "Pick your hours on the roster.</p>"
+            '<p><a href="{{ link }}">{{ link }}</a></p>'
+        ),
+        "variables": ["role", "event.title", "link"],
+    },
+    {
+        "key": "waitlist.offer",
+        "subject": "A {{ role }} place opened: {{ event.title }}, {{ when }}",
+        "body_html": (
+            "<p>You were waiting for a {{ role }} place in {{ event.title }}, {{ when }}, "
+            "{{ position }}. One has opened and it is yours until {{ expires|date:'j M H:i' }} UTC.</p>"
+            '<p><a href="{{ link }}">Take it</a>; after that it passes to the next person.</p>'
+        ),
+        "variables": ["role", "event.title", "when", "position", "expires", "link"],
+    },
 ]
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}

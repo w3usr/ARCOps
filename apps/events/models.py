@@ -29,6 +29,11 @@ class Event(models.Model):
     reminder_hours_before = models.PositiveSmallIntegerField(
         null=True, blank=True, help_text="Blank uses the club default (FR-72)."
     )
+    display_only = models.BooleanField(default=False)  # FR-45: on the calendar, no roster
+    recurrence_text = models.CharField(
+        max_length=120, blank=True, help_text="For display-only events: 'Tuesdays 20:00 ET'."
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)  # FR-44
     published_at = models.DateTimeField(null=True, blank=True)
     published_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -184,6 +189,7 @@ class Opening(models.Model):
     opens_at = models.DateTimeField()
     categories = models.JSONField(default=list, blank=True)  # empty -> everyone
     announce = models.BooleanField(default=False)
+    announced_at = models.DateTimeField(null=True, blank=True)  # FR-80: once
 
     class Meta:
         ordering = ["opens_at"]
@@ -252,3 +258,29 @@ class SlotWarning(models.Model):
 
     class Meta:
         ordering = ["-sent_at"]
+
+
+class Waitlist(models.Model):
+    """FR-57: a member waiting for a full role in a slot. When a place opens, the first pending
+    entry is offered it by message and has a window to accept before it passes to the next."""
+
+    class State(models.TextChoices):
+        PENDING = "pending", "Waiting"
+        OFFERED = "offered", "Offered"
+        ACCEPTED = "accepted", "Accepted"
+        EXPIRED = "expired", "Offer expired"
+        WITHDRAWN = "withdrawn", "Withdrawn"
+
+    slot = models.ForeignKey(Slot, on_delete=models.CASCADE, related_name="waitlist")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="waitlist_entries"
+    )
+    role = models.CharField(max_length=20)
+    state = models.CharField(max_length=10, choices=State.choices, default=State.PENDING)
+    created = models.DateTimeField(auto_now_add=True)
+    offered_at = models.DateTimeField(null=True, blank=True)
+    offer_expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["created"]
+        unique_together = [("slot", "user", "role")]
