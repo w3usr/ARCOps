@@ -806,3 +806,19 @@ carries the actual running model ID.
   and the first full import on the server is the memory measurement NAF asked for (D6). 125 tests
   pass; ruff and the neutrality check clean.
 - **Git Hash**: a227acb
+
+## [2026-09-15 21:50 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Fix found by the advisor on first use of browser notifications: the
+  permission prompt and notifications named the product ("ARCOps" in the static manifest, "Club
+  Ops" as the service worker's fallback) instead of the installation. A member of two clubs
+  running the software would not be able to tell them apart. The manifest is now rendered from
+  the club's configuration with the host in its name, every push title is prefixed with the
+  club's short name, and the worker falls back to the origin.
+- **Sections/Files Affected**: apps/ops/views.py (manifest view), config/urls.py,
+  templates/base.html, static/sw.js (cache v2, origin fallback, icon and tag), apps/comms/push.py,
+  static/manifest.webmanifest (deleted); tests apps/ops/tests/test_health_and_import.py and
+  apps/comms/tests/test_push.py.
+- **Nature of Contribution**: Code generation and tests; the finding is the advisor's.
+- **Human Review Status**: Pending review; T34 step 1 of the private test plan is the check.
+- **Git Hash**: [fill in after committing]

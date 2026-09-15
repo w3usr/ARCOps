@@ -102,3 +102,39 @@ def dashboard(request):
             "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },
     )
+
+
+def manifest(request):
+    """The web app manifest (FR-96), rendered from the club's configuration so an installed
+    copy and its notification prompts carry this installation's name, never the product's. A
+    member of two clubs running the software sees two names."""
+    from .config import branding
+
+    b = branding()
+    short = setting("club.short_name", "Club")
+    host = request.get_host()
+    icons = []
+    for key, sizes, mime in (
+        ("apple_touch_icon", "180x180", "image/png"),
+        ("logo", "any", None),
+    ):
+        path = b.get(key)
+        if path:
+            entry = {"src": f"{settings.STATIC_URL}{path}", "sizes": sizes}
+            if mime:
+                entry["type"] = mime
+            elif path.endswith(".svg"):
+                entry["type"] = "image/svg+xml"
+            icons.append(entry)
+    body = {
+        "name": f"{short} Operations ({host})",
+        "short_name": short[:12],
+        "description": f"{setting('club.name', short)}: events, rosters, and sign-ups",
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": b.get("accent") or "#1f3a5f",
+        "icons": icons,
+    }
+    return JsonResponse(body, content_type="application/manifest+json")

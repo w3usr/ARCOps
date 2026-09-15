@@ -6,10 +6,11 @@ from django.views.generic import RedirectView, TemplateView
 
 from apps.accounts import views_entry, views_members
 from apps.ops.api import api
-from apps.ops.views import healthz
+from apps.ops.views import healthz, manifest
 
 urlpatterns = [
     path("healthz", healthz, name="healthz"),
+    path("manifest.webmanifest", manifest, name="manifest"),
     # The admin signs in through allauth, so its second-factor rules apply there too.
     path(
         "admin/login/", RedirectView.as_view(url="/accounts/login/?next=/admin/", permanent=False)

@@ -44,3 +44,15 @@ def test_signin_page_renders_for_anonymous():
 def test_dashboard_requires_login():
     r = Client().get("/")
     assert r.status_code == 302 and "/accounts/login/" in r["Location"]
+
+
+def test_manifest_carries_the_installations_name_not_the_products():
+    ClubSetting.objects.update_or_create(key="club.short_name", defaults={"value": "Test ARC"})
+    ClubSetting.objects.update_or_create(
+        key="club.name", defaults={"value": "Test Amateur Radio Club"}
+    )
+    r = Client().get("/manifest.webmanifest", HTTP_HOST="testserver")
+    body = r.json()
+    assert r["Content-Type"].startswith("application/manifest+json")
+    assert body["name"] == "Test ARC Operations (testserver)" and body["short_name"] == "Test ARC"
+    assert "ARCOps" not in body["name"] and body["start_url"] == "/"

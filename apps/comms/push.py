@@ -47,7 +47,20 @@ def send_push(user, title: str, url: str = "/") -> int:
     except ImportError:  # pragma: no cover - dependency pinned
         log.warning("pywebpush not installed; push skipped")
         return 0
-    payload = json.dumps({"title": title[:120], "body": "", "url": url})
+    from apps.ops.config import branding, setting
+
+    short = str(setting("club.short_name", "") or "")
+    shown = f"{short}: {title}" if short and not title.startswith(short) else title
+    icon = branding().get("apple_touch_icon") or branding().get("logo")
+    payload = json.dumps(
+        {
+            "title": shown[:120],
+            "body": "",
+            "url": url,
+            "icon": f"{settings.STATIC_URL}{icon}" if icon else "",
+            "tag": f"{short}-{abs(hash(title)) % 100000}",
+        }
+    )
     claims = {"sub": f"mailto:{getattr(settings, 'VAPID_CLAIMS_EMAIL', '') or 'ops@example.org'}"}
     delivered = 0
     for sub in list(user.push_subscriptions.all()):

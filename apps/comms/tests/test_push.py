@@ -58,7 +58,7 @@ def test_delivery_pushes_subject_and_link_only_and_drops_gone_devices():
             compose(u, "warning", "Slot at risk", "<p>secret body</p>")
     assert wp.call_count == 2
     payload = json.loads(wp.call_args_list[0].kwargs["data"])
-    assert payload["title"] == "Slot at risk" and "secret" not in json.dumps(payload)
+    assert payload["title"].endswith("Slot at risk") and "secret" not in json.dumps(payload)
     assert payload["url"] == "https://ops.example/me/messages/"
     assert PushSubscription.objects.count() == 1  # the 410 device is gone
 
@@ -80,3 +80,16 @@ def test_push_respects_the_member_switch_and_per_category_preference():
     with mock.patch("pywebpush.webpush") as wp:  # no keys configured: nothing happens
         compose(u, "cancellation", "Cancelled", "<p>x</p>")
         assert wp.call_count == 0
+
+
+def test_push_title_names_the_club_so_two_installations_are_distinguishable():
+    from apps.ops.models import ClubSetting
+
+    ClubSetting.objects.update_or_create(key="club.short_name", defaults={"value": "Test ARC"})
+    u = _user()
+    PushSubscription.objects.create(user=u, endpoint="https://push.example/1", p256dh="P", auth="A")
+    with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
+        with mock.patch("pywebpush.webpush") as wp:
+            compose(u, "cancellation", "Slot cancelled", "<p>x</p>")
+    payload = json.loads(wp.call_args.kwargs["data"])
+    assert payload["title"] == "Test ARC: Slot cancelled"
