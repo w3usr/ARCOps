@@ -852,4 +852,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests against the requirement text and TR-10.
 - **Human Review Status**: Pending review; scenarios T39 to T41 of the private test plan are
   the check. 134 tests pass; ruff and the neutrality check clean.
-- **Git Hash**: [fill in after committing]
+- **Git Hash**: d6ba7f0
