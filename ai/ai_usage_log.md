@@ -853,3 +853,27 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenarios T39 to T41 of the private test plan are
   the check. 134 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: d6ba7f0
+
+## [2026-09-15 22:19 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Phase 5 of the implementation plan kept in the private repository
+  (announcements and contest fields): captains announce to an event's participants filtered by
+  day, role, slot status, confirmation state, or category, officers to every member, with the
+  recipient count before sending; every announcement recorded with its audience and resolved
+  recipients and listed for officers (FR-75); each copy carries Reply-To to the sender, the
+  captains, and the club address (FR-69), an unsubscribe footer, and the List-Unsubscribe and
+  List-Unsubscribe-Post headers with a one-click endpoint that turns off the announcement
+  category only (FR-81); "copy for my own mail client" records the announcement as sent outside
+  and shows the BCC list and body (FR-106); the WA7BNM contest field set entered by hand on
+  Manage, shown on the event page, with the exchange and logging lines added to every reminder
+  (FR-37). The calendar import itself stays out (D1).
+- **Sections/Files Affected**: apps/comms/announce.py (new), apps/comms/views_announce.py (new),
+  apps/comms/{models,services}.py, migration comms 0003; apps/events/contest_fields.py (new),
+  apps/events/{views,views_rules,views_manage,urls}.py, apps/events/services/notify.py;
+  apps/ops/urls.py; templates/comms/{announce,announce_outside,announcements,unsubscribe}.html
+  (new), templates/events/{manage,detail}.html, templates/base.html; tests
+  apps/comms/tests/test_announce.py (new).
+- **Nature of Contribution**: Code generation and tests against the requirement text.
+- **Human Review Status**: Pending review; scenario T42 of the private test plan is the check.
+  138 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [fill in after committing]

@@ -89,16 +89,26 @@ def deliver(msg: Outbox) -> Outbox:
         msg.save(update_fields=["state"])
         return msg
     from_addr = f"{setting('club.sending_display_name', 'Club Operations')} <{setting('club.sending_address', 'ops@example.org')}>"
-    reply_to = [setting("club.contact_email", "")] if setting("club.contact_email", "") else None
+    reply_to = msg.reply_to or (
+        [setting("club.contact_email", "")] if setting("club.contact_email", "") else None
+    )
     try:
         email = EmailMultiAlternatives(
             msg.subject, msg.body_text, from_addr, msg.to_addresses, reply_to=reply_to
         )
         email.attach_alternative(msg.body_html, "text/html")
-        if msg.category == "announcement":
-            email.extra_headers["List-Unsubscribe"] = (
-                f"<mailto:{setting('club.contact_email', '')}?subject=unsubscribe>"
+        if msg.category == "announcement" and msg.user is not None:
+            # FR-81: list mail carries a working unsubscribe, by link and by one-click POST
+            from django.urls import reverse
+
+            from .announce import unsubscribe_token
+
+            one_click = f"{getattr(dj, 'SITE_URL', '')}{reverse('unsubscribe', args=[unsubscribe_token(msg.user)])}"
+            club = setting("club.contact_email", "")
+            email.extra_headers["List-Unsubscribe"] = f"<{one_click}>" + (
+                f", <mailto:{club}?subject=unsubscribe>" if club else ""
             )
+            email.extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
         email.send()
         msg.state, msg.sent_at = Outbox.State.SENT, timezone.now()
     except Exception as exc:  # noqa: BLE001

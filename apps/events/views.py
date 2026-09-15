@@ -62,6 +62,9 @@ def event_detail(request, pk):
             "health": health(event) if roster["is_captain"] else None,
             "is_captain": roster["is_captain"],
             "roles": roster["roles"],
+            "contest": __import__("apps.events.contest_fields", fromlist=["present"]).present(
+                event.contest_fields or {}
+            ),
         },
     )
 

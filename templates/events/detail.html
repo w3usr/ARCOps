@@ -29,6 +29,7 @@
 {% endif %}
 
 {% if event.description_html %}<div class="prose">{{ event.description_html|richtext }}</div>{% endif %}
+{% if contest %}<details class="card"><summary>Contest details</summary><dl class="dl">{% for label, value, kind in contest %}<dt>{{ label }}</dt><dd>{% if kind == 'url' %}<a href="{{ value }}">{{ value }}</a>{% elif kind == 'email' %}<a href="mailto:{{ value }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</dd>{% endfor %}</dl></details>{% endif %}
 
 {% if is_captain %}
 <section class="card health" aria-labelledby="h">

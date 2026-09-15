@@ -137,6 +137,23 @@ def send_reminders(now: datetime | None = None) -> dict:
     return {"sent": sent}
 
 
+def _contest_kbyg(event: Event) -> str:
+    """FR-37: the exchange and logging lines from the contest fields, for the reminder."""
+    f = event.contest_fields or {}
+    bits = []
+    if f.get("exchange"):
+        bits.append(f"<p><strong>Exchange:</strong> {f['exchange']}</p>")
+    if f.get("mode") or f.get("bands"):
+        bits.append(
+            f"<p><strong>Mode and bands:</strong> {f.get('mode', '')} {f.get('bands', '')}</p>"
+        )
+    if f.get("cabrillo_name") or f.get("log_deadline"):
+        bits.append(
+            f"<p><strong>Logging:</strong> Cabrillo {f.get('cabrillo_name', '')}; deadline {f.get('log_deadline', '')}</p>"
+        )
+    return "".join(bits)
+
+
 def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     now = now or timezone.now()
     slot, event, user = su.slot, su.slot.event, su.user
@@ -158,7 +175,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
         "others": ", ".join(s.user.short_name_lettered for s in signups),
         "confirm_link": site() + reverse("confirm_by_token", args=[confirm_token(su)]),
         "cannot_link": site() + reverse("cannot_by_token", args=[confirm_token(su)]),
-        "kbyg": kbyg,
+        "kbyg": kbyg + _contest_kbyg(event),
         "captains": [contact_line(c) for c in caps],
         "advisors": [contact_line(a) for a in advisors() if a not in caps],
     }

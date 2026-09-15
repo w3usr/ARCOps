@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load richtext %}
+{% block title %}Announcements · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<div class="titlerow"><h1>Announcements</h1><a class="button" href="{% url 'announce_all' %}">Announce to every member</a></div>
+<p class="lede">Every announcement sent from the system or recorded as sent outside it, with who sent it, to whom, and the text (FR-75). To announce to an event's participants, use <strong>Announce</strong> on that event's Manage page.</p>
+{% for a in announcements %}
+<details class="card">
+  <summary><strong>{{ a.subject }}</strong> <small class="muted">· {{ a.created|date:"j M Y H:i" }} UTC · {{ a.sender.short_name|default:"?" }} · {% if a.event %}{{ a.event.title }}{% else %}all members{% endif %} · {{ a.recipient_count }} recipient{{ a.recipient_count|pluralize }}{% if a.sent_outside %} · sent outside the system{% endif %}</small></summary>
+  <p class="muted"><small>Audience: {% for k, v in a.audience.items %}{{ k }}={{ v }}{% if not forloop.last %}, {% endif %}{% empty %}everyone{% endfor %}. Recipients: {% for r in a.recipients %}{{ r.1 }}{% if not forloop.last %}, {% endif %}{% endfor %}</small></p>
+  <div class="prose">{{ a.body_html|richtext }}</div>
+</details>
+{% empty %}<p>None yet.</p>{% endfor %}
+{% endblock %}

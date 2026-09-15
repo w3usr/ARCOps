@@ -242,6 +242,9 @@ def event_manage(request, pk):
             "slot_count": slot_count,
             "signups_exist": has_signups(event),
             "limits": limit_report(event),
+            "contest_fields": __import__(
+                "apps.events.contest_fields", fromlist=["CONTEST_FIELDS"]
+            ).CONTEST_FIELDS,
             **rules_context(event),
         },
     )

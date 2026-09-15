@@ -223,3 +223,23 @@ def rules_context(event) -> dict:
         "openings": event.openings.order_by("opens_at"),
         "limit_form": LimitForm(instance=getattr(event, "limit", None)),
     }
+
+
+@login_required
+@require_POST
+def contest_save(request, pk):
+    """FR-37: the WA7BNM field set, entered by hand until the calendar import is authorised."""
+    from .contest_fields import KEYS
+
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    data = {k: request.POST.get(k, "").strip()[:500] for k in KEYS}
+    event.contest_fields = {k: v for k, v in data.items() if v}
+    if request.POST.get("calendar_ref", "").strip().isdigit():
+        event.calendar_ref = int(request.POST["calendar_ref"])
+    event.save(update_fields=["contest_fields", "calendar_ref"])
+    record(
+        request.user, "event.contest_fields", event, after={"fields": sorted(event.contest_fields)}
+    )
+    messages.success(request, "Contest details saved.")
+    return redirect("event_manage", pk=pk)

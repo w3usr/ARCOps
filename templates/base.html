@@ -50,6 +50,7 @@
       <li class="navsep" aria-hidden="true"></li>
       <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' 'entry_links' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
+      <li><a href="{% url 'announcements' %}"{% nav_active 'announcements' 'announce_all' %}>{% icon 'mail' %}<span>Announcements</span></a></li>
       <li><a href="{% url 'outbox' %}"{% nav_active 'outbox' %}>{% icon 'inbox' %}<span>Outbox</span></a></li>
       {% endif %}
       {% if user.is_sysadmin %}

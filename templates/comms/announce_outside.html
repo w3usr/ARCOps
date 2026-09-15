@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load richtext %}
+{% block title %}Send from your own mail client · {{ club.short_name }}{% endblock %}
+{% block content %}
+<h1>Send from your own mail client</h1>
+<p>Recorded as sent outside the system (FR-106): {{ ann.recipient_count }} recipient{{ ann.recipient_count|pluralize }}. Paste the addresses into your <strong>BCC</strong> field, so no one sees the others.</p>
+<section class="card"><h2>Recipients ({{ ann.recipient_count }})</h2>
+<p class="copyrow"><code id="addr">{{ addresses }}</code> <button type="button" class="secondary" data-copy="#addr">Copy addresses</button></p></section>
+<section class="card"><h2>Subject</h2><p class="copyrow"><code id="subj">{{ ann.subject }}</code> <button type="button" class="secondary" data-copy="#subj">Copy</button></p></section>
+<section class="card"><h2>Body</h2><div class="prose" id="body">{{ ann.body_html|richtext }}</div><p><button type="button" class="secondary" data-copy="#body">Copy body</button></p></section>
+<p><a class="button" href="{% if event %}{% url 'event_detail' event.pk %}{% else %}{% url 'announcements' %}{% endif %}">Done</a></p>
+{% endblock %}

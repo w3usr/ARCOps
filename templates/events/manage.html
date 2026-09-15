@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load dicts %}
 {% block title %}Manage · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
@@ -77,6 +78,23 @@
     <div><button type="submit">{% if slot_count %}Regenerate{% else %}Generate{% endif %} slots</button></div>
   </form>
   {% endif %}
+</section>
+
+<section class="card" aria-labelledby="con">
+  <h2 id="con">Contest details</h2>
+  <p class="helptext">The fields the WA7BNM Contest Calendar publishes (FR-37), entered by hand until the calendar import is authorised. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
+  <form method="post" action="{% url 'contest_save' event.pk %}" class="stack">{% csrf_token %}
+    <div class="row">
+      <div class="field"><label for="cf-ref">Calendar reference number</label><input id="cf-ref" name="calendar_ref" inputmode="numeric" value="{{ event.calendar_ref|default_if_none:'' }}"></div>
+      {% for key, label, kind in contest_fields %}<div class="field"><label for="cf-{{ key }}">{{ label }}</label><input id="cf-{{ key }}" name="{{ key }}" type="{% if kind == 'url' %}url{% elif kind == 'email' %}email{% else %}text{% endif %}" maxlength="500" value="{{ event.contest_fields|dictkey:key|default:'' }}"></div>{% endfor %}
+    </div>
+    <div><button type="submit" class="secondary">Save contest details</button></div>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="ann">
+  <h2 id="ann">Announce</h2>
+  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation (FR-75).</span></p>
 </section>
 
 <section class="card" aria-labelledby="lim">

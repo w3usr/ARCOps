@@ -33,6 +33,10 @@ class Outbox(models.Model):
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="messages"
     )
     to_addresses = models.JSONField(default=list)
+    reply_to = models.JSONField(default=list, blank=True)  # FR-69: announcements reply to people
+    announcement = models.ForeignKey(
+        "Announcement", null=True, blank=True, on_delete=models.SET_NULL, related_name="messages"
+    )
     channel = models.CharField(max_length=10, default="email")
     category = models.CharField(
         max_length=40
@@ -62,9 +66,18 @@ class Announcement(models.Model):
         on_delete=models.SET_NULL,
         related_name="announcements",
     )
-    audience = models.JSONField(default=dict)
+    audience = models.JSONField(default=dict)  # the filters as chosen (FR-75)
+    recipients = models.JSONField(
+        default=list, blank=True
+    )  # resolved: [[user id, short name], ...]
     recipient_count = models.PositiveIntegerField(default=0)
     subject = models.CharField(max_length=200)
     body_html = models.TextField()
     sent_outside = models.BooleanField(default=False)  # FR-106
     created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self) -> str:
+        return f"{self.subject} ({self.recipient_count})"

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Unsubscribe · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% if state == 'invalid' %}<h1>This link is no longer valid</h1><p>Nothing has changed. Sign in and use Notifications on your profile to change what reaches you by email.</p>
+{% elif state == 'done' %}<h1>Unsubscribed</h1><p>{{ person.display_first }}, announcements no longer reach you by email. Notices about your own slots and your account still do, and every message stays under Messages when you sign in. Turn announcements back on any time under Notifications on your profile.</p>
+{% else %}<h1>Stop announcement emails?</h1><p>{{ person.display_first }}, this turns off announcement emails only. Notices about your own slots and your account are unaffected.</p>
+<form method="post" action="{% url 'unsubscribe' token %}"><button type="submit">Unsubscribe</button> <a class="button secondary" href="/">Keep them</a></form>{% endif %}
+{% endblock %}
