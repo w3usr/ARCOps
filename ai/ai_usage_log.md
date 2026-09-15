@@ -649,3 +649,14 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test. The finding is the advisor's.
 - **Human Review Status**: Pending review; the advisor verifies on the live site.
 - **Git Hash**: c052d39
+
+## [2026-09-15 15:41 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Requirement text for entry links and the Provisional access level, from the
+  advisor's two use cases and the decisions he made in discussion on 2026-09-15: FR-1 rewritten;
+  FR-119 to FR-124 added; §2.1, §2.7, FR-5, FR-36, FR-53, FR-61, FR-62, FR-67 amended; change log.
+  No code.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md.
+- **Nature of Contribution**: Draft, with the advisor's words quoted at each decision.
+- **Human Review Status**: Pending review; the advisor asked for the text before the code.
+- **Git Hash**: [pending]
