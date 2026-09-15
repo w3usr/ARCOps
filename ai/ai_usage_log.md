@@ -805,4 +805,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; scenario T38 of the private test plan is the check,
   and the first full import on the server is the memory measurement NAF asked for (D6). 125 tests
   pass; ruff and the neutrality check clean.
-- **Git Hash**: [fill in after committing]
+- **Git Hash**: a227acb
