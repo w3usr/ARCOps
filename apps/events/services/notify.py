@@ -35,7 +35,7 @@ def captains_of(event: Event) -> list[User]:
 
 
 def advisors() -> list[User]:
-    """Members in an approver position (§2.3): the faculty advisors, at W3USR."""
+    """Members in an approver position (§2.3): the faculty advisors, in the shipped configuration."""
     keys = {p["key"] for p in (setting("club_positions", []) or []) if p.get("approver")}
     if not keys:
         return []
