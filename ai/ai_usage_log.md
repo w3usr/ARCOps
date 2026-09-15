@@ -705,4 +705,4 @@ carries the actual running model ID.
   apps/accounts/tests/test_members.py (helper `mk` as a def).
 - **Nature of Contribution**: Edit (mechanical formatting; one three-line rewrite).
 - **Human Review Status**: Reviewed by the tools: ruff check and format clean, 83 tests pass.
-- **Git Hash**: [fill in after committing]
+- **Git Hash**: 7bd2c07
