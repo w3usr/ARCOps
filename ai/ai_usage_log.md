@@ -980,4 +980,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T49 of the private test plan is the check, and the
   screen-reader walk (T49 step 2) is a person's to do. Locally: 7 accessibility tests pass in
   3 min 49 s; 157 unit tests pass; ruff and the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: bec7bf3
