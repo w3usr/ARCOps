@@ -149,7 +149,7 @@ def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone
     c.post(f"/events/{e.pk}/slot/{slots[0].pk}/assign/", {"user": mem.pk, "role": "observer"})
     assert "signed up" in _msgs(mem, "moved").get().subject
     # slot cancel with a person: refused without confirmation, done with it
-    r = c.post(f"/events/slot/{slots[0].pk}/toggle/", {"what": "cancel"})
+    c.post(f"/events/slot/{slots[0].pk}/toggle/", {"what": "cancel"})
     assert Slot.objects.get(pk=slots[0].pk).cancelled is False
     c.post(
         f"/events/slot/{slots[0].pk}/toggle/",
