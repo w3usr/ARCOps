@@ -684,3 +684,14 @@ carries the actual running model ID.
   of two of his decisions, recorded in the private plan note.
 - **Human Review Status**: Pending review; scenarios T23 to T27 of the test plan are his check.
 - **Git Hash**: a26a26e
+
+## [2026-09-15 16:41 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: One label fix found by the requirements coverage audit run in the private
+  repository: the event page still printed "minimum class" for a field that became the
+  *preferred* class on 2026-09-15 (FR-36, FR-61), so a tester following the acceptance plan would
+  have seen the stale word and passed it.
+- **Sections/Files Affected**: templates/events/detail.html (one string).
+- **Nature of Contribution**: Edit.
+- **Human Review Status**: Pending review; T12 step 1 of the private test plan is the check.
+- **Git Hash**: [fill in after committing]
