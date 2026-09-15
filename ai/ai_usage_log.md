@@ -993,4 +993,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and a test.
 - **Human Review Status**: Pending review; T49 step 3 of the private test plan is the check.
   158 tests pass; ruff and the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: f5b8568
