@@ -757,4 +757,4 @@ carries the actual running model ID.
   template wording is a first draft the sysadmin edits on the Templates page.
 - **Human Review Status**: Pending review; scenarios T31 to T34 of the private test plan are
   the check. 112 tests pass; ruff clean.
-- **Git Hash**: [fill in after committing]
+- **Git Hash**: e5c36d6
