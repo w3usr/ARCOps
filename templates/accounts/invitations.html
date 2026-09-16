@@ -12,7 +12,7 @@
 {% endif %}
 <form method="post" class="card stack">{% csrf_token %}
   {{ form.non_field_errors }}
-  <div class="field">{{ form.email.label_tag }}{{ form.email }}{{ form.email.errors }}</div>
+  <div class="field">{{ form.email.label_tag }}{{ form.email }}<span class="helptext">{{ form.email.help_text }}</span>{{ form.email.errors }}</div>
   <div class="field">{{ form.category.label_tag }}{{ form.category }}{{ form.category.errors }}</div>
   <div class="check">{{ form.is_minor }}<label for="{{ form.is_minor.id_for_label }}">{{ form.is_minor.label }}</label></div>
   {# Shown only once "under 18" is ticked; the form enforces the rule server-side either way. #}

@@ -75,7 +75,7 @@
   </section>
   {% endif %}
   {% if wards %}<section class="card"><h2>Acts for</h2><ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul></section>{% endif %}
-  {% if not member.deleted_at %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member (read-only)</button></form>{% endif %}
+  {% if not member.deleted_at and not member.is_sysadmin %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member (read-only)</button></form>{% endif %}
   {% if member.deleted_at %}<p class="msg warning">This account was deleted on {{ member.deleted_at|date:"j M Y" }}; the row stays so past rosters keep their shape.</p>{% else %}
   <details class="card"><summary>Delete this account (FR-118)</summary>
     <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="delete">

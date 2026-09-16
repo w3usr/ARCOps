@@ -1040,3 +1040,21 @@ carries the actual running model ID.
 - **Nature of Contribution**: Test-harness fix.
 - **Human Review Status**: Pending review; CI on this commit is the check.
 - **Git Hash**: 9a17184
+
+## [2026-09-16 14:29 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Defects found by the 2026-09-16 reconciliation of the private test plan
+  against this code (four parallel read-only reviews of T1 to T49): the invite form dropped the
+  invitee-address help text; the entry-link card hard-coded "7 days" instead of the configured
+  verification window; no 429 page existed for allauth's rate limit; the slot generator ignored
+  defaults.slot_length_minutes; the view-as button appeared on another sysadmin's page though the
+  POST was refused; My Sked still offered "Cannot make it" on a locked roster; two settings the
+  code reads (waitlist_offer_hours, health_overview_weeks) were absent from the shipped
+  configuration.
+- **Sections/Files Affected**: templates/accounts/{invitations,entry_links,member_detail}.html,
+  templates/events/my_schedule.html, templates/429.html (new), apps/accounts/views_entry.py,
+  apps/events/views_manage.py, config/club.example.yaml.
+- **Nature of Contribution**: Code fixes from a review.
+- **Human Review Status**: Pending review; the corrected test plan (private, T3, T5, T21, T23,
+  T37, T43) is the check. 161 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [pending]

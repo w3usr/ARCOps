@@ -97,6 +97,7 @@ def entry_links(request):
             "created": created,
             "base": base,
             "created_link": f"{base}/join/{created.token}/" if created else "",
+            "verification_days": int(setting("defaults.entry_link_verification_days", 7)),
         },
     )
 

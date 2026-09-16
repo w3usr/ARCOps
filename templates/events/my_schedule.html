@@ -18,7 +18,7 @@
 <td><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a></td><td>{{ s.slot.position }}</td><td>{{ s.role }}</td>
 <td>{% if s.checked_in_at %}checked in{% elif s.confirmed_at %}confirmed{% else %}signed up{% endif %}</td>
 <td>{% if minor_readonly %}<span class="muted">via your guardian</span>{% else %}{% if not s.confirmed_at and not s.checked_in_at %}<form class="inline" method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm</button></form>{% endif %}
-<form class="inline" method="post" action="{% url 'cancel_signup' s.pk %}">{% csrf_token %}<button type="submit" class="secondary">Cannot make it</button></form>
+{% if s.slot.event.state == 'locked' %}<span class="muted">roster locked; ask a captain</span>{% else %}<form class="inline" method="post" action="{% url 'cancel_signup' s.pk %}">{% csrf_token %}<button type="submit" class="secondary">Cannot make it</button></form>{% endif %}
 {% if s.user.under_18 %}<a href="{% url 'signup_adults' s.pk %}">Responsible adults ({{ s.responsible_adults.count }})</a>{% endif %}{% endif %}</td>
 </tr>{% endfor %}</tbody></table>
 {% else %}<p>No upcoming slots. <a href="{% url 'event_list' %}">Find an event.</a></p>{% endif %}

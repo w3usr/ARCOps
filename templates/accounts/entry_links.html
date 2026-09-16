@@ -7,7 +7,7 @@
 {% if created %}
 <section class="card highlight" aria-labelledby="c"><h2 id="c">Link created: {{ created.label }}</h2>
 <div class="field"><label for="lnk">Send this</label><div class="copyrow"><input id="lnk" readonly value="{{ created_link }}"> <button type="button" class="secondary" data-copy="#lnk">Copy link</button></div></div>
-<p class="helptext">{% if created.kind == 'class' %}Only {{ created.required_domain }} addresses can use it; each person is a member as soon as they finish the form and has {{ 7 }} days to confirm their address.{% else %}Anyone can use it; each person is provisional until an officer admits them.{% endif %} Expires {{ created.expires_at|date:"d M Y" }}{% if created.cap %}; at most {{ created.cap }} accounts{% endif %}.</p>
+<p class="helptext">{% if created.kind == 'class' %}Only {{ created.required_domain }} addresses can use it; each person is a member as soon as they finish the form and has {{ verification_days }} days to confirm their address.{% else %}Anyone can use it; each person is provisional until an officer admits them.{% endif %} Expires {{ created.expires_at|date:"d M Y" }}{% if created.cap %}; at most {{ created.cap }} accounts{% endif %}.</p>
 </section>
 {% endif %}
 <form method="post" class="card stack">{% csrf_token %}

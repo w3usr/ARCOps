@@ -172,6 +172,7 @@ class GenerateForm(forms.Form):
     def __init__(self, *args, roles, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
+        self.fields["minutes"].initial = int(setting("defaults.slot_length_minutes", 60))  # FR-89
         for r in roles:
             self.fields[f"cap_{r['key']}"] = forms.IntegerField(
                 label=f"{r['label']} seats per slot",

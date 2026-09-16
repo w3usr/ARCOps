@@ -109,6 +109,8 @@ defaults:
   agreement_expiry_notice_days: 30            # FR-28
   email_delivery: "off"                       # FR-105; turn on when your mail path works
   entry_link_verification_days: 7              # FR-120; an officer can waive it per account or per link
+  waitlist_offer_hours: 12                     # FR-57; how long a waitlisted member has to take an offered place
+  health_overview_weeks: 6                     # FR-68; the Upcoming health page's horizon
   # FR-77: the headings a new event's Know-before-you-go starts with (editor HTML). Optional.
   # kbyg_outline_html: "<h2>Where and when</h2><p></p><h2>What to bring</h2><p></p>"
   # Retention (§4.3, TR-28), applied daily by retention:apply. Days.
