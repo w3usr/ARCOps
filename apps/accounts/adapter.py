@@ -54,10 +54,27 @@ class AccountAdapter(DefaultAccountAdapter):
         return subject
 
     def render_mail(self, template_prefix, email, context, headers=None):
+        """The club's names for the templates, a table-drawn button for the reset link, and the
+        site's one mail layout around the HTML part (apps.comms.layout), as every other message
+        gets in deliver()."""
+        from apps.comms.layout import button, wrap
+
         context = {
             **context,
             "club_name": setting("club.name", "the club"),
             "club_short": setting("club.short_name", "the club"),
             "club_contact": setting("club.contact_email", ""),
         }
-        return super().render_mail(template_prefix, email, context, headers)
+        if context.get("password_reset_url"):
+            context["reset_button"] = button(context["password_reset_url"], "Reset my password")
+        msg = super().render_mail(template_prefix, email, context, headers)
+        alts = getattr(msg, "alternatives", None) or []
+        for i, alt in enumerate(alts):
+            content, mimetype = (alt.content, alt.mimetype) if hasattr(alt, "content") else alt
+            if mimetype == "text/html":
+                alts[i] = (
+                    type(alt)(wrap(content), mimetype)
+                    if hasattr(alt, "content")
+                    else (wrap(content), mimetype)
+                )
+        return msg

@@ -1101,3 +1101,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T3, T19, T31, T42 of the private test plan show the
   mails. 162 tests pass.
 - **Git Hash**: e41fe2a
+
+## [2026-09-16 21:14 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: The advisor found the HTML reset mail ugly in Outlook, whose renderer
+  ignores the CSS that drew the button. One mail layout for everything the site sends
+  (apps/comms/layout.py): a table frame with a band in the club's accent colour naming the
+  club, the body at a readable measure, the club's name and contact beneath; a table-drawn
+  button for a message's one call to action; plain links coloured inline. deliver() wraps the
+  club's messages in it; the sign-in library's mail is wrapped by the adapter; the reset mail
+  uses the button. Tests for both paths.
+- **Sections/Files Affected**: apps/comms/layout.py (new), apps/comms/services.py (deliver),
+  apps/accounts/adapter.py (render_mail), templates/account/email/{base_message,
+  password_reset_key_message}.html, apps/comms/tests/test_messages.py,
+  apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Code generation and tests.
+- **Human Review Status**: Pending the advisor's look at the next mail in Outlook. 163 tests
+  pass; ruff and the neutrality check clean.
+- **Git Hash**: [pending]

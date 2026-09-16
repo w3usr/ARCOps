@@ -96,7 +96,9 @@ def deliver(msg: Outbox) -> Outbox:
         email = EmailMultiAlternatives(
             msg.subject, msg.body_text, from_addr, msg.to_addresses, reply_to=reply_to
         )
-        email.attach_alternative(msg.body_html, "text/html")
+        from .layout import wrap
+
+        email.attach_alternative(wrap(msg.body_html), "text/html")
         if msg.category == "announcement" and msg.user is not None:
             # FR-81: list mail carries a working unsubscribe, by link and by one-click POST
             from django.urls import reverse

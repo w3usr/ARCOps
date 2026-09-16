@@ -172,3 +172,29 @@ def test_invitation_message_goes_to_the_address_and_marks_emailed_at():
         o, "kid@example.org", "student", True, "parent@example.org", base_url="https://ops.example"
     )
     assert Outbox.objects.get(to_addresses=["parent@example.org"]) and minor.guardian_email
+
+
+def test_delivered_html_carries_the_site_layout_and_styled_links(settings):
+    """Every mail the site sends is framed alike (apps.comms.layout): a band with the club's
+    short name, the body, the club's name and contact; plain anchors take the accent colour."""
+    from django.core import mail
+
+    from apps.comms.services import compose, deliver
+    from apps.ops.config import set_setting
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    set_setting(None, "defaults.email_delivery", "on")
+    set_setting(None, "club.short_name", "EXAMPLE")
+    set_setting(None, "club.contact_email", "club@example.org")
+    msg = compose(
+        None,
+        "account",
+        "Hello",
+        '<p>See <a href="https://x.example/p/">the page</a>.</p>',
+        to=["m@example.org"],
+    )
+    deliver(msg)
+    html = [c for c, t in mail.outbox[-1].alternatives if t == "text/html"][0]
+    assert "EXAMPLE Operations</td>" in html and "club@example.org" in html
+    assert '<a style="color:#' in html and 'href="https://x.example/p/"' in html
+    assert "See" in mail.outbox[-1].body  # the text part is the bare body
