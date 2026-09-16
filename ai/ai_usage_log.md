@@ -1074,3 +1074,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T21 step 5 of the private test plan is the check.
   162 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: 35550b6
+
+## [2026-09-16 20:45 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: On the advisor's request, allauth's password-reset mail now has an HTML
+  part with the link on readable text ("Reset my password"), so a mail scanner that rewrites URLs
+  (Microsoft Safe Links) changes only the target and the words a person reads stay clean; the
+  plain-text part remains as the alternative. Test extended.
+- **Sections/Files Affected**: templates/account/email/{base_message,password_reset_key_message}.html
+  (new), apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Templates and a test.
+- **Human Review Status**: Pending review; T21 step 5 is the check. 162 tests pass.
+- **Git Hash**: [pending]
