@@ -1028,3 +1028,15 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit.
 - **Human Review Status**: Pending review (the wording is the advisor's to confirm).
 - **Git Hash**: 1bc9dcf
+
+## [2026-09-16 13:43 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: CI's accessibility job failed on f4a0f5e with two slot pages answering
+  500: an IndexError deep in Django's session lookup, from SQLite's shared in-memory test
+  database misreading rows under the live server's concurrent requests. The check's database
+  now lives in a temporary file with a 60 s lock timeout. Locally the full check passes again
+  (7 tests, 3 min 54 s); the application is unchanged.
+- **Sections/Files Affected**: tools/a11y/conftest.py.
+- **Nature of Contribution**: Test-harness fix.
+- **Human Review Status**: Pending review; CI on this commit is the check.
+- **Git Hash**: [pending]

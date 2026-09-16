@@ -14,10 +14,18 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.test")
 
 
 def pytest_configure():
+    import tempfile
+
     from django.conf import settings
 
     settings.WHITENOISE_USE_FINDERS = True
     settings.WHITENOISE_AUTOREFRESH = True
+    # The live server answers a browser's parallel requests from several threads. SQLite's shared
+    # in-memory test database misreads rows under that concurrency (seen on CI as an IndexError
+    # deep in the session lookup); a file on disk does not.
+    db = settings.DATABASES["default"]
+    db.setdefault("TEST", {})["NAME"] = str(Path(tempfile.mkdtemp(prefix="a11y-")) / "test.sqlite3")
+    db.setdefault("OPTIONS", {})["timeout"] = 60
 
 
 @pytest.fixture(autouse=True)
