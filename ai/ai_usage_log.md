@@ -1013,4 +1013,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T43 step 1 of the private test plan is the check.
   161 tests pass; the accessibility check passes for the sysadmin and officer pages; ruff and
   the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 1ef7ce4
