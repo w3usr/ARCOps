@@ -1057,4 +1057,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code fixes from a review.
 - **Human Review Status**: Pending review; the corrected test plan (private, T3, T5, T21, T23,
   T37, T43) is the check. 161 tests pass; ruff and the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: c3ab667
