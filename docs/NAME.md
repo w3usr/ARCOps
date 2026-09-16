@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Product** | **ARCOps**, for *Amateur Radio Club operations* |
+| **Product** | **ARCOps**, for *Amateur Radio Club Operations*. Spelled out in full wherever the name is first met (README, this file, the footer, the repository description): the advisor's standing rule for acronyms (2026-09-16) |
 | **Repository** | `github.com/w3usr/arcops` (renamed from `ops.w3usr.org` the same day; GitHub redirects the old name) |
 | **Attribution** | Every installation's footer reads *Powered by ARCOps, free software from W3USR*, linking to the repository. This is the software's credit, shown on other clubs' installations too; it is set in `apps/ops/branding.py`, the one file in the code allowed to name W3USR. |
 | **Feature name** | **Sked**: the schedule and roster inside the application. "Sked" is amateur-radio slang for a scheduled contact, so members read it at once. It is a feature name only, never a hostname. |

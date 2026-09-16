@@ -1,6 +1,6 @@
-# ARCOps
+# ARCOps: Amateur Radio Club Operations
 
-**Operations software for amateur radio clubs**: scheduling members into operating slots with a
+**ARCOps** (Amateur Radio Club Operations) is **operations software for amateur radio clubs**: scheduling members into operating slots with a
 roster that knows who may legally and physically run the station, access agreements with approval
 and expiry, the shared station-computer password, FCC license sync, and the reports a club owes
 its institution. Free software (GPL-3.0-or-later) from **W3USR**, the amateur radio club of the

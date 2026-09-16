@@ -1,4 +1,4 @@
-# ARCOps (repository `w3usr/arcops`)
+# ARCOps, Amateur Radio Club Operations (repository `w3usr/arcops`)
 
 A project of the **University of Scranton Amateur Radio Club (W3USR)**.
 
@@ -6,7 +6,7 @@ New to this club's repositories? Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md)
 
 ## Project Overview
 
-**ARCOps** is operations software for amateur radio clubs (see `docs/NAME.md`). W3USR's
+**ARCOps** (Amateur Radio Club Operations) is operations software for amateur radio clubs (see `docs/NAME.md`). The name is spelled out wherever it is first met: the advisor's rule for every acronym. W3USR's
 installation is served at `ops.w3usr.org`. The club runs contests and operating events and currently coordinates them by hand; this
 application is intended to carry that work. **Functional requirements are drafted and awaiting
 adoption**: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) holds numbered requirements (FR-1

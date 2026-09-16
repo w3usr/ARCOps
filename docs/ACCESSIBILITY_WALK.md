@@ -7,6 +7,13 @@ page makes sense read aloud, whether the important action comes first, whether a
 a table. If a club member who uses a screen reader is willing, their walk counts for more than
 anyone else's (FR-117).
 
+> **Timing (the advisor, 2026-09-16):** "As much as I want screen reader accessibility, testing
+> that is going to be a phase 2 or 3 thing. I wanted it built in place so it was thought about
+> from the beginning, but I don't have time to test it before our first contest, and our people
+> who are sight-impaired are not ready to use this site yet." The automated check runs on every
+> push regardless; this walk is scheduled for the club's second or third phase, before members
+> who use a screen reader are asked to rely on the site.
+
 ## How
 
 - Screen reader: NVDA (Windows, free) or VoiceOver (macOS, iOS). Note which, and the browser.

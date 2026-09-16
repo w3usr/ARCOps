@@ -1014,3 +1014,17 @@ carries the actual running model ID.
   161 tests pass; the accessibility check passes for the sysadmin and officer pages; ruff and
   the neutrality check clean.
 - **Git Hash**: 1ef7ce4
+
+## [2026-09-16 13:34 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Two of the advisor's instructions of 2026-09-16. (1) "I want ARCOps to
+  be clearly defined upfront as 'Amateur Radio Club Operations'": the README title and first
+  sentence, CLAUDE.md, docs/NAME.md, the footer's "Powered by" line, and the repository
+  description now spell the name out where it is first met. (2) The screen-reader walk is
+  deferred to the club's second or third phase, in his words, recorded at the top of
+  docs/ACCESSIBILITY_WALK.md; the automated check is unchanged.
+- **Sections/Files Affected**: README.md, CLAUDE.md, docs/NAME.md, docs/ACCESSIBILITY_WALK.md,
+  apps/ops/branding.py (PRODUCT_LONG_NAME), templates/base.html.
+- **Nature of Contribution**: Edit.
+- **Human Review Status**: Pending review (the wording is the advisor's to confirm).
+- **Git Hash**: [pending]

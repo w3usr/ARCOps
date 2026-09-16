@@ -9,6 +9,7 @@ from here. tools/check_club_neutral.sh excludes this file for that reason.
 """
 
 PRODUCT_NAME = "ARCOps"
+PRODUCT_LONG_NAME = "Amateur Radio Club Operations"  # spelled out where the name is first met
 PRODUCT_TAGLINE = "operations software for amateur radio clubs"
 PRODUCT_URL = "https://github.com/w3usr/arcops"
 PRODUCT_CREDIT = "free software from W3USR"
@@ -19,6 +20,7 @@ def product_context() -> dict:
     return {
         "product": {
             "name": PRODUCT_NAME,
+            "long_name": PRODUCT_LONG_NAME,
             "tagline": PRODUCT_TAGLINE,
             "url": PRODUCT_URL,
             "credit": PRODUCT_CREDIT,
