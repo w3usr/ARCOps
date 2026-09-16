@@ -1039,4 +1039,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: tools/a11y/conftest.py.
 - **Nature of Contribution**: Test-harness fix.
 - **Human Review Status**: Pending review; CI on this commit is the check.
-- **Git Hash**: [pending]
+- **Git Hash**: 9a17184
