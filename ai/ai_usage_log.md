@@ -1119,3 +1119,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look at the next mail in Outlook. 163 tests
   pass; ruff and the neutrality check clean.
 - **Git Hash**: 828563a
+
+## [2026-09-16 21:27 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Two things from the advisor's reset walk-through: the "password changed"
+  page had no way back to sign-in (it now says so and offers a Sign in button), and Outlook
+  recoloured the mail button's text with its own link colour (an inner span and font tag now
+  hold the white). Tests for both.
+- **Sections/Files Affected**: templates/account/password_reset_from_key_done.html (new),
+  apps/comms/layout.py (button), static/css/app.css (.button.wide),
+  apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Code fix and tests.
+- **Human Review Status**: Pending the advisor's next look. 164 tests pass.
+- **Git Hash**: [pending]

@@ -206,7 +206,7 @@ button:hover, .button:hover { filter: brightness(1.08); }
 button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 button.secondary:hover { background: var(--accent-soft); filter: none; }
 button.big { font-size: 1.5rem; padding: 1rem 2rem; width: 100%; }
-button.wide { width: 100%; }
+button.wide, .button.wide { width: 100%; display: block; text-align: center; box-sizing: border-box; }
 .linklike { color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .linklike:hover { text-decoration: underline; }
 input, select, textarea {

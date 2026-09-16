@@ -237,5 +237,14 @@ def test_password_reset_mail_comes_from_the_club_with_its_own_subject(settings):
     # HTML part: the link on readable text (a mail scanner rewrites only the href), drawn as a
     # table button inside the site's one mail layout, which Outlook renders faithfully
     html = [c for c, t in m.alternatives if t == "text/html"][0]
-    assert ">Reset my password</a>" in html and "/accounts/password/reset/key/" in html
+    assert "Reset my password</span></font></a>" in html and "/accounts/password/reset/key/" in html
     assert "EXAMPLE Operations</td>" in html and 'bgcolor="#' in html and "<table" in html
+
+
+def test_password_changed_page_offers_sign_in(client):
+    r = client.get("/accounts/password/reset/key/done/")
+    assert (
+        r.status_code == 200
+        and b"Password changed" in r.content
+        and b'href="/accounts/login/"' in r.content
+    )

@@ -52,7 +52,10 @@ def button(href: str, label: str) -> str:
     return (
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">'
         f'<tr><td bgcolor="{accent}" style="background:{accent};padding:11px 20px;">'
-        f'<a href="{escape(href, quote=True)}" style="{FONT}font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;display:inline-block;">{escape(label)}</a>'
+        # Outlook recolours the anchor with its own link colour; the inner span (and the old
+        # font tag) carry the white the button needs.
+        f'<a href="{escape(href, quote=True)}" style="{FONT}font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;display:inline-block;">'
+        f'<font color="#ffffff"><span style="color:#ffffff;text-decoration:none;">{escape(label)}</span></font></a>'
         "</td></tr></table>"
     )
 
