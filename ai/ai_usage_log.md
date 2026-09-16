@@ -1132,3 +1132,20 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code fix and tests.
 - **Human Review Status**: Pending the advisor's next look. 164 tests pass.
 - **Git Hash**: ae28158
+
+## [2026-09-16 21:40 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Two of the advisor's findings on the reset flow (FR-107). An unknown
+  address received the library's "Unknown Account" mail, pointing at a signup page this site
+  does not have: strangers now get no mail at all, and the page after the form reads the same
+  for everyone, in his words: "If we have an account with that address on file, a message with
+  a reset link is on its way." A personal address on file did not work for a reset because the
+  library matched only the sign-in address: a reset may now be asked for with the sign-in,
+  institution, or personal address, and the mail goes to the address typed; a minor's generated
+  sign-in-only address is excluded.
+- **Sections/Files Affected**: apps/accounts/forms.py (new ResetPasswordForm), config/settings/
+  base.py (ACCOUNT_FORMS), templates/account/password_reset_done.html (new),
+  apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Code fix and a test.
+- **Human Review Status**: Pending the advisor's retry with his personal address. 165 tests pass.
+- **Git Hash**: [pending]

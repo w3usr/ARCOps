@@ -160,6 +160,9 @@ ACCOUNT_EMAIL_VERIFICATION = "none"  # nothing may depend on email delivery (FR-
 ACCOUNT_SESSION_REMEMBER = None  # the user chooses (TR-17)
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_PREVENT_ENUMERATION = True  # FR-107
+ACCOUNT_FORMS = {
+    "reset_password": "apps.accounts.forms.ResetPasswordForm"
+}  # any address on file; no mail to unknown ones
 ACCOUNT_RATE_LIMITS = {"login_failed": "5/5m/ip,10/5m/key", "reset_password": "5/5m/ip"}
 MFA_SUPPORTED_TYPES = ["totp", "recovery_codes", "webauthn"]
 MFA_PASSKEY_LOGIN_ENABLED = True

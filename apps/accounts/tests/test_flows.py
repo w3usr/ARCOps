@@ -248,3 +248,32 @@ def test_password_changed_page_offers_sign_in(client):
         and b"Password changed" in r.content
         and b'href="/accounts/login/"' in r.content
     )
+
+
+def test_password_reset_works_with_any_address_on_file_and_says_nothing_to_strangers(settings):
+    """FR-107 as the advisor wants it: the personal address resets the account whose sign-in
+    address is the institution one; an unknown address gets no mail at all, and the page reads
+    the same either way."""
+    from django.core import mail
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    u = User.objects.create_user(
+        "who@example.edu",
+        "pw-Testing-123",
+        first_name="W",
+        last_name="H",
+        institution_email="who@example.edu",
+        personal_email="who.home@example.org",
+    )
+    u.access_level = AccessLevel.MEMBER
+    u.save()
+    c = Client()
+    r = c.post("/accounts/password/reset/", {"email": "Who.Home@example.org"}, follow=True)
+    assert (
+        b"Check your email" in r.content and b"If we have an account with that address" in r.content
+    )
+    assert len(mail.outbox) == 1 and mail.outbox[0].to == ["who.home@example.org"]
+    assert "/accounts/password/reset/key/" in mail.outbox[0].body
+    r = c.post("/accounts/password/reset/", {"email": "nobody@example.org"}, follow=True)
+    assert b"Check your email" in r.content
+    assert len(mail.outbox) == 1  # nothing sent to a stranger
