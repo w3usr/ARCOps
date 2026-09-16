@@ -1086,3 +1086,18 @@ carries the actual running model ID.
 - **Nature of Contribution**: Templates and a test.
 - **Human Review Status**: Pending review; T21 step 5 is the check. 162 tests pass.
 - **Git Hash**: b33dde0
+
+## [2026-09-16 20:56 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: The advisor asked whether other mail needed the same treatment as the
+  reset mail. Every one of the club's own message templates carried its URL as the link's own
+  text (or bare), so a mail scanner that rewrites URLs replaced the words a person reads. The 23
+  templates with a URL now put it behind a short labelled link ("Accept the invitation", "Open
+  the slot", "Take it", "View the password", …); the reminder's two links already had labels.
+  The plain-text alternative still carries the URL. club_import refreshes unedited template
+  rows on deploy.
+- **Sections/Files Affected**: apps/comms/defaults.py (23 templates).
+- **Nature of Contribution**: Edit.
+- **Human Review Status**: Pending review; T3, T19, T31, T42 of the private test plan show the
+  mails. 162 tests pass.
+- **Git Hash**: [pending]
