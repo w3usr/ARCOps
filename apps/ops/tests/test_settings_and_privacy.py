@@ -61,3 +61,62 @@ def test_new_event_form_starts_with_kbyg_outline():
     assert r.status_code == 200
     assert b"Where and when" in r.content and b"Who to contact" in r.content
     assert b"tinymce.min.js" in r.content
+
+
+def test_time_zone_is_a_drop_down_and_bad_values_are_refused():
+    c, _ = _as(AccessLevel.SYSADMIN)
+    set_setting(None, "club.timezone", "America/New_York")
+    r = c.get("/ops/settings/")
+    body = r.content.decode()
+    assert (
+        '<select id="s-1-8" name="club.timezone">' in body
+        and 'value="America/New_York" selected' in body
+    )
+    c.post("/ops/settings/", {"club.timezone": "America/New_YorDk"})
+    assert setting("club.timezone") == "America/New_York"
+    c.post("/ops/settings/", {"club.timezone": "America/Chicago"})
+    assert setting("club.timezone") == "America/Chicago"
+
+
+def test_accent_uses_the_colour_picker_and_images_upload(settings, tmp_path):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    settings.MEDIA_ROOT = tmp_path
+    c, _ = _as(AccessLevel.SYSADMIN)
+    body = c.get("/ops/settings/").content.decode()
+    assert (
+        'name="branding.accent" type="color"' in body and 'name="branding.logo" type="file"' in body
+    )
+    c.post("/ops/settings/", {"branding.accent": "purple"})
+    assert setting("branding.accent") != "purple"
+    c.post("/ops/settings/", {"branding.accent": "#401068"})
+    assert setting("branding.accent") == "#401068"
+    png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+    r = c.post(
+        "/ops/settings/",
+        {"branding.logo": SimpleUploadedFile("anything.png", png, content_type="image/png")},
+    )
+    assert r.status_code == 302 and setting("branding.logo") == "media/branding/logo.png"
+    assert (tmp_path / "branding" / "logo.png").read_bytes() == png
+    r = c.get("/branding/logo.png")
+    assert (
+        r.status_code == 200
+        and r["Content-Type"] == "image/png"
+        and "max-age" in r["Cache-Control"]
+    )
+    assert c.get("/branding/../settings.py").status_code == 404
+    page = c.get("/").content.decode()
+    assert "/branding/logo.png?v=" in page  # the shell shows the uploaded logo
+    r = c.post(
+        "/ops/settings/",
+        {"branding.logo": SimpleUploadedFile("x.txt", b"hi", content_type="text/plain")},
+    )
+    assert setting("branding.logo") == "media/branding/logo.png"  # refused, unchanged
+    c.post("/ops/settings/", {"branding.logo__clear": "on"})
+    assert setting("branding.logo") is None
+
+
+def test_event_form_offers_the_display_zone_as_a_drop_down():
+    c, _ = _as(AccessLevel.OFFICER)
+    body = c.get("/events/new/").content.decode()
+    assert '<select name="display_timezone"' in body and 'value="America/New_York"' in body

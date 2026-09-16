@@ -994,3 +994,23 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T49 step 3 of the private test plan is the check.
   158 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: f5b8568
+
+## [2026-09-16 13:33 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: Two interface rules from the advisor's review of the Settings page
+  (2026-09-16): time zone fields are always a drop-down (he had typed a zone name with a typo;
+  a saved typo would put every roster on UTC), and resource paths need a file picker. Built:
+  club.timezone and the event's display zone as selects over the IANA list with server-side
+  validation; the accent colour as a colour picker; each branding image with a preview, a file
+  chooser (PNG/JPEG/SVG/WebP/ICO, 2 MB), and a remove tick, stored under MEDIA_ROOT/branding/
+  and served by a small view; branding settings now resolve to URLs for both the overlay's
+  static files and uploads, used by the shell, the sign-in layout, and the web manifest.
+- **Sections/Files Affected**: apps/ops/{config,views,views_settings}.py, config/urls.py,
+  apps/events/views_manage.py (display_timezone field), templates/ops/settings.html,
+  templates/base.html, templates/allauth/layouts/base.html, static/css/app.css, tests
+  apps/ops/tests/test_settings_and_privacy.py.
+- **Nature of Contribution**: Code generation and tests.
+- **Human Review Status**: Pending review; T43 step 1 of the private test plan is the check.
+  161 tests pass; the accessibility check passes for the sysadmin and officer pages; ruff and
+  the neutrality check clean.
+- **Git Hash**: [pending]

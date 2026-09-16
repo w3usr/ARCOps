@@ -124,15 +124,34 @@ def accent_colour() -> str:
     return value
 
 
+BRANDING_IMAGES = ("logo", "logo_monochrome", "favicon", "apple_touch_icon", "qsl_card")
+
+
+def branding_url(value: str | None) -> str | None:
+    """A branding setting is either a path in the club's static overlay (served hashed through
+    the static storage) or, when uploaded from Settings, a file under MEDIA_ROOT/branding/
+    served by `ops.views.branding_file`. Either way the templates get a URL."""
+    if not value:
+        return None
+    if value.startswith("media/branding/"):
+        from django.urls import reverse
+
+        name = value[len("media/branding/") :]
+        path = dj.MEDIA_ROOT / "branding" / name
+        stamp = int(path.stat().st_mtime) if path.exists() else 0
+        return reverse("branding_file", args=[name]) + f"?v={stamp}"
+    from django.templatetags.static import static
+
+    try:
+        return static(normalise_static_path(value))
+    except ValueError:  # not in the collected manifest: a wrong path in the configuration
+        return None
+
+
 def branding() -> dict[str, str | None]:
-    return {
-        "logo": normalise_static_path(setting("branding.logo")),
-        "logo_monochrome": normalise_static_path(setting("branding.logo_monochrome")),
-        "favicon": normalise_static_path(setting("branding.favicon")),
-        "apple_touch_icon": normalise_static_path(setting("branding.apple_touch_icon")),
-        "qsl_card": normalise_static_path(setting("branding.qsl_card")),
-        "accent": accent_colour(),
-    }
+    out = {key: branding_url(setting(f"branding.{key}")) for key in BRANDING_IMAGES}
+    out["accent"] = accent_colour()
+    return out
 
 
 def institution_email_domain() -> str:

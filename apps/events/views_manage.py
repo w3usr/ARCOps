@@ -69,6 +69,7 @@ class EventForm(forms.ModelForm):
             "rules_url",
             "min_license_class",
             "kbyg_html",
+            "display_timezone",
             "reminder_hours_before",
             "display_only",
             "recurrence_text",
@@ -93,6 +94,15 @@ class EventForm(forms.ModelForm):
         self.fields["type"] = forms.ChoiceField(choices=_types())
         self.fields["min_license_class"] = forms.ChoiceField(
             choices=[("", "Any")] + [(c, c) for c in ladder()], required=False
+        )
+        import zoneinfo
+
+        self.fields["display_timezone"] = forms.ChoiceField(  # a drop-down, never free text
+            label="Local time zone for the roster",
+            choices=[("", f"The club's ({setting('club.timezone', 'UTC')})")]
+            + [(z, z) for z in sorted(zoneinfo.available_timezones())],
+            required=False,
+            help_text="For an event operated from somewhere else; the roster shows it beside UTC.",
         )
         self.fields[
             "description_html"

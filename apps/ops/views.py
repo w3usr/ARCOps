@@ -118,12 +118,12 @@ def manifest(request):
         ("apple_touch_icon", "180x180", "image/png"),
         ("logo", "any", None),
     ):
-        path = b.get(key)
-        if path:
-            entry = {"src": f"{settings.STATIC_URL}{path}", "sizes": sizes}
+        url = b.get(key)  # already a URL: static (hashed) or an uploaded file (FR-89)
+        if url:
+            entry = {"src": url, "sizes": sizes}
             if mime:
                 entry["type"] = mime
-            elif path.endswith(".svg"):
+            elif ".svg" in url:
                 entry["type"] = "image/svg+xml"
             icons.append(entry)
     body = {
@@ -156,4 +156,23 @@ def service_worker(request):
     resp = HttpResponse(body, content_type="application/javascript; charset=utf-8")
     resp["Cache-Control"] = "no-cache, max-age=0, must-revalidate"
     resp["Service-Worker-Allowed"] = "/"
+    return resp
+
+
+def branding_file(request, name):
+    """An image uploaded from Settings (FR-89): served from MEDIA_ROOT/branding/ with a day's
+    cache; the URL carries the file's mtime so a replacement is fetched at once."""
+    import mimetypes
+    from pathlib import Path
+
+    from django.conf import settings as dj
+    from django.http import FileResponse, Http404
+
+    safe = Path(name).name
+    path = dj.MEDIA_ROOT / "branding" / safe
+    if safe != name or not path.is_file():
+        raise Http404
+    ctype = mimetypes.guess_type(safe)[0] or "application/octet-stream"
+    resp = FileResponse(path.open("rb"), content_type=ctype)
+    resp["Cache-Control"] = "public, max-age=86400"
     return resp

@@ -4,6 +4,7 @@ grouped, audited); FR-101: the privacy notice page."""
 from __future__ import annotations
 
 import json
+import re
 
 from django.conf import settings
 from django.contrib import messages
@@ -12,7 +13,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
-from .config import flatten, load_yaml, set_setting, setting
+from .config import BRANDING_IMAGES, branding_url, flatten, load_yaml, set_setting, setting
 from .models import ClubSetting
 from .templatetags.richtext import sanitise
 
@@ -88,6 +89,48 @@ GROUPS = [
     ),
 ]
 RICH = ["privacy_notice_html"]
+# Field kinds beyond text, number, and JSON. A time zone is always a drop-down (NAF,
+# 2026-09-16, after a typo in the free-text field); a colour gets the colour picker; an image
+# gets an uploader with a preview, stored under MEDIA_ROOT/branding/ (FR-89).
+KIND_OF = {
+    "club.timezone": "tz",
+    "branding.accent": "color",
+    **{f"branding.{k}": "image" for k in BRANDING_IMAGES},
+}
+IMAGE_TYPES = {
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+    "image/svg+xml": ".svg",
+    "image/webp": ".webp",
+    "image/x-icon": ".ico",
+    "image/vnd.microsoft.icon": ".ico",
+}
+IMAGE_MAX_BYTES = 2 * 1024 * 1024
+
+
+def zone_names() -> list[str]:
+    import zoneinfo
+
+    return sorted(zoneinfo.available_timezones())
+
+
+def _store_image(key: str, upload) -> str:
+    """Save an uploaded branding image as MEDIA_ROOT/branding/<name>.<ext> and return the
+    setting value; a ValueError carries the reason a file is refused."""
+    ext = IMAGE_TYPES.get(upload.content_type)
+    if ext is None:
+        raise ValueError("PNG, JPEG, SVG, WebP, or ICO only")
+    if upload.size > IMAGE_MAX_BYTES:
+        raise ValueError("2 MB at most")
+    stem = key.split(".", 1)[1]
+    folder = settings.MEDIA_ROOT / "branding"
+    folder.mkdir(parents=True, exist_ok=True)
+    for old in folder.glob(stem + ".*"):  # one file per key
+        old.unlink()
+    with (folder / (stem + ext)).open("wb") as fh:
+        for chunk in upload.chunks():
+            fh.write(chunk)
+    return f"media/branding/{stem}{ext}"
 
 
 def _current() -> dict:
@@ -111,11 +154,39 @@ def settings_page(request):
         changed = 0
         for group, keys in GROUPS:
             for key in keys:
+                kind = KIND_OF.get(key)
+                if kind == "image":
+                    upload = request.FILES.get(key)
+                    if request.POST.get(f"{key}__clear") == "on":
+                        if current.get(key):
+                            set_setting(request.user, key, None)
+                            changed += 1
+                    elif upload:
+                        try:
+                            set_setting(request.user, key, _store_image(key, upload))
+                            changed += 1
+                        except ValueError as exc:
+                            messages.error(request, f"{key}: {exc}; left unchanged.")
+                    continue
                 if key not in request.POST:
                     continue
                 raw = request.POST.get(key, "")
                 old = current.get(key)
-                if group == "Lists (JSON)":
+                if kind == "tz":
+                    if raw not in zone_names():
+                        messages.error(
+                            request, f"{key}: {raw!r} is not a known time zone; left unchanged."
+                        )
+                        continue
+                    new = raw
+                elif kind == "color":
+                    new = raw.strip().lower()
+                    if not re.fullmatch(r"#[0-9a-f]{6}", new):
+                        messages.error(
+                            request, f"{key}: a colour like #401068 is needed; left unchanged."
+                        )
+                        continue
+                elif group == "Lists (JSON)":
                     try:
                         new = json.loads(raw) if raw.strip() else []
                     except ValueError:
@@ -149,7 +220,7 @@ def settings_page(request):
         rows = []
         for key in keys:
             v = current.get(key)
-            kind = (
+            kind = KIND_OF.get(key) or (
                 "json"
                 if label == "Lists (JSON)"
                 else "int"
@@ -162,6 +233,7 @@ def settings_page(request):
                     "key": key,
                     "value": shown,
                     "kind": kind,
+                    "url": branding_url(v) if kind == "image" else None,
                     "interface": ClubSetting.objects.filter(key=key, source="interface").exists(),
                 }
             )
@@ -174,6 +246,7 @@ def settings_page(request):
             "groups": groups,
             "privacy_html": current.get("privacy_notice_html") or "",
             "mce_conf": mce_conf,
+            "zones": zone_names(),
         },
     )
 

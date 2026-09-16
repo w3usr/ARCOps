@@ -7,8 +7,8 @@
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="{{ club.branding.accent }}">
 <link rel="manifest" href="{% url 'manifest' %}">
-{% if club.branding.favicon %}<link rel="icon" href="{% static club.branding.favicon %}">{% endif %}
-{% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{% static club.branding.apple_touch_icon %}">{% endif %}
+{% if club.branding.favicon %}<link rel="icon" href="{{ club.branding.favicon }}">{% endif %}
+{% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{{ club.branding.apple_touch_icon }}">{% endif %}
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
 {# The club's colour, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
 <style>:root { --brand: {{ club.branding.accent }}; }</style>
@@ -23,7 +23,7 @@
   <header class="topbar">
     <button class="iconbtn" type="button" id="menu-open" aria-controls="sidenav" aria-expanded="false" aria-label="Open menu">{% icon 'menu' %}</button>
     <a class="brand" href="{% url 'dashboard' %}">
-      {% if club.branding.logo %}<img src="{% static club.branding.logo %}" alt="" width="36" height="36">{% endif %}
+      {% if club.branding.logo %}<img src="{{ club.branding.logo }}" alt="" width="36" height="36">{% endif %}
       <span class="brand-name">{{ club.short_name }}</span>
     </a>
   </header>
@@ -31,7 +31,7 @@
   <nav class="sidenav" id="sidenav" aria-label="Main">
     <div class="sidenav-head">
       <a class="brand" href="{% url 'dashboard' %}">
-        {% if club.branding.logo %}<img src="{% static club.branding.logo %}" alt="" width="56" height="56">{% endif %}
+        {% if club.branding.logo %}<img src="{{ club.branding.logo }}" alt="" width="56" height="56">{% endif %}
         <span class="brand-text"><span class="brand-name">{{ club.short_name }}</span><span class="brand-sub">Operations</span></span>
       </a>
       <button class="iconbtn only-drawer" type="button" id="menu-close" aria-label="Close menu">{% icon 'close' %}</button>

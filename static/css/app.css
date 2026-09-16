@@ -357,3 +357,4 @@ td .when1, th .when1 { font-weight: 600; }
 code, .copyrow code, .kv dd, .helptext { overflow-wrap: anywhere; }
 textarea, input:not([type="checkbox"]):not([type="radio"]), select { max-width: 100%; }
 pre { overflow-x: auto; max-width: 100%; }
+.brand-preview { height: 48px; max-width: 12rem; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: .2rem; }
