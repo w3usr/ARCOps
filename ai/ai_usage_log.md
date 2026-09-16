@@ -1073,4 +1073,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code fix and a test.
 - **Human Review Status**: Pending review; T21 step 5 of the private test plan is the check.
   162 tests pass; ruff and the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 35550b6
