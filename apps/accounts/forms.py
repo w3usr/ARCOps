@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from allauth.account import forms as allauth_forms
+from allauth.account.forms import default_token_generator  # the library's email-aware one
 from allauth.account.internal import flows
-from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Q
 
 from .models import User
@@ -33,6 +33,9 @@ class ResetPasswordForm(allauth_forms.ResetPasswordForm):
     def save(self, request, **kwargs) -> str:
         email = self.cleaned_data["email"]
         if self.users:
+            # The key view checks the link with the library's email-aware generator; the mail
+            # must be made with the same one, or every link reads "Bad Token" (found live,
+            # 2026-09-16, after this form first shipped with Django's generator here).
             token_generator = kwargs.get("token_generator", default_token_generator)
             flows.password_reset.request_password_reset(request, email, self.users, token_generator)
         return email

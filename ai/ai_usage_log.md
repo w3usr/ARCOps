@@ -1149,3 +1149,15 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code fix and a test.
 - **Human Review Status**: Pending the advisor's retry with his personal address. 165 tests pass.
 - **Git Hash**: 1ecf1fb
+
+## [2026-09-16 22:06 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: The advisor's reset link from the new form read "Bad Token" on his phone.
+  Cause, from the access log and the library's code: the form shipped an hour earlier fell back
+  to Django's token generator when making the link, while the library checks links with its
+  own email-aware one, so every fresh link failed. The form now uses the library's generator,
+  and the test follows the link through to setting a password, which it had not.
+- **Sections/Files Affected**: apps/accounts/forms.py, apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Bug fix and test.
+- **Human Review Status**: Pending the advisor's retry. 165 tests pass.
+- **Git Hash**: [pending]

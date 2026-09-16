@@ -273,7 +273,16 @@ def test_password_reset_works_with_any_address_on_file_and_says_nothing_to_stran
         b"Check your email" in r.content and b"If we have an account with that address" in r.content
     )
     assert len(mail.outbox) == 1 and mail.outbox[0].to == ["who.home@example.org"]
-    assert "/accounts/password/reset/key/" in mail.outbox[0].body
+    link = re.search(r"https?://\S+/accounts/password/reset/key/\S+/", mail.outbox[0].body).group(0)
+    path = link[link.index("/accounts/") :]
+    r = c.get(path, follow=True)  # a valid key redirects to the set-password form; a bad one
+    assert r.status_code == 200  # renders "Bad Token" in place
+    assert b"Bad Token" not in r.content and b"password1" in r.content
+    form_url = r.redirect_chain[-1][0]
+    r = c.post(form_url, {"password1": "a-New-Password-123!", "password2": "a-New-Password-123!"})
+    assert r.status_code == 302
+    u.refresh_from_db()
+    assert u.check_password("a-New-Password-123!")
     r = c.post("/accounts/password/reset/", {"email": "nobody@example.org"}, follow=True)
     assert b"Check your email" in r.content
     assert len(mail.outbox) == 1  # nothing sent to a stranger
