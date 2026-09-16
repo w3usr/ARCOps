@@ -1118,4 +1118,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests.
 - **Human Review Status**: Pending the advisor's look at the next mail in Outlook. 163 tests
   pass; ruff and the neutrality check clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 828563a
