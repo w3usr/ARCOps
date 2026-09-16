@@ -208,3 +208,29 @@ def test_real_login_post_works_behind_a_proxy_with_empty_remote_addr():
     assert r.status_code == 302, r.status_code
     assert c.get("/", REMOTE_ADDR="", HTTP_X_REAL_IP="203.0.113.5").status_code == 200
     assert page.status_code == 200
+
+
+def test_password_reset_mail_comes_from_the_club_with_its_own_subject(settings):
+    """allauth's own mail used Django's default sender and a "[host] …" subject (seen live on
+    2026-09-16); it now carries the club's sender and wording."""
+    from django.core import mail
+
+    from apps.ops.config import set_setting
+
+    set_setting(None, "club.sending_address", "ops@example.org")
+    set_setting(None, "club.sending_display_name", "Example Operations")
+    set_setting(None, "club.short_name", "EXAMPLE")
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    u = User.objects.create_user("who@example.org", "pw-Testing-123", first_name="W", last_name="H")
+    u.access_level = AccessLevel.MEMBER
+    u.save()
+    Client().post("/accounts/password/reset/", {"email": "who@example.org"})
+    assert len(mail.outbox) == 1
+    m = mail.outbox[0]
+    assert m.from_email == "Example Operations <ops@example.org>"
+    assert m.subject == "Reset your EXAMPLE password"
+    assert (
+        "webmaster" not in m.body
+        and "Hello from" not in m.body
+        and "/accounts/password/reset/key/" in m.body
+    )

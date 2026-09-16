@@ -1058,3 +1058,19 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; the corrected test plan (private, T3, T5, T21, T23,
   T37, T43) is the check. 161 tests pass; ruff and the neutrality check clean.
 - **Git Hash**: c3ab667
+
+## [2026-09-16 20:07 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: The advisor received a live password-reset mail from
+  "webmaster@localhost" headed "[ops.w3usr.org] Password Reset Email": allauth sends its own mail
+  outside the club's composer, so it took Django's default sender and allauth's default
+  wording. The adapter now gives every allauth mail the club's sending address and display name
+  (FR-69) and an unprefixed subject, and the reset mail has the club's own text, signed off with
+  the club's name and contact address.
+- **Sections/Files Affected**: apps/accounts/adapter.py (get_from_email, format_email_subject,
+  render_mail), templates/account/email/{base_message,password_reset_key_subject,
+  password_reset_key_message}.txt (new), apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Code fix and a test.
+- **Human Review Status**: Pending review; T21 step 5 of the private test plan is the check.
+  162 tests pass; ruff and the neutrality check clean.
+- **Git Hash**: [pending]
