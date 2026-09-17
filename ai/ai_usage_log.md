@@ -1356,4 +1356,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Rehearsed forward, back, and forward again
   against the copy: both real accounts keep their addresses, the delivery rule is preserved, and
   the mirror matches. 188 tests pass; `makemigrations --check` reports no changes.
-- **Git Hash**: pending
+- **Git Hash**: a68ad02
