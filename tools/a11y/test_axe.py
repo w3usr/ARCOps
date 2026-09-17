@@ -86,6 +86,7 @@ def pages_for(role: str) -> list[str]:
     sysadmin = [
         "/ops/status/",
         "/ops/settings/",
+        "/ops/groups/",
         "/ops/templates/",
         f"/ops/templates/{tpl.key}/" if tpl else "/ops/templates/",
         "/credentials/computer-password/manage/",

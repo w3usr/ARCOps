@@ -382,3 +382,10 @@ pre { overflow-x: auto; max-width: 100%; }
 .row-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem; margin-top: .6rem; }
 .row-form label { display: block; font-size: .9rem; }
 .row-form input { min-width: 16rem; }
+
+/* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a
+   phone inside its own wrapper, so the page itself never does (FR-95). */
+.tablewrap { overflow-x: auto; max-width: 100%; }
+.table.grid th[scope="row"] { text-align: left; font-weight: 500; }
+.table.grid td.tick { text-align: center; }
+.table.grid td.tick input { width: 1.1rem; height: 1.1rem; }

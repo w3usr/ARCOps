@@ -83,7 +83,7 @@ The advisor's framing, verbatim:
    generate bookable time slots that respect each contest's operating rules, and let members
    sign up.
 2. **People**: an invitation-only user database with the profile fields the club needs, four
-   access levels, per-event captains, and guardian-managed accounts for minors.
+   access groups, per-event captains, and guardian-managed accounts for minors.
 3. **Credentials and access**: FCC license class and expiration kept current automatically;
    digital signing, advisor approval, and expiry of the station and computer access agreements;
    controlled display of the shared computer account password.
@@ -139,20 +139,37 @@ below that exist mainly to keep this true are marked **(portability)**.
 
 ## 2. Users, roles, and permissions
 
-### 2.1 Access levels
+### 2.1 Access: capabilities and groups
 
-The dictation names four levels; **Provisional** was added on 2026-09-15 (FR-121) and **Faculty
-advisor** on 2026-09-17 (the advisor's issue 87). They are mutually exclusive and every account
-holds exactly one, and each level holds everything the level below it holds.
+**Access is item-by-item, and a group is a named set of the items.** The advisor, 2026-09-17:
 
-| Level | Who | Summary of powers |
+> I am thinking the correct way to do this is actually have access be item-by-item, and then
+> define configurable access groups (member, officer, faculty advisor, etc). Systemic is
+> superuser. I think this is the best forward-thinking access model to use.
+
+So the application declares **capabilities** (one list, in `apps/ops/capabilities.py`), and every
+permission decision asks whether the account holds one. A **group** holds a set of capabilities;
+an account is in the groups somebody puts it in; an account in no group can do nothing, which is
+what having no access means. A **sysadmin is a superuser** and holds every capability without
+being in any group. A sysadmin edits the groups, and may invent a group this application has
+never heard of, which is what makes the model fit a club whose structure differs from W3USR's.
+
+A fresh installation starts with five groups, seeded from `access_groups` in the club's
+configuration, which reproduce the ladder this section used to describe:
+
+| Group | Who | What it holds |
 |---|---|---|
-| **Sysadmin** | The people who run the application | Everything, including manual account creation and editing, password resets, privilege fields, configuration, and overrides of automated data |
-| **Faculty advisor** | The faculty member answerable for the club, and their associates | Everything an officer holds, and: approve a signed access agreement, convert a minor's account at 18, and read the archive of former members. *(Added 2026-09-17. The advisor: "This is above 'Club Officer' but below 'Sysadmin'. Faculty Advisors should have the ability to approve access agreements. Club officers should not." Station access is the club's answer to the University, so it belongs to a level the University appoints rather than to a post the club elects.)* |
-| **Club officer** | Elected officers | Send invitations; create, edit, and captain events; send announcements; view reports; approve applications. Cannot approve access agreements, edit another account's privilege fields, or reset passwords |
-| **Member** | An admitted member in good standing | Edit own non-privilege profile fields; view schedules and rosters; sign up for slots; sign agreements; view the computer password when eligible |
-| **Provisional** | Someone who joined through a community entry link (FR-119) and has not yet been reviewed by an officer | Sign in; see events; sign up for slots the role rules allow (Mentor, given a license); on a roster see their own name and the count of people by license class, nothing more. No directory, no other names or contact details, no agreements. Becomes Member on an officer's review (FR-121) |
-| **No access** | Account exists; sign-in refused | Nothing. Used for graduated, lapsed, or suspended members, for declined Provisional accounts, and for class-link accounts whose address went unverified (FR-120) |
+| **Sysadmin** | The people who run the application | Every capability, and the Django admin |
+| **Faculty advisor** | The faculty member answerable for the club | Everything an officer holds, and: approve a signed access agreement, convert a minor's account at 18, archive a former member, read the archive |
+| **Club officer** | Elected officers | Invitations and entry links, events and sign-ups, announcements, the outbox, reports, the directory and member records, another member's club position and addresses |
+| **Member** | An admitted member in good standing | The member directory. Everything else a member does (their own profile, sign-ups, agreements, the computer password when eligible) belongs to the account rather than to a capability |
+| **Provisional** | Someone who joined through a community entry link (FR-119) and has not been reviewed | Nothing beyond signing in and seeing the club's events. No directory, no other names or contact details, no agreements. Becomes a Member on an officer's review (FR-121) |
+
+Two kinds of rule are deliberately outside this model. **Whether an account may be used at all**
+is a state rather than a capability: signing in, the verification deadline (FR-120), a minor's
+read-only session (§2.4), and the archive (FR-125). And **a rule about one record** (captain of
+*this* event, guardian of *this* minor, the owner of *this* sign-up) needs the record in front of
+it, so those stay in the code that knows about it.
 
 Verbatim:
 
@@ -179,7 +196,7 @@ configurable list **(portability)**. It is displayed, and one capability derives
   club address (`w3usr@scranton.edu`), per the dictation.
 
 Approving an access agreement was a flag on the position until 2026-09-17; it is now the Faculty
-advisor access level (§2.1), so a position the club elects cannot carry it.
+advisor group's capability (§2.1), so a position the club elects cannot carry it.
 
 ### 2.4 Guardians and minors (added; the dictation states the rules, the account model is the draft's)
 
@@ -204,7 +221,7 @@ The draft models this as follows:
   them, and can change their own password. They cannot sign up, cancel, change role, check in,
   sign anything, or edit the profile; those are the guardian's. The guardian sets the minor's
   initial password and can reset it (as FR-7, from the guardian's account). Read-only is a
-  restriction that follows from the under-18 flag, and no fifth access level is introduced.
+  restriction that follows from the under-18 flag, and no access group is introduced for it.
 - The guardian record holds the guardian's name, relationship, email(s), and phone. The minor's
   own email and phone are optional.
 - When a guardian signs the minor up for a slot, the guardian designates the **responsible
@@ -224,13 +241,13 @@ The draft models this as follows:
 
 `✓` may do; `E` may do within events they captain; `own` on their own record only; `·` may not.
 
-| Action | Sysadmin | Advisor | Officer | Captain | Member | Guardian (for linked minor) |
+| Action | Sysadmin | Faculty advisor | Club officer | Captain | Member | Guardian (for linked minor) |
 |---|---|---|---|---|---|---|
 | Send invitation | ✓ | ✓ | ✓ | · | · | · |
 | Set member category (on the invitation) | ✓ | ✓ | ✓ | · | · | · |
 | Create or edit account manually | ✓ | · | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · | · |
-| Change access level or club position | ✓ | · | · | · | · | · |
+| Decide which groups an account is in, or set a club position | ✓ | · | · | · | · | · |
 | Delete a user account (FR-118) | ✓ | · | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · | · |
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | ✓ | own | for minor |
@@ -280,7 +297,7 @@ passwords and sysadmin resets directly. Specifics:
   which needs working email. The sysadmin temporary-password path (FR-7) is the fallback and
   never depends on email.
 - Second factor: **TOTP and passkeys are both built in v1 (Must)**, optional for every member by
-  default, with a sysadmin setting that makes a second factor required for a given access level
+  default, with a sysadmin setting that makes a second factor required for a given access group
   (sysadmin, officer, member); a passkey can also sign a member in with no password at all
   (NAF, 2026-09-13; TR-16). The application displays a shared password to eligible members
   (FR-33), which raises the value of any compromised account.
@@ -467,7 +484,7 @@ officer admits or declines them (FR-121). Every account records the link it join
   | Responsible adults previously named | for minors | guardian | Section 2.4; picked from when signing up for a slot (FR-64) |
 
 - **FR-9 [Must]** Members can edit their own non-privilege fields. Privilege fields (category,
-  license data, access approvals, club position, access level) are read-only to the member and
+  license data, access approvals, club position, access groups) are read-only to the member and
   show where the value came from and when.
 - **FR-10 [Must]** A guardian account can do everything on behalf of a linked minor that the
   minor could do if self-managed, except sign access agreements (FR-22). The minor's own
@@ -1262,7 +1279,7 @@ made it likely that reliable delivery would take time to establish:
   club reports to the University and puts in a grant application, so it should be right.
 - **FR-87 [Should]** **Member roster** for officers: name, callsign, category, position,
   student level and anticipated graduation (semester and year), license class and expiry,
-  access credentials and their expiry, access level, last sign-in. A filter for Students
+  access credentials and their expiry, access groups, last sign-in. A filter for Students
   whose anticipated graduation semester has passed gives officers the list, three times a
   year, of accounts to review for category change or No access (section 4.3).
   Contact details are a separate, deliberately clicked export.
@@ -1276,7 +1293,7 @@ made it likely that reliable delivery would take time to establish:
   templates **(portability)**.
 - **FR-90 [Must]** Sysadmins manage agreement templates (FR-21) and the computer password
   (FR-32).
-- **FR-91 [Must]** Sysadmins can set an account's access level to No access with a reason, and
+- **FR-91 [Must]** Sysadmins can take an account out of every access group with a reason, and
   restore it. Doing so removes the person from future slots and notifies the captains of those
   events.
 - **FR-118 [Must]** A sysadmin can **delete a user account**, with a required reason and a
@@ -1728,6 +1745,15 @@ accept, amend, or strike.
   users. §5.3 promoted from a paragraph to FR-116 (specific commitments) and FR-117
   (verification as a release gate); the itemised commitments are the assistant's reading of
   what that requires of this particular application.
+- 2026-09-17, NAF (quoted at §2.1, §2.3, §4.3, FR-125, and the advisor's issue 87 of the private
+  repository): a Faculty Advisor level above Club Officer, holding the approval of access
+  agreements that an elected officer does not; then, the same day, the levels themselves give way
+  to item-by-item capabilities held by groups the club configures, with the sysadmin as a
+  superuser; and members are archived rather than deleted, with the archive readable only at
+  advisor level. The capability list, the decision to keep account state and per-record rules
+  outside the model, the guard that stops a club removing the last account able to assign groups,
+  and the audit row on every group change are the assistant's. The privacy notice was rewritten
+  to match, because it had promised members the deletions that no longer happen.
 - 2026-09-15, NAF (two use cases quoted at §2.7; decisions quoted at FR-119 to FR-124, FR-61,
   FR-67): entry links replace "invitation only" (FR-1 rewritten); a Provisional access level;
   Mentor needs a license only, station and IT access sit with anyone in the slot; the event's

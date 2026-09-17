@@ -1416,3 +1416,20 @@ carries the actual running model ID.
 - **Nature of Contribution**: Defect analysis and code.
 - **Human Review Status**: Pending the advisor's look. 204 tests pass; ruff clean.
 - **Git Hash**: d94fe2a
+
+## [2026-09-17 12:45 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The rest of the permission model the advisor asked for. A page where a
+  sysadmin decides what each group may do, adds a group the application has never heard of, and
+  removes an empty one, refusing the one edit that cannot be undone from inside: leaving nobody
+  able to decide who may do what. The requirements' access section was rewritten around
+  capabilities and groups rather than a ladder, with the advisor's words quoted, and a technical
+  requirement records how it is built.
+- **Sections/Files Affected**: apps/ops/views_groups.py (new), templates/ops/groups.html (new),
+  apps/ops/urls.py, templates/base.html, static/css/app.css, apps/ops/tests/test_groups_page.py
+  (new), tools/a11y/test_axe.py, docs/REQUIREMENTS.md (§2.1, §2.3, the capability table, the
+  decision record), docs/TECHNICAL_REQUIREMENTS.md (TR-42).
+- **Nature of Contribution**: Design and code generation from the advisor's decision.
+- **Human Review Status**: Pending the advisor's look. 218 tests pass, including the permission
+  matrix unchanged from before the refactor; ruff and both project checks clean.
+- **Git Hash**: pending

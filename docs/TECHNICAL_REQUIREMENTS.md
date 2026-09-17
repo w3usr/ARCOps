@@ -201,10 +201,10 @@ has a decade of documentation.
   needs, maintained and current (65.19, September 2026). Serves: §2.6, FR-7, FR-99, FR-100,
   FR-107.
 - **TR-16 Second factor and passkeys: both built in v1, optional by default, requirable per
-  access level.** allauth's MFA module provides TOTP (any authenticator app), WebAuthn
+  access group.** allauth's MFA module provides TOTP (any authenticator app), WebAuthn
   **passkeys** as a second factor, **passwordless sign-in by passkey**, and recovery codes. A
   member enrols either or both from the profile page. A sysadmin setting (FR-89) marks, per
-  access level (sysadmin, officer, member), whether a second factor is **required**; the
+  access group, whether a second factor is **required**; the
   shipped default requires none, and a level switched to required gives its holders a grace
   period with a banner before sign-in is blocked. A passkey-only account has no password to
   forget; FR-107's reset path still works for accounts that have one.
@@ -280,7 +280,7 @@ has a decade of documentation.
 
   | App | Tables (principal columns) | FRs |
   |---|---|---|
-  | `accounts` | `User` (ULS and preferred names, emails, phone, category, position, access level, under-18 flag, student level, graduation term), `Guardianship` (guardian ↔ minor, history), `Invitation` (token, category, state, issuer), `CallsignHistory`, `NotificationPreference`, `PushSubscription` | FR-1 to FR-13, FR-71, FR-102, FR-109, FR-112 |
+  | `accounts` | `User` (ULS and preferred names, phone, category, position, under-18 flag, student level, graduation term), `Address` (one row per address, its kind, confirmation, delivery switch), `Guardianship` (guardian ↔ minor, history), `Invitation` (token, category, state, issuer), `CallsignHistory`, `NotificationPreference`, `PushSubscription` | FR-1 to FR-13, FR-71, FR-102, FR-109, FR-112 |
   | `credentials` | `CredentialType` (config), `LicenseRecord` (class, status, dates, source, retrieved, override), `AgreementTemplate` (type, audience, version, HTML, hash), `SignedAgreement` (signer, version hash, signature block, PDF path, state, expiry, approver), `SharedSecret` (the computer password, Fernet ciphertext, effective date) | FR-14 to FR-35 |
   | `events` | `Event` (type, title, description, display zone, state, contest fields, calendar ref), `OperatingPeriod`, `OperatingLimit`, `Location`, `Position`, `Slot` (kind, times, closed/cancelled), `RoleCapacity`, `EligibilityRule`, `Opening`, `SignUp` (person, role, note, confirmed, checked-in, control-operator flag), `ResponsibleAdult` (per minor sign-up), `WaitlistEntry`, `Captaincy` | FR-36 to FR-68, FR-110, FR-111, FR-113 |
   | `comms` | `MessageTemplate`, `Outbox` (recipient, channel, category, body, state, sent/failed), `Announcement` (sender, audience definition, recipients) | FR-69 to FR-82, FR-105, FR-106 |
@@ -290,6 +290,13 @@ has a decade of documentation.
   the retention and deletion jobs (FR-11, FR-118, §4.3) find them without a hand-kept list.
 - **TR-27 Migrations**: Django migrations, committed, run by `deploy.sh` before the service
   restarts; a migration that drops or rewrites personal data is reviewed by a second person.
+- **TR-42 Permissions**: capabilities are Django permissions on a table-less model in the `ops`
+  app, declared in one list (`apps/ops/capabilities.py`); an access group is a Django group; a
+  sysadmin is a superuser. `club_import` writes any new capability and seeds the configured
+  groups, and the deploy runs it. Nothing in the application tests a rank: every decision asks
+  whether an account holds a named capability (§2.1). A permission matrix test
+  (`apps/accounts/tests/test_permission_matrix.py`) asserts what every kind of account gets from
+  every page, because the failure mode is silent.
 - **TR-28 Retention**: `retention:apply` (TR-11) implements §4.3 exactly: it deletes on schedule
   what is not a member's own record, logs what it did to the audit log by count, and never
   touches a row under a legal hold flag (added for the case where a record must be kept). A

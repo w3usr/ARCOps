@@ -68,6 +68,7 @@
       <li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>
       <li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Templates</span></a></li>
       <li><a href="{% url 'settings_page' %}"{% nav_active 'settings_page' %}>{% icon 'settings' %}<span>Settings</span></a></li>
+      {% if perms.ops.manage_groups %}<li><a href="{% url 'groups_page' %}"{% nav_active 'groups_page' %}>{% icon 'users' %}<span>Access groups</span></a></li>{% endif %}
       <li><a href="{% url 'admin:index' %}">{% icon 'edit' %}<span>Django Admin</span></a></li>
     </ul>
     {% endif %}
