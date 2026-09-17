@@ -1,14 +1,19 @@
 /*
   ARCOps stylesheet (TR-5): one file, no framework, semantic class names.
 
-  Colour: --brand is the club's colour, set inline by base.html from club.yaml (TR-40); the
+  How a page should read, and which class does what, is in docs/INTERFACE.md. Read it before
+  adding a rule here. In short: one solid button per form, outline for a side action, link for
+  a row action, .danger for anything destructive (underlined, never color alone), data-label on
+  every cell so a table survives a phone.
+
+  Color: --brand is the club's color, set inline by base.html from club.yaml (TR-40); the
   default below is the application's own. Everything else derives from it. In dark mode the
   brand stays as a background (footer, sign-in panel) and a lightened mix of it becomes the
-  text and link colour, so contrast holds in both schemes. Colour never carries meaning on
+  text and link color, so contrast holds in both schemes. Color never carries meaning on
   its own (FR-62): every status also has a word.
 
   Layout: signed in, a left sidebar (full, or an icon rail when the member collapses it; an
-  off-canvas drawer under 60rem) beside the content, and the club-coloured footer under both.
+  off-canvas drawer under 60rem) beside the content, and the club-colored footer under both.
   Signed out, a split page: club panel and form. Without JavaScript the sidebar simply
   renders in full and the drawer controls are hidden (TR-4).
 */
@@ -21,9 +26,17 @@
   --accent-soft: color-mix(in srgb, var(--brand) 9%, #ffffff);
   --accent-soft-fg: var(--brand);
   --bg: #ffffff; --fg: #1b1f24; --muted: #5a6470; --line: #d9dee5; --card: #f6f7f9; --side: #f3f4f7;
-  --ok: #1b6e3a; --warn: #8a5a00; --bad: #9b1c1c; --focus: #e0a100;
+  --ok: #1b6e3a; --warn: #8a5a00; --bad: #9b1c1c; --bad-fg: #ffffff;
+  /* The gold at #e0a100 was 2.3:1 on white, under the 3:1 a focus indicator needs.
+     Darkened here, and every ring is drawn over a halo of the page color so it also
+     holds against the brand-colored panels. */
+  --focus: #9a6700; --focus-halo: #ffffff;
   --tag-ok: #d8f0e0; --tag-warn: #fff1cc; --tag-bad: #fbdada;
   --radius: .6rem;
+  /* Four steps of space and five of type. Pick from these; a page that needs a sixth size
+     usually needs a different structure instead. */
+  --s1: .35rem; --s2: .75rem; --s3: 1.25rem; --s4: 2rem;
+  --t-small: .85rem; --t-body: 1rem; --t-lede: 1.05rem; --t-h2: 1.25rem; --t-h1: 1.9rem;
   --sidebar-w: 15.5rem;
   --rail-w: 4.5rem;
   --shadow: 0 1px 2px rgb(0 0 0 / .06), 0 8px 24px rgb(0 0 0 / .06);
@@ -35,7 +48,8 @@
     --accent-fg: #0c1220;
     --accent-soft: color-mix(in srgb, var(--brand) 45%, #111418);
     --accent-soft-fg: var(--accent);
-    --ok: #7ad19a; --warn: #f2c15a; --bad: #ff9b9b;
+    --ok: #7ad19a; --warn: #f2c15a; --bad: #ff9b9b; --bad-fg: #3a0d0d;
+    --focus: #f2c15a; --focus-halo: #111418;
     --tag-ok: #163d26; --tag-warn: #4a3a10; --tag-bad: #4a1a1a;
     --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
   }
@@ -46,7 +60,7 @@
 html { font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); -webkit-text-size-adjust: 100%; }
 body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; }
 a { color: var(--accent); }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--focus-halo); }
 h1 { font-size: 1.9rem; line-height: 1.2; letter-spacing: -.01em; margin: 0 0 1rem; }
 h2 { font-size: 1.25rem; line-height: 1.3; margin: 1.5rem 0 .5rem; }
 h1 + p, h2 + p { margin-top: 0; }
@@ -59,6 +73,8 @@ h1 + p, h2 + p { margin-top: 0; }
 /* --------------------------------------------------------- app shell */
 .shell { flex: 1; display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
 html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+.shell > .banner, .shell > main { grid-column: 2; }
+.shell > .banner { margin: 1rem clamp(1rem, 4vw, 3rem) 0; }
 
 .topbar { display: none; }
 
@@ -200,8 +216,14 @@ footer.site .credit a { color: inherit; }
 .tag { display: inline-block; font-size: .8rem; padding: 0 .45rem; border-radius: .3rem; background: var(--card); border: 1px solid var(--line); }
 .tag.ok { background: var(--tag-ok); } .tag.warn { background: var(--tag-warn); } .tag.bad { background: var(--tag-bad); } .tag.note { background: var(--tag-warn); }
 .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
+.messages:focus { outline: none; }
 .msg { padding: .65rem .9rem; border-radius: var(--radius); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--card); }
-.msg.success { border-left-color: var(--ok); } .msg.error { border-left-color: var(--bad); } .msg.warning { border-left-color: var(--warn); } .msg.info { border-left-color: var(--accent); }
+.msg .lvl { font-weight: 700; }
+/* Four levels, each with a word and a tint. Color never carries the meaning alone (FR-62). */
+.msg.success { border-left-color: var(--ok); background: var(--tag-ok); border-color: var(--ok); }
+.msg.error { border-left-color: var(--bad); background: var(--tag-bad); border-color: var(--bad); }
+.msg.warning { border-left-color: var(--warn); background: var(--tag-warn); border-color: var(--warn); }
+.msg.info { border-left-color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
 .dl dt { font-weight: 600; margin-top: .5rem; } .dl dd { margin: 0; }
 .prose h1, .prose h2, .prose h3 { margin-top: 1rem; }
 .secret code { font-size: 1.5rem; letter-spacing: .05em; }
@@ -218,6 +240,8 @@ button.big { font-size: 1.5rem; padding: 1rem 2rem; width: 100%; }
 button.wide, .button.wide { width: 100%; display: block; text-align: center; box-sizing: border-box; }
 .linklike { color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .linklike:hover { text-decoration: underline; }
+button.linklike.danger, .linklike.danger { background: none; color: var(--bad); padding: 0; font-weight: inherit; text-decoration: underline; }
+button.linklike.danger:hover, .linklike.danger:hover { background: none; filter: none; text-decoration: underline; }
 input, select, textarea {
   font: inherit; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: var(--radius);
   background: var(--bg); color: var(--fg); width: 100%; max-width: 28rem;
@@ -231,6 +255,9 @@ form label, .field label { display: block; font-weight: 600; margin-bottom: .25r
 .field { min-width: 0; }
 .check { display: flex; align-items: center; gap: .55rem; }
 .check label { display: inline; font-weight: 500; margin: 0; }
+/* A switch, its label, and its one line of help: the help goes under, on its own row. */
+.check { flex-wrap: wrap; }
+.check > .helptext { flex-basis: 100%; margin-left: 1.7rem; margin-top: 0; }
 .row { display: flex; gap: 1rem; flex-wrap: wrap; } .row > * { flex: 1 1 10rem; }
 fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem 1rem 1rem; margin: 0; }
 legend { font-weight: 600; padding: 0 .35rem; }
@@ -241,15 +268,31 @@ fieldset .helptext { margin-top: 0; }
 .copyrow { display: flex; gap: .5rem; flex-wrap: wrap; } .copyrow input { flex: 1 1 16rem; }
 form.inline { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 .helptext { display: block; color: var(--muted); font-size: .9rem; margin-top: .25rem; }
+.req { color: var(--bad); font-weight: 700; }
+/* The settings page names each value in words; the key stays for whoever edits club.yaml. */
+.settingkey { font-size: .8em; }
+label .req { margin-left: .15rem; }
 .errorlist { color: var(--bad); margin: .25rem 0; padding-left: 1rem; }
+/* A field that came back wrong: the message sits with the field, and the field itself is marked. */
+.fielderror { display: block; color: var(--bad); font-weight: 600; font-size: .9rem; margin-top: .25rem; }
+.field.haserror > input, .field.haserror > select, .field.haserror > textarea { border-color: var(--bad); border-width: 2px; }
 [hidden] { display: none !important; }
 
 /* ------------------------------------------------- narrow tables */
 @media (max-width: 40rem) {
-  .table, .table thead, .table tbody, .table tr, .table th, .table td { display: block; }
+  .table, .table thead, .table tbody,
+  .table tr, .table th, .table td { display: block; }
   .table thead { position: absolute; left: -999px; }
   .table tr { border: 1px solid var(--line); border-radius: var(--radius); margin: .5rem 0; padding: .25rem; }
   .table td, .table th { border: 0; padding: .25rem .5rem; }
+  /* Stacked, a cell has lost its column heading. data-label puts it back; a table with a
+     header row and no data-label is unreadable here, which is what tools/check_interface.sh
+     refuses. Every table stacks: one wide enough to want sideways scrolling instead overflowed
+     the page at 390px, which FR-95 forbids. */
+  .table td[data-label]::before {
+    content: attr(data-label) ": "; font-weight: 600; color: var(--muted);
+  }
+  .table td:empty { display: none; }
 }
 
 /* ------------------------------------------- management pages */
@@ -260,7 +303,7 @@ form.inline { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: 
 .cols > .card, .cols > .stack > .card { margin: 0; }
 .searchrow { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; } .searchrow input { max-width: 24rem; flex: 1 1 14rem; }
 .directory { columns: 14rem; list-style: none; padding: 0; } .directory li { padding: .25rem 0; break-inside: avoid; }
-button.danger { background: var(--bad); color: #fff; }
+button.danger { background: var(--bad); color: var(--bad-fg); }
 button.danger:hover { filter: brightness(1.1); }
 a.button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 .captain-actions { display: block; margin-top: .25rem; font-size: .9rem; }
@@ -272,6 +315,15 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .lede { font-size: 1.05rem; }
 .banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .75rem 1rem; border-radius: var(--radius); background: var(--tag-warn); border: 1px solid var(--warn); margin: 1rem 0; }
 .banner p, .banner form { margin: 0; }
+/* The three banners meant three different things and all looked like a warning. Acting for
+   somebody is a mode you chose; read-only is a fact about the account; viewing as somebody
+   else is the one that should keep catching your eye. */
+.banner.acting { background: var(--accent-soft); border-color: var(--accent); }
+.banner.readonly { background: var(--card); border-color: var(--line); }
+.banner.impersonating { background: var(--tag-warn); border-color: var(--warn); }
+/* A standing fact, quieter than a banner and never mistaken for something that just happened. */
+.note { padding: .6rem .9rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
+.note p:first-child { margin-top: 0; } .note p:last-child { margin-bottom: 0; }
 .rosterhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .rosterhead h2, .rosterhead p { margin: 0; }
 .legend { font-size: .85rem; margin: .5rem 0 .75rem; }
@@ -287,7 +339,7 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .roster .r-head > div { padding: .5rem .75rem; }
 .roster .r-pos { display: flex; flex-direction: column; line-height: 1.2; } .roster .r-pos .loc { font-weight: 400; }
 .roster .r-dayhead { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem .75rem; font-weight: 600; position: sticky; top: 2.4rem; z-index: 1; }
-.roster.list .r-dayhead, .roster:not(.grid) .r-dayhead { top: 0; }
+.roster.list .r-dayhead, .roster .r-dayhead { top: 0; }
 .roster .daysel { gap: .6rem; } .roster .daysel span { font-weight: 600; }
 .roster .r-row { border-top: 1px solid var(--line); } .roster .r-day .r-row:first-of-type { border-top: 0; }
 .roster .r-time { padding: .5rem .75rem; display: flex; flex-direction: column; gap: .1rem; line-height: 1.25; }
@@ -364,9 +416,22 @@ td .when1, th .when1 { font-weight: 600; }
 
 /* FR-95: nothing forces a phone to scroll sideways. Long tokens (feed URLs, keys, JSON) wrap. */
 code, .copyrow code, .kv dd, .helptext { overflow-wrap: anywhere; }
-textarea, input:not([type="checkbox"]):not([type="radio"]), select { max-width: 100%; }
+/* This used to be max-width: 100% for all three, which sat after the 28rem cap above and
+   undid it, so every text field ran the full width of the page. */
+textarea { max-width: 100%; }
+input:not([type="checkbox"]):not([type="radio"]), select { max-width: min(28rem, 100%); }
 pre { overflow-x: auto; max-width: 100%; }
 .brand-preview { height: 48px; max-width: 12rem; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: .2rem; }
+
+/* The levels ladder: each one named, described in a line, with what it can do underneath. */
+.levels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
+.levels > li { padding: var(--s2) 0; border-top: 1px solid var(--line); }
+.levels > li:first-child { border-top: 0; padding-top: 0; }
+.levels .check { gap: var(--s1) var(--s2); flex-wrap: wrap; }
+.levels label { font-weight: 600; }
+.levels .helptext { margin: var(--s1) 0 0 1.7rem; }
+.levels details { margin-left: 1.7rem; }
+.levels summary { font-size: var(--t-small); color: var(--muted); cursor: pointer; }
 
 /* A state and the one action that changes it, in a single control: the badge is the button. */
 .tag-button {
@@ -376,8 +441,31 @@ pre { overflow-x: auto; max-width: 100%; }
 }
 .tag-button.warn { background: var(--tag-warn); border-color: var(--warn); }
 .tag-button:hover { filter: brightness(.96); }
-.addresses-list li { margin: .35rem 0; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
-.addresses-list .address { font-weight: 600; overflow-wrap: anywhere; }
+/* One address per block: the address, then what it does in words, then the actions. The row
+   of badges, buttons, and links that used to follow each address read as noise. */
+.addresses-list { list-style: none; padding-left: 0; }
+.addresses-list > li { margin: 0; padding: var(--s2) 0; border-top: 1px solid var(--line); }
+.addresses-list > li:first-child { border-top: 0; padding-top: 0; }
+.addresses-list .address { font-weight: 600; overflow-wrap: anywhere; margin: 0; }
+.addresses-list .addr-state { margin: var(--s1) 0 0; color: var(--muted); font-size: var(--t-small); }
+.addresses-list .addr-state .needs { color: var(--warn); font-weight: 600; }
+.addresses-list .addr-actions { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); margin: var(--s1) 0 0; }
+.addresses-list .addr-actions:empty { display: none; }
+/* Django renders a multiple-checkbox field as a <ul>; it wants no bullets and no indent. */
+.checkset > ul { list-style: none; margin: var(--s1) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--s1); }
+.checkset > ul li { display: flex; align-items: center; gap: .55rem; }
+.checkset > ul label { display: inline; font-weight: 500; margin: 0; }
+.checkset > ul input { width: 1.15rem; }
+/* Removing something in place: the confirmation is the disclosure, so it needs no second page
+   and still works with JavaScript turned off. */
+/* Everything that cannot be undone, in one place at the foot of the page, marked as such. */
+.card.dangerzone { border-color: var(--bad); }
+.card.dangerzone > h2 { color: var(--bad); margin-top: 0; }
+.card.dangerzone > details + details { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
+
+details.confirm { margin-top: var(--s1); }
+details.confirm > summary { color: var(--bad); text-decoration: underline; cursor: pointer; font-size: var(--t-small); width: fit-content; }
+details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 /* Adding an address: the field and its button sit on one line, and stack on a phone. */
 .row-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem; margin-top: .6rem; }
 .row-form label { display: block; font-size: .9rem; }

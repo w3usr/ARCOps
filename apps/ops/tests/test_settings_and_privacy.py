@@ -33,6 +33,8 @@ def test_settings_page_edits_are_stored_and_audited():
     set_setting(None, "defaults.slot_length_minutes", 60)
     r = c.get("/ops/settings/")
     assert r.status_code == 200 and b"defaults.slot_length_minutes" in r.content
+    # One bad field saves nothing and comes back with everything that was typed, beside the
+    # reason. It used to save the good fields, drop the typed ones, and redirect to a fresh page.
     r = c.post(
         "/ops/settings/",
         {
@@ -41,10 +43,24 @@ def test_settings_page_edits_are_stored_and_audited():
             "slot_roles": "not json",
         },
     )
+    assert r.status_code == 200
+    body = r.content.decode()
+    assert "Nothing was saved" in body and "not valid JSON" in body
+    assert "not json" in body and "Test Club" in body  # what was typed is still on the page
+    assert setting("defaults.slot_length_minutes") == 60
+    assert not ClubSetting.objects.filter(key="club.short_name").exists()
+
+    r = c.post(
+        "/ops/settings/",
+        {
+            "defaults.slot_length_minutes": "90",
+            "club.short_name": "Test Club",
+            "slot_roles": '["operator"]',
+        },
+    )
     assert r.status_code == 302
     assert setting("defaults.slot_length_minutes") == 90
     assert ClubSetting.objects.get(key="club.short_name").value == "Test Club"
-    assert not ClubSetting.objects.filter(key="slot_roles").exists()
     assert AuditLog.objects.filter(action="setting.changed").count() >= 2
     c2, _ = _as("officer")
     assert c2.get("/ops/settings/").status_code == 404
@@ -87,7 +103,7 @@ def test_time_zone_is_a_drop_down_and_bad_values_are_refused():
     assert setting("club.timezone") == "America/Chicago"
 
 
-def test_accent_uses_the_colour_picker_and_images_upload(settings, tmp_path):
+def test_accent_uses_the_color_picker_and_images_upload(settings, tmp_path):
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     settings.MEDIA_ROOT = tmp_path

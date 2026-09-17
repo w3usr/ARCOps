@@ -108,6 +108,24 @@ def sign_up(request, slot_id):
 
 
 @login_required
+def confirm_remove_signup(request, signup_id):
+    """A captain taking somebody else out of a slot (FR-58).
+
+    The remove control used to post straight through with confirmed=yes and no reason, so the
+    club member got a removal notice with an empty reason and the captain never saw what it did
+    to the slot. This page says both things before anything happens.
+    """
+    su = get_object_or_404(SignUp, pk=signup_id)
+    if not request.user.can_captain(su.slot.event):
+        raise Http404
+    return render(
+        request,
+        "events/confirm_remove.html",
+        {"signup": su, "broken": would_break(su.slot, su), "event": su.slot.event},
+    )
+
+
+@login_required
 @require_POST
 def cancel_signup(request, signup_id):
     su = get_object_or_404(SignUp, pk=signup_id)
@@ -132,13 +150,14 @@ def cancel_signup(request, signup_id):
     if su.user == request.user:
         notify.member_cancelled(request.user, su, broken)  # FR-56: the captains always hear
     else:
-        notify.removed_by_captain(request.user, su, request.POST.get("reason", "")[:300])  # FR-58
+        reason = request.POST.get("reason", "").strip()[:300]
+        notify.removed_by_captain(request.user, su, reason)  # FR-58
     role = su.role
     su.delete()
     from .services import waitlist
 
     waitlist.on_place_opened(slot, role)  # FR-57
-    messages.success(request, "Sign-up cancelled.")
+    messages.success(request, "Sign-up canceled.")
     return redirect("event_detail", pk=slot.event.pk)
 
 
@@ -292,7 +311,7 @@ def publish(request, pk):
         messages.info(request, "Back to draft.")
     else:
         messages.error(
-            request, "A published event with sign-ups can only be cancelled, not unpublished."
+            request, "A published event with sign-ups can only be canceled, not unpublished."
         )
     return redirect("event_detail", pk=pk)
 

@@ -119,7 +119,7 @@ def test_slot_close_cancel_duplicate_and_cancel_event(officer):
     assert copy.state == "draft" and copy.duplicated_from == ev
     assert (
         Slot.objects.filter(position__location__event=copy).count() == 2 * 26 - 1
-    )  # the cancelled one is not copied
+    )  # the canceled one is not copied
     assert c.post(f"/events/{copy.pk}/cancel/", {}).status_code == 302
     copy.refresh_from_db()
     assert copy.state == "draft"  # without the confirmation tick nothing happens

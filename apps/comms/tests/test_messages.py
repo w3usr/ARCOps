@@ -140,11 +140,12 @@ def test_outbox_is_officers_only_and_filters_by_state():
         session["acting_view"] = "sysadmin"
         session.save()
     body = c.get("/ops/outbox/").content.decode()
-    assert "Sent one" in body and "Kept one" in body and "Email delivery is <strong>off" in body
+    assert "Sent one" in body and "Kept one" in body
+    assert "<strong>Mail is not being sent.</strong>" in body
     body = c.get("/ops/outbox/?state=sent").content.decode()
     assert "Sent one" in body and "Kept one" not in body
     home = c.get("/").content.decode()
-    assert "Email delivery is <strong>off</strong>" in home
+    assert "<strong>Mail is not being sent.</strong>" in home
 
 
 def test_template_edit_page_is_sysadmin_only_sanitises_and_audits():
@@ -163,7 +164,9 @@ def test_template_edit_page_is_sysadmin_only_sanitises_and_audits():
         session["acting_view"] = "sysadmin"
         session.save()
     body = c.get("/ops/templates/").content.decode()
-    assert "account.admitted" in body and "shipped default" in body
+    # named by what the message is, not by its key
+    assert "Admitted as a member" in body and "as shipped" in body
+    assert "account.admitted" in body  # the link still carries the key
     r = c.post(
         "/ops/templates/account.admitted/",
         {
@@ -205,7 +208,7 @@ def test_invitation_message_goes_to_the_address_and_marks_emailed_at():
 
 def test_delivered_html_carries_the_site_layout_and_styled_links(settings):
     """Every mail the site sends is framed alike (apps.comms.layout): a band with the club's
-    short name, the body, the club's name and contact; plain anchors take the accent colour."""
+    short name, the body, the club's name and contact; plain anchors take the accent color."""
     from django.core import mail
 
     from apps.comms.services import compose, deliver

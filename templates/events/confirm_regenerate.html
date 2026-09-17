@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Regenerate slots · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{% url 'event_manage' event.pk %}">Manage</a></p>
+<h1>Replace the whole grid?</h1>
+<p class="msg warning"><span class="lvl">Careful:</span> this deletes the {{ slot_count }} slot{{ slot_count|pluralize }} on the roster now and builds a new grid in their place. The seat counts, the closed flags, and every "who may sign up" override on those slots go with them. It cannot be undone.</p>
+<form method="post" action="{% url 'slots_generate' event.pk %}">{% csrf_token %}
+  {% for name, value in fields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+  <input type="hidden" name="confirmed" value="yes">
+  <a class="button" href="{% url 'event_manage' event.pk %}">Keep the grid</a>
+  <button type="submit" class="danger">Replace the grid</button>
+</form>
+{% endblock %}

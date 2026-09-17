@@ -26,6 +26,28 @@ MANDATORY: dict[str, str] = {
 
 ALL = {**CONTROLLED, **MANDATORY}
 
+# The short name a table column shows. The sentences above are the ones a member reads beside a
+# switch; a column headed "Category" wants two words, and it wants them in English rather than
+# as the stored key ("license_expiry").
+NAMES: dict[str, str] = {
+    "reminder": "Reminder",
+    "warning": "Warning",
+    "opening": "Seats open",
+    "announcement": "Announcement",
+    "digest": "Digest",
+    "license_expiry": "License expiry",
+    "cancellation": "Cancellation",
+    "moved": "Sign-up moved",
+    "security": "Account security",
+    "agreement": "Agreement",
+    "account": "Account",
+}
+
+
+def name(key: str) -> str:
+    return NAMES.get(key, str(key).replace("_", " ").capitalize())
+
+
 # Categories whose unread messages earn a Home banner (FR-108): the ones that would otherwise
 # have been a warning email.
 BANNER = ("warning", "agreement", "security", "cancellation", "moved")

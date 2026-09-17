@@ -113,3 +113,21 @@ if ("serviceWorker" in navigator) {
     update();
   }
 })();
+
+// Flash messages: a live region that is already on the page when it loads announces nothing,
+// so move focus to it once. The list is tabindex="-1", so it never enters the tab order.
+(() => {
+  const list = document.getElementById("messages");
+  if (list) list.focus({ preventScroll: true });
+})();
+
+// Slot eligibility override: the role select renames the fields that go with it. This was an
+// inline onchange, which the CSP (script-src 'self') blocks, so every override was written
+// against the first role whatever the captain picked.
+document.addEventListener("change", (ev) => {
+  const sel = ev.target.closest("[data-role-select]");
+  if (!sel || !sel.form) return;
+  sel.form.querySelectorAll("[data-role-field]").forEach((el) => {
+    el.name = el.dataset.roleField + "_" + sel.value;
+  });
+});

@@ -1,25 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Your level · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>The level you are acting at</h1>
-<p>Your account holds everything below, and your session acts at one of them at a time. A lower
-level is real: what it cannot do is refused, not just hidden, so this is also how you see the
-application as a member or an officer sees it. Raising the level asks for your password again.</p>
+<h1>Your level</h1>
+<p class="lede">Your account holds every level below. Your session acts at one of them at a time.</p>
+<p>A lower level is real: what it cannot do is refused, not merely hidden, so this is also how you
+see the application as a member or an officer sees it. Moving up a level asks for your password
+again; moving down never does.</p>
 
 <form method="post" class="card stack">{% csrf_token %}
   {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
   <fieldset>
-    <legend>Act as</legend>
+    <legend>Choose a level</legend>
+    <ul class="levels">
     {% for view in views %}
-    <div class="check">
-      <input type="radio" id="v-{{ view.key }}" name="view" value="{{ view.key }}"{% if view.current %} checked{% endif %}>
-      <label for="v-{{ view.key }}">{{ view.label }}
-        <span class="muted">· {{ view.count }} capabilit{{ view.count|pluralize:"y,ies" }}</span>
-        {% if view.current %}<span class="tag ok">now</span>{% endif %}
-        {% if view.raises %}<span class="tag warn">asks for your password</span>{% endif %}
-      </label>
-    </div>
+      <li>
+        <div class="check">
+          <input type="radio" id="v-{{ view.key }}" name="view" value="{{ view.key }}"{% if view.current %} checked{% endif %}>
+          <label for="v-{{ view.key }}">{{ view.label }}</label>
+          {% if view.current %}<span class="tag ok">where you are now</span>{% endif %}
+          {% if view.raises %}<span class="tag warn">asks for your password</span>{% endif %}
+        </div>
+        <p class="helptext">{{ view.summary }}</p>
+        <details><summary>Everything this level can do</summary>
+          <ul class="list">{% for ability in view.abilities %}<li>{{ ability }}</li>{% empty %}<li class="muted">Sign in, see your own account, and sign up for slots.</li>{% endfor %}</ul>
+        </details>
+      </li>
     {% endfor %}
+    </ul>
   </fieldset>
   <div class="field">
     <label for="pw">Your password</label>

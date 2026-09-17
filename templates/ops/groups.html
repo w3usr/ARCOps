@@ -22,7 +22,7 @@ in. Changes here take effect at once and are written to the audit log.</p>
   <tr>
     <th scope="row">{{ capability.1 }}</th>
     {% for row in rows %}
-    <td class="tick">
+    <td class="tick" data-label="{{ row.label }}">
       <label class="sr-only" for="c{{ row.group.pk }}-{{ capability.0 }}">{{ capability.1 }} for {{ row.label }}</label>
       <input type="checkbox" id="c{{ row.group.pk }}-{{ capability.0 }}" name="caps_{{ row.group.pk }}" value="{{ capability.0 }}"{% if capability.0 in row.held %} checked{% endif %}>
     </td>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load richtext dicts %}
+{% load richtext dicts labels %}
 {% block title %}{{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
@@ -22,7 +22,7 @@
 {% elif event.state == 'completed' %}
 <div class="banner"><p><strong>Completed.</strong> Kept for the record.</p></div>
 {% elif event.state == 'cancelled' %}
-<div class="banner"><p><strong>Cancelled.</strong> Kept for the record.</p></div>
+<div class="banner"><p><strong>Canceled.</strong> Kept for the record.</p></div>
 {% endif %}
 {% if event.display_only %}
 <section class="card"><h2>When</h2><p>{{ event.recurrence_text|default:"See the club's calendar." }}</p><p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
@@ -41,9 +41,9 @@
     {% if roster.counts.closed %}<span class="tag">{{ roster.counts.closed }} closed</span>{% endif %}
     · {{ health.scheduled_hours|floatformat:"-1" }} operating hours{% if health.limits.total_limit %} of {{ health.limits.total_limit|floatformat:"-1" }}{% endif %}{% if health.over_total_limit %} <strong>(over the event's limit)</strong>{% endif %}
     {% for d in health.limits.days %}{% if d.limit %}{% if forloop.first %}<br><small class="muted">Per day: {% endif %}{{ d.day }} {{ d.hours }} h{% if d.over %} <strong>(over {{ d.limit|floatformat:"-1" }})</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% if forloop.last %}</small>{% endif %}{% endif %}{% endfor %}
-    · <a href="{% url 'roster_csv' event.pk %}">Export CSV</a> · <a href="{% url 'participation' event.pk %}">Participation</a>
-    {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<button type="submit" class="linklike">Return to draft</button></form>{% endif %}
   </p>
+  <p class="health-actions"><a href="{% url 'roster_csv' event.pk %}">Export the roster</a> · <a href="{% url 'participation' event.pk %}">Who took part</a></p>
+  {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<button type="submit" class="linklike">Take it back to draft</button></form>{% endif %}
 </section>
 {% elif roster.published %}
 <p class="lede">{% if roster.counts.open %}<strong>{{ roster.counts.open }} open slot{{ roster.counts.open|pluralize }}</strong>{% if roster.counts.covered %}, {{ roster.counts.covered }} covered{% endif %}. Pick your hours below: tick several and sign up for them together, or open one for the details.{% else %}Every slot is spoken for. Open one to see who is on it.{% endif %}</p>
@@ -89,7 +89,7 @@
         <a class="slot-link" href="{% url 'slot_detail' event.pk c.slot.pk %}" data-slot="{{ c.slot.pk }}">
           {% if roster.layout == 'list' %}<span class="r-where">{% if not roster.single_location %}{{ c.slot.position.location.name }} · {% endif %}{{ c.slot.position.name }}</span>{% endif %}
           <span class="people">
-            {% if not roster.names_visible %}{% if c.signups %}<span class="person"><span class="counts">{{ c.class_counts }}</span><small class="role">{{ c.signups|length }} signed up</small></span>{% endif %}{% else %}{% for s in c.signups %}<span class="person">{% if is_captain %}{{ s.user.full_name_lettered }}{% else %}{{ s.user.short_name_lettered }}{% endif %}<small class="role">{{ s.role }}{% for b in c.badges|dictkey:s.pk %} · {{ b }}{% endfor %}{% if c.control_operator and c.control_operator.pk == s.user.pk %} · CO{% endif %}{% if s.checked_in_at %} · in{% elif s.confirmed_at %} · ✓{% elif is_captain and s.user.reminders_off %} · reminders off{% endif %}</small>{% if is_captain and s.note %}<small class="role notemark" title="{{ s.note }}">note</small>{% endif %}</span>{% endfor %}{% endif %}
+            {% if not roster.names_visible %}{% if c.signups %}<span class="person"><span class="counts">{{ c.class_counts }}</span><small class="role">{{ c.signups|length }} signed up</small></span>{% endif %}{% else %}{% for s in c.signups %}<span class="person">{% if is_captain %}{{ s.user.full_name_lettered }}{% else %}{{ s.user.short_name_lettered }}{% endif %}<small class="role">{{ s.role|role_label }}{% for b in c.badges|dictkey:s.pk %} · {{ b }}{% endfor %}{% if c.control_operator and c.control_operator.pk == s.user.pk %} · CO{% endif %}{% if s.checked_in_at %} · in{% elif s.confirmed_at %} · ✓{% elif is_captain and s.user.reminders_off %} · reminders off{% endif %}</small>{% if is_captain and s.note %}<small class="role notemark">Note: {{ s.note|truncatechars:40 }}</small>{% endif %}</span>{% endfor %}{% endif %}
             {% if c.mine %}<span class="you">you{% if not roster.names_visible %} ({{ c.mine.role }}){% endif %}</span>{% endif %}
           </span>
           <span class="state"><span class="word">{{ c.shown.word }}</span>{% if c.shown.detail %}<small>{{ c.shown.detail }}</small>{% endif %}{% if c.over_limit %}<small class="tag bad">over limit</small>{% endif %}</span>
@@ -115,7 +115,7 @@
   {% if is_captain %}
   <button type="submit" name="action" value="close" class="secondary">Close</button>
   <button type="submit" name="action" value="reopen" class="secondary">Reopen</button>
-  <button type="submit" name="action" value="cancel" class="secondary">Cancel slots</button>
+  <button type="submit" name="action" value="cancel" class="danger">Cancel slots</button>
   {% endif %}
 </div>
 </form>

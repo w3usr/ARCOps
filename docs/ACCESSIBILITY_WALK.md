@@ -29,7 +29,7 @@ anyone else's (FR-117).
 | # | Flow | What must be true |
 |---|---|---|
 | 1 | Sign in | The email and password fields are announced with their labels; an error is announced; after sign-in the page title says where you are |
-| 2 | Find an event | The event list reads as a list with one heading per event; each link's text names the event; the roster's status words (Open, Needs, Covered, Full) are read, not only coloured |
+| 2 | Find an event | The event list reads as a list with one heading per event; each link's text names the event; the roster's status words (Open, Needs, Covered, Full) are read, not only colored |
 | 3 | Read the roster | The roster is a table: row and column headers are announced for each cell (time, position, who); a slot's dialog opens with focus inside it and closes with Escape, returning focus |
 | 4 | Sign up | The role select and note field are labelled; the confirmation message is announced; the new state is read on return |
 | 5 | Confirm | From the reminder's link or My schedule: the Confirm button is reachable first in the tab order and its result is announced |

@@ -10,7 +10,7 @@
 {% if club.branding.favicon %}<link rel="icon" href="{{ club.branding.favicon }}">{% endif %}
 {% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{{ club.branding.apple_touch_icon }}">{% endif %}
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
-{# The club's colour, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
+{# The club's color, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
 <style>:root { --brand: {{ club.branding.accent }}; }</style>
 {# Restores the remembered sidebar state before first paint, so it never flashes open. #}
 <script src="{% static 'js/nav-state.js' %}"></script>
@@ -66,7 +66,7 @@
     <p class="navgroup" id="nav-sysadmin"><span>Sysadmin tools</span></p>
     <ul class="navlist" aria-labelledby="nav-sysadmin">
       <li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>
-      <li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Templates</span></a></li>
+      <li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Message text</span></a></li>
       <li><a href="{% url 'settings_page' %}"{% nav_active 'settings_page' %}>{% icon 'settings' %}<span>Settings</span></a></li>
       {% if perms.ops.manage_groups %}<li><a href="{% url 'groups_page' %}"{% nav_active 'groups_page' %}>{% icon 'users' %}<span>Access groups</span></a></li>{% endif %}
       <li><a href="{% url 'admin:index' %}">{% icon 'edit' %}<span>Django Admin</span></a></li>
@@ -74,9 +74,9 @@
     {% endif %}
     <div class="sidenav-foot">
       {% if acting_views > 1 %}
-      <a class="whoami" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}" title="Acting as {{ acting_label }}. Change the level you are acting at.">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}<span class="level">{{ acting_label }}</span></span></a>
+      <a class="whoami" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}<span class="level">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></span></span></a>
       {% else %}
-      <p class="whoami" title="{{ user.email }}">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}</span></p>
+      <p class="whoami">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}</span></p>
       {% endif %}
       <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>
       <button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>
@@ -87,7 +87,8 @@
 {% if minor_readonly %}<div class="banner readonly" role="status"><p><strong>Read-only.</strong> A member under 18 sees their schedule, rosters, and messages here; sign-ups, changes, and profile edits are made by a guardian from their own account. You can change your own password.</p></div>{% endif %}
 {% if impersonator %}<div class="banner impersonating" role="status"><p><strong>Viewing as {{ user.full_name }}</strong>. Read-only: nothing can be changed from this view. You are {{ impersonator.short_name }}.</p><form method="post" action="{% url 'impersonate_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop viewing as them</button></form></div>{% endif %}
 <main id="main" class="{% if user.is_authenticated %}content{% else %}plain{% endif %}">
-  {% if messages %}<ul class="messages" role="status" aria-live="polite">{% for m in messages %}<li class="msg {{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+  {# A live region already present at load announces nothing, so app.js focuses it instead. #}
+  {% if messages %}<ul class="messages" id="messages" tabindex="-1" role="status" aria-live="polite">{% for m in messages %}<li class="msg {{ m.tags }}"><span class="lvl">{% if m.level_tag == 'error' %}Problem{% elif m.level_tag == 'warning' %}Careful{% elif m.level_tag == 'success' %}Done{% else %}Note{% endif %}:</span> {{ m }}</li>{% endfor %}</ul>{% endif %}
   {# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
   {% block main %}{% block content %}{% endblock %}{% endblock %}
 </main>

@@ -98,7 +98,7 @@ def test_both_pages_render_the_same_fields_for_the_same_person():
 
 
 def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
-    """It used to be uppercased and stored, skipping the lookup, the licence record, and the
+    """It used to be uppercased and stored, skipping the lookup, the license record, and the
     name check that the profile did (found 2026-09-17)."""
     from apps.credentials.models import LicenseRecord, UlsLicense
 

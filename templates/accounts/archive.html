@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load dicts %}
+{% load dicts labels %}
 {% block title %}Archive · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Archive</h1><span><a class="button secondary" href="{% url 'members' %}">Members</a></span></div>
@@ -10,7 +10,7 @@ opened is recorded.</p>
 <form method="get" class="searchrow" role="search">
   <label class="sr-only" for="q">Search the archive</label>
   <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name, callsign, email, or reason">
-  <button type="submit" class="secondary">Search</button>
+  <button type="submit">Search</button>
   {% if q %}<a class="button secondary" href="{% url 'archive' %}">Clear</a>{% endif %}
 </form>
 <table class="table">
@@ -19,11 +19,11 @@ opened is recorded.</p>
 {% for m in people %}
 <tr>
   <th scope="row"><a href="{% url 'member_detail' m.pk %}">{{ m.full_name }}</a>{% if m.preferred_name %} <span class="muted">({{ m.preferred_name }})</span>{% endif %}</th>
-  <td>{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
-  <td>{{ categories|default_if_none:""|dictkey:m.category|default:m.category|capfirst }}</td>
-  <td>{{ m.archived_at|date:"j M Y" }}</td>
-  <td>{{ m.archived_reason|default:"—" }}</td>
-  <td>{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
+  <td data-label="Callsign">{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
+  <td data-label="Category">{{ m.category|category_label }}</td>
+  <td data-label="Archived">{{ m.archived_at|date:"j M Y" }}</td>
+  <td data-label="Why">{{ m.archived_reason|default:"—" }}</td>
+  <td data-label="Contact">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
 </tr>
 {% empty %}<tr><td colspan="6">{% if q %}No one in the archive matches.{% else %}Nobody has been archived.{% endif %}</td></tr>{% endfor %}
 </tbody></table>

@@ -13,6 +13,15 @@ sys.path.insert(0, str(ROOT))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.test")
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--contact-sheet",
+        action="store_true",
+        default=False,
+        help="write a screenshot of every page into var/contact-sheet/ for review by eye",
+    )
+
+
 def pytest_configure():
     import tempfile
 

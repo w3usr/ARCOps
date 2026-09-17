@@ -155,7 +155,7 @@ def test_minor_signs_in_read_only():
     assert not SignUp.objects.filter(user=minor).exists()
     r = c.get("/me/")
     assert (
-        b"Your guardians" in r.content
+        b">Guardians</h2>" in r.content
         and b"Parent Tester" in r.content
         and b"Close my account" not in r.content
     )

@@ -42,8 +42,8 @@ CAPABILITIES: list[tuple[str, str]] = [
     ("view_archive", "Read the archive of former members"),
     ("delete_accounts", "Delete an account outright"),
     ("impersonate_members", "View the site as another member, read-only"),
-    # licences and access to the station
-    ("override_license", "Override a licence class, status, or expiry"),
+    # licenses and access to the station
+    ("override_license", "Override a license class, status, or expiry"),
     ("approve_agreements", "Approve a signed access agreement, and revoke an approval"),
     ("convert_minor_accounts", "Convert a member's account to an adult's at 18"),
     ("rotate_shared_secret", "Set or rotate the computer password"),

@@ -19,6 +19,8 @@ jobs:
         run: bash tools/check_club_neutral.sh
       - name: No requirement identifiers in the interface
         run: bash tools/check_no_requirement_ids.sh
+      - name: Interface house rules (docs/INTERFACE.md)
+        run: bash tools/check_interface.sh
       - name: Tests
         run: pytest
       - name: Dependency audit

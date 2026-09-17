@@ -38,7 +38,7 @@ def _standing(user) -> dict:
     latest = {}
     for a in agreements:
         latest.setdefault(a.template_id, a)
-    return {"licence": lic, "agreements": list(latest.values())}
+    return {"license": lic, "agreements": list(latest.values())}
 
 
 @login_required

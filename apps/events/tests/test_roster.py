@@ -164,7 +164,14 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], closed=True).count() == len(
         run_slots
     )
-    co.post(f"/events/{ev.pk}/bulk/", {"action": "cancel", "slots": [s.pk for s in run_slots]})
+    # Canceling cannot be undone, so it asks first and says what is about to go.
+    r = co.post(f"/events/{ev.pk}/bulk/", {"action": "cancel", "slots": [s.pk for s in run_slots]})
+    assert r.status_code == 200 and b"cannot be brought back" in r.content
+    assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], cancelled=False).count() == 4
+    co.post(
+        f"/events/{ev.pk}/bulk/",
+        {"action": "cancel", "confirmed": "yes", "slots": [s.pk for s in run_slots]},
+    )
     # the two with sign-ups stay
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], cancelled=False).count() == 2
     assert (

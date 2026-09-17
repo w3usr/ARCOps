@@ -55,7 +55,7 @@ def profile(request):
             return redirect("profile")
     else:
         form = AccountForm(instance=request.user, actor=request.user)
-    licence = LicenseRecord.objects.filter(user=request.user).first()
+    license = LicenseRecord.objects.filter(user=request.user).first()
     from apps.comms.categories import CONTROLLED, MANDATORY
 
     prefs = {p.category: p for p in request.user.notification_preferences.all()}
@@ -73,7 +73,7 @@ def profile(request):
         "accounts/profile.html",
         {
             "form": form,
-            "licence": licence,
+            "license": license,
             "readonly_rows": readonly_rows(request.user, request.user),
             "notification_rows": rows,
             "mandatory_labels": list(MANDATORY.values()),

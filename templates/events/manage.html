@@ -29,7 +29,7 @@
       <div class="field">{{ period_form.start.label_tag }}{{ period_form.start }}</div>
       <div class="field">{{ period_form.end.label_tag }}{{ period_form.end }}</div>
     </div>
-    <div><button type="submit" class="secondary">Add period</button></div>
+    <div><button type="submit">Add period</button></div>
   </form>
 </section>
 
@@ -41,7 +41,7 @@
     {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>{% endfor %}
   </ul>
   <form method="post" action="{% url 'position_add' event.pk l.pk %}" class="inline">{% csrf_token %}
-    <label class="sr-only" for="pos-{{ l.pk }}">Position name</label><input id="pos-{{ l.pk }}" name="name" placeholder="Position name (Run, Mult, VHF…)"> <button type="submit" class="secondary">Add position</button>
+    <label class="sr-only" for="pos-{{ l.pk }}">Position name</label><input id="pos-{{ l.pk }}" name="name" placeholder="Position name (Run, Mult, VHF…)"> <button type="submit">Add position</button>
   </form>
   {% empty %}<p class="muted">No location yet. A position is one operating seat at a location; each gets its own column of slots.</p>{% endfor %}
   <h3>Add a location</h3>
@@ -50,7 +50,7 @@
     <div class="field"><label for="laddr">Address (optional)</label><input id="laddr" name="address"></div>
     <div class="field"><label for="lpos">First position</label><input id="lpos" name="position" placeholder="Run"></div>
     <div class="check"><input type="checkbox" id="lclub" name="is_club_station" checked><label for="lclub">This is the club station</label></div>
-    <div><button type="submit" class="secondary">Add location</button></div>
+    <div><button type="submit">Add location</button></div>
   </form>
 </section>
 
@@ -76,20 +76,20 @@
   {% if not signups_exist %}
   <form method="post" action="{% url 'slots_generate' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for f in generate_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
-    <div><button type="submit">{% if slot_count %}Regenerate{% else %}Generate{% endif %} slots</button></div>
+    <div><button type="submit"{% if slot_count %} class="danger"{% endif %}>{% if slot_count %}Regenerate{% else %}Generate{% endif %} slots</button></div>
   </form>
   {% endif %}
 </section>
 
 <section class="card" aria-labelledby="con">
   <h2 id="con">Contest details</h2>
-  <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorised. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
+  <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorized. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
   <form method="post" action="{% url 'contest_save' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">
       <div class="field"><label for="cf-ref">Calendar reference number</label><input id="cf-ref" name="calendar_ref" inputmode="numeric" value="{{ event.calendar_ref|default_if_none:'' }}"></div>
       {% for key, label, kind in contest_fields %}<div class="field"><label for="cf-{{ key }}">{{ label }}</label><input id="cf-{{ key }}" name="{{ key }}" type="{% if kind == 'url' %}url{% elif kind == 'email' %}email{% else %}text{% endif %}" maxlength="500" value="{{ event.contest_fields|dictkey:key|default:'' }}"></div>{% endfor %}
     </div>
-    <div><button type="submit" class="secondary">Save contest details</button></div>
+    <div><button type="submit">Save contest details</button></div>
   </form>
 </section>
 
@@ -103,7 +103,7 @@
   <p class="helptext">Advisory: the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
   <form method="post" action="{% url 'limits_save' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for f in limit_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
-    <div><button type="submit" class="secondary">Save limits</button></div>
+    <div><button type="submit">Save limits</button></div>
   </form>
   {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total }} h{% if limits.total_limit %} of {{ limits.total_limit }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}
 </section>
@@ -123,7 +123,7 @@
       </div>
     </fieldset>
     {% endfor %}
-    <div><button type="submit" class="secondary">Save who may sign up</button></div>
+    <div><button type="submit">Save who may sign up</button></div>
   </form>
 </section>
 
@@ -139,7 +139,7 @@
       <div class="field"><span class="label">To</span>{% for c in categories %}<div class="check"><input type="checkbox" name="categories" value="{{ c.key }}" id="op-cat-{{ c.key }}"><label for="op-cat-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: everyone.</span></div>
       <div class="field"><div class="check"><input type="checkbox" name="announce" id="op-ann"><label for="op-ann">Announce when it opens</label></div></div>
     </div>
-    <div><button type="submit" class="secondary">Add opening</button></div>
+    <div><button type="submit">Add opening</button></div>
   </form>
 </section>
 

@@ -260,7 +260,7 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert lic.effective_source == "sysadmin override, Canada" and lic.override_by == s
     assert AuditLog.objects.filter(action="license.override", subject_id=str(lic.pk)).exists()
     body = c.get(f"/members/{u.pk}/").content.decode()
-    assert "sysadmin override, Canada" in body and "Lift the override" in body
+    assert "Set by a sysadmin, Canada" in body and "Go back to the FCC value" in body
     # a refresh from the (still empty) table does not touch the override
     from apps.credentials.services import refresh_license_from_local_table
 
@@ -283,8 +283,8 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert "sysadmin override" not in c.get("/me/").content.decode() or True
 
 
-def test_a_member_whose_callsign_never_had_a_licence_record_gets_one():
-    """The first sysadmin's callsign is set at bootstrap, outside the profile form, so no licence
+def test_a_member_whose_callsign_never_had_a_license_record_gets_one():
+    """The first sysadmin's callsign is set at bootstrap, outside the profile form, so no license
     record exists for it; the sync used to iterate the records and never reach them, leaving the
     account reading "none on file" for ever (found on the live site, 2026-09-17)."""
     from apps.credentials.models import LicenseRecord

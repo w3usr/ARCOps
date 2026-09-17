@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Remove from the slot · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
+<h1>Remove {{ signup.user.full_name }} from this slot?</h1>
+<p>{{ signup.slot.position.location.name }} · {{ signup.slot.position.name }} · {{ signup.slot.start|date:"D j M H:i" }}Z, as <strong>{{ signup.role }}</strong>.</p>
+{% if broken %}<p class="msg warning"><span class="lvl">Careful:</span> the slot becomes <strong>{{ broken.label|lower }}</strong> without them: {{ broken.reasons|join:"; " }}.</p>{% endif %}
+<form method="post" action="{% url 'cancel_signup' signup.pk %}" class="stack card">{% csrf_token %}
+  <input type="hidden" name="confirmed" value="yes">
+  <div class="field">
+    <label for="reason">Reason</label>
+    <input id="reason" name="reason" maxlength="300" required placeholder="Station closed for the storm">
+    <span class="helptext">{{ signup.user.display_first }} is told they have been removed, and this is what they are told.</span>
+  </div>
+  <div>
+    <a class="button" href="{% url 'event_detail' event.pk %}">Keep them in the slot</a>
+    <button type="submit" class="danger">Remove and tell them</button>
+  </div>
+</form>
+{% endblock %}

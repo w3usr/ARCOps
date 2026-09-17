@@ -402,7 +402,7 @@ def cancel_slot_with_people(actor: User, slot: Slot, reason: str = "") -> int:
             actor,
             "signup.cancelled",
             su,
-            before={"role": su.role, "user": su.user_id, "by": "slot cancelled"},
+            before={"role": su.role, "user": su.user_id, "by": "slot canceled"},
         )
     slot.signups.all().delete()
     slot.cancelled = True

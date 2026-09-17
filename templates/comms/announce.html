@@ -18,7 +18,7 @@
       <div class="field"><span class="label">Category</span>{% for c in categories %}<div class="check"><input type="checkbox" name="categories" value="{{ c.key }}" id="f-cat-{{ c.key }}"{% if c.key in filters.categories %} checked{% endif %}><label for="f-cat-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: every category.</span></div>
     </div>
     <p><strong>{{ recipients|length }} recipient{{ recipients|length|pluralize }}</strong>{% if recipients %}: {% for u in recipients|slice:":12" %}{{ u.short_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if recipients|length > 12 %}, …{% endif %}{% endif %}
-    <button type="submit" formmethod="get" formaction="" class="secondary">Recount</button></p>
+    <button type="submit" name="action" value="recount" class="secondary">Recount</button></p>
   </fieldset>
   <div class="field">{{ form.subject.label_tag }}{{ form.subject }}{{ form.subject.errors }}</div>
   <div class="field">{{ form.body_html.label_tag }}{{ form.body_html }}{{ form.body_html.errors }}<span class="helptext">Plain paragraphs are fine; simple HTML is kept. An unsubscribe footer is added to every copy.</span></div>

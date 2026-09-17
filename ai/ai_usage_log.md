@@ -1473,3 +1473,35 @@ carries the actual running model ID.
 - **Nature of Contribution**: Review by four subagents, applied and checked by the assistant.
 - **Human Review Status**: Pending the advisor's look. 228 tests pass.
 - **Git Hash**: 08ad3f0
+
+## [2026-09-17 21:07 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The interface, reviewed and rebuilt. The advisor read the live site and
+  found three faults in as many minutes: a level offered as "Faculty Advisor · 16 capabilities",
+  a heading reading "Where we write, and how you sign in" where "Email" would do, and a run of
+  badges, buttons, and links after each address ending in a filled red pill. His instruction was
+  to survey every page, find the best practice for this kind of application, propose one solution,
+  and apply it everywhere. Four reviewers read all 73 templates, the stylesheet, and the
+  JavaScript against the code behind them and returned 159 findings. Applied here: the dozen that
+  were not cosmetic (pressing Recount discarded the announcement body; a bad value in Settings
+  discarded everything typed; Enter in the decline-reason field approved an agreement and granted
+  station access; a captain's remove bypassed the viability check and sent an empty reason; the
+  slot role override was an inline handler the content security policy blocks; any banner pushed
+  the page into the sidebar column; danger buttons were 2.0:1 in dark mode and the focus ring
+  2.0:1 in light; flash messages were never announced; bulk cancel and regenerate were
+  unconfirmed; two pages disagreed about "open" slots), then the house rules in docs/INTERFACE.md,
+  the design system they need, and a vocabulary pass so no stored key, dotted setting, or Python
+  repr reaches a page. Also, on the advisor's instruction mid-session, American English throughout.
+- **Sections/Files Affected**: docs/INTERFACE.md (new); tools/check_interface.sh (new, wired into
+  CI); tools/a11y/test_contact_sheet.py (new); apps/ops/templatetags/labels.py (new);
+  apps/ops/tests/test_interface.py and test_labels.py (new); static/css/app.css; static/js/app.js;
+  templates/base.html and 30 further templates, the member page and profile rebuilt as separate
+  cards with a danger zone last; apps/comms/views_announce.py, apps/ops/views_settings.py,
+  apps/events/views.py, views_slots.py, views_manage.py; apps/comms/defaults.py and categories.py;
+  apps/credentials/models.py; apps/events/services/viability.py; config/club.example.yaml.
+- **Nature of Contribution**: Review by four subagents; design, code, and tests by the assistant
+  under the advisor's four instructions and four design decisions.
+- **Human Review Status**: Pending the advisor's look at the contact sheet. 241 tests pass, ruff
+  clean, the axe sweep passes for all eight roles at 1280px and 390px, and the three repository
+  guards pass.
+- **Git Hash**: (filled in after committing)

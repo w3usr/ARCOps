@@ -5,7 +5,7 @@ The slot page (`/events/<pk>/slot/<id>/`) is the full record of a slot and every
 the roster opens the same content in a dialog (`?partial=1`) when JavaScript is present. Bulk
 actions come from the roster's checkboxes: a member signs up for several slots in one role with
 one note and gets a per-slot answer; a captain closes, reopens, or cancels several at once.
-Nothing here deletes: a slot with history is cancelled, never removed (FR-102).
+Nothing here deletes: a slot with history is canceled, never removed (FR-102).
 """
 
 from __future__ import annotations
@@ -244,9 +244,17 @@ def event_bulk(request, pk):
     elif action == "cancel":
         with_people = [s for s in slots if s.signups.exists()]
         free = [s for s in slots if not s.signups.exists()]
+        if request.POST.get("confirmed") != "yes":
+            # Canceling cannot be undone, and the control sat between Close and Reopen, which
+            # both can. Say what is about to go before anything goes.
+            return render(
+                request,
+                "events/confirm_bulk_cancel.html",
+                {"event": event, "free": free, "with_people": with_people},
+            )
         n = Slot.objects.filter(pk__in=[s.pk for s in free]).update(cancelled=True)
         record(request.user, "slots.cancel", event, after={"count": n})
-        messages.success(request, f"{n} slot{'s' if n != 1 else ''} cancelled.")
+        messages.success(request, f"{n} slot{'s' if n != 1 else ''} canceled.")
         if with_people:
             messages.warning(
                 request,

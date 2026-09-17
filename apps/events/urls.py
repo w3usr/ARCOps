@@ -48,6 +48,11 @@ urlpatterns = [
     path("signup/<int:signup_id>/no-show/", views_slots.signup_no_show, name="signup_no_show"),
     path("slot/<int:slot_id>/signup/", views.sign_up, name="sign_up"),
     path("signup/<int:signup_id>/cancel/", views.cancel_signup, name="cancel_signup"),
+    path(
+        "signup/<int:signup_id>/remove/",
+        views.confirm_remove_signup,
+        name="confirm_remove_signup",
+    ),
     path("signup/<int:signup_id>/checkin/", views.check_in, name="check_in"),
     path("signup/<int:signup_id>/confirm/", views.confirm_signup, name="confirm_signup"),
     path("confirm/<str:token>/", views.confirm_by_token, name="confirm_by_token"),

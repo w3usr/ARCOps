@@ -31,7 +31,7 @@ def _base(request) -> str:
 class LinkForm(forms.Form):
     label = forms.CharField(
         max_length=80,
-        help_text="The course or the organisation; recorded on every account that joins.",
+        help_text="The course or the organization; recorded on every account that joins.",
     )
     kind = forms.ChoiceField(choices=EntryLink.Kind.choices)
     required_domain = forms.ChoiceField(required=False, label="Required email domain (class links)")

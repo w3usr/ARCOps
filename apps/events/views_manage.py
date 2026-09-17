@@ -234,7 +234,6 @@ def event_create(request):
 def event_manage(request, pk):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    roles = setting("slot_roles", []) or []
     form = EventForm(instance=event)
     if request.method == "POST":
         form = EventForm(request.POST, instance=event)
@@ -250,6 +249,13 @@ def event_manage(request, pk):
             )
             messages.success(request, "Saved.")
             return redirect("event_manage", pk=pk)
+    return _manage_page(request, event, form)
+
+
+def _manage_page(request, event, form=None, generate_form=None):
+    """The manage page. A view that refuses a form renders this with the bound form, so the
+    captain gets their values back with the reason beside them."""
+    roles = setting("slot_roles", []) or []
     positions = (
         Position.objects.filter(location__event=event)
         .select_related("location")
@@ -266,14 +272,16 @@ def event_manage(request, pk):
         "events/manage.html",
         {
             "event": event,
-            "form": form,
+            "form": form if form is not None else EventForm(instance=event),
             "period_form": PeriodForm(),
             "periods": event.periods.order_by("start"),
             "locations": event.locations.prefetch_related("positions").order_by("order"),
             "positions": positions,
             "captains": event.captaincies.select_related("user").order_by("user__last_name"),
             "candidates": candidates,
-            "generate_form": GenerateForm(roles=roles),
+            "generate_form": generate_form
+            if generate_form is not None
+            else GenerateForm(roles=roles),
             "slot_count": slot_count,
             "signups_exist": has_signups(event),
             "limits": limit_report(event),
@@ -402,9 +410,24 @@ def slots_generate(request, pk):
         messages.error(request, "Members have signed up; the grid cannot be rebuilt under them.")
         return redirect("event_manage", pk=pk)
     if not form.is_valid():
-        messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-        return redirect("event_manage", pk=pk)
-    Slot.objects.filter(position__location__event=event).delete()
+        messages.error(request, "Nothing was generated; correct the fields marked below.")
+        return _manage_page(request, event, generate_form=form)
+    existing = Slot.objects.filter(position__location__event=event)
+    if existing.exists() and request.POST.get("confirmed") != "yes":
+        # Regenerating deletes every seat count, closed flag, and eligibility override on the
+        # grid. It used to be the page's primary button, with nothing in between.
+        return render(
+            request,
+            "events/confirm_regenerate.html",
+            {
+                "event": event,
+                "slot_count": existing.count(),
+                "fields": [
+                    (k, v) for k, v in request.POST.items() if k not in ("csrfmiddlewaretoken",)
+                ],
+            },
+        )
+    existing.delete()
     windows = None
     if form.cleaned_data.get("windows"):
         from .services.slots import windows_from_daily
@@ -451,7 +474,7 @@ def slot_toggle(request, slot_id):
                 n = cancel_slot_with_people(
                     request.user, slot, request.POST.get("reason", "")[:300]
                 )
-                messages.success(request, f"Slot cancelled; {n} person(s) told.")
+                messages.success(request, f"Slot canceled; {n} person(s) told.")
             else:
                 messages.error(
                     request,
@@ -461,7 +484,7 @@ def slot_toggle(request, slot_id):
             slot.cancelled = True
             slot.save(update_fields=["cancelled"])
             record(request.user, "slot.cancelled", slot)
-            messages.success(request, "Slot cancelled.")
+            messages.success(request, "Slot canceled.")
     return redirect("event_detail", pk=event.pk)
 
 
@@ -493,6 +516,6 @@ def event_cancel(request, pk):
     record(request.user, "event.cancelled", event, after={"reason": reason, "people_told": told})
     messages.success(
         request,
-        f"Event cancelled; {told} person(s) told. It stays in the record; members no longer see it as upcoming.",
+        f"Event canceled; {told} person(s) told. It stays in the record; members no longer see it as upcoming.",
     )
     return redirect("event_list")

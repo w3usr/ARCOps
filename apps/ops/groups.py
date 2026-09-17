@@ -50,6 +50,29 @@ def sync(configured: list[dict] | None, *, reset: bool = False) -> dict:
     return counts
 
 
+def summary_of(
+    group_name: str, configured: list[dict] | None = None, added: list[str] | None = None
+) -> str:
+    """One line saying what a level lets somebody do, in words.
+
+    The page used to offer "Faculty advisor · 16 capabilities", which is a row count from a
+    database table and tells a reader nothing. The club's configuration carries a sentence for
+    each group it ships; a group invented in the interface gets one built from the capabilities
+    it adds to the level below it.
+    """
+    for row in configured or []:
+        if str(row.get("key")) == group_name and row.get("summary"):
+            return str(row["summary"])
+    things = [LABELS[c][0].lower() + LABELS[c][1:] for c in (added or []) if c in LABELS]
+    if not things:
+        return "Nothing beyond signing in and seeing your own account."
+    if len(things) > 3:
+        things = things[:3] + ["more besides"]
+    if len(things) == 1:
+        return things[0] + "."
+    return ", ".join(things[:-1]) + ", and " + things[-1] + "."
+
+
 def label_of(group: Group, configured: list[dict] | None = None) -> str:
     """The name a page shows. The configuration carries it; a group made in the interface is
     shown by its own name."""

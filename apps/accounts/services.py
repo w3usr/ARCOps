@@ -380,7 +380,7 @@ def deletion_effects(user: User) -> dict:
 
 
 def delete_account(actor: User, user: User, reason: str) -> dict:
-    """FR-118: irreversible. Future sign-ups are cancelled and their captains told; every
+    """FR-118: irreversible. Future sign-ups are canceled and their captains told; every
     identifying field is removed and the row stays as "deleted member" so past rosters and
     participation counts keep their shape; signed agreements and their PDFs stay for the §4.3
     period and the retention job purges them; the audit log keeps its entries and records this."""

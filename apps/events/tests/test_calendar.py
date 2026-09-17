@@ -23,4 +23,4 @@ def test_year_rollover_and_qualifier():
 
 def test_unparseable_reports():
     r = parse_date_line("sometime in October, 2026")
-    assert not r.parsed and "unrecognised" in r.error
+    assert not r.parsed and "unrecognized" in r.error

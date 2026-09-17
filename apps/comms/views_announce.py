@@ -52,18 +52,55 @@ class AnnounceForm(forms.Form):
         }
 
 
-def _filters_from_get(request):
+def _filters_from(data):
     return {
         k: v
         for k, v in {
-            "day": request.GET.get("day", ""),
-            "role": request.GET.get("role", ""),
-            "status": request.GET.get("status", ""),
-            "confirmation": request.GET.get("confirmation", ""),
-            "categories": [c for c in request.GET.getlist("categories") if c],
+            "day": data.get("day", ""),
+            "role": data.get("role", ""),
+            "status": data.get("status", ""),
+            "confirmation": data.get("confirmation", ""),
+            "categories": [c for c in data.getlist("categories") if c],
         }.items()
         if v
     }
+
+
+def _compose(request, event, form, filters, roles, categories):
+    """The compose page itself. Reached on first view, on a recount, and after a form error."""
+    days = []
+    if event is not None:
+        zone = display_zone(event)
+        seen = set()
+        from apps.events.models import Slot
+
+        for s in Slot.objects.filter(position__location__event=event, cancelled=False).order_by(
+            "start"
+        ):
+            d = s.start.astimezone(zone)
+            key = d.strftime("%Y-%m-%d")
+            if key not in seen:
+                seen.add(key)
+                days.append((key, d.strftime("%A %-d %B")))
+    return render(
+        request,
+        "comms/announce.html",
+        {
+            "form": form,
+            "event": event,
+            "filters": filters,
+            "recipients": announce.resolve_audience(event, filters),
+            "days": days,
+            "roles": roles,
+            "categories": categories,
+            "statuses": [
+                ("open", "Open (nobody yet)"),
+                ("needs", "Needs someone"),
+                ("thin", "Covered, depends on one person"),
+                ("covered", "Covered"),
+            ],
+        },
+    )
 
 
 @login_required
@@ -78,8 +115,15 @@ def announce_view(request, pk=None):
     categories = setting("member_categories", []) or []
     roles = setting("slot_roles", []) or []
     if request.method == "POST":
-        form = AnnounceForm(request.POST)
         cats = [c for c in request.POST.getlist("categories") if c]
+        if request.POST.get("action") == "recount":
+            # Recounting used to be a GET, and the GET branch rebuilt the form without the
+            # body, so pressing Recount threw away everything the officer had written. It is a
+            # POST now, and the form stays unbound so a half-finished draft shows no errors yet.
+            form = AnnounceForm(initial=request.POST.dict())
+            filters = _filters_from(request.POST)
+            return _compose(request, event, form, filters, roles, categories)
+        form = AnnounceForm(request.POST)
         if form.is_valid():
             filters = form.filters(cats)
             if request.POST.get("action") == "outside":
@@ -119,41 +163,8 @@ def announce_view(request, pk=None):
                 if k in ("subject", "day", "role", "status", "confirmation")
             }
         )
-        filters = _filters_from_get(request)
-    recipients = announce.resolve_audience(event, filters)
-    days = []
-    if event is not None:
-        zone = display_zone(event)
-        seen = set()
-        from apps.events.models import Slot
-
-        for s in Slot.objects.filter(position__location__event=event, cancelled=False).order_by(
-            "start"
-        ):
-            d = s.start.astimezone(zone)
-            key = d.strftime("%Y-%m-%d")
-            if key not in seen:
-                seen.add(key)
-                days.append((key, d.strftime("%A %-d %B")))
-    return render(
-        request,
-        "comms/announce.html",
-        {
-            "form": form,
-            "event": event,
-            "filters": filters,
-            "recipients": recipients,
-            "days": days,
-            "roles": roles,
-            "categories": categories,
-            "statuses": [
-                ("open", "Open (nobody yet)"),
-                ("needs", "Needs someone"),
-                ("thin", "Covered, depends on one person"),
-                ("covered", "Covered"),
-            ],
-        },
-    )
+        filters = _filters_from(request.GET)
+    return _compose(request, event, form, filters, roles, categories)
 
 
 @login_required

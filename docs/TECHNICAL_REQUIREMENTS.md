@@ -26,7 +26,7 @@ names the runner-up briefly. It does not survey. The alternatives are listed so 
 session can see they were weighed, and so that the advisor can pick one of them instead by
 saying so.
 
-**Verification.** Facts about software versions, licences, and the server were checked on
+**Verification.** Facts about software versions, licenses, and the server were checked on
 2026-09-13 and are tabulated in section 11 with their sources. Memory and throughput figures are
 estimates from experience with the named components on comparable hosts and are marked as such;
 the build measures them (TR-30).
@@ -117,9 +117,9 @@ has a decade of documentation.
   *Considered:* React/Vue SPA (a second toolchain, a second language, and accessibility that
   must be re-earned component by component; the API still exists without it, see TR-8).
   Serves: FR-65, FR-116, §5.8.
-- **TR-5 CSS: a small semantic base stylesheet plus project CSS**, with colour tokens and a
+- **TR-5 CSS: a small semantic base stylesheet plus project CSS**, with color tokens and a
   dark mode; the base is Pico CSS (MIT) or equivalent classless framework. *Why:* accessible
-  defaults for forms and tables out of the box; no utility-class build step. Colour-blind-safe
+  defaults for forms and tables out of the box; no utility-class build step. Color-blind-safe
   palette and text-plus-icon status (FR-62) are project CSS.
 - **TR-6 PWA: a web app manifest and a hand-written service worker** that caches the shell and
   the member's own schedule for offline reading (FR-96); no framework. Installable on Android,
@@ -139,11 +139,11 @@ has a decade of documentation.
   heading levels, lists, links, emphasis, simple tables) with accessibility checking on; all
   saved HTML passed through **nh3** (an allow-list sanitiser) on save and again on render.
   *Why:* TinyMCE's accessibility work is mature and its GPL option is compatible with this
-  repository's licence; nh3 is the maintained successor to bleach. *Considered:* CKEditor 5
+  repository's license; nh3 is the maintained successor to bleach. *Considered:* CKEditor 5
   (also GPL-2+, equally capable; the choice between the two is taste, and either satisfies
   FR-115 and FR-116). Serves: FR-115, FR-116.
   *As built (2026-09-15):* `django-tinymce` 4.1.0, which bundles **TinyMCE 6.8.4 under the MIT
-  licence** (no licence key), self-hosted from the package's static files; the FR-115 feature
+  license** (no license key), self-hosted from the package's static files; the FR-115 feature
   set as above; the premium accessibility checker is not available, so `static/js/richtext-check.js`
   warns beneath the editor when a heading level is skipped. The saved HTML goes through nh3.
 - **TR-10 PDF: WeasyPrint** rendering the signed agreement from an HTML template with
@@ -203,7 +203,7 @@ has a decade of documentation.
 - **TR-16 Second factor and passkeys: both built in v1, optional by default, requirable per
   access group.** allauth's MFA module provides TOTP (any authenticator app), WebAuthn
   **passkeys** as a second factor, **passwordless sign-in by passkey**, and recovery codes. A
-  member enrols either or both from the profile page. A sysadmin setting (FR-89) marks, per
+  member enrolls either or both from the profile page. A sysadmin setting (FR-89) marks, per
   access group, whether a second factor is **required**; the
   shipped default requires none, and a level switched to required gives its holders a grace
   period with a banner before sign-in is blocked. A passkey-only account has no password to
@@ -249,7 +249,7 @@ has a decade of documentation.
   restore is rehearsed onto a scratch checkout before the first live event and each summer,
   and the date recorded in the private repository's notes. The pull is least-privilege: a
   dedicated backup user on the server whose only permitted command is a read-only `rrsync` of
-  the backup directory, authorised for the campus machine's key. Archives carry a SHA-256
+  the backup directory, authorized for the campus machine's key. Archives carry a SHA-256
   sidecar so the puller can verify what arrived without holding the decryption key. Retention
   on the campus side follows the advisor's grandfather-father-son ladder: everything for 7
   days, four days a month for a month, two a month for a year, one a month for three years,
@@ -490,7 +490,7 @@ document and of `REQUIREMENTS.md` once the advisor has read them through.
 | Server: Python 3.14.4, 956 MB RAM, 496 MB swap, 20 GB free, 1 vCPU; `age` 1.2.1, `sqlite3` 3.46, `python3-cryptography` 46 packaged | the Linode, over SSH | 2026-09-13 |
 | Django 5.2 is the LTS, extended support to April 2028; Python 3.14 supported from 5.2.8 | djangoproject.com download page and 5.2 install FAQ | 2026-09-13 |
 | WeasyPrint 70.0: `pdf_variant` accepts `pdf/ua-1` and `pdf/ua-2`; `pdf_tags` tags for accessibility; conformance is the author's to verify | WeasyPrint API reference | 2026-09-13 |
-| TinyMCE 8 is GPL-2.0-or-later with `license_key: 'gpl'` required in configuration | tiny.cloud licence-key documentation | 2026-09-13 |
+| TinyMCE 8 is GPL-2.0-or-later with `license_key: 'gpl'` required in configuration | tiny.cloud license-key documentation | 2026-09-13 |
 | CKEditor 5 is GPL-2.0-or-later with a commercial alternative | ckeditor5 `LICENSE.md` | 2026-09-13 |
 | callook.info returns `status`, `type`, `current.callsign`, `current.operClass`, `previous`, `trustee`, `name`, `address`, `location`, `otherInfo.grantDate`, `otherInfo.expiryDate`, `otherInfo.lastActionDate`, `otherInfo.frn`, `otherInfo.ulsUrl` as JSON at `/{CALLSIGN}/json`; maintained by W1JDD; no published terms or rate limit | callook.info, API page and a live lookup | 2026-09-13 |
 | `pywebpush` 2.5.0, `nh3` 0.3.7, `django-otp` 1.7.3, `weasyprint` 70.0, `gunicorn` 26.2.0, `django-ninja` 1.7.0 exist on PyPI | `pip index versions` | 2026-09-13 |

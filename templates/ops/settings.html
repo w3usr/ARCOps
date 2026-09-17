@@ -2,13 +2,15 @@
 {% block title %}Settings · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
-<h1>Club settings</h1>
-<p class="lede">Every fact about the club that the software reads. A value changed here is kept through later imports of the configuration file unless the import is run with <code>--reset</code>. Each change is audited.</p>
+<h1>Settings</h1>
+<p class="lede">Every fact about the club that the application reads.</p>
+<p>A value changed here stays changed when the configuration file is imported again, unless that import is told to reset. Every change is recorded with your name against it.</p>
 <form method="post" class="stack" enctype="multipart/form-data">{% csrf_token %}
 {% for label, rows in groups %}
 <section class="card" aria-labelledby="g{{ forloop.counter }}"><h2 id="g{{ forloop.counter }}">{{ label }}</h2>
   {% for r in rows %}
-  <div class="field"><label for="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"><code>{{ r.key }}</code>{% if r.interface %} <span class="tag">edited here</span>{% endif %}</label>
+  <div class="field{% if r.error %} haserror{% endif %}"><label for="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">{{ r.label }}{% if r.interface %} <span class="tag">edited here</span>{% endif %}</label>
+    <span class="helptext">{% if r.help %}{{ r.help }} {% endif %}<code class="settingkey">{{ r.key }}</code></span>
     {% if r.kind == 'json' %}<textarea id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" rows="6" spellcheck="false">{{ r.value }}</textarea>
     {% elif r.kind == 'tz' %}<select id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}">{% for z in zones %}<option value="{{ z }}"{% if z == r.value %} selected{% endif %}>{{ z }}</option>{% endfor %}</select>{% if r.value and r.value not in zones %} <span class="msg error">The saved value <code>{{ r.value }}</code> is not a known zone; UTC is used until you save a correct one.</span>{% endif %}
     {% elif r.kind == 'color' %}<span class="row"><input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" type="color" value="{{ r.value|default:'#000000' }}"> <code>{{ r.value }}</code></span>
@@ -18,6 +20,7 @@
       <span class="helptext">PNG, JPEG, SVG, WebP, or ICO, 2 MB at most. Today: <code>{{ r.value|default:"none" }}</code>.</span>
     {% elif r.kind == 'int' %}<input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" type="number" value="{{ r.value }}">
     {% else %}<input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" value="{{ r.value }}">{% endif %}
+    {% if r.error %}<span class="fielderror">{{ r.error }}</span>{% endif %}
   </div>
   {% endfor %}
 </section>

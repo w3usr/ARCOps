@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% load labels %}
 {% block title %}Outbox · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Outbox</h1>
-<p class="lede">Every message the system composed, with what happened to it. Email delivery is <strong>{{ delivery_mode }}</strong>{% if delivery_mode != 'on' %}: messages are recorded here and shown to their recipients in the application, and delivering them is yours to do{% endif %}.</p>
+<p class="lede">Every message the application composed, and what happened to it.</p>
+<p>{% if delivery_mode == 'on' %}Mail is being sent.{% else %}<strong>Mail is not being sent.</strong> Messages are recorded here and shown to their recipients inside the application; delivering them is yours to do.{% endif %}</p>
 <form method="get" class="searchrow">
   <label for="state">State</label>
   <select name="state" id="state">
@@ -18,11 +20,11 @@
 <tbody>
 {% for m in page.object_list %}
 <tr>
-  <td>{{ m.created|date:"j M H:i" }}</td>
-  <td>{% if m.user %}<a href="{% url 'member_detail' m.user.pk %}">{{ m.user.short_name }}</a>{% else %}<span class="muted">no account</span>{% endif %}<br><small class="muted">{{ m.to_addresses|join:", " }}</small></td>
-  <td>{{ m.category }}</td>
-  <td>{{ m.subject }}</td>
-  <td><span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% elif m.state == 'not_sent' %} warn{% endif %}">{{ m.get_state_display }}</span>{% if m.sent_at %}<br><small class="muted">{{ m.sent_at|date:"j M H:i" }}</small>{% endif %}{% if m.error %}<br><small class="muted">{{ m.error|truncatechars:160 }}</small>{% endif %}</td>
+  <td data-label="When (UTC)">{{ m.created|date:"j M H:i" }}</td>
+  <td data-label="To">{% if m.user %}<a href="{% url 'member_detail' m.user.pk %}">{{ m.user.short_name }}</a>{% else %}<span class="muted">no account</span>{% endif %}<br><small class="muted">{{ m.to_addresses|join:", " }}</small></td>
+  <td data-label="Category">{{ m.category|message_category }}</td>
+  <td data-label="Subject">{{ m.subject }}</td>
+  <td data-label="State"><span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% elif m.state == 'not_sent' %} warn{% endif %}">{{ m.get_state_display }}</span>{% if m.sent_at %}<br><small class="muted">{{ m.sent_at|date:"j M H:i" }}</small>{% endif %}{% if m.error %}<br><small class="muted">{{ m.error|truncatechars:160 }}</small>{% endif %}</td>
 </tr>
 {% empty %}
 <tr><td colspan="5">No messages{% if state %} in that state{% endif %}.</td></tr>

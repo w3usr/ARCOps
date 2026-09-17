@@ -80,6 +80,7 @@ arcops/
 |   |-- NAME.md                   <- why it is called ARCOps; the attribution rule
 |   |-- REQUIREMENTS.md           <- functional requirements (draft, FR-numbered)
 |   |-- TECHNICAL_REQUIREMENTS.md <- proposed stack and technical decisions (draft, TR-numbered)
+|   |-- INTERFACE.md              <- how a page reads: words, controls, destructive actions
 |   |-- ONBOARDING.md             <- read this first
 |   `-- ai_policy_agreement/      <- sign before using AI tools
 `-- web/                          <- served at ops.w3usr.org; currently a holding page
@@ -90,6 +91,10 @@ best you can"), against the decided stack in `docs/TECHNICAL_REQUIREMENTS.md`. L
 (settings, urls, generic club defaults), `apps/{ops,accounts,credentials,events,comms}/` each with
 models, services, views, and tests, `templates/`, `static/`. Run `pytest` and `ruff check .`
 before committing; CI runs both plus the club-neutrality grep (`tools/check_club_neutral.sh`).
+
+Anything that changes a page follows [`docs/INTERFACE.md`](docs/INTERFACE.md): plain nouns for
+headings, nothing from inside the program on a page, one solid button per form, the three tiers
+of destructive action, and American English throughout.
 
 ## Deployment
 

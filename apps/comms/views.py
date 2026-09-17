@@ -13,7 +13,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.richtext import sanitise
 
-from .defaults import DEFAULTS_BY_KEY
+from .defaults import DEFAULTS_BY_KEY, TEMPLATE_WORDS
 from .models import MessageTemplate, Outbox
 from .services import render_message, seed_templates
 
@@ -91,9 +91,14 @@ def message_templates(request):
     if not request.user.may("edit_club_settings"):
         raise Http404
     seed_templates()  # a fresh installation sees the shipped set at once
-    return render(
-        request, "ops/templates.html", {"templates": MessageTemplate.objects.order_by("key")}
-    )
+    rows = []
+    for t in MessageTemplate.objects.order_by("key"):
+        title, audience = TEMPLATE_WORDS.get(
+            t.key, (t.key.replace(".", ": ").replace("_", " "), "")
+        )
+        rows.append({"template": t, "title": title, "audience": audience})
+    rows.sort(key=lambda r: r["title"])
+    return render(request, "ops/templates.html", {"rows": rows})
 
 
 @login_required
@@ -137,6 +142,8 @@ def message_template_edit(request, key):
         "ops/template_edit.html",
         {
             "template": tpl,
+            "title": TEMPLATE_WORDS.get(key, (key, ""))[0],
+            "audience": TEMPLATE_WORDS.get(key, (key, ""))[1],
             "form": form,
             "preview_subject": preview_subject,
             "preview_body": preview_body,

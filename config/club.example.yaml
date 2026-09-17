@@ -26,9 +26,9 @@ branding:
   favicon: "assets/club-logo.svg"
   apple_touch_icon: "assets/club-logo.svg"
   qsl_card: null
-  # The club's colour: footer, sign-in panel, buttons, links, and the active menu entry. A
+  # The club's color: footer, sign-in panel, buttons, links, and the active menu entry. A
   # six-digit hex; it must carry white text at WCAG AA (4.5:1) or the application's own
-  # colour is used instead (FR-116). null keeps the default.
+  # color is used instead (FR-116). null keeps the default.
   accent: null
 
 member_categories:                            # FR-8, FR-12; edit freely
@@ -44,12 +44,15 @@ member_categories:                            # FR-8, FR-12; edit freely
 access_groups:
   - key: provisional
     label: "Provisional"                      # joined through a community link, awaiting review
+    summary: "Can sign in and sign up for slots, and nothing else, until an officer admits them."
     capabilities: []
   - key: member
     label: "Member"
+    summary: "The club's everyday level: the directory, the rosters, and their own account."
     capabilities: [view_directory]
   - key: officer
     label: "Club officer"
+    summary: "Runs the club's events and its mail: invites members, builds rosters, and announces."
     capabilities:
       - view_directory
       - view_member_records
@@ -65,6 +68,7 @@ access_groups:
       - view_reports
   - key: advisor
     label: "Faculty advisor"                  # everything an officer holds, and the club's word
+    summary: "Everything an officer does, and the club's word: approves station access and reads the archive."
     capabilities:
       - view_directory
       - view_member_records
@@ -175,7 +179,7 @@ privacy_notice_html: |
   <h1>Privacy notice</h1>
   <p>This site helps the club schedule operating events and manage access to its station. It holds the details you give when you join (name, callsign, email addresses, phone, membership category, and for students your level and expected graduation) and what you do here (sign-ups, check-ins, signed access agreements, and the messages sent to you).</p>
   <h2>Who sees what</h2>
-  <p>Other members see your first name, callsign, and licence class on rosters and in the directory. Event captains, club officers, and the people who run this site see your full name and contact details. Nothing here is visible without signing in.</p>
+  <p>Other members see your first name, callsign, and license class on rosters and in the directory. Event captains, club officers, and the people who run this site see your full name and contact details. Nothing here is visible without signing in.</p>
   <h2>How long it is kept</h2>
   <p>When you leave, your record is archived rather than deleted: your name, callsign, contact details, and what you took part in are kept as the club's record of its members, and only the faculty advisor and the people who administer this site can read the archive. Some things are still removed on a schedule: the adults named to accompany a member under 18 are kept a year after the event, message bodies are kept a year, and invitations nobody used are removed three months after they expire. The record of who did what on this site is kept indefinitely.</p>
   <h2>Closing your account</h2>

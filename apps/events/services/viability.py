@@ -63,6 +63,16 @@ def rule_for(slot) -> list[dict]:
     )
 
 
+def _credential_word(key: str) -> str:
+    """What the club calls this credential, lowercased to sit inside a sentence."""
+    from apps.ops.config import setting
+
+    for row in setting("credential_types", []) or []:
+        if str(row.get("key")) == key and row.get("label"):
+            return str(row["label"]).lower()
+    return key.replace("_", " ")
+
+
 def _satisfied(rule: list[dict], people, slot) -> tuple[bool, list[str]]:
     """Does this set of people satisfy every requirement? Returns (ok, missing labels)."""
     on = slot.start.date()
@@ -72,7 +82,9 @@ def _satisfied(rule: list[dict], people, slot) -> tuple[bool, list[str]]:
         # The event's class is *preferred* (FR-61, 2026-09-15): any class satisfies the requirement;
         # evaluate() adds a warning when nobody in the slot reaches the preferred class.
         if not any(holds(p, key, on, None) for p in people):
-            missing.append(key.replace("_", " "))
+            # The reader sees the club's own word for the credential, not its key. This one
+            # list reaches the roster, the slot page, and three confirmation pages.
+            missing.append(_credential_word(key))
     return (not missing, missing)
 
 

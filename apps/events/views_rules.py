@@ -228,7 +228,7 @@ def rules_context(event) -> dict:
 @login_required
 @require_POST
 def contest_save(request, pk):
-    """FR-37: the WA7BNM field set, entered by hand until the calendar import is authorised."""
+    """FR-37: the WA7BNM field set, entered by hand until the calendar import is authorized."""
     from .contest_fields import KEYS
 
     event = get_object_or_404(Event, pk=pk)

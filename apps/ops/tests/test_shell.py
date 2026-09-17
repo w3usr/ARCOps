@@ -60,9 +60,9 @@ def test_accent_comes_from_club_config_when_it_carries_white_text(client: Client
 
 def test_accent_that_fails_aa_contrast_falls_back_to_the_default():
     _set("branding.accent", "#ffff00")
-    assert config.accent_colour() == config.DEFAULT_ACCENT
-    _set("branding.accent", "not-a-colour")
-    assert config.accent_colour() == config.DEFAULT_ACCENT
+    assert config.accent_color() == config.DEFAULT_ACCENT
+    _set("branding.accent", "not-a-color")
+    assert config.accent_color() == config.DEFAULT_ACCENT
     _set("branding.accent", "#401068")
-    assert config.accent_colour() == "#401068"
+    assert config.accent_color() == "#401068"
     assert config.contrast_with_white("#401068") > 4.5

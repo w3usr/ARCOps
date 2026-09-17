@@ -166,7 +166,7 @@ A few habits that keep that true:
 ## The scheduled jobs
 
 Some of what the application does happens on a clock, not on a click: reminders, warnings, the
-weekly digest, the FCC licence sync, expiry notices, retention, a self-check. Each is a
+weekly digest, the FCC license sync, expiry notices, retention, a self-check. Each is a
 management command registered in `apps/ops/jobs.py` and listed, with its period and what it
 does, in [`docs/JOBS.md`](JOBS.md). On an installation each one is run by a systemd timer set
 up from the deploying repository; the application never schedules anything itself.

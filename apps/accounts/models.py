@@ -410,7 +410,7 @@ class EntryLink(models.Model):
         PAUSED = "paused", "Paused"
         REVOKED = "revoked", "Revoked"
 
-    label = models.CharField(max_length=80)  # the course or the organisation
+    label = models.CharField(max_length=80)  # the course or the organization
     kind = models.CharField(max_length=10, choices=Kind.choices)
     required_domain = models.CharField(max_length=120, blank=True)  # class links only
     token = models.CharField(max_length=64, unique=True, default=secrets.token_urlsafe)

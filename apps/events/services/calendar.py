@@ -6,7 +6,7 @@ then segments joined by " and ", each "HHMMZ, Mon D to HHMMZ, Mon D" or "HHMMZ-H
 with one ", YYYY" at the end for the whole line. 2400Z is the next day's 00:00. The year
 belongs to the last date; earlier dates later in the calendar are the previous year.
 
-Parsing only. Retrieval of pages waits on the calendar owner's authorisation (FR-40).
+Parsing only. Retrieval of pages waits on the calendar owner's authorization (FR-40).
 """
 
 from __future__ import annotations
@@ -84,7 +84,7 @@ def parse_date_line(text: str) -> DateLine:
         elif ms:
             points += [(ms["m1"], int(ms["d1"]), ms["t1"]), (ms["m1"], int(ms["d1"]), ms["t2"])]
         else:
-            row.error = f"unrecognised segment: {part!r}"
+            row.error = f"unrecognized segment: {part!r}"
             return row
         shapes.append((len(points) - 2, len(points) - 1))
     if any(mon not in MONTHS for mon, _, _ in points):

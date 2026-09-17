@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load times %}
+{% load times labels %}
 {% block title %}My schedule · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>My schedule</h1>
@@ -15,9 +15,9 @@
 <table class="table"><thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Position</th><th scope="col">Role</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
 {% for s in upcoming %}<tr>
 <th scope="row">{% when s.slot.start s.slot.end s.slot.event %}</th>
-<td><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a></td><td>{{ s.slot.position }}</td><td>{{ s.role }}</td>
-<td>{% if s.checked_in_at %}checked in{% elif s.confirmed_at %}confirmed{% else %}signed up{% endif %}</td>
-<td>{% if minor_readonly %}<span class="muted">via your guardian</span>{% else %}{% if not s.confirmed_at and not s.checked_in_at %}<form class="inline" method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm</button></form>{% endif %}
+<td data-label="Event"><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a></td><td data-label="Position">{{ s.slot.position }}</td><td data-label="Role">{{ s.role|role_label }}</td>
+<td data-label="State">{% if s.checked_in_at %}checked in{% elif s.confirmed_at %}confirmed{% else %}signed up{% endif %}</td>
+<td data-label="Actions">{% if minor_readonly %}<span class="muted">via your guardian</span>{% else %}{% if not s.confirmed_at and not s.checked_in_at %}<form class="inline" method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm</button></form>{% endif %}
 {% if s.slot.event.state == 'locked' %}<span class="muted">roster locked; ask a captain</span>{% else %}<form class="inline" method="post" action="{% url 'cancel_signup' s.pk %}">{% csrf_token %}<button type="submit" class="secondary">Cannot make it</button></form>{% endif %}
 {% if s.user.under_18 %}<a href="{% url 'signup_adults' s.pk %}">Responsible adults ({{ s.responsible_adults.count }})</a>{% endif %}{% endif %}</td>
 </tr>{% endfor %}</tbody></table>

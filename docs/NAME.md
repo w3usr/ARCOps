@@ -19,12 +19,12 @@ The advisor's first proposal, verbatim:
 > even non-W3USR installation. i realize this may involve renaming repository, but that is ok.
 > what do you think? are there any collisions in the software namespace I need to worry about?
 
-The collision check (2026-09-13) against GitHub repositories and organisations, PyPI, npm, the
+The collision check (2026-09-13) against GitHub repositories and organizations, PyPI, npm, the
 web, and domain registrations:
 
 | Candidate | Finding |
 |---|---|
-| ClubOps | A commercial sports-club management app of that name (TransactBox, UK; App Store and Google Play; its terms assert trademark rights), plus a golf-maintenance product, a WordPress facility platform, and a poker-club product. GitHub organisations `clubops` and `club-ops` taken; 15+ repositories. **Rejected**: the short form would always land on someone else's product in the same category. |
+| ClubOps | A commercial sports-club management app of that name (TransactBox, UK; App Store and Google Play; its terms assert trademark rights), plus a golf-maintenance product, a WordPress facility platform, and a poker-club product. GitHub organizations `clubops` and `club-ops` taken; 15+ repositories. **Rejected**: the short form would always land on someone else's product in the same category. |
 | Sked | Apt, but taken everywhere (GitHub user, PyPI, npm, 30 repositories). Kept as the feature name. |
 | OpSked, ShackOps, ClubSked, HamSked | Free everywhere. ClubSked was weighed and set aside because the product is already more than scheduling (credentials, agreements, the shared password, license sync, reports). |
 | **ARCOps** | No amateur-radio product uses it. One sound-alike in the community, **arcOS**, a ham Linux distribution: spoken, the names are neighbours; written, they are distinct; the products are unrelated. Unrelated noise elsewhere (GitHub users `arcops` and `arc-ops`, ~17 repositories in cloud, AI, and security; the obvious domains registered). PyPI and npm free. **Chosen**: it names the whole scope and tells another club at a glance that the software is for them. |

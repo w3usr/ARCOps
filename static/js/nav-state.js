@@ -1,5 +1,5 @@
 // Runs in <head>, before first paint: marks JavaScript as available (the stylesheet keys the
-// drawer behaviour on html.js) and restores the remembered sidebar state, so the layout never
+// drawer behavior on html.js) and restores the remembered sidebar state, so the layout never
 // flashes from full to rail. Presentation only; without it the page still works (TR-4).
 (function () {
   var html = document.documentElement;

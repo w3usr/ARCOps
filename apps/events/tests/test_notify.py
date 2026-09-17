@@ -116,7 +116,7 @@ def test_cannot_make_it_token_cancels_and_tells_the_captains_late():
     r = c.get(f"/events/cannot/{token}/")
     assert r.status_code == 200 and b"Cannot make it" in r.content
     r = c.post(f"/events/cannot/{token}/")
-    assert r.status_code == 200 and b"Sign-up cancelled" in r.content
+    assert r.status_code == 200 and b"Sign-up canceled" in r.content
     assert not SignUp.objects.filter(pk=su.pk).exists()
     m = _msgs(cap, "cancellation").get()
     assert "Late cancellation" in m.subject and "Mo" in m.subject
@@ -159,12 +159,12 @@ def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone
     s0 = Slot.objects.get(pk=slots[0].pk)
     assert s0.cancelled and not s0.signups.exists()
     m = _msgs(mem, "cancellation").get()
-    assert "Slot cancelled" in m.subject and "storm" in m.body_html
+    assert "Slot canceled" in m.subject and "storm" in m.body_html
     SignUp.objects.create(slot=slots[1], user=mem, role="observer")
     c.post(f"/events/{e.pk}/cancel/", {"confirm": "yes", "reason": "no operators"})
     assert Event.objects.get(pk=e.pk).state == Event.State.CANCELLED
     assert any(
-        "Event cancelled" in x.subject and "no operators" in x.body_html
+        "Event canceled" in x.subject and "no operators" in x.body_html
         for x in _msgs(mem, "cancellation")
     )
 

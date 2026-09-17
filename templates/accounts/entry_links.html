@@ -18,14 +18,14 @@
 <h2>Links</h2>
 <table class="table"><thead><tr><th scope="col">Label</th><th scope="col">Kind</th><th scope="col">Domain</th><th scope="col">Expires</th><th scope="col">Joined</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
 {% for l in links %}<tr>
-<td><strong>{{ l.label }}</strong><br><small class="muted"><code>{{ base }}/join/{{ l.token }}/</code></small></td>
-<td>{{ l.kind }}</td><td>{{ l.required_domain|default:"any" }}</td><td>{{ l.expires_at|date:"d M Y" }}</td>
-<td>{{ l.joined_count }}{% if l.cap %} / {{ l.cap }}{% endif %}</td>
-<td>{% if l.is_open %}<span class="tag ok">open</span>{% else %}<span class="tag">{{ l.get_state_display|lower }}{% if l.state == 'active' %}, closed{% endif %}</span>{% endif %}</td>
-<td><form method="post" action="{% url 'entry_link_action' l.pk %}" class="inline">{% csrf_token %}
-  {% if l.state == 'active' %}<button name="action" value="pause" class="linklike">pause</button>{% elif l.state == 'paused' %}<button name="action" value="resume" class="linklike">resume</button>{% endif %}
-  {% if l.state != 'revoked' %}<button name="action" value="extend" class="linklike">+30 days</button> <button name="action" value="revoke" class="linklike">revoke</button>{% endif %}
-  {% if l.kind == 'class' %}<button name="action" value="verify_all" class="linklike" title="Waive address verification for everyone who joined through this link">mark all verified</button>{% endif %}
+<td data-label="Label"><strong>{{ l.label }}</strong><br><small class="muted"><code>{{ base }}/join/{{ l.token }}/</code></small></td>
+<td data-label="Kind">{% if l.kind == 'class' %}Class{% else %}Community{% endif %}</td><td data-label="Domain">{{ l.required_domain|default:"any" }}</td><td data-label="Expires">{{ l.expires_at|date:"d M Y" }}</td>
+<td data-label="Joined">{{ l.joined_count }}{% if l.cap %} / {{ l.cap }}{% endif %}</td>
+<td data-label="State">{% if l.is_open %}<span class="tag ok">open</span>{% else %}<span class="tag">{{ l.get_state_display|lower }}{% if l.state == 'active' %}, closed{% endif %}</span>{% endif %}</td>
+<td data-label="Actions"><form method="post" action="{% url 'entry_link_action' l.pk %}" class="inline">{% csrf_token %}
+  {% if l.state == 'active' %}<button name="action" value="pause" class="linklike">Pause</button>{% elif l.state == 'paused' %}<button name="action" value="resume" class="linklike">Resume</button>{% endif %}
+  {% if l.state != 'revoked' %}<button name="action" value="extend" class="linklike">Give it 30 more days</button> <button name="action" value="revoke" class="linklike danger">Revoke</button>{% endif %}
+  {% if l.kind == 'class' %}<button name="action" value="verify_all" class="linklike">Mark everyone who joined here as verified</button>{% endif %}
 </form></td>
 </tr>{% empty %}<tr><td colspan="7">None yet.</td></tr>{% endfor %}
 </tbody></table>

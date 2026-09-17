@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load labels %}
 {% block title %}Member roster · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
@@ -11,15 +12,15 @@
 {% for r in rows %}
 <tr{% if r.graduated %} class="muted"{% endif %}>
   <th scope="row"><a href="{% url 'member_detail' r.u.pk %}">{{ r.u.full_name }}</a></th>
-  <td>{{ r.u.callsign }}</td>
-  <td>{{ r.lic.effective_class|default:"" }}</td>
-  <td>{{ r.lic.effective_expiry|date:"Y-m-d"|default:"" }}</td>
-  <td>{{ r.u.category|capfirst }}</td>
-  <td>{{ r.u.club_position }}</td>
-  <td>{% if r.u.category == 'student' %}{{ r.u.student_level|default:"" }} {{ r.u.graduation_semester|default:"" }} {{ r.u.graduation_year|default:"" }}{% if r.graduated %} <span class="tag warn">past graduation</span>{% endif %}{% endif %}</td>
-  <td>{{ r.u.access_label }}</td>
-  <td>{{ r.credentials|join:"; " }}</td>
-  <td>{{ r.u.last_login|date:"Y-m-d"|default:"never" }}</td>
+  <td data-label="Callsign">{{ r.u.callsign }}</td>
+  <td data-label="Class">{{ r.lic.effective_class|default:"" }}</td>
+  <td data-label="License expires">{{ r.lic.effective_expiry|date:"Y-m-d"|default:"" }}</td>
+  <td data-label="Category">{{ r.u.category|category_label }}</td>
+  <td data-label="Position">{{ r.u.club_position|position_label|default:"—" }}</td>
+  <td data-label="Student">{% if r.u.category == 'student' %}{{ r.u.student_level|default:"" }} {{ r.u.graduation_semester|default:"" }} {{ r.u.graduation_year|default:"" }}{% if r.graduated %} <span class="tag warn">past graduation</span>{% endif %}{% endif %}</td>
+  <td data-label="Access">{{ r.u.access_label }}</td>
+  <td data-label="Credentials">{{ r.credentials|join:"; " }}</td>
+  <td data-label="Last sign-in">{{ r.u.last_login|date:"Y-m-d"|default:"never" }}</td>
 </tr>
 {% empty %}<tr><td colspan="10">Nobody matches.</td></tr>{% endfor %}
 </tbody></table></div>

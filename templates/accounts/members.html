@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% load dicts %}
+{% load dicts labels %}
 {% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Members</h1>{% if perms.ops.view_reports %}<span><a class="button secondary" href="{% url 'member_roster' %}">Roster and credentials</a> <a class="button secondary" href="{% url 'access_rosters' %}">Access rosters</a> <a class="button secondary" href="{% url 'hours' %}">Hours by course</a></span>{% endif %}</div>
 <form method="get" class="searchrow" role="search">
   <label class="sr-only" for="q">Search members</label>
   <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}">
-  <button type="submit" class="secondary">Search</button>
+  <button type="submit">Search</button>
   {% if q %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
 </form>
 {% if full %}
@@ -16,18 +16,18 @@
 {% for m in members %}
 <tr>
   <th scope="row"><a href="{% url 'member_detail' m.pk %}">{{ m.full_name }}</a>{% if m.preferred_name %} <span class="muted">({{ m.preferred_name }})</span>{% endif %}{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</th>
-  <td>{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
-  <td>{{ categories|default_if_none:""|dictkey:m.category|default:m.category|capfirst }}</td>
-  <td>{{ positions|dictkey:m.club_position|default:"—" }}</td>
-  <td>{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
-  <td>{% if m.joined_via %}{{ m.joined_via.label }}{% else %}<span class="muted">invitation</span>{% endif %}</td>
-  <td>{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
+  <td data-label="Callsign">{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
+  <td data-label="Category">{{ m.category|category_label }}</td>
+  <td data-label="Position">{{ m.club_position|position_label|default:"—" }}</td>
+  <td data-label="Access">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
+  <td data-label="Joined via">{% if m.joined_via %}{{ m.joined_via.label }}{% else %}<span class="muted">invitation</span>{% endif %}</td>
+  <td data-label="Contact">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
 </tr>
 {% empty %}<tr><td colspan="7">No one matches.</td></tr>{% endfor %}
 </tbody></table>
 {% else %}
 <ul class="directory">
-{% for m in members %}<li>{{ m.short_name_lettered }}{% if m.club_position %} <span class="muted">· {{ positions|dictkey:m.club_position }}</span>{% endif %}</li>{% empty %}<li class="muted">No one matches.</li>{% endfor %}
+{% for m in members %}<li>{{ m.short_name_lettered }}{% if m.club_position %} <span class="muted">· {{ m.club_position|position_label }}</span>{% endif %}</li>{% empty %}<li class="muted">No one matches.</li>{% endfor %}
 </ul>
 {% endif %}
 {% endblock %}

@@ -116,15 +116,15 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "slot.cancelled",
-        "subject": "Slot cancelled: {{ event.title }}, {{ when }}",
-        "body_html": '<p>The slot you held in {{ event.title }}, {{ when }}, {{ position }}, was cancelled by {{ actor }}.{% if reason %} Reason: {{ reason }}{% endif %}</p><p><a href="{{ link }}">Open the event</a></p>',
+        "subject": "Slot canceled: {{ event.title }}, {{ when }}",
+        "body_html": '<p>The slot you held in {{ event.title }}, {{ when }}, {{ position }}, was canceled by {{ actor }}.{% if reason %} Reason: {{ reason }}{% endif %}</p><p><a href="{{ link }}">Open the event</a></p>',
         "variables": ["actor", "event.title", "when", "position", "reason", "link"],
     },
     {
         "key": "event.cancelled",
-        "subject": "Event cancelled: {{ event.title }}",
+        "subject": "Event canceled: {{ event.title }}",
         "body_html": (
-            "<p>{{ event.title }} was cancelled by {{ actor }}.{% if reason %} Reason: {{ reason }}{% endif %} "
+            "<p>{{ event.title }} was canceled by {{ actor }}.{% if reason %} Reason: {{ reason }}{% endif %} "
             "Your sign-ups for it ({{ count }}) are withdrawn.</p>"
         ),
         "variables": ["actor", "event.title", "reason", "count"],
@@ -132,7 +132,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "captain.member_cancelled",
         "subject": "{% if late %}Late cancellation{% else %}Cancellation{% endif %}: {{ person }} left {{ when }}, {{ event.title }}",
-        "body_html": '<p>{{ person }} cancelled their {{ role }} sign-up for {{ event.title }}, {{ when }}, {{ position }}.{% if late %} This is inside the {{ cutoff }}-hour cutoff.{% endif %}</p>{% if broken %}<p>The slot is now <strong>{{ broken }}</strong>.</p>{% endif %}<p><a href="{{ link }}">Open the slot</a></p>',
+        "body_html": '<p>{{ person }} canceled their {{ role }} sign-up for {{ event.title }}, {{ when }}, {{ position }}.{% if late %} This is inside the {{ cutoff }}-hour cutoff.{% endif %}</p>{% if broken %}<p>The slot is now <strong>{{ broken }}</strong>.</p>{% endif %}<p><a href="{{ link }}">Open the slot</a></p>',
         "variables": [
             "person",
             "role",
@@ -363,5 +363,56 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["address", "link", "club.short_name"],
     },
 ]
+
+# What each message is, and who gets it, for the templates page. The page listed the keys
+# ("slot.cancelled") and nothing else, which named the code rather than the message.
+TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
+    "invitation": ("Invitation to join", "the person being invited"),
+    "account.verify_member": ("Confirm your address", "a new member"),
+    "account.verify_provisional": (
+        "Confirm your address (provisional)",
+        "somebody who joined through a community link",
+    ),
+    "account.provisional_notice": ("Somebody is waiting for review", "the officers"),
+    "account.admitted": ("Admitted as a member", "the person admitted"),
+    "account.declined": ("Not admitted", "the person who was declined"),
+    "account.address_in_use": ("That address is already on an account", "whoever tried to use it"),
+    "account.completed": ("Somebody finished joining", "the officers and whoever invited them"),
+    "account.welcome": ("Welcome", "the new member"),
+    "agreement.submitted": ("An agreement is waiting for approval", "the faculty advisors"),
+    "agreement.approved": ("Agreement approved", "the member who signed it"),
+    "agreement.declined": ("Agreement not approved", "the member who signed it"),
+    "signup.removed": ("A captain removed your sign-up", "the member removed"),
+    "signup.assigned": ("A captain signed you up", "the member signed up"),
+    "slot.cancelled": ("A slot was canceled", "everybody in the slot"),
+    "event.cancelled": ("An event was canceled", "everybody signed up for it"),
+    "captain.member_cancelled": ("Somebody gave up a slot", "the captains"),
+    "captain.access_removed": ("Somebody lost access", "the captains of events they were in"),
+    "reminder": ("Your slot is tomorrow", "the member holding the slot"),
+    "warning.person": ("Your slot is short of people", "the members in the slot"),
+    "warning.captains": ("Slots at risk", "the captains"),
+    "captain.no_show": ("Somebody did not check in", "the captains"),
+    "digest.weekly": ("The fortnightly digest", "every member"),
+    "event.published": ("A new event is on the calendar", "every member"),
+    "captain.role_changed": ("A role changed close to the slot", "the captains"),
+    "opening.announced": ("Seats opened in an event", "the members who may take them"),
+    "waitlist.offer": ("A place opened for you", "the member at the front of the waitlist"),
+    "license.expiring": ("Your license expires soon", "the license holder"),
+    "license.expired": ("Your license has expired", "the license holder"),
+    "agreement.expiring": ("Your access agreements expire soon", "the agreement holder"),
+    "agreement.expired_notice": ("Your access agreements have expired", "the agreement holder"),
+    "agreement.expiry_summary": ("Agreements expiring", "the faculty advisors"),
+    "agreement.revoked": ("An approval was revoked", "the member who held it"),
+    "password.rotated": (
+        "The station computer password changed",
+        "everybody who holds computer access",
+    ),
+    "password.rotation_summary": ("The password rotation ran", "the sysadmins"),
+    "account.closure_requested": ("Somebody asked to close their account", "the faculty advisors"),
+    "guardian.converted": ("A minor's account is now their own", "the guardians"),
+    "account.converted": ("Your account is now your own", "the member who turned 18"),
+    "account.verify_address": ("Confirm an address", "whoever added it"),
+}
+
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}

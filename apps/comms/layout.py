@@ -3,7 +3,7 @@ One HTML layout for every mail the site sends (the club's own messages and the s
 library's), built for the mail clients members use. Outlook's desktop renderer ignores much of
 CSS (padding on inline elements, border-radius, max-width on divs), so the frame is tables with
 inline styles and cell attributes, and the call-to-action is a table cell with a background,
-which every client honours. The club's accent colour comes from branding.accent.
+which every client honours. The club's accent color comes from branding.accent.
 """
 
 from __future__ import annotations
@@ -11,15 +11,15 @@ from __future__ import annotations
 import re
 from html import escape
 
-from apps.ops.config import accent_colour, setting
+from apps.ops.config import accent_color, setting
 
 FONT = "font-family: Arial, Helvetica, sans-serif;"
 
 
 def wrap(body_html: str, *, footer_html: str = "") -> str:
-    """The frame around a message body: a thin band in the club colour with the club's short
+    """The frame around a message body: a thin band in the club color with the club's short
     name, the body at a readable measure, and the club's name and contact address beneath."""
-    accent = accent_colour()
+    accent = accent_color()
     short = escape(str(setting("club.short_name", "Club")))
     name = escape(str(setting("club.name", short)))
     contact = str(setting("club.contact_email", "") or "")
@@ -46,13 +46,13 @@ def wrap(body_html: str, *, footer_html: str = "") -> str:
 
 def button(href: str, label: str) -> str:
     """A call-to-action every mail client draws as a filled block: a table cell with a
-    background colour and padding, the link inside it. Use it for the one thing the message
+    background color and padding, the link inside it. Use it for the one thing the message
     asks the reader to do; ordinary links stay as links."""
-    accent = accent_colour()
+    accent = accent_color()
     return (
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">'
         f'<tr><td bgcolor="{accent}" style="background:{accent};padding:11px 20px;">'
-        # Outlook recolours the anchor with its own link colour; the inner span (and the old
+        # Outlook recolors the anchor with its own link color; the inner span (and the old
         # font tag) carry the white the button needs.
         f'<a href="{escape(href, quote=True)}" style="{FONT}font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;display:inline-block;">'
         f'<font color="#ffffff"><span style="color:#ffffff;text-decoration:none;">{escape(label)}</span></font></a>'
@@ -61,7 +61,7 @@ def button(href: str, label: str) -> str:
 
 
 def _style_links(html: str, accent: str) -> str:
-    """Give plain anchors the club colour and an underline, inline, since Outlook ignores a
+    """Give plain anchors the club color and an underline, inline, since Outlook ignores a
     stylesheet for them; anchors that already carry a style (the button) are left alone."""
     return re.sub(
         r"<a (?![^>]*style=)([^>]*href=)",

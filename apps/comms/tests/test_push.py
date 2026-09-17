@@ -91,6 +91,6 @@ def test_push_title_names_the_club_so_two_installations_are_distinguishable():
     PushSubscription.objects.create(user=u, endpoint="https://push.example/1", p256dh="P", auth="A")
     with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
         with mock.patch("pywebpush.webpush") as wp:
-            compose(u, "cancellation", "Slot cancelled", "<p>x</p>")
+            compose(u, "cancellation", "Slot canceled", "<p>x</p>")
     payload = json.loads(wp.call_args.kwargs["data"])
-    assert payload["title"] == "Test ARC: Slot cancelled"
+    assert payload["title"] == "Test ARC: Slot canceled"

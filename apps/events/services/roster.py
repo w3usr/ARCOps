@@ -41,7 +41,7 @@ def display_zone(event: Event) -> ZoneInfo:
 
 
 def zone_label(dt: datetime, zone: ZoneInfo) -> str:
-    """'EDT', 'UTC': what the reader recognises, not the IANA name."""
+    """'EDT', 'UTC': what the reader recognizes, not the IANA name."""
     return dt.astimezone(zone).strftime("%Z") or str(zone)
 
 

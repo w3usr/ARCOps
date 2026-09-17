@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Cancel slots · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
+<h1>Cancel {{ free|length }} slot{{ free|length|pluralize }}?</h1>
+<p class="msg warning"><span class="lvl">Careful:</span> a canceled slot cannot be brought back. To take a slot off the roster for a while and put it back later, close it instead.</p>
+{% if free %}
+<ul class="list">{% for s in free %}<li>{{ s.position.location.name }} · {{ s.position.name }} · {{ s.start|date:"D j M H:i" }}Z</li>{% endfor %}</ul>
+{% else %}<p>Nothing here can be canceled.</p>{% endif %}
+{% if with_people %}
+<p>{{ with_people|length }} of the slots you picked {{ with_people|length|pluralize:"has,have" }} someone signed up and {{ with_people|length|pluralize:"is,are" }} left alone. Remove the people first if you mean to cancel {{ with_people|length|pluralize:"it,them" }}.</p>
+{% endif %}
+<form method="post" action="{% url 'event_bulk' event.pk %}">{% csrf_token %}
+  <input type="hidden" name="action" value="cancel">
+  <input type="hidden" name="confirmed" value="yes">
+  {% for s in free %}<input type="hidden" name="slots" value="{{ s.pk }}">{% endfor %}
+  <a class="button" href="{% url 'event_detail' event.pk %}">Keep them</a>
+  {% if free %}<button type="submit" class="danger">Cancel {{ free|length }} slot{{ free|length|pluralize }}</button>{% endif %}
+</form>
+{% endblock %}

@@ -6,7 +6,10 @@
   {% for f in form %}
     {% if f.name in form.student_fields %}
     <div class="field" data-reveal-when="#id_category" data-reveal-value="student">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>
-    {% elif f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
+    {% elif f.field.widget.allow_multiple_selected %}
+    {# A set of checkboxes is a group of fields, not one field. #}
+    <fieldset class="checkset"><legend>{{ f.label }}</legend>{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</fieldset>
+    {% elif f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}</div>
     {% else %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endif %}
   {% endfor %}
   {% if subject.name_from_uls %}<p class="helptext">The name comes from the FCC record for {{ subject.callsign }} and is not edited here.</p>{% endif %}

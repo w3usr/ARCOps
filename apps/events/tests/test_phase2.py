@@ -174,7 +174,7 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     c = Client()
     c.force_login(cap)
     body = c.get(f"/events/{e.pk}/").content.decode()
-    assert "over limit" in body and "Per day:" in body and "Export CSV" in body
+    assert "over limit" in body and "Per day:" in body and "Export the roster" in body
     # the manage page's generator accepts the windows text and the limits form saves
     r = c.post(
         f"/events/{e.pk}/limits/",

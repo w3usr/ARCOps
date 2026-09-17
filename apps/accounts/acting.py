@@ -62,9 +62,11 @@ def available_views(user) -> list[dict]:
     """The views this account may act at: every group whose capabilities it already holds, and
     the sysadmin view for a sysadmin. Nobody can pick a view above themselves, because a view is
     only offered when its capabilities are a subset of what the account holds."""
+    from apps.ops.capabilities import LABELS
     from apps.ops.config import setting
-    from apps.ops.groups import label_of
+    from apps.ops.groups import label_of, summary_of
 
+    configured = setting("access_groups", []) or []
     held = full_capabilities(user)
     views = []
     for group in Group.objects.order_by("name"):
@@ -73,14 +75,30 @@ def available_views(user) -> list[dict]:
             views.append(
                 {
                     "key": group.name,
-                    "label": label_of(group, setting("access_groups", []) or []),
-                    "count": len(capabilities),
+                    "label": label_of(group, configured),
+                    "capabilities": capabilities,
                     "raises": False,
                 }
             )
-    views.sort(key=lambda v: v["count"])  # smallest first, so the list reads as a ladder
+    views.sort(key=lambda v: len(v["capabilities"]))  # smallest first: the list reads as a ladder
     if user.is_superuser:
-        views.append({"key": SYSADMIN, "label": "Sysadmin", "count": len(held), "raises": True})
+        views.append(
+            {"key": SYSADMIN, "label": "Sysadmin", "capabilities": set(held), "raises": True}
+        )
+    # Each level is described by what it lets somebody do, never by how many permissions it
+    # holds: a count of database rows means nothing to the person reading the page.
+    below: set[str] = set()
+    for view in views:
+        added = sorted(view["capabilities"] - below, key=lambda c: list(LABELS).index(c))
+        view["summary"] = (
+            "Everything, including the club's configuration and the Django admin."
+            if view["key"] == SYSADMIN
+            else summary_of(view["key"], configured, added)
+        )
+        view["abilities"] = [
+            LABELS[c] for c in sorted(view["capabilities"], key=list(LABELS).index)
+        ]
+        below |= view["capabilities"]
     return views
 
 
@@ -174,5 +192,5 @@ def context(request):
     now = current_view(request)
     label = next((v["label"] for v in views if v["key"] == now), "")
     if not label and views:
-        label = "Everything your account holds"
+        label = views[-1]["label"]
     return {"acting_views": len(views), "acting_label": label, "acting_now": now}

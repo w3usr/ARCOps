@@ -1,6 +1,6 @@
 """FR-37: the fields the WA7BNM Contest Calendar publishes for each contest, verified against the
 site on 2026-09-12. Free text except the reference number and the URLs. Entered by hand on the
-Manage page until the calendar import (FR-40) is authorised; they inform the know-before-you-go
+Manage page until the calendar import (FR-40) is authorized; they inform the know-before-you-go
 text and are otherwise for people to read."""
 
 CONTEST_FIELDS: list[tuple[str, str, str]] = [

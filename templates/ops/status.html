@@ -1,22 +1,23 @@
 {% extends "base.html" %}
+{% load labels %}
 {% block title %}Status · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Status</h1>
 <section class="card" aria-labelledby="jobs">
 <h2 id="jobs">Scheduled jobs</h2>
-<p class="muted">Each job runs on a systemd timer installed by the deployment and pings its own healthchecks.io check on success. <strong>Stale</strong> means the last success is older than the job's period plus its grace; that job's check is late, and the watchdog has said so.</p>
+<p class="muted">Each job runs on a systemd timer installed by the deployment and pings its own healthchecks.io check on success. <strong>Late</strong> means the last success is older than the job's period plus its grace; that job's check is overdue, and the watchdog has said so.</p>
 <div class="table-wrap">
 <table class="table">
 <thead><tr><th scope="col">Job</th><th scope="col">Every</th><th scope="col">Last run (UTC)</th><th scope="col">Outcome</th><th scope="col">Last success</th><th scope="col">Detail</th></tr></thead>
 <tbody>
 {% for r in rows %}
 <tr>
-  <td><strong>{{ r.spec.name }}</strong><br><small class="muted">{{ r.spec.label }} · check <code>{{ r.spec.slug }}</code></small></td>
-  <td>{{ r.spec.period }}<br><small class="muted">grace {{ r.spec.grace }}</small></td>
-  <td>{% if r.last %}{{ r.last.started|date:"j M H:i:s" }}{% if r.last.finished %} to {{ r.last.finished|date:"H:i:s" }}{% endif %}{% else %}<span class="muted">never</span>{% endif %}</td>
-  <td>{% if r.stale %}<span class="tag bad">stale</span> {% endif %}{% if r.last %}<span class="tag{% if r.last.outcome == 'ok' %} ok{% elif r.last.outcome == 'failed' %} bad{% endif %}">{{ r.last.outcome }}</span>{% endif %}</td>
-  <td>{% if r.last_ok %}{{ r.last_ok.finished|date:"j M H:i" }}{% else %}<span class="muted">never</span>{% endif %}</td>
-  <td><small><code>{{ r.last.detail|default:"" }}</code></small></td>
+  <td data-label="Job"><strong>{{ r.spec.name }}</strong><br><small class="muted">{{ r.spec.label }} · check <code>{{ r.spec.slug }}</code></small></td>
+  <td data-label="Every">Every {{ r.spec.period|duration }}<br><small class="muted">{{ r.spec.grace|duration }} of grace</small></td>
+  <td data-label="Last run (UTC)">{% if r.last %}{{ r.last.started|date:"j M H:i:s" }}{% if r.last.finished %} to {{ r.last.finished|date:"H:i:s" }}{% endif %}{% else %}<span class="muted">never</span>{% endif %}</td>
+  <td data-label="Outcome">{% if r.stale %}<span class="tag bad">late</span> {% endif %}{% if r.last %}<span class="tag{% if r.last.outcome == 'ok' %} ok{% elif r.last.outcome == 'failed' %} bad{% endif %}">{% if r.last.outcome == 'ok' %}worked{% elif r.last.outcome == 'failed' %}failed{% else %}{{ r.last.outcome }}{% endif %}</span>{% endif %}</td>
+  <td data-label="Last success">{% if r.last_ok %}{{ r.last_ok.finished|date:"j M H:i" }}{% else %}<span class="muted">never</span>{% endif %}</td>
+  <td data-label="Detail"><small><code>{{ r.last.detail|default:"" }}</code></small></td>
 </tr>
 {% endfor %}
 </tbody>

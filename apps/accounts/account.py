@@ -33,7 +33,7 @@ LABELS = {
     "graduation_semester": "Graduation semester",
     "graduation_year": "Graduation year",
     "under_18": "Under 18",
-    "legal_hold": "Legal hold: the retention job leaves this account's records alone",
+    "legal_hold": "Keep everything on this account",
 }
 
 
@@ -42,7 +42,7 @@ def editable_fields(actor: User, subject: User) -> list[str]:
 
     The member's own details are theirs; an officer sets a club position and nothing else; a
     sysadmin sets everything, on any account including their own. A name that comes from the FCC
-    record is nobody's to type (it is refreshed by the licence sync), and the student fields
+    record is nobody's to type (it is refreshed by the license sync), and the student fields
     belong to the Student category.
     """
     is_self = actor.pk == subject.pk
@@ -127,6 +127,18 @@ class AccountForm(forms.ModelForm):
         for name, label in LABELS.items():
             if name in self.fields:
                 self.fields[name].label = label
+        # One line under the switch, rather than an explanation crammed into its label.
+        if "legal_hold" in self.fields:
+            self.fields["legal_hold"].help_text = (
+                "Nothing on this account is ever removed by the nightly clear-out, whatever the "
+                "club's retention settings say. For an account under a legal or institutional "
+                "hold."
+            )
+        if "under_18" in self.fields:
+            self.fields["under_18"].help_text = (
+                "A guardian acts for them, every message reaches the guardian too, and they sign "
+                "in read-only."
+            )
 
     @property
     def student_fields(self) -> list[str]:

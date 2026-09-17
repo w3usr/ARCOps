@@ -16,3 +16,4 @@ DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py"]
 testpaths = ["apps"]
 addopts = "-q"
+markers = ["contact_sheet: writes screenshots for review by eye, not part of the build"]

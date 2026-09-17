@@ -79,6 +79,35 @@ class LicenseRecord(models.Model):
     def effective_status(self) -> str:
         return self.override_status or self.status
 
+    # What a page shows. The stored values are keys ("not_found", "unverified"); a person
+    # reading a member's page should see a sentence, not a column value.
+    STATUS_WORDS = {
+        "active": "active",
+        "expired": "expired",
+        "cancelled": "canceled by the FCC",
+        "not_found": "no FCC record under this callsign",
+        "unverified": "not checked against the FCC yet",
+    }
+
+    @property
+    def status_label(self) -> str:
+        status = self.effective_status
+        return self.STATUS_WORDS.get(status, status.replace("_", " "))
+
+    SOURCE_WORDS = {
+        "uls": "from the FCC",
+        "unverified": "not checked yet",
+        "manual": "entered here",
+    }
+
+    @property
+    def source_label(self) -> str:
+        if self.has_override:
+            return "set by a sysadmin" + (
+                f", {self.override_country}" if self.override_country else ""
+            )
+        return self.SOURCE_WORDS.get(self.source or "unverified", self.source)
+
     @property
     def effective_expiry(self):
         return self.override_expiry or self.expiry_date

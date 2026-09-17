@@ -438,7 +438,7 @@ officer admits or declines them (FR-121). Every account records the link it join
   system never emails it. This is the password-reset path that does not depend on email
   (FR-103).
 - **FR-119 [Must] Entry links.** An officer or sysadmin creates a multi-use link with: a **label**
-  (a course or an organisation), recorded on every account that joins through it; a **kind**,
+  (a course or an organization), recorded on every account that joins through it; a **kind**,
   *class* or *community*; for a class link a **required email domain**, chosen from the club's
   trusted domains (configuration, `trusted_email_domains`; W3USR: `scranton.edu`); an **expiry
   date**, required; an optional **cap** on the number of accounts; an optional **landing page**
@@ -494,7 +494,7 @@ officer admits or declines them (FR-121). Every account records the link it join
   | Callsign | no | yes | Uppercase, validated as a plausible callsign. A change triggers FR-102 |
   | License class | no | no | From FCC lookup (FR-14) or sysadmin override |
   | License expiration | no | no | From FCC lookup or sysadmin override |
-  | License status | no | no | **(added)** Active / expired / cancelled / not found, from FCC lookup; the health check needs status, not only class |
+  | License status | no | no | **(added)** Active / expired / canceled / not found, from FCC lookup; the health check needs status, not only class |
   | Addresses | at least one, except for a member under 18 | yes | One row per address, each marked institution or personal, each either confirmed or not, each with its own club-mail switch. Any confirmed address signs the member in; an unconfirmed one still receives club mail (§2.6) |
   | Notification preferences | yes | yes | Per category and channel (FR-71); browser notification subscriptions per device (FR-112) |
   | Cell phone | no for adults; no for minors | yes | Guardian phone is required for a minor instead |
@@ -780,7 +780,7 @@ Verbatim:
   that re-reads the calendar for the next listed date.
 - **FR-44 [Must]** An event has a lifecycle: *draft* (visible to officers and captains only),
   *published* (visible to members; sign-ups open per FR-54), *locked* (visible; no member
-  changes to sign-ups), *completed*, *cancelled*. Cancelling notifies everyone signed up.
+  changes to sign-ups), *completed*, *canceled*. Canceling notifies everyone signed up.
   **Locking is optional.** A captain locks an event when they want the roster frozen (the
   night before a contest, say, so that a late cancellation goes through them); an event that
   is never locked goes from *published* to *completed* directly. *Completed* is set by a
@@ -790,7 +790,7 @@ Verbatim:
   role's opening, and this one covers the event becoming visible). Visibility and sign-up are
   separate switches: a published event may have every role still closed, so members can see
   what is coming before anything opens. A published event can return to *draft* only while
-  no one has signed up; once anyone has, the only way off the schedule is *cancelled*, so no
+  no one has signed up; once anyone has, the only way off the schedule is *canceled*, so no
   member's commitment disappears without notice.
 - **FR-45 [Should]** Events can be marked as recurring for display purposes (the club's weekly
   net, monthly meeting) without slots; these appear on the calendar and have no roster.
@@ -858,8 +858,8 @@ Verbatim:
   to captains, officers, and sysadmins, per section 4.2.
 
   > Q12: Yes, we should support multiple positions and even locations. — NAF, 2026-09-13
-- **FR-52 [Should]** A captain can mark a slot as *closed* (not bookable, shown greyed) and as
-  *cancelled* (removed from the schedule with notice to anyone signed up).
+- **FR-52 [Should]** A captain can mark a slot as *closed* (not bookable, shown grayed) and as
+  *canceled* (removed from the schedule with notice to anyone signed up).
 
 ### 3.6 Eligibility and sign-ups
 
@@ -901,7 +901,7 @@ Verbatim:
   change is made**, the system evaluates what it would do to the slot and, if the slot would
   become *not viable* or *at risk* (FR-62), tells the member so in plain terms ("you are the
   only licensed operator in this slot; if you switch to observer it cannot run") and asks them
-  to confirm or stay. The same warning applies to cancelling a sign-up (FR-56). If they go
+  to confirm or stay. The same warning applies to canceling a sign-up (FR-56). If they go
   ahead, a captain is told. Captains can change a member's role on their behalf (FR-58). A
   guardian does the same for a minor.
 
@@ -1014,7 +1014,7 @@ Verbatim:
   depends on one person (if they cancel, it fails). *(Reworded 2026-09-13 from empty / not viable
   / viable / at risk so that a newcomer reads an invitation, not a verdict.)* A slot also shows
   *over limit* when it would push the event past an FR-39 operating-time limit. Status is
-  conveyed by icon and text as well as colour, in a colour-blind-safe palette.
+  conveyed by icon and text as well as color, in a color-blind-safe palette.
 - **FR-63 [Must] (added; FCC Part 97)** For each viable slot, the roster names the **control
   operator**: the licensed person whose license class governs what the station may do during
   that slot. Part 97 requires a control operator for every transmission and limits the station
@@ -1095,7 +1095,7 @@ Verbatim:
 > and ask them to confirm. The reminder email should provide all of the important
 > know-before-you-go information, as well as who to contact (the event captains(s)) in the event
 > of an issue. Event captains and people who sign up for slots should receive a warning email and
-> notification in the event their time slot is in danger of being cancelled because we do not
+> notification in the event their time slot is in danger of being canceled because we do not
 > have the correct combination of licensed people and people with station access.
 
 > There should be a way for event captains, club officers, and sysadmins to quickly evaluate the
@@ -1215,7 +1215,7 @@ made it likely that reliable delivery would take time to establish:
   captains receive a warning, and the people signed up receive a message saying what is
   missing and asking them to help fill it. Warnings for one slot are rate-limited (at most one
   per state change per 12 hours) so a problem generates one clear signal.
-- **FR-74 [Must]** **Cancellation notices**: when a slot, an event, or a sign-up is cancelled
+- **FR-74 [Must]** **Cancellation notices**: when a slot, an event, or a sign-up is canceled
   by someone other than the member, everyone affected is told, with the reason if one was given.
 - **FR-75 [Must]** **Announcements**: captains (for their events), officers, and sysadmins can
   compose a message to a chosen audience: everyone signed up for an event, a subset filtered by
@@ -1472,7 +1472,7 @@ afford.
     alternative text or marked decorative.
   - The roster (FR-65) is a real table with row and column headers, so a screen reader announces
     the slot, position, and person for each cell; slot status (FR-62) has a text name read out
-    alongside its icon and colour; a change of status while the page is open is announced
+    alongside its icon and color; a change of status while the page is open is announced
     through a live region.
   - Everything works by keyboard alone, with a visible focus indicator, and the most important
     action on each page (the check-in button when inside its window, FR-113; the confirm action
@@ -1483,7 +1483,7 @@ afford.
     them afterwards.
   - Email and browser notifications (FR-69, FR-112) use plain, well-structured HTML with a
     plain-text alternative.
-  - Colour is never the only carrier of information (FR-62), and text contrast meets AA.
+  - Color is never the only carrier of information (FR-62), and text contrast meets AA.
 - **FR-117 [Must]** Accessibility is verified: automated checks (an axe-core class
   of tool) run on every page in the build pipeline and a failure blocks the deploy; and before
   each release the core member flows (sign in, find an event, sign up, confirm, check in, read
@@ -1770,7 +1770,7 @@ accept, amend, or strike.
   minor's responsible adults). Q4, Q8, Q11, Q15 accepted the recommendation with a refinement;
   the rest accepted it as drafted. Section 8 is now a table of decisions.
 - 2026-09-13, NAF (quoted at FR-118): sysadmins can delete accounts. New FR-118; the
-  anonymise-and-retain behaviour (history kept without identity, agreements purged at the end
+  anonymise-and-retain behavior (history kept without identity, agreements purged at the end
   of retention, audit log intact), the last-sysadmin guard, and the guardian ordering rule are
   the assistant's.
 - 2026-09-13, NAF (quoted at §5.3): the system must be accessible, especially to screen reader
@@ -1811,14 +1811,14 @@ accept, amend, or strike.
   set beyond cancellations (moves by others, account security, agreement decisions and
   expiry), the *reminders off* roster state, and the iOS home-screen constraint.
 - 2026-09-13, NAF (quoted at FR-111): a member may change role within a slot when eligible.
-  New FR-111; the cutoff behaviour and the no-gap guarantee are the assistant's. On the
+  New FR-111; the cutoff behavior and the no-gap guarantee are the assistant's. On the
   assistant's question of what to do when a role change breaks viability, NAF chose to warn
   the member before the change and let them decide; applied to FR-111 and, by the same logic,
   to cancellation (FR-56).
 - 2026-09-13, NAF (quoted at FR-110): sign-ups carry a note to the captains. New FR-110; the
   roster marker and the inclusion of late notes in the captains' digest are the assistant's.
 - 2026-09-13, NAF (quoted at FR-51): multiple positions and multiple locations are supported.
-  FR-51 to Must, modelling location → position → slot; viability rule per location (FR-61);
+  FR-51 to Must, modeling location → position → slot; viability rule per location (FR-61);
   roster grouped by location (FR-65); location in reminders (FR-72); know-before-you-go per
   location (FR-77); FR-36 updated. Resolves Q12.
 - 2026-09-13, NAF (quoted at FR-47): setup and breakdown are two kinds of non-operating slot

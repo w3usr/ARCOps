@@ -1,0 +1,97 @@
+# The interface
+
+How a page in ARCOps reads and behaves. One file, so a page written next semester matches the
+ones written this one.
+
+The application was built requirement by requirement, and for a while nothing said how a page
+should read. The result was an interface that showed the shape of the code: a level offered as
+"Faculty Advisor · 16 capabilities", where the number was a row count from a database table; a
+heading reading "Where we write, and how you sign in" where "Email" would do. The advisor's
+verdict on 2026-09-17 was "no self-respecting UI would do that", and he was right.
+
+These rules exist so that judgment does not have to be made again from scratch on every page.
+
+## Words
+
+**American English.** Color, license, canceled, organization, authorize, gray. The exception is
+an identifier: a database column, a state key, an audit action, or an HTML attribute keeps the
+spelling it was created with, because changing it is a migration and not a proofread.
+
+**Headings are plain nouns.** "Email", not "Where we write, and how you sign in". "Guardians",
+not "The adults who can act for you". The heading names the thing; the sentence under it, if
+one is needed at all, explains it.
+
+**Nothing from inside the program reaches a page.** No counts of database rows, no dotted
+setting keys, no enum values, no state names, no Python `timedelta` strings, no file format
+names. A role stored as `operator` reaches the reader as its configured label. A level is
+described by what it lets you do, never by how many permissions it holds.
+
+**One sentence of help, under the field it helps.** Not a paragraph, not a `title=` attribute.
+A `title` is invisible on a phone, invisible to the keyboard, and unreliable to a screen
+reader, so it is never the only place something is explained.
+
+**Say what happens, not what the code does.** "Everyone in the slot is told" beats "sends
+notifications to signups".
+
+## Controls
+
+| Style | Use |
+|---|---|
+| Solid | The one action that commits the form. One per form. |
+| Outline (`.secondary`) | Adds a row, navigates, or commits a small side form. |
+| Link (`.linklike`) | An action on one row of a list or table. |
+
+If a page seems to need two solid buttons, it is two forms, or one of them is not the primary
+action. The safe choice comes first in the source order, so the keyboard reaches it first.
+
+## Destructive actions
+
+Three tiers, and the friction matches what is lost. (After GitLab's Pajamas and the VA design
+system, both of which say the same thing.)
+
+1. **Reversible** (close a slot, archive a member): an ordinary control. No confirmation.
+2. **Irreversible, but an officer can put it back** (remove somebody's sign-up, decline an
+   agreement): a red link, and a confirmation page that names who is affected and what they
+   are told. Destructive controls carry `.danger` and are underlined, because color alone
+   never carries meaning (FR-62).
+3. **Irreversible and unrecoverable** (cancel slots, replace the slot grid, delete an account):
+   a solid red button, and a confirmation page that names what is lost, how many people hear
+   about it, and offers the safe option first.
+
+A destructive control never sits between two reversible ones styled the same way.
+
+## Forms
+
+- Label, then input, then one line of help, then the error. In that order.
+- A form that comes back with an error comes back with **everything the person typed**. A view
+  that validates and redirects throws their work away; render the bound form instead.
+- Nothing is saved when part of the form is wrong. Half-saving is worse than not saving,
+  because the person cannot tell which half.
+- Mark required fields. Put the error beside its field, and mark the field itself.
+- A form with a text field and two submit buttons submits the **first** one when somebody
+  presses Enter. If that button is the dangerous one, split the form in two.
+
+## Tables
+
+Every `<td>` carries `data-label` with its column's name, because under 40rem the header row is
+taken off screen and the label is what replaces it. A table with a header row and no
+`data-label` loses its meaning entirely on a phone.
+
+Every table stacks there. Letting a wide one keep its shape and scroll sideways inside a
+wrapper was tried, and it pushed the whole page sideways at 390px, which FR-95 forbids.
+
+## Feedback
+
+Four levels, each with a word as well as a tint: **Done** (success), **Note** (info),
+**Careful** (warning), **Problem** (error). The list of messages is focused when the page
+loads, because a live region that is already there when the page arrives announces nothing.
+
+A standing fact ("you are acting for a member under 18") is a banner, not a flash message. A
+flash message is something that just happened.
+
+## Checking the work
+
+- `pytest apps` — the permission matrix is the guard that no gate moved.
+- `pytest tools/a11y` — axe across eight roles at 1280px and 390px, serious and critical.
+- `tools/check_club_neutral.sh`, `tools/check_no_requirement_ids.sh` — no club name in code, no
+  FR- or TR- numbers in the interface.

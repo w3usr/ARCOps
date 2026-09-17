@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load times %}
+{% load times labels %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Hello, {{ user.display_first }}</h1>
@@ -15,7 +15,7 @@
 </div>
 {% endif %}
 {% if perms.ops.view_member_records %}
-<p class="muted">Email delivery is <strong>{{ delivery_mode }}</strong>{% if delivery_mode != 'on' %}; invitation links and notices are shown in the application and delivering them is yours to do{% endif %}. <a href="{% url 'outbox' %}">Outbox</a>.</p>
+{% if delivery_mode != 'on' %}<p class="note"><strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all in the <a href="{% url 'outbox' %}">outbox</a>.</p>{% else %}<p class="muted">Mail is being sent. <a href="{% url 'outbox' %}">Outbox</a>.</p>{% endif %}
 {% endif %}
 {% if pending_review %}
 <section class="card highlight" aria-labelledby="rev">
@@ -46,7 +46,7 @@
   {% if my_signups %}
   <ul class="list">
     {% for s in my_signups %}
-    <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a> · {{ s.slot.position }} as {{ s.role }}<br>{% when s.slot.start s.slot.end s.slot.event %}
+    <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a> · {{ s.slot.position }} as {{ s.role|role_label }}<br>{% when s.slot.start s.slot.end s.slot.event %}
       {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
     {% endfor %}
   </ul>

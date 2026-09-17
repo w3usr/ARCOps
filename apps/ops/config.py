@@ -95,22 +95,22 @@ DEFAULT_ACCENT = "#1f3a5f"
 _HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
-def _relative_luminance(hex_colour: str) -> float:
+def _relative_luminance(hex_color: str) -> float:
     def channel(v: int) -> float:
         c = v / 255
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
 
-    r, g, b = (int(hex_colour[i : i + 2], 16) for i in (1, 3, 5))
+    r, g, b = (int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
     return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
 
 
-def contrast_with_white(hex_colour: str) -> float:
-    """WCAG contrast ratio of white text on the colour."""
-    return 1.05 / (_relative_luminance(hex_colour) + 0.05)
+def contrast_with_white(hex_color: str) -> float:
+    """WCAG contrast ratio of white text on the color."""
+    return 1.05 / (_relative_luminance(hex_color) + 0.05)
 
 
-def accent_colour() -> str:
-    """The club's accent (branding.accent) if it is a six-digit hex colour that carries white
+def accent_color() -> str:
+    """The club's accent (branding.accent) if it is a six-digit hex color that carries white
     text at AA (4.5:1, FR-116); otherwise the application's default. The accent is used as a
     background for the footer, buttons, and the sign-in panel, and as link text on white, so
     the same threshold covers both uses."""
@@ -150,7 +150,7 @@ def branding_url(value: str | None) -> str | None:
 
 def branding() -> dict[str, str | None]:
     out = {key: branding_url(setting(f"branding.{key}")) for key in BRANDING_IMAGES}
-    out["accent"] = accent_colour()
+    out["accent"] = accent_color()
     return out
 
 
