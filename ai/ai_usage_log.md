@@ -1432,4 +1432,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Design and code generation from the advisor's decision.
 - **Human Review Status**: Pending the advisor's look. 218 tests pass, including the permission
   matrix unchanged from before the refactor; ruff and both project checks clean.
-- **Git Hash**: pending
+- **Git Hash**: 3cf2b6c
