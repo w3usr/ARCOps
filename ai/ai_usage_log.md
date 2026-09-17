@@ -1323,4 +1323,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 188 tests pass; the accessibility check
   passes for every role at phone and desktop width; ruff, the club-neutrality guard and the
   requirement-id guard are clean; `makemigrations --check` reports no changes.
-- **Git Hash**: pending
+- **Git Hash**: 05c2b86
