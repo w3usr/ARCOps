@@ -13,7 +13,7 @@
   </li>
 {% endfor %}
 </ul>
-{% else %}<p>No upcoming events.</p>{% endif %}
+{% else %}<p class="empty">Nothing is coming up.{% if perms.ops.create_events %} <a href="{% url 'event_create' %}">Put an event on the calendar.</a>{% endif %}</p>{% endif %}
 </section>
 {% if regular %}<section aria-labelledby="r"><h2 id="r">Regular meetings and nets</h2>
 <ul class="eventcards">{% for e in regular %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e.recurrence_text }}</p></li>{% endfor %}</ul></section>{% endif %}

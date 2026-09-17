@@ -51,7 +51,7 @@ manager, an archivist, a safety officer. Give it a name, then tick what it may d
 {% for row in rows %}
   <li>{{ row.label }} <span class="muted">({{ row.members }} account{{ row.members|pluralize }})</span>
     {% if row.members == 0 %}
-    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="group" value="{{ row.group.pk }}"><button type="submit" class="linklike danger">remove</button></form>
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="group" value="{{ row.group.pk }}"><button type="submit" class="linklike danger">Remove</button></form>
     {% else %}<span class="muted">· move its members elsewhere first</span>{% endif %}
   </li>
 {% endfor %}

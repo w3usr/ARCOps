@@ -23,7 +23,7 @@ def test_sign_in_page_is_the_split_layout_without_signup_or_contact_noise(client
     assert "invitation from a club officer" not in body
     assert "Times are shown" not in body
     assert "mailto:" not in body  # the footer names the club and links its page, nothing else
-    assert "Forgot your username or password?" in body
+    assert "Forgot your password?" in body
     # No inline executable script: the CSP allows own-origin files only.
     assert not [
         t

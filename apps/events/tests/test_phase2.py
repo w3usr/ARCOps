@@ -142,7 +142,7 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     body = c.get(f"/events/{e.pk}/slot/{slots[0].pk}/").content.decode()
     assert "Change role to" in body
     r = c.post(f"/events/signup/{su.pk}/role/", {"role": "observer"})
-    assert r.status_code == 200 and b"Before you switch" in r.content  # the only licensee
+    assert r.status_code == 200 and b"Change your role?" in r.content  # the only licensee
     su.refresh_from_db()
     assert su.role == "operator"
     c.post(f"/events/signup/{su.pk}/role/", {"role": "observer", "confirmed": "yes"})

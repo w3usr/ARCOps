@@ -9,7 +9,7 @@
     {% if f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
     {% else %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endif %}
   {% endfor %}
-  <p class="muted">Privacy notice: we hold the details above so the club can schedule and contact you, we show other members only your first name, callsign, and license class, and you can ask to close your account at any time.</p>
+  <p class="note">The club holds the details above so it can schedule you and reach you. Other members see only your first name, callsign, and license class. You can ask for your account to be closed at any time; the <a href="{% url 'privacy' %}">privacy notice</a> has the rest.</p>
   <div><button type="submit">Create my account</button></div>
 </form>
 {% endblock %}

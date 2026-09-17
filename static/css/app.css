@@ -259,6 +259,11 @@ form label, .field label { display: block; font-weight: 600; margin-bottom: .25r
 .check { flex-wrap: wrap; }
 .check > .helptext { flex-basis: 100%; margin-left: 1.7rem; margin-top: 0; }
 .row { display: flex; gap: 1rem; flex-wrap: wrap; } .row > * { flex: 1 1 10rem; }
+/* A field whose whole content is one checkbox sits beside fields that have a label above their
+   input. Without this it floats level with the labels instead of level with the inputs. */
+.row > .field > .check:only-child { margin-top: 1.7rem; }
+/* A row-level action after an item in a list needs air, or "Run Remove" reads as one phrase. */
+.list > li > form.inline { margin-left: .5rem; }
 fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem 1rem 1rem; margin: 0; }
 legend { font-weight: 600; padding: 0 .35rem; }
 fieldset .helptext { margin-top: 0; }
@@ -458,6 +463,28 @@ pre { overflow-x: auto; max-width: 100%; }
 .checkset > ul input { width: 1.15rem; }
 /* Removing something in place: the confirmation is the disclosure, so it needs no second page
    and still works with JavaScript turned off. */
+/* An empty state names what belongs there and how it gets there. Quiet, but not so quiet the
+   reader takes it for a rendering fault. */
+.empty { color: var(--muted); }
+td.empty { padding: var(--s3) var(--s2); }
+li.empty { list-style: none; margin-left: -1.25rem; }
+
+/* The count of who an announcement reaches, with the control that counts again beside it. */
+.note.recipients { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); flex-wrap: wrap; }
+.note.recipients p { margin: 0; min-width: 0; }
+
+/* Setting an event up is four things in order, on a page of a dozen cards. The strip says
+   which are done and which one to do next, and each links to the card that does it. */
+.steps { list-style: none; margin: 0 0 var(--s4); padding: 0; display: flex; flex-direction: column; gap: var(--s1); }
+.steps > li { display: flex; align-items: flex-start; gap: var(--s2); padding: var(--s2); border-radius: var(--radius); border: 1px solid var(--line); background: var(--card); }
+.steps > li.now { border-color: var(--accent); background: var(--accent-soft); }
+.steps .mark { flex: none; display: flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: var(--t-small); font-weight: 700; }
+.steps > li.done .mark { background: var(--tag-ok); border-color: var(--ok); color: var(--ok); }
+.steps > li.done .what > a { color: var(--muted); }
+.steps .what { min-width: 0; }
+.steps .helptext { margin-top: .1rem; }
+@media (min-width: 60rem) { .steps { flex-direction: row; } .steps > li { flex: 1 1 0; } }
+
 /* Everything that cannot be undone, in one place at the foot of the page, marked as such. */
 .card.dangerzone { border-color: var(--bad); }
 .card.dangerzone > h2 { color: var(--bad); margin-top: 0; }

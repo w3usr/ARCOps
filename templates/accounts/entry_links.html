@@ -27,6 +27,6 @@
   {% if l.state != 'revoked' %}<button name="action" value="extend" class="linklike">Give it 30 more days</button> <button name="action" value="revoke" class="linklike danger">Revoke</button>{% endif %}
   {% if l.kind == 'class' %}<button name="action" value="verify_all" class="linklike">Mark everyone who joined here as verified</button>{% endif %}
 </form></td>
-</tr>{% empty %}<tr><td colspan="7">None yet.</td></tr>{% endfor %}
+</tr>{% empty %}<tr><td colspan="7" class="empty">No entry links yet. An entry link lets people join without an invitation each: make a class link for a course, or a community link for a public event.</td></tr>{% endfor %}
 </tbody></table>
 {% endblock %}

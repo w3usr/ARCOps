@@ -1,8 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Cancel? · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% load labels %}
+{% block title %}Give up the slot? · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Before you cancel</h1>
-<p>If you leave this slot it becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>
+<h1>Give up this slot?</h1>
+<p class="msg warning"><span class="lvl">Careful:</span> without you the slot becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>
+<p>The captains are told either way. If you can still make it, staying is the greater help.</p>
 <form method="post" action="{% url 'cancel_signup' signup.pk %}">{% csrf_token %}<input type="hidden" name="confirmed" value="yes">
-<button type="submit" class="secondary">Cancel anyway</button> <a class="button" href="{% url 'my_schedule' %}">Stay in the slot</a></form>
+  <a class="button" href="{% url 'my_schedule' %}">Keep the slot</a>
+  <button type="submit" class="danger">Give it up</button>
+</form>
 {% endblock %}

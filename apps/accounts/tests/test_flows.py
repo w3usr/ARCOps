@@ -36,7 +36,7 @@ def test_login_page_has_no_signup_link_or_wording():
     assert "Sign in" in body
     assert "sign up" not in body.lower()
     assert "/accounts/signup/" not in body
-    assert "Forgot your username or password?" in body
+    assert "Forgot your password?" in body
 
 
 def test_signup_route_is_closed():

@@ -19,6 +19,6 @@
   <td data-label="Hours">{{ r.health.scheduled_hours }}{% if r.health.over_total_limit %} <span class="tag bad">over limit</span>{% endif %}</td>
   <td data-label="Unconfirmed, next 48 h">{% if r.unconfirmed_48h %}<span class="tag warn">{{ r.unconfirmed_48h }}</span>{% else %}0{% endif %}</td>
 </tr>
-{% empty %}<tr><td colspan="8">Nothing published in that window.</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="8" class="empty">No published event falls in that window. Widen it above, or publish an event from its manage page.</td></tr>{% endfor %}
 </tbody></table></div>
 {% endblock %}

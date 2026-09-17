@@ -10,5 +10,5 @@
   <p class="muted"><small>Audience: {% for k, v in a.audience.items %}{{ k }}={{ v }}{% if not forloop.last %}, {% endif %}{% empty %}everyone{% endfor %}. Recipients: {% for r in a.recipients %}{{ r.1 }}{% if not forloop.last %}, {% endif %}{% endfor %}</small></p>
   <div class="prose">{{ a.body_html|richtext }}</div>
 </details>
-{% empty %}<p>None yet.</p>{% endfor %}
+{% empty %}<p class="empty">No announcements have gone out yet. The ones you send appear here, with who received each.</p>{% endfor %}
 {% endblock %}

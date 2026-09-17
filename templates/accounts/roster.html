@@ -22,6 +22,6 @@
   <td data-label="Credentials">{{ r.credentials|join:"; " }}</td>
   <td data-label="Last sign-in">{{ r.u.last_login|date:"Y-m-d"|default:"never" }}</td>
 </tr>
-{% empty %}<tr><td colspan="10">Nobody matches.</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="10" class="empty">Nobody matches what you have picked.</td></tr>{% endfor %}
 </tbody></table></div>
 {% endblock %}

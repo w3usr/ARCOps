@@ -23,11 +23,11 @@
   <td data-label="Joined via">{% if m.joined_via %}{{ m.joined_via.label }}{% else %}<span class="muted">invitation</span>{% endif %}</td>
   <td data-label="Contact">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
 </tr>
-{% empty %}<tr><td colspan="7">No one matches.</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="7" class="empty">{% if q %}Nobody matches "{{ q }}". <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
 </tbody></table>
 {% else %}
 <ul class="directory">
-{% for m in members %}<li>{{ m.short_name_lettered }}{% if m.club_position %} <span class="muted">· {{ m.club_position|position_label }}</span>{% endif %}</li>{% empty %}<li class="muted">No one matches.</li>{% endfor %}
+{% for m in members %}<li>{{ m.short_name_lettered }}{% if m.club_position %} <span class="muted">· {{ m.club_position|position_label }}</span>{% endif %}</li>{% empty %}<li class="empty">{% if q %}Nobody matches "{{ q }}". <a href="{% url 'members' %}">Show every member.</a>{% else %}No members yet.{% endif %}</li>{% endfor %}
 </ul>
 {% endif %}
 {% endblock %}

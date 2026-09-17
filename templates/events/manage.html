@@ -1,10 +1,25 @@
 {% extends "base.html" %}
-{% load dicts %}
+{% load dicts labels %}
 {% block title %}Manage · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
 <div class="titlerow"><h1>Manage: {{ event.title }}</h1><span class="tag">{{ event.get_state_display }}</span></div>
+
+{% if setup_steps %}
+<ol class="steps">
+{% for step in setup_steps %}
+  <li class="{% if step.done %}done{% elif step.next %}now{% endif %}">
+    <span class="mark" aria-hidden="true">{% if step.done %}&check;{% else %}{{ forloop.counter }}{% endif %}</span>
+    <span class="what">
+      <a href="#{{ step.anchor }}">{{ step.title }}</a>
+      {% if step.done %}<span class="sr-only">: done</span>{% elif step.next %}<span class="tag">do this next</span>{% endif %}
+      <span class="helptext">{{ step.detail }}</span>
+    </span>
+  </li>
+{% endfor %}
+</ol>
+{% endif %}
 
 <div class="cols">
 <section class="card" aria-labelledby="det">
@@ -21,8 +36,8 @@
   <h2 id="per">Operating periods</h2>
   <ul class="list">
     {% for p in periods %}<li>{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC
-      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>
-    {% empty %}<li class="muted">None yet; the slots are generated from these.</li>{% endfor %}
+      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>
+    {% empty %}<li class="empty">No operating period yet. Add one below; the slots are generated inside it.</li>{% endfor %}
   </ul>
   <form method="post" action="{% url 'period_add' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">
@@ -38,12 +53,12 @@
   {% for l in locations %}
   <p><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %} · {{ l.address }}{% endif %}</p>
   <ul class="list">
-    {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>{% endfor %}
+    {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}
   </ul>
   <form method="post" action="{% url 'position_add' event.pk l.pk %}" class="inline">{% csrf_token %}
     <label class="sr-only" for="pos-{{ l.pk }}">Position name</label><input id="pos-{{ l.pk }}" name="name" placeholder="Position name (Run, Mult, VHF…)"> <button type="submit">Add position</button>
   </form>
-  {% empty %}<p class="muted">No location yet. A position is one operating seat at a location; each gets its own column of slots.</p>{% endfor %}
+  {% empty %}<p class="empty">No location yet. Add one below. A position is one operating seat at a location, and each gets its own column of slots.</p>{% endfor %}
   <h3>Add a location</h3>
   <form method="post" action="{% url 'location_add' event.pk %}" class="stack">{% csrf_token %}
     <div class="field"><label for="lname">Name</label><input id="lname" name="name" required placeholder="{{ club.short_name }} station"></div>
@@ -58,7 +73,7 @@
   <h2 id="cap">Captains</h2>
   <ul class="list">
     {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
-      {% if c.user != user %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form>{% endif %}</li>{% endfor %}
+      {% if c.user != user %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
   <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>
   <form method="post" action="{% url 'captain_add' event.pk %}" class="inline">{% csrf_token %}
@@ -130,8 +145,8 @@
 <section class="card" aria-labelledby="opn">
   <h2 id="opn">Openings</h2>
   <p class="helptext">When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
-  {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {{ o.categories|join:", "|default:"everyone" }}{% if o.announce %} · announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
-    <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>{% endfor %}</ul>{% endif %}
+  {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %} · announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
+    <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}</ul>{% endif %}
   <form method="post" action="{% url 'opening_add' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">
       <div class="field"><label for="op-role">Role</label><select id="op-role" name="role">{% for r in rule_roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
@@ -144,8 +159,9 @@
 </section>
 
 <section class="card" aria-labelledby="st">
-  <h2 id="st">State: {{ event.get_state_display }}</h2>
-  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members see it, changes to sign-ups go through a captain. Completed is set here or automatically once the last slot has ended.</p>
+  <h2 id="st">Status</h2>
+  <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
+  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p>
   <form method="post" action="{% url 'event_state' event.pk %}" class="inline">{% csrf_token %}
     {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">Lock the roster</button>{% endif %}
     {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
@@ -154,16 +170,23 @@
 </section>
 
 <section class="card" aria-labelledby="more">
-  <h2 id="more">Copy or cancel</h2>
-  <div class="row">
-    <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button><span class="helptext">A draft copy with the same periods, locations, and slot grid, and no sign-ups. For next year's running, or a similar event.</span></form>
-    {% if event.state != 'cancelled' %}
-    <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
-      <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I want to cancel this event</label></div>
-      <div class="field"><label for="cancel-reason">Reason (sent to everyone signed up)</label><input id="cancel-reason" name="reason" maxlength="300"></div>
-      <div><button type="submit" class="danger">Cancel event</button></div>
-    </form>
-    {% endif %}
-  </div>
+  <h2 id="more">Another copy</h2>
+  <p class="helptext">A draft copy with the same periods, locations, and slot grid, and nobody signed up. For next year's running, or a similar event.</p>
+  <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button></form>
 </section>
+
+{% if event.state != 'cancelled' %}
+<section class="card dangerzone" aria-labelledby="dz">
+  <h2 id="dz">Danger zone</h2>
+  <details class="confirm">
+    <summary>Cancel this event</summary>
+    <p>The event comes off the calendar and every sign-up for it is withdrawn. Everyone signed up is told, with your reason. It cannot be undone; the event stays in the record.</p>
+    <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
+      <div class="field"><label for="cancel-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="cancel-reason" name="reason" maxlength="300" required><span class="helptext">Sent to everyone signed up.</span></div>
+      <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I understand this cannot be undone</label></div>
+      <div><button type="submit" class="danger">Cancel the event</button></div>
+    </form>
+  </details>
+</section>
+{% endif %}
 {% endblock %}

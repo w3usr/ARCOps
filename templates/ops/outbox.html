@@ -27,7 +27,7 @@
   <td data-label="State"><span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% elif m.state == 'not_sent' %} warn{% endif %}">{{ m.get_state_display }}</span>{% if m.sent_at %}<br><small class="muted">{{ m.sent_at|date:"j M H:i" }}</small>{% endif %}{% if m.error %}<br><small class="muted">{{ m.error|truncatechars:160 }}</small>{% endif %}</td>
 </tr>
 {% empty %}
-<tr><td colspan="5">No messages{% if state %} in that state{% endif %}.</td></tr>
+<tr><td colspan="5" class="empty">{% if state %}No messages in that state. <a href="?">Show them all.</a>{% else %}Nothing has been sent yet. Every message the application composes appears here, whether or not mail is going out.{% endif %}</td></tr>
 {% endfor %}
 </tbody>
 </table>

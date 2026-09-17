@@ -23,7 +23,7 @@
 {% if PASSKEY_LOGIN_ENABLED %}
 <button type="submit" form="mfa_login" id="passkey_login" class="secondary wide">Sign in with a passkey</button>
 {% endif %}
-<p class="auth-links"><a href="{% url 'account_reset_password' %}">Forgot your username or password?</a></p>
+<p class="auth-links"><a href="{% url 'account_reset_password' %}">Forgot your password?</a></p>
 {% endblock %}
 {% block extra_body %}
 {{ block.super }}

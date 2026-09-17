@@ -10,7 +10,7 @@
 <p>A member checked in to a slot is credited with its full length; a captain can mark a no-show, which removes the credit.</p>
 <h2>Totals</h2>
 <table class="table"><thead><tr><th scope="col">Member</th><th scope="col">Credited hours</th></tr></thead><tbody>
-{% for u, total in report.totals %}<tr><th scope="row"><a href="{% url 'member_detail' u.pk %}">{{ u.full_name }}</a>{% if u.callsign %} {{ u.callsign }}{% endif %}</th><td data-label="Credited hours">{{ total|floatformat:"-2" }}</td></tr>{% empty %}<tr><td colspan="2">No sign-ups yet.</td></tr>{% endfor %}
+{% for u, total in report.totals %}<tr><th scope="row"><a href="{% url 'member_detail' u.pk %}">{{ u.full_name }}</a>{% if u.callsign %} {{ u.callsign }}{% endif %}</th><td data-label="Credited hours">{{ total|floatformat:"-2" }}</td></tr>{% empty %}<tr><td colspan="2" class="empty">Nobody has been on the air yet. Hours are counted from checked-in slots once events have run.</td></tr>{% endfor %}
 </tbody></table>
 <h2>Every slot</h2>
 <table class="table"><thead><tr><th scope="col">Member</th><th scope="col">Event</th><th scope="col">Slot (UTC)</th><th scope="col">Checked in</th><th scope="col">Hours</th></tr></thead><tbody>

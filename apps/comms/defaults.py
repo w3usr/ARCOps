@@ -58,7 +58,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "subject": "Your {{ club.short_name }} account",
         "body_html": (
             "<p>Someone used this address on a join link, but it already has an account. Sign in, "
-            "or use “Forgot your username or password?” on the sign-in page.</p>"
+            "or use “Forgot your password?” on the sign-in page.</p>"
         ),
         "variables": ["club.short_name"],
     },

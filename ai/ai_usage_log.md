@@ -1505,3 +1505,33 @@ carries the actual running model ID.
   clean, the axe sweep passes for all eight roles at 1280px and 390px, and the three repository
   guards pass.
 - **Git Hash**: 9d15363
+
+## [2026-09-17 23:18 UTC]
+- **Session Purpose**: The rest of the interface review applied: the polish findings left over
+  from the first pass. The event manage page gains a strip at the top saying which of the four
+  setup steps are done and which to do next, because the page is a dozen cards with nothing on it
+  that says what order they go in. The announce page is rebuilt as "Who gets it" and "What it
+  says", with the count of recipients and the control that counts again beside each other. Every
+  empty state now names what belongs there and how it gets there, rather than saying "None yet."
+  Row-level actions read as words ("Remove them", "Check in") instead of lowercase fragments. The
+  two "before you cancel" pages put the safe option first, after the VA design system, and stop
+  using "cancel" to mean two things on one page. The sign-in page stops offering to recover a
+  username, since an account has none. One fault found by the new guard was already live: a
+  {# #} comment on the approvals page ran over two lines, and Django's is a single line, so the
+  comment was rendering onto the page as text. The guard now refuses that, and was checked
+  against a file that should fail.
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Sections/Files Affected**: apps/events/views_manage.py (setup_steps); templates/events/
+  manage.html, confirm_cancel.html, confirm_role.html, list.html, my_schedule.html, _slot_body.html,
+  adults.html, participation.html, health_overview.html; templates/comms/announce.html,
+  my_messages.html, announcements.html; templates/credentials/agreements.html, approvals.html,
+  access_rosters.html, password_denied.html; templates/accounts/invitations.html, entry_links.html,
+  members.html, roster.html, member_detail.html, profile.html, hours.html, join.html,
+  ward_password.html; templates/account/login.html, password_reset.html; templates/ops/
+  settings.html, outbox.html, groups.html; static/css/app.css; tools/check_interface.sh;
+  apps/comms/defaults.py.
+- **Nature of Contribution**: Design and code by the assistant, from the review the four subagents
+  returned earlier in the day.
+- **Human Review Status**: Pending the advisor's look. 241 tests pass, ruff clean, the axe sweep
+  passes for all eight roles at 1280px and 390px, and the four repository guards pass.
+- **Git Hash**: (filled in after committing)

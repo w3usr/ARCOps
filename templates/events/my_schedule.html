@@ -8,7 +8,7 @@
 <p>{{ s.slot.position }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
 {% if minor_readonly %}<p class="muted">Your guardian or a captain checks you in.</p>
 {% else %}<form method="post" action="{% url 'check_in' s.pk %}" class="stack">{% csrf_token %}
-{% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}{% if adults|length > 1 %}<fieldset><legend>Who is with {{ s.user.display_first }}</legend>{% for a in adults %}<div class="check"><input type="checkbox" name="adult" value="{{ a.pk }}" id="ad-{{ s.pk }}-{{ a.pk }}"{% if forloop.first %} checked{% endif %}><label for="ad-{{ s.pk }}-{{ a.pk }}">{{ a.name }}</label></div>{% endfor %}</fieldset>{% elif adults %}<p class="muted">With {{ adults.0.name }}.</p>{% else %}<p class="msg warning">No responsible adult is named yet: <a href="{% url 'signup_adults' s.pk %}">name one</a> before checking in.</p>{% endif %}{% endwith %}{% endif %}
+{% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}{% if adults|length > 1 %}<fieldset><legend>Who is with {{ s.user.display_first }}</legend>{% for a in adults %}<div class="check"><input type="checkbox" name="adult" value="{{ a.pk }}" id="ad-{{ s.pk }}-{{ a.pk }}"{% if forloop.first %} checked{% endif %}><label for="ad-{{ s.pk }}-{{ a.pk }}">{{ a.name }}</label></div>{% endfor %}</fieldset>{% elif adults %}<p class="muted">With {{ adults.0.name }}.</p>{% else %}<p class="msg warning"><span class="lvl">Careful:</span> no responsible adult is named yet. <a href="{% url 'signup_adults' s.pk %}">Name one</a> before checking in.</p>{% endif %}{% endwith %}{% endif %}
 <button class="big" type="submit">Check in</button></form>{% endif %}</section>
 {% endfor %}
 {% if upcoming %}
@@ -21,7 +21,7 @@
 {% if s.slot.event.state == 'locked' %}<span class="muted">roster locked; ask a captain</span>{% else %}<form class="inline" method="post" action="{% url 'cancel_signup' s.pk %}">{% csrf_token %}<button type="submit" class="secondary">Cannot make it</button></form>{% endif %}
 {% if s.user.under_18 %}<a href="{% url 'signup_adults' s.pk %}">Responsible adults ({{ s.responsible_adults.count }})</a>{% endif %}{% endif %}</td>
 </tr>{% endfor %}</tbody></table>
-{% else %}<p>No upcoming slots. <a href="{% url 'event_list' %}">Find an event.</a></p>{% endif %}
+{% else %}<p class="empty">You are not on for anything yet. <a href="{% url 'event_list' %}">Find an event and pick your hours.</a></p>{% endif %}
 <section class="card" aria-labelledby="feed"><h2 id="feed">Calendar feed</h2>
 <p>Subscribe your phone or desktop calendar to this address and every slot you hold appears there, updated as you sign up or cancel. The address is yours alone; do not share it.</p>
 <p class="copyrow"><code id="feed-url">{{ feed_url }}</code> <button type="button" class="secondary" data-copy="#feed-url">Copy</button></p>

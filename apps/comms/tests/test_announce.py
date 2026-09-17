@@ -76,7 +76,7 @@ def test_audience_filters_count_and_send_with_reply_to_and_unsubscribe():
     cl = Client()
     cl.force_login(cap)
     body = cl.get(f"/events/{e.pk}/announce/?role=observer").content.decode()
-    assert "2 recipients" in body and "Send to 2" in body
+    assert "2 people" in body and "Send to 2" in body
     r = cl.post(
         f"/events/{e.pk}/announce/",
         {

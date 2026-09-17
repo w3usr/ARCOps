@@ -252,6 +252,48 @@ def event_manage(request, pk):
     return _manage_page(request, event, form)
 
 
+def setup_steps(event, positions, slot_count) -> list[dict]:
+    """Setting an event up is four things in order, and the page is a dozen cards. Without this
+    a captain has to know which card to open first, and there is nothing on the page that says.
+
+    Each step says whether it is done, which one to do next, and where on the page it lives.
+    """
+    periods = event.periods.exists()
+    steps = [
+        {
+            "title": "Say when the club will be on the air",
+            "done": periods,
+            "anchor": "per",
+            "detail": "One operating period, or several. The slots are generated inside them.",
+        },
+        {
+            "title": "Say where, and how many seats",
+            "done": bool(positions),
+            "anchor": "loc",
+            "detail": "A location, and a position for each operating seat at it.",
+        },
+        {
+            "title": "Generate the slots",
+            "done": bool(slot_count),
+            "anchor": "gen",
+            "detail": "One slot per position per interval, across every period.",
+        },
+        {
+            "title": "Publish it",
+            "done": event.state
+            in (Event.State.PUBLISHED, Event.State.LOCKED, Event.State.COMPLETED),
+            "anchor": "st",
+            "detail": "Members see it and can sign up.",
+        },
+    ]
+    for step in steps:  # the first one not done is the one to do
+        step["next"] = False
+    nxt = next((step for step in steps if not step["done"]), None)
+    if nxt is not None:
+        nxt["next"] = True
+    return steps
+
+
 def _manage_page(request, event, form=None, generate_form=None):
     """The manage page. A view that refuses a form renders this with the bound form, so the
     captain gets their values back with the reason beside them."""
@@ -283,6 +325,7 @@ def _manage_page(request, event, form=None, generate_form=None):
             if generate_form is not None
             else GenerateForm(roles=roles),
             "slot_count": slot_count,
+            "setup_steps": setup_steps(event, positions, slot_count),
             "signups_exist": has_signups(event),
             "limits": limit_report(event),
             "contest_fields": __import__(

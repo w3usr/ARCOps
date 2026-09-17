@@ -81,7 +81,7 @@ def _index(shots) -> str:
             f"<section><h2>{role} · <code>{url}</code></h2>"
             f'<div class="pair"><figure><figcaption>1280px</figcaption>'
             f'<img src="{desktop}" alt="{url} at 1280px" loading="lazy"></figure>'
-            f'<figure><figcaption>390px</figcaption>'
+            f"<figure><figcaption>390px</figcaption>"
             f'<img src="{phone}" alt="{url} at 390px" loading="lazy"></figure></div></section>'
         )
     return (

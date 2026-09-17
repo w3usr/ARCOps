@@ -62,7 +62,7 @@
 <button type="button" id="push-enable-here" class="secondary" hidden>Allow notifications on this device</button>
 {% if push_subscriptions %}
 <ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.user_agent|truncatechars:60|default:"a browser" }} · since {{ sub.created|date:"j M Y" }}{% if sub.failures %} · {{ sub.failures }} failed{% endif %}
-<form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike">revoke</button></form></li>{% endfor %}</ul>
+<form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Forget this device</button></form></li>{% endfor %}</ul>
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>
 {% endif %}

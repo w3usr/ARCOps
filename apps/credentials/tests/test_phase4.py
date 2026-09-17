@@ -133,7 +133,7 @@ def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so()
         session.save()
     body = c.get("/credentials/agreements/").content.decode()
     assert (
-        "You signed version 1; version 2 is current and must be re-signed by" in body
+        "you signed version 1; version 2 is current and must be re-signed by" in body
         and "Sign" in body
     )
     assert agreement_expiry_run()["superseded"] == 0
@@ -224,7 +224,7 @@ def test_signed_pdf_is_rendered_stored_and_downloadable_by_signer_and_approver(s
         session = body.session  # acting at the raised level
         session["acting_view"] = "sysadmin"
         session.save()
-    assert "PDF of what you signed" in body.get("/credentials/agreements/").content.decode()
+    assert "Open what you signed" in body.get("/credentials/agreements/").content.decode()
 
 
 def test_password_manage_rotates_and_notifies_current_holders_and_lists_former_viewers(settings):

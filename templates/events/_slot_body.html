@@ -16,7 +16,7 @@
     {% if cell.control_operator and cell.control_operator.pk == s.user.pk %}<span class="tag ok">control operator</span>{% endif %}
     {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
     {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
-    {% if is_captain and s.user != user %}<a class="linklike danger" href="{% url 'confirm_remove_signup' s.pk %}">remove</a>{% endif %}
+    {% if is_captain and s.user != user %}<a class="linklike danger" href="{% url 'confirm_remove_signup' s.pk %}">Remove them</a>{% endif %}
     {% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}
       {% if is_captain or cell.mine or s.user == user %}<details class="inline"><summary>under 18: who accompanies</summary>
         {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %} · {{ a.phone }}{% endif %}{% if is_captain and a.email %} · {{ a.email }}{% endif %}{% if a.present_at %} · <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
@@ -24,13 +24,13 @@
         <a href="{% url 'signup_adults' s.pk %}">Edit the designation</a>{% elif s.user == user and not minor_readonly %}<a href="{% url 'signup_adults' s.pk %}">Name or change the adult</a>{% endif %}</details>
       {% else %}<span class="tag">under 18, with an adult</span>{% endif %}
     {% endwith %}{% endif %}
-    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post" action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button class="linklike">check in</button></form>{% endif %}
-    {% if is_captain and s.checked_in_at %}<form method="post" action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}undo no-show{% else %}mark no-show{% endif %}</button></form>{% endif %}
+    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post" action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button class="linklike">Check in</button></form>{% endif %}
+    {% if is_captain and s.checked_in_at %}<form method="post" action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}Undo the no-show{% else %}Mark as a no-show{% endif %}</button></form>{% endif %}
     {% if s.no_show %}<span class="tag warn">no-show</span>{% endif %}
   </li>
 {% endfor %}
 </ul>
-{% else %}<p class="muted">Nobody yet.</p>{% endif %}
+{% else %}<p class="empty">Nobody has signed up for this slot yet.</p>{% endif %}
 {% if cell.open_roles and published %}<p class="muted">Seats open: {{ cell.open_roles|role_labels }}.</p>{% endif %}
 
 {% if cell.mine %}
@@ -99,7 +99,7 @@
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
   <details><summary>Who may sign up for this slot (override)</summary>
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %} · {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %} · needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %} · no minors{% endif %}
-      <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike">clear</button></form></li>{% endfor %}</ul>{% endif %}
+      <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike danger">Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
     <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
       <div class="row">
         <div class="field"><label for="se-role-{{ slot.pk }}">Role</label><select id="se-role-{{ slot.pk }}" name="role" data-role-select>{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>

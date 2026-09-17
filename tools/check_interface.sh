@@ -15,6 +15,9 @@ TABLE = re.compile(r"<table\b[^>]*>.*?</table>", re.S)
 ROW = re.compile(r"<tr\b[^>]*>.*?</tr>", re.S)
 CELL = re.compile(r"<td\b([^>]*)>")
 INLINE_HANDLER = re.compile(r'\son[a-z]+\s*=\s*"')
+# Django's {# #} is a single line. Spread over two it is not a comment at all: the opening
+# brace and every word of it render onto the page.
+OPEN_COMMENT = re.compile(r"\{#(?![^\n]*#\})")
 TITLE = re.compile(r'\stitle\s*=\s*"')
 BRITISH = re.compile(
     r"\b(colour|licence|organis\w*|authoris\w*|recognis\w*|behaviour|cancelled|cancelling"
@@ -41,6 +44,10 @@ for path in sorted(pathlib.Path("templates").rglob("*.html")):
                 if "data-label" not in attrs and "colspan" not in attrs:
                     fail.append(f"{path}: a <td> with no data-label; it loses its column on a phone")
                     break
+
+    for n, line in enumerate(raw.splitlines(), 1):
+        if OPEN_COMMENT.search(line):
+            fail.append(f"{path}:{n}: a {{# #}} comment running past one line; it renders as text")
 
     for n, line in enumerate(text.splitlines(), 1):
         if INLINE_HANDLER.search(line):

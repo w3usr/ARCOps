@@ -228,7 +228,7 @@ def test_captain_can_check_a_member_in_from_the_slot_page():
     c = Client()
     c.force_login(cap)
     body = c.get(f"/events/{e.pk}/slot/{slots[0].pk}/").content.decode()
-    assert ">check in<" in body
+    assert ">Check in<" in body
     c.post(f"/events/signup/{su.pk}/checkin/")
     su.refresh_from_db()
     assert su.checked_in_at is not None and su.checked_in_by == cap
