@@ -1454,4 +1454,4 @@ carries the actual running model ID.
   security claim stated honestly in the module and the requirements (a seatbelt, not a lock).
 - **Human Review Status**: Pending the advisor's look. 226 tests pass; ruff and both project
   checks clean; `makemigrations --check` reports no changes.
-- **Git Hash**: pending
+- **Git Hash**: 7adef4d
