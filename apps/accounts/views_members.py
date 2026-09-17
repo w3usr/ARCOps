@@ -46,7 +46,8 @@ def members(request):
     full = request.user.is_officer
     q = request.GET.get("q", "").strip()
     users = (
-        User.objects.select_related("joined_via", "license")
+        # the directory shows every address an officer may write to, so they come in one query
+        User.objects.select_related("joined_via", "license").prefetch_related("addresses")
         if full
         else User.objects.exclude(
             access_level__in=[AccessLevel.NONE, AccessLevel.PROVISIONAL]

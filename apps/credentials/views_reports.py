@@ -196,6 +196,7 @@ def member_roster(request):
     users = (
         User.objects.exclude(access_level=AccessLevel.NONE)
         .select_related("license", "joined_via")
+        .prefetch_related("addresses")
         .order_by("last_name", "first_name")
     )
     rows = _member_roster_rows(list(users))

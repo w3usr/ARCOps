@@ -1324,3 +1324,19 @@ carries the actual running model ID.
   passes for every role at phone and desktop width; ruff, the club-neutrality guard and the
   requirement-id guard are clean; `makemigrations --check` reports no changes.
 - **Git Hash**: 05c2b86
+
+## [2026-09-17 10:35 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A sweep for anything left assuming one address per account, after the
+  identity refactor. The directory now lists every address an officer may write to, in one
+  query; the member roster export prefetches them too. The three pages that named a single
+  address hold for an account with none: a minor's temporary-password page says there is
+  nothing to sign in with yet, the guardian's invitation page says the same, and the signed
+  agreement's PDF names the account's address only when there is one.
+- **Sections/Files Affected**: apps/accounts/views_members.py, apps/credentials/
+  views_reports.py, templates/accounts/{members,ward_password,accept_invitation_guardian}.html,
+  templates/credentials/agreement_pdf.html, apps/accounts/tests/test_members.py.
+- **Nature of Contribution**: Code and template edits with a test.
+- **Human Review Status**: Pending the advisor's look. 188 tests pass; ruff and both project
+  checks clean.
+- **Git Hash**: pending

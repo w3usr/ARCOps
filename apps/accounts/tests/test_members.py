@@ -50,8 +50,13 @@ def test_members_see_short_names_and_officers_see_everything(people):
     directory = re.search(r'<ul class="directory">(.*?)</ul>', body, re.S).group(1)
     assert "Mo N0MEM" in directory and "Ann O." in directory
     assert "@" not in directory  # no addresses for members (FR-67)
+    from apps.accounts import addresses
+
+    addresses.add(people["mem"], "mo@uni.example", confirmed=True)
     body = _as(people["off"]).get("/members/").content.decode()
-    assert "Mo Member" in body and "mem@home.example" in body
+    assert "Mo Member" in body
+    # every address an officer may write to, not one of them chosen for them
+    assert "mem@home.example" in body and "mo@uni.example" in body
     assert _as(people["mem"]).get(f"/members/{people['off'].pk}/").status_code == 404
 
 
