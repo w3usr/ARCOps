@@ -141,13 +141,15 @@ below that exist mainly to keep this true are marked **(portability)**.
 
 ### 2.1 Access levels
 
-The dictation names four levels; a fifth, **Provisional**, was added on 2026-09-15 (FR-121). They
-are mutually exclusive and every account holds exactly one.
+The dictation names four levels; **Provisional** was added on 2026-09-15 (FR-121) and **Faculty
+advisor** on 2026-09-17 (the advisor's issue 87). They are mutually exclusive and every account
+holds exactly one, and each level holds everything the level below it holds.
 
 | Level | Who | Summary of powers |
 |---|---|---|
 | **Sysadmin** | The people who run the application | Everything, including manual account creation and editing, password resets, privilege fields, configuration, and overrides of automated data |
-| **Club officer** | Elected officers and the faculty advisors | Send invitations; create, edit, and captain events; send announcements; view reports; approve applications. Cannot edit another account's privilege fields or reset passwords |
+| **Faculty advisor** | The faculty member answerable for the club, and their associates | Everything an officer holds, and: approve a signed access agreement, convert a minor's account at 18, and read the archive of former members. *(Added 2026-09-17. The advisor: "This is above 'Club Officer' but below 'Sysadmin'. Faculty Advisors should have the ability to approve access agreements. Club officers should not." Station access is the club's answer to the University, so it belongs to a level the University appoints rather than to a post the club elects.)* |
+| **Club officer** | Elected officers | Send invitations; create, edit, and captain events; send announcements; view reports; approve applications. Cannot approve access agreements, edit another account's privilege fields, or reset passwords |
 | **Member** | An admitted member in good standing | Edit own non-privilege profile fields; view schedules and rosters; sign up for slots; sign agreements; view the computer password when eligible |
 | **Provisional** | Someone who joined through a community entry link (FR-119) and has not yet been reviewed by an officer | Sign in; see events; sign up for slots the role rules allow (Mentor, given a license); on a roster see their own name and the count of people by license class, nothing more. No directory, no other names or contact details, no agreements. Becomes Member on an officer's review (FR-121) |
 | **No access** | Account exists; sign-in refused | Nothing. Used for graduated, lapsed, or suspended members, for declined Provisional accounts, and for class-link accounts whose address went unverified (FR-120) |
@@ -171,13 +173,13 @@ event generates. An event has one or more captains.
 
 Club position (Faculty Advisor, Associate Faculty Advisor, President, Vice President, Secretary,
 Treasurer, Trustee, and so on) is a profile field set by a sysadmin or officer, from a
-configurable list **(portability)**. It is displayed, and two capabilities derive from it:
+configurable list **(portability)**. It is displayed, and one capability derives from it:
 
-- **Agreement approver.** Approving a signed access agreement is reserved to positions the
-  configuration marks as approvers; for W3USR, the faculty advisors. This is deliberately
-  narrower than "officer".
 - **Default reply-to.** Announcement replies route to the sender, the event's captains, and the
   club address (`w3usr@scranton.edu`), per the dictation.
+
+Approving an access agreement was a flag on the position until 2026-09-17; it is now the Faculty
+advisor access level (§2.1), so a position the club elects cannot carry it.
 
 ### 2.4 Guardians and minors (added; the dictation states the rules, the account model is the draft's)
 
@@ -222,35 +224,35 @@ The draft models this as follows:
 
 `✓` may do; `E` may do within events they captain; `own` on their own record only; `·` may not.
 
-| Action | Sysadmin | Officer | Captain | Member | Guardian (for linked minor) |
-|---|---|---|---|---|---|
-| Send invitation | ✓ | ✓ | · | · | · |
-| Set member category (on the invitation) | ✓ | ✓ | · | · | · |
-| Create or edit account manually | ✓ | · | · | · | · |
-| Reset another user's password | ✓ | · | · | · | · |
-| Change access level or club position | ✓ | · | · | · | · |
-| Delete a user account (FR-118) | ✓ | · | · | · | · |
-| Override license class or expiration | ✓ | · | · | · | · |
-| Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | own | for minor |
-| Sign an access agreement | ✓ | ✓ | ✓ | own | own only, never for the minor (FR-22) |
-| Approve an access agreement | approver position only | | | | |
-| Convert a minor's account to an adult's (FR-109) | approver position only | | | | |
-| Designate responsible adults for a minor's slot | ✓ | ✓ | E | · | for minor |
-| View a minor's responsible adults and guardians, with contact details | ✓ | ✓ | E | · | for minor |
-| Set or rotate the computer password | ✓ | · | · | · | · |
-| View the computer password | with current IT agreement | | | | · |
-| Create event, import from calendar | ✓ | ✓ | · | · | · |
-| Name event captains | ✓ | ✓ | · | · | · |
-| Edit event, slots, capacities, eligibility | ✓ | ✓ | E | · | · |
-| Move or remove another person's sign-up | ✓ | ✓ | E | · | · |
-| Sign up for a slot, cancel own sign-up | ✓ | ✓ | ✓ | ✓ | for minor |
-| View roster (names, callsigns, roles, health) | ✓ | ✓ | ✓ | ✓ | ✓ |
-| View participants' phone and email | ✓ | ✓ | E | · | · |
-| Send announcement to event participants | ✓ | ✓ | E | · | · |
-| Send announcement to all members | ✓ | ✓ | · | · | · |
-| View access rosters and reports | ✓ | ✓ | · | · | · |
-| View audit log | ✓ | · | · | · | · |
-| Edit club configuration | ✓ | · | · | · | · |
+| Action | Sysadmin | Advisor | Officer | Captain | Member | Guardian (for linked minor) |
+|---|---|---|---|---|---|---|
+| Send invitation | ✓ | ✓ | ✓ | · | · | · |
+| Set member category (on the invitation) | ✓ | ✓ | ✓ | · | · | · |
+| Create or edit account manually | ✓ | · | · | · | · | · |
+| Reset another user's password | ✓ | · | · | · | · | · |
+| Change access level or club position | ✓ | · | · | · | · | · |
+| Delete a user account (FR-118) | ✓ | · | · | · | · | · |
+| Override license class or expiration | ✓ | · | · | · | · | · |
+| Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | ✓ | own | for minor |
+| Sign an access agreement | ✓ | ✓ | ✓ | ✓ | own | own only, never for the minor (FR-22) |
+| Approve an access agreement | ✓ | ✓ | · | · | · | · |
+| Convert a minor's account to an adult's (FR-109) | ✓ | ✓ | · | · | · | · |
+| Designate responsible adults for a minor's slot | ✓ | ✓ | ✓ | E | · | for minor |
+| View a minor's responsible adults and guardians, with contact details | ✓ | ✓ | ✓ | E | · | for minor |
+| Set or rotate the computer password | ✓ | · | · | · | · | · |
+| View the computer password | with current IT agreement | | | | | · |
+| Create event, import from calendar | ✓ | ✓ | ✓ | · | · | · |
+| Name event captains | ✓ | ✓ | ✓ | · | · | · |
+| Edit event, slots, capacities, eligibility | ✓ | ✓ | ✓ | E | · | · |
+| Move or remove another person's sign-up | ✓ | ✓ | ✓ | E | · | · |
+| Sign up for a slot, cancel own sign-up | ✓ | ✓ | ✓ | ✓ | ✓ | for minor |
+| View roster (names, callsigns, roles, health) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| View participants' phone and email | ✓ | ✓ | ✓ | E | · | · |
+| Send announcement to event participants | ✓ | ✓ | ✓ | E | · | · |
+| Send announcement to all members | ✓ | ✓ | ✓ | · | · | · |
+| View access rosters and reports | ✓ | ✓ | ✓ | · | · | · |
+| View audit log | ✓ | · | · | · | · | · |
+| Edit club configuration | ✓ | · | · | · | · | · |
 
 ### 2.6 Authentication
 

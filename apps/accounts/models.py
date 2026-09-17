@@ -13,6 +13,10 @@ from django.utils import timezone
 
 class AccessLevel(models.TextChoices):
     SYSADMIN = "sysadmin", "Sysadmin"
+    # The advisor sits above the elected officers: a faculty member answerable for the club, who
+    # approves access to the station and sees the archive. Officers do neither (the advisor's
+    # own issue, 2026-09-17: "This is above 'Club Officer' but below 'Sysadmin'").
+    ADVISOR = "advisor", "Faculty advisor"
     OFFICER = "officer", "Club officer"
     MEMBER = "member", "Member"
     PROVISIONAL = (
@@ -20,6 +24,25 @@ class AccessLevel(models.TextChoices):
         "Provisional",
     )  # joined through a community link, awaiting review (FR-121)
     NONE = "none", "No access"
+
+
+# The ladder, low to high, for "this level and above". Every comparison in the application reads
+# this rather than listing levels, so a level inserted here does not need them all found again.
+ACCESS_RANK = {
+    AccessLevel.NONE: 0,
+    AccessLevel.PROVISIONAL: 1,
+    AccessLevel.MEMBER: 2,
+    AccessLevel.OFFICER: 3,
+    AccessLevel.ADVISOR: 4,
+    AccessLevel.SYSADMIN: 5,
+}
+
+
+def levels_at_least(level: str) -> list[str]:
+    """Every level from this one upward, for a query. A query that lists the levels it wants
+    silently misses a level added later; this one cannot."""
+    floor = ACCESS_RANK.get(level, 0)
+    return [key for key, rank in ACCESS_RANK.items() if rank >= floor]
 
 
 LICENSE_LETTERS = {  # FR-67: the class after a name; U when there is no license
@@ -132,13 +155,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_staff(self) -> bool:
         return self.access_level == AccessLevel.SYSADMIN
 
+    def at_least(self, level: str) -> bool:
+        """Whether this account holds that level or a higher one."""
+        return ACCESS_RANK.get(self.access_level, 0) >= ACCESS_RANK.get(level, 0)
+
     @property
     def is_sysadmin(self) -> bool:
         return self.access_level == AccessLevel.SYSADMIN
 
     @property
+    def is_advisor(self) -> bool:
+        """Faculty advisor or above: approves access to the station, and sees the archive."""
+        return self.at_least(AccessLevel.ADVISOR)
+
+    @property
     def is_officer(self) -> bool:
-        return self.access_level in (AccessLevel.SYSADMIN, AccessLevel.OFFICER)
+        """Club officer or above. An advisor holds everything an officer holds, and more."""
+        return self.at_least(AccessLevel.OFFICER)
 
     @property
     def email(self) -> str:
@@ -183,7 +216,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_member(self) -> bool:
         """Member or above: sees other members' short names, the directory, the agreements."""
-        return self.access_level in (AccessLevel.SYSADMIN, AccessLevel.OFFICER, AccessLevel.MEMBER)
+        return self.at_least(AccessLevel.MEMBER)
 
     @property
     def license_letter(self) -> str:

@@ -26,13 +26,13 @@ def _user(email, level, position="", **kw):
 def test_agreement_lifecycle_notices():
     ClubSetting.objects.update_or_create(
         key="club_positions",
-        defaults={"value": [{"key": "advisor", "label": "Advisor", "approver": True}]},
+        defaults={"value": [{"key": "advisor", "label": "Advisor"}]},
     )
     ClubSetting.objects.update_or_create(
         key="member_categories", defaults={"value": [{"key": "student", "label": "Student"}]}
     )
     advisor = _user(
-        "adv@example.org", AccessLevel.OFFICER, "advisor", first_name="Ad", last_name="Visor"
+        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
     )
     mem = _user("mem@example.org", AccessLevel.MEMBER, first_name="Mo", last_name="Member")
     ct = CredentialType.objects.create(

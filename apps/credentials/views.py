@@ -16,9 +16,14 @@ from .services import approve, holds, reveal_shared_secret
 
 
 def _is_approver(user) -> bool:
-    positions = setting("club_positions", []) or []
-    approver_keys = {p["key"] for p in positions if p.get("approver")}
-    return user.is_sysadmin or user.club_position in approver_keys
+    """Who may approve access to the station: a faculty advisor or a sysadmin.
+
+    This used to be a flag on the club position, so an elected officer holding a marked position
+    could approve. The advisor asked on 2026-09-17 for it to follow the access level instead:
+    "Faculty Advisors should have the ability to approve access agreements. Club officers should
+    not." Station access is the club's answer to the University, so it belongs to the level the
+    University appoints, not to a position the club votes on."""
+    return user.is_advisor
 
 
 def _applicable_templates(user):

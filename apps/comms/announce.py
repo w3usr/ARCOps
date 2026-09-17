@@ -18,7 +18,7 @@ from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import AccessLevel, User, levels_at_least
 from apps.events.models import Event, SignUp
 from apps.events.services.roster import display_zone
 from apps.events.services.viability import evaluate
@@ -56,7 +56,7 @@ def resolve_audience(event: Event | None, filters: dict) -> list[User]:
     if event is None:
         qs = User.objects.filter(
             is_active=True,
-            access_level__in=[AccessLevel.MEMBER, AccessLevel.OFFICER, AccessLevel.SYSADMIN],
+            access_level__in=levels_at_least(AccessLevel.MEMBER),
         )
         if cats:
             qs = qs.filter(category__in=cats)

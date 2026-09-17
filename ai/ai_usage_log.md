@@ -1357,3 +1357,23 @@ carries the actual running model ID.
   against the copy: both real accounts keep their addresses, the delivery rule is preserved, and
   the mirror matches. 188 tests pass; `makemigrations --check` reports no changes.
 - **Git Hash**: a68ad02
+
+## [2026-09-17 11:20 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The Faculty advisor access level the advisor asked for (issue 87 of the
+  private repository), between Club officer and Sysadmin. Approving a signed access agreement,
+  and converting a minor's account at 18, move from a flag on the club position to this level:
+  an elected officer cannot approve access to the station, whatever post they hold. The ladder
+  now has a rank, so "this level and above" is one comparison rather than a list of levels that
+  a new level silently escapes. Approvals moved out of the officer group in the sidebar into an
+  advisor group of its own.
+- **Sections/Files Affected**: apps/accounts/models.py (AccessLevel, ACCESS_RANK, at_least,
+  levels_at_least, is_advisor), apps/accounts/migrations/0010_faculty_advisor_access_level.py,
+  apps/credentials/{views,services}.py, apps/{comms/announce,events/services/lifecycle,
+  events/services/notify,accounts/entry,accounts/services}.py, templates/base.html,
+  config/club.example.yaml, docs/REQUIREMENTS.md (§2.1, §2.3, the capability table),
+  apps/accounts/tests/test_access_levels.py (new), the credentials tests.
+- **Nature of Contribution**: Design and code generation from the advisor's issue.
+- **Human Review Status**: Pending the advisor's look. 192 tests pass; ruff and both project
+  checks clean; `makemigrations --check` reports no changes.
+- **Git Hash**: pending

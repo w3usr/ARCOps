@@ -23,7 +23,7 @@ from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from .models import AccessLevel, EntryLink, User
+from .models import AccessLevel, EntryLink, User, levels_at_least
 
 VERIFY_SALT = "arcops.verify-email"
 VERIFY_MAX_AGE = 30 * 24 * 3600  # a link in an old email still works for a month
@@ -154,7 +154,7 @@ def notify_officers_of_provisional(user: User, base_url: str) -> None:
     url = base_url + reverse("member_detail", args=[user.pk])
     via = user.joined_via.label if user.joined_via else "a community link"
     for officer in User.objects.filter(
-        access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True
+        access_level__in=levels_at_least(AccessLevel.OFFICER), is_active=True
     ):
         send(
             "account.provisional_notice",

@@ -8,7 +8,7 @@ from django.conf import settings as dj
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import AccessLevel, User, levels_at_least
 from apps.comms.services import send
 from apps.ops.audit import record
 
@@ -77,7 +77,7 @@ def announce_published(actor, event: Event) -> int:
     link = _site() + reverse("event_detail", args=[event.pk])
     members = User.objects.filter(
         is_active=True,
-        access_level__in=[AccessLevel.MEMBER, AccessLevel.OFFICER, AccessLevel.SYSADMIN],
+        access_level__in=levels_at_least(AccessLevel.MEMBER),
     )
     n = 0
     for u in members:
@@ -99,7 +99,7 @@ def announce_openings(now: datetime | None = None) -> int:
             continue
         audience = User.objects.filter(
             is_active=True,
-            access_level__in=[AccessLevel.MEMBER, AccessLevel.OFFICER, AccessLevel.SYSADMIN],
+            access_level__in=levels_at_least(AccessLevel.MEMBER),
         )
         if o.categories:
             audience = audience.filter(category__in=o.categories)

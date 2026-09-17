@@ -109,15 +109,12 @@ def approve(
 
 
 def approvers():
-    """Sysadmins and members in an approver position (§2.3)."""
-    from apps.accounts.models import AccessLevel, User
-    from apps.ops.config import setting
+    """Everyone who may approve access to the station: faculty advisors and sysadmins (§2.1)."""
+    from apps.accounts.models import AccessLevel, User, levels_at_least
 
-    keys = {p["key"] for p in (setting("club_positions", []) or []) if p.get("approver")}
-    qs = User.objects.filter(is_active=True).exclude(access_level=AccessLevel.NONE)
-    from django.db.models import Q
-
-    return list(qs.filter(Q(access_level=AccessLevel.SYSADMIN) | Q(club_position__in=keys)))
+    return list(
+        User.objects.filter(is_active=True, access_level__in=levels_at_least(AccessLevel.ADVISOR))
+    )
 
 
 def expire_due() -> int:

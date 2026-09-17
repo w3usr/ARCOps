@@ -30,7 +30,7 @@ def _user(email, level=AccessLevel.MEMBER, position="", **kw):
 def _setup():
     ClubSetting.objects.update_or_create(
         key="club_positions",
-        defaults={"value": [{"key": "advisor", "label": "Advisor", "approver": True}]},
+        defaults={"value": [{"key": "advisor", "label": "Advisor"}]},
     )
     ClubSetting.objects.update_or_create(key="club.short_name", defaults={"value": "Test ARC"})
     st, _ = CredentialType.objects.get_or_create(
@@ -80,7 +80,7 @@ def _approved(user, template, expires):
 def test_expiry_notices_bundle_agreements_and_summarise_to_approvers():
     st, it, t_st, t_it = _setup()
     adv = _user(
-        "adv@example.org", AccessLevel.OFFICER, "advisor", first_name="Ad", last_name="Visor"
+        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
     )
     mem = _user("mem@example.org", first_name="Mo", last_name="Member", callsign="N0MEM")
     today = timezone.now().date()
@@ -141,7 +141,7 @@ def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so()
 def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
     st, it, t_st, t_it = _setup()
     adv = _user(
-        "adv@example.org", AccessLevel.OFFICER, "advisor", first_name="Ad", last_name="Visor"
+        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
     )
     mem = _user("mem@example.org", first_name="Mo", last_name="Member", callsign="N0MEM")
     today = timezone.now().date()
@@ -176,7 +176,7 @@ def test_signed_pdf_is_rendered_stored_and_downloadable_by_signer_and_approver(s
     settings.MEDIA_ROOT = tmp_path
     st, it, t_st, t_it = _setup()
     adv = _user(
-        "adv@example.org", AccessLevel.OFFICER, "advisor", first_name="Ad", last_name="Visor"
+        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
     )
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     other = _user("o@example.org", first_name="Ot", last_name="Her")

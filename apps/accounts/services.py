@@ -10,7 +10,7 @@ from django.utils import timezone
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from .models import AccessLevel, CallsignHistory, Invitation, User
+from .models import AccessLevel, CallsignHistory, Invitation, User, levels_at_least
 
 
 def create_invitation(
@@ -152,7 +152,7 @@ def _completion_notices(inv: Invitation, user: User) -> None:
     recipients = {
         u.pk: u
         for u in User.objects.filter(
-            access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True
+            access_level__in=levels_at_least(AccessLevel.OFFICER), is_active=True
         )
     }
     if inv.issued_by and inv.issued_by.is_active:

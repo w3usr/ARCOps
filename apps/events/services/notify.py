@@ -15,7 +15,7 @@ from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import AccessLevel, User, levels_at_least
 from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
@@ -48,9 +48,7 @@ def advisors() -> list[User]:
 
 def officers() -> list[User]:
     return list(
-        User.objects.filter(
-            access_level__in=[AccessLevel.OFFICER, AccessLevel.SYSADMIN], is_active=True
-        )
+        User.objects.filter(access_level__in=levels_at_least(AccessLevel.OFFICER), is_active=True)
     )
 
 
@@ -519,7 +517,7 @@ def send_digest(now: datetime | None = None) -> dict:
         )
     members = User.objects.filter(
         is_active=True,
-        access_level__in=[AccessLevel.MEMBER, AccessLevel.OFFICER, AccessLevel.SYSADMIN],
+        access_level__in=levels_at_least(AccessLevel.MEMBER),
     )
     sent = 0
     for u in members:
