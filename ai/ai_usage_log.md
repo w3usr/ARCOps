@@ -1400,4 +1400,4 @@ carries the actual running model ID.
   privacy consequences named rather than assumed.
 - **Human Review Status**: Pending the advisor's look. 202 tests pass; ruff and both project
   checks clean.
-- **Git Hash**: pending
+- **Git Hash**: 5738c6a
