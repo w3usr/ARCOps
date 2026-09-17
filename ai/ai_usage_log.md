@@ -1295,4 +1295,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Bug fix and interface work.
 - **Human Review Status**: Pending the advisor's look. 183 tests pass; the accessibility check
   passes for the member, officer, and sysadmin views; ruff and both project checks clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 505ec70
