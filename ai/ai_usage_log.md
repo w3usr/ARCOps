@@ -1192,4 +1192,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit and a check.
 - **Human Review Status**: Pending review; the member page and the settings page are where the
   advisor saw them. 166 tests pass; ruff, both checks clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 98d90c9
