@@ -1472,4 +1472,4 @@ carries the actual running model ID.
   docs/TECHNICAL_REQUIREMENTS.md (TR-15, TR-25, TR-26).
 - **Nature of Contribution**: Review by four subagents, applied and checked by the assistant.
 - **Human Review Status**: Pending the advisor's look. 228 tests pass.
-- **Git Hash**: pending
+- **Git Hash**: 08ad3f0
