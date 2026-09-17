@@ -348,7 +348,7 @@ def archived_members():
 
 def request_closure(user: User) -> None:
     """FR-11: the member asks for their account to be closed. No access at once; the retention
-    clock of §4.3 starts; signed agreements stay for their own retention period."""
+    record is kept as the club's own, and an advisor archives it when they get to it."""
     user.closure_requested_at = timezone.now()
     user.save(update_fields=["closure_requested_at"])
     set_access(user, user, [], "closure requested by the member")

@@ -322,9 +322,8 @@ DEFAULT_TEMPLATES: list[dict] = [
         "subject": "{{ person.full_name }} asked to close their account",
         "body_html": (
             "<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} asked to close their "
-            "account. It is now at No access and the retention clock has started; their signed "
-            "agreements stay for their own retention period. Nothing else is needed unless you want "
-            "to delete the account outright from their page.</p>"
+            "account. It has no access now, and their record is kept as the club's own. Nothing else "
+            "is needed unless you want to archive it, or to delete it outright from their page.</p>"
         ),
         "variables": ["person.full_name", "person.callsign"],
     },

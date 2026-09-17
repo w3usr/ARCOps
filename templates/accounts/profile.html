@@ -68,7 +68,7 @@
 {% endif %}
 {% endif %}
 {% if not minor_readonly %}<section class="card"><h2>Closing your account</h2>
-<p>You can ask for your account to be closed at any time (see the <a href="{% url 'privacy' %}">privacy notice</a>). Access ends at once; the club keeps its records for the stated period and then removes your contact details. Signed agreements are kept for their own retention period.</p>
+<p>You can ask for your account to be closed at any time (see the <a href="{% url 'privacy' %}">privacy notice</a>). Access ends at once and your record is archived: your name, callsign, contact details, signed agreements, and what you took part in are kept as the club's record of its members, readable by the faculty advisor and the people who administer this site. If you would rather it were deleted outright than archived, say so and an administrator can do that.</p>
 <form method="post" action="{% url 'request_closure' %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="confirm" value="yes"> I want to close my account</label> <button type="submit" class="danger">Close my account</button></form>
 </section>
 {% endif %}

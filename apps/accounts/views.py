@@ -459,7 +459,8 @@ def request_closure(request):
     logout(request)
     messages.info(
         request,
-        "Your account is closed. The club keeps its records for the period in the privacy notice, then removes your contact details.",
+        "Your account is closed. The club keeps its record of you, and the privacy notice says who "
+        "can read it.",
     )
     return redirect("account_login")
 

@@ -263,7 +263,7 @@ def member_detail(request, pk):
                 return redirect("member_detail", pk=pk)
             messages.success(
                 request,
-                f"Account deleted. {result['withdrawn']} future sign-up(s) withdrawn; {result['agreements']} signed agreement(s) kept for their retention period.",
+                f"Account deleted. {result['withdrawn']} future sign-up(s) withdrawn; {result['agreements']} signed agreement(s) kept.",
             )
             return redirect("members")
         elif action == "temporary_password" and actor.may("issue_temporary_password"):
