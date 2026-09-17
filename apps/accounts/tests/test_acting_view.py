@@ -120,3 +120,54 @@ def test_the_sidebar_names_the_level_on_every_page():
     c = _signed_in(_sysadmin())
     body = c.get("/").content.decode()
     assert "Faculty advisor" in body and "/me/level/" in body
+
+
+def test_the_django_admin_says_what_to_do_instead_of_looping():
+    """The admin follows the level. Left alone it sent an unraised sysadmin to its own sign-in,
+    which sent them back, which sent them to the admin again."""
+    c = _signed_in(_sysadmin())
+    r = c.get("/admin/", follow=True)
+    assert r.status_code == 200
+    assert r.redirect_chain[0][0].startswith("/me/level/?next=/admin/")
+    assert b"opens at the Sysadmin level" in r.content
+
+    c.post("/me/level/", {"view": "sysadmin", "password": PASSWORD})
+    assert c.get("/admin/").status_code == 200
+
+
+def test_converting_a_minor_follows_its_own_capability():
+    """It was gated on approving agreements, so a club that ticked "Convert a member's account
+    to an adult's at 18" for a group got nothing."""
+    from django.contrib.auth.models import Group, Permission
+
+    from apps.accounts.models import Guardianship
+    from apps.ops.capabilities import APP_LABEL
+
+    converters = Group.objects.create(name="converters")
+    converters.permissions.set(
+        Permission.objects.filter(
+            content_type__app_label=APP_LABEL,
+            codename__in=["convert_minor_accounts", "view_member_records"],
+        )
+    )
+    keeper = User.objects.create_user(
+        "keep@example.org", PASSWORD, first_name="Kee", last_name="Per", groups=["converters"]
+    )
+    guardian = User.objects.create_user(
+        "guard@example.org", PASSWORD, first_name="Gua", last_name="Rd", groups=["member"]
+    )
+    minor = User.objects.create_user(
+        "kid@example.org",
+        PASSWORD,
+        first_name="Kid",
+        last_name="Doe",
+        under_18=True,
+        groups=["member"],
+    )
+    Guardianship.objects.create(minor=minor, guardian=guardian)
+
+    c = _signed_in(keeper)
+    assert b"Convert to adult account" in c.get(f"/members/{minor.pk}/").content
+    c.post(f"/members/{minor.pk}/", {"action": "convert_adult"})
+    minor.refresh_from_db()
+    assert not minor.under_18

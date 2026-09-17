@@ -212,7 +212,7 @@ def member_detail(request, pk):
                     "License override saved; it shows as such wherever the value appears and the nightly import leaves it alone.",
                 )
             return redirect("member_detail", pk=pk)
-        elif action == "convert_adult" and member.under_18 and _is_approver(actor):  # FR-109
+        elif action == "convert_adult" and member.under_18 and actor.may("convert_minor_accounts"):
             from .guardian import convert_to_adult
 
             temp_password = convert_to_adult(actor, member)
@@ -351,6 +351,7 @@ def member_detail(request, pk):
             ),
             "wards": list(member.wards.filter(active=True).select_related("minor")),
             "is_approver": _is_approver(actor),
+            "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
         },
     )

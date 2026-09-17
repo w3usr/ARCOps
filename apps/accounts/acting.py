@@ -134,6 +134,9 @@ class ActingViewMiddleware(MiddlewareMixin):
             view = default_view(user)
             if view is not None:
                 request.session[SESSION_KEY] = view
+        refusal = self._admin_needs_the_top_level(request, user, view)
+        if refusal is not None:
+            return refusal
         if view is None or view == SYSADMIN:
             user.acting_view = view
             user.acting_capabilities = None  # everything this account holds
@@ -142,6 +145,24 @@ class ActingViewMiddleware(MiddlewareMixin):
         user.acting_view = view
         user.acting_capabilities = granted
         return None
+
+    @staticmethod
+    def _admin_needs_the_top_level(request, user, view):
+        """The Django admin opens only at the top level. Without this the admin sends an
+        unraised sysadmin to its own sign-in, which sends them back, which sends them to the
+        admin again: three pages in a loop rather than one sentence saying what to do."""
+        from django.contrib import messages
+        from django.shortcuts import redirect
+
+        if not request.path.startswith("/admin/") or not user.is_superuser:
+            return None
+        if view in (None, SYSADMIN):
+            return None
+        messages.info(
+            request,
+            "The Django admin opens at the Sysadmin level. Raise it here, then open it again.",
+        )
+        return redirect(f"/me/level/?next={request.path}")
 
 
 def context(request):

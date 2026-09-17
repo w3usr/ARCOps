@@ -241,6 +241,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.full_name}{call} ({self.license_letter})"
 
     @property
+    def access_label(self) -> str:
+        """What this account holds, for a table cell: the groups it is in, or what having none
+        means. A sysadmin is a superuser and holds everything without being in a group."""
+        if self.is_superuser:
+            return "Sysadmin"
+        names = [g.name.replace("_", " ").capitalize() for g in self.groups.all()]
+        return ", ".join(sorted(names)) or "No access"
+
+    @property
     def is_archived(self) -> bool:
         """A former member, kept as club record. They cannot sign in, they are out of the
         directory and every audience, and the archive is where they are read."""

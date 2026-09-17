@@ -19,7 +19,7 @@
   <td>{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
   <td>{{ categories|default_if_none:""|dictkey:m.category|default:m.category|capfirst }}</td>
   <td>{{ positions|dictkey:m.club_position|default:"—" }}</td>
-  <td>{{ m.get_access_level_display }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
+  <td>{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
   <td>{% if m.joined_via %}{{ m.joined_via.label }}{% else %}<span class="muted">invitation</span>{% endif %}</td>
   <td>{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
 </tr>

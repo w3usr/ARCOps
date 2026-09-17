@@ -17,7 +17,7 @@
   <td>{{ r.u.category|capfirst }}</td>
   <td>{{ r.u.club_position }}</td>
   <td>{% if r.u.category == 'student' %}{{ r.u.student_level|default:"" }} {{ r.u.graduation_semester|default:"" }} {{ r.u.graduation_year|default:"" }}{% if r.graduated %} <span class="tag warn">past graduation</span>{% endif %}{% endif %}</td>
-  <td>{{ r.u.get_access_level_display }}</td>
+  <td>{{ r.u.access_label }}</td>
   <td>{{ r.credentials|join:"; " }}</td>
   <td>{{ r.u.last_login|date:"Y-m-d"|default:"never" }}</td>
 </tr>
