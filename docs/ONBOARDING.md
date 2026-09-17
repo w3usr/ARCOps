@@ -182,6 +182,30 @@ show the last success of each job and flag one that is overdue. If the installat
 healthchecks.io project, each run pings its check, so a job that stops running raises an alert
 without anyone watching the page.
 
+## How the application decides who may do what
+
+One question, asked everywhere: does this account hold this capability. The capabilities are a
+single list in `apps/ops/capabilities.py`; a group is a named set of them, seeded from the club's
+configuration and edited afterwards on the **Access groups** page; a sysadmin is a Django
+superuser and holds all of them. An account in no group can do nothing, which is what having no
+access means.
+
+Three things to know before you write a permission check.
+
+1. **Ask for a capability, never for a rank.** `user.may("manage_events")`, or
+   `{% if perms.ops.manage_events %}` in a template. There is no "is this person an officer";
+   a club can put that capability in whatever group it likes.
+2. **A rule about one record stays in the code that knows the record.** Captain of *this* event,
+   guardian of *this* minor, the owner of *this* sign-up. Capabilities are global, and folding
+   these into them would be wrong.
+3. **A session acts at a level.** Somebody may be holding less than their account allows, on
+   purpose (`apps/accounts/acting.py`), and `has_perm` answers from that level. So a page that
+   hides a button without also refusing the action is a bug, not a shortcut.
+
+`apps/accounts/tests/test_permission_matrix.py` asserts what every kind of account gets from
+every page. Add a row when you add a page; it is the only test that catches somebody seeing
+something they should not, because nothing else about that failure is noisy.
+
 ## Two things the build refuses
 
 **A club's name in the code.** Anything specific to one club belongs in its configuration, so
