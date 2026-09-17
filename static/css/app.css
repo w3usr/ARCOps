@@ -88,6 +88,14 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .navlist a[aria-current="page"] { background: var(--accent-soft); color: var(--accent-soft-fg); font-weight: 600; }
 .navlist a[aria-current="page"] .icon { color: currentColor; }
 .navsep { height: 1px; background: var(--line); margin: .5rem .75rem; }
+/* The sidebar is three groups: what any member uses, what an officer adds, what a sysadmin
+   adds. Each later group is introduced by a rule and a small label, so the dividing line is
+   visible; the label names the list for a screen reader through aria-labelledby. */
+.navgroup {
+  margin: .75rem .75rem .25rem; padding-top: .75rem; border-top: 1px solid var(--line);
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+}
 .sidenav-foot { margin-top: auto; padding-top: .75rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: .125rem; }
 .whoami { display: flex; align-items: center; gap: .75rem; margin: 0; padding: .4rem .75rem; color: var(--muted); font-size: .9rem; min-width: 0; }
 .whoami span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -103,6 +111,7 @@ html[data-nav="rail"] .brand img { width: 2.75rem; height: 2.75rem; }
 html[data-nav="rail"] .brand-text,
 html[data-nav="rail"] .navlist a > span,
 html[data-nav="rail"] .navbtn > span,
+html[data-nav="rail"] .navgroup > span,
 html[data-nav="rail"] .whoami > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn, html[data-nav="rail"] .whoami { justify-content: center; padding-inline: 0; }
 html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
@@ -127,7 +136,7 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
   html.no-js .sidenav { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   html.no-js .topbar .iconbtn { display: none; }
   /* The rail preference is irrelevant in a drawer. */
-  html[data-nav="rail"] .brand-text, html[data-nav="rail"] .navlist a > span, html[data-nav="rail"] .navbtn > span, html[data-nav="rail"] .whoami > span { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+  html[data-nav="rail"] .brand-text, html[data-nav="rail"] .navlist a > span, html[data-nav="rail"] .navbtn > span, html[data-nav="rail"] .navgroup > span, html[data-nav="rail"] .whoami > span { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
   html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn, html[data-nav="rail"] .whoami { justify-content: flex-start; padding-inline: .75rem; }
   html[data-nav="rail"] .brand img { width: 3.5rem; height: 3.5rem; }
   .content { padding: 1.25rem 1rem 2.5rem; }

@@ -1193,3 +1193,18 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; the member page and the settings page are where the
   advisor saw them. 166 tests pass; ruff, both checks clean.
 - **Git Hash**: 98d90c9
+
+## [2026-09-17 02:26 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The advisor asked for a clear dividing line in the sidebar between the
+  officer's tools and the sysadmin's, and for "Admin" to read "Django Admin". The sidebar is
+  now three lists: the member's pages, then **Officer tools** (Invite, Approvals,
+  Announcements, Outbox), then **Sysadmin tools** (Status, Templates, Settings, Django Admin).
+  Each later group sits under a rule with a small label, which also names the list for a screen
+  reader; collapsed to the rail the rules stay and the words go, as the other labels do. Django
+  Admin takes its own icon, so it no longer repeats Settings'.
+- **Sections/Files Affected**: templates/base.html, static/css/app.css.
+- **Nature of Contribution**: Edit.
+- **Human Review Status**: Pending review. 166 tests pass; the accessibility check passes for
+  the member, officer, and sysadmin views; both project checks clean.
+- **Git Hash**: [pending]
