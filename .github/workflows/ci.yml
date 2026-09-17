@@ -17,6 +17,8 @@ jobs:
         run: ruff check . && ruff format --check .
       - name: Club-neutral code (TR-40)
         run: bash tools/check_club_neutral.sh
+      - name: No requirement identifiers in the interface
+        run: bash tools/check_no_requirement_ids.sh
       - name: Tests
         run: pytest
       - name: Dependency audit

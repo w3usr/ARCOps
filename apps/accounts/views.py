@@ -141,7 +141,7 @@ class InviteForm(forms.Form):
     email = forms.EmailField(
         required=False,
         label="Invitee's email",
-        help_text="Required for an adult. Optional for a member under 18, who need not have one (§2.4): with none, they sign in with an address made from the guardian's.",
+        help_text="Required for an adult. Optional for a member under 18, who need not have one: with none, they sign in with an address made from the guardian's.",
     )
     category = forms.ChoiceField()
     is_minor = forms.BooleanField(required=False, label="The invitee is under 18")

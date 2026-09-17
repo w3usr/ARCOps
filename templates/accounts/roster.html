@@ -3,7 +3,7 @@
 {% block content %}
 <p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
 <h1>Member roster</h1>
-<p class="lede">Every account with access (FR-87): license, credentials and their expiry, student level and graduation, last sign-in. Contact details are not on this page; they are a separate, audited export.</p>
+<p class="lede">Every account with access: license, credentials and their expiry, student level and graduation, last sign-in. Contact details are not on this page; they are a separate, audited export.</p>
 <p>{% if graduated %}<a class="button secondary" href="?">All members</a>{% else %}<a class="button secondary" href="?graduated=1">Students past their graduation</a>{% endif %} <a class="button secondary" href="?format=csv{% if graduated %}&graduated=1{% endif %}">Download CSV</a> <a class="button secondary" href="?format=csv&contacts=1{% if graduated %}&graduated=1{% endif %}">Download CSV with contact details</a></p>
 <div class="table-wrap"><table class="table">
 <thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Class</th><th scope="col">License expires</th><th scope="col">Category</th><th scope="col">Position</th><th scope="col">Student</th><th scope="col">Access</th><th scope="col">Credentials</th><th scope="col">Last sign-in</th></tr></thead>

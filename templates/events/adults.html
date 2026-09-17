@@ -4,7 +4,7 @@
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{% url 'slot_detail' event.pk slot.pk %}">{{ slot.position }}</a></p>
 <h1>Who accompanies {{ su.user.display_first }}</h1>
-<p>{% when slot.start slot.end event %} · {{ su.role }}. A member under 18 is accompanied for the whole slot by a responsible adult their guardian has named (FR-64). The adult takes no seat and is not counted. Until one is named, the slot shows <em>Needs a responsible adult for {{ su.user.short_name }}</em>.</p>
+<p>{% when slot.start slot.end event %} · {{ su.role }}. A member under 18 is accompanied for the whole slot by a responsible adult their guardian has named. The adult takes no seat and is not counted. Until one is named, the slot shows <em>Needs a responsible adult for {{ su.user.short_name }}</em>.</p>
 
 <section class="card" aria-labelledby="named"><h2 id="named">Named for this slot</h2>
 {% if adults %}<ul class="list">{% for a in adults %}<li><strong>{{ a.name }}</strong>{% if a.phone %} · {{ a.phone }}{% endif %}{% if a.email %} · {{ a.email }}{% endif %}{% if a.member %} · member{% endif %}{% if a.present_at %} · <span class="tag ok">present at check-in</span>{% endif %}

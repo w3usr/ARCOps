@@ -3,7 +3,7 @@
 {% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
 <h1>Club settings</h1>
-<p class="lede">Every fact about the club that the software reads (FR-89). A value changed here is kept through later imports of the configuration file unless the import is run with <code>--reset</code>. Each change is audited.</p>
+<p class="lede">Every fact about the club that the software reads. A value changed here is kept through later imports of the configuration file unless the import is run with <code>--reset</code>. Each change is audited.</p>
 <form method="post" class="stack" enctype="multipart/form-data">{% csrf_token %}
 {% for label, rows in groups %}
 <section class="card" aria-labelledby="g{{ forloop.counter }}"><h2 id="g{{ forloop.counter }}">{{ label }}</h2>
@@ -22,7 +22,7 @@
   {% endfor %}
 </section>
 {% endfor %}
-<section class="card" aria-labelledby="pn"><h2 id="pn">Privacy notice (FR-101)</h2>
+<section class="card" aria-labelledby="pn"><h2 id="pn">Privacy notice</h2>
   <p class="helptext">Shown at <a href="{% url 'privacy' %}">/privacy/</a> and linked from every page. The advisor approves the text.</p>
   <textarea id="privacy_notice_html" name="privacy_notice_html" class="tinymce" data-mce-conf="{{ mce_conf }}">{{ privacy_html }}</textarea>
 </section>

@@ -4,7 +4,7 @@
 {% block content %}
 {% if event %}<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>{% endif %}
 <h1>Announce{% if event %}: {{ event.title }}{% else %} to every member{% endif %}</h1>
-<p class="lede">{% if event %}Everyone signed up for a future slot, or a subset by day, role, slot status, confirmation state, or category (FR-75).{% else %}Every active member, or a subset by category (FR-75).{% endif %} The count below updates when you press <strong>Recount</strong>. Replies go to you{% if event %}, the captains,{% endif %} and the club address.</p>
+<p class="lede">{% if event %}Everyone signed up for a future slot, or a subset by day, role, slot status, confirmation state, or category.{% else %}Every active member, or a subset by category.{% endif %} The count below updates when you press <strong>Recount</strong>. Replies go to you{% if event %}, the captains,{% endif %} and the club address.</p>
 <form method="post" class="card stack">{% csrf_token %}
   {{ form.non_field_errors }}
   <fieldset><legend>Who</legend>
@@ -26,6 +26,6 @@
     <button type="submit" name="action" value="send">Send to {{ recipients|length }}</button>
     <button type="submit" name="action" value="outside" class="secondary">Copy for my own mail client instead</button>
   </div>
-  <p class="helptext">"Copy for my own mail client" records the announcement here as sent outside the system and shows you the address list for your BCC field and the body (FR-106).</p>
+  <p class="helptext">"Copy for my own mail client" records the announcement here as sent outside the system and shows you the address list for your BCC field and the body.</p>
 </form>
 {% endblock %}

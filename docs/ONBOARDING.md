@@ -182,6 +182,17 @@ show the last success of each job and flag one that is overdue. If the installat
 healthchecks.io project, each run pings its check, so a job that stops running raises an alert
 without anyone watching the page.
 
+## Two things the build refuses
+
+**A club's name in the code.** Anything specific to one club belongs in its configuration, so
+`tools/check_club_neutral.sh` fails a build whose code names one.
+
+**A requirement identifier in the interface.** `FR-7`, `TR-28`, and `§2.4` are how this
+project's documents refer to themselves; they mean nothing to a member reading a page. Keep
+them in code comments, docstrings, and template comments, where they explain why something is
+the way it is, and out of the text a browser renders and the labels a form shows.
+`tools/check_no_requirement_ids.sh` fails a build that puts one on a page.
+
 ## Accessibility is checked by the build
 
 CI runs [`tools/a11y`](../tools/a11y): axe-core over every page of the seeded demo, signed in

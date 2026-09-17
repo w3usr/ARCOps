@@ -23,7 +23,7 @@
 </tr>{% endfor %}</tbody></table>
 {% else %}<p>No upcoming slots. <a href="{% url 'event_list' %}">Find an event.</a></p>{% endif %}
 <section class="card" aria-labelledby="feed"><h2 id="feed">Calendar feed</h2>
-<p>Subscribe your phone or desktop calendar to this address and every slot you hold appears there, updated as you sign up or cancel (FR-59). The address is yours alone; do not share it.</p>
+<p>Subscribe your phone or desktop calendar to this address and every slot you hold appears there, updated as you sign up or cancel. The address is yours alone; do not share it.</p>
 <p class="copyrow"><code id="feed-url">{{ feed_url }}</code> <button type="button" class="secondary" data-copy="#feed-url">Copy</button></p>
 </section>
 {% endblock %}

@@ -5,7 +5,7 @@
 <p>This invitation is for <strong>{{ invitation.email }}</strong> as a {{ invitation.category }}, under 18. As their guardian at <strong>{{ invitation.guardian_email }}</strong> you complete it: {% if guardian %}your account {{ guardian.display_first }} will be linked to theirs{% else %}your own account is created alongside theirs{% endif %}. You sign them up, edit their profile, and receive every message sent to them; they sign in read-only with the address above and the password you set here.</p>
 <form method="post" class="card">{% csrf_token %}
 {{ form.as_div }}
-<p class="muted">The member's own email and mobile number are optional; yours are required (REQUIREMENTS §2.4). Members under 18 do not sign access agreements, and you do not sign them on their behalf. <a href="{% url 'privacy' %}">Privacy notice</a>.</p>
+<p class="muted">The member's own email and mobile number are optional; yours are required. Members under 18 do not sign access agreements, and you do not sign them on their behalf. <a href="{% url 'privacy' %}">Privacy notice</a>.</p>
 <button type="submit">Create the account{% if not guardian %}s{% endif %}</button>
 </form>
 {% endblock %}

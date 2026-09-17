@@ -4,7 +4,7 @@
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
 <h1>Participation: {{ event.title }}</h1>
-<p class="lede">Hours scheduled, covered, and viable per operating period; people scheduled and checked in; first-time participants (FR-86). Operating slots only. <a href="?format=csv">Download CSV</a></p>
+<p class="lede">Hours scheduled, covered, and viable per operating period; people scheduled and checked in; first-time participants. Operating slots only. <a href="?format=csv">Download CSV</a></p>
 <div class="table-wrap"><table class="table">
 <thead><tr><th scope="col">Period</th><th scope="col">Slots</th><th scope="col">Hours scheduled</th><th scope="col">Hours covered</th><th scope="col">Hours viable</th><th scope="col">People scheduled</th><th scope="col">People checked in</th></tr></thead>
 <tbody>

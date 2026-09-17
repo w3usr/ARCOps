@@ -27,7 +27,7 @@ class Event(models.Model):
     calendar_ref = models.PositiveIntegerField(null=True, blank=True)  # FR-40
     kbyg_html = models.TextField(blank=True)  # know-before-you-go (FR-77)
     reminder_hours_before = models.PositiveSmallIntegerField(
-        null=True, blank=True, help_text="Blank uses the club default (FR-72)."
+        null=True, blank=True, help_text="Blank uses the club default."
     )
     display_only = models.BooleanField(default=False)  # FR-45: on the calendar, no roster
     recurrence_text = models.CharField(

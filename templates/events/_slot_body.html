@@ -97,7 +97,7 @@
     {% if not cell.signups %}<button name="what" value="cancel" class="danger">Cancel slot</button>{% endif %}
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
-  <details><summary>Who may sign up for this slot (override, FR-53)</summary>
+  <details><summary>Who may sign up for this slot (override)</summary>
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role }}</strong>: {{ r.categories|join:", "|default:"any category" }}{% if r.min_license_class %} · {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %} · needs {{ r.required_credentials|join:", " }}{% endif %}{% if not r.minors_allowed %} · no minors{% endif %}
       <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike">clear</button></form></li>{% endfor %}</ul>{% endif %}
     <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}

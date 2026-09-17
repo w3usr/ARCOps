@@ -7,7 +7,7 @@
 <select id="course" name="course">{% for l in labels %}<option value="{{ l }}"{% if l == label %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
 <button type="submit" class="secondary">Show</button>{% if label %}<a class="button secondary" href="?course={{ label|urlencode }}&format=csv">Download CSV</a>{% endif %}</form>
 {% if not labels %}<p>No entry links yet, so no course to report on.</p>{% else %}
-<p>A member checked in to a slot is credited with its full length; a captain can mark a no-show, which removes the credit (FR-124).</p>
+<p>A member checked in to a slot is credited with its full length; a captain can mark a no-show, which removes the credit.</p>
 <h2>Totals</h2>
 <table class="table"><thead><tr><th scope="col">Member</th><th scope="col">Credited hours</th></tr></thead><tbody>
 {% for u, total in report.totals %}<tr><th scope="row"><a href="{% url 'member_detail' u.pk %}">{{ u.full_name }}</a>{% if u.callsign %} {{ u.callsign }}{% endif %}</th><td>{{ total|floatformat:"-2" }}</td></tr>{% empty %}<tr><td colspan="2">No sign-ups yet.</td></tr>{% endfor %}

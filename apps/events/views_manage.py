@@ -148,7 +148,7 @@ class GenerateForm(forms.Form):
     )
 
     windows = forms.CharField(
-        label="Hours to operate each day (FR-48), one range per line, e.g. 15:00-21:00; blank fills the whole period",
+        label="Hours to operate each day, one range per line, e.g. 15:00-21:00; blank fills the whole period",
         required=False,
         widget=forms.Textarea(attrs={"rows": 2}),
     )

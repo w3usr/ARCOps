@@ -1175,3 +1175,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review; T7 step 4 of the private test plan is the check.
   166 tests pass.
 - **Git Hash**: 372aacc
+
+## [2026-09-17 02:10 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: "We should not have FR- and TR-references in the UI" (the advisor,
+  2026-09-17, seeing "Delete this account (FR-118)" and two others on a member's page). Every
+  requirement identifier was removed from the text a browser renders and from the labels, help
+  text, and messages a form shows; they stay in code comments, docstrings, and template
+  comments. A new check, tools/check_no_requirement_ids.sh, fails a build that puts one back;
+  it strips template comments and Python comments before looking, skips migrations, and was
+  proved able to fail by planting one. CI runs it beside the club-neutrality check, and
+  docs/ONBOARDING.md explains both.
+- **Sections/Files Affected**: 18 templates, apps/events/models.py (help text) with migration
+  events 0005, apps/events/views_manage.py, apps/accounts/views.py, apps/accounts/views_members.py,
+  tools/check_no_requirement_ids.sh (new), .github/workflows/ci.yml, docs/ONBOARDING.md.
+- **Nature of Contribution**: Edit and a check.
+- **Human Review Status**: Pending review; the member page and the settings page are where the
+  advisor saw them. 166 tests pass; ruff, both checks clean.
+- **Git Hash**: [pending]

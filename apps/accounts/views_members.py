@@ -85,7 +85,7 @@ class MemberForm(forms.ModelForm):
         self.fields["under_18"].label = "Under 18"
         self.fields[
             "legal_hold"
-        ].label = "Legal hold: the retention job leaves this account's records alone (TR-28)"
+        ].label = "Legal hold: the retention job leaves this account's records alone"
         if self.instance.name_from_uls:
             for f in NAME_FIELDS:  # FR-4: the FCC record's name is read-only
                 self.fields.pop(f)

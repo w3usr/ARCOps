@@ -60,7 +60,7 @@
     {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
       {% if c.user != user %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
-  <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only (§2.2).</p>
+  <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>
   <form method="post" action="{% url 'captain_add' event.pk %}" class="inline">{% csrf_token %}
     <label class="sr-only" for="cand">Member</label>
     <select id="cand" name="user">{% for u in candidates %}<option value="{{ u.pk }}">{{ u.full_name }}{% if u.callsign %} {{ u.callsign }}{% endif %}</option>{% endfor %}</select>
@@ -72,7 +72,7 @@
 
 <section class="card" aria-labelledby="gen">
   <h2 id="gen">Slots</h2>
-  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid is fixed; close or cancel individual slots from the roster instead.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends (FR-46, FR-47).{% endif %}</p>
+  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid is fixed; close or cancel individual slots from the roster instead.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% endif %}</p>
   {% if not signups_exist %}
   <form method="post" action="{% url 'slots_generate' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for f in generate_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
@@ -83,7 +83,7 @@
 
 <section class="card" aria-labelledby="con">
   <h2 id="con">Contest details</h2>
-  <p class="helptext">The fields the WA7BNM Contest Calendar publishes (FR-37), entered by hand until the calendar import is authorised. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
+  <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorised. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
   <form method="post" action="{% url 'contest_save' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">
       <div class="field"><label for="cf-ref">Calendar reference number</label><input id="cf-ref" name="calendar_ref" inputmode="numeric" value="{{ event.calendar_ref|default_if_none:'' }}"></div>
@@ -95,12 +95,12 @@
 
 <section class="card" aria-labelledby="ann">
   <h2 id="ann">Announce</h2>
-  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation (FR-75).</span></p>
+  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation.</span></p>
 </section>
 
 <section class="card" aria-labelledby="lim">
   <h2 id="lim">Operating limits</h2>
-  <p class="helptext">Advisory (FR-39): the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
+  <p class="helptext">Advisory: the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
   <form method="post" action="{% url 'limits_save' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for f in limit_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
     <div><button type="submit" class="secondary">Save limits</button></div>
@@ -110,7 +110,7 @@
 
 <section class="card" aria-labelledby="who">
   <h2 id="who">Who may sign up</h2>
-  <p class="helptext">Per role (FR-53). Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing (FR-122). A slot can override this from its own page.</p>
+  <p class="helptext">Per role. Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing. A slot can override this from its own page.</p>
   <form method="post" action="{% url 'eligibility_save' event.pk %}" class="stack">{% csrf_token %}
     {% for r in rule_roles %}
     <fieldset>
@@ -129,7 +129,7 @@
 
 <section class="card" aria-labelledby="opn">
   <h2 id="opn">Openings</h2>
-  <p class="helptext">When each role opens, and to whom (FR-54). With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
+  <p class="helptext">When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
   {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {{ o.categories|join:", "|default:"everyone" }}{% if o.announce %} · announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
     <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" class="inline">{% csrf_token %}<button class="linklike">remove</button></form></li>{% endfor %}</ul>{% endif %}
   <form method="post" action="{% url 'opening_add' event.pk %}" class="stack">{% csrf_token %}
@@ -137,7 +137,7 @@
       <div class="field"><label for="op-role">Role</label><select id="op-role" name="role">{% for r in rule_roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
       <div class="field"><label for="op-at">Opens at (UTC)</label><input id="op-at" type="datetime-local" name="opens_at" required></div>
       <div class="field"><span class="label">To</span>{% for c in categories %}<div class="check"><input type="checkbox" name="categories" value="{{ c.key }}" id="op-cat-{{ c.key }}"><label for="op-cat-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: everyone.</span></div>
-      <div class="field"><div class="check"><input type="checkbox" name="announce" id="op-ann"><label for="op-ann">Announce when it opens (FR-80)</label></div></div>
+      <div class="field"><div class="check"><input type="checkbox" name="announce" id="op-ann"><label for="op-ann">Announce when it opens</label></div></div>
     </div>
     <div><button type="submit" class="secondary">Add opening</button></div>
   </form>
@@ -145,7 +145,7 @@
 
 <section class="card" aria-labelledby="st">
   <h2 id="st">State: {{ event.get_state_display }}</h2>
-  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members see it, changes to sign-ups go through a captain (FR-44). Completed is set here or automatically once the last slot has ended.</p>
+  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members see it, changes to sign-ups go through a captain. Completed is set here or automatically once the last slot has ended.</p>
   <form method="post" action="{% url 'event_state' event.pk %}" class="inline">{% csrf_token %}
     {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">Lock the roster</button>{% endif %}
     {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
@@ -156,7 +156,7 @@
 <section class="card" aria-labelledby="more">
   <h2 id="more">Copy or cancel</h2>
   <div class="row">
-    <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button><span class="helptext">A draft copy with the same periods, locations, and slot grid, and no sign-ups (FR-42). For next year's running, or a similar event.</span></form>
+    <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button><span class="helptext">A draft copy with the same periods, locations, and slot grid, and no sign-ups. For next year's running, or a similar event.</span></form>
     {% if event.state != 'cancelled' %}
     <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
       <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I want to cancel this event</label></div>
