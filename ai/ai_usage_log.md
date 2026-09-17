@@ -1433,3 +1433,25 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 218 tests pass, including the permission
   matrix unchanged from before the refactor; ruff and both project checks clean.
 - **Git Hash**: 3cf2b6c
+
+## [2026-09-17 13:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two decisions of the advisor's. First, sysadmin and superuser are one
+  thing, so the Sysadmin group is gone and the account flag is what a sysadmin is, set from the
+  member's own page beside the groups. Second, a session acts at a level rather than always at
+  the top: a sysadmin signs in acting as Faculty advisor, the name in the sidebar shows the level
+  and leads to the page that changes it, raising asks for the password and lowering does not, and
+  no level is offered that the account does not already hold. The lowered level is real, because
+  `User.has_perm` answers from it: a request it does not allow is refused rather than hidden.
+- **Sections/Files Affected**: apps/accounts/acting.py (new), apps/accounts/views_acting.py
+  (new), templates/accounts/acting_view.html (new), apps/accounts/{models,account}.py,
+  apps/accounts/urls.py, config/settings/base.py, templates/base.html, static/css/app.css,
+  config/club.example.yaml, apps/accounts/migrations/0012 (no sysadmin group),
+  apps/ops/management/commands/bootstrap_sysadmin.py, apps/accounts/tests/test_acting_view.py
+  (new), the permission matrix (a sysadmin at the everyday level and the same account raised),
+  many test factories, docs/REQUIREMENTS.md §2.1, docs/TECHNICAL_REQUIREMENTS.md (TR-43).
+- **Nature of Contribution**: Design and code generation from the advisor's decisions, with the
+  security claim stated honestly in the module and the requirements (a seatbelt, not a lock).
+- **Human Review Status**: Pending the advisor's look. 226 tests pass; ruff and both project
+  checks clean; `makemigrations --check` reports no changes.
+- **Git Hash**: pending

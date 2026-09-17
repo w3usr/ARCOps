@@ -22,13 +22,21 @@ def _user(email, level="member", **kw):
     kw.setdefault("first_name", email.split("@")[0].title())
     kw.setdefault("last_name", "Tester")
     return User.objects.create_user(
-        email, "pw-Testing-123", groups=[level], is_superuser=level == "sysadmin", **kw
+        email,
+        "pw-Testing-123",
+        groups=[] if level == "sysadmin" else [level],
+        is_superuser=level == "sysadmin",
+        **kw,
     )
 
 
-def _as(user):
+def _as(user, view="sysadmin"):
     c = Client()
     c.force_login(user)
+    if user.is_superuser:
+        session = c.session  # the level a sysadmin's session acts at
+        session["acting_view"] = view
+        session.save()
     return c
 
 

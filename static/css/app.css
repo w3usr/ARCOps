@@ -389,3 +389,9 @@ pre { overflow-x: auto; max-width: 100%; }
 .table.grid th[scope="row"] { text-align: left; font-weight: 500; }
 .table.grid td.tick { text-align: center; }
 .table.grid td.tick input { width: 1.1rem; height: 1.1rem; }
+
+/* The level a session is acting at, under the name in the sidebar. A link, because that is where
+   it is changed (apps/accounts/acting.py). */
+a.whoami { text-decoration: none; color: inherit; display: flex; }
+a.whoami:hover .level { text-decoration: underline; }
+.whoami .level { display: block; font-size: .78rem; opacity: .75; }

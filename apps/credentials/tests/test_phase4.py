@@ -21,7 +21,10 @@ pytestmark = pytest.mark.django_db
 
 def _user(email, level="member", position="", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.groups.set(Group.objects.filter(name=level))
+    if level == "sysadmin":  # a sysadmin is a superuser, not a member of a group
+        u.is_superuser = True
+    else:
+        u.groups.set(Group.objects.filter(name=level))
     u.club_position = position
     u.category = kw.get("category", "student")
     u.save()
@@ -124,6 +127,10 @@ def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so()
     )
     c = Client()
     c.force_login(mem)
+    if mem.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/credentials/agreements/").content.decode()
     assert (
         "You signed version 1; version 2 is current and must be re-signed by" in body
@@ -146,6 +153,10 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
     _approved(mem, t_it, today + dt.timedelta(days=200))
     c = Client()
     c.force_login(adv)
+    if adv.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/credentials/access-rosters/").content.decode()
     assert body.count("Mo Member") == 2 and "Revoke" in body
     body = c.get("/credentials/access-rosters/?expiring=30").content.decode()
@@ -166,6 +177,10 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
     m = Outbox.objects.get(user=mem, subject__startswith="Revoked")
     assert "left the club" in m.body_html
     c.force_login(mem)
+    if mem.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get("/credentials/access-rosters/").status_code == 404
 
 
@@ -177,6 +192,10 @@ def test_signed_pdf_is_rendered_stored_and_downloadable_by_signer_and_approver(s
     other = _user("o@example.org", first_name="Ot", last_name="Her")
     c = Client()
     c.force_login(mem)
+    if mem.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     c.post(f"/credentials/agreements/{t_st.pk}/sign/", {"affirm": "on", "signer_name": "Mo Member"})
     a = SignedAgreement.objects.get(user=mem)
     assert a.pdf and a.pdf.size > 1000
@@ -188,11 +207,23 @@ def test_signed_pdf_is_rendered_stored_and_downloadable_by_signer_and_approver(s
     a.refresh_from_db()
     assert a.pdf.size > 1000
     c.force_login(adv)
+    if adv.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get(f"/credentials/agreements/{a.pk}/pdf/").status_code == 200
     c.force_login(other)
+    if other.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get(f"/credentials/agreements/{a.pk}/pdf/").status_code == 404
     body = Client()
     body.force_login(mem)
+    if mem.is_superuser:
+        session = body.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert "PDF of what you signed" in body.get("/credentials/agreements/").content.decode()
 
 
@@ -209,8 +240,16 @@ def test_password_manage_rotates_and_notifies_current_holders_and_lists_former_v
     AuditLog.objects.create(actor=former, actor_label=str(former), action="shared_secret.viewed")
     c = Client()
     c.force_login(holder)
+    if holder.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get("/credentials/computer-password/manage/").status_code == 404
     c.force_login(sysadmin)
+    if sysadmin.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     r = c.post(
         "/credentials/computer-password/manage/",
         {
@@ -227,6 +266,10 @@ def test_password_manage_rotates_and_notifies_current_holders_and_lists_former_v
     assert "1 told, 1 former holder" in summary.subject and "For Mer" in summary.body_html
     assert not Outbox.objects.filter(user=former).exists()
     c.force_login(holder)
+    if holder.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     r = c.post("/credentials/computer-password/", {"password": "pw-Testing-123"})
     assert b"c0rrect-horse" in r.content
 
@@ -246,6 +289,10 @@ def test_member_roster_filters_graduated_and_audits_contact_export():
     cur.save()
     c = Client()
     c.force_login(off)
+    if off.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/members/roster/").content.decode()
     assert "Gra Duate" in body and "Cur Rent" in body and "past graduation" in body
     body = c.get("/members/roster/?graduated=1").content.decode()
@@ -257,4 +304,8 @@ def test_member_roster_filters_graduated_and_audits_contact_export():
     rows = AuditLog.objects.filter(action="report.member_roster_exported").order_by("at")
     assert rows.count() == 2 and rows.last().after["contacts"] is True
     c.force_login(cur)
+    if cur.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get("/members/roster/").status_code == 404

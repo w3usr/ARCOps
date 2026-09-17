@@ -38,9 +38,9 @@ member_categories:                            # FR-8, FR-12; edit freely
   - { key: community, label: "Community Member" }
 
 # Access groups: a named set of capabilities. A sysadmin edits these in the interface, and may
-# invent new ones; the list of capabilities themselves is in apps/ops/capabilities.py. An account
-# in no group can do nothing, which is what "no access" means. A sysadmin is a superuser and
-# holds every capability without being in any group.
+# invent new ones; the capabilities themselves are listed in apps/ops/capabilities.py. An account
+# in no group can do nothing, which is what "no access" means. A sysadmin is not a group: it is
+# the account flag that holds every capability, set on a member's own page.
 access_groups:
   - key: provisional
     label: "Provisional"                      # joined through a community link, awaiting review
@@ -82,36 +82,6 @@ access_groups:
       - convert_minor_accounts
       - archive_members
       - view_archive
-  - key: sysadmin
-    label: "Sysadmin"                         # everything, including the club's configuration
-    capabilities:
-      - view_directory
-      - view_member_records
-      - invite_members
-      - set_club_position
-      - edit_member_privileges
-      - assign_groups
-      - manage_groups
-      - manage_member_addresses
-      - issue_temporary_password
-      - archive_members
-      - view_archive
-      - delete_accounts
-      - impersonate_members
-      - override_license
-      - approve_agreements
-      - convert_minor_accounts
-      - rotate_shared_secret
-      - create_events
-      - manage_events
-      - manage_signups
-      - view_participant_contacts
-      - send_announcements
-      - view_outbox
-      - view_reports
-      - view_audit_log
-      - edit_club_settings
-      - view_job_status
 
 club_positions:                               # the position is displayed; capabilities follow
   - { key: advisor,        label: "Advisor" }       # the access level, not the position
@@ -188,6 +158,11 @@ defaults:
   health_overview_weeks: 6                     # FR-68; the Upcoming health page's horizon
   # FR-77: the headings a new event's Know-before-you-go starts with (editor HTML). Optional.
   # kbyg_outline_html: "<h2>Where and when</h2><p></p><h2>What to bring</h2><p></p>"
+  # The level a session acts at when somebody signs in, where their account holds more than it
+  # grants (REQUIREMENTS §2.1). Raising back asks for the password again. Empty means everyone
+  # signs in holding everything their account holds.
+  default_view: advisor
+
   # Retention, applied daily by retention:apply. Days. A member's own record is not on this
   # list: former members are archived and kept, not deleted.
   retention_responsible_adult_days: 365        # adults named for a minor's slot, after the event

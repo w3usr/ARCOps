@@ -95,6 +95,9 @@ def test_status_page_is_sysadmin_only_and_shows_jobs_and_mail():
     s.is_superuser = True
     s.save()
     c.force_login(s)
+    session = c.session  # a sysadmin signs in acting lower; this is the raised view
+    session["acting_view"] = "sysadmin"
+    session.save()
     body = c.get("/ops/status/").content.decode()
     assert "ops-selfcheck" in body and "jobs:stale" in body and "Email delivery" in body
     assert "<strong>on</strong>" in body

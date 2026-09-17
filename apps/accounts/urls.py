@@ -2,10 +2,11 @@ from django.urls import path
 
 from apps.comms import views as comms_views
 
-from . import guardian, impersonate, views, views_entry, views_push
+from . import guardian, impersonate, views, views_acting, views_entry, views_push
 
 urlpatterns = [
     path("", views.profile, name="profile"),
+    path("level/", views_acting.acting_view, name="acting_view"),
     path("notifications/", views.notifications, name="notifications"),
     path("uls-name/", views.uls_name_decide, name="uls_name_decide"),
     path("messages/", comms_views.my_messages, name="my_messages"),

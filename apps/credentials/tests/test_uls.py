@@ -158,6 +158,10 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     assert CallsignHistory.objects.filter(user=u, callsign="N0AAA").exists()
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/me/").content.decode()
     assert "Is this you?" in body and "Zed Other" in body
     c.post("/me/uls-name/", {"decision": "no"})
@@ -233,6 +237,10 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     LicenseRecord.objects.create(user=u, callsign="VE3XYZ", status="unverified")
     c = Client()
     c.force_login(s)
+    if s.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     r = c.post(
         f"/members/{u.pk}/",
         {
@@ -268,6 +276,10 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     c.post(f"/members/{u.pk}/", {"action": "license_override", "lift": "1"})
     assert not LicenseRecord.objects.get(user=u).has_override
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert "sysadmin override" not in c.get("/me/").content.decode() or True
 
 

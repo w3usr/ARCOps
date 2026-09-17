@@ -154,16 +154,41 @@ what having no access means. A **sysadmin is a superuser** and holds every capab
 being in any group. A sysadmin edits the groups, and may invent a group this application has
 never heard of, which is what makes the model fit a club whose structure differs from W3USR's.
 
-A fresh installation starts with five groups, seeded from `access_groups` in the club's
+A **sysadmin** is not a group: it is the account flag that holds every capability, set on a
+member's own page (the advisor, 2026-09-17: "I mean sysadmin and superuser to mean the same
+thing"). A fresh installation starts with four groups, seeded from `access_groups` in the club's
 configuration, which reproduce the ladder this section used to describe:
 
 | Group | Who | What it holds |
 |---|---|---|
-| **Sysadmin** | The people who run the application | Every capability, and the Django admin |
 | **Faculty advisor** | The faculty member answerable for the club | Everything an officer holds, and: approve a signed access agreement, convert a minor's account at 18, archive a former member, read the archive |
 | **Club officer** | Elected officers | Invitations and entry links, events and sign-ups, announcements, the outbox, reports, the directory and member records, another member's club position and addresses |
 | **Member** | An admitted member in good standing | The member directory. Everything else a member does (their own profile, sign-ups, agreements, the computer password when eligible) belongs to the account rather than to a capability |
 | **Provisional** | Someone who joined through a community entry link (FR-119) and has not been reviewed | Nothing beyond signing in and seeing the club's events. No directory, no other names or contact details, no agreements. Becomes a Member on an officer's review (FR-121) |
+
+**A session acts at one level, and it is not always the highest one it could.** The advisor,
+2026-09-17:
+
+> I don't always like being logged in with the superuser view, even though my account has
+> superuser capabilities. I want it so that supervisors can change the view level of their
+> account view easily to any level by clicking on their user name on any page. By default, it is
+> set to the highest level below superuser. To get superuser, the user has to explicitly change
+> the view and re-authenticate. I think this will provide a cleaner experience, better debugging,
+> and better security.
+
+So a session carries a **view**: one of the groups whose capabilities the account already holds.
+Signing in sets it to the club's configured everyday view (`defaults.default_view`; Faculty
+advisor for W3USR), and the name in the sidebar shows it and leads to the page that changes it.
+Raising the view asks for the password again; lowering it does not. A view above what the account
+holds is never offered, so this grants nothing.
+
+**The lower view is real.** `User.has_perm` answers from it, so a request the view does not allow
+is refused exactly as it would be for somebody who genuinely held that group; it is not a filter
+over what the pages draw. That is what makes it usable for seeing the application as a member
+sees it, and what makes it worth anything as a precaution. What it protects against is a session
+somebody else picks up, a stray click on a page that deletes things, and a mistake made while
+tired. What it does not protect against is somebody who has the password, because they can raise
+the view too.
 
 Two kinds of rule are deliberately outside this model. **Whether an account may be used at all**
 is a state rather than a capability: signing in, the verification deadline (FR-120), a minor's

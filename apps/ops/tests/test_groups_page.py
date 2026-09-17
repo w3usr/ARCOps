@@ -26,21 +26,25 @@ def _user(email, groups=(), **kw):
     return User.objects.create_user(email, "pw-Testing-123", groups=list(groups), **kw)
 
 
-def _as(user):
+def _as(user, view="sysadmin"):
     c = Client()
     c.force_login(user)
+    if user.is_superuser:
+        session = c.session  # the level a sysadmin's session acts at
+        session["acting_view"] = view
+        session.save()
     return c
 
 
 def test_only_an_account_that_may_manage_groups_opens_the_page():
-    sysadmin = _user("sys@example.org", ["sysadmin"])
+    sysadmin = _user("sys@example.org", is_superuser=True)
     officer = _user("off@example.org", ["officer"])
     assert _as(sysadmin).get("/ops/groups/").status_code == 200
     assert _as(officer).get("/ops/groups/").status_code == 404
 
 
 def test_a_sysadmin_changes_what_a_group_may_do():
-    sysadmin = _user("sys@example.org", ["sysadmin"])
+    sysadmin = _user("sys@example.org", is_superuser=True)
     officer = _user("off@example.org", ["officer"])
     assert not officer.may("view_archive")
 
@@ -63,7 +67,7 @@ def test_a_sysadmin_changes_what_a_group_may_do():
 
 
 def test_a_club_invents_a_group_of_its_own():
-    sysadmin = _user("sys@example.org", ["sysadmin"])
+    sysadmin = _user("sys@example.org", is_superuser=True)
     c = _as(sysadmin)
     c.post("/ops/groups/", {"action": "new", "name": "Station Manager"})
     made = Group.objects.get(name="station_manager")
@@ -82,7 +86,7 @@ def test_a_club_invents_a_group_of_its_own():
 
 
 def test_a_group_with_members_is_not_deleted_and_an_empty_one_is():
-    sysadmin = _user("sys@example.org", ["sysadmin"])
+    sysadmin = _user("sys@example.org", is_superuser=True)
     _user("off@example.org", ["officer"])
     c = _as(sysadmin)
     officers = Group.objects.get(name="officer")
@@ -96,14 +100,14 @@ def test_a_group_with_members_is_not_deleted_and_an_empty_one_is():
 
 def test_nobody_can_save_away_the_last_account_that_decides_who_may_do_what():
     """The one edit that cannot be undone from inside the application."""
-    sysadmin = _user("sys@example.org", ["sysadmin"])
-    group = Group.objects.get(name="sysadmin")
+    sysadmin = _user("sys@example.org", is_superuser=True)
+    advisor_group = Group.objects.get(name="advisor")
     c = _as(sysadmin)
-    r = c.post(
+    # stripping every group changes nothing about a sysadmin, who is not in one
+    c.post(
         "/ops/groups/",
-        {"action": "save", "groups_in_form": [group.pk], f"caps_{group.pk}": ["view_directory"]},
-        follow=True,
+        {"action": "save", "groups_in_form": [advisor_group.pk]},
     )
-    assert b"nobody able to decide who may do what" in r.content
     sysadmin = User.objects.get(pk=sysadmin.pk)
     assert sysadmin.may("assign_groups") and sysadmin.may("manage_groups")
+    assert not Group.objects.get(name="advisor").permissions.exists()

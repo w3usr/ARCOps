@@ -19,7 +19,10 @@ def _user(email, level="member", **kw):
     kw.setdefault("first_name", email.split("@")[0].title())
     kw.setdefault("last_name", "Tester")
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.groups.set(Group.objects.filter(name=level))
+    if level == "sysadmin":  # a sysadmin is a superuser, not a member of a group
+        u.is_superuser = True
+    else:
+        u.groups.set(Group.objects.filter(name=level))
     u.save()
     return u
 
@@ -75,9 +78,17 @@ def test_both_pages_render_the_same_fields_for_the_same_person():
     m = _user("mem@example.org")
     c = Client()
     c.force_login(m)
+    if m.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     profile = c.get("/me/").content.decode()
     c2 = Client()
     c2.force_login(sys_user)
+    if sys_user.is_superuser:
+        session = c2.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     member_page = c2.get(f"/members/{m.pk}/").content.decode()
     # the member's own fields appear on their page; the privilege fields only on the officer's
     assert 'name="preferred_name"' in profile and 'name="category"' not in profile
@@ -101,6 +112,10 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
     )
     c = Client()
     c.force_login(sys_user)
+    if sys_user.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     r = c.post(
         f"/members/{m.pk}/",
         {
@@ -167,6 +182,10 @@ def test_no_template_comment_reaches_the_page():
     sys_user = _user("sys@example.org", "sysadmin")
     c = Client()
     c.force_login(sys_user)
+    if sys_user.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     for url in ("/me/", f"/members/{sys_user.pk}/"):
         body = c.get(url).content.decode()
         assert "{#" not in body and "editable_fields" not in body, url

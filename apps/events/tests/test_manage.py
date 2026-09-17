@@ -30,9 +30,13 @@ def officer():
     )
 
 
-def _as(user):
+def _as(user, view="sysadmin"):
     c = Client()
     c.force_login(user)
+    if user.is_superuser:
+        session = c.session  # the level a sysadmin's session acts at
+        session["acting_view"] = view
+        session.save()
     return c
 
 

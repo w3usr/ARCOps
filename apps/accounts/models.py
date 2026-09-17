@@ -132,10 +132,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self) -> str:
         return f"{self.full_name} ({self.callsign})" if self.callsign else self.full_name
 
-    # Django's admin is the sysadmin's tool, and a sysadmin is a superuser.
+    # Django's admin is the sysadmin's tool, and a sysadmin is a superuser. It follows the view
+    # the session is acting at, so a sysadmin acting lower cannot reach it either.
     @property
     def is_staff(self) -> bool:
-        return self.is_superuser
+        return self.is_superuser and getattr(self, "acting_capabilities", None) is None
+
+    def has_perm(self, perm, obj=None) -> bool:
+        """What this account may do *right now*, which is the view its session is acting at
+        (apps.accounts.acting). Everything asks this: `may`, the pages, and Django itself, so a
+        lowered view refuses a request rather than merely hiding the button that makes it."""
+        acting = getattr(self, "acting_capabilities", None)
+        if acting is not None:
+            app, _, codename = perm.partition(".")
+            from apps.ops.capabilities import APP_LABEL
+
+            return app == APP_LABEL and codename in acting
+        return super().has_perm(perm, obj)
 
     def may(self, capability: str) -> bool:
         """Whether this account holds a capability (apps.ops.capabilities). Every permission

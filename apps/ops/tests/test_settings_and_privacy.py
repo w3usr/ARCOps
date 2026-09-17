@@ -14,13 +14,17 @@ def _as(level):
     u = User.objects.create_user(
         f"{level}@example.org",
         "pw-Testing-123",
-        groups=[level],
+        groups=[] if level == "sysadmin" else [level],
         is_superuser=level == "sysadmin",
         first_name="A",
         last_name="B",
     )
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower; this is the raised view
+        session["acting_view"] = "sysadmin"
+        session.save()
     return c, u
 
 

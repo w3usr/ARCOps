@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Your level · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>The level you are acting at</h1>
+<p>Your account holds everything below, and your session acts at one of them at a time. A lower
+level is real: what it cannot do is refused, not just hidden, so this is also how you see the
+application as a member or an officer sees it. Raising the level asks for your password again.</p>
+
+<form method="post" class="card stack">{% csrf_token %}
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  <fieldset>
+    <legend>Act as</legend>
+    {% for view in views %}
+    <div class="check">
+      <input type="radio" id="v-{{ view.key }}" name="view" value="{{ view.key }}"{% if view.current %} checked{% endif %}>
+      <label for="v-{{ view.key }}">{{ view.label }}
+        <span class="muted">· {{ view.count }} capabilit{{ view.count|pluralize:"y,ies" }}</span>
+        {% if view.current %}<span class="tag ok">now</span>{% endif %}
+        {% if view.raises %}<span class="tag warn">asks for your password</span>{% endif %}
+      </label>
+    </div>
+    {% endfor %}
+  </fieldset>
+  <div class="field">
+    <label for="pw">Your password</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password">
+    <span class="helptext">Needed only when the level you pick can do something this one cannot.</span>
+  </div>
+  <div><button type="submit">Act at this level</button></div>
+</form>
+{% endblock %}

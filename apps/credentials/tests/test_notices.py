@@ -17,7 +17,10 @@ pytestmark = pytest.mark.django_db
 
 def _user(email, level, position="", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.groups.set(Group.objects.filter(name=level))
+    if level == "sysadmin":  # a sysadmin is a superuser, not a member of a group
+        u.is_superuser = True
+    else:
+        u.groups.set(Group.objects.filter(name=level))
     u.club_position = position
     u.category = kw.get("category", "student")
     u.save()

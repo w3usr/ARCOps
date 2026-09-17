@@ -24,7 +24,9 @@ from apps.events.services.slots import generate_slots
 pytestmark = pytest.mark.django_db
 
 OK, GONE, AWAY, POST_ONLY, NO_CREDENTIAL = 200, 404, 302, 405, 403
-ROLES = ("anonymous", "provisional", "member", "officer", "advisor", "sysadmin")
+# "sysadmin" is a sysadmin acting at the level they sign in at (the club's configured everyday
+# view); "raised" is the same account after stepping up, which asks for the password.
+ROLES = ("anonymous", "provisional", "member", "officer", "advisor", "sysadmin", "raised")
 
 
 @pytest.fixture(autouse=True)
@@ -37,7 +39,11 @@ def _user(email, level, **kw):
     kw.setdefault("last_name", "Tester")
     kw.setdefault("category", "student")
     return User.objects.create_user(
-        email, "pw-Testing-123", groups=[level], is_superuser=level == "sysadmin", **kw
+        email,
+        "pw-Testing-123",
+        groups=[] if level == "sysadmin" else [level],
+        is_superuser=level == "sysadmin",
+        **kw,
     )
 
 
@@ -77,8 +83,13 @@ def world():
 
 def _client(role, world):
     c = Client()
-    if role != "anonymous":
-        c.force_login(world["people"][role])
+    if role == "anonymous":
+        return c
+    c.force_login(world["people"]["sysadmin" if role == "raised" else role])
+    if role == "raised":
+        session = c.session
+        session["acting_view"] = "sysadmin"
+        session.save()
     return c
 
 
@@ -87,21 +98,31 @@ def _pages(world):
     ev, slot = world["event"].pk, world["slot"].pk
     mem = world["people"]["member"].pk
     tpl = world["template"].pk
-    everyone_in = {"provisional": OK, "member": OK, "officer": OK, "advisor": OK, "sysadmin": OK}
-    officer_up = {"provisional": GONE, "member": GONE, "officer": OK, "advisor": OK, "sysadmin": OK}
+    everyone_in = dict.fromkeys(ROLES[1:], OK)
+    officer_up = {
+        "provisional": GONE,
+        "member": GONE,
+        "officer": OK,
+        "advisor": OK,
+        "sysadmin": OK,
+        "raised": OK,
+    }
     advisor_up = {
         "provisional": GONE,
         "member": GONE,
         "officer": GONE,
         "advisor": OK,
         "sysadmin": OK,
+        "raised": OK,
     }
+    # A sysadmin signs in acting at the everyday level, so these are refused until they step up.
     sysadmin_only = {
         "provisional": GONE,
         "member": GONE,
         "officer": GONE,
         "advisor": GONE,
-        "sysadmin": OK,
+        "sysadmin": GONE,
+        "raised": OK,
     }
     return [
         # the pages anyone signed in may see
@@ -124,6 +145,7 @@ def _pages(world):
                 "officer": OK,
                 "advisor": OK,
                 "sysadmin": OK,
+                "raised": OK,
             },
         ),
         (
@@ -136,6 +158,7 @@ def _pages(world):
                 "officer": OK,
                 "advisor": OK,
                 "sysadmin": OK,
+                "raised": OK,
             },
         ),
         # signing is a POST, so a GET is refused the same way for everyone who is signed in

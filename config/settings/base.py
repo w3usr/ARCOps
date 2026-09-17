@@ -76,6 +76,9 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     # After messages and allauth, because it posts a message and may sign the user out.
     "apps.accounts.middleware.AccountGateMiddleware",
+    # The view the session is acting at, which decides what this account may do right now. Before
+    # impersonation, so that dropping to a lower view also takes away the power to impersonate.
+    "apps.accounts.acting.ActingViewMiddleware",
     # FR-94: a sysadmin viewing as a member, read-only; after the gate, so the gate sees the
     # sysadmin and this sees the member.
     "apps.accounts.impersonate.ImpersonationMiddleware",
@@ -101,6 +104,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "apps.ops.context_processors.club",
                 "apps.ops.context_processors.product",
+                "apps.accounts.acting.context",
                 "apps.comms.context_processors.unread",
                 "apps.accounts.impersonate.context",
                 "apps.accounts.guardian.context",

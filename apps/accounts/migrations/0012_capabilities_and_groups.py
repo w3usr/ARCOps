@@ -5,10 +5,11 @@ The advisor, 2026-09-17: "I am thinking the correct way to do this is actually h
 item-by-item, and then define configurable access groups (member, officer, faculty advisor,
 etc). Systemic is superuser."
 
-Each of the five levels becomes the group of the same name, holding the capabilities that level
-used to imply, and every account joins the group its level named. A sysadmin becomes a Django
-superuser, which is what holds every capability without naming any of them. `access_level` stays
-for now and is dropped once nothing reads it.
+Each of the four levels below sysadmin becomes the group of the same name, holding the
+capabilities that level used to imply, and every account joins the group its level named. A sysadmin becomes a Django
+superuser, which is the same thing as a sysadmin and holds every capability without naming any of
+them (the advisor, 2026-09-17: "I mean sysadmin and superuser to mean the same thing").
+`access_level` stays for now and is dropped once nothing reads it.
 
 The groups are the club's afterwards: a sysadmin edits them, and may make others. What this
 migration writes is a starting point that matches the behaviour of the day it ran.
@@ -55,17 +56,15 @@ GROUPS = {
 }
 
 
-GROUPS["sysadmin"] = "everything"  # filled in below, from the capability list itself
-
-
 def ladder_into_groups(apps, schema_editor):
-    from apps.ops.capabilities import CODENAMES, ensure_permissions
+    from apps.ops.capabilities import ensure_permissions
 
     # The permission rows are written by a signal that fires after every migration has run, from
     # a frozen copy of the model's Meta. This migration needs them now, and needs the list as it
     # stands rather than as it stood when an earlier migration was written.
-    ensure_permissions(apps.get_model("auth", "Permission"), apps.get_model("contenttypes", "ContentType"))
-    GROUPS["sysadmin"] = list(CODENAMES)
+    ensure_permissions(
+        apps.get_model("auth", "Permission"), apps.get_model("contenttypes", "ContentType")
+    )
 
     Group = apps.get_model("auth", "Group")
     Permission = apps.get_model("auth", "Permission")
@@ -80,10 +79,9 @@ def ladder_into_groups(apps, schema_editor):
     groups = {g.name: g for g in Group.objects.filter(name__in=GROUPS)}
     for user in User.objects.all():
         if user.access_level == "sysadmin":
-            # the group holds every capability, and the superuser flag opens the Django admin
+            # a sysadmin is a superuser: every capability, and no group to be in
             user.is_superuser = True
             user.save(update_fields=["is_superuser"])
-            user.groups.add(groups["sysadmin"])
         elif user.access_level in groups:
             user.groups.add(groups[user.access_level])
         # "none" joins nothing, which is what having no access now means

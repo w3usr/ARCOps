@@ -48,13 +48,6 @@ class Command(BaseCommand):
         user.password_is_temporary = True
         user.set_password(password)
         user.save()
-        # and the group of the same name, if the club's configuration has been imported, so the
-        # account reads as a Sysadmin on the pages rather than as an account in no group
-        from django.contrib.auth.models import Group
-
-        sysadmins = Group.objects.filter(name="sysadmin").first()
-        if sysadmins:
-            user.groups.add(sysadmins)
         record(None, "sysadmin.bootstrap", user, after={"created": created})
         self.stdout.write(f"{'created' if created else 'promoted'} sysadmin {user.email}")
         self.stdout.write(

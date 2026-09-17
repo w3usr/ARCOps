@@ -64,9 +64,13 @@ def world():
     return {"off": off, "mem": mem, "ev": ev, "run": run, "mult": mult}
 
 
-def _as(u):
+def _as(u, view="sysadmin"):
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # the level a sysadmin's session acts at
+        session["acting_view"] = view
+        session.save()
     return c
 
 

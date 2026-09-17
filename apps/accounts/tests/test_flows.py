@@ -106,6 +106,10 @@ def test_an_account_in_no_group_is_signed_out():
     )
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     r = c.get("/")
     assert r.status_code == 302 and "/accounts/login/" in r["Location"]
     assert c.get("/").status_code == 302  # still out
@@ -119,6 +123,10 @@ def test_temporary_password_forces_change_and_expires():
     issue_temporary_password(o, u)
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     r = c.get("/events/")
     assert r.status_code == 302 and r["Location"].startswith("/accounts/password/change/")
     assert c.get("/accounts/password/change/").status_code == 200
@@ -138,6 +146,10 @@ def test_admin_add_user_page_renders_with_custom_forms():
     )
     c = Client()
     c.force_login(a)
+    if a.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get("/admin/accounts/user/add/").status_code == 200
     assert c.get("/admin/accounts/user/").status_code == 200
     assert c.get(f"/admin/accounts/user/{a.pk}/change/").status_code == 200
@@ -154,6 +166,10 @@ def test_every_page_has_one_h1_and_labelled_inputs():
     )
     c = Client()
     c.force_login(a)
+    if a.is_superuser:
+        session = c.session  # acting at the raised level
+        session["acting_view"] = "sysadmin"
+        session.save()
     pages = [
         "/",
         "/events/",

@@ -25,7 +25,7 @@ def _run(**kw):
 def test_the_first_sysadmin_can_sign_in_with_the_address_it_was_given(capsys):
     user = _run()
     password = capsys.readouterr().out.rsplit(": ", 1)[-1].strip()
-    assert user.in_group("sysadmin") and user.is_superuser
+    assert user.is_superuser and user.is_superuser
     row = user.addresses.get(address="first@example.org")
     assert row.confirmed, "whoever runs this at the console vouches for the address"
     c = Client()

@@ -16,8 +16,12 @@ pytestmark = pytest.mark.django_db
 
 
 def _user(email="m@example.org", level="member"):
+    """A sysadmin is a superuser rather than a member of a group of that name."""
     u = User.objects.create_user(email, "pw-Testing-123", first_name="Mo", last_name="Member")
-    u.groups.set(Group.objects.filter(name=level))
+    if level == "sysadmin":
+        u.is_superuser = True
+    else:
+        u.groups.set(Group.objects.filter(name=level))
     u.save()
     return u
 
@@ -78,6 +82,10 @@ def test_my_messages_lists_marks_read_and_the_badge_and_banner_follow():
     compose(u, "reminder", "Your slot", "<p>Tomorrow</p>")
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     home = c.get("/").content.decode()
     assert (
         "2 unread" in home
@@ -95,6 +103,10 @@ def test_notification_form_writes_preferences_and_profile_shows_them():
     u = _user()
     c = Client()
     c.force_login(u)
+    if u.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/me/").content.decode()
     assert (
         "Notifications" in body
@@ -116,9 +128,17 @@ def test_outbox_is_officers_only_and_filters_by_state():
     compose(m, "reminder", "Kept one", "<p>y</p>")
     c = Client()
     c.force_login(m)
+    if m.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get("/ops/outbox/").status_code == 404
     o = _user("o@example.org", "officer")
     c.force_login(o)
+    if o.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/ops/outbox/").content.decode()
     assert "Sent one" in body and "Kept one" in body and "Email delivery is <strong>off" in body
     body = c.get("/ops/outbox/?state=sent").content.decode()
@@ -132,8 +152,16 @@ def test_template_edit_page_is_sysadmin_only_sanitises_and_audits():
     o = _user("o@example.org", "officer")
     c = Client()
     c.force_login(o)
+    if o.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     assert c.get("/ops/templates/").status_code == 404
     c.force_login(s)
+    if s.is_superuser:
+        session = c.session  # a sysadmin signs in acting lower
+        session["acting_view"] = "sysadmin"
+        session.save()
     body = c.get("/ops/templates/").content.decode()
     assert "account.admitted" in body and "shipped default" in body
     r = c.post(

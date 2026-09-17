@@ -297,6 +297,11 @@ has a decade of documentation.
   whether an account holds a named capability (§2.1). A permission matrix test
   (`apps/accounts/tests/test_permission_matrix.py`) asserts what every kind of account gets from
   every page, because the failure mode is silent.
+- **TR-43 Acting view**: a session carries the level it acts at (`apps/accounts/acting.py`); a
+  middleware puts it on the user object and `User.has_perm` answers from it, so a lowered view
+  refuses requests rather than hiding controls. Raising asks for the password, both directions
+  are audited, and no view is offered whose capabilities the account does not already hold. The
+  permission matrix covers a sysadmin at the everyday level and the same account raised.
 - **TR-28 Retention**: `retention:apply` (TR-11) implements §4.3 exactly: it deletes on schedule
   what is not a member's own record, logs what it did to the audit log by count, and never
   touches a row under a legal hold flag (added for the case where a record must be kept). A

@@ -25,7 +25,7 @@ STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
 POSITION_FIELDS = ("club_position",)
 PRIVILEGE_FIELDS = ("category", "under_18", "legal_hold")
-GROUP_FIELDS = ("groups",)  # what the account may do, gated by its own capability
+GROUP_FIELDS = ("groups", "is_superuser")  # what the account may do
 
 LABELS = {
     "cell_phone": "Mobile number",
@@ -115,6 +115,15 @@ class AccountForm(forms.ModelForm):
             )
             configured = setting("access_groups", []) or []
             self.fields["groups"].label_from_instance = lambda g: label_of(g, configured)
+        if "is_superuser" in self.fields:
+            self.fields["is_superuser"] = forms.BooleanField(
+                required=False,
+                label="Sysadmin",
+                help_text=(
+                    "Every capability there is, including the club's configuration, the groups "
+                    "themselves, and the Django admin. A sysadmin needs no group."
+                ),
+            )
         for name, label in LABELS.items():
             if name in self.fields:
                 self.fields[name].label = label

@@ -46,9 +46,13 @@ def people():
     }
 
 
-def _as(user):
+def _as(user, view="sysadmin"):
     c = Client()
     c.force_login(user)
+    if user.is_superuser:
+        session = c.session  # the level a sysadmin's session acts at
+        session["acting_view"] = view
+        session.save()
     return c
 
 
@@ -93,15 +97,25 @@ def test_a_sysadmin_sets_what_another_account_may_do(people):
 
 
 def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
-    """A superuser keeps every capability whatever group they are in, so their own edit is
-    harmless. Anyone else holding it can lock the club out of its own site in one save."""
-    sys_ = people["sys"]
+    """A sysadmin keeps every capability whatever group they are in, so their own edit is
+    harmless. Anyone else the club has trusted with it can lock everyone out in one save."""
+    from django.contrib.auth.models import Permission
+
+    from apps.ops.capabilities import APP_LABEL
+
+    trusted = Group.objects.create(name="trusted")
+    trusted.permissions.set(
+        Permission.objects.filter(
+            content_type__app_label=APP_LABEL,
+            codename__in=["assign_groups", "view_member_records", "edit_member_privileges"],
+        )
+    )
     keeper = User.objects.create_user(
         "keeper@example.org",
         "pw-Testing-123",
         first_name="Kee",
         last_name="Per",
-        groups=["sysadmin"],
+        groups=["trusted"],
     )
     fields = {
         "action": "save",
@@ -119,16 +133,16 @@ def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
         {**fields, "groups": [Group.objects.get(name="member").pk]},
     )
     keeper.refresh_from_db()
-    assert keeper.in_group("sysadmin") and b"your own ability" in r.content
+    assert keeper.in_group("trusted") and b"your own ability" in r.content
 
-    # the same edit by a superuser goes through: the flag, not the group, is what they hold by
-    c = _as(sys_)
+    # a sysadmin may do it to them, because a sysadmin still holds it
+    c = _as(people["sys"])
     c.post(
         f"/members/{keeper.pk}/",
         {**fields, "groups": [Group.objects.get(name="member").pk]},
     )
     keeper.refresh_from_db()
-    assert not keeper.in_group("sysadmin")
+    assert not keeper.in_group("trusted")
 
 
 def test_officer_sets_club_position_only(people):
