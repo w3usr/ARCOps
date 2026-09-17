@@ -356,7 +356,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "subject": "Confirm {{ address }} for {{ club.short_name }}",
         "body_html": (
             "<p>{{ address }} is listed on your {{ club.short_name }} account. Confirm it and you "
-            "can sign in with it as well as with your usual address:</p>"
+            "can sign in with it:</p>"
             '<p><a href="{{ link }}">Confirm this address</a></p>'
             "<p>Until you do, club email still comes to it; it simply does not sign you in. If you "
             "did not add it, ignore this message and tell a club officer.</p>"

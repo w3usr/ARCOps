@@ -5,31 +5,28 @@ from __future__ import annotations
 from allauth.account import forms as allauth_forms
 from allauth.account.forms import default_token_generator  # the library's email-aware one
 from allauth.account.internal import flows
-from django.db.models import Q
 
+from .addresses import sign_in_addresses
 from .models import User
 
 
 class ResetPasswordForm(allauth_forms.ResetPasswordForm):
-    """A reset may be asked for with any address that signs the member in: their sign-in
-    address, or one they have confirmed. The mail goes to the address typed. An unknown address
-    gets no mail at all (the library's default sends an "unknown account" mail pointing at a
-    signup page this site does not have); the page says the same thing either way. A minor's
-    generated sign-in-only address is not an address anyone reads."""
+    """A reset may be asked for with any address that signs the member in. The mail goes to the
+    address typed. An unknown address gets no mail at all (the library's default sends an
+    "unknown account" mail pointing at a signup page this site does not have); the page says the
+    same thing either way."""
 
     def clean_email(self) -> str:
         email = self.cleaned_data["email"].lower().strip()
-        qs = User.objects.filter(is_active=True, sign_in_only_address=False).exclude(
-            access_level="none"
-        )
-        # The same addresses that sign a member in: their sign-in address, and any they have
-        # confirmed. An address merely typed into a profile does not move anyone's password.
-        self.users = list(
-            qs.filter(
-                Q(email__iexact=email)
-                | Q(emailaddress__email__iexact=email, emailaddress__verified=True)
-            ).distinct()
-        )
+        # The same addresses that sign a member in, so the two doors match: an address merely
+        # typed into a profile moves nobody's password.
+        self.users = [
+            u
+            for u in User.objects.by_address(email)
+            .filter(is_active=True)
+            .exclude(access_level="none")
+            if email in sign_in_addresses(u)
+        ]
         return email
 
     def save(self, request, **kwargs) -> str:

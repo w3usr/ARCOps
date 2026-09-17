@@ -23,20 +23,16 @@ from .models import MessageTemplate, Outbox
 
 
 def recipient_addresses(user) -> list[str]:
-    """FR-70: the member's chosen addresses; a minor's guardians always."""
-    addrs = []
+    """Where a message to this person goes: every address of theirs that takes club mail, and
+    for a member under 18 their guardians' as well, always (FR-70). A minor with no address of
+    their own is reached entirely through the guardians, which is why they need none."""
+    from apps.accounts.addresses import for_delivery
+
+    addrs: list[str] = []
     if user.under_18:
         for g in user.guardianships.filter(active=True).select_related("guardian"):
             addrs += recipient_addresses(g.guardian)
-        if user.email and not user.sign_in_only_address:
-            addrs.append(user.email)
-        return sorted(set(addrs))
-    if user.institution_email and user.institution_email_delivery:
-        addrs.append(user.institution_email)
-    if user.personal_email and user.personal_email_delivery:
-        addrs.append(user.personal_email)
-    if not addrs:
-        addrs.append(user.email)  # the sign-in address: the fallback, never unreachable
+    addrs += for_delivery(user)
     return sorted({a.lower() for a in addrs if a})
 
 

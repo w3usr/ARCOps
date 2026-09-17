@@ -139,6 +139,12 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
     assert Outbox.objects.filter(user=cap).exists()  # captain told
     row = AuditLog.objects.get(action="account.deleted")
     assert row.before["callsign"] == "AB1CDE" and row.after["reason"] == "asked in writing"
+    # the addresses go, and with them the sign-in library's copies: a deleted account answers to
+    # no address, and nothing had to be invented to stand in for one
+    from allauth.account.models import EmailAddress
+
+    assert row.before["addresses"] == ["mem@example.org"]
+    assert not m.addresses.exists() and not EmailAddress.objects.filter(user=m).exists()
 
 
 def test_deletion_guards():
@@ -149,9 +155,7 @@ def test_deletion_guards():
 
 def test_retention_job_applies_schedule_and_respects_legal_hold():
     now = timezone.now()
-    old = _user(
-        "old@example.org", AccessLevel.NONE, cell_phone="555", personal_email="p@example.org"
-    )
+    old = _user("old@example.org", AccessLevel.NONE, cell_phone="555")
     held = _user("held@example.org", AccessLevel.NONE, cell_phone="555", legal_hold=True)
     AuditLog.objects.create(
         action="access_level.changed", subject_type="User", subject_id=str(old.pk)
@@ -181,11 +185,10 @@ def test_retention_job_applies_schedule_and_respects_legal_hold():
     counts = apply(now)
     old.refresh_from_db()
     held.refresh_from_db()
-    assert (
-        counts["profiles_contact_removed"] == 1
-        and old.cell_phone == ""
-        and old.personal_email == ""
-    )
+    from allauth.account.models import EmailAddress
+
+    assert counts["profiles_contact_removed"] == 1 and old.cell_phone == ""
+    assert not old.addresses.exists() and not EmailAddress.objects.filter(user=old).exists()
     assert held.cell_phone == "555"
     assert counts["invitations_deleted"] == 1
     assert counts["agreements_purged"] == 1 and SignedAgreement.objects.filter(user=held).exists()

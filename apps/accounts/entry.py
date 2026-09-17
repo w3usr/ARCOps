@@ -66,13 +66,18 @@ def verification_token(user: User) -> str:
     return signing.dumps({"u": user.pk, "e": user.email}, salt=VERIFY_SALT)
 
 
-def user_from_token(token: str) -> User | None:
+def user_from_token(token: str) -> tuple[User, str] | None:
+    """The account the link was issued to and the address it was sent to. The link stops working
+    when that address leaves the account, which is what stops an old link proving a new mailbox."""
     try:
         data = signing.loads(token, salt=VERIFY_SALT, max_age=VERIFY_MAX_AGE)
     except signing.BadSignature:
         return None
-    user = User.objects.filter(pk=data.get("u"), email=data.get("e")).first()
-    return user
+    user = User.objects.filter(pk=data.get("u")).first()
+    address = (data.get("e") or "").lower()
+    if not user or not user.addresses.filter(address__iexact=address).exists():
+        return None
+    return user, address
 
 
 def send_verification(user: User, base_url: str) -> None:
@@ -96,26 +101,26 @@ def join_through_link(
             access_level=AccessLevel.MEMBER if is_class else AccessLevel.NONE,
             joined_via=link,
             verification_deadline=now + timedelta(days=verification_days()) if is_class else None,
+            confirmed=False,  # they typed it; the link they are sent proves it
             **profile,
         )
         if not is_class:
             user.is_active = False  # exists only once the address is confirmed
             user.save(update_fields=["is_active"])
-        from .services import place_sign_in_email
-
-        if place_sign_in_email(user):
-            user.save(update_fields=["institution_email", "personal_email"])
     record(user, "account.joined_via_link", user, after={"link": link.pk, "kind": link.kind})
     send_verification(user, base_url)
     return user
 
 
-def complete_verification(user: User, base_url: str) -> str:
+def complete_verification(user: User, base_url: str, address: str = "") -> str:
     """Marks the address verified; a community account becomes Provisional and officers are told.
     Returns a short description of what happened for the page."""
-    now = timezone.now()
-    user.email_verified_at = now
-    fields = ["email_verified_at"]
+    from . import addresses as address_book
+
+    rows = user.addresses.filter(address__iexact=address) if address else user.addresses.all()
+    for row in rows:
+        address_book.mark_confirmed(user, row.address)
+    fields = []
     became_provisional = False
     if (
         not user.is_active
@@ -127,7 +132,8 @@ def complete_verification(user: User, base_url: str) -> str:
         user.access_level = AccessLevel.PROVISIONAL
         fields += ["is_active", "access_level"]
         became_provisional = True
-    user.save(update_fields=fields)
+    if fields:
+        user.save(update_fields=fields)
     record(user, "email.verified", user)
     if became_provisional:
         notify_officers_of_provisional(user, base_url)
@@ -137,9 +143,10 @@ def complete_verification(user: User, base_url: str) -> str:
 
 def mark_verified(actor: User, user: User) -> None:
     """The officer's waiver (FR-120): counts as verification for the deadline and the badge."""
-    if not user.email_verified_at:
-        user.email_verified_at = timezone.now()
-        user.save(update_fields=["email_verified_at"])
+    from . import addresses as address_book
+
+    for row in user.addresses.filter(confirmed=False):
+        address_book.mark_confirmed(user, row.address, actor)
         record(actor, "email.verified_by_officer", user)
 
 

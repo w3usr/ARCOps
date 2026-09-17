@@ -145,9 +145,10 @@ def test_invitation_reissue_and_acceptance_places_the_sign_in_address(people):
             "consent": "on",
         },
     )
-    u = User.objects.get(email="new@uni.example")
-    assert u.institution_email == "new@uni.example" and u.personal_email == ""
-    # A personal-domain sign-in address lands in the personal slot.
+    u = User.objects.by_address("new@uni.example").get()
+    row = u.addresses.get(address="new@uni.example")
+    assert row.kind == "institution" and row.confirmed and u.addresses.count() == 1
+    # An address outside the institution's domain is a personal one.
     c.post("/me/invitations/", {"email": "other@home.example", "category": "student"})
     inv2 = Invitation.objects.get(email="other@home.example")
     Client().post(
@@ -164,27 +165,27 @@ def test_invitation_reissue_and_acceptance_places_the_sign_in_address(people):
             "consent": "on",
         },
     )
-    u2 = User.objects.get(email="other@home.example")
-    assert u2.personal_email == "other@home.example" and u2.institution_email == ""
+    u2 = User.objects.by_address("other@home.example").get()
+    assert u2.addresses.get(address="other@home.example").kind == "personal"
 
 
-def test_sysadmin_edits_contact_and_student_fields(people):
-    """The advisor, 2026-09-17: sysadmins edit every field. The change is audited like the rest."""
+def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
+    """The advisor, 2026-09-17: sysadmins edit every field. Addresses have their own controls, so
+    the form holds the rest of the account."""
     from apps.ops.models import AuditLog
 
     s, m = people["sys"], people["mem"]
     c = _as(s)
     body = c.get(f"/members/{m.pk}/").content.decode()
-    for label in ("Sign-in email", "Personal email", "Mobile number", "Graduation year"):
+    for label in ("Mobile number", "Graduation year", "Category", "Access level"):
         assert label in body
+    assert "Sign-in email" not in body  # every confirmed address signs in; none of them is special
     data = {
         "action": "save",
         "first_name": m.first_name,
         "last_name": m.last_name,
         "category": m.category,
         "access_level": m.access_level,
-        "email": "Moved@example.org",
-        "personal_email": "home@example.org",
         "cell_phone": "555-0199",
         "student_level": "undergraduate",
         "graduation_year": "2028",
@@ -192,15 +193,19 @@ def test_sysadmin_edits_contact_and_student_fields(people):
     r = c.post(f"/members/{m.pk}/", data)
     assert r.status_code in (200, 302)
     m.refresh_from_db()
-    assert m.email == "moved@example.org" and m.personal_email == "home@example.org"
     assert m.cell_phone == "555-0199" and m.graduation_year == 2028
     row = AuditLog.objects.filter(action="member.edited").latest("at")
-    assert "personal_email" in row.after and "cell_phone" in row.after
-    # the sign-in address must stay unique
-    r = c.post(f"/members/{m.pk}/", {**data, "email": s.email})
-    assert b"already signs in with that address" in r.content
-    m.refresh_from_db()
-    assert m.email == "moved@example.org"
+    assert "cell_phone" in row.after
+
+    # and the addresses are changed from the same page, through their own controls
+    c.post(f"/members/{m.pk}/", {"action": "address_add", "address": "Moved@example.org"})
+    assert m.addresses.filter(address="moved@example.org").exists()
+    r = c.post(
+        f"/members/{m.pk}/",
+        {"action": "address_confirm", "address": s.email},
+        follow=True,
+    )
+    assert b"not on the account" in r.content  # a sysadmin cannot hand over someone else's
 
 
 def test_officer_looks_a_callsign_up_in_the_fcc_table(people):

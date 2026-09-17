@@ -92,8 +92,8 @@ def test_guardian_completes_a_minors_invitation_creating_both_accounts():
         },
     )
     assert r.status_code == 302
-    g = User.objects.get(email="parent@example.org")
-    m = User.objects.get(email="kid@example.org")
+    g = User.objects.by_address("parent@example.org").get()
+    m = User.objects.by_address("kid@example.org").get()
     assert g.category == "community" and not g.under_18 and g.cell_phone == "555-0100"
     assert m.under_18 and m.category == "student" and m.access_level == AccessLevel.MEMBER
     assert Guardianship.objects.get(minor=m, guardian=g).relationship == "parent"
@@ -111,7 +111,7 @@ def test_existing_member_as_guardian_must_sign_in_first_then_only_the_minor_form
     assert (
         r.status_code == 200
         and b"Sign in" in r.content
-        and not User.objects.filter(email="kid@example.org").exists()
+        and not User.objects.by_address("kid@example.org").exists()
     )
     c = _as(parent)
     r = c.get(f"/me/invite/{inv.token}/")
@@ -129,7 +129,7 @@ def test_existing_member_as_guardian_must_sign_in_first_then_only_the_minor_form
         },
     )
     assert r.status_code == 302
-    m = User.objects.get(email="kid@example.org")
+    m = User.objects.by_address("kid@example.org").get()
     assert Guardianship.objects.filter(minor=m, guardian=parent, active=True).exists()
     assert parent.category == "student"  # an existing member keeps their category
 
@@ -233,7 +233,6 @@ def test_messages_to_a_minor_reach_every_guardian(settings):
     Guardianship.objects.create(minor=minor, guardian=second)
     addrs = recipient_addresses(minor)
     assert set(addrs) == {"parent@example.org", "aunt@example.org", "kid@example.org"}
-    minor.email = "kid@example.org"
     minor2 = _user("kid2@example.org", under_18=True)
     Guardianship.objects.create(minor=minor2, guardian=guardian)
     assert "parent@example.org" in recipient_addresses(minor2)
@@ -281,7 +280,10 @@ def test_sysadmin_links_and_unlinks_guardians():
     assert last.active  # the last guardian of a minor stays
 
 
-def test_minor_without_an_address_signs_in_with_a_plus_address_that_is_never_messaged():
+def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
+    """The advisor's rule that an account keeps at least one address is about an account someone
+    signs in to. A minor need hold none: their guardians are written to and act for them, and the
+    guardian puts an address on the account from the minor's own profile once there is one."""
     officer = _user("off@example.org", AccessLevel.OFFICER)
     c = _as(officer)
     r = c.post(
@@ -326,18 +328,15 @@ def test_minor_without_an_address_signs_in_with_a_plus_address_that_is_never_mes
     )
     assert r.status_code == 302
     minor = User.objects.get(first_name="Kim")
-    parent = User.objects.get(email="parent@example.org")
-    assert minor.email == "parent+kim@example.org" and minor.sign_in_only_address
+    parent = User.objects.by_address("parent@example.org").get()
+    assert not minor.addresses.exists() and minor.email == ""
     assert recipient_addresses(minor) == ["parent@example.org"]
-    assert b"sign-in only" in g.get("/me/").content
-    # the guardian gives the minor their own address later
-    assert (
-        g.post(f"/me/wards/{minor.pk}/email/", {"email": "parent@example.org"}).status_code == 302
-    )
+    assert b"no address of their own" in g.get("/me/").content
+
+    # the guardian acts for the minor and adds one from the minor's own profile
+    g.post(f"/me/wards/{minor.pk}/act/")
+    g.post("/me/", {"action": "address_add", "address": "kim@example.org"})
     minor.refresh_from_db()
-    assert minor.sign_in_only_address  # refused: the guardian's own
-    g.post(f"/me/wards/{minor.pk}/email/", {"email": "kim@example.org"})
-    minor.refresh_from_db()
-    assert minor.email == "kim@example.org" and not minor.sign_in_only_address
+    assert minor.email == "kim@example.org"
     assert set(recipient_addresses(minor)) == {"parent@example.org", "kim@example.org"}
-    assert AuditLog.objects.filter(action="account.email_changed", actor=parent).exists()
+    assert AuditLog.objects.filter(action="address.added", actor=parent).exists()

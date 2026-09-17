@@ -45,7 +45,7 @@ def test_signup_route_is_closed():
         "/accounts/signup/",
         {"email": "x@example.org", "password1": "abcdefghijk1", "password2": "abcdefghijk1"},
     )
-    assert r.status_code in (200, 405) and User.objects.filter(email="x@example.org").count() == 0
+    assert r.status_code in (200, 405) and User.objects.by_address("x@example.org").count() == 0
 
 
 def test_admin_login_goes_through_allauth():
@@ -82,7 +82,7 @@ def test_invitation_accept_admits_member_at_once():
         },
     )
     assert r.status_code == 302 and r["Location"] == "/"
-    u = User.objects.get(email="new@example.org")
+    u = User.objects.by_address("new@example.org").get()
     assert (
         u.access_level == AccessLevel.MEMBER and u.category == "student" and u.callsign == "N0NEW"
     )
@@ -258,14 +258,8 @@ def test_password_reset_follows_the_addresses_that_sign_you_in(settings):
     from apps.accounts import addresses
 
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-    u = User.objects.create_user(
-        "who@example.edu",
-        "pw-Testing-123",
-        first_name="W",
-        last_name="H",
-        institution_email="who@example.edu",
-        personal_email="who.home@example.org",
-    )
+    u = User.objects.create_user("who@example.edu", "pw-Testing-123", first_name="W", last_name="H")
+    addresses.add(u, "who.home@example.org")
     u.access_level = AccessLevel.MEMBER
     u.save()
     c = Client()
@@ -274,7 +268,7 @@ def test_password_reset_follows_the_addresses_that_sign_you_in(settings):
     assert b"Check your email" in r.content  # the same page either way
     assert len(mail.outbox) == 0  # not confirmed: it does not move a password
 
-    addresses.mark_verified(u, "who.home@example.org")
+    addresses.mark_confirmed(u, "who.home@example.org")
     r = c.post("/accounts/password/reset/", {"email": "Who.Home@example.org"}, follow=True)
     assert b"Check your email" in r.content
     assert len(mail.outbox) == 1 and mail.outbox[0].to == ["who.home@example.org"]

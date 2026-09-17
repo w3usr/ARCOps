@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import secrets
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -35,13 +36,26 @@ LICENSE_LETTERS = {  # FR-67: the class after a name; U when there is no license
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, email: str, password: str | None = None, **extra):
-        if not email:
-            raise ValueError("an email address is required")
-        user = self.model(email=self.normalize_email(email).lower(), **extra)
+    def create_user(self, email: str = "", password: str | None = None, **extra):
+        """`email` is the first address on the account, if there is one. A member under 18 may
+        hold none: their guardians are written to instead (FR-70), and the account is its key."""
+        confirmed = extra.pop("confirmed", True)  # the path that made the account vouches for it
+        user = self.model(**extra)
         user.set_password(password)
         user.save(using=self._db)
+        if email:
+            from .addresses import add
+
+            add(user, self.normalize_email(email).lower(), confirmed=confirmed)
         return user
+
+    def by_address(self, address: str, confirmed_only: bool = False):
+        """Accounts holding this address. Sign-in and reset ask for confirmed ones only; a
+        lookup by contact details (an officer searching) does not care."""
+        qs = self.filter(addresses__address__iexact=(address or "").strip())
+        if confirmed_only:
+            qs = qs.filter(addresses__confirmed=True)
+        return qs.distinct()
 
     def create_superuser(self, email: str, password: str | None = None, **extra):
         extra.setdefault("access_level", AccessLevel.SYSADMIN)
@@ -50,19 +64,16 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    """A person with an account. The login identifier is the email address (§2.6)."""
+    """A person with an account.
 
-    email = models.EmailField(unique=True)
-    # §2.4: a minor with no address of their own signs in with a generated plus-address derived
-    # from a guardian's; it receives nothing (messages go to the guardians, FR-70).
-    sign_in_only_address = models.BooleanField(default=False)
-    # Two contact addresses of equal standing, each with its own delivery switch (FR-70). When
-    # neither is switched on, club mail falls back to the sign-in address so no member is
-    # unreachable. NAF, 2026-09-13: "Neither should be considered primary."
-    institution_email = models.EmailField(blank=True)  # the university address, in practice
-    institution_email_delivery = models.BooleanField(default=True)
-    personal_email = models.EmailField(blank=True)
-    personal_email_delivery = models.BooleanField(default=True)
+    What the account *is* is `public_id`, a key that never changes and is never shown. What a
+    person *signs in with* is any address they have confirmed, held in `Address` rows. Where club
+    mail *goes* is each address's own delivery switch. Those were one field once, which forced a
+    fabricated address on a minor with no mailbox and another on a deleted account; identity as a
+    key removes both (the advisor, 2026-09-17).
+    """
+
+    public_id = models.UUIDField(default=uuid4, unique=True, editable=False)
     first_name = models.CharField(max_length=80)
     middle_name = models.CharField(max_length=80, blank=True)
     last_name = models.CharField(max_length=80)
@@ -102,13 +113,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     joined_via = models.ForeignKey(
         "EntryLink", null=True, blank=True, on_delete=models.SET_NULL, related_name="joined"
     )
-    email_verified_at = models.DateTimeField(null=True, blank=True)
     verification_deadline = models.DateTimeField(null=True, blank=True)  # class links: seven days
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
 
     objects = UserManager()
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = "public_id"  # identity, never typed by anyone; sign-in is by address
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
     class Meta:
@@ -129,6 +139,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_officer(self) -> bool:
         return self.access_level in (AccessLevel.SYSADMIN, AccessLevel.OFFICER)
+
+    @property
+    def email(self) -> str:
+        """The address to show where one is wanted. Read-only on purpose: an account is its
+        `public_id`, not an address, and a person may hold several."""
+        from .addresses import display
+
+        return display(self)
 
     @property
     def full_name(self) -> str:
@@ -184,12 +202,55 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.full_name}{call} ({self.license_letter})"
 
     @property
+    def has_confirmed_address(self) -> bool:
+        """Whether anything on this account has been proved. A page reads it to decide whether
+        to show the unconfirmed badge, and the verification deadline is measured against it."""
+        return self.addresses.filter(confirmed=True).exists()
+
+    @property
     def verification_overdue(self) -> bool:
+        """A class link asks the member to confirm an address within a few days; past the
+        deadline with nothing confirmed, sign-in pauses until they do or an officer says so."""
         return bool(
             self.verification_deadline
-            and not self.email_verified_at
+            and not self.addresses.filter(confirmed=True).exists()
             and self.verification_deadline < timezone.now()
         )
+
+
+class Address(models.Model):
+    """An email address on an account.
+
+    A person may hold more than one. Each says what kind it is, whether the person has proved it,
+    and whether club mail goes there. Any confirmed address signs its owner in; an unconfirmed
+    one still receives mail, so nothing a member relies on waits for delivery. A confirmed
+    address belongs to one account, which the constraint below enforces.
+    """
+
+    class Kind(models.TextChoices):
+        INSTITUTION = "institution", "Institution"
+        PERSONAL = "personal", "Personal"
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
+    address = models.EmailField()
+    kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.PERSONAL)
+    confirmed = models.BooleanField(default=False)
+    delivery = models.BooleanField(default=True)  # club mail goes here
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["kind", "address"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "address"], name="one_row_per_address"),
+            models.UniqueConstraint(
+                fields=["address"],
+                condition=models.Q(confirmed=True),
+                name="a_confirmed_address_belongs_to_one_account",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.address
 
 
 class Guardianship(models.Model):

@@ -258,16 +258,21 @@ The draft models this as follows:
 University login, so University SSO cannot be the only door, and the dictation describes
 passwords and sysadmin resets directly. Specifics:
 
-- Sign-in by email address (either on file) and password. The account's sign-in address always
-  works; another address on the account works once it is **confirmed**, either by the member
-  following a link sent to that address or by an officer saying it is theirs (the same waiver as
-  FR-120). Until then the address still receives club mail, so nothing waits on delivery
-  (FR-103). A confirmed address belongs to one account, and is never taken away automatically,
-  so correcting a sign-in address cannot lock anyone out; the temporary password (FR-7) remains
-  the path that needs no mail at all. *(Clarified 2026-09-17 after the advisor asked why one of
-  his addresses would not sign him in: "either on file" had never been built, and confirmation
-  is the condition the assistant proposed and he accepted for the addresses that are not the
-  account's identity.)*
+- Sign-in by email address and password. **An account is a key of its own** (`public_id`, a
+  value that never changes and is never typed), and every address on it is a row. Any address
+  the member has **confirmed** signs them in, by following a link sent to that address or by an
+  officer saying it is theirs (the same waiver as FR-120). An address that is not yet confirmed
+  still receives club mail, so nothing waits on delivery (FR-103). A confirmed address belongs
+  to one account. An account keeps at least one address, so nobody can remove their own last way
+  back in, and a member changes an address by adding the new one and removing the old. A member
+  under 18 may hold none at all: their guardians are written to and act for them (FR-70).
+  Correcting an address cannot lock anyone out, and the temporary password (FR-7) remains the
+  path that needs no mail at all. *(Decided 2026-09-17. The advisor: "Either one can sign-in, so
+  there should not be a separate 'sign-in' email. The user should not be allowed to delete their
+  last email. They can change an email to a different verified email. To keep accounts 'unique',
+  they should each be given a unique key/id." This supersedes the 2026-09-17 clarification
+  earlier the same day, which kept one address as the account's sign-in and let confirmed others
+  sign in beside it.)*
 - Password strength enforced; breached-password check **Should**.
 - Self-service reset from a "Forgot username or password?" link on the sign-in page (FR-107),
   which needs working email. The sysadmin temporary-password path (FR-7) is the fallback and
@@ -1096,12 +1101,13 @@ made it likely that reliable delivery would take time to establish:
   recorded per FR-75, marked *sent outside the system*. This shows addresses to people who may
   already see them (section 2.5) and to no one else.
 - **FR-107 [Must]** The sign-in page carries a **"Forgot username or password?"** link. The
-  member enters one identifier they know: either email address on file, or their callsign. If it
-  matches an account, reset instructions go to every email address on that account (the
-  guardian's, for a minor). The page's response is the same whether or not a match exists, so
-  the form cannot be used to discover who has an account. This path needs working email; when
-  email delivery is off (FR-105), the link leads to a page saying that resets are done by a club
-  officer, with the club contact, and the sysadmin uses FR-7.
+  member enters an address they have confirmed on their account. If it matches, reset
+  instructions go to that address; an address merely typed into a profile moves nobody's
+  password, which is the same rule that governs signing in (section 2.6). The page's response
+  is the same whether or not a match exists, so the form cannot be used to discover who has an
+  account. This path needs working email; when email delivery is off (FR-105), the link leads
+  to a page saying that resets are done by a club officer, with the club contact, and the
+  sysadmin uses FR-7.
 - **FR-108 [Should]** In-application notifications: an unread-messages indicator and a dashboard
   banner for anything that would otherwise be a warning email (a slot at risk, an agreement
   expiring, a rotated computer password). The in-application half of FR-73 and FR-76.

@@ -3,7 +3,7 @@
 {% block content %}
 {% if outcome == 'done' %}
 <h1>Address confirmed</h1>
-<p><strong>{{ address }}</strong> is confirmed. You can sign in with it as well as with your usual address, and a password reset asked for with it will work.</p>
+<p><strong>{{ address }}</strong> is confirmed. You can sign in with it, and a password reset asked for with it will work.</p>
 {% elif outcome == 'taken' %}
 <h1>That address belongs to another account</h1>
 <p><strong>{{ address }}</strong> is already confirmed on someone else's account, so it cannot also confirm this one. A club officer can sort it out.</p>

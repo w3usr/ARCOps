@@ -40,7 +40,7 @@ def pages_for(role: str) -> list[str]:
         .order_by("start")
         .first()
     )
-    member = User.objects.get(email="cy@example.org")
+    member = User.objects.by_address("cy@example.org").get()
     minor_su = SignUp.objects.filter(user__under_18=True).first()
     common = [
         "/",

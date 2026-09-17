@@ -14,37 +14,25 @@ from __future__ import annotations
 from django import forms
 
 from apps.ops.audit import record
-from apps.ops.config import institution_email_domain, setting
+from apps.ops.config import setting
 
 from .models import AccessLevel, User
 
 # What the member keeps for themselves, and what only a sysadmin sets. `club_position` is the
 # one field an officer sets on another member's account.
-OWN_FIELDS = (
-    "preferred_name",
-    "callsign",
-    "institution_email",
-    "institution_email_delivery",
-    "personal_email",
-    "personal_email_delivery",
-    "cell_phone",
-)
+OWN_FIELDS = ("preferred_name", "callsign", "cell_phone")
 STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
 POSITION_FIELDS = ("club_position",)
-PRIVILEGE_FIELDS = ("email", "category", "access_level", "under_18", "legal_hold")
+PRIVILEGE_FIELDS = ("category", "access_level", "under_18", "legal_hold")
 
 LABELS = {
-    "email": "Sign-in email",
-    "personal_email": "Personal email",
     "cell_phone": "Mobile number",
     "student_level": "Student level",
     "graduation_semester": "Graduation semester",
     "graduation_year": "Graduation year",
     "under_18": "Under 18",
     "legal_hold": "Legal hold: the retention job leaves this account's records alone",
-    "institution_email_delivery": "Send club email here",
-    "personal_email_delivery": "Send club email here",
 }
 
 
@@ -113,44 +101,9 @@ class AccountForm(forms.ModelForm):
             self.fields["access_level"] = forms.ChoiceField(
                 choices=AccessLevel.choices, label="Access level"
             )
-        if "email" in self.fields:
-            self.fields["email"].required = False
-        if "institution_email" in self.fields:
-            domain = institution_email_domain()
-            self.fields["institution_email"].label = (
-                f"{domain} email" if domain else "Institution email"
-            )
         for name, label in LABELS.items():
-            if name in self.fields and name != "institution_email":
+            if name in self.fields:
                 self.fields[name].label = label
-
-    ADDRESS_PAIRS = (
-        ("institution_email", "institution_email_delivery"),
-        ("personal_email", "personal_email_delivery"),
-    )
-
-    @property
-    def address_fields(self) -> list[str]:
-        """The addresses and their delivery switches, which the page groups together."""
-        names = ["email"] + [n for pair in self.ADDRESS_PAIRS for n in pair]
-        return [n for n in names if n in self.fields]
-
-    @property
-    def email_field(self):
-        return self["email"] if "email" in self.fields else None
-
-    @property
-    def address_pairs(self) -> list[dict]:
-        out = []
-        for address, switch in self.ADDRESS_PAIRS:
-            if address in self.fields:
-                out.append(
-                    {
-                        "address": self[address],
-                        "switch": self[switch] if switch in self.fields else None,
-                    }
-                )
-        return out
 
     @property
     def student_fields(self) -> list[str]:
@@ -167,23 +120,14 @@ class AccountForm(forms.ModelForm):
                 data[name] = None if name == "graduation_year" else ""
         return data
 
-    def clean_email(self):
-        email = (self.cleaned_data.get("email") or "").strip().lower()
-        if not email:  # a form posted without the field keeps the sign-in address as it is
-            return self.instance.email
-        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError("Another account already signs in with that address.")
-        return email
-
 
 def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
     """The one save path. A callsign always goes through the lookup and the name check, whoever
-    typed it; addresses that changed lose or gain their standing; the change is audited once.
+    typed it, and the change is audited once. Addresses are rows with their own controls, so
+    nothing here touches them.
 
-    Returns what the page needs to say: the callsign result, if any, and the addresses a
-    confirmation link went to.
+    Returns what the page needs to say: the callsign result, if any.
     """
-    from . import addresses
     from .services import apply_callsign
 
     subject = form.instance
@@ -198,10 +142,6 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
     if "callsign" in form.changed_data and new_callsign != old_callsign:
         callsign_result = apply_callsign(user, new_callsign, previous=old_callsign)
 
-    sent = []
-    if {"email", "institution_email", "personal_email"} & set(form.changed_data):
-        sent = addresses.sync(user, actor, base_url)
-
     if form.changed_data:
         record(
             actor,
@@ -210,7 +150,7 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
             before=before,
             after={f: getattr(user, f) for f in form.changed_data},
         )
-    return {"callsign": callsign_result, "addresses_sent": sent}
+    return {"callsign": callsign_result}
 
 
 def _label(setting_key: str, key: str) -> str:

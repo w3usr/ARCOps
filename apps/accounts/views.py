@@ -15,6 +15,7 @@ from apps.credentials.models import LicenseRecord
 from apps.ops.audit import record
 from apps.ops.config import setting
 
+from . import views_addresses
 from .account import AccountForm, readonly_rows, save_account
 from .models import AccessLevel, Invitation, User
 from .services import (
@@ -32,6 +33,8 @@ def profile(request):
     uses (apps.accounts.account), plus what is theirs alone: notifications, browser
     notifications, security, closing the account."""
     if request.method == "POST":
+        if views_addresses.handle(request, request.user):
+            return redirect(reverse("profile") + "#addr")
         form = AccountForm(request.POST, instance=request.user, actor=request.user)
         if form.is_valid():
             result = save_account(form, request.user, f"{request.scheme}://{request.get_host()}")
@@ -47,15 +50,6 @@ def profile(request):
                     request,
                     f"{request.user.callsign} is not in the FCC table yet; it is held as "
                     "unverified until the nightly import finds it.",
-                )
-            if result["addresses_sent"]:
-                messages.info(
-                    request,
-                    "Confirm "
-                    + " and ".join(result["addresses_sent"])
-                    + " from the link we sent there and you can sign in with "
-                    + ("them" if len(result["addresses_sent"]) > 1 else "it")
-                    + " too. Club email goes there either way.",
                 )
             messages.success(request, "Profile saved.")
             return redirect("profile")
@@ -85,6 +79,7 @@ def profile(request):
             "mandatory_labels": list(MANDATORY.values()),
             "push_subscriptions": request.user.push_subscriptions.order_by("-created"),
             "addresses": addresses_state(request.user),
+            "address_subject_is_self": True,
             "guardians": list(
                 request.user.guardianships.filter(active=True).select_related("guardian")
             )
@@ -269,7 +264,7 @@ class GuardianAcceptForm(forms.Form):
             self.add_error(
                 "minor_email", "That is your own address; leave it blank if the member has none."
             )
-        elif addr and User.objects.filter(email=addr).exists():
+        elif addr and User.objects.by_address(addr, confirmed_only=True).exists():
             self.add_error("minor_email", "An account already uses that address.")
         if "guardian_password1" in self.fields:
             if data.get("guardian_password1") != data.get("guardian_password2"):
@@ -296,7 +291,7 @@ def _accept_as_guardian(request, inv):
     from .guardian import link_guardian
     from .services import admit_from_invitation, apply_callsign
 
-    existing = User.objects.filter(email=inv.guardian_email).first()
+    existing = User.objects.by_address(inv.guardian_email, confirmed_only=True).first()
     if existing and (not request.user.is_authenticated or request.user.pk != existing.pk):
         return render(
             request,
@@ -326,14 +321,11 @@ def _accept_as_guardian(request, inv):
                 access_level=AccessLevel.MEMBER,
             )
             record(guardian, "account.guardian_created", guardian, after={"invitation": inv.pk})
-        from .guardian import sign_in_address
-
         own = (d.get("minor_email") or "").lower()
         minor = admit_from_invitation(
             inv,
             d["password1"],
-            email=own or sign_in_address(guardian, d["first_name"]),
-            sign_in_only_address=not own,
+            email=own,  # a minor may hold no address: the guardians are reached instead (FR-70)
             first_name=d["first_name"],
             middle_name=d["middle_name"],
             last_name=d["last_name"],
@@ -348,7 +340,12 @@ def _accept_as_guardian(request, inv):
             login(request, guardian, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(
             request,
-            f"{minor.display_first}'s account is ready. You act for them from your profile; they sign in read-only with {minor.email}.",
+            f"{minor.display_first}'s account is ready. You act for them from your profile, and "
+            + (
+                f"they sign in read-only with {minor.email}."
+                if minor.email
+                else "everything addressed to them reaches you."
+            ),
         )
         return redirect("profile")
     return render(
@@ -478,7 +475,7 @@ def verify_address(request, token):
         return render(request, "accounts/verify_address.html", {"outcome": "invalid"}, status=410)
     user, address = found
     try:
-        addresses.mark_verified(user, address)
+        addresses.mark_confirmed(user, address)
         outcome = "done"
     except addresses.AddressInUse:
         outcome = "taken"
@@ -493,22 +490,3 @@ def addresses_state(user):
     from . import addresses
 
     return addresses.state(user)
-
-
-@login_required
-@require_http_methods(["POST"])
-def resend_address(request):
-    """Send the confirmation link again, to the address itself."""
-    from . import addresses
-
-    address = request.POST.get("address", "").strip().lower()
-    if address not in addresses.on_file(request.user):
-        messages.error(request, "That address is not on your account.")
-    elif address in addresses.verified(request.user):
-        messages.info(request, f"{address} is already confirmed.")
-    else:
-        addresses.send_confirmation(
-            request.user, address, f"{request.scheme}://{request.get_host()}"
-        )
-        messages.success(request, f"A confirmation link is on its way to {address}.")
-    return redirect("profile")

@@ -1,30 +1,14 @@
-{% comment %}The account fields, on the member's own page and on an officer's view of them. Which fields are here at all is decided by apps.accounts.account.editable_fields, so the two pages cannot drift apart again. The email addresses keep their own group, each beside its delivery switch.{% endcomment %}
+{% comment %}The account fields, on the member's own page and on an officer's view of them. Which fields are here at all is decided by apps.accounts.account.editable_fields, so the two pages cannot drift apart again. Addresses are rows with their own controls, in accounts/_addresses.html.{% endcomment %}
 <form method="post" class="{{ form_class|default:'card stack' }}">{% csrf_token %}
   <input type="hidden" name="action" value="save">
   {% if form_heading %}<h2>{{ form_heading }}</h2>{% endif %}
   {{ form.non_field_errors }}
   {% for f in form %}
-    {% if f.name in form.address_fields %}{# rendered together, below #}
-    {% elif f.name in form.student_fields %}
+    {% if f.name in form.student_fields %}
     <div class="field" data-reveal-when="#id_category" data-reveal-value="student">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>
     {% elif f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
     {% else %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endif %}
   {% endfor %}
-
-  {% if form.address_fields %}
-  <fieldset>
-    <legend>Email addresses</legend>
-    <p class="helptext">Club email goes to every address with its switch on. With both off, it goes to the sign-in address.</p>
-    {% if form.email_field %}<div class="field">{{ form.email_field.label_tag }}{{ form.email_field }}{{ form.email_field.errors }}</div>{% endif %}
-    {% for pair in form.address_pairs %}
-    <div class="addr">
-      <div class="field">{{ pair.address.label_tag }}{{ pair.address }}{{ pair.address.errors }}</div>
-      {% if pair.switch %}<div class="check">{{ pair.switch }}<label for="{{ pair.switch.id_for_label }}">{{ pair.switch.label }}</label></div>{% endif %}
-    </div>
-    {% endfor %}
-  </fieldset>
-  {% endif %}
-
   {% if subject.name_from_uls %}<p class="helptext">The name comes from the FCC record for {{ subject.callsign }} and is not edited here.</p>{% endif %}
   <div><button type="submit">Save</button></div>
 </form>

@@ -119,7 +119,7 @@ def entry_link_action(request, pk):
         link.expires_at = max(link.expires_at, timezone.now()) + timedelta(days=30)
     elif action == "verify_all":
         n = 0
-        for u in link.joined.filter(email_verified_at__isnull=True):
+        for u in link.joined.exclude(addresses__confirmed=True).distinct():
             entry.mark_verified(request.user, u)
             n += 1
         messages.success(request, f"{n} account{'s' if n != 1 else ''} marked verified.")
@@ -237,7 +237,7 @@ def join_form(request, token):
             d = form.cleaned_data
             if d.get("under_18"):
                 return render(request, "accounts/invitation_minor.html", {"link": link}, status=200)
-            existing = User.objects.filter(email=d["email"]).first()
+            existing = User.objects.by_address(d["email"]).first()
             if existing:
                 # The same page as success (FR-107); the person is told by email instead.
                 from apps.comms.services import send
@@ -281,13 +281,16 @@ def join_form(request, token):
 
 
 def verify_email(request, token):
-    user = entry.user_from_token(token)
-    if not user:
+    found = entry.user_from_token(token)
+    if not found:
         return render(request, "accounts/verify_result.html", {"outcome": "invalid"}, status=410)
-    if user.email_verified_at:
+    user, address = found
+    from . import addresses as address_book
+
+    if address in address_book.confirmed(user):
         outcome = "already"
     else:
-        outcome = entry.complete_verification(user, _base(request))
+        outcome = entry.complete_verification(user, _base(request), address)
     if request.user.is_authenticated and request.user.pk != user.pk:
         pass  # someone else's link opened while signed in: show the result, change nothing else
     elif not request.user.is_authenticated and user.is_active:

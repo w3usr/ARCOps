@@ -21,7 +21,7 @@ from apps.credentials.views import _is_approver
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from . import entry
+from . import entry, views_addresses
 from .account import AccountForm, readonly_rows, save_account
 from .models import AccessLevel, User
 from .services import issue_temporary_password, set_access_level
@@ -62,11 +62,7 @@ def members(request):
             | Q(callsign__icontains=q)
         )
         if full:
-            cond |= (
-                Q(email__icontains=q)
-                | Q(institution_email__icontains=q)
-                | Q(personal_email__icontains=q)
-            )
+            cond |= Q(addresses__address__icontains=q)
         users = users.filter(cond)
     users = users.order_by("last_name", "first_name")
     positions = {p["key"]: p["label"] for p in (setting("club_positions", []) or [])}
@@ -115,46 +111,9 @@ def member_detail(request, pk):
                             f"{member.callsign} is not in the FCC table yet; it is held as "
                             "unverified until the nightly import finds it.",
                         )
-                    if result["addresses_sent"]:
-                        messages.info(
-                            request,
-                            "A confirmation link has gone to "
-                            + " and ".join(result["addresses_sent"])
-                            + "; until it is followed that address does not sign them in.",
-                        )
                     messages.success(request, "Saved.")
                     return redirect("member_detail", pk=member.pk)
-        elif action == "verify_address":  # an officer vouches for an address (no mail needed)
-            from . import addresses
-
-            address = request.POST.get("address", "").strip().lower()
-            try:
-                addresses.mark_verified(member, address, actor)
-                messages.success(
-                    request, f"{address} is confirmed; {member.display_first} can sign in with it."
-                )
-            except addresses.AddressInUse as exc:
-                messages.error(request, str(exc))
-            return redirect("member_detail", pk=member.pk)
-        elif action == "unverify_address" and actor.is_sysadmin:
-            from . import addresses
-
-            address = request.POST.get("address", "").strip().lower()
-            if address == (member.email or "").lower():
-                messages.error(request, "The sign-in address always signs this member in.")
-            else:
-                addresses.unverify(member, address, actor)
-                messages.success(request, f"{address} no longer signs this member in.")
-            return redirect("member_detail", pk=member.pk)
-        elif action == "send_address_link":
-            from . import addresses
-
-            address = request.POST.get("address", "").strip().lower()
-            if address in addresses.on_file(member):
-                addresses.send_confirmation(
-                    member, address, f"{request.scheme}://{request.get_host()}"
-                )
-                messages.success(request, f"A confirmation link is on its way to {address}.")
+        elif views_addresses.handle(request, member):
             return redirect("member_detail", pk=member.pk)
         elif action == "license_lookup":  # any officer: FR-14, the local FCC table
             from apps.credentials.models import UlsLicense
@@ -224,9 +183,7 @@ def member_detail(request, pk):
         elif action == "link_guardian" and actor.is_sysadmin and member.under_18:  # §2.4
             from .guardian import link_guardian
 
-            g = User.objects.filter(
-                email=request.POST.get("guardian_email", "").strip().lower()
-            ).first()
+            g = User.objects.by_address(request.POST.get("guardian_email", "")).first()
             if g is None or g.under_18 or g == member:
                 messages.error(
                     request,
@@ -313,6 +270,7 @@ def member_detail(request, pk):
             "readonly_rows": readonly_rows(actor, member, skip=("first_name",)),
             "manage_heading": "Manage" if actor.is_sysadmin else "Club position",
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
+            "address_subject_is_self": member == actor,
             "deletion": __import__(
                 "apps.accounts.services", fromlist=["deletion_effects"]
             ).deletion_effects(member)
@@ -358,7 +316,7 @@ def hours(request):
                 "Last name",
                 "First name",
                 "Callsign",
-                "Sign-in email",
+                "Email",
                 "Event",
                 "Slot start (UTC)",
                 "Slot end (UTC)",

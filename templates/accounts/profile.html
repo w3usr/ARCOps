@@ -17,10 +17,10 @@
 {% if my_wards %}
 <section class="card highlight" aria-labelledby="wards"><h2 id="wards">Members you act for</h2>
 <p>You are the guardian of the members below. <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>
-<ul class="list">{% for w in my_wards %}<li><strong>{{ w.full_name }}</strong>{% if w.callsign %} {{ w.callsign }}{% endif %} · signs in read-only with {{ w.email }}{% if w.sign_in_only_address %} <span class="tag" title="Made from your address; it receives nothing">sign-in only</span>{% endif %}
+<ul class="list">{% for w in my_wards %}<li><strong>{{ w.full_name }}</strong>{% if w.callsign %} {{ w.callsign }}{% endif %} · {% if w.email %}signs in read-only with {{ w.email }}{% else %}<span class="tag">no address of their own; everything reaches you</span>{% endif %}
   <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit">Act for {{ w.display_first }}</button></form>
   <form method="post" action="{% url 'ward_password' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Set a temporary password</button></form>
-  {% if w.sign_in_only_address %}<form method="post" action="{% url 'ward_email' w.pk %}" class="inline">{% csrf_token %}<label for="we-{{ w.pk }}">Their own email, once they have one</label> <input id="we-{{ w.pk }}" name="email" type="email" required> <button type="submit" class="secondary">Set</button></form>{% endif %}</li>{% endfor %}</ul>
+  </li>{% endfor %}</ul>
 </section>
 {% endif %}
 {% if guardians %}

@@ -155,6 +155,9 @@ ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+# Addresses live in their own rows (apps.accounts.models.Address), mirrored into the library's
+# table; the user row has no address field for it to consult.
+ACCOUNT_USER_MODEL_EMAIL_FIELD = None
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "none"  # nothing may depend on email delivery (FR-103)
 ACCOUNT_SESSION_REMEMBER = None  # the user chooses (TR-17)

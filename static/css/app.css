@@ -376,4 +376,9 @@ pre { overflow-x: auto; max-width: 100%; }
 }
 .tag-button.warn { background: var(--tag-warn); border-color: var(--warn); }
 .tag-button:hover { filter: brightness(.96); }
-.addresses-list li { margin: .35rem 0; }
+.addresses-list li { margin: .35rem 0; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.addresses-list .address { font-weight: 600; overflow-wrap: anywhere; }
+/* Adding an address: the field and its button sit on one line, and stack on a phone. */
+.row-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem; margin-top: .6rem; }
+.row-form label { display: block; font-size: .9rem; }
+.row-form input { min-width: 16rem; }

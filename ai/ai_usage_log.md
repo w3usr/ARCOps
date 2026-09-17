@@ -1296,3 +1296,31 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 183 tests pass; the accessibility check
   passes for the member, officer, and sysadmin views; ruff and both project checks clean.
 - **Git Hash**: 505ec70
+
+## [2026-09-17 05:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The advisor's decision that an account should not have a "sign-in" email
+  at all, implemented. Identity is now `public_id`, a UUID that never changes and is never
+  typed; every address a person holds is an `Address` row with its kind, whether it is
+  confirmed, and its own delivery switch. Any confirmed address signs its owner in; an
+  unconfirmed one still receives club mail; an account keeps at least one address, except a
+  minor, who may hold none because their guardians are written to and act for them. The two
+  fabricated addresses the old schema needed (a minor's `guardian+name@`, a deleted account's
+  `deleted-<id>@invalid.example`) are gone. One address-control handler serves both the member's
+  own profile and an officer's view of them. Migration 0009 was written by hand, rehearsed
+  forward and in reverse against a database built on the old schema, and made reversible.
+- **Sections/Files Affected**: apps/accounts/{models,addresses,account,entry,forms,services,
+  admin,urls,views,views_entry,views_members}.py, apps/accounts/views_addresses.py (new),
+  apps/accounts/migrations/0009_identity_is_a_key_addresses_are_rows.py (new), apps/comms/
+  {services,defaults}.py, apps/credentials/{views,views_reports}.py, apps/ops/retention.py,
+  apps/ops/management/commands/{seed_demo,bootstrap_sysadmin}.py, config/settings/base.py,
+  templates/accounts/{_addresses,_account_form,profile,member_detail,members,verify_address}.html,
+  templates/credentials/approvals.html, static/css/app.css, docs/REQUIREMENTS.md (§2.6, FR-107),
+  tools/a11y/test_axe.py, and the account tests including a new apps/ops/tests/
+  test_bootstrap_sysadmin.py.
+- **Nature of Contribution**: Design, code generation, data migration, and test rewriting under
+  the advisor's decision, quoted in docs/REQUIREMENTS.md §2.6 and the session note.
+- **Human Review Status**: Pending the advisor's look. 188 tests pass; the accessibility check
+  passes for every role at phone and desktop width; ruff, the club-neutrality guard and the
+  requirement-id guard are clean; `makemigrations --check` reports no changes.
+- **Git Hash**: pending

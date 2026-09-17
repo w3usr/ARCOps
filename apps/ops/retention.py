@@ -37,7 +37,9 @@ def apply(now=None) -> dict:
     n = 0
     for u in User.objects.filter(
         access_level=AccessLevel.NONE, legal_hold=False, deleted_at__isnull=True
-    ).exclude(institution_email="", personal_email="", cell_phone=""):
+    ):
+        if not (u.addresses.exists() or u.cell_phone):
+            continue
         changed = (
             AuditLog.objects.filter(
                 action="access_level.changed", subject_type="User", subject_id=str(u.pk)
@@ -47,8 +49,12 @@ def apply(now=None) -> dict:
         )
         since = changed.at if changed else u.date_joined
         if since <= cutoff:
-            u.institution_email = u.personal_email = u.cell_phone = ""
-            u.save(update_fields=["institution_email", "personal_email", "cell_phone"])
+            from apps.accounts.addresses import mirror
+
+            u.addresses.all().delete()
+            mirror(u)  # and with the rows go the sign-in library's copies of them
+            u.cell_phone = ""
+            u.save(update_fields=["cell_phone"])
             n += 1
     counts["profiles_contact_removed"] = n
 

@@ -17,29 +17,37 @@ def _officer():
     return u
 
 
-def test_recipients_are_the_switched_on_addresses_else_the_sign_in_address():
+def test_club_mail_follows_the_delivery_switches_and_never_reaches_nobody():
+    from apps.accounts import addresses
+
     u = _officer()
-    u.institution_email = "ann@uni.example"
-    u.personal_email = "ann@home.example"
-    u.institution_email_delivery = True
-    u.personal_email_delivery = False
-    u.save()
+    addresses.add(u, "ann@uni.example", confirmed=True)
+    addresses.add(u, "ann@home.example", delivery=False)
+    u.addresses.filter(address="o@example.org").update(delivery=False)
     assert recipient_addresses(u) == ["ann@uni.example"]
-    u.institution_email_delivery = False
-    u.save()
-    assert recipient_addresses(u) == ["o@example.org"]
-    u.institution_email_delivery = u.personal_email_delivery = True
-    u.save()
-    assert recipient_addresses(u) == ["ann@home.example", "ann@uni.example"]
+
+    u.addresses.update(delivery=False)  # every switch off: everything receives, rather than nothing
+    assert recipient_addresses(u) == ["ann@home.example", "ann@uni.example", "o@example.org"]
+
+    u.addresses.update(delivery=True)
+    assert recipient_addresses(u) == ["ann@home.example", "ann@uni.example", "o@example.org"]
 
 
-def test_profile_shows_two_addresses_of_equal_standing_with_a_switch_each():
+def test_profile_shows_every_address_once_with_its_standing_and_a_way_to_add_one():
+    from apps.accounts import addresses
+
+    u = _officer()
+    addresses.add(u, "ann@home.example")
     c = Client()
-    c.force_login(_officer())
+    c.force_login(u)
     body = c.get("/me/").content.decode()
-    assert "Email addresses" in body
-    assert body.count("Send club email here") == 2
-    assert "Primary" not in body
+    assert "Where we write, and how you sign in" in body
+    assert body.count('value="address_delivery"') == 2  # one switch per address
+    assert "Not confirmed: send the link" in body  # the badge is the button
+    assert 'name="action" value="address_add"' in body
+    # each address is written out once; the rest of its row is controls, not a second copy
+    assert body.count('<span class="address">o@example.org</span>') == 1
+    assert body.count('<span class="address">ann@home.example</span>') == 1
 
 
 def test_a_minor_needs_a_guardian_and_an_adult_never_stores_one():

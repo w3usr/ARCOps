@@ -122,7 +122,9 @@ def approvals(request):
     queue = SignedAgreement.objects.filter(state=SignedAgreement.State.SIGNED).select_related(
         "user", "template", "credential"
     )
-    return render(request, "credentials/approvals.html", {"queue": queue})
+    # the institution address is a row on the account now, so the page is handed it per agreement
+    rows = [{"a": a, "institution_address": _institution_address(a.user)} for a in queue]
+    return render(request, "credentials/approvals.html", {"queue": rows})
 
 
 @login_required
@@ -135,7 +137,7 @@ def decide(request, pk):
         if a.user.category == "community" and a.credential.key == "station_access":
             # FR-27: the institution's address is the evidence HR is done
             addr = (
-                (request.POST.get("institution_email") or a.user.institution_email or "")
+                (request.POST.get("institution_email") or _institution_address(a.user) or "")
                 .strip()
                 .lower()
             )
@@ -153,9 +155,11 @@ def decide(request, pk):
                     "A community member needs an institution email address on file before approval.",
                 )
                 return redirect("approvals")
-            if addr != a.user.institution_email:
-                a.user.institution_email = addr
-                a.user.save(update_fields=["institution_email"])
+            if addr and addr != _institution_address(a.user):
+                from apps.accounts.addresses import add
+                from apps.accounts.models import Address
+
+                add(a.user, addr, kind=Address.Kind.INSTITUTION, actor=request.user)
         approve(request.user, a)
         messages.success(request, f"Approved; expires {a.expires_on:%d %B %Y}.")
     else:
@@ -197,3 +201,9 @@ def computer_password(request):
     elif request.method == "POST":
         messages.error(request, "That password did not match.")
     return render(request, "credentials/password.html", {"secret": secret})
+
+
+def _institution_address(user) -> str:
+    """The institution address on the account, if there is one (FR-27)."""
+    row = user.addresses.filter(kind="institution").first()
+    return row.address if row else ""

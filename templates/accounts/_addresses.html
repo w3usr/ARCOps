@@ -1,26 +1,37 @@
-{% comment %}Every address on the account, each shown once, with what it does and the one action
-that changes that. An officer looking at someone else can confirm an address without any mail,
-which is what keeps signing in from depending on delivery.{% endcomment %}
+{% comment %}Every address on the account, each shown once, with what it does and the controls
+that change it. The page posting this sets `address_subject_is_self`; an officer looking at
+someone else can confirm an address without any mail, which is what keeps signing in from
+depending on delivery.{% endcomment %}
 <h2 id="addr">{{ addresses_heading|default:"Addresses" }}</h2>
 <ul class="list addresses-list">
 {% for a in addresses %}
-  <li>{{ a.address }}
-    {% if a.is_sign_in %}<span class="tag">sign-in</span>{% endif %}
-    {% if not a.delivery %}<span class="tag">delivery off</span>{% endif %}
-    {% if a.verified %}
+  <li>
+    <span class="address">{{ a.address }}</span>
+    <span class="tag">{{ a.kind }}</span>
+    {% if a.confirmed %}
       <span class="tag ok">confirmed</span>
-      {% if user.is_sysadmin and not is_self and not a.is_sign_in %}
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unverify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">stop it signing in</button></form>
+      {% if user.is_sysadmin and not address_subject_is_self %}
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">stop it signing in</button></form>
       {% endif %}
     {% else %}
-      {% if is_self %}
-      <form method="post" action="{% url 'resend_address' %}" class="inline">{% csrf_token %}<input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="tag-button warn" title="This address does not sign you in until it is confirmed">Not confirmed: send the link</button></form>
+      {% if address_subject_is_self %}
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="tag-button warn" title="This address does not sign you in until it is confirmed">Not confirmed: send the link</button></form>
       {% else %}
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="send_address_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="tag-button warn" title="Does not sign them in until it is confirmed">Not confirmed: send them the link</button></form>
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="verify_address"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="tag-button" title="Confirm it yourself when you know it is theirs">Confirm it</button></form>
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="tag-button warn" title="Does not sign them in until it is confirmed">Not confirmed: send them the link</button></form>
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="tag-button" title="Confirm it yourself when you know it is theirs">Confirm it</button></form>
       {% endif %}
+    {% endif %}
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike" title="{% if a.delivery %}Club mail goes here{% else %}Club mail skips this one{% endif %}">{% if a.delivery %}club mail on{% else %}club mail off{% endif %}</button></form>
+    {% if a.can_remove %}
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_remove"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike danger">remove</button></form>
     {% endif %}
   </li>
 {% endfor %}
 </ul>
-<p class="helptext">Club email goes to every address with its delivery switch on, confirmed or not. Signing in and password resets use the sign-in address and any confirmed one.</p>
+<form method="post" class="row-form">{% csrf_token %}
+  <input type="hidden" name="action" value="address_add">
+  <label for="new-address">Add an address</label>
+  <input type="email" id="new-address" name="address" placeholder="name@example.org" required>
+  <button type="submit">Add</button>
+</form>
+<p class="helptext">Club mail goes to every address with club mail on, confirmed or not. Signing in and password resets use any confirmed address. An account keeps at least one address.</p>

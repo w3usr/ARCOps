@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserChangeForm as DjangoUserChangeForm
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 
 from .models import (
+    Address,
     CallsignHistory,
     Guardianship,
     Invitation,
@@ -13,10 +14,19 @@ from .models import (
 )
 
 
+class AddressInline(admin.TabularInline):
+    """An account's addresses, edited beside it. The rules (a confirmed address belongs to one
+    account, an account keeps at least one) are enforced by the model and the pages, so an admin
+    editing here is deliberately working below them."""
+
+    model = Address
+    extra = 0
+
+
 class UserCreationForm(DjangoUserCreationForm):
     class Meta(DjangoUserCreationForm.Meta):
         model = User
-        fields = ("email", "first_name", "last_name", "category", "access_level")
+        fields = ("first_name", "last_name", "category", "access_level")
 
 
 class UserChangeForm(DjangoUserChangeForm):
@@ -31,7 +41,7 @@ class UserAdmin(DjangoUserAdmin):
     form = UserChangeForm
     ordering = ("last_name", "first_name")
     list_display = (
-        "email",
+        "addresses_shown",
         "first_name",
         "last_name",
         "callsign",
@@ -40,9 +50,9 @@ class UserAdmin(DjangoUserAdmin):
         "under_18",
     )
     list_filter = ("access_level", "category", "under_18")
-    search_fields = ("email", "first_name", "last_name", "callsign")
+    search_fields = ("addresses__address", "first_name", "last_name", "callsign")
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("public_id", "password")}),
         (
             "Name",
             {
@@ -57,13 +67,7 @@ class UserAdmin(DjangoUserAdmin):
         ),
         (
             "Contact",
-            {
-                "fields": (
-                    ("institution_email", "institution_email_delivery"),
-                    ("personal_email", "personal_email_delivery"),
-                    "cell_phone",
-                )
-            },
+            {"fields": ("cell_phone",)},
         ),
         ("Club", {"fields": ("callsign", "category", "club_position", "access_level", "under_18")}),
         ("Student", {"fields": ("student_level", "graduation_semester", "graduation_year")}),
@@ -86,7 +90,6 @@ class UserAdmin(DjangoUserAdmin):
             None,
             {
                 "fields": (
-                    "email",
                     "first_name",
                     "last_name",
                     "password1",
@@ -97,7 +100,12 @@ class UserAdmin(DjangoUserAdmin):
             },
         ),
     )
-    readonly_fields = ("date_joined",)
+    readonly_fields = ("date_joined", "public_id")
+    inlines = (AddressInline,)
+
+    @admin.display(description="Addresses")
+    def addresses_shown(self, obj) -> str:
+        return ", ".join(a.address for a in obj.addresses.all()) or "(none)"
 
 
 admin.site.register(Guardianship)
@@ -105,3 +113,12 @@ admin.site.register(Invitation)
 admin.site.register(CallsignHistory)
 admin.site.register(NotificationPreference)
 admin.site.register(PushSubscription)
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    """Addresses are rows, not fields: an account is its key, and a person may hold several."""
+
+    list_display = ("address", "user", "kind", "confirmed", "delivery", "created")
+    list_filter = ("kind", "confirmed", "delivery")
+    search_fields = ("address", "user__first_name", "user__last_name", "user__callsign")

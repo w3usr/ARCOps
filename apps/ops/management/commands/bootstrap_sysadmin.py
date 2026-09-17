@@ -28,16 +28,21 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         password = secrets.token_urlsafe(12)
-        user, created = User.objects.get_or_create(
-            email=opts["email"].lower(),
-            defaults={
-                "first_name": opts["first"],
-                "last_name": opts["last"],
-                "callsign": opts["callsign"].upper(),
-                "category": opts["category"],
-                "access_level": AccessLevel.SYSADMIN,
-            },
-        )
+        address = opts["email"].lower().strip()
+        user = User.objects.by_address(address).first()
+        created = user is None
+        if created:
+            # The address is confirmed because whoever runs this command at the server console
+            # is vouching for it, and the account must be able to sign in with it at once.
+            user = User.objects.create_user(
+                address,
+                None,
+                first_name=opts["first"],
+                last_name=opts["last"],
+                callsign=opts["callsign"].upper(),
+                category=opts["category"],
+                access_level=AccessLevel.SYSADMIN,
+            )
         user.access_level = AccessLevel.SYSADMIN
         user.is_superuser = True
         user.is_active = True

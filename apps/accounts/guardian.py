@@ -140,57 +140,6 @@ def ward_password(request, pk):
 # ------------------------------------------------------------------------------- services ---
 
 
-def sign_in_address(guardian: User, first_name: str) -> str:
-    """§2.4: a minor with no address signs in with a plus-address made from the guardian's
-    (`parent+kim@example.org`): unique, never the guardian's own, and delivered to the guardian
-    by most providers if anyone ever writes to it. Marked sign-in-only, it is never messaged."""
-    import re
-
-    local, _, domain = guardian.email.partition("@")
-    local = local.split("+")[0]
-    slug = re.sub(r"[^a-z0-9]", "", first_name.lower()) or "member"
-    addr, n = f"{local}+{slug}@{domain}", 2
-    while User.objects.filter(email=addr).exists():
-        addr, n = f"{local}+{slug}{n}@{domain}", n + 1
-    return addr
-
-
-@login_required
-@require_POST
-def ward_email(request, pk):
-    """The guardian gives the minor their own address once they have one; messages then reach
-    it too (FR-70)."""
-    real = getattr(request, "acting_guardian", None) or request.user
-    link = (
-        Guardianship.objects.filter(minor_id=pk, guardian=real, active=True)
-        .select_related("minor")
-        .first()
-    )
-    if link is None:
-        raise Http404
-    addr = request.POST.get("email", "").strip().lower()
-    if not addr or "@" not in addr:
-        messages.error(request, "Enter an email address.")
-    elif addr == real.email or User.objects.filter(email=addr).exclude(pk=link.minor.pk).exists():
-        messages.error(request, "That address belongs to another account.")
-    else:
-        before = link.minor.email
-        link.minor.email, link.minor.sign_in_only_address = addr, False
-        link.minor.save(update_fields=["email", "sign_in_only_address"])
-        record(
-            real,
-            "account.email_changed",
-            link.minor,
-            before={"email": before},
-            after={"email": addr},
-        )
-        messages.success(
-            request,
-            f"{link.minor.display_first} now signs in with {addr} and receives messages there as well as through you.",
-        )
-    return redirect("profile")
-
-
 def link_guardian(actor, minor: User, guardian: User, relationship: str = "") -> Guardianship:
     link, created = Guardianship.objects.get_or_create(
         minor=minor, guardian=guardian, defaults={"relationship": relationship}

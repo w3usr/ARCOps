@@ -25,6 +25,15 @@ from apps.events.models import (
 from apps.events.services.slots import generate_slots
 
 
+def account(email: str, **fields):
+    """The demo's accounts, found by address or created with it. An account is its key now, so
+    there is no address field to get_or_create on."""
+    found = User.objects.by_address(email).first()
+    if found:
+        return found, False
+    return User.objects.create_user(email, None, **fields), True
+
+
 class Command(BaseCommand):
     help = "Seed a development database with fictitious data."
 
@@ -32,7 +41,8 @@ class Command(BaseCommand):
         parser.add_argument("--force", action="store_true")
 
     def handle(self, *args, **opts):
-        if User.objects.exclude(email__endswith="@example.org").exists() and not opts["force"]:
+        real = User.objects.exclude(addresses__address__endswith="@example.org").distinct()
+        if real.exists() and not opts["force"]:
             raise CommandError("database has non-demo users; pass --force to seed anyway")
 
         people = [
@@ -76,15 +86,13 @@ class Command(BaseCommand):
         ]
         users = {}
         for email, first, last, call, cls, level, cat in people:
-            u, _ = User.objects.get_or_create(
-                email=email,
-                defaults={
-                    "first_name": first,
-                    "last_name": last,
-                    "callsign": call,
-                    "access_level": level,
-                    "category": cat,
-                },
+            u, _ = account(
+                email,
+                first_name=first,
+                last_name=last,
+                callsign=call,
+                access_level=level,
+                category=cat,
             )
             u.set_password("demo-password-please-change")
             u.save()
@@ -171,25 +179,21 @@ class Command(BaseCommand):
         from apps.events.models import ResponsibleAdult, Waitlist
 
         seed_templates()
-        pat, _ = User.objects.get_or_create(
-            email="pat@example.org",
-            defaults={
-                "first_name": "Pat",
-                "last_name": "Example",
-                "cell_phone": "555-0100",
-                "category": "community",
-                "access_level": AccessLevel.MEMBER,
-            },
+        pat, _ = account(
+            "pat@example.org",
+            first_name="Pat",
+            last_name="Example",
+            cell_phone="555-0100",
+            category="community",
+            access_level=AccessLevel.MEMBER,
         )
-        kim, kim_new = User.objects.get_or_create(
-            email="kim@example.org",
-            defaults={
-                "first_name": "Kim",
-                "last_name": "Example",
-                "category": "student",
-                "access_level": AccessLevel.MEMBER,
-                "under_18": True,
-            },
+        kim, kim_new = account(
+            "kim@example.org",
+            first_name="Kim",
+            last_name="Example",
+            category="student",
+            access_level=AccessLevel.MEMBER,
+            under_18=True,
         )
         for u in (pat, kim):
             u.set_password("demo-password-please-change")

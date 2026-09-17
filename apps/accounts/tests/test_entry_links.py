@@ -135,26 +135,26 @@ def test_class_link_admits_at_once_with_a_verification_deadline(world):
     )
     assert (
         "is for uni.example addresses" in r.content.decode()
-        and not User.objects.filter(email="kid@home.example").exists()
+        and not User.objects.by_address("kid@home.example").exists()
     )
     r = c.post(
         f"/join/{link.token}/form/", {**FORM, "email": "kid@uni.example", "category": "student"}
     )
     assert r.status_code == 302 and r["Location"] == f"/events/{world['ev'].pk}/"
-    u = User.objects.get(email="kid@uni.example")
+    u = User.objects.by_address("kid@uni.example").get()
     assert (
         u.access_level == "member"
         and u.joined_via == link
-        and u.institution_email == "kid@uni.example"
+        and u.addresses.get(address="kid@uni.example").kind == "institution"
     )
-    assert u.verification_deadline and not u.email_verified_at
+    assert u.verification_deadline and not u.has_confirmed_address
     assert Outbox.objects.filter(user=u, subject__startswith="Confirm your address").exists()
     # Signed in already; the roster works; the sign-in address is verified by the token.
     assert c.get(f"/events/{world['ev'].pk}/").status_code == 200
     token = entry.verification_token(u)
     assert c.get(f"/verify/{token}/").status_code == 200
     u.refresh_from_db()
-    assert u.email_verified_at
+    assert u.has_confirmed_address
 
 
 def test_overdue_verification_pauses_sign_in_until_an_officer_waives_it(world):
@@ -163,14 +163,14 @@ def test_overdue_verification_pauses_sign_in_until_an_officer_waives_it(world):
     c.post(
         f"/join/{link.token}/form/", {**FORM, "email": "late@uni.example", "category": "student"}
     )
-    u = User.objects.get(email="late@uni.example")
+    u = User.objects.by_address("late@uni.example").get()
     u.verification_deadline = timezone.now() - timedelta(hours=1)
     u.save()
     r = c.get("/events/")
     assert r.status_code == 302 and "/accounts/login/" in r["Location"]
     _as(world["off"]).post(f"/members/{u.pk}/", {"action": "mark_verified"})
     u.refresh_from_db()
-    assert u.email_verified_at and not u.verification_overdue
+    assert u.has_confirmed_address and not u.verification_overdue
     c2 = _as(u)
     assert c2.get("/events/").status_code == 200
     # and the whole-link waiver
@@ -178,7 +178,7 @@ def test_overdue_verification_pauses_sign_in_until_an_officer_waives_it(world):
         f"/join/{link.token}/form/", {**FORM, "email": "late2@uni.example", "category": "student"}
     )
     _as(world["off"]).post(f"/me/entry-links/{link.pk}/", {"action": "verify_all"})
-    assert User.objects.get(email="late2@uni.example").email_verified_at
+    assert User.objects.by_address("late2@uni.example").get().has_confirmed_address
 
 
 def test_closed_links_admit_nobody(world):
@@ -202,13 +202,13 @@ def test_community_link_makes_a_provisional_member_after_verification_and_office
     assert "Room 596" not in page and "Ann" not in page  # no room, no names for outsiders
     r = c.post(f"/join/{link.token}/form/", {**FORM, "email": "ham@gmail.example"})
     assert "Check your email" in r.content.decode()
-    u = User.objects.get(email="ham@gmail.example")
+    u = User.objects.by_address("ham@gmail.example").get()
     assert not u.is_active and u.access_level == "none" and u.category == "community"
-    assert Client().login(username="ham@gmail.example", password=FORM["password1"]) is False
+    assert Client().login(email="ham@gmail.example", password=FORM["password1"]) is False
     r = c.get(f"/verify/{entry.verification_token(u)}/")
     assert "provisional" in r.content.decode().lower()
     u.refresh_from_db()
-    assert u.is_active and u.access_level == "provisional" and u.email_verified_at
+    assert u.is_active and u.access_level == "provisional" and u.has_confirmed_address
     assert Outbox.objects.filter(
         user=world["off"], subject__startswith="New provisional member"
     ).exists()

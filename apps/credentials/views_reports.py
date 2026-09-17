@@ -223,7 +223,7 @@ def member_roster(request):
             "last_sign_in",
         ]
         if contacts:
-            head += ["email", "institution_email", "personal_email", "cell_phone"]
+            head += ["addresses", "cell_phone"]
         w.writerow(head)
         for r in rows:
             u, lic = r["u"], r["lic"]
@@ -242,7 +242,10 @@ def member_roster(request):
                 u.last_login.isoformat() if u.last_login else "",
             ]
             if contacts:
-                line += [u.email, u.institution_email, u.personal_email, u.cell_phone]
+                line += [
+                    " ".join(a.address for a in u.addresses.all()),
+                    u.cell_phone,
+                ]
             w.writerow(line)
         record(
             request.user,

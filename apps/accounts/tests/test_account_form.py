@@ -26,7 +26,7 @@ def _user(email, level=AccessLevel.MEMBER, **kw):
 def test_a_member_edits_their_own_details_and_no_privilege_field():
     m = _user("mem@example.org")
     fields = editable_fields(m, m)
-    for allowed in ("preferred_name", "callsign", "personal_email", "cell_phone", "first_name"):
+    for allowed in ("preferred_name", "callsign", "cell_phone", "first_name"):
         assert allowed in fields, allowed
     for refused in ("category", "access_level", "club_position", "under_18", "legal_hold", "email"):
         assert refused not in fields, refused
@@ -53,9 +53,6 @@ def test_a_sysadmin_sets_everything_on_any_account_including_their_own():
             "first_name",
             "preferred_name",
             "callsign",
-            "email",
-            "institution_email",
-            "personal_email",
             "cell_phone",
             "category",
             "club_position",
