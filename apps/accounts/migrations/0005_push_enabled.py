@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0004_entry_links'),
+        ("accounts", "0004_entry_links"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='push_enabled',
+            model_name="user",
+            name="push_enabled",
             field=models.BooleanField(default=True),
         ),
     ]

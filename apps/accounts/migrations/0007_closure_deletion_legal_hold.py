@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0006_pending_uls_name'),
+        ("accounts", "0006_pending_uls_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='closure_requested_at',
+            model_name="user",
+            name="closure_requested_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='deleted_at',
+            model_name="user",
+            name="deleted_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='legal_hold',
+            model_name="user",
+            name="legal_hold",
             field=models.BooleanField(default=False),
         ),
     ]

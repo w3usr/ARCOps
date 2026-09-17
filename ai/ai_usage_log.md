@@ -1340,3 +1340,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 188 tests pass; ruff and both project
   checks clean.
 - **Git Hash**: 64ac45c
+
+## [2026-09-17 11:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The identity migration rehearsed against a copy of the server's database
+  (the advisor's permission, 2026-09-17), which found two defects invented data could not. The
+  delivery rule was lost when the sign-in address also filled one of the two contact slots: with
+  both switches off, every row came out with delivery off, and the application then writes to
+  every address, so an address that had been receiving nothing would have started receiving club
+  mail. And the sign-in library's own table was left holding the pre-migration rows, because
+  nothing calls the mirror during a migration. Both fixed; the migration now rebuilds that table
+  to hold exactly the confirmed addresses.
+- **Sections/Files Affected**: apps/accounts/migrations/0009_identity_is_a_key_addresses_are_rows.py.
+- **Nature of Contribution**: Defect analysis and code.
+- **Human Review Status**: Pending the advisor's look. Rehearsed forward, back, and forward again
+  against the copy: both real accounts keep their addresses, the delivery rule is preserved, and
+  the mirror matches. 188 tests pass; `makemigrations --check` reports no changes.
+- **Git Hash**: pending

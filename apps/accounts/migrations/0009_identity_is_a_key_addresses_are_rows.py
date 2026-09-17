@@ -66,12 +66,22 @@ def addresses_into_rows(apps, schema_editor):
         # The address they signed in with keeps working: it is confirmed by having been used.
         # A minor's fabricated address is dropped instead, which is what it was standing in for.
         if sign_in and not user.sign_in_only_address:
-            row = rows.setdefault(sign_in, {"kind": "personal", "delivery": False})
+            row = rows.setdefault(sign_in, {"kind": "personal", "confirmed": False})
             row["confirmed"] = True
-            if sign_in not in (institution, personal):
-                row["delivery"] = not (user.institution_email_delivery and institution) and not (
-                    user.personal_email_delivery and personal
-                )
+            # The old rule: with neither switch on, club mail went to the sign-in address alone.
+            # It must still go there alone, whether or not that address also filled one of the
+            # two slots. Found on the live data, where both switches were off and every row came
+            # out with delivery off, which would have started sending to an address that had
+            # been receiving nothing.
+            nothing_switched_on = not (institution and user.institution_email_delivery) and not (
+                personal and user.personal_email_delivery
+            )
+            if nothing_switched_on:
+                for other in rows.values():
+                    other["delivery"] = False
+                row["delivery"] = True
+            else:
+                row.setdefault("delivery", False)
 
         for address, values in rows.items():
             Address.objects.create(
@@ -81,6 +91,23 @@ def addresses_into_rows(apps, schema_editor):
                 confirmed=values.get("confirmed", False),
                 delivery=values.get("delivery", True),
             )
+
+        # The sign-in library reads its own table, and `apps.accounts.addresses.mirror` is what
+        # keeps it in step. Nothing calls that during a migration, so the mirror is rebuilt here:
+        # exactly the confirmed addresses, marked verified. Without this the two tables disagree
+        # from the first request after the migration, and an address this migration did not
+        # confirm would still be sitting in the library's table signing someone in.
+        confirmed_here = {a for a, v in rows.items() if v.get("confirmed")}
+        EmailAddress.objects.filter(user_id=user.pk).exclude(email__in=confirmed_here).delete()
+        for address in confirmed_here:
+            existing = EmailAddress.objects.filter(user_id=user.pk, email=address).first()
+            if existing is None:
+                EmailAddress.objects.create(
+                    user_id=user.pk, email=address, verified=True, primary=False
+                )
+            elif not existing.verified:
+                existing.verified = True
+                existing.save(update_fields=["verified"])
 
 
 def rows_back_into_fields(apps, schema_editor):
