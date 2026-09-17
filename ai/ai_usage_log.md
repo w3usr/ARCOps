@@ -1207,4 +1207,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit.
 - **Human Review Status**: Pending review. 166 tests pass; the accessibility check passes for
   the member, officer, and sysadmin views; both project checks clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 515be43
