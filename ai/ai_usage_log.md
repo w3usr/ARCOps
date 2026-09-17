@@ -1230,4 +1230,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Bug fix, code generation, tests.
 - **Human Review Status**: Pending the advisor's look; his own page is the check. 169 tests pass;
   ruff and both project checks clean.
-- **Git Hash**: [pending]
+- **Git Hash**: 749889e
