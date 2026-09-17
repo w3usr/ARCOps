@@ -272,7 +272,8 @@ The draft models this as follows:
 | Set member category (on the invitation) | ✓ | ✓ | ✓ | · | · | · |
 | Create or edit account manually | ✓ | · | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · | · |
-| Decide which groups an account is in, or set a club position | ✓ | · | · | · | · | · |
+| Decide which groups an account is in | ✓ | · | · | · | · | · |
+| Set another member's club position | ✓ | ✓ | ✓ | · | · | · |
 | Delete a user account (FR-118) | ✓ | · | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · | · |
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | ✓ | own | for minor |
@@ -494,17 +495,15 @@ officer admits or declines them (FR-121). Every account records the link it join
   | License class | no | no | From FCC lookup (FR-14) or sysadmin override |
   | License expiration | no | no | From FCC lookup or sysadmin override |
   | License status | no | no | **(added)** Active / expired / cancelled / not found, from FCC lookup; the health check needs status, not only class |
-  | Scranton email | one of the two | yes | Validated as `@scranton.edu` |
-  | Personal email | one of the two | yes | |
-  | Email delivery preference | yes | yes | Scranton, personal, or both |
+  | Addresses | at least one, except for a member under 18 | yes | One row per address, each marked institution or personal, each either confirmed or not, each with its own club-mail switch. Any confirmed address signs the member in; an unconfirmed one still receives club mail (§2.6) |
   | Notification preferences | yes | yes | Per category and channel (FR-71); browser notification subscriptions per device (FR-112) |
   | Cell phone | no for adults; no for minors | yes | Guardian phone is required for a minor instead |
   | Under 18 | yes | no | A flag set at invitation; drives the guardian rules. No date of birth is stored (NAF, 2026-09-13); conversion at 18 is by hand (FR-109) |
   | Member category | yes | no | Faculty / Staff / Student / Community Member; set at invitation, changed by officer or sysadmin |
   | Anticipated graduation | for Students | yes | Semester (Spring, Summer, or Fall; Spring is the default) and four-digit year. Students only; blank for other categories. NAF, 2026-09-13 |
   | Student level | for Students | yes | Undergraduate or graduate. Students only. NAF, 2026-09-13 |
-  | Club position | no | no | From the configured list; set by sysadmin |
-  | Access level | yes | no | Section 2.1; set by sysadmin |
+  | Club position | no | no | From the configured list; set by anyone who may set another member's club position, which the Club Officer and Faculty Advisor groups hold |
+  | Access groups | no | no | Section 2.1; the groups the account is in, set by anyone who may decide which groups an account is in. An account in no group can do nothing |
   | Guardian(s) | required if under 18; more than one allowed | guardian edits own | Section 2.4 |
   | Responsible adults previously named | for minors | guardian | Section 2.4; picked from when signing up for a slot (FR-64) |
 
@@ -516,9 +515,10 @@ officer admits or declines them (FR-121). Every account records the link it join
   account signs in read-only (section 2.4).
 
   > Yes, read only — NAF, 2026-09-13, Q6
-- **FR-11 [Should]** A member can ask for their account to be closed. Closure sets No access and
-  starts the retention clock (section 4.3); it does not delete signed agreements before their
-  retention period ends.
+- **FR-11 [Should]** A member can ask for their account to be closed. Closure takes the account
+  out of every access group, so it can do nothing and sign-in is refused, and it removes the
+  person from future slots with a notice to the captains. Nothing of theirs ages out: a member's
+  own record is kept, and a member who has left is archived (FR-125).
 - **FR-12 [Should] (portability)** Member categories and club positions are configurable lists.
   W3USR ships with the values in FR-8.
 - **FR-13 [Must]** A member directory, visible to members, showing each member's short name
@@ -638,7 +638,7 @@ and the next revision of the agreement should say only what HR actually does.)
   University facilities needs it, but this repository's rules forbid storing rosters tied to
   student IDs. The advisor obtains the R number from University systems at the moment of
   requesting access, outside this application.
-- **FR-25 [Must]** A signed agreement enters an approval queue visible to approver positions
+- **FR-25 [Must]** A signed agreement enters an approval queue visible to everyone who may approve a signed access agreement, which the Faculty Advisor group holds and a sysadmin holds by being a superuser (§2.1)
   (section 2.3). The approver can approve, setting an expiration date, or decline with a reason
   that is sent to the signer. The default expiration is **the next 1 September**, except that
   an approval dated in August is set to the 1 September of the following year, so no one signs
@@ -1036,8 +1036,8 @@ Verbatim:
   > Instead, […] the guardian should be able to designate responsible adult(s) that will be
   > accompanying the minor for each slot. — NAF, 2026-09-13
 
-- **FR-109 [Must]** Converting a minor's account to an adult's is a manual action by a faculty
-  advisor (an approver position, section 2.3), taken when the member or a guardian reports that
+- **FR-109 [Must]** Converting a minor's account to an adult's is a manual action by anyone who
+  may convert a member's account at 18, which the Faculty Advisor group holds (§2.1), taken when the member or a guardian reports that
   the member has turned 18. It clears the under-18 flag, ends the guardian links (kept in
   history), makes the account self-managed, and issues a one-time temporary password (FR-7) or
   a reset link so the member sets their own credentials. Guardians are notified. Audited.
@@ -1159,7 +1159,7 @@ made it likely that reliable delivery would take time to establish:
   (for the BCC field of their own mail client) and the message body. The announcement is still
   recorded per FR-75, marked *sent outside the system*. This shows addresses to people who may
   already see them (section 2.5) and to no one else.
-- **FR-107 [Must]** The sign-in page carries a **"Forgot username or password?"** link. The
+- **FR-107 [Must]** The sign-in page carries a **"Forgot your username or password?"** link. The
   member enters an address they have confirmed on their account. If it matches, reset
   instructions go to that address; an address merely typed into a profile moves nobody's
   password, which is the same rule that governs signing in (section 2.6). The page's response
@@ -1177,8 +1177,8 @@ made it likely that reliable delivery would take time to establish:
   with a display name naming the club. Transactional mail (invitations, resets, reminders,
   warnings) has `Reply-To` set to the club address; announcements have `Reply-To` set to the
   sender, the event's captains, and the club address.
-- **FR-70 [Must]** Every message to a member is delivered to the address(es) their preference
-  selects. Every message to a minor is delivered to the guardian's address(es), with the
+- **FR-70 [Must]** Every message to a member is delivered to every address on the account whose club-mail switch
+  is on, confirmed or not. Every message to a minor is delivered to the guardian's address(es), with the
   minor's own address included only if one is on file. There is no path by which a minor is
   messaged without the guardian.
 - **FR-71 [Must]** **Notification preferences** live on the member's profile page: one row per
@@ -1313,7 +1313,7 @@ made it likely that reliable delivery would take time to establish:
 ### 3.10 Administration and audit
 
 - **FR-89 [Must]** Sysadmins edit club configuration in the interface: club identity, sending
-  and reply-to addresses, member categories, club positions and which are approvers, roles,
+  and reply-to addresses, member categories, club positions, access groups and what each may do, roles,
   credential types, license ladder, default slot length, default cutoffs and horizons, message
   templates **(portability)**.
 - **FR-90 [Must]** Sysadmins manage agreement templates (FR-21) and the computer password
@@ -1324,13 +1324,14 @@ made it likely that reliable delivery would take time to establish:
 - **FR-118 [Must]** A sysadmin can **delete a user account**, with a required reason and a
   confirmation that names what will happen, since the action is irreversible. Deletion is
   distinct from setting No access (FR-91), which keeps everything, and from member-requested
-  closure (FR-11), which starts the retention clock. On deletion the system: cancels the
+  closure (FR-11), which keeps everything and archives the record (FR-125). On deletion the system: cancels the
   person's future sign-ups and tells the captains of those events (FR-74); removes name,
   callsign, emails, phone, preferences, browser-notification subscriptions, guardian links, and
   responsible-adult designations; and replaces the person on past rosters and in participation
   history with an anonymous marker ("deleted member"), so counts and hours stay right while
-  nothing identifies them. Signed agreements and their PDFs are kept for the retention period
-  in section 4.3 and then purged automatically; the audit log (FR-92) keeps its entries, with
+  nothing identifies them. Signed agreements and their PDFs are kept indefinitely (section 4.3),
+  because who was cleared for the station, and when, is the club's answer to the University
+  years later; the audit log (FR-92) keeps its entries, with
   the deleted account's identifier and the deletion itself recorded. A sysadmin cannot delete
   the last remaining sysadmin account. Deleting a minor's account also deletes the
   responsible-adult records attached to their sign-ups; a guardian account is deleted only
@@ -1338,19 +1339,24 @@ made it likely that reliable delivery would take time to establish:
   deleted.
 
   > There needs to be a mechanism for a sysadmin to delete a user account. — NAF, 2026-09-13
-- **FR-92 [Must]** An **audit log**, append-only and readable by sysadmins, records: access
-  level and club position changes, category changes, license overrides, agreement approvals,
-  revocations and declines, computer password sets and every view, invitations
-  issued, applications completed, accounts set to No access, announcements sent, sign-ups moved or removed by
-  someone other than the member, configuration changes, and sign-ins by sysadmins. Each entry
+- **FR-92 [Must]** An **audit log**, append-only and readable in the Django admin at the
+  sysadmin level, records: changes to the groups an account is in and to what a group may do,
+  club position and category changes, license overrides, agreement approvals, revocations and
+  declines, computer password sets and every view, invitations issued, applications completed,
+  accounts taken out of every group, members archived and restored, the level a session acts at
+  raised or lowered, announcements sent, sign-ups moved or removed by someone other than the
+  member, configuration changes, and every opening of the archive. Each entry
   carries actor, subject, action, timestamp, and the before and after values where they exist.
 - **FR-93 [Should]** Scheduled jobs (FCC sync, reminders, warnings, expiry notices, digest)
   report their last run and outcome on a status page for sysadmins, and a job that has not run
   on schedule raises an alert. A reminder system that silently stops is worse than none. The
   same page shows email delivery health: the delivery mode (FR-105), messages sent and failed
   in the last 24 hours, and the last successful delivery time.
-- **FR-94 [Must]** Sysadmins can impersonate a member's *view* (read-only) to reproduce what
-  the member reports seeing. Impersonation is audited and never permits actions.
+- **FR-94 [Must]** An account that may view the site as another member, read-only, can do so to
+  reproduce what the member reports seeing. No configured group holds that capability, so it is a
+  sysadmin's, and a sysadmin acting at a lower level cannot until they raise it (§2.1). Another
+  sysadmin's account cannot be viewed this way. Impersonation is audited and never permits
+  actions.
 
 ### 3.11 Deferred candidates (from the requirements skeleton; not in v1 unless promoted)
 
@@ -1638,8 +1644,9 @@ New questions are appended with the next number; a resolved question is never re
 
 **Follow-ups that are not questions for the advisor:**
 
-- Q8: find out whether the University sets a retention period for signed access agreements; until
-  then the default is 3 years after expiry.
+- Q8: find out whether the University sets a retention period for signed access agreements. Since
+  2026-09-17 the club keeps them indefinitely (§4.3), so the question is whether the University
+  requires anything to be destroyed rather than how long to keep it.
 - Q11: the letter to WA7BNM (advisor); the retrieval prototype (assistant), in the application
   repository, ahead of the stack decision and without committing to one.
 - ~~FR-63: the Part 97 section numbers cited (§97.7, §97.105, §97.115) are from memory and must be

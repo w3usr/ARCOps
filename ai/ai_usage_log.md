@@ -1455,3 +1455,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 226 tests pass; ruff and both project
   checks clean; `makemigrations --check` reports no changes.
 - **Git Hash**: 7adef4d
+
+## [2026-09-17 16:45 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The requirements reconciled against the code after the day's three
+  changes. Four reviewers read the acceptance plan and both requirement documents against the
+  tree and reported 41 discrepancies; the requirements' side is applied here. What changed:
+  deletion and closure no longer speak of a retention clock, signed agreements are kept
+  indefinitely, the field table carries one Addresses row instead of two email fields and a
+  delivery preference, the audit log's list names the actions the code writes, approving an
+  agreement and converting a minor follow capabilities rather than a club position, the sign-in
+  identifier is the account's key, the data-model row names what the model holds, and the
+  uploads requirement admits the branding image the settings page has accepted since Phase 6.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-8's field table, FR-11, FR-25, FR-70,
+  FR-89, FR-92, FR-94, FR-107, FR-109, FR-118, the §2.5 matrix, Q8),
+  docs/TECHNICAL_REQUIREMENTS.md (TR-15, TR-25, TR-26).
+- **Nature of Contribution**: Review by four subagents, applied and checked by the assistant.
+- **Human Review Status**: Pending the advisor's look. 228 tests pass.
+- **Git Hash**: pending

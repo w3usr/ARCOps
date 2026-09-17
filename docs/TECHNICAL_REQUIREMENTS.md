@@ -193,7 +193,7 @@ has a decade of documentation.
 ## 4. Security decisions
 
 - **TR-15 Authentication: `django-allauth` (MIT) for accounts and sign-in, with Argon2 password
-  hashing**; email address as the login identifier; Django's password validators plus a
+  hashing**; the account's identifier is `public_id`, a key nobody types, and a person signs in with any address they have confirmed; Django's password validators plus a
   breached-password check against the Have I Been Pwned range API (k-anonymity: five characters
   of the hash leave the server, the password never does); one-time temporary passwords (FR-7)
   and single-use signed tokens (FR-100) built on Django's signing with expiry. *Why allauth:* it
@@ -267,9 +267,10 @@ has a decade of documentation.
 - **TR-24 Dependencies**: pinned in `requirements.txt` from a `requirements.in`; Dependabot
   enabled on the public repository; a published advisory in a dependency is a task, and the
   monthly `deploy` picks up patch releases. Serves: §5.7, `.claude/rules/web-development.md`.
-- **TR-25 Uploads**: the application accepts no file uploads in v1 (agreement PDFs are
-  generated, not uploaded), which removes a class of risk; if images in rich text are ever
-  wanted (FR-115 leaves them out) they arrive with their own requirement.
+- **TR-25 Uploads**: the only upload the application accepts is a branding image on the club
+  settings page, restricted to PNG, JPEG, SVG, WebP or ICO at 2 MB at most and stored under
+  `MEDIA_ROOT/branding/`. Agreement PDFs are generated rather than uploaded. If images in rich
+  text are ever wanted (FR-115 leaves them out) they arrive with their own requirement.
 
 ---
 
@@ -280,14 +281,15 @@ has a decade of documentation.
 
   | App | Tables (principal columns) | FRs |
   |---|---|---|
-  | `accounts` | `User` (ULS and preferred names, phone, category, position, under-18 flag, student level, graduation term), `Address` (one row per address, its kind, confirmation, delivery switch), `Guardianship` (guardian ↔ minor, history), `Invitation` (token, category, state, issuer), `CallsignHistory`, `NotificationPreference`, `PushSubscription` | FR-1 to FR-13, FR-71, FR-102, FR-109, FR-112 |
+  | `accounts` | `User` (`public_id` as the identity, ULS and preferred names, phone, category, position, under-18 flag, student level, graduation term, closure, archive and legal-hold fields), `Address` (one row per address, its kind, confirmation, delivery switch), `Guardianship` (guardian ↔ minor, history), `Invitation` (token, category, state, issuer), `EntryLink` (label, kind, domain, expiry, cap, landing page), `CallsignHistory`, `NotificationPreference`, `PushSubscription` | FR-1 to FR-13, FR-71, FR-102, FR-109, FR-112, FR-119 to FR-121, FR-125 |
   | `credentials` | `CredentialType` (config), `LicenseRecord` (class, status, dates, source, retrieved, override), `AgreementTemplate` (type, audience, version, HTML, hash), `SignedAgreement` (signer, version hash, signature block, PDF path, state, expiry, approver), `SharedSecret` (the computer password, Fernet ciphertext, effective date) | FR-14 to FR-35 |
   | `events` | `Event` (type, title, description, display zone, state, contest fields, calendar ref), `OperatingPeriod`, `OperatingLimit`, `Location`, `Position`, `Slot` (kind, times, closed/cancelled), `RoleCapacity`, `EligibilityRule`, `Opening`, `SignUp` (person, role, note, confirmed, checked-in, control-operator flag), `ResponsibleAdult` (per minor sign-up), `WaitlistEntry`, `Captaincy` | FR-36 to FR-68, FR-110, FR-111, FR-113 |
   | `comms` | `MessageTemplate`, `Outbox` (recipient, channel, category, body, state, sent/failed), `Announcement` (sender, audience definition, recipients) | FR-69 to FR-82, FR-105, FR-106 |
   | `ops` | `ClubSetting` (key/value config), `AuditLog`, `JobRun` | FR-89 to FR-94, §1.5 |
 
-  Every table has `created`/`updated` timestamps; personal fields are marked in the model so
-  the retention and deletion jobs (FR-11, FR-118, §4.3) find them without a hand-kept list.
+  Every table has `created`/`updated` timestamps. Retention no longer touches a member's own
+  record (FR-125), and deletion (FR-118) clears the fields named in one place,
+  `apps/accounts/services.py`, which is the list to update when a personal field is added.
 - **TR-27 Migrations**: Django migrations, committed, run by `deploy.sh` before the service
   restarts; a migration that drops or rewrites personal data is reviewed by a second person.
 - **TR-42 Permissions**: capabilities are Django permissions on a table-less model in the `ops`
