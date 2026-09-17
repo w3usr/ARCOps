@@ -108,9 +108,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     callsign = models.CharField(max_length=12, blank=True, db_index=True)
     cell_phone = models.CharField(max_length=30, blank=True)
     push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default
-    # FR-11, FR-118, §4.3: closure and deletion. A closed account is No access with the retention
-    # clock running; a deleted one is anonymised in place so past rosters and counts stay right.
+    # Closure, archiving, and deletion (FR-11, FR-118, FR-125, §4.3). A closed account is No
+    # access; an archived one is the club's record of a former member, kept whole and read by the
+    # faculty advisor and the sysadmins; a deleted one is anonymised in place so past rosters and
+    # counts stay right.
     closure_requested_at = models.DateTimeField(null=True, blank=True)
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_reason = models.CharField(max_length=200, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     legal_hold = models.BooleanField(default=False)  # TR-28: retention never touches this account
     category = models.CharField(max_length=30, blank=True)  # key from club config (FR-8)
@@ -233,6 +237,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def full_name_lettered(self) -> str:
         call = f" {self.callsign}" if self.callsign else ""
         return f"{self.full_name}{call} ({self.license_letter})"
+
+    @property
+    def is_archived(self) -> bool:
+        """A former member, kept as club record. They cannot sign in, they are out of the
+        directory and every audience, and the archive is where they are read."""
+        return self.archived_at is not None
 
     @property
     def has_confirmed_address(self) -> bool:

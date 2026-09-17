@@ -59,6 +59,7 @@
     <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
     <ul class="navlist" aria-labelledby="nav-advisor">
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
+      <li><a href="{% url 'archive' %}"{% nav_active 'archive' %}>{% icon 'archive' %}<span>Archive</span></a></li>
     </ul>
     {% endif %}
     {% if user.is_sysadmin %}

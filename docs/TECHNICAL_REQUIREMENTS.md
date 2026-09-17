@@ -290,9 +290,10 @@ has a decade of documentation.
   the retention and deletion jobs (FR-11, FR-118, §4.3) find them without a hand-kept list.
 - **TR-27 Migrations**: Django migrations, committed, run by `deploy.sh` before the service
   restarts; a migration that drops or rewrites personal data is reviewed by a second person.
-- **TR-28 Retention**: `retention:apply` (TR-11) implements §4.3 exactly: it anonymises and
-  deletes on schedule, logs what it did to the audit log by count, and never touches a row
-  under a legal hold flag (added for the case where a record must be kept).
+- **TR-28 Retention**: `retention:apply` (TR-11) implements §4.3 exactly: it deletes on schedule
+  what is not a member's own record, logs what it did to the audit log by count, and never
+  touches a row under a legal hold flag (added for the case where a record must be kept). A
+  member's own record is never on that list: former members are archived and kept (FR-125).
 - **TR-29 Sizing**: with 100 members, 30 events a year, and 2,000 sign-ups, the database is
   under 50 MB and the PDFs under 200 MB after five years (estimate). A daily backup is a few
   megabytes encrypted. Disk is not a constraint for a decade.

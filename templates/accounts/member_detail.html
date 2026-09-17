@@ -94,14 +94,27 @@
     </form>
   </details>
   {% endif %}
-  {% if user.is_sysadmin and not is_self %}
+  {% if user.is_advisor and not is_self %}
+  <h2>Membership</h2>
+  {% if member.is_archived %}
+  <p class="msg">In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Bring them back as a member</button></form>
+  {% else %}
+  <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="archive">
+    <div class="field"><label for="ar-reason">Why they are leaving (kept with the record)</label><input id="ar-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"></div>
+    <div><button type="submit" class="secondary">Archive this member</button></div>
+  </form>
+  <p class="helptext">Archiving keeps everything and ends access: they leave the directory and every audience, and their record is read in the <a href="{% url 'archive' %}">archive</a> by a faculty advisor or a sysadmin. An advisor can bring them back.</p>
+  {% endif %}
+  {% endif %}
+  {% if user.is_sysadmin and not is_self and not member.is_archived %}
   <h2>Access</h2>
   {% if member.access_level != 'none' %}
   <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="close">
-    <div class="field"><label for="reason">Reason (kept in the audit log)</label><input id="reason" name="reason" placeholder="graduated, lapsed, suspended…"></div>
+    <div class="field"><label for="reason">Reason (kept in the audit log)</label><input id="reason" name="reason" placeholder="suspended pending a decision…"></div>
     <div><button type="submit" class="danger">Remove access</button></div>
   </form>
-  <p class="helptext">The account and its history stay; sign-in is refused. Deletion is a separate, later step.</p>
+  <p class="helptext">For a member who stays on the books with sign-in refused, a suspension rather than a departure. Archiving is what a member who has left gets.</p>
   {% else %}
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Restore access as a member</button></form>
   {% endif %}

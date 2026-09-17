@@ -112,10 +112,9 @@ defaults:
   health_overview_weeks: 6                     # FR-68; the Upcoming health page's horizon
   # FR-77: the headings a new event's Know-before-you-go starts with (editor HTML). Optional.
   # kbyg_outline_html: "<h2>Where and when</h2><p></p><h2>What to bring</h2><p></p>"
-  # Retention (§4.3, TR-28), applied daily by retention:apply. Days.
-  retention_no_access_days: 730                # contact details of a No-access profile
+  # Retention, applied daily by retention:apply. Days. A member's own record is not on this
+  # list: former members are archived and kept, not deleted.
   retention_responsible_adult_days: 365        # adults named for a minor's slot, after the event
-  retention_agreement_days: 1095               # signed agreements and PDFs, after expiry
   retention_message_days: 365                  # message bodies (the fact and count stay)
   retention_invitation_days: 90                # invitations never completed, after expiry
 
@@ -127,6 +126,6 @@ privacy_notice_html: |
   <h2>Who sees what</h2>
   <p>Other members see your first name, callsign, and licence class on rosters and in the directory. Event captains, club officers, and the people who run this site see your full name and contact details. Nothing here is visible without signing in.</p>
   <h2>How long it is kept</h2>
-  <p>Contact details are removed two years after an account loses access; signed agreements are kept three years after they expire; the adults named to accompany a minor are kept a year after the event; message bodies are kept a year. The record of who did what on this site is kept indefinitely.</p>
+  <p>When you leave, your record is archived rather than deleted: your name, callsign, contact details, and what you took part in are kept as the club's record of its members, and only the faculty advisor and the people who administer this site can read the archive. Some things are still removed on a schedule: the adults named to accompany a member under 18 are kept a year after the event, message bodies are kept a year, and invitations nobody used are removed three months after they expire. The record of who did what on this site is kept indefinitely.</p>
   <h2>Closing your account</h2>
-  <p>Ask from your profile page, or ask a club officer. Access ends at once and the periods above then apply.</p>
+  <p>Ask from your profile page, or ask a club officer. Access ends at once and your record is archived. If you want it deleted outright rather than archived, say so: an administrator can do that, and what survives is only what the club needs to keep its own past rosters and counts correct.</p>

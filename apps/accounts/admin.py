@@ -49,7 +49,7 @@ class UserAdmin(DjangoUserAdmin):
         "access_level",
         "under_18",
     )
-    list_filter = ("access_level", "category", "under_18")
+    list_filter = ("access_level", "category", "under_18", "archived_at")
     search_fields = ("addresses__address", "first_name", "last_name", "callsign")
     fieldsets = (
         (None, {"fields": ("public_id", "password")}),
@@ -71,6 +71,14 @@ class UserAdmin(DjangoUserAdmin):
         ),
         ("Club", {"fields": ("callsign", "category", "club_position", "access_level", "under_18")}),
         ("Student", {"fields": ("student_level", "graduation_semester", "graduation_year")}),
+        (
+            "Leaving",
+            {
+                "fields": ("archived_at", "archived_reason", "closure_requested_at", "legal_hold"),
+                "description": "A former member is archived rather than deleted; the archive is "
+                "read by a faculty advisor or a sysadmin at /members/archive/.",
+            },
+        ),
         (
             "Account",
             {

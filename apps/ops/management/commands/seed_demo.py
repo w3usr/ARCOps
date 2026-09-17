@@ -73,7 +73,8 @@ class Command(BaseCommand):
                 AccessLevel.MEMBER,
                 "student",
             ),
-            ("dee@example.org", "Dee", "Example", "", "", AccessLevel.MEMBER, "faculty"),
+            # the faculty advisor: approves access agreements and reads the archive (FR-125)
+            ("dee@example.org", "Dee", "Example", "", "", AccessLevel.ADVISOR, "faculty"),
             (
                 "eli@example.org",
                 "Eli",
@@ -213,6 +214,22 @@ class Command(BaseCommand):
                 signup=su, name="Pat Example", phone="555-0100", email="pat@example.org", member=pat
             )
             Waitlist.objects.get_or_create(slot=op_slots[0], user=users["Dee"], role="operator")
+        # someone in the archive, so the page has a row to read (FR-125)
+        gone, gone_new = account(
+            "gus@example.org",
+            first_name="Gus",
+            last_name="Example",
+            callsign="N0OLD",
+            category="student",
+            access_level=AccessLevel.MEMBER,
+        )
+        if gone_new:
+            gone.set_password("demo-password-please-change")
+            gone.save()
+            from apps.accounts.services import archive_member
+
+            archive_member(users["Ada"], gone, "graduated in May")
+
         if not EntryLink.objects.exists():
             create_link(
                 users["Ada"],

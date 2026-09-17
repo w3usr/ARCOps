@@ -80,21 +80,24 @@ def pages_for(role: str) -> list[str]:
     if role == "officer":
         return common + officer
     tpl = MessageTemplate.objects.order_by("pk").first()
+    advisor = ["/credentials/approvals/", "/members/archive/"]
+    if role == "advisor":
+        return common + officer + advisor
     sysadmin = [
         "/ops/status/",
         "/ops/settings/",
         "/ops/templates/",
         f"/ops/templates/{tpl.key}/" if tpl else "/ops/templates/",
         "/credentials/computer-password/manage/",
-        "/credentials/approvals/",
     ]
-    return common + officer + sysadmin
+    return common + officer + advisor + sysadmin
 
 
 ACCOUNTS = {
     "signed-out": None,
     "member": "cy@example.org",
     "officer": "ben@example.org",
+    "advisor": "dee@example.org",
     "sysadmin": "ada@example.org",
     "guardian": "pat@example.org",
     "minor": "kim@example.org",

@@ -153,15 +153,14 @@ def test_deletion_guards():
         delete_account(s, s, "oops")  # last sysadmin
 
 
-def test_retention_job_applies_schedule_and_respects_legal_hold():
+def test_retention_keeps_member_records_and_agreements_and_sweeps_only_the_rest():
+    """The advisor, 2026-09-17: "I don't really like the automatic deletion. Instead, can we have
+    a method to archive members?" So a former member's profile and their signed agreements are
+    kept; what still ages out is what is not a member's record."""
     now = timezone.now()
     old = _user("old@example.org", AccessLevel.NONE, cell_phone="555")
-    held = _user("held@example.org", AccessLevel.NONE, cell_phone="555", legal_hold=True)
     AuditLog.objects.create(
         action="access_level.changed", subject_type="User", subject_id=str(old.pk)
-    )
-    AuditLog.objects.create(
-        action="access_level.changed", subject_type="User", subject_id=str(held.pk)
     )
     AuditLog.objects.filter(action="access_level.changed").update(at=now - dt.timedelta(days=800))
     Invitation.objects.create(
@@ -175,21 +174,14 @@ def test_retention_job_applies_schedule_and_respects_legal_hold():
         signer_name="Old",
         expires_on=timezone.localdate() - dt.timedelta(days=4 * 365),
     )
-    SignedAgreement.objects.create(
-        user=held,
-        template=tpl,
-        credential=tpl.credential,
-        signer_name="Held",
-        expires_on=timezone.localdate() - dt.timedelta(days=4 * 365),
-    )
     counts = apply(now)
     old.refresh_from_db()
-    held.refresh_from_db()
-    from allauth.account.models import EmailAddress
 
-    assert counts["profiles_contact_removed"] == 1 and old.cell_phone == ""
-    assert not old.addresses.exists() and not EmailAddress.objects.filter(user=old).exists()
-    assert held.cell_phone == "555"
+    # kept, however long ago the account lost access
+    assert old.cell_phone == "555" and old.addresses.exists()
+    assert SignedAgreement.objects.filter(user=old).count() == 1
+    assert "profiles_contact_removed" not in counts and "agreements_purged" not in counts
+
+    # still swept: nothing here is a member's own record
     assert counts["invitations_deleted"] == 1
-    assert counts["agreements_purged"] == 1 and SignedAgreement.objects.filter(user=held).exists()
     assert AuditLog.objects.filter(action="retention.applied").exists()

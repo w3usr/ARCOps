@@ -1377,3 +1377,27 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 192 tests pass; ruff and both project
   checks clean; `makemigrations --check` reports no changes.
 - **Git Hash**: 3ba45ec
+
+## [2026-09-17 11:35 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The archive of former members, replacing the automatic deletion the
+  advisor said he did not want. A faculty advisor or a sysadmin archives someone who has left,
+  with a reason; the record is kept whole and indefinitely, the account stops authenticating and
+  leaves the directory and every audience, and the archive page is readable only at advisor level
+  and above, with each opening written to the audit log. An advisor restores someone, and there
+  is nothing to restore but the access, because nothing ages out while they are in it. The
+  retention job no longer strips a former member's contact details or purges expired agreements;
+  what still runs is what is not a member's own record. The privacy notice, which promised those
+  deletions to members, says what happens now.
+- **Sections/Files Affected**: apps/accounts/{models,services,views_members,admin}.py,
+  apps/accounts/migrations/0011_archive_former_members.py, apps/ops/retention.py,
+  apps/ops/views_settings.py, apps/ops/templatetags/nav.py, apps/ops/management/commands/
+  seed_demo.py, config/{urls.py,club.example.yaml}, templates/accounts/{archive.html (new),
+  member_detail.html}, templates/base.html, docs/{REQUIREMENTS.md (FR-125, §4.3),
+  TECHNICAL_REQUIREMENTS.md (TR-28), JOBS.md}, tools/a11y/test_axe.py,
+  apps/accounts/tests/{test_archive.py (new), test_phase6.py}.
+- **Nature of Contribution**: Design and code generation from the advisor's decision, with the
+  privacy consequences named rather than assumed.
+- **Human Review Status**: Pending the advisor's look. 202 tests pass; ruff and both project
+  checks clean.
+- **Git Hash**: pending

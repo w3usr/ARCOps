@@ -281,6 +281,68 @@ def decide_uls_name(user: User, accept: bool) -> str:
     return "callsign rejected"
 
 
+# ---------------------------------------- the archive of former members (FR-125, §4.3) ---
+
+
+class ArchiveRefused(Exception):
+    """Some accounts cannot leave active service while something still depends on them."""
+
+
+def archive_member(actor: User, user: User, reason: str = "") -> None:
+    """Put a former member into the archive: their record is kept whole and indefinitely, and it
+    is read by a faculty advisor or a sysadmin.
+
+    This is what the club does instead of deleting people. The advisor, 2026-09-17: "I don't
+    really like the automatic deletion. Instead, can we have a method to archive members? Only
+    faculty advisors and above can view the archive." Nothing is erased here: the name, callsign,
+    addresses, participation, and signed agreements all stay. What changes is that the account
+    stops signing in, leaves the directory and every audience, and is read in one place.
+    """
+    if user.is_archived:
+        return
+    if user.wards.filter(active=True).exists():
+        raise ArchiveRefused(
+            "a guardian is archived once every linked minor has been converted, re-linked, or archived"
+        )
+    if user.is_sysadmin and not _another_sysadmin_exists(user):
+        raise ArchiveRefused("the last remaining sysadmin account cannot be archived")
+    user.archived_at = timezone.now()
+    user.archived_reason = (reason or "").strip()[:200]
+    # The password stops working too. No access already refuses every page, but an account
+    # nobody is a member of should not authenticate at all.
+    user.is_active = False
+    user.save(update_fields=["archived_at", "archived_reason", "is_active"])
+    set_access_level(actor, user, AccessLevel.NONE, reason or "archived")
+    record(actor, "member.archived", user, after={"reason": user.archived_reason})
+
+
+def restore_member(actor: User, user: User, level: str = AccessLevel.MEMBER) -> None:
+    """Take a former member out of the archive and give them access again. Nothing was lost while
+    they were in it, so they come back as themselves."""
+    if not user.is_archived:
+        return
+    before = {"archived_at": user.archived_at.isoformat(), "reason": user.archived_reason}
+    user.archived_at = None
+    user.archived_reason = ""
+    user.is_active = True
+    user.save(update_fields=["archived_at", "archived_reason", "is_active"])
+    set_access_level(actor, user, level, "restored from the archive")
+    record(actor, "member.restored", user, before=before, after={"level": level})
+
+
+def _another_sysadmin_exists(user: User) -> bool:
+    return (
+        User.objects.filter(access_level=AccessLevel.SYSADMIN, is_active=True)
+        .exclude(pk=user.pk)
+        .exists()
+    )
+
+
+def archived_members():
+    """Everyone in the archive, most recently archived first."""
+    return User.objects.filter(archived_at__isnull=False).order_by("-archived_at")
+
+
 # ------------------------------------------------------ closure and deletion (FR-11, FR-118) ---
 
 
@@ -313,11 +375,7 @@ def deletion_effects(user: User) -> dict:
         "past_signups": SignUp.objects.filter(user=user, slot__end__lt=now).count(),
         "agreements": SignedAgreement.objects.filter(user=user).count(),
         "wards": user.wards.filter(active=True).count() if hasattr(user, "wards") else 0,
-        "is_last_sysadmin": user.is_sysadmin
-        and User.objects.filter(access_level=AccessLevel.SYSADMIN, is_active=True)
-        .exclude(pk=user.pk)
-        .count()
-        == 0,
+        "is_last_sysadmin": user.is_sysadmin and not _another_sysadmin_exists(user),
     }
 
 

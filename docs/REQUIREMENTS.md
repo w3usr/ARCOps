@@ -898,6 +898,21 @@ Verbatim:
   > let's just record event check-in time and report that to the professor. By default, student
   > will be given full credit for the slot. — NAF, 2026-09-15
 
+- **FR-125 [Must] Archive a former member.** A faculty advisor or a sysadmin archives a member
+  who has left, with a short reason kept beside the record. Archiving keeps everything: name,
+  callsign, addresses, phone, participation, signed agreements. It ends access (the account is
+  set to No access and stops authenticating), takes the person out of the member directory and
+  out of every message audience, and puts their record in the **archive**, a page only a faculty
+  advisor or a sysadmin can open. Opening the archive is written to the audit log, because it
+  holds contact details for people who are no longer around to be asked. An advisor restores an
+  archived member, and the record comes back untouched, because nothing ages out while they are
+  in it. Archiving is refused for a guardian with a minor still linked, for the last remaining
+  sysadmin, and for the archiver's own account. This is what the club does instead of deleting
+  people; FR-118's deliberate deletion remains for the case where a record must actually go.
+
+  > I don't really like the automatic deletion. Instead, can we have a method to archive
+  > members? Only faculty advisors and above can view the archive. — NAF, 2026-09-17
+
 - **FR-114 [Could]** A browser notification (FR-112) 30 minutes before each slot the member
   holds, opening the check-in.
 - **FR-110 [Must]** A sign-up carries an optional free-text **note to the captains** ("I will
@@ -1349,17 +1364,31 @@ following are binding:
 - The IP address recorded with a signature (FR-22) exists to make the signature evidentially
   useful and is shown only on the rendered agreement.
 
-### 4.3 Retention (proposed; the advisor's call, Q8)
+### 4.3 Retention
+
+Members are **archived, not deleted** (FR-125). The advisor, 2026-09-17: *"I don't really like
+the automatic deletion. Instead, can we have a method to archive members? Only faculty advisors
+and above can view the archive."* A former member's record is kept whole and indefinitely, and it
+is read in the archive by a faculty advisor or a sysadmin. This replaces the rule that stripped a
+former member's contact details two years after the account lost access, and the rule that purged
+signed agreements three years after they expired: who was cleared for the station, and when, is
+the club's answer to the University years later.
+
+What still ages out is what is not a member's own record:
 
 | Data | Retain | Then |
 |---|---|---|
-| Profile of a member set to No access | 2 years from the change | Delete contact details and phone; keep name, callsign, and participation history as club record, or delete entirely on request |
-| Guardian records | Until the minor's account is converted (FR-109) or closed | Delete contact details; keep the link in history |
-| Responsible adults named for a slot | 1 year after the event | Delete |
-| Signed agreements and approval history | 3 years after expiry (proposed default, configurable). The University's own period for the paper equivalents is not known to the advisor (Q8); if one is found, it replaces this | Delete |
+| A member's profile, addresses, phone, callsign, and participation | Indefinitely | Archived when they leave; deleted only by a sysadmin's deliberate act (FR-118) |
+| Signed agreements and approval history | Indefinitely | Nothing |
 | Audit log | Indefinitely | Nothing; it is small and it is the record |
+| Relationship note on an ended guardian link | Until the minor's account is converted (FR-109) or closed | Delete the note; keep the link in history |
+| Responsible adults named for a slot | 1 year after the event | Delete. They are often people with no account here |
 | Messages sent | 1 year | Delete bodies; keep the fact and recipient count |
 | Invitations never completed | 90 days after expiry | Delete |
+
+A member may still ask for their account to be closed (FR-11) and a sysadmin may still delete one
+outright (FR-118); neither is automatic. The legal-hold flag (TR-28) stays: it exempts an account
+from the sweeps above, which now matter only for the four rows that still run.
 
 ### 4.4 Storage, backup, and recovery
 

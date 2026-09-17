@@ -56,9 +56,7 @@ GROUPS = [
     (
         "Retention (days)",
         [
-            "defaults.retention_no_access_days",
             "defaults.retention_responsible_adult_days",
-            "defaults.retention_agreement_days",
             "defaults.retention_message_days",
             "defaults.retention_invitation_days",
         ],

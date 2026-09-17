@@ -20,43 +20,17 @@ def _days(key: str, default_days: int) -> dt.timedelta:
 
 
 def apply(now=None) -> dict:
-    from apps.accounts.models import AccessLevel, Guardianship, Invitation, User
+    from apps.accounts.models import Guardianship, Invitation
     from apps.comms.models import Outbox
-    from apps.credentials.models import SignedAgreement
     from apps.events.models import ResponsibleAdult
 
     now = now or timezone.now()
-    today = now.date()
     counts = {}
 
-    # Profiles at No access for the period: contact details go; name, callsign, and
-    # participation history stay as club record. The audit row for the access change dates it.
-    from .models import AuditLog
-
-    cutoff = now - _days("defaults.retention_no_access_days", 730)
-    n = 0
-    for u in User.objects.filter(
-        access_level=AccessLevel.NONE, legal_hold=False, deleted_at__isnull=True
-    ):
-        if not (u.addresses.exists() or u.cell_phone):
-            continue
-        changed = (
-            AuditLog.objects.filter(
-                action="access_level.changed", subject_type="User", subject_id=str(u.pk)
-            )
-            .order_by("-at")
-            .first()
-        )
-        since = changed.at if changed else u.date_joined
-        if since <= cutoff:
-            from apps.accounts.addresses import mirror
-
-            u.addresses.all().delete()
-            mirror(u)  # and with the rows go the sign-in library's copies of them
-            u.cell_phone = ""
-            u.save(update_fields=["cell_phone"])
-            n += 1
-    counts["profiles_contact_removed"] = n
+    # A former member's record is kept whole, and read in the archive (FR-125). It used to be
+    # stripped of its contact details two years after the account lost access. The advisor,
+    # 2026-09-17: "I don't really like the automatic deletion. Instead, can we have a method to
+    # archive members?" So nothing here touches a member's profile any more.
 
     # Guardian records: contact details go once the minor is converted or closed; the link stays.
     n = 0
@@ -77,17 +51,8 @@ def apply(now=None) -> dict:
     counts["responsible_adults_deleted"] = qs.count()
     qs.delete()
 
-    # Signed agreements and their PDFs: the configured years after expiry.
-    cutoff_date = today - _days("defaults.retention_agreement_days", 3 * 365)
-    n = 0
-    for a in SignedAgreement.objects.filter(expires_on__lt=cutoff_date).exclude(
-        user__legal_hold=True
-    ):
-        if a.pdf:
-            a.pdf.delete(save=False)
-        a.delete()
-        n += 1
-    counts["agreements_purged"] = n
+    # Signed agreements and their PDFs are kept indefinitely, on the same decision: who was
+    # cleared for the station, and when, is the club's answer to the University years later.
 
     # Messages: bodies go after a year; the fact and recipient count stay.
     cutoff = now - _days("defaults.retention_message_days", 365)

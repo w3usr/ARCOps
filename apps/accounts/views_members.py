@@ -45,11 +45,14 @@ def _standing(user) -> dict:
 def members(request):
     full = request.user.is_officer
     q = request.GET.get("q", "").strip()
+    # The directory is who the club has now. A former member is in the archive (FR-125), which
+    # is read by a faculty advisor or a sysadmin, so they are out of this list for everyone.
+    current = User.objects.filter(archived_at__isnull=True)
     users = (
         # the directory shows every address an officer may write to, so they come in one query
-        User.objects.select_related("joined_via", "license").prefetch_related("addresses")
+        current.select_related("joined_via", "license").prefetch_related("addresses")
         if full
-        else User.objects.exclude(
+        else current.exclude(
             access_level__in=[AccessLevel.NONE, AccessLevel.PROVISIONAL]
         ).select_related("license")
     )
@@ -76,12 +79,41 @@ def members(request):
 
 
 @login_required
+def archive(request):
+    """The club's record of its former members (FR-125). Only a faculty advisor or a sysadmin
+    reads it: it holds contact details and history for people who have left, which is the most
+    that anyone here holds about someone who is no longer around to ask."""
+    if not request.user.is_advisor:
+        raise Http404
+    from .services import archived_members
+
+    q = request.GET.get("q", "").strip()
+    people = archived_members().select_related("license").prefetch_related("addresses")
+    if q:
+        people = people.filter(
+            Q(first_name__icontains=q)
+            | Q(last_name__icontains=q)
+            | Q(preferred_name__icontains=q)
+            | Q(callsign__icontains=q)
+            | Q(addresses__address__icontains=q)
+            | Q(archived_reason__icontains=q)
+        ).distinct()
+    record(request.user, "archive.viewed", None, after={"search": q} if q else None)
+    cats = {c["key"]: c["label"] for c in (setting("member_categories", []) or [])}
+    return render(
+        request, "accounts/archive.html", {"people": people, "q": q, "categories": cats}
+    )
+
+
+@login_required
 @require_http_methods(["GET", "POST"])
 def member_detail(request, pk):
     if not request.user.is_officer:
         raise Http404
     member = get_object_or_404(User, pk=pk)
     actor = request.user
+    if member.is_archived and not actor.is_advisor:
+        raise Http404  # the archive is the advisor's to read, and so is a page within it
     temp_password = None
     form = AccountForm(instance=member, actor=actor)
 
@@ -241,6 +273,29 @@ def member_detail(request, pk):
                 return redirect("member_detail", pk=member.pk)
         elif action == "reopen" and actor.is_sysadmin:
             set_access_level(actor, member, AccessLevel.MEMBER, "reopened")
+            messages.success(request, f"{member.short_name} is a member again.")
+            return redirect("member_detail", pk=member.pk)
+        elif action == "archive" and actor.is_advisor:  # FR-125
+            from .services import ArchiveRefused, archive_member
+
+            if member == actor:
+                messages.error(request, "You cannot archive your own account.")
+                return redirect("member_detail", pk=member.pk)
+            try:
+                archive_member(actor, member, request.POST.get("reason", ""))
+            except ArchiveRefused as exc:
+                messages.error(request, f"Not archived: {exc}.")
+            else:
+                messages.success(
+                    request,
+                    f"{member.short_name} is in the archive. Nothing of theirs was deleted, and "
+                    "an advisor can bring them back.",
+                )
+            return redirect("member_detail", pk=member.pk)
+        elif action == "restore" and actor.is_advisor:
+            from .services import restore_member
+
+            restore_member(actor, member)
             messages.success(request, f"{member.short_name} is a member again.")
             return redirect("member_detail", pk=member.pk)
         elif action == "admit" and member.is_provisional:  # FR-121: any officer reviews
