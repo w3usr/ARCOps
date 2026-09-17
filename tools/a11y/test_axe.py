@@ -52,6 +52,7 @@ def pages_for(role: str) -> list[str]:
         f"/events/{ev.pk}/slot/{slot.pk}/",
         "/credentials/agreements/",
         "/credentials/computer-password/",
+        "/me/level/",
         "/privacy/",
     ]
     if role == "minor":
@@ -105,13 +106,25 @@ ACCOUNTS = {
 }
 
 
-def sign_in(page, base, email):
+def sign_in(page, base, email, raise_level: bool = False):
     page.goto(f"{base}/accounts/login/")
     page.fill("input[name=login]", email)
     page.fill("input[name=password]", PASSWORD)
     page.click("form button[type=submit], form input[type=submit]")
     page.wait_for_load_state("networkidle")
     assert "/accounts/login" not in page.url, f"sign-in failed for {email}"
+    if raise_level:
+        # A sysadmin signs in acting at the club's everyday level, so the sysadmin pages are not
+        # theirs until they step up (apps/accounts/acting.py). Stepping up is itself a page worth
+        # checking, and doing it here is the only way the pages behind it can be.
+        page.goto(f"{base}/me/level/")
+        page.check("#v-sysadmin")
+        page.fill("#pw", PASSWORD)
+        # By name, because "form button[type=submit]" also matches Sign out in the sidebar, and
+        # the first match at phone width is off screen inside the collapsed menu.
+        page.get_by_role("button", name="Act at this level").click()
+        page.wait_for_load_state("networkidle")
+        assert "/accounts/login" not in page.url, "the step-up signed us out"
 
 
 def audit(page) -> list[dict]:
@@ -154,7 +167,7 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, role):
             ctx = browser.new_context(viewport=viewport)
             page = ctx.new_page()
             if email:
-                sign_in(page, base, email)
+                sign_in(page, base, email, raise_level=role == "sysadmin")
             for url in urls:
                 r = page.goto(f"{base}{url}")
                 # A refusal page is still a page someone reads (the computer password for a
