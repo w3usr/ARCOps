@@ -1534,4 +1534,4 @@ carries the actual running model ID.
   returned earlier in the day.
 - **Human Review Status**: Pending the advisor's look. 241 tests pass, ruff clean, the axe sweep
   passes for all eight roles at 1280px and 390px, and the four repository guards pass.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: f79ccee
