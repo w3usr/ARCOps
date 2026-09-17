@@ -1401,3 +1401,18 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 202 tests pass; ruff and both project
   checks clean.
 - **Git Hash**: 5738c6a
+
+## [2026-09-17 11:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The advisor asked whether capabilities should stop deriving from the club
+  position entirely. Reading the tree for the answer found two rules still on the old flag: the
+  "who to call" line on a slot reminder, which had gone empty when the flag left the
+  configuration an hour earlier and would have sent every reminder without the advisor's contact
+  details, and the access-rosters page, which offered a Revoke control to anyone holding any
+  position while the action behind it required an approver. Both follow the access level now,
+  and a test reads the tree for the shape of either mistake returning.
+- **Sections/Files Affected**: apps/events/services/notify.py (advisors),
+  templates/credentials/access_rosters.html, apps/accounts/tests/test_access_levels.py.
+- **Nature of Contribution**: Defect analysis and code.
+- **Human Review Status**: Pending the advisor's look. 204 tests pass; ruff clean.
+- **Git Hash**: d94fe2a
