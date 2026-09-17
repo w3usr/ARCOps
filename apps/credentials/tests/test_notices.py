@@ -2,9 +2,10 @@
 the invitation-completed and welcome notices (FR-5, FR-76)."""
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.accounts.services import admit_from_invitation, create_invitation
 from apps.comms.models import Outbox
 from apps.credentials.models import AgreementTemplate, CredentialType, SignedAgreement
@@ -16,7 +17,7 @@ pytestmark = pytest.mark.django_db
 
 def _user(email, level, position="", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.club_position = position
     u.category = kw.get("category", "student")
     u.save()
@@ -31,10 +32,8 @@ def test_agreement_lifecycle_notices():
     ClubSetting.objects.update_or_create(
         key="member_categories", defaults={"value": [{"key": "student", "label": "Student"}]}
     )
-    advisor = _user(
-        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
-    )
-    mem = _user("mem@example.org", AccessLevel.MEMBER, first_name="Mo", last_name="Member")
+    advisor = _user("adv@example.org", "advisor", "advisor", first_name="Ad", last_name="Visor")
+    mem = _user("mem@example.org", "member", first_name="Mo", last_name="Member")
     ct = CredentialType.objects.create(
         key="station_access", label="Station", established_by="agreement"
     )
@@ -70,8 +69,8 @@ def test_agreement_lifecycle_notices():
 
 
 def test_invitation_completion_tells_inviter_and_officers_and_welcomes_the_member():
-    off = _user("off@example.org", AccessLevel.OFFICER, first_name="Ann", last_name="Officer")
-    other = _user("o2@example.org", AccessLevel.OFFICER, first_name="Bo", last_name="Officer")
+    off = _user("off@example.org", "officer", first_name="Ann", last_name="Officer")
+    other = _user("o2@example.org", "officer", first_name="Bo", last_name="Officer")
     inv = create_invitation(off, "new@example.org", "student", base_url="https://ops.example")
     user = admit_from_invitation(
         inv, "pw-Testing-123", first_name="New", last_name="Person", callsign="N0NEW"

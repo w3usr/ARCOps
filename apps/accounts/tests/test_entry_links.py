@@ -8,7 +8,7 @@ from django.test import Client
 from django.utils import timezone
 
 from apps.accounts import entry
-from apps.accounts.models import AccessLevel, EntryLink, User
+from apps.accounts.models import EntryLink, User
 from apps.comms.models import Outbox
 from apps.events.models import Event, Location, OperatingPeriod, Position, RoleCapacity
 from apps.events.services.slots import generate_slots
@@ -59,7 +59,7 @@ def world():
     off = User.objects.create_user(
         "off@uni.example",
         "pw-Testing-123",
-        access_level=AccessLevel.OFFICER,
+        groups=["officer"],
         first_name="Ann",
         last_name="Officer",
     )
@@ -116,11 +116,7 @@ def test_officer_creates_links_and_the_page_lists_them(world):
     )
     assert "needs a trusted domain" in r.content.decode()
     assert (
-        _as(
-            User.objects.create_user(
-                "m@x.example", "pw-Testing-123", access_level=AccessLevel.MEMBER
-            )
-        )
+        _as(User.objects.create_user("m@x.example", "pw-Testing-123", groups=["member"]))
         .get("/me/entry-links/")
         .status_code
         == 404
@@ -143,7 +139,7 @@ def test_class_link_admits_at_once_with_a_verification_deadline(world):
     assert r.status_code == 302 and r["Location"] == f"/events/{world['ev'].pk}/"
     u = User.objects.by_address("kid@uni.example").get()
     assert (
-        u.access_level == "member"
+        u.in_group("member")
         and u.joined_via == link
         and u.addresses.get(address="kid@uni.example").kind == "institution"
     )
@@ -203,12 +199,12 @@ def test_community_link_makes_a_provisional_member_after_verification_and_office
     r = c.post(f"/join/{link.token}/form/", {**FORM, "email": "ham@gmail.example"})
     assert "Check your email" in r.content.decode()
     u = User.objects.by_address("ham@gmail.example").get()
-    assert not u.is_active and u.access_level == "none" and u.category == "community"
+    assert not u.is_active and not u.has_access and u.category == "community"
     assert Client().login(email="ham@gmail.example", password=FORM["password1"]) is False
     r = c.get(f"/verify/{entry.verification_token(u)}/")
     assert "provisional" in r.content.decode().lower()
     u.refresh_from_db()
-    assert u.is_active and u.access_level == "provisional" and u.has_confirmed_address
+    assert u.is_active and u.in_group("provisional") and u.has_confirmed_address
     assert Outbox.objects.filter(
         user=world["off"], subject__startswith="New provisional member"
     ).exists()
@@ -222,7 +218,7 @@ def test_provisional_sees_counts_not_names_and_no_directory_or_agreements(world)
     prov = User.objects.create_user(
         "p@gmail.example",
         "pw-Testing-123",
-        access_level=AccessLevel.PROVISIONAL,
+        groups=["provisional"],
         first_name="Pat",
         last_name="Prov",
         joined_via=link,
@@ -230,7 +226,7 @@ def test_provisional_sees_counts_not_names_and_no_directory_or_agreements(world)
     mem = User.objects.create_user(
         "s@uni.example",
         "pw-Testing-123",
-        access_level=AccessLevel.MEMBER,
+        groups=["member"],
         first_name="Stu",
         last_name="Dent",
         callsign="N0STU",
@@ -250,7 +246,7 @@ def test_provisional_sees_counts_not_names_and_no_directory_or_agreements(world)
     # once admitted, names appear
     _as(world["off"]).post(f"/members/{prov.pk}/", {"action": "admit"})
     prov.refresh_from_db()
-    assert prov.access_level == "member"
+    assert prov.in_group("member")
     body = _as(prov).get(f"/events/{world['ev'].pk}/").content.decode()
     assert "Stu N0STU (U)" in body
     assert Outbox.objects.filter(user=prov, subject__startswith="Welcome").exists()
@@ -260,7 +256,7 @@ def test_decline_sets_no_access_with_a_reason(world):
     prov = User.objects.create_user(
         "q@gmail.example",
         "pw-Testing-123",
-        access_level=AccessLevel.PROVISIONAL,
+        groups=["provisional"],
         first_name="Q",
         last_name="R",
     )
@@ -268,7 +264,7 @@ def test_decline_sets_no_access_with_a_reason(world):
         f"/members/{prov.pk}/", {"action": "decline", "reason": "not this season"}
     )
     prov.refresh_from_db()
-    assert prov.access_level == "none"
+    assert not prov.has_access
     assert "not this season" in Outbox.objects.get(user=prov).body_html
 
 

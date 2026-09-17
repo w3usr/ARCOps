@@ -4,12 +4,13 @@ from datetime import timedelta
 from unittest import mock
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import Client, override_settings
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops import jobs
 from apps.ops.models import AuditLog, ClubSetting, JobRun
 
@@ -85,13 +86,13 @@ def test_status_page_is_sysadmin_only_and_shows_jobs_and_mail():
     call_command("selfcheck")
     ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
     o = User.objects.create_user("o@example.org", "pw-Testing-123")
-    o.access_level = AccessLevel.OFFICER
+    o.groups.set(Group.objects.filter(name="officer"))
     o.save()
     c = Client()
     c.force_login(o)
     assert c.get("/ops/status/").status_code == 404
     s = User.objects.create_user("s@example.org", "pw-Testing-123")
-    s.access_level = AccessLevel.SYSADMIN
+    s.is_superuser = True
     s.save()
     c.force_login(s)
     body = c.get("/ops/status/").content.decode()
@@ -107,7 +108,7 @@ def test_setting_change_from_the_admin_is_audited():
     from apps.ops.config import set_setting
 
     s = User.objects.create_user("s@example.org", "pw-Testing-123")
-    s.access_level = AccessLevel.SYSADMIN
+    s.is_superuser = True
     s.save()
     row = set_setting(s, "defaults.email_delivery", "off")
     assert row.source == "interface"

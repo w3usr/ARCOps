@@ -2,9 +2,10 @@
 change lands (FR-7)."""
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, Invitation, User
+from apps.accounts.models import Invitation, User
 from apps.comms.services import recipient_addresses
 
 pytestmark = pytest.mark.django_db
@@ -12,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 def _officer():
     u = User.objects.create_user("o@example.org", "pw-Testing-123", first_name="Ann", last_name="O")
-    u.access_level = AccessLevel.OFFICER
+    u.groups.set(Group.objects.filter(name="officer"))
     u.save()
     return u
 

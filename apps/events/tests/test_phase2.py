@@ -6,11 +6,12 @@ display-only events (FR-45)."""
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.comms.models import Outbox
 from apps.credentials.models import CredentialType, LicenseRecord
 from apps.events.models import (
@@ -34,9 +35,9 @@ from apps.ops.models import ClubSetting
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, **kw):
+def _user(email, level="member", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.category = kw.get("category", "student")
     u.save()
     return u
@@ -88,7 +89,7 @@ def _event(start, hours=2, captain=None, state=Event.State.PUBLISHED):
 
 def test_lock_blocks_member_changes_and_complete_runs_automatically():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     mem = _user("mem@example.org")
     e, slots = _event(now + timedelta(days=2), captain=cap)
     su = SignUp.objects.create(slot=slots[0], user=mem, role="observer")
@@ -116,7 +117,7 @@ def test_lock_blocks_member_changes_and_complete_runs_automatically():
 
 def test_publish_with_announcement_reaches_members():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     mem = _user("mem@example.org")
     e, _ = _event(now + timedelta(days=5), captain=cap, state=Event.State.DRAFT)
     c = Client()
@@ -130,7 +131,7 @@ def test_publish_with_announcement_reaches_members():
 
 def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cutoff():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     mem = _user("mem@example.org", callsign="N0MEM")
     _licensed(mem)
     _station(mem)  # the slot is viable on mem alone
@@ -153,7 +154,7 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
 
 def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     now = timezone.now().replace(minute=0, second=0, microsecond=0)
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     e = Event.objects.create(title="SCR", state=Event.State.PUBLISHED)
     start = now + timedelta(days=3)
     OperatingPeriod.objects.create(
@@ -203,7 +204,7 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
 
 def test_eligibility_editor_and_openings_with_announcement():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     stu = _user("stu@example.org", category="student")
     com = _user("com@example.org", category="community", callsign="N0COM")
     _licensed(com, "Technician")
@@ -256,7 +257,7 @@ def test_eligibility_editor_and_openings_with_announcement():
 
 def test_waitlist_offer_accept_and_lapse():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     a = _user("a@example.org")
     b = _user("b@example.org")
     d = _user("d@example.org")
@@ -291,7 +292,7 @@ def test_waitlist_offer_accept_and_lapse():
 
 def test_csv_filter_badges_feed_and_overview():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member", callsign="N0MEM")
     _licensed(mem)
     CredentialType.objects.get_or_create(
@@ -327,7 +328,7 @@ def test_csv_filter_badges_feed_and_overview():
 
 
 def test_display_only_event_has_no_roster_and_lists_as_regular():
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     e = Event.objects.create(
         title="Tuesday Net",
         state=Event.State.PUBLISHED,

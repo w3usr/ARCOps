@@ -14,7 +14,7 @@ from django.core import mail
 from django.test import Client
 
 from apps.accounts import addresses
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops.models import AuditLog
 
 pytestmark = pytest.mark.django_db
@@ -24,7 +24,7 @@ PASSWORD = "pw-Testing-123"
 def _member(email="mem@example.edu", **kw):
     kw.setdefault("first_name", "Mem")
     kw.setdefault("last_name", "Ber")
-    kw.setdefault("access_level", AccessLevel.MEMBER)
+    kw.setdefault("groups", ["member"])
     return User.objects.create_user(email, PASSWORD, **kw)
 
 
@@ -82,7 +82,7 @@ def test_a_member_adds_an_address_and_confirms_it_from_the_link_sent_to_it(setti
 
 def test_an_officer_can_confirm_an_address_without_any_mail():
     """Nothing here may depend on mail arriving, so the officer's word is enough."""
-    off = _member("off@example.edu", access_level=AccessLevel.OFFICER)
+    off = _member("off@example.edu", groups=["officer"])
     m = _member()
     addresses.add(m, "mem.home@example.org")
     c = Client()
@@ -148,7 +148,7 @@ def test_club_mail_follows_the_delivery_switch_and_one_address_always_receives()
 
 
 def test_only_a_sysadmin_takes_a_confirmation_away_and_never_the_last_one():
-    sysadmin = _member("sys@example.edu", access_level=AccessLevel.SYSADMIN)
+    sysadmin = _member("sys@example.edu", is_superuser=True)
     m = _member()
     addresses.add(m, "mem.home@example.org", confirmed=True)
     c = Client()

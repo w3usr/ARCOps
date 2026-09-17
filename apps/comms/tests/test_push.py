@@ -4,9 +4,10 @@ import json
 from unittest import mock
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client, override_settings
 
-from apps.accounts.models import AccessLevel, NotificationPreference, PushSubscription, User
+from apps.accounts.models import NotificationPreference, PushSubscription, User
 from apps.comms.services import compose
 
 pytestmark = pytest.mark.django_db
@@ -16,7 +17,7 @@ SUB = {"endpoint": "https://push.example/abc", "keys": {"p256dh": "P", "auth": "
 
 def _user(email="m@example.org"):
     u = User.objects.create_user(email, "pw-Testing-123", first_name="Mo", last_name="M")
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     return u
 

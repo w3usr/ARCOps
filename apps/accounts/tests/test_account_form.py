@@ -6,19 +6,20 @@ two pages cannot drift apart again.
 """
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client
 
 from apps.accounts.account import AccountForm, editable_fields
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, **kw):
+def _user(email, level="member", **kw):
     kw.setdefault("first_name", email.split("@")[0].title())
     kw.setdefault("last_name", "Tester")
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.save()
     return u
 
@@ -28,7 +29,7 @@ def test_a_member_edits_their_own_details_and_no_privilege_field():
     fields = editable_fields(m, m)
     for allowed in ("preferred_name", "callsign", "cell_phone", "first_name"):
         assert allowed in fields, allowed
-    for refused in ("category", "access_level", "club_position", "under_18", "legal_hold", "email"):
+    for refused in ("category", "groups", "club_position", "under_18", "legal_hold", "email"):
         assert refused not in fields, refused
 
 
@@ -41,12 +42,12 @@ def test_a_member_with_a_name_from_the_fcc_does_not_type_their_name():
 
 
 def test_an_officer_sets_a_club_position_and_nothing_else():
-    off, m = _user("off@example.org", AccessLevel.OFFICER), _user("mem@example.org")
+    off, m = _user("off@example.org", "officer"), _user("mem@example.org")
     assert editable_fields(off, m) == ["club_position"]
 
 
 def test_a_sysadmin_sets_everything_on_any_account_including_their_own():
-    sys_user, m = _user("sys@example.org", AccessLevel.SYSADMIN), _user("mem@example.org")
+    sys_user, m = _user("sys@example.org", "sysadmin"), _user("mem@example.org")
     for subject in (m, sys_user):
         fields = editable_fields(sys_user, subject)
         for allowed in (
@@ -56,7 +57,7 @@ def test_a_sysadmin_sets_everything_on_any_account_including_their_own():
             "cell_phone",
             "category",
             "club_position",
-            "access_level",
+            "groups",
             "under_18",
             "legal_hold",
             "student_level",
@@ -66,7 +67,7 @@ def test_a_sysadmin_sets_everything_on_any_account_including_their_own():
 
 def test_both_pages_render_the_same_fields_for_the_same_person():
     """The member's own page and a sysadmin's view of them differ by permission, not by page."""
-    sys_user = _user("sys@example.org", AccessLevel.SYSADMIN)
+    sys_user = _user("sys@example.org", "sysadmin")
     own = set(AccountForm(instance=sys_user, actor=sys_user).fields)
     from_member_page = set(AccountForm(instance=sys_user, actor=sys_user).fields)
     assert own == from_member_page
@@ -90,7 +91,7 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
     name check that the profile did (found 2026-09-17)."""
     from apps.credentials.models import LicenseRecord, UlsLicense
 
-    sys_user, m = _user("sys@example.org", AccessLevel.SYSADMIN), _user("mem@example.org")
+    sys_user, m = _user("sys@example.org", "sysadmin"), _user("mem@example.org")
     UlsLicense.objects.create(
         callsign="N0PAGE",
         first_name="Mem",
@@ -107,7 +108,7 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
             "first_name": "Mem",
             "last_name": "Tester",
             "category": "",
-            "access_level": AccessLevel.MEMBER,
+            "groups": [Group.objects.get(name="member").pk],
             "email": m.email,
             "callsign": "n0page",
         },
@@ -126,7 +127,7 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
             "first_name": "Mem",
             "last_name": "Tester",
             "category": "",
-            "access_level": AccessLevel.MEMBER,
+            "groups": [Group.objects.get(name="member").pk],
             "email": m.email,
             "callsign": "N0NEW",
         },
@@ -139,8 +140,8 @@ def test_a_field_is_shown_once_as_an_input_or_as_text_but_never_both():
     read-only view and an edit view." The read-only rows are the complement of the form."""
     from apps.accounts.account import editable_fields, readonly_rows
 
-    sys_user = _user("sys@example.org", AccessLevel.SYSADMIN)
-    off = _user("off@example.org", AccessLevel.OFFICER)
+    sys_user = _user("sys@example.org", "sysadmin")
+    off = _user("off@example.org", "officer")
     m = _user("mem@example.org", category="student", cell_phone="555-0100")
 
     for actor in (m, off, sys_user):
@@ -158,12 +159,12 @@ def test_a_field_is_shown_once_as_an_input_or_as_text_but_never_both():
     assert readonly_rows(sys_user, m) == []
     # an officer edits only the club position, so the rest is text
     labels = {r["label"] for r in readonly_rows(off, m)}
-    assert {"Name", "Category", "Access level", "Mobile number"} <= labels
+    assert {"Name", "Category", "Access", "Mobile number"} <= labels
 
 
 def test_no_template_comment_reaches_the_page():
     """Django's {# #} is one line only; a multi-line one renders as text, which it did."""
-    sys_user = _user("sys@example.org", AccessLevel.SYSADMIN)
+    sys_user = _user("sys@example.org", "sysadmin")
     c = Client()
     c.force_login(sys_user)
     for url in ("/me/", f"/members/{sys_user.pk}/"):

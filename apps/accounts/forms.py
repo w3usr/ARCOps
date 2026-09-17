@@ -22,9 +22,7 @@ class ResetPasswordForm(allauth_forms.ResetPasswordForm):
         # typed into a profile moves nobody's password.
         self.users = [
             u
-            for u in User.objects.by_address(email)
-            .filter(is_active=True)
-            .exclude(access_level="none")
+            for u in User.objects.by_address(email).filter(is_active=True)
             if email in sign_in_addresses(u)
         ]
         return email

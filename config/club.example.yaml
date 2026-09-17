@@ -37,6 +37,82 @@ member_categories:                            # FR-8, FR-12; edit freely
   - { key: staff,     label: "Staff" }
   - { key: community, label: "Community Member" }
 
+# Access groups: a named set of capabilities. A sysadmin edits these in the interface, and may
+# invent new ones; the list of capabilities themselves is in apps/ops/capabilities.py. An account
+# in no group can do nothing, which is what "no access" means. A sysadmin is a superuser and
+# holds every capability without being in any group.
+access_groups:
+  - key: provisional
+    label: "Provisional"                      # joined through a community link, awaiting review
+    capabilities: []
+  - key: member
+    label: "Member"
+    capabilities: [view_directory]
+  - key: officer
+    label: "Club officer"
+    capabilities:
+      - view_directory
+      - view_member_records
+      - view_participant_contacts
+      - invite_members
+      - set_club_position
+      - manage_member_addresses
+      - create_events
+      - manage_events
+      - manage_signups
+      - send_announcements
+      - view_outbox
+      - view_reports
+  - key: advisor
+    label: "Faculty advisor"                  # everything an officer holds, and the club's word
+    capabilities:
+      - view_directory
+      - view_member_records
+      - view_participant_contacts
+      - invite_members
+      - set_club_position
+      - manage_member_addresses
+      - create_events
+      - manage_events
+      - manage_signups
+      - send_announcements
+      - view_outbox
+      - view_reports
+      - approve_agreements
+      - convert_minor_accounts
+      - archive_members
+      - view_archive
+  - key: sysadmin
+    label: "Sysadmin"                         # everything, including the club's configuration
+    capabilities:
+      - view_directory
+      - view_member_records
+      - invite_members
+      - set_club_position
+      - edit_member_privileges
+      - assign_groups
+      - manage_groups
+      - manage_member_addresses
+      - issue_temporary_password
+      - archive_members
+      - view_archive
+      - delete_accounts
+      - impersonate_members
+      - override_license
+      - approve_agreements
+      - convert_minor_accounts
+      - rotate_shared_secret
+      - create_events
+      - manage_events
+      - manage_signups
+      - view_participant_contacts
+      - send_announcements
+      - view_outbox
+      - view_reports
+      - view_audit_log
+      - edit_club_settings
+      - view_job_status
+
 club_positions:                               # the position is displayed; capabilities follow
   - { key: advisor,        label: "Advisor" }       # the access level, not the position
   - { key: trustee,        label: "License Trustee" }

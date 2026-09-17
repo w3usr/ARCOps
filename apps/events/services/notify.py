@@ -15,10 +15,11 @@ from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User, levels_at_least
+from apps.accounts.models import User
 from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.groups import people_who_may
 
 from ..models import Event, SignUp, Slot, SlotWarning
 from .roster import UTC, display_zone, zone_label
@@ -38,17 +39,11 @@ def advisors() -> list[User]:
     """The faculty advisors, for the "who to call" line in a slot reminder. This read the club
     position until 2026-09-17, when approving access became an access level; the position no
     longer says anything about what a person may do, so it cannot say who is on call either."""
-    return list(
-        User.objects.filter(
-            access_level__in=levels_at_least(AccessLevel.ADVISOR), is_active=True
-        )
-    )
+    return list(people_who_may("approve_agreements"))
 
 
 def officers() -> list[User]:
-    return list(
-        User.objects.filter(access_level__in=levels_at_least(AccessLevel.OFFICER), is_active=True)
-    )
+    return list(people_who_may("manage_events"))
 
 
 def contact_line(u: User) -> str:
@@ -514,10 +509,7 @@ def send_digest(now: datetime | None = None) -> dict:
                 "link": site() + reverse("event_detail", args=[e.pk]),
             }
         )
-    members = User.objects.filter(
-        is_active=True,
-        access_level__in=levels_at_least(AccessLevel.MEMBER),
-    )
+    members = people_who_may("view_directory")
     sent = 0
     for u in members:
         mine = [

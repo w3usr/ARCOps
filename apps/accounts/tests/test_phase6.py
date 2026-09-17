@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, Invitation, User
+from apps.accounts.models import Invitation, User
 from apps.accounts.services import DeletionRefused, delete_account
 from apps.comms.models import Outbox
 from apps.credentials.models import AgreementTemplate, CredentialType, SignedAgreement
@@ -18,10 +18,12 @@ from apps.ops.retention import apply
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, **kw):
+def _user(email, level="member", **kw):
     kw.setdefault("first_name", email.split("@")[0].title())
     kw.setdefault("last_name", "Tester")
-    return User.objects.create_user(email, "pw-Testing-123", access_level=level, **kw)
+    return User.objects.create_user(
+        email, "pw-Testing-123", groups=[level], is_superuser=level == "sysadmin", **kw
+    )
 
 
 def _as(user):
@@ -55,7 +57,7 @@ def _slot(captain, days=5):
 
 
 def test_sysadmin_views_as_member_read_only_and_audited():
-    s = _user("sys@example.org", AccessLevel.SYSADMIN)
+    s = _user("sys@example.org", "sysadmin")
     m = _user("mem@example.org")
     c = _as(s)
     assert c.post(f"/members/{m.pk}/view-as/").status_code == 302
@@ -78,8 +80,8 @@ def test_sysadmin_views_as_member_read_only_and_audited():
 
 
 def test_view_as_refused_for_sysadmins_and_for_members():
-    s = _user("sys@example.org", AccessLevel.SYSADMIN)
-    s2 = _user("sys2@example.org", AccessLevel.SYSADMIN)
+    s = _user("sys@example.org", "sysadmin")
+    s2 = _user("sys2@example.org", "sysadmin")
     m = _user("mem@example.org")
     c = _as(s)
     c.post(f"/members/{s2.pk}/view-as/")
@@ -88,23 +90,23 @@ def test_view_as_refused_for_sysadmins_and_for_members():
 
 
 def test_member_closes_own_account():
-    _user("sys@example.org", AccessLevel.SYSADMIN)
+    _user("sys@example.org", "sysadmin")
     m = _user("mem@example.org")
     c = _as(m)
     assert c.post("/me/close/", {}).status_code == 302  # no confirmation: nothing happens
     m.refresh_from_db()
-    assert m.access_level == AccessLevel.MEMBER
+    assert m.in_group("member")
     c.post("/me/close/", {"confirm": "yes"})
     m.refresh_from_db()
-    assert m.access_level == AccessLevel.NONE and m.closure_requested_at is not None
+    assert not m.has_access and m.closure_requested_at is not None
     assert Outbox.objects.filter(subject__contains="asked to close their account").count() == 1
     r = c.get("/")
     assert r.status_code == 302 and "/login" in r["Location"] or r.status_code == 200
 
 
 def test_delete_account_anonymises_withdraws_and_keeps_shape():
-    s = _user("sys@example.org", AccessLevel.SYSADMIN)
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    s = _user("sys@example.org", "sysadmin")
+    cap = _user("cap@example.org", "officer")
     m = _user("mem@example.org", callsign="AB1CDE", cell_phone="555")
     future = _slot(cap, days=5)
     past = _slot(cap, days=-5)
@@ -132,7 +134,7 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
         and m.callsign == ""
         and m.cell_phone == ""
     )
-    assert not m.is_active and m.access_level == AccessLevel.NONE
+    assert not m.is_active and not m.has_access
     assert SignUp.objects.filter(slot=future, user=m).count() == 0  # future withdrawn
     assert SignUp.objects.filter(slot=past, user=m).count() == 1  # past kept for counts
     assert SignedAgreement.objects.filter(user=m).count() == 1  # kept for retention
@@ -148,7 +150,7 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
 
 
 def test_deletion_guards():
-    s = _user("sys@example.org", AccessLevel.SYSADMIN)
+    s = _user("sys@example.org", "sysadmin")
     with pytest.raises(DeletionRefused):
         delete_account(s, s, "oops")  # last sysadmin
 
@@ -158,11 +160,9 @@ def test_retention_keeps_member_records_and_agreements_and_sweeps_only_the_rest(
     a method to archive members?" So a former member's profile and their signed agreements are
     kept; what still ages out is what is not a member's record."""
     now = timezone.now()
-    old = _user("old@example.org", AccessLevel.NONE, cell_phone="555")
-    AuditLog.objects.create(
-        action="access_level.changed", subject_type="User", subject_id=str(old.pk)
-    )
-    AuditLog.objects.filter(action="access_level.changed").update(at=now - dt.timedelta(days=800))
+    old = _user("old@example.org", "none", cell_phone="555")
+    AuditLog.objects.create(action="access.changed", subject_type="User", subject_id=str(old.pk))
+    AuditLog.objects.filter(action="access.changed").update(at=now - dt.timedelta(days=800))
     Invitation.objects.create(
         email="x@example.org", category="student", expires_at=now - dt.timedelta(days=100)
     )

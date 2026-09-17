@@ -3,7 +3,7 @@
 import pytest
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.events.models import Captaincy, Event, Slot
 from apps.ops.models import ClubSetting
 
@@ -24,7 +24,7 @@ def officer():
     return User.objects.create_user(
         "off@example.org",
         "pw-Testing-123",
-        access_level=AccessLevel.OFFICER,
+        groups=["officer"],
         first_name="Ann",
         last_name="O",
     )
@@ -87,7 +87,7 @@ def test_members_are_kept_out_and_captains_let_in(officer):
     mem = User.objects.create_user(
         "m@example.org",
         "pw-Testing-123",
-        access_level=AccessLevel.MEMBER,
+        groups=["member"],
         first_name="Mo",
         last_name="M",
     )

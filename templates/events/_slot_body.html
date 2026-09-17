@@ -6,7 +6,7 @@
 <p class="slot-state tone-{{ cell.shown.tone }}"><span class="word">{{ cell.shown.word }}</span>{% if cell.shown.detail %} <span class="muted">{{ cell.shown.detail }}</span>{% endif %}</p>
 
 <h2>Who is on it</h2>
-{% if cell.signups and not user.is_member %}
+{% if cell.signups and not perms.ops.view_directory %}
 <p>{{ cell.class_counts }} ({{ cell.signups|length }} signed up{% if cell.mine %}, including you as {{ cell.mine.role }}{% endif %}). Names appear once a club officer has admitted you as a member.</p>
 {% elif cell.signups %}
 <ul class="list">

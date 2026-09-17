@@ -14,8 +14,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import AccessLevel
-
 ALLOWED_WHILE_TEMPORARY = (
     "/accounts/password/change/",
     "/accounts/logout/",
@@ -31,7 +29,7 @@ class AccountGateMiddleware:
     def __call__(self, request):
         user = getattr(request, "user", None)
         if user is not None and user.is_authenticated:
-            if user.access_level == AccessLevel.NONE and not user.is_superuser:
+            if not user.has_access:
                 logout(request)
                 messages.error(
                     request, "This account does not currently have access. Contact a club officer."

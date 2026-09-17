@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from django.contrib.auth.models import Group
 from django.core import signing
 from django.db import transaction
 from django.urls import reverse
@@ -22,8 +23,9 @@ from django.utils import timezone
 from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.groups import people_who_may
 
-from .models import AccessLevel, EntryLink, User, levels_at_least
+from .models import EntryLink, User
 
 VERIFY_SALT = "arcops.verify-email"
 VERIFY_MAX_AGE = 30 * 24 * 3600  # a link in an old email still works for a month
@@ -98,7 +100,7 @@ def join_through_link(
             email=email,
             password=password,
             category=category if is_class else "community",
-            access_level=AccessLevel.MEMBER if is_class else AccessLevel.NONE,
+            groups=["member"] if is_class else [],
             joined_via=link,
             verification_deadline=now + timedelta(days=verification_days()) if is_class else None,
             confirmed=False,  # they typed it; the link they are sent proves it
@@ -124,13 +126,13 @@ def complete_verification(user: User, base_url: str, address: str = "") -> str:
     became_provisional = False
     if (
         not user.is_active
-        and user.access_level == AccessLevel.NONE
+        and not user.has_access
         and user.joined_via
         and user.joined_via.kind == EntryLink.Kind.COMMUNITY
     ):
         user.is_active = True
-        user.access_level = AccessLevel.PROVISIONAL
-        fields += ["is_active", "access_level"]
+        fields += ["is_active"]
+        user.groups.set(Group.objects.filter(name="provisional"))
         became_provisional = True
     if fields:
         user.save(update_fields=fields)
@@ -153,9 +155,7 @@ def mark_verified(actor: User, user: User) -> None:
 def notify_officers_of_provisional(user: User, base_url: str) -> None:
     url = base_url + reverse("member_detail", args=[user.pk])
     via = user.joined_via.label if user.joined_via else "a community link"
-    for officer in User.objects.filter(
-        access_level__in=levels_at_least(AccessLevel.OFFICER), is_active=True
-    ):
+    for officer in people_who_may("view_member_records"):
         send(
             "account.provisional_notice",
             officer,
@@ -165,22 +165,22 @@ def notify_officers_of_provisional(user: User, base_url: str) -> None:
 
 
 def admit(actor: User, user: User) -> None:
-    from .services import set_access_level
+    from .services import set_access
 
-    set_access_level(actor, user, AccessLevel.MEMBER, "admitted after review")
+    set_access(actor, user, ["member"], "admitted after review")
     send("account.admitted", user, "account")
 
 
 def decline(actor: User, user: User, reason: str) -> None:
-    from .services import set_access_level
+    from .services import set_access
 
-    set_access_level(actor, user, AccessLevel.NONE, f"declined: {reason}")
+    set_access(actor, user, [], f"declined: {reason}")
     send("account.declined", user, "account", {"reason": reason})
 
 
 def pending_review():
     return (
-        User.objects.filter(access_level=AccessLevel.PROVISIONAL, is_active=True)
+        User.objects.filter(groups__name="provisional", is_active=True)
         .select_related("joined_via")
         .order_by("date_joined")
     )

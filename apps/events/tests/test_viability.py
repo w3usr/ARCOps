@@ -3,7 +3,7 @@ import datetime as dt
 import pytest
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.credentials.models import CredentialType, LicenseRecord, SignedAgreement
 from apps.events.models import (
     Event,
@@ -56,7 +56,7 @@ def person(name, cls=None, station=False, it=False, minor=False):
         "x",
         first_name=name,
         last_name="T",
-        access_level=AccessLevel.MEMBER,
+        groups=["member"],
         under_18=minor,
         callsign=f"N0{name[:2].upper()}" if cls else "",
     )

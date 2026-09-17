@@ -4,9 +4,14 @@ import pytest
 from django.core.management import call_command
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def club():
+    call_command("club_import")
 
 
 def _run(**kw):
@@ -20,7 +25,7 @@ def _run(**kw):
 def test_the_first_sysadmin_can_sign_in_with_the_address_it_was_given(capsys):
     user = _run()
     password = capsys.readouterr().out.rsplit(": ", 1)[-1].strip()
-    assert user.access_level == AccessLevel.SYSADMIN and user.is_superuser
+    assert user.in_group("sysadmin") and user.is_superuser
     row = user.addresses.get(address="first@example.org")
     assert row.confirmed, "whoever runs this at the console vouches for the address"
     c = Client()

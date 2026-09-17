@@ -3,9 +3,10 @@
 import re
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops import config
 from apps.ops.models import ClubSetting
 
@@ -42,7 +43,7 @@ def test_footer_links_the_club_page_and_credits_the_product(client: Client):
 
 def test_signed_in_pages_get_the_sidebar_with_the_current_page_marked():
     u = User.objects.create_user("m@example.org", "pw-Testing-123", first_name="Mo", last_name="M")
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     c = Client()
     c.force_login(u)

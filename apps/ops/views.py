@@ -43,7 +43,7 @@ def healthz(request):
 @login_required
 def status(request):
     """FR-93: every registered job's last run and outcome, and mail health."""
-    if not request.user.is_sysadmin:
+    if not request.user.may("view_job_status"):
         from django.http import Http404
 
         raise Http404
@@ -82,7 +82,7 @@ def dashboard(request):
     upcoming_events = Event.objects.filter(state__in=["published", "locked"]).order_by("id")[:10]
     upcoming_events = [e for e in upcoming_events if e.ends_at() and e.ends_at() >= now]
     pending = []
-    if request.user.is_officer:
+    if request.user.may("view_member_records"):
         from apps.accounts.entry import pending_review
 
         pending = list(pending_review()[:20])

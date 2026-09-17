@@ -6,11 +6,12 @@ import zipfile
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, CallsignHistory, User
+from apps.accounts.models import CallsignHistory, User
 from apps.accounts.services import apply_callsign, decide_uls_name
 from apps.comms.models import Outbox
 from apps.credentials.models import LicenseRecord, UlsLicense, UlsStaging
@@ -132,7 +133,7 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     u = User.objects.create_user(
         "a@example.org", "pw-Testing-123", first_name="Ada M", last_name="Lovelace"
     )
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     assert names_match("Ada M", "Lovelace", "Ada", "Lovelace") and not names_match(
         "Ada", "Lovelace", "Zed", "Other"
@@ -191,7 +192,7 @@ def test_expiry_notices_at_90_30_and_expired_once_each_and_reset_on_renewal():
     u = User.objects.create_user(
         "a@example.org", "pw-Testing-123", first_name="Ada", last_name="L", callsign="N0AAA"
     )
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     today = timezone.now().date()
     lic = LicenseRecord.objects.create(
@@ -222,12 +223,12 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     s = User.objects.create_user(
         "s@example.org", "pw-Testing-123", first_name="Sys", last_name="Admin"
     )
-    s.access_level = AccessLevel.SYSADMIN
+    s.is_superuser = True
     s.save()
     u = User.objects.create_user(
         "v@example.org", "pw-Testing-123", first_name="Vic", last_name="Eh", callsign="VE3XYZ"
     )
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     LicenseRecord.objects.create(user=u, callsign="VE3XYZ", status="unverified")
     c = Client()

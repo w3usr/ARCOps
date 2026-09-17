@@ -16,7 +16,7 @@ from django import forms
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from .models import AccessLevel, User
+from .models import User
 
 # What the member keeps for themselves, and what only a sysadmin sets. `club_position` is the
 # one field an officer sets on another member's account.
@@ -24,7 +24,8 @@ OWN_FIELDS = ("preferred_name", "callsign", "cell_phone")
 STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
 POSITION_FIELDS = ("club_position",)
-PRIVILEGE_FIELDS = ("category", "access_level", "under_18", "legal_hold")
+PRIVILEGE_FIELDS = ("category", "under_18", "legal_hold")
+GROUP_FIELDS = ("groups",)  # what the account may do, gated by its own capability
 
 LABELS = {
     "cell_phone": "Mobile number",
@@ -46,17 +47,19 @@ def editable_fields(actor: User, subject: User) -> list[str]:
     """
     is_self = actor.pk == subject.pk
     fields: list[str] = []
-    if is_self or actor.is_sysadmin:
+    if is_self or actor.may("edit_member_privileges"):
         fields += list(OWN_FIELDS)
         if not subject.name_from_uls:
             fields += list(NAME_FIELDS)
-        if subject.category == "student" or actor.is_sysadmin:
+        if subject.category == "student" or actor.may("edit_member_privileges"):
             fields += list(STUDENT_FIELDS)
-    if actor.is_officer and not is_self:
+    if actor.may("set_club_position") and not is_self:
         fields += list(POSITION_FIELDS)
-    if actor.is_sysadmin:
+    if actor.may("edit_member_privileges"):
         fields += [f for f in POSITION_FIELDS if f not in fields]
         fields += list(PRIVILEGE_FIELDS)
+    if actor.may("assign_groups"):
+        fields += list(GROUP_FIELDS)
     # the model's own order, so the page reads the same however the lists are built
     order = [f.name for f in User._meta.get_fields() if hasattr(f, "name")]
     return sorted(set(fields), key=lambda f: order.index(f) if f in order else 99)
@@ -74,6 +77,7 @@ class AccountForm(forms.ModelForm):
             *STUDENT_FIELDS,
             *POSITION_FIELDS,
             *PRIVILEGE_FIELDS,
+            *GROUP_FIELDS,
         ]
 
     def __init__(self, *args, actor: User, **kwargs):
@@ -97,10 +101,20 @@ class AccountForm(forms.ModelForm):
                 required=False,
                 label="Club position",
             )
-        if "access_level" in self.fields:
-            self.fields["access_level"] = forms.ChoiceField(
-                choices=AccessLevel.choices, label="Access level"
+        if "groups" in self.fields:
+            from django.contrib.auth.models import Group
+
+            from apps.ops.groups import label_of
+
+            self.fields["groups"] = forms.ModelMultipleChoiceField(
+                queryset=Group.objects.order_by("name"),
+                required=False,
+                widget=forms.CheckboxSelectMultiple,
+                label="Access",
+                help_text="What this account may do. An account in no group can do nothing.",
             )
+            configured = setting("access_groups", []) or []
+            self.fields["groups"].label_from_instance = lambda g: label_of(g, configured)
         for name, label in LABELS.items():
             if name in self.fields:
                 self.fields[name].label = label
@@ -131,12 +145,14 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
     from .services import apply_callsign
 
     subject = form.instance
-    before = {f: getattr(User.objects.get(pk=subject.pk), f) for f in form.changed_data}
+    before = {f: _auditable(User.objects.get(pk=subject.pk), f) for f in form.changed_data}
     old_callsign = User.objects.get(pk=subject.pk).callsign
     user = form.save(commit=False)
     new_callsign = (user.callsign or "").upper().strip()
     user.callsign = old_callsign  # apply_callsign owns the change
     user.save()
+    if "groups" in form.fields:
+        form.save_m2m()  # the access groups, which the form holds as a many-to-many
 
     callsign_result = None
     if "callsign" in form.changed_data and new_callsign != old_callsign:
@@ -148,9 +164,29 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
             "member.edited",
             user,
             before=before,
-            after={f: getattr(user, f) for f in form.changed_data},
+            after={f: _auditable(user, f) for f in form.changed_data},
         )
     return {"callsign": callsign_result}
+
+
+def _auditable(user: User, field: str):
+    """A field's value in a form the audit log can hold. The access groups are a relation, so
+    they are recorded as the names that mean something to a reader."""
+    value = getattr(user, field)
+    if field == "groups":
+        return sorted(g.name for g in value.all())
+    return value
+
+
+def _groups_line(subject: User) -> str:
+    """The account's access, in words: the groups it is in, or what having none means."""
+    from apps.ops.groups import label_of
+
+    if subject.is_superuser:
+        return "Sysadmin (every capability)"
+    configured = setting("access_groups", []) or []
+    names = [label_of(g, configured) for g in subject.groups.all().order_by("name")]
+    return ", ".join(names) or "No access"
 
 
 def _label(setting_key: str, key: str) -> str:
@@ -184,7 +220,7 @@ def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> lis
     add("callsign", "Callsign", subject.callsign)
     add("category", "Category", _label("member_categories", subject.category))
     add("club_position", "Club position", _label("club_positions", subject.club_position))
-    add("access_level", "Access level", subject.get_access_level_display())
+    add("groups", "Access", _groups_line(subject))
     add("cell_phone", "Mobile number", subject.cell_phone)
     if subject.under_18 and "under_18" not in allowed:
         rows.append({"label": "Under 18", "value": "yes, a guardian acts for them"})

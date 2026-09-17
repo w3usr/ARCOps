@@ -10,41 +10,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 
-
-class AccessLevel(models.TextChoices):
-    SYSADMIN = "sysadmin", "Sysadmin"
-    # The advisor sits above the elected officers: a faculty member answerable for the club, who
-    # approves access to the station and sees the archive. Officers do neither (the advisor's
-    # own issue, 2026-09-17: "This is above 'Club Officer' but below 'Sysadmin'").
-    ADVISOR = "advisor", "Faculty advisor"
-    OFFICER = "officer", "Club officer"
-    MEMBER = "member", "Member"
-    PROVISIONAL = (
-        "provisional",
-        "Provisional",
-    )  # joined through a community link, awaiting review (FR-121)
-    NONE = "none", "No access"
-
-
-# The ladder, low to high, for "this level and above". Every comparison in the application reads
-# this rather than listing levels, so a level inserted here does not need them all found again.
-ACCESS_RANK = {
-    AccessLevel.NONE: 0,
-    AccessLevel.PROVISIONAL: 1,
-    AccessLevel.MEMBER: 2,
-    AccessLevel.OFFICER: 3,
-    AccessLevel.ADVISOR: 4,
-    AccessLevel.SYSADMIN: 5,
-}
-
-
-def levels_at_least(level: str) -> list[str]:
-    """Every level from this one upward, for a query. A query that lists the levels it wants
-    silently misses a level added later; this one cannot."""
-    floor = ACCESS_RANK.get(level, 0)
-    return [key for key, rank in ACCESS_RANK.items() if rank >= floor]
-
-
 LICENSE_LETTERS = {  # FR-67: the class after a name; U when there is no license
     "novice": "N",
     "technician": "T",
@@ -63,14 +28,30 @@ class UserManager(BaseUserManager):
         """`email` is the first address on the account, if there is one. A member under 18 may
         hold none: their guardians are written to instead (FR-70), and the account is its key."""
         confirmed = extra.pop("confirmed", True)  # the path that made the account vouches for it
+        groups = extra.pop("groups", None)  # the access groups this account starts in
         user = self.model(**extra)
         user.set_password(password)
         user.save(using=self._db)
+        if groups:
+            from django.contrib.auth.models import Group
+
+            user.groups.set(Group.objects.filter(name__in=list(groups)))
         if email:
             from .addresses import add
 
             add(user, self.normalize_email(email).lower(), confirmed=confirmed)
         return user
+
+    def with_access(self):
+        """Accounts that can be used: in a group, or a superuser. What "no access" means now is
+        belonging to no group at all."""
+        from django.db.models import Q
+
+        return (
+            self.filter(is_active=True)
+            .filter(Q(groups__isnull=False) | Q(is_superuser=True))
+            .distinct()
+        )
 
     def by_address(self, address: str, confirmed_only: bool = False):
         """Accounts holding this address. Sign-in and reset ask for confirmed ones only; a
@@ -81,7 +62,7 @@ class UserManager(BaseUserManager):
         return qs.distinct()
 
     def create_superuser(self, email: str, password: str | None = None, **extra):
-        extra.setdefault("access_level", AccessLevel.SYSADMIN)
+        """A sysadmin: every capability, without being in any group (apps.ops.capabilities)."""
         extra.setdefault("is_superuser", True)
         return self.create_user(email, password, **extra)
 
@@ -119,9 +100,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     legal_hold = models.BooleanField(default=False)  # TR-28: retention never touches this account
     category = models.CharField(max_length=30, blank=True)  # key from club config (FR-8)
     club_position = models.CharField(max_length=40, blank=True)  # key from club config
-    access_level = models.CharField(
-        max_length=12, choices=AccessLevel.choices, default=AccessLevel.NONE
-    )
     under_18 = models.BooleanField(default=False)  # a flag, never a date (§2.4)
     student_level = models.CharField(
         max_length=14,
@@ -154,28 +132,32 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self) -> str:
         return f"{self.full_name} ({self.callsign})" if self.callsign else self.full_name
 
-    # Django admin access follows the access level; there is no separate staff flag.
+    # Django's admin is the sysadmin's tool, and a sysadmin is a superuser.
     @property
     def is_staff(self) -> bool:
-        return self.access_level == AccessLevel.SYSADMIN
+        return self.is_superuser
 
-    def at_least(self, level: str) -> bool:
-        """Whether this account holds that level or a higher one."""
-        return ACCESS_RANK.get(self.access_level, 0) >= ACCESS_RANK.get(level, 0)
+    def may(self, capability: str) -> bool:
+        """Whether this account holds a capability (apps.ops.capabilities). Every permission
+        decision in the application asks this and nothing else, so what a person may do is one
+        list, read the same way everywhere."""
+        from apps.ops.capabilities import holds
+
+        return holds(self, capability)
+
+    def in_group(self, key: str) -> bool:
+        return self.groups.filter(name=key).exists()
+
+    @property
+    def has_access(self) -> bool:
+        """Whether the account may be used at all. An account in no group can do nothing, which
+        is what losing access means now; a superuser always can."""
+        return bool(self.is_superuser or self.groups.exists())
 
     @property
     def is_sysadmin(self) -> bool:
-        return self.access_level == AccessLevel.SYSADMIN
-
-    @property
-    def is_advisor(self) -> bool:
-        """Faculty advisor or above: approves access to the station, and sees the archive."""
-        return self.at_least(AccessLevel.ADVISOR)
-
-    @property
-    def is_officer(self) -> bool:
-        """Club officer or above. An advisor holds everything an officer holds, and more."""
-        return self.at_least(AccessLevel.OFFICER)
+        """Kept as the name the pages use for a superuser: the person who answers for the site."""
+        return self.is_superuser
 
     @property
     def email(self) -> str:
@@ -203,7 +185,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.display_first}{initial}"
 
     def can_captain(self, event) -> bool:
-        return self.is_officer or event.captaincies.filter(user=self).exists()
+        return self.may("manage_events") or event.captaincies.filter(user=self).exists()
 
     @property
     def reminders_off(self) -> bool:
@@ -215,12 +197,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_provisional(self) -> bool:
-        return self.access_level == AccessLevel.PROVISIONAL
+        """Joined through a community link and not yet reviewed. A group with no capability in
+        it: they can sign in and see the club's events, and nothing else."""
+        return self.in_group("provisional")
 
     @property
     def is_member(self) -> bool:
-        """Member or above: sees other members' short names, the directory, the agreements."""
-        return self.at_least(AccessLevel.MEMBER)
+        """Holds the capability that the member directory and the agreements hang on."""
+        return self.may("view_directory")
 
     @property
     def license_letter(self) -> str:

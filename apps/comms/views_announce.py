@@ -73,7 +73,7 @@ def announce_view(request, pk=None):
     event = get_object_or_404(Event, pk=pk) if pk else None
     if event is not None and not request.user.can_captain(event):
         raise Http404
-    if event is None and not request.user.is_officer:
+    if event is None and not request.user.may("send_announcements"):
         raise Http404
     categories = setting("member_categories", []) or []
     roles = setting("slot_roles", []) or []
@@ -159,7 +159,7 @@ def announce_view(request, pk=None):
 @login_required
 def announcements(request):
     """FR-75: every announcement, visible to officers afterwards."""
-    if not request.user.is_officer:
+    if not request.user.may("send_announcements"):
         raise Http404
     qs = Announcement.objects.select_related("sender", "event")
     return render(request, "comms/announcements.html", {"announcements": qs[:200]})

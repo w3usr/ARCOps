@@ -10,7 +10,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
-from apps.accounts.models import AccessLevel, Guardianship, User
+from apps.accounts.models import Guardianship, User
 from apps.ops.audit import record
 
 from .models import ResponsibleAdult, SignUp
@@ -75,7 +75,7 @@ def adults(request, signup_id):
                 messages.success(request, f"{name.strip()} will accompany {su.user.display_first}.")
         elif action == "member":
             member = get_object_or_404(User, pk=request.POST.get("member"), under_18=False)
-            if member.access_level == AccessLevel.NONE:
+            if not member.has_access:
                 raise Http404
             ResponsibleAdult.objects.create(
                 signup=su,
@@ -113,8 +113,6 @@ def adults(request, signup_id):
             "slot": su.slot,
             "adults": list(su.responsible_adults.all()),
             "saved": previously_named(su),
-            "members": User.objects.filter(under_18=False)
-            .exclude(access_level=AccessLevel.NONE)
-            .order_by("last_name", "first_name"),
+            "members": User.objects.filter(under_18=False).order_by("last_name", "first_name"),
         },
     )

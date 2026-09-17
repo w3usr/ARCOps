@@ -9,8 +9,9 @@ from django.utils import timezone
 
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.groups import people_who_may
 
-from .models import AccessLevel, CallsignHistory, Invitation, User, levels_at_least
+from .models import CallsignHistory, Invitation, User
 
 
 def create_invitation(
@@ -83,21 +84,23 @@ def issue_temporary_password(actor: User, user: User) -> str:
     return password
 
 
-def set_access_level(actor: User, user: User, level: str, reason: str = "") -> None:
-    before = user.access_level
-    user.access_level = level
-    user.save(update_fields=["access_level"])
-    record(
-        actor,
-        "access_level.changed",
-        user,
-        before={"level": before},
-        after={"level": level, "reason": reason},
-    )
-    if level == AccessLevel.NONE and before != AccessLevel.NONE:
+def set_access(actor: User, user: User, groups: list[str], reason: str = "") -> None:
+    """Put an account in exactly these access groups, which is the whole of what it may do.
+
+    This was `set_access_level`, a move up or down one ladder. The ladder is gone: a group is a
+    named set of capabilities the club defines, and an account in no group can do nothing, which
+    is what losing access means (the advisor's decision, 2026-09-17).
+    """
+    from apps.ops.groups import set_groups
+
+    had_access = user.has_access
+    set_groups(actor, user, groups)
+    if reason:
+        record(actor, "access.changed", user, after={"groups": sorted(groups), "reason": reason})
+    if had_access and not user.has_access:
         from apps.events.services.notify import access_removed
 
-        access_removed(actor, user)  # FR-91: future sign-ups go, captains are told
+        access_removed(actor, user)  # future sign-ups go, captains are told
 
 
 def revoke_invitation(actor: User, inv: Invitation) -> None:
@@ -122,7 +125,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
         email=profile.pop("email", "") or inv.email,  # a minor's may differ (§2.4)
         password=password,
         category=inv.category,
-        access_level=AccessLevel.MEMBER,
+        groups=["member"],
         under_18=inv.is_minor,
         **profile,
     )
@@ -149,12 +152,7 @@ def _completion_notices(inv: Invitation, user: User) -> None:
     link = site + reverse("member_detail", args=[user.pk])
     lic = getattr(user, "license", None)
     uls_name = getattr(lic, "uls_name", "") if lic else ""
-    recipients = {
-        u.pk: u
-        for u in User.objects.filter(
-            access_level__in=levels_at_least(AccessLevel.OFFICER), is_active=True
-        )
-    }
+    recipients = {u.pk: u for u in people_who_may("invite_members")}
     if inv.issued_by and inv.issued_by.is_active:
         recipients[inv.issued_by.pk] = inv.issued_by
     for r in recipients.values():
@@ -304,21 +302,23 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
         raise ArchiveRefused(
             "a guardian is archived once every linked minor has been converted, re-linked, or archived"
         )
-    if user.is_sysadmin and not _another_sysadmin_exists(user):
-        raise ArchiveRefused("the last remaining sysadmin account cannot be archived")
+    if user.may("assign_groups") and not _someone_else_can_assign_groups(user):
+        raise ArchiveRefused("the last account that can decide who may do what cannot be archived")
     user.archived_at = timezone.now()
     user.archived_reason = (reason or "").strip()[:200]
     # The password stops working too. No access already refuses every page, but an account
     # nobody is a member of should not authenticate at all.
     user.is_active = False
     user.save(update_fields=["archived_at", "archived_reason", "is_active"])
-    set_access_level(actor, user, AccessLevel.NONE, reason or "archived")
+    set_access(actor, user, [], reason or "archived")
     record(actor, "member.archived", user, after={"reason": user.archived_reason})
 
 
-def restore_member(actor: User, user: User, level: str = AccessLevel.MEMBER) -> None:
+def restore_member(actor: User, user: User, groups: list[str] | None = None) -> None:
     """Take a former member out of the archive and give them access again. Nothing was lost while
-    they were in it, so they come back as themselves."""
+    they were in it, so they come back as themselves, in the groups they are given (Member by
+    default, whatever they held before)."""
+    groups = ["member"] if groups is None else groups
     if not user.is_archived:
         return
     before = {"archived_at": user.archived_at.isoformat(), "reason": user.archived_reason}
@@ -326,16 +326,16 @@ def restore_member(actor: User, user: User, level: str = AccessLevel.MEMBER) -> 
     user.archived_reason = ""
     user.is_active = True
     user.save(update_fields=["archived_at", "archived_reason", "is_active"])
-    set_access_level(actor, user, level, "restored from the archive")
-    record(actor, "member.restored", user, before=before, after={"level": level})
+    set_access(actor, user, groups, "restored from the archive")
+    record(actor, "member.restored", user, before=before, after={"groups": groups})
 
 
-def _another_sysadmin_exists(user: User) -> bool:
-    return (
-        User.objects.filter(access_level=AccessLevel.SYSADMIN, is_active=True)
-        .exclude(pk=user.pk)
-        .exists()
-    )
+def _someone_else_can_assign_groups(user: User) -> bool:
+    """Whether anyone but this account can still decide who may do what. Losing that is how a
+    club locks itself out of its own site, so archiving and deletion both check it."""
+    from apps.ops.groups import people_who_may
+
+    return people_who_may("assign_groups").exclude(pk=user.pk).exists()
 
 
 def archived_members():
@@ -351,10 +351,10 @@ def request_closure(user: User) -> None:
     clock of §4.3 starts; signed agreements stay for their own retention period."""
     user.closure_requested_at = timezone.now()
     user.save(update_fields=["closure_requested_at"])
-    set_access_level(user, user, AccessLevel.NONE, "closure requested by the member")
+    set_access(user, user, [], "closure requested by the member")
     from apps.comms.services import send
 
-    for s in User.objects.filter(access_level=AccessLevel.SYSADMIN, is_active=True):
+    for s in User.objects.filter(is_superuser=True, is_active=True):
         send("account.closure_requested", s, "account", {"person": user})
 
 
@@ -375,7 +375,7 @@ def deletion_effects(user: User) -> dict:
         "past_signups": SignUp.objects.filter(user=user, slot__end__lt=now).count(),
         "agreements": SignedAgreement.objects.filter(user=user).count(),
         "wards": user.wards.filter(active=True).count() if hasattr(user, "wards") else 0,
-        "is_last_sysadmin": user.is_sysadmin and not _another_sysadmin_exists(user),
+        "is_last_sysadmin": user.may("assign_groups") and not _someone_else_can_assign_groups(user),
     }
 
 
@@ -425,7 +425,7 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
     user.name_from_uls = False
     user.pending_uls_name = {}
     user.club_position = ""
-    user.access_level = AccessLevel.NONE
+    user.groups.clear()
     user.is_active = False
     user.deleted_at = timezone.now()
     user.set_unusable_password()

@@ -18,12 +18,13 @@ from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User, levels_at_least
+from apps.accounts.models import User
 from apps.events.models import Event, SignUp
 from apps.events.services.roster import display_zone
 from apps.events.services.viability import evaluate
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.groups import people_who_may
 
 from .models import Announcement
 from .services import compose
@@ -54,10 +55,7 @@ def resolve_audience(event: Event | None, filters: dict) -> list[User]:
     confirmation state, and category. Without: every active member, narrowed by category."""
     cats = [c for c in filters.get("categories", []) if c]
     if event is None:
-        qs = User.objects.filter(
-            is_active=True,
-            access_level__in=levels_at_least(AccessLevel.MEMBER),
-        )
+        qs = people_who_may("view_directory")
         if cats:
             qs = qs.filter(category__in=cats)
         return list(qs.order_by("last_name", "first_name"))

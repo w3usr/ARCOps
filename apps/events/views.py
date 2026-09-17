@@ -28,7 +28,7 @@ def _visible(user, event: Event) -> bool:
 def event_list(request):
     now = timezone.now()
     events = Event.objects.prefetch_related("periods")
-    if not request.user.is_officer:
+    if not request.user.may("manage_events"):
         events = events.filter(state__in=["published", "locked", "completed"]) | events.filter(
             captaincies__user=request.user
         )

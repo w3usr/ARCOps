@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 from tinymce.widgets import TinyMCE
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
@@ -204,7 +204,7 @@ def kbyg_outline() -> str:
 @login_required
 @require_http_methods(["GET", "POST"])
 def event_create(request):
-    if not request.user.is_officer:
+    if not request.user.may("manage_events"):
         raise Http404
     form = EventForm(request.POST or None, initial={"kbyg_html": kbyg_outline()})
     period = PeriodForm(request.POST or None)
@@ -257,7 +257,7 @@ def event_manage(request, pk):
     )
     slot_count = Slot.objects.filter(position__location__event=event, cancelled=False).count()
     candidates = (
-        User.objects.exclude(access_level=AccessLevel.NONE)
+        User.objects.with_access()
         .exclude(captaincies__event=event)
         .order_by("last_name", "first_name")
     )

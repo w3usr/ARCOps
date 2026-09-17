@@ -4,9 +4,10 @@ placement of the sign-in address on acceptance."""
 import re
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, Invitation, User
+from apps.accounts.models import Invitation, User
 from apps.ops.models import ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -23,14 +24,20 @@ def people():
     )
 
     def mk(email, lvl, **kw):
-        return User.objects.create_user(email, "pw-Testing-123", access_level=lvl, **kw)
+        return User.objects.create_user(
+            email,
+            "pw-Testing-123",
+            groups=[] if lvl == "sysadmin" else [lvl],
+            is_superuser=lvl == "sysadmin",
+            **kw,
+        )
 
     return {
-        "sys": mk("root@uni.example", AccessLevel.SYSADMIN, first_name="Sys", last_name="Admin"),
-        "off": mk("off@uni.example", AccessLevel.OFFICER, first_name="Ann", last_name="Officer"),
+        "sys": mk("root@uni.example", "sysadmin", first_name="Sys", last_name="Admin"),
+        "off": mk("off@uni.example", "officer", first_name="Ann", last_name="Officer"),
         "mem": mk(
             "mem@home.example",
-            AccessLevel.MEMBER,
+            "member",
             first_name="Mo",
             last_name="Member",
             callsign="N0MEM",
@@ -60,8 +67,8 @@ def test_members_see_short_names_and_officers_see_everything(people):
     assert _as(people["mem"]).get(f"/members/{people['off'].pk}/").status_code == 404
 
 
-def test_sysadmin_edits_privilege_fields_and_cannot_demote_self(people):
-    c, mem, sys_ = _as(people["sys"]), people["mem"], people["sys"]
+def test_a_sysadmin_sets_what_another_account_may_do(people):
+    c, mem = _as(people["sys"]), people["mem"]
     c.post(
         f"/members/{mem.pk}/",
         {
@@ -72,44 +79,73 @@ def test_sysadmin_edits_privilege_fields_and_cannot_demote_self(people):
             "callsign": "n0mem",
             "category": "student",
             "club_position": "president",
-            "access_level": "officer",
+            "groups": [Group.objects.get(name="officer").pk],
             "under_18": "",
         },
     )
     mem.refresh_from_db()
-    assert (mem.access_level, mem.club_position, mem.callsign) == ("officer", "president", "N0MEM")
-    r = c.post(
-        f"/members/{sys_.pk}/",
-        {
-            "action": "save",
-            "first_name": "Sys",
-            "middle_name": "",
-            "last_name": "Admin",
-            "callsign": "",
-            "category": "",
-            "club_position": "",
-            "access_level": "member",
-            "under_18": "",
-        },
+    assert (mem.in_group("officer"), mem.club_position, mem.callsign) == (
+        True,
+        "president",
+        "N0MEM",
     )
-    sys_.refresh_from_db()
-    assert sys_.access_level == "sysadmin" and "your own sysadmin" in r.content.decode()
+    assert mem.may("manage_events") and not mem.may("approve_agreements")
+
+
+def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
+    """A superuser keeps every capability whatever group they are in, so their own edit is
+    harmless. Anyone else holding it can lock the club out of its own site in one save."""
+    sys_ = people["sys"]
+    keeper = User.objects.create_user(
+        "keeper@example.org",
+        "pw-Testing-123",
+        first_name="Kee",
+        last_name="Per",
+        groups=["sysadmin"],
+    )
+    fields = {
+        "action": "save",
+        "first_name": "Kee",
+        "middle_name": "",
+        "last_name": "Per",
+        "callsign": "",
+        "category": "",
+        "club_position": "",
+        "under_18": "",
+    }
+    c = _as(keeper)
+    r = c.post(
+        f"/members/{keeper.pk}/",
+        {**fields, "groups": [Group.objects.get(name="member").pk]},
+    )
+    keeper.refresh_from_db()
+    assert keeper.in_group("sysadmin") and b"your own ability" in r.content
+
+    # the same edit by a superuser goes through: the flag, not the group, is what they hold by
+    c = _as(sys_)
+    c.post(
+        f"/members/{keeper.pk}/",
+        {**fields, "groups": [Group.objects.get(name="member").pk]},
+    )
+    keeper.refresh_from_db()
+    assert not keeper.in_group("sysadmin")
 
 
 def test_officer_sets_club_position_only(people):
     c, mem = _as(people["off"]), people["mem"]
     body = c.get(f"/members/{mem.pk}/").content.decode()
-    assert 'name="club_position"' in body and 'name="access_level"' not in body
+    assert 'name="club_position"' in body and 'name="groups"' not in body
     assert "temporary password" not in body.lower()
     c.post(f"/members/{mem.pk}/", {"action": "save", "club_position": "president"})
     mem.refresh_from_db()
     assert mem.club_position == "president"
     # A forged privilege change is ignored: the field is not on an officer's form.
     c.post(
-        f"/members/{mem.pk}/", {"action": "save", "club_position": "", "access_level": "sysadmin"}
+        f"/members/{mem.pk}/",
+        {"action": "save", "club_position": "", "groups": [Group.objects.get(name="member").pk]},
     )
     mem.refresh_from_db()
-    assert mem.access_level == "member"
+    assert mem.in_group("member")
     assert c.post(f"/members/{mem.pk}/", {"action": "temporary_password"}).status_code == 404
 
 
@@ -122,10 +158,10 @@ def test_temporary_password_shown_once_and_access_removed_and_restored(people):
     assert shown not in c.get(f"/members/{mem.pk}/").content.decode()
     c.post(f"/members/{mem.pk}/", {"action": "close", "reason": "graduated"})
     mem.refresh_from_db()
-    assert mem.access_level == "none"
+    assert not mem.has_access
     c.post(f"/members/{mem.pk}/", {"action": "reopen"})
     mem.refresh_from_db()
-    assert mem.access_level == "member"
+    assert mem.in_group("member")
 
 
 def test_invitation_reissue_and_acceptance_places_the_sign_in_address(people):
@@ -182,7 +218,7 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
     s, m = people["sys"], people["mem"]
     c = _as(s)
     body = c.get(f"/members/{m.pk}/").content.decode()
-    for label in ("Mobile number", "Graduation year", "Category", "Access level"):
+    for label in ("Mobile number", "Graduation year", "Category", "Access"):
         assert label in body
     assert "Sign-in email" not in body  # every confirmed address signs in; none of them is special
     data = {
@@ -190,7 +226,7 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
         "first_name": m.first_name,
         "last_name": m.last_name,
         "category": m.category,
-        "access_level": m.access_level,
+        "groups": [g.pk for g in m.groups.all()],
         "cell_phone": "555-0199",
         "student_level": "undergraduate",
         "graduation_year": "2028",
@@ -268,7 +304,7 @@ def test_student_fields_are_cleared_when_the_category_is_not_student(people):
             "first_name": m.first_name,
             "last_name": m.last_name,
             "category": "faculty",
-            "access_level": m.access_level,
+            "groups": [g.pk for g in m.groups.all()],
             "email": m.email,
             "student_level": "undergraduate",
             "graduation_year": "2028",

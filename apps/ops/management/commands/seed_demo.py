@@ -11,7 +11,7 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.credentials.models import CredentialType, LicenseRecord, SignedAgreement
 from apps.events.models import (
     Captaincy,
@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 "Example",
                 "N0CAL",
                 "Extra",
-                AccessLevel.SYSADMIN,
+                "sysadmin",
                 "faculty",
             ),
             (
@@ -61,7 +61,7 @@ class Command(BaseCommand):
                 "Example",
                 "N0CAM",
                 "General",
-                AccessLevel.OFFICER,
+                "officer",
                 "student",
             ),
             (
@@ -70,30 +70,31 @@ class Command(BaseCommand):
                 "Example",
                 "N0CAN",
                 "Technician",
-                AccessLevel.MEMBER,
+                "member",
                 "student",
             ),
             # the faculty advisor: approves access agreements and reads the archive (FR-125)
-            ("dee@example.org", "Dee", "Example", "", "", AccessLevel.ADVISOR, "faculty"),
+            ("dee@example.org", "Dee", "Example", "", "", "advisor", "faculty"),
             (
                 "eli@example.org",
                 "Eli",
                 "Example",
                 "N0CAP",
                 "General",
-                AccessLevel.MEMBER,
+                "member",
                 "community",
             ),
         ]
         users = {}
-        for email, first, last, call, cls, level, cat in people:
+        for email, first, last, call, cls, group, cat in people:
             u, _ = account(
                 email,
                 first_name=first,
                 last_name=last,
                 callsign=call,
-                access_level=level,
                 category=cat,
+                is_superuser=group == "sysadmin",
+                groups=[group],
             )
             u.set_password("demo-password-please-change")
             u.save()
@@ -186,14 +187,14 @@ class Command(BaseCommand):
             last_name="Example",
             cell_phone="555-0100",
             category="community",
-            access_level=AccessLevel.MEMBER,
+            groups=["member"],
         )
         kim, kim_new = account(
             "kim@example.org",
             first_name="Kim",
             last_name="Example",
             category="student",
-            access_level=AccessLevel.MEMBER,
+            groups=["member"],
             under_18=True,
         )
         for u in (pat, kim):
@@ -221,7 +222,7 @@ class Command(BaseCommand):
             last_name="Example",
             callsign="N0OLD",
             category="student",
-            access_level=AccessLevel.MEMBER,
+            groups=["member"],
         )
         if gone_new:
             gone.set_password("demo-password-please-change")

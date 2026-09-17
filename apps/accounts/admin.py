@@ -26,7 +26,7 @@ class AddressInline(admin.TabularInline):
 class UserCreationForm(DjangoUserCreationForm):
     class Meta(DjangoUserCreationForm.Meta):
         model = User
-        fields = ("first_name", "last_name", "category", "access_level")
+        fields = ("first_name", "last_name", "category")
 
 
 class UserChangeForm(DjangoUserChangeForm):
@@ -46,10 +46,10 @@ class UserAdmin(DjangoUserAdmin):
         "last_name",
         "callsign",
         "category",
-        "access_level",
+        "access_shown",
         "under_18",
     )
-    list_filter = ("access_level", "category", "under_18", "archived_at")
+    list_filter = ("groups", "is_superuser", "category", "under_18", "archived_at")
     search_fields = ("addresses__address", "first_name", "last_name", "callsign")
     fieldsets = (
         (None, {"fields": ("public_id", "password")}),
@@ -69,7 +69,7 @@ class UserAdmin(DjangoUserAdmin):
             "Contact",
             {"fields": ("cell_phone",)},
         ),
-        ("Club", {"fields": ("callsign", "category", "club_position", "access_level", "under_18")}),
+        ("Club", {"fields": ("callsign", "category", "club_position", "under_18")}),
         ("Student", {"fields": ("student_level", "graduation_semester", "graduation_year")}),
         (
             "Leaving",
@@ -103,13 +103,19 @@ class UserAdmin(DjangoUserAdmin):
                     "password1",
                     "password2",
                     "category",
-                    "access_level",
+                    "groups",
                 )
             },
         ),
     )
     readonly_fields = ("date_joined", "public_id")
     inlines = (AddressInline,)
+
+    @admin.display(description="Access")
+    def access_shown(self, obj) -> str:
+        if obj.is_superuser:
+            return "sysadmin"
+        return ", ".join(g.name for g in obj.groups.all()) or "none"
 
     @admin.display(description="Addresses")
     def addresses_shown(self, obj) -> str:

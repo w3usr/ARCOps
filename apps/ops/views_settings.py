@@ -145,7 +145,7 @@ def _current() -> dict:
 @login_required
 @require_http_methods(["GET", "POST"])
 def settings_page(request):
-    if not request.user.is_sysadmin:
+    if not request.user.may("edit_club_settings"):
         raise Http404
     current = _current()
     if request.method == "POST":

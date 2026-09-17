@@ -3,11 +3,12 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, NotificationPreference, User
+from apps.accounts.models import NotificationPreference, User
 from apps.comms import announce
 from apps.comms.models import Announcement, Outbox
 from apps.events.models import (
@@ -25,9 +26,9 @@ from apps.ops.models import AuditLog, ClubSetting
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, category="student", **kw):
+def _user(email, level="member", category="student", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.category = category
     u.save()
     return u
@@ -56,7 +57,7 @@ def test_audience_filters_count_and_send_with_reply_to_and_unsubscribe():
     ClubSetting.objects.update_or_create(
         key="club.contact_email", defaults={"value": "club@example.org"}
     )
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     a = _user("a@example.org", first_name="A", last_name="One")
     b = _user("b@example.org", category="community", first_name="B", last_name="Two")
     c = _user("c@example.org", first_name="C", last_name="Three")
@@ -117,7 +118,7 @@ def test_audience_filters_count_and_send_with_reply_to_and_unsubscribe():
 
 
 def test_outside_copy_records_without_sending_and_lists_bcc_addresses():
-    cap = _user("cap@example.org", AccessLevel.OFFICER)
+    cap = _user("cap@example.org", "officer")
     a = _user("a@example.org", first_name="A", last_name="One")
     e, slots = _event(timezone.now() + timedelta(days=2), cap)
     SignUp.objects.create(slot=slots[0], user=a, role="operator")
@@ -138,7 +139,7 @@ def test_outside_copy_records_without_sending_and_lists_bcc_addresses():
 
 def test_unsubscribe_link_and_one_click_turn_off_announcements_only():
     ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
-    off = _user("off@example.org", AccessLevel.OFFICER)
+    off = _user("off@example.org", "officer")
     m = _user("m@example.org", first_name="Mo", last_name="M")
     token = announce.unsubscribe_token(m)
     cl = Client()
@@ -158,7 +159,7 @@ def test_unsubscribe_link_and_one_click_turn_off_announcements_only():
 
 
 def test_contest_fields_saved_shown_and_in_the_reminder():
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="T")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="T")
     mem = _user("m@example.org", first_name="Mo", last_name="M")
     e, slots = _event(timezone.now() + timedelta(hours=20), cap)
     cl = Client()

@@ -27,11 +27,16 @@ class ImpersonationMiddleware(MiddlewareMixin):
     def process_request(self, request):
         target_id = request.session.get(SESSION_KEY)
         real = getattr(request, "user", None)
-        if not target_id or real is None or not real.is_authenticated or not real.is_sysadmin:
+        if (
+            not target_id
+            or real is None
+            or not real.is_authenticated
+            or not real.may("impersonate_members")
+        ):
             request.impersonator = None
             return None
         target = User.objects.filter(pk=target_id).first()
-        if target is None or target.is_sysadmin:
+        if target is None or target.is_superuser:
             request.session.pop(SESSION_KEY, None)
             request.impersonator = None
             return None
@@ -47,10 +52,10 @@ class ImpersonationMiddleware(MiddlewareMixin):
 @login_required
 @require_POST
 def start(request, pk):
-    if not request.user.is_sysadmin or getattr(request, "impersonator", None):
+    if not request.user.may("impersonate_members") or getattr(request, "impersonator", None):
         raise Http404
     target = get_object_or_404(User, pk=pk)
-    if target.is_sysadmin:
+    if target.is_superuser:
         messages.error(request, "Another sysadmin's view cannot be impersonated.")
         return redirect("member_detail", pk=pk)
     request.session[SESSION_KEY] = target.pk

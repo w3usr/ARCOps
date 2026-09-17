@@ -5,11 +5,12 @@ summaries (FR-28), revocation (FR-29), re-sign policy on a new version (FR-30), 
 import datetime as dt
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.comms.models import Outbox
 from apps.credentials.models import AgreementTemplate, CredentialType, SignedAgreement
 from apps.credentials.services import agreement_expiry_run, approve
@@ -18,9 +19,9 @@ from apps.ops.models import AuditLog, ClubSetting
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, position="", **kw):
+def _user(email, level="member", position="", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.club_position = position
     u.category = kw.get("category", "student")
     u.save()
@@ -79,9 +80,7 @@ def _approved(user, template, expires):
 
 def test_expiry_notices_bundle_agreements_and_summarise_to_approvers():
     st, it, t_st, t_it = _setup()
-    adv = _user(
-        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
-    )
+    adv = _user("adv@example.org", "advisor", "advisor", first_name="Ad", last_name="Visor")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member", callsign="N0MEM")
     today = timezone.now().date()
     _approved(mem, t_st, today + dt.timedelta(days=20))
@@ -140,9 +139,7 @@ def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so()
 
 def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
     st, it, t_st, t_it = _setup()
-    adv = _user(
-        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
-    )
+    adv = _user("adv@example.org", "advisor", "advisor", first_name="Ad", last_name="Visor")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member", callsign="N0MEM")
     today = timezone.now().date()
     a = _approved(mem, t_st, today + dt.timedelta(days=20))
@@ -175,9 +172,7 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
 def test_signed_pdf_is_rendered_stored_and_downloadable_by_signer_and_approver(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
     st, it, t_st, t_it = _setup()
-    adv = _user(
-        "adv@example.org", AccessLevel.ADVISOR, "advisor", first_name="Ad", last_name="Visor"
-    )
+    adv = _user("adv@example.org", "advisor", "advisor", first_name="Ad", last_name="Visor")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     other = _user("o@example.org", first_name="Ot", last_name="Her")
     c = Client()
@@ -206,7 +201,7 @@ def test_password_manage_rotates_and_notifies_current_holders_and_lists_former_v
 
     settings.FIELD_ENCRYPTION_KEY = Fernet.generate_key().decode()
     st, it, t_st, t_it = _setup()
-    sysadmin = _user("s@example.org", AccessLevel.SYSADMIN, first_name="Sys", last_name="Admin")
+    sysadmin = _user("s@example.org", "sysadmin", first_name="Sys", last_name="Admin")
     holder = _user("h@example.org", first_name="Ho", last_name="Lder")
     former = _user("f@example.org", first_name="For", last_name="Mer")
     today = timezone.now().date()
@@ -238,7 +233,7 @@ def test_password_manage_rotates_and_notifies_current_holders_and_lists_former_v
 
 def test_member_roster_filters_graduated_and_audits_contact_export():
     _setup()
-    off = _user("off@example.org", AccessLevel.OFFICER, first_name="An", last_name="Officer")
+    off = _user("off@example.org", "officer", first_name="An", last_name="Officer")
     grad = _user("g@example.org", first_name="Gra", last_name="Duate")
     grad.graduation_semester, grad.graduation_year, grad.student_level = (
         "spring",

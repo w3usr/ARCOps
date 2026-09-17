@@ -14,7 +14,7 @@
   <p><a href="{% url 'my_messages' %}">Read them</a></p>
 </div>
 {% endif %}
-{% if user.is_officer %}
+{% if perms.ops.view_member_records %}
 <p class="muted">Email delivery is <strong>{{ delivery_mode }}</strong>{% if delivery_mode != 'on' %}; invitation links and notices are shown in the application and delivering them is yours to do{% endif %}. <a href="{% url 'outbox' %}">Outbox</a>.</p>
 {% endif %}
 {% if pending_review %}

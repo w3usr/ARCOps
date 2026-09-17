@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops.audit import record
 
 from .models import CredentialType, SharedSecret, SignedAgreement
@@ -24,8 +24,8 @@ from .views import _is_approver
 
 @login_required
 def password_manage(request):
-    """FR-32: set or rotate the shared computer password from a page, sysadmins only."""
-    if not request.user.is_sysadmin:
+    """FR-32: set or rotate the shared computer password from a page."""
+    if not request.user.may("rotate_shared_secret"):
         raise Http404
     current = SharedSecret.objects.filter(name="computer_account").first()
     if request.method == "POST":
@@ -52,7 +52,7 @@ def password_manage(request):
 @login_required
 def access_rosters(request):
     """FR-31, FR-84: who holds station and computer access, with expiry; filterable; CSV."""
-    if not request.user.is_officer:
+    if not request.user.may("view_reports"):
         raise Http404
     today = timezone.now().date()
     within = request.GET.get("expiring", "")
@@ -191,10 +191,10 @@ def _graduation_passed(u, today) -> bool:
 def member_roster(request):
     """FR-87: the officers' roster with credentials, graduation, and last sign-in; the past-
     graduation filter; contact details only through the separate, audited export."""
-    if not request.user.is_officer:
+    if not request.user.may("view_reports"):
         raise Http404
     users = (
-        User.objects.exclude(access_level=AccessLevel.NONE)
+        User.objects.with_access()
         .select_related("license", "joined_via")
         .prefetch_related("addresses")
         .order_by("last_name", "first_name")
@@ -219,7 +219,7 @@ def member_roster(request):
             "position",
             "student_level",
             "graduation",
-            "access_level",
+            "access",
             "credentials",
             "last_sign_in",
         ]
@@ -238,7 +238,7 @@ def member_roster(request):
                 u.club_position,
                 u.student_level or "",
                 f"{u.graduation_semester or ''} {u.graduation_year or ''}".strip(),
-                u.access_level,
+                ", ".join(g.name for g in u.groups.all()) or "none",
                 "; ".join(r["credentials"]),
                 u.last_login.isoformat() if u.last_login else "",
             ]

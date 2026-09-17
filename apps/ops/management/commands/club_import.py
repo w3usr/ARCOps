@@ -85,6 +85,18 @@ class Command(BaseCommand):
             f"settings: {created} created, {updated} updated, {kept} kept (interface edits)"
         )
 
+        # The access groups, which is what a person may do (apps/ops/capabilities.py). A group a
+        # sysadmin has edited is left alone unless --reset says otherwise.
+        from apps.ops.capabilities import ensure_permissions
+        from apps.ops.groups import sync as sync_groups
+
+        ensure_permissions()
+
+        g = sync_groups(data.get("access_groups"), reset=opts["reset"])
+        self.stdout.write(
+            f"access groups: {g['created']} created, {g['updated']} updated, {g['kept']} kept"
+        )
+
         for ct in data.get("credential_types", []):
             CredentialType.objects.update_or_create(
                 key=ct["key"],

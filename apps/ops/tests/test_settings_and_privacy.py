@@ -3,7 +3,7 @@
 import pytest
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops.config import set_setting, setting
 from apps.ops.models import AuditLog, ClubSetting
 
@@ -12,7 +12,12 @@ pytestmark = pytest.mark.django_db
 
 def _as(level):
     u = User.objects.create_user(
-        f"{level}@example.org", "pw-Testing-123", access_level=level, first_name="A", last_name="B"
+        f"{level}@example.org",
+        "pw-Testing-123",
+        groups=[level],
+        is_superuser=level == "sysadmin",
+        first_name="A",
+        last_name="B",
     )
     c = Client()
     c.force_login(u)
@@ -20,7 +25,7 @@ def _as(level):
 
 
 def test_settings_page_edits_are_stored_and_audited():
-    c, u = _as(AccessLevel.SYSADMIN)
+    c, u = _as("sysadmin")
     set_setting(None, "defaults.slot_length_minutes", 60)
     r = c.get("/ops/settings/")
     assert r.status_code == 200 and b"defaults.slot_length_minutes" in r.content
@@ -37,7 +42,7 @@ def test_settings_page_edits_are_stored_and_audited():
     assert ClubSetting.objects.get(key="club.short_name").value == "Test Club"
     assert not ClubSetting.objects.filter(key="slot_roles").exists()
     assert AuditLog.objects.filter(action="setting.changed").count() >= 2
-    c2, _ = _as(AccessLevel.OFFICER)
+    c2, _ = _as("officer")
     assert c2.get("/ops/settings/").status_code == 404
 
 
@@ -51,12 +56,12 @@ def test_privacy_notice_is_public_and_linked():
     assert (
         r.status_code == 200 and b"Kept for two years" in r.content and b"<script>" not in r.content
     )
-    c, _ = _as(AccessLevel.MEMBER)
+    c, _ = _as("member")
     assert b'href="/privacy/"' in c.get("/").content
 
 
 def test_new_event_form_starts_with_kbyg_outline():
-    c, _ = _as(AccessLevel.OFFICER)
+    c, _ = _as("officer")
     r = c.get("/events/new/")
     assert r.status_code == 200
     assert b"Where and when" in r.content and b"Who to contact" in r.content
@@ -64,7 +69,7 @@ def test_new_event_form_starts_with_kbyg_outline():
 
 
 def test_time_zone_is_a_drop_down_and_bad_values_are_refused():
-    c, _ = _as(AccessLevel.SYSADMIN)
+    c, _ = _as("sysadmin")
     set_setting(None, "club.timezone", "America/New_York")
     r = c.get("/ops/settings/")
     body = r.content.decode()
@@ -82,7 +87,7 @@ def test_accent_uses_the_colour_picker_and_images_upload(settings, tmp_path):
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     settings.MEDIA_ROOT = tmp_path
-    c, _ = _as(AccessLevel.SYSADMIN)
+    c, _ = _as("sysadmin")
     body = c.get("/ops/settings/").content.decode()
     assert (
         'name="branding.accent" type="color"' in body and 'name="branding.logo" type="file"' in body
@@ -117,6 +122,6 @@ def test_accent_uses_the_colour_picker_and_images_upload(settings, tmp_path):
 
 
 def test_event_form_offers_the_display_zone_as_a_drop_down():
-    c, _ = _as(AccessLevel.OFFICER)
+    c, _ = _as("officer")
     body = c.get("/events/new/").content.decode()
     assert '<select name="display_timezone"' in body and 'value="America/New_York"' in body

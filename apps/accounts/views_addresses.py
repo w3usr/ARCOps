@@ -27,7 +27,7 @@ ACTIONS = (
 def may_edit(actor: User, subject: User) -> bool:
     """A member holds their own addresses; an officer or sysadmin holds anyone's, because
     someone has to be able to help a member who has lost the mailbox they signed up with."""
-    return actor.pk == subject.pk or actor.is_officer or actor.is_sysadmin
+    return actor.pk == subject.pk or actor.may("manage_member_addresses")
 
 
 def handle(request, subject: User) -> bool:
@@ -106,7 +106,7 @@ def handle(request, subject: User) -> bool:
         return True
 
     if action == "address_unconfirm":
-        if not actor.is_sysadmin:
+        if not actor.may("manage_member_addresses"):
             messages.error(request, "Only a sysadmin can take an address's confirmation away.")
         elif len(addresses.confirmed(subject)) == 1 and address in addresses.confirmed(subject):
             messages.error(

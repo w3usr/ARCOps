@@ -4,11 +4,12 @@ import datetime as dt
 import re
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, Invitation, User
+from apps.accounts.models import Invitation, User
 from apps.accounts.services import create_invitation, issue_temporary_password
 
 pytestmark = pytest.mark.django_db
@@ -25,7 +26,7 @@ def officer():
         "x",
         first_name="Off",
         last_name="Icer",
-        access_level=AccessLevel.OFFICER,
+        groups=["officer"],
         category="faculty",
     )
 
@@ -83,9 +84,7 @@ def test_invitation_accept_admits_member_at_once():
     )
     assert r.status_code == 302 and r["Location"] == "/"
     u = User.objects.by_address("new@example.org").get()
-    assert (
-        u.access_level == AccessLevel.MEMBER and u.category == "student" and u.callsign == "N0NEW"
-    )
+    assert u.in_group("member") and u.category == "student" and u.callsign == "N0NEW"
     assert u.license.status == "unverified"  # not in the local ULS table yet
     inv.refresh_from_db()
     assert inv.state == Invitation.State.COMPLETED and inv.accepted_by == u
@@ -101,9 +100,9 @@ def test_minor_invitation_is_addressed_to_the_guardian():
     assert "under 18" in body and "parent@example.org" in body and "Your first name" in body
 
 
-def test_no_access_level_is_signed_out():
+def test_an_account_in_no_group_is_signed_out():
     u = User.objects.create_user(
-        "none@example.org", "x", first_name="No", last_name="Access", access_level=AccessLevel.NONE
+        "none@example.org", "x", first_name="No", last_name="Access", groups=[]
     )
     c = Client()
     c.force_login(u)
@@ -115,7 +114,7 @@ def test_no_access_level_is_signed_out():
 def test_temporary_password_forces_change_and_expires():
     o = officer()
     u = User.objects.create_user(
-        "tmp@example.org", "x", first_name="T", last_name="P", access_level=AccessLevel.MEMBER
+        "tmp@example.org", "x", first_name="T", last_name="P", groups=["member"]
     )
     issue_temporary_password(o, u)
     c = Client()
@@ -135,7 +134,6 @@ def test_admin_add_user_page_renders_with_custom_forms():
         "x",
         first_name="A",
         last_name="D",
-        access_level=AccessLevel.SYSADMIN,
         is_superuser=True,
     )
     c = Client()
@@ -151,7 +149,6 @@ def test_every_page_has_one_h1_and_labelled_inputs():
         "x",
         first_name="A",
         last_name="Y",
-        access_level=AccessLevel.SYSADMIN,
         is_superuser=True,
         category="faculty",
     )
@@ -189,7 +186,7 @@ def test_real_login_post_works_behind_a_proxy_with_empty_remote_addr():
         "a-long-password-123",
         first_name="R",
         last_name="L",
-        access_level=AccessLevel.MEMBER,
+        groups=["member"],
     )
     c = Client()
     page = c.get("/accounts/login/", REMOTE_ADDR="", HTTP_X_REAL_IP="203.0.113.5")
@@ -222,7 +219,7 @@ def test_password_reset_mail_comes_from_the_club_with_its_own_subject(settings):
     set_setting(None, "club.short_name", "EXAMPLE")
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     u = User.objects.create_user("who@example.org", "pw-Testing-123", first_name="W", last_name="H")
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     Client().post("/accounts/password/reset/", {"email": "who@example.org"})
     assert len(mail.outbox) == 1
@@ -260,7 +257,7 @@ def test_password_reset_follows_the_addresses_that_sign_you_in(settings):
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     u = User.objects.create_user("who@example.edu", "pw-Testing-123", first_name="W", last_name="H")
     addresses.add(u, "who.home@example.org")
-    u.access_level = AccessLevel.MEMBER
+    u.groups.set(Group.objects.filter(name="member"))
     u.save()
     c = Client()
 

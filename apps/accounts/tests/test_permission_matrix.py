@@ -16,7 +16,7 @@ from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.credentials.models import AgreementTemplate, CredentialType
 from apps.events.models import Event, Location, OperatingPeriod, Position
 from apps.events.services.slots import generate_slots
@@ -36,17 +36,19 @@ def _user(email, level, **kw):
     kw.setdefault("first_name", email.split("@")[0].title())
     kw.setdefault("last_name", "Tester")
     kw.setdefault("category", "student")
-    return User.objects.create_user(email, "pw-Testing-123", access_level=level, **kw)
+    return User.objects.create_user(
+        email, "pw-Testing-123", groups=[level], is_superuser=level == "sysadmin", **kw
+    )
 
 
 @pytest.fixture
 def world():
     people = {
-        "provisional": _user("prov@example.org", AccessLevel.PROVISIONAL),
-        "member": _user("mem@example.org", AccessLevel.MEMBER),
-        "officer": _user("off@example.org", AccessLevel.OFFICER),
-        "advisor": _user("adv@example.org", AccessLevel.ADVISOR, category="faculty"),
-        "sysadmin": _user("sys@example.org", AccessLevel.SYSADMIN, category="faculty"),
+        "provisional": _user("prov@example.org", "provisional"),
+        "member": _user("mem@example.org", "member"),
+        "officer": _user("off@example.org", "officer"),
+        "advisor": _user("adv@example.org", "advisor", category="faculty"),
+        "sysadmin": _user("sys@example.org", "sysadmin", category="faculty"),
     }
     people["sysadmin"].is_superuser = True
     people["sysadmin"].save()
@@ -191,8 +193,8 @@ def test_every_page_answers_each_kind_of_account_the_same_way(role, world):
 
 def test_an_account_with_no_access_and_an_archived_one_reach_nothing(world):
     """Two ways of being outside the club, and neither is a role."""
-    closed = _user("closed@example.org", AccessLevel.NONE)
-    archived = _user("gone@example.org", AccessLevel.MEMBER)
+    closed = _user("closed@example.org", "none")
+    archived = _user("gone@example.org", "member")
     from apps.accounts.services import archive_member
 
     archive_member(world["people"]["advisor"], archived, "graduated")

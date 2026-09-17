@@ -23,8 +23,8 @@ from apps.ops.config import setting
 
 from . import entry, views_addresses
 from .account import AccountForm, readonly_rows, save_account
-from .models import AccessLevel, User
-from .services import issue_temporary_password, set_access_level
+from .models import User
+from .services import issue_temporary_password, set_access
 
 
 def _standing(user) -> dict:
@@ -43,7 +43,7 @@ def _standing(user) -> dict:
 
 @login_required
 def members(request):
-    full = request.user.is_officer
+    full = request.user.may("view_member_records")
     q = request.GET.get("q", "").strip()
     # The directory is who the club has now. A former member is in the archive (FR-125), which
     # is read by a faculty advisor or a sysadmin, so they are out of this list for everyone.
@@ -52,9 +52,9 @@ def members(request):
         # the directory shows every address an officer may write to, so they come in one query
         current.select_related("joined_via", "license").prefetch_related("addresses")
         if full
-        else current.exclude(
-            access_level__in=[AccessLevel.NONE, AccessLevel.PROVISIONAL]
-        ).select_related("license")
+        else current.filter(groups__permissions__codename="view_directory")
+        .distinct()
+        .select_related("license")
     )
     if not request.user.is_member:
         raise Http404  # FR-121: a Provisional member sees no directory
@@ -78,12 +78,21 @@ def members(request):
     )
 
 
+def _still_assigns_groups(form, actor, member) -> bool:
+    """Whoever is editing keeps the capability that assigns capabilities. Without this, one save
+    can leave a club with nobody able to give anyone access, and no way back but the shell."""
+    if "groups" not in form.changed_data or member != actor or actor.is_superuser:
+        return True  # a superuser cannot lose it, and nobody else's account is at stake here
+    wanted = form.cleaned_data.get("groups") or []
+    return any(g.permissions.filter(codename="assign_groups").exists() for g in wanted)
+
+
 @login_required
 def archive(request):
     """The club's record of its former members (FR-125). Only a faculty advisor or a sysadmin
     reads it: it holds contact details and history for people who have left, which is the most
     that anyone here holds about someone who is no longer around to ask."""
-    if not request.user.is_advisor:
+    if not request.user.may("view_archive"):
         raise Http404
     from .services import archived_members
 
@@ -100,19 +109,17 @@ def archive(request):
         ).distinct()
     record(request.user, "archive.viewed", None, after={"search": q} if q else None)
     cats = {c["key"]: c["label"] for c in (setting("member_categories", []) or [])}
-    return render(
-        request, "accounts/archive.html", {"people": people, "q": q, "categories": cats}
-    )
+    return render(request, "accounts/archive.html", {"people": people, "q": q, "categories": cats})
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
 def member_detail(request, pk):
-    if not request.user.is_officer:
+    if not request.user.may("view_member_records"):
         raise Http404
     member = get_object_or_404(User, pk=pk)
     actor = request.user
-    if member.is_archived and not actor.is_advisor:
+    if member.is_archived and not actor.may("view_archive"):
         raise Http404  # the archive is the advisor's to read, and so is a page within it
     temp_password = None
     form = AccountForm(instance=member, actor=actor)
@@ -122,12 +129,12 @@ def member_detail(request, pk):
         if action == "save":
             form = AccountForm(request.POST, instance=member, actor=actor)
             if form.is_valid():
-                if (
-                    "access_level" in form.changed_data
-                    and member == actor
-                    and form.cleaned_data["access_level"] != AccessLevel.SYSADMIN
-                ):
-                    form.add_error("access_level", "You cannot remove your own sysadmin access.")
+                keeps_the_keys = _still_assigns_groups(form, actor, member)
+                if not keeps_the_keys:
+                    form.add_error(
+                        "groups",
+                        "You cannot take away your own ability to decide who may do what.",
+                    )
                 else:
                     result = save_account(form, actor, f"{request.scheme}://{request.get_host()}")
                     call = result["callsign"]
@@ -172,7 +179,7 @@ def member_detail(request, pk):
                         "not have reached it yet; a sysadmin can set an override below.",
                     )
             return redirect("member_detail", pk=member.pk)
-        elif action == "license_override" and actor.is_sysadmin:  # FR-15, FR-20
+        elif action == "license_override" and actor.may("override_license"):  # FR-15, FR-20
             from apps.credentials.models import LicenseRecord
             from apps.credentials.services import apply_override, lift_override
 
@@ -213,7 +220,9 @@ def member_detail(request, pk):
                 request,
                 f"{member.display_first} now holds their own account; the guardians have been told. Pass on the temporary password below.",
             )
-        elif action == "link_guardian" and actor.is_sysadmin and member.under_18:  # §2.4
+        elif (
+            action == "link_guardian" and actor.may("edit_member_privileges") and member.under_18
+        ):  # §2.4
             from .guardian import link_guardian
 
             g = User.objects.by_address(request.POST.get("guardian_email", "")).first()
@@ -225,7 +234,7 @@ def member_detail(request, pk):
             else:
                 link_guardian(actor, member, g, request.POST.get("relationship", "").strip()[:40])
                 messages.success(request, f"{g.full_name} linked as guardian.")
-        elif action == "unlink_guardian" and actor.is_sysadmin:
+        elif action == "unlink_guardian" and actor.may("edit_member_privileges"):
             from .guardian import unlink_guardian
             from .models import Guardianship
 
@@ -240,7 +249,7 @@ def member_detail(request, pk):
             else:
                 unlink_guardian(actor, link)
                 messages.success(request, f"{link.guardian.full_name} unlinked.")
-        elif action == "delete" and actor.is_sysadmin:  # FR-118
+        elif action == "delete" and actor.may("delete_accounts"):  # FR-118
             from .services import DeletionRefused, delete_account
 
             reason = request.POST.get("reason", "").strip()
@@ -257,25 +266,25 @@ def member_detail(request, pk):
                 f"Account deleted. {result['withdrawn']} future sign-up(s) withdrawn; {result['agreements']} signed agreement(s) kept for their retention period.",
             )
             return redirect("members")
-        elif action == "temporary_password" and actor.is_sysadmin:
+        elif action == "temporary_password" and actor.may("issue_temporary_password"):
             temp_password = issue_temporary_password(actor, member)
             hours = int(setting("defaults.temporary_password_expiry_hours", 72))
             messages.success(
                 request,
                 f"Temporary password issued. It works once, within {hours} hours, and is shown only here.",
             )
-        elif action == "close" and actor.is_sysadmin:
+        elif action == "close" and actor.may("assign_groups"):
             if member == actor:
                 messages.error(request, "You cannot close your own account.")
             else:
-                set_access_level(actor, member, AccessLevel.NONE, request.POST.get("reason", ""))
+                set_access(actor, member, [], request.POST.get("reason", ""))
                 messages.success(request, f"{member.short_name} no longer has access.")
                 return redirect("member_detail", pk=member.pk)
-        elif action == "reopen" and actor.is_sysadmin:
-            set_access_level(actor, member, AccessLevel.MEMBER, "reopened")
+        elif action == "reopen" and actor.may("assign_groups"):
+            set_access(actor, member, ["member"], "reopened")
             messages.success(request, f"{member.short_name} is a member again.")
             return redirect("member_detail", pk=member.pk)
-        elif action == "archive" and actor.is_advisor:  # FR-125
+        elif action == "archive" and actor.may("archive_members"):  # FR-125
             from .services import ArchiveRefused, archive_member
 
             if member == actor:
@@ -292,7 +301,7 @@ def member_detail(request, pk):
                     "an advisor can bring them back.",
                 )
             return redirect("member_detail", pk=member.pk)
-        elif action == "restore" and actor.is_advisor:
+        elif action == "restore" and actor.may("archive_members"):
             from .services import restore_member
 
             restore_member(actor, member)
@@ -324,13 +333,13 @@ def member_detail(request, pk):
             "form": form,
             "ladder": ctx_ladder,
             "readonly_rows": readonly_rows(actor, member, skip=("first_name",)),
-            "manage_heading": "Manage" if actor.is_sysadmin else "Club position",
+            "manage_heading": "Manage" if actor.may("edit_member_privileges") else "Club position",
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "address_subject_is_self": member == actor,
             "deletion": __import__(
                 "apps.accounts.services", fromlist=["deletion_effects"]
             ).deletion_effects(member)
-            if actor.is_sysadmin
+            if actor.may("delete_accounts")
             else None,
             "can_revoke": __import__(
                 "apps.credentials.views", fromlist=["_is_approver"]
@@ -350,7 +359,7 @@ def member_detail(request, pk):
 @login_required
 def hours(request):
     """FR-124: credited hours per member for one entry-link label (a course), with CSV."""
-    if not request.user.is_officer:
+    if not request.user.may("view_reports"):
         raise Http404
     from django.http import HttpResponse
 

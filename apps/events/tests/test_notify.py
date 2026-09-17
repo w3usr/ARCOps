@@ -4,12 +4,13 @@ cancellation and move notices (FR-56, FR-58, FR-74, FR-91), and the digest (FR-7
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
-from apps.accounts.services import set_access_level
+from apps.accounts.models import User
+from apps.accounts.services import set_access
 from apps.comms.models import Outbox
 from apps.events.models import (
     Captaincy,
@@ -28,9 +29,9 @@ from apps.ops.models import ClubSetting
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, **kw):
+def _user(email, level="member", **kw):
     u = User.objects.create_user(email, "pw-Testing-123", **kw)
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.save()
     return u
 
@@ -64,7 +65,7 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
     now = timezone.now()
     cap = _user(
         "cap@example.org",
-        AccessLevel.OFFICER,
+        "officer",
         first_name="Cap",
         last_name="Tain",
         cell_phone="555-0100",
@@ -106,7 +107,7 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
 
 def test_cannot_make_it_token_cancels_and_tells_the_captains_late():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now + timedelta(hours=5), captain=cap)
     su = SignUp.objects.create(slot=slots[0], user=mem, role="operator")
@@ -123,7 +124,7 @@ def test_cannot_make_it_token_cancels_and_tells_the_captains_late():
 
 def test_member_cancel_outside_cutoff_is_not_late_and_captain_removal_tells_the_member():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now + timedelta(days=3), captain=cap)
     su = SignUp.objects.create(slot=slots[0], user=mem, role="observer")
@@ -141,7 +142,7 @@ def test_member_cancel_outside_cutoff_is_not_late_and_captain_removal_tells_the_
 
 def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now + timedelta(days=3), captain=cap)
     c = Client()
@@ -170,13 +171,13 @@ def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone
 
 def test_access_removed_withdraws_future_signups_and_tells_the_captains():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
-    sysadmin = _user("s@example.org", AccessLevel.SYSADMIN)
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
+    sysadmin = _user("s@example.org", "sysadmin")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now + timedelta(days=2), captain=cap)
     SignUp.objects.create(slot=slots[0], user=mem, role="observer")
     SignUp.objects.create(slot=slots[1], user=mem, role="observer")
-    set_access_level(sysadmin, mem, AccessLevel.NONE, "graduated")
+    set_access(sysadmin, mem, [], "graduated")
     assert not SignUp.objects.filter(user=mem).exists()
     m = _msgs(cap, "moved").get()
     assert "lost access" in m.subject and "2 sign-up" in m.subject
@@ -184,7 +185,7 @@ def test_access_removed_withdraws_future_signups_and_tells_the_captains():
 
 def test_warnings_go_to_people_and_captains_once_per_state_and_carry_late_notes():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     new = _user("new@example.org", first_name="Newt", last_name="Person")
     e, slots = _event(now + timedelta(hours=30), captain=cap)
     SignUp.objects.create(slot=slots[0], user=new, role="observer", note="running 10 minutes late")
@@ -204,7 +205,7 @@ def test_warnings_go_to_people_and_captains_once_per_state_and_carry_late_notes(
 
 def test_no_show_notice_goes_once_to_captains():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now - timedelta(minutes=20), captain=cap)
     su = SignUp.objects.create(
@@ -220,7 +221,7 @@ def test_no_show_notice_goes_once_to_captains():
 
 def test_captain_can_check_a_member_in_from_the_slot_page():
     now = timezone.now()
-    cap = _user("cap@example.org", AccessLevel.OFFICER, first_name="Cap", last_name="Tain")
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now - timedelta(minutes=10), captain=cap)
     su = SignUp.objects.create(slot=slots[0], user=mem, role="observer")

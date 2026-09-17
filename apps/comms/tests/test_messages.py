@@ -2,11 +2,12 @@
 (FR-105)."""
 
 import pytest
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.management import call_command
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, NotificationPreference, User
+from apps.accounts.models import NotificationPreference, User
 from apps.comms.models import MessageTemplate, Outbox
 from apps.comms.services import compose, render_message, seed_templates, send
 from apps.ops.models import AuditLog, ClubSetting
@@ -14,9 +15,9 @@ from apps.ops.models import AuditLog, ClubSetting
 pytestmark = pytest.mark.django_db
 
 
-def _user(email="m@example.org", level=AccessLevel.MEMBER):
+def _user(email="m@example.org", level="member"):
     u = User.objects.create_user(email, "pw-Testing-123", first_name="Mo", last_name="Member")
-    u.access_level = level
+    u.groups.set(Group.objects.filter(name=level))
     u.save()
     return u
 
@@ -116,7 +117,7 @@ def test_outbox_is_officers_only_and_filters_by_state():
     c = Client()
     c.force_login(m)
     assert c.get("/ops/outbox/").status_code == 404
-    o = _user("o@example.org", AccessLevel.OFFICER)
+    o = _user("o@example.org", "officer")
     c.force_login(o)
     body = c.get("/ops/outbox/").content.decode()
     assert "Sent one" in body and "Kept one" in body and "Email delivery is <strong>off" in body
@@ -127,8 +128,8 @@ def test_outbox_is_officers_only_and_filters_by_state():
 
 
 def test_template_edit_page_is_sysadmin_only_sanitises_and_audits():
-    s = _user("s@example.org", AccessLevel.SYSADMIN)
-    o = _user("o@example.org", AccessLevel.OFFICER)
+    s = _user("s@example.org", "sysadmin")
+    o = _user("o@example.org", "officer")
     c = Client()
     c.force_login(o)
     assert c.get("/ops/templates/").status_code == 404
@@ -160,7 +161,7 @@ def test_invitation_message_goes_to_the_address_and_marks_emailed_at():
     _on()
     from apps.accounts.services import create_invitation
 
-    o = _user("o@example.org", AccessLevel.OFFICER)
+    o = _user("o@example.org", "officer")
     inv = create_invitation(o, "new@example.org", "student", base_url="https://ops.example")
     assert inv.emailed_at is not None
     msg = Outbox.objects.get(to_addresses=["new@example.org"])

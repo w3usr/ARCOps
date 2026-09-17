@@ -32,7 +32,7 @@ def my_messages(request):
 
 @login_required
 def outbox(request):
-    if not request.user.is_officer:
+    if not request.user.may("view_outbox"):
         raise Http404
     state = request.GET.get("state", "")
     qs = Outbox.objects.select_related("user")
@@ -88,7 +88,7 @@ SAMPLE_CONTEXT = {
 
 @login_required
 def message_templates(request):
-    if not request.user.is_sysadmin:
+    if not request.user.may("edit_club_settings"):
         raise Http404
     seed_templates()  # a fresh installation sees the shipped set at once
     return render(
@@ -98,7 +98,7 @@ def message_templates(request):
 
 @login_required
 def message_template_edit(request, key):
-    if not request.user.is_sysadmin:
+    if not request.user.may("edit_club_settings"):
         raise Http404
     seed_templates()
     tpl = get_object_or_404(MessageTemplate, key=key)

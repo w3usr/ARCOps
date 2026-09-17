@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, Guardianship, Invitation, User
+from apps.accounts.models import Guardianship, Invitation, User
 from apps.accounts.services import create_invitation
 from apps.comms.models import Outbox
 from apps.comms.services import recipient_addresses
@@ -26,11 +26,13 @@ from apps.ops.models import AuditLog
 pytestmark = pytest.mark.django_db
 
 
-def _user(email, level=AccessLevel.MEMBER, **kw):
+def _user(email, level="member", **kw):
     kw.setdefault("first_name", email.split("@")[0].title())
     kw.setdefault("last_name", "Tester")
     kw.setdefault("category", "student")
-    return User.objects.create_user(email, "pw-Testing-123", access_level=level, **kw)
+    return User.objects.create_user(
+        email, "pw-Testing-123", groups=[level], is_superuser=level == "sysadmin", **kw
+    )
 
 
 def _as(user):
@@ -55,7 +57,7 @@ def _slot(captain, days=5, minutes=60):
 
 
 def _family():
-    officer = _user("off@example.org", AccessLevel.OFFICER)
+    officer = _user("off@example.org", "officer")
     guardian = _user("parent@example.org", category="community")
     minor = _user("kid@example.org", under_18=True)
     Guardianship.objects.create(minor=minor, guardian=guardian, relationship="parent")
@@ -63,7 +65,7 @@ def _family():
 
 
 def test_guardian_completes_a_minors_invitation_creating_both_accounts():
-    officer = _user("off@example.org", AccessLevel.OFFICER)
+    officer = _user("off@example.org", "officer")
     inv = create_invitation(
         officer, "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"
     )
@@ -95,14 +97,14 @@ def test_guardian_completes_a_minors_invitation_creating_both_accounts():
     g = User.objects.by_address("parent@example.org").get()
     m = User.objects.by_address("kid@example.org").get()
     assert g.category == "community" and not g.under_18 and g.cell_phone == "555-0100"
-    assert m.under_18 and m.category == "student" and m.access_level == AccessLevel.MEMBER
+    assert m.under_18 and m.category == "student" and m.in_group("member")
     assert Guardianship.objects.get(minor=m, guardian=g).relationship == "parent"
     assert c.get("/").context["user"] == g  # the guardian is signed in
     assert m.check_password("pw-Kid-Testing-123!")
 
 
 def test_existing_member_as_guardian_must_sign_in_first_then_only_the_minor_form():
-    officer = _user("off@example.org", AccessLevel.OFFICER)
+    officer = _user("off@example.org", "officer")
     parent = _user("parent@example.org")
     inv = create_invitation(
         officer, "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"
@@ -240,7 +242,7 @@ def test_messages_to_a_minor_reach_every_guardian(settings):
 
 def test_conversion_at_18_by_an_approver():
     officer, guardian, minor = _family()
-    sys = _user("sys@example.org", AccessLevel.SYSADMIN)
+    sys = _user("sys@example.org", "sysadmin")
     c = _as(officer)
     assert b"Convert to adult account" not in c.get(f"/members/{minor.pk}/").content
     c = _as(sys)
@@ -262,7 +264,7 @@ def test_conversion_at_18_by_an_approver():
 
 def test_sysadmin_links_and_unlinks_guardians():
     officer, guardian, minor = _family()
-    sys = _user("sys@example.org", AccessLevel.SYSADMIN)
+    sys = _user("sys@example.org", "sysadmin")
     aunt = _user("aunt@example.org")
     c = _as(sys)
     c.post(
@@ -284,7 +286,7 @@ def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
     """The advisor's rule that an account keeps at least one address is about an account someone
     signs in to. A minor need hold none: their guardians are written to and act for them, and the
     guardian puts an address on the account from the minor's own profile once there is one."""
-    officer = _user("off@example.org", AccessLevel.OFFICER)
+    officer = _user("off@example.org", "officer")
     c = _as(officer)
     r = c.post(
         "/me/invitations/",

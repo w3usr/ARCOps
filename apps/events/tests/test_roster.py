@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from django.test import Client
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.events.models import (
     Event,
     Location,
@@ -40,14 +40,14 @@ def world():
     off = User.objects.create_user(
         "off@example.org",
         "pw-Testing-123",
-        access_level=AccessLevel.OFFICER,
+        groups=["officer"],
         first_name="Ann",
         last_name="Officer",
     )
     mem = User.objects.create_user(
         "mem@example.org",
         "pw-Testing-123",
-        access_level=AccessLevel.MEMBER,
+        groups=["member"],
         first_name="Mo",
         last_name="Member",
         callsign="N0MEM",

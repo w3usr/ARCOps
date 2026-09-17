@@ -3,10 +3,11 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth.models import Group
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.events.models import (
     Captaincy,
     Event,
@@ -26,12 +27,12 @@ def test_participation_counts_hours_people_and_first_timers():
     cap = User.objects.create_user(
         "cap@example.org", "pw-Testing-123", first_name="Cap", last_name="T"
     )
-    cap.access_level = AccessLevel.OFFICER
+    cap.groups.set(Group.objects.filter(name="officer"))
     cap.save()
     a = User.objects.create_user("a@example.org", "pw-Testing-123", first_name="A", last_name="One")
     b = User.objects.create_user("b@example.org", "pw-Testing-123", first_name="B", last_name="Two")
     for u in (a, b):
-        u.access_level = AccessLevel.MEMBER
+        u.groups.set(Group.objects.filter(name="member"))
         u.save()
     start = timezone.now() - timedelta(days=2)
     e = Event.objects.create(title="Past Sprint", state=Event.State.COMPLETED)

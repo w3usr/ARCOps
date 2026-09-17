@@ -3,6 +3,20 @@
 from django.conf import settings
 from django.db import models
 
+from .capabilities import CAPABILITIES
+
+
+class Capability(models.Model):
+    """No rows, ever. It exists so the club's capabilities (apps.ops.capabilities) have somewhere
+    to hang: Django permissions belong to a model, and none of ours is the right owner for
+    "approve an access agreement" or "read the audit log"."""
+
+    class Meta:
+        managed = False  # no table
+        default_permissions = ()
+        permissions = CAPABILITIES
+        verbose_name_plural = "capabilities"
+
 
 class ClubSetting(models.Model):
     """One configuration value. Keys are dotted paths into club.yaml ("club.name",

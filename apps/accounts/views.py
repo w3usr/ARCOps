@@ -17,7 +17,7 @@ from apps.ops.config import setting
 
 from . import views_addresses
 from .account import AccountForm, readonly_rows, save_account
-from .models import AccessLevel, Invitation, User
+from .models import Invitation, User
 from .services import (
     admit_from_invitation,
     create_invitation,
@@ -153,7 +153,7 @@ class InviteForm(forms.Form):
 @login_required
 @require_http_methods(["GET", "POST"])
 def invitations(request):
-    if not request.user.is_officer:
+    if not request.user.may("invite_members"):
         raise Http404
     created = None
     if request.method == "POST":
@@ -318,7 +318,7 @@ def _accept_as_guardian(request, inv):
                 last_name=d["guardian_last_name"],
                 cell_phone=d["guardian_phone"],
                 category=guardian_category(),
-                access_level=AccessLevel.MEMBER,
+                groups=["member"],
             )
             record(guardian, "account.guardian_created", guardian, after={"invitation": inv.pk})
         own = (d.get("minor_email") or "").lower()
@@ -400,7 +400,7 @@ def accept_invitation(request, token):
 @require_http_methods(["POST"])
 def invitation_action(request, pk):
     """FR-3: revoke an unused invitation, or reissue it as a fresh link."""
-    if not request.user.is_officer:
+    if not request.user.may("invite_members"):
         raise Http404
     inv = get_object_or_404(Invitation, pk=pk)
     action = request.POST.get("action")

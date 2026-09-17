@@ -12,7 +12,7 @@ import secrets
 
 from django.core.management.base import BaseCommand
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops.audit import record
 
 
@@ -41,14 +41,20 @@ class Command(BaseCommand):
                 last_name=opts["last"],
                 callsign=opts["callsign"].upper(),
                 category=opts["category"],
-                access_level=AccessLevel.SYSADMIN,
+                is_superuser=True,
             )
-        user.access_level = AccessLevel.SYSADMIN
-        user.is_superuser = True
+        user.is_superuser = True  # the Django admin, and every capability
         user.is_active = True
         user.password_is_temporary = True
         user.set_password(password)
         user.save()
+        # and the group of the same name, if the club's configuration has been imported, so the
+        # account reads as a Sysadmin on the pages rather than as an account in no group
+        from django.contrib.auth.models import Group
+
+        sysadmins = Group.objects.filter(name="sysadmin").first()
+        if sysadmins:
+            user.groups.add(sysadmins)
         record(None, "sysadmin.bootstrap", user, after={"created": created})
         self.stdout.write(f"{'created' if created else 'promoted'} sysadmin {user.email}")
         self.stdout.write(

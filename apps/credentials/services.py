@@ -110,11 +110,9 @@ def approve(
 
 def approvers():
     """Everyone who may approve access to the station: faculty advisors and sysadmins (§2.1)."""
-    from apps.accounts.models import AccessLevel, User, levels_at_least
+    from apps.ops.groups import people_who_may
 
-    return list(
-        User.objects.filter(is_active=True, access_level__in=levels_at_least(AccessLevel.ADVISOR))
-    )
+    return list(people_who_may("approve_agreements"))
 
 
 def expire_due() -> int:
@@ -217,7 +215,7 @@ def expiry_notices(now=None) -> dict:
     sent = {"90": 0, "30": 0, "expired": 0}
     for lic in LicenseRecord.objects.select_related("user").exclude(status="unverified"):
         expiry = lic.effective_expiry
-        if not expiry or not lic.user.is_active or lic.user.access_level == "none":
+        if not expiry or not lic.user.is_active or not lic.user.has_access:
             continue
         reset = lic.expiry_notice_for != expiry
         if reset:
@@ -330,7 +328,7 @@ def agreement_expiry_run(now=None) -> dict:
     )
     due_summary = []
     for user, items in bundle(soon).items():
-        if not user.is_active or user.access_level == "none":
+        if not user.is_active or not user.has_access:
             continue
         expires = min(a.expires_on for a in items)
         send(
@@ -357,7 +355,7 @@ def agreement_expiry_run(now=None) -> dict:
     )
     expired_summary = []
     for user, items in bundle(just).items():
-        if not user.is_active or user.access_level == "none":
+        if not user.is_active or not user.has_access:
             continue
         send(
             "agreement.expired_notice",
@@ -438,7 +436,7 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
     from django.conf import settings as dj
     from django.urls import reverse
 
-    from apps.accounts.models import AccessLevel, User
+    from apps.accounts.models import User
     from apps.comms.services import send
     from apps.ops.models import AuditLog
 
@@ -450,11 +448,7 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
     )
     set_shared_secret(actor, plaintext, effective_date)
     link = (getattr(dj, "SITE_URL", "") or "") + reverse("computer_password")
-    current = [
-        u
-        for u in User.objects.filter(is_active=True).exclude(access_level=AccessLevel.NONE)
-        if holds(u, "it_access", today)
-    ]
+    current = [u for u in User.objects.with_access() if holds(u, "it_access", today)]
     for u in current:
         send("password.rotated", u, "security", {"effective": effective_date, "link": link})
     former = [

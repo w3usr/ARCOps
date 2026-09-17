@@ -67,7 +67,7 @@ class LinkForm(forms.Form):
 @login_required
 @require_http_methods(["GET", "POST"])
 def entry_links(request):
-    if not request.user.is_officer:
+    if not request.user.may("invite_members"):
         raise Http404
     created = None
     form = LinkForm()
@@ -105,7 +105,7 @@ def entry_links(request):
 @login_required
 @require_POST
 def entry_link_action(request, pk):
-    if not request.user.is_officer:
+    if not request.user.may("invite_members"):
         raise Http404
     link = get_object_or_404(EntryLink, pk=pk)
     action = request.POST.get("action")

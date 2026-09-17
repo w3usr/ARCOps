@@ -7,7 +7,7 @@ from django.core.management import call_command
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.events.models import (
     Captaincy,
     Event,
@@ -30,7 +30,7 @@ def club():
 
 
 def user(name, **kw):
-    kw.setdefault("access_level", AccessLevel.MEMBER)
+    kw.setdefault("groups", ["member"])
     kw.setdefault("category", "student")
     return User.objects.create_user(
         f"{name}@example.org", "x", first_name=name, last_name="Tester", **kw

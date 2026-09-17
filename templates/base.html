@@ -40,14 +40,14 @@
       <li><a href="{% url 'dashboard' %}"{% nav_active 'dashboard' %}>{% icon 'home' %}<span>Home</span></a></li>
       <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' %}>{% icon 'calendar' %}<span>Events</span></a></li>
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
-      {% if user.is_member %}
+      {% if perms.ops.view_directory %}
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
       <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' 'hours' %}>{% icon 'users' %}<span>Members</span></a></li>
       {% endif %}
       <li><a href="{% url 'my_messages' %}"{% nav_active 'my_messages' %}>{% icon 'mail' %}<span>Messages{% if unread_count %} <span class="badge" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</span></a></li>
       <li><a href="{% url 'profile' %}"{% nav_active 'profile' 'notifications' %}>{% icon 'user' %}<span>Profile</span></a></li>
     </ul>
-    {% if user.is_officer %}
+    {% if perms.ops.invite_members or perms.ops.send_announcements %}
     <p class="navgroup" id="nav-officer"><span>Officer tools</span></p>
     <ul class="navlist" aria-labelledby="nav-officer">
       <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' 'entry_links' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
@@ -55,14 +55,14 @@
       <li><a href="{% url 'outbox' %}"{% nav_active 'outbox' %}>{% icon 'inbox' %}<span>Outbox</span></a></li>
     </ul>
     {% endif %}
-    {% if user.is_advisor %}
+    {% if perms.ops.approve_agreements or perms.ops.view_archive %}
     <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
     <ul class="navlist" aria-labelledby="nav-advisor">
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
       <li><a href="{% url 'archive' %}"{% nav_active 'archive' %}>{% icon 'archive' %}<span>Archive</span></a></li>
     </ul>
     {% endif %}
-    {% if user.is_sysadmin %}
+    {% if perms.ops.edit_club_settings or perms.ops.view_job_status %}
     <p class="navgroup" id="nav-sysadmin"><span>Sysadmin tools</span></p>
     <ul class="navlist" aria-labelledby="nav-sysadmin">
       <li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>

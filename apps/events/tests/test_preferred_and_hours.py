@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from apps.accounts.models import AccessLevel, EntryLink, User
+from apps.accounts.models import EntryLink, User
 from apps.events.models import SignUp
 from apps.events.services.eligibility import can_sign_up
 from apps.events.services.hours import course_report
@@ -72,7 +72,7 @@ def test_names_carry_the_license_letter():
 
 def test_hours_credit_check_in_unless_no_show_and_export_csv():
     off = User.objects.create_user(
-        "off@example.org", "x", access_level=AccessLevel.OFFICER, first_name="Ann", last_name="O"
+        "off@example.org", "x", groups=["officer"], first_name="Ann", last_name="O"
     )
     link = EntryLink.objects.create(
         label="PHYS 101",

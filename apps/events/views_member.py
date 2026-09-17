@@ -293,7 +293,7 @@ def roster_csv(request, pk):
 
 @login_required
 def health_overview(request):
-    if not request.user.is_officer:
+    if not request.user.may("manage_events"):
         raise Http404
     now = timezone.now()
     weeks = int(request.GET.get("weeks") or setting("defaults.health_overview_weeks", 6))

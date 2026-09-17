@@ -23,7 +23,7 @@ def _is_approver(user) -> bool:
     "Faculty Advisors should have the ability to approve access agreements. Club officers should
     not." Station access is the club's answer to the University, so it belongs to the level the
     University appoints, not to a position the club votes on."""
-    return user.is_advisor
+    return user.may("approve_agreements")
 
 
 def _applicable_templates(user):

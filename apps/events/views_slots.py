@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from apps.accounts.models import AccessLevel, User
+from apps.accounts.models import User
 from apps.ops.audit import record
 from apps.ops.config import setting
 
@@ -98,9 +98,7 @@ def slot_detail(request, pk, slot_id):
         "ladder": __import__("apps.credentials.services", fromlist=["ladder"]).ladder(),
         "capacities": {c.role: c.capacity for c in slot.capacities.all()},
         "on_air": [s for s in cell.signups],
-        "members": User.objects.exclude(access_level=AccessLevel.NONE).order_by(
-            "last_name", "first_name"
-        )
+        "members": User.objects.with_access().order_by("last_name", "first_name")
         if is_captain
         else [],
         "partial": request.GET.get("partial") == "1",
