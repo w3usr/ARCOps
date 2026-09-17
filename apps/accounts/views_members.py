@@ -35,12 +35,38 @@ PRIVILEGE_FIELDS = (
     "legal_hold",
 )
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
+# Everything else a sysadmin may set on a member's behalf (the advisor, 2026-09-17: "Sysadmins
+# should be able to edit all fields"): the sign-in address, the contact details, the student
+# fields. Officers still edit the club position only (§2.3).
+CONTACT_FIELDS = (
+    "preferred_name",
+    "email",
+    "institution_email",
+    "institution_email_delivery",
+    "personal_email",
+    "personal_email_delivery",
+    "cell_phone",
+    "student_level",
+    "graduation_semester",
+    "graduation_year",
+)
 
 
 class MemberForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = [*NAME_FIELDS, *PRIVILEGE_FIELDS]
+        fields = [*NAME_FIELDS, "preferred_name", *PRIVILEGE_FIELDS, *CONTACT_FIELDS[1:]]
+        labels = {
+            "email": "Sign-in email",
+            "institution_email": "Institution email",
+            "institution_email_delivery": "Send club email to the institution address",
+            "personal_email": "Personal email",
+            "personal_email_delivery": "Send club email to the personal address",
+            "cell_phone": "Mobile number",
+            "student_level": "Student level",
+            "graduation_semester": "Graduation semester",
+            "graduation_year": "Graduation year",
+        }
 
     def __init__(self, *args, actor: User, **kwargs):
         kwargs.setdefault("label_suffix", "")
@@ -54,6 +80,8 @@ class MemberForm(forms.ModelForm):
             choices=[("", "None")] + [(p["key"], p["label"]) for p in positions], required=False
         )
         self.fields["access_level"] = forms.ChoiceField(choices=AccessLevel.choices)
+        if "email" in self.fields:
+            self.fields["email"].required = False
         self.fields["under_18"].label = "Under 18"
         self.fields[
             "legal_hold"
@@ -65,6 +93,14 @@ class MemberForm(forms.ModelForm):
             for f in list(self.fields):
                 if f != "club_position":
                     self.fields.pop(f)
+
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        if not email:  # a form posted without the field keeps the sign-in address as it is
+            return self.instance.email
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Another account already signs in with that address.")
+        return email
 
 
 def _standing(user) -> dict:

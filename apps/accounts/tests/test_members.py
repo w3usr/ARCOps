@@ -166,3 +166,38 @@ def test_invitation_reissue_and_acceptance_places_the_sign_in_address(people):
     )
     u2 = User.objects.get(email="other@home.example")
     assert u2.personal_email == "other@home.example" and u2.institution_email == ""
+
+
+def test_sysadmin_edits_contact_and_student_fields(people):
+    """The advisor, 2026-09-17: sysadmins edit every field. The change is audited like the rest."""
+    from apps.ops.models import AuditLog
+
+    s, m = people["sys"], people["mem"]
+    c = _as(s)
+    body = c.get(f"/members/{m.pk}/").content.decode()
+    for label in ("Sign-in email", "Personal email", "Mobile number", "Graduation year"):
+        assert label in body
+    data = {
+        "action": "save",
+        "first_name": m.first_name,
+        "last_name": m.last_name,
+        "category": m.category,
+        "access_level": m.access_level,
+        "email": "Moved@example.org",
+        "personal_email": "home@example.org",
+        "cell_phone": "555-0199",
+        "student_level": "undergraduate",
+        "graduation_year": "2028",
+    }
+    r = c.post(f"/members/{m.pk}/", data)
+    assert r.status_code in (200, 302)
+    m.refresh_from_db()
+    assert m.email == "moved@example.org" and m.personal_email == "home@example.org"
+    assert m.cell_phone == "555-0199" and m.graduation_year == 2028
+    row = AuditLog.objects.filter(action="member.edited").latest("at")
+    assert "personal_email" in row.after and "cell_phone" in row.after
+    # the sign-in address must stay unique
+    r = c.post(f"/members/{m.pk}/", {**data, "email": s.email})
+    assert b"already signs in with that address" in r.content
+    m.refresh_from_db()
+    assert m.email == "moved@example.org"

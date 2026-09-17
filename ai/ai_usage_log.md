@@ -1161,3 +1161,17 @@ carries the actual running model ID.
 - **Nature of Contribution**: Bug fix and test.
 - **Human Review Status**: Pending the advisor's retry. 165 tests pass.
 - **Git Hash**: d4b32fe
+
+## [2026-09-17 01:58 UTC]
+- **Tool**: Claude (Anthropic), claude-fable-5-1
+- **Session Purpose**: "Sysadmins should be able to edit all fields" (the advisor, 2026-09-17,
+  on a member's page). The sysadmin's Manage form now carries the preferred name, the sign-in
+  address (kept unique), the institution and personal addresses with their delivery switches,
+  the mobile number, and the student fields, alongside the privilege fields; officers still
+  edit the club position only; every change is audited as before. Test added.
+- **Sections/Files Affected**: apps/accounts/views_members.py (MemberForm),
+  apps/accounts/tests/test_members.py.
+- **Nature of Contribution**: Code generation and a test.
+- **Human Review Status**: Pending review; T7 step 4 of the private test plan is the check.
+  166 tests pass.
+- **Git Hash**: [pending]
