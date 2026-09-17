@@ -45,6 +45,7 @@
   <h2>Standing</h2>
   <dl class="dl">
     <dt>License</dt><dd>{% if standing.licence %}{{ standing.licence.callsign }} · {{ standing.licence.effective_class|default:"class unknown" }} · {{ standing.licence.effective_status }}{% if standing.licence.effective_expiry %} · expires {{ standing.licence.effective_expiry }}{% endif %} <small class="muted">({{ standing.licence.effective_source }})</small>{% if standing.licence.has_override %}<br><small class="muted">Override by {{ standing.licence.override_by.short_name|default:"a sysadmin" }}: {{ standing.licence.override_reason }}</small>{% endif %}{% else %}none on file{% endif %}</dd>
+    {% if member.callsign %}<dd><form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="license_lookup"><button type="submit" class="linklike">Look this callsign up in the FCC table</button></form></dd>{% endif %}
     {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt><dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %} · <a href="{% url 'agreement_pdf' a.pk %}">PDF</a>{% if a.state == 'approved' and can_revoke %}<form method="post" action="{% url 'agreement_revoke' a.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{% url 'member_detail' member.pk %}"><input name="reason" placeholder="reason" aria-label="Reason for revoking" required><button class="linklike">revoke</button></form>{% endif %}</dd>{% empty %}<dt>Agreements</dt><dd>none signed</dd>{% endfor %}
   </dl>
 </section>
@@ -55,7 +56,9 @@
     <input type="hidden" name="action" value="save">
     {{ form.non_field_errors }}
     {% for f in form %}
-      {% if f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
+      {% if f.name in student_only %}{# shown while the category is Student; cleared on save otherwise #}
+      <div class="field" data-reveal-when="#id_category" data-reveal-value="student">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>
+      {% elif f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
       {% else %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endif %}
     {% endfor %}
     {% if member.name_from_uls and user.is_sysadmin %}<p class="helptext">The name comes from the FCC record for {{ member.callsign }} and is not edited here.</p>{% endif %}
@@ -64,6 +67,7 @@
   {% if user.is_sysadmin and not is_self %}
   <h2>Sign-in</h2>
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
+  <p class="helptext">For a member who cannot get in. Shown once, works once, replaces their password.</p>
   {% if member.under_18 or guardian_links %}
   <section class="card" aria-labelledby="gd"><h2 id="gd">Guardians</h2>
     {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
@@ -88,6 +92,8 @@
     </form>
   </details>
   {% endif %}
+  {% endif %}
+  {% if user.is_sysadmin %}
   <details class="card"><summary>License override</summary>
     <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="license_override">
       <p class="helptext">Where ULS is out of date or wrong, or for a non-US license: what you set here is shown as an override wherever it appears and the nightly import never replaces it. Blank fields leave the FCC value in force.</p>
@@ -102,7 +108,8 @@
       <div><button type="submit" class="secondary">Save override</button>{% if standing.licence.has_override %} <button type="submit" name="lift" value="1" class="linklike">Lift the override</button>{% endif %}</div>
     </form>
   </details>
-  <p class="helptext">For a member who cannot get in. Shown once, works once, replaces their password.</p>
+  {% endif %}
+  {% if user.is_sysadmin and not is_self %}
   <h2>Access</h2>
   {% if member.access_level != 'none' %}
   <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="close">

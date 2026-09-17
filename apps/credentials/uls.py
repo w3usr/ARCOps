@@ -29,7 +29,7 @@ from django.utils import timezone
 
 from apps.ops.branding import PRODUCT_NAME, PRODUCT_URL
 
-from .models import LicenseRecord, UlsLicense, UlsStaging
+from .models import UlsLicense, UlsStaging
 
 log = logging.getLogger(__name__)
 
@@ -286,15 +286,22 @@ def apply_staging(now=None) -> dict:
 
 
 def refresh_members(callsigns: set[str] | None = None) -> int:
-    """Refresh every member's LicenseRecord from the table (all, or only the callsigns touched)."""
+    """Refresh every member's licence from the table (all, or only the callsigns touched).
+
+    Driven by the member's callsign rather than by the licence rows, so an account whose
+    callsign was set outside the profile form, the first sysadmin or an import, is given a
+    licence on the next run instead of reading "none on file" for ever (found 2026-09-17).
+    """
+    from apps.accounts.models import User
+
     from .services import refresh_license_from_local_table
 
-    qs = LicenseRecord.objects.select_related("user")
+    qs = User.objects.exclude(callsign="")
     if callsigns is not None:
-        qs = qs.filter(callsign__in=callsigns)
+        qs = qs.filter(callsign__in={c.upper() for c in callsigns})
     n = 0
-    for lic in qs:
-        refresh_license_from_local_table(lic.user)
+    for user in qs:
+        refresh_license_from_local_table(user)
         n += 1
     return n
 

@@ -300,6 +300,15 @@ class GuardianAcceptForm(forms.Form):
         return data
 
 
+def guardian_category() -> str:
+    """A guardian is any adult with an account; guardianship is a relationship, not a membership
+    category (the advisor, 2026-09-17). A parent who joins only to manage a minor's account is a
+    community member where the club has that category, and uncategorised where it does not; an
+    officer can set it to whatever is right."""
+    keys = {c["key"] for c in (setting("member_categories", []) or [])}
+    return "community" if "community" in keys else ""
+
+
 def _accept_as_guardian(request, inv):
     """§2.4, FR-10: the invitation for a minor is completed by the guardian at
     `inv.guardian_email`. An existing account with that address signs in first; a new one is
@@ -334,7 +343,7 @@ def _accept_as_guardian(request, inv):
                 first_name=d["guardian_first_name"],
                 last_name=d["guardian_last_name"],
                 cell_phone=d["guardian_phone"],
-                category="guardian",
+                category=guardian_category(),
                 access_level=AccessLevel.MEMBER,
             )
             record(guardian, "account.guardian_created", guardian, after={"invitation": inv.pk})

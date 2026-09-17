@@ -38,6 +38,7 @@ NAME_FIELDS = ("first_name", "middle_name", "last_name")
 # Everything else a sysadmin may set on a member's behalf (the advisor, 2026-09-17: "Sysadmins
 # should be able to edit all fields"): the sign-in address, the contact details, the student
 # fields. Officers still edit the club position only (§2.3).
+STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 CONTACT_FIELDS = (
     "preferred_name",
     "email",
@@ -93,6 +94,16 @@ class MemberForm(forms.ModelForm):
             for f in list(self.fields):
                 if f != "club_position":
                     self.fields.pop(f)
+
+    def clean(self):
+        """The student fields belong to the Student category; a member moved out of it does not
+        keep a graduation year. The page hides them, and this makes it true on the server."""
+        data = super().clean()
+        if data.get("category") != "student":
+            for f in STUDENT_FIELDS:
+                if f in self.fields:
+                    data[f] = "" if f != "graduation_year" else None
+        return data
 
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip().lower()
@@ -190,6 +201,30 @@ def member_detail(request, pk):
                         )
                     messages.success(request, "Saved.")
                     return redirect("member_detail", pk=member.pk)
+        elif action == "license_lookup":  # any officer: FR-14, the local FCC table
+            from apps.credentials.models import UlsLicense
+            from apps.credentials.services import refresh_license_from_local_table
+
+            if not member.callsign:
+                messages.error(request, "This member has no callsign to look up.")
+            else:
+                found = UlsLicense.objects.filter(callsign=member.callsign.upper()).exists()
+                lic = refresh_license_from_local_table(member)
+                record(actor, "license.looked_up", member, after={"callsign": member.callsign})
+                if found:
+                    messages.success(
+                        request,
+                        f"{member.callsign}: {lic.operator_class or 'no class'}, {lic.status}"
+                        + (f", expires {lic.expiry_date}" if lic.expiry_date else "")
+                        + f" ({lic.licensee_name}).",
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        f"{member.callsign} is not in the local FCC table. The nightly import may "
+                        "not have reached it yet; a sysadmin can set an override below.",
+                    )
+            return redirect("member_detail", pk=member.pk)
         elif action == "license_override" and actor.is_sysadmin:  # FR-15, FR-20
             from apps.credentials.models import LicenseRecord
             from apps.credentials.services import apply_override, lift_override
@@ -320,6 +355,7 @@ def member_detail(request, pk):
             "member": member,
             "form": form,
             "ladder": ctx_ladder,
+            "student_only": STUDENT_FIELDS,
             "deletion": __import__(
                 "apps.accounts.services", fromlist=["deletion_effects"]
             ).deletion_effects(member)

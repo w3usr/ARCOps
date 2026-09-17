@@ -36,7 +36,6 @@ member_categories:                            # FR-8, FR-12; edit freely
   - { key: faculty,   label: "Faculty" }
   - { key: staff,     label: "Staff" }
   - { key: community, label: "Community Member" }
-  - { key: guardian,  label: "Guardian" }            # §2.4: a minor's guardian who is not a member; created by the guardian flow, never invited to
 
 club_positions:                               # §2.3; approver: true may approve agreements
   - { key: advisor,        label: "Advisor",        approver: true }

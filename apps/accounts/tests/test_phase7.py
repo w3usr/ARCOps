@@ -56,7 +56,7 @@ def _slot(captain, days=5, minutes=60):
 
 def _family():
     officer = _user("off@example.org", AccessLevel.OFFICER)
-    guardian = _user("parent@example.org", category="guardian")
+    guardian = _user("parent@example.org", category="community")
     minor = _user("kid@example.org", under_18=True)
     Guardianship.objects.create(minor=minor, guardian=guardian, relationship="parent")
     return officer, guardian, minor
@@ -94,7 +94,7 @@ def test_guardian_completes_a_minors_invitation_creating_both_accounts():
     assert r.status_code == 302
     g = User.objects.get(email="parent@example.org")
     m = User.objects.get(email="kid@example.org")
-    assert g.is_guardian_only and not g.under_18 and g.cell_phone == "555-0100"
+    assert g.category == "community" and not g.under_18 and g.cell_phone == "555-0100"
     assert m.under_18 and m.category == "student" and m.access_level == AccessLevel.MEMBER
     assert Guardianship.objects.get(minor=m, guardian=g).relationship == "parent"
     assert c.get("/").context["user"] == g  # the guardian is signed in
@@ -131,7 +131,7 @@ def test_existing_member_as_guardian_must_sign_in_first_then_only_the_minor_form
     assert r.status_code == 302
     m = User.objects.get(email="kid@example.org")
     assert Guardianship.objects.filter(minor=m, guardian=parent, active=True).exists()
-    assert not parent.is_guardian_only  # a member stays a member
+    assert parent.category == "student"  # an existing member keeps their category
 
 
 def test_minor_signs_in_read_only():
@@ -229,7 +229,7 @@ def test_captain_checks_a_minor_in_recording_the_adult_present():
 
 def test_messages_to_a_minor_reach_every_guardian(settings):
     officer, guardian, minor = _family()
-    second = _user("aunt@example.org", category="guardian")
+    second = _user("aunt@example.org", category="community")
     Guardianship.objects.create(minor=minor, guardian=second)
     addrs = recipient_addresses(minor)
     assert set(addrs) == {"parent@example.org", "aunt@example.org", "kid@example.org"}

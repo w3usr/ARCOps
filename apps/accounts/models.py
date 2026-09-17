@@ -159,11 +159,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         )
 
     @property
-    def is_guardian_only(self) -> bool:
-        """§2.4: a guardian who is not a member holds an account in the `guardian` category."""
-        return self.category == "guardian"
-
-    @property
     def is_provisional(self) -> bool:
         return self.access_level == AccessLevel.PROVISIONAL
 

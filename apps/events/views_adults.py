@@ -115,7 +115,6 @@ def adults(request, signup_id):
             "saved": previously_named(su),
             "members": User.objects.filter(under_18=False)
             .exclude(access_level=AccessLevel.NONE)
-            .exclude(category="guardian")
             .order_by("last_name", "first_name"),
         },
     )

@@ -1,6 +1,7 @@
 """The FCC ULS import (FR-14, TR-13), the member refresh, name confirmation on callsign change
 (FR-16), expiry notices (FR-17), and sysadmin overrides (FR-15, FR-20)."""
 
+import datetime as dt
 import zipfile
 from datetime import timedelta
 
@@ -267,3 +268,33 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert not LicenseRecord.objects.get(user=u).has_override
     c.force_login(u)
     assert "sysadmin override" not in c.get("/me/").content.decode() or True
+
+
+def test_a_member_whose_callsign_never_had_a_licence_record_gets_one():
+    """The first sysadmin's callsign is set at bootstrap, outside the profile form, so no licence
+    record exists for it; the sync used to iterate the records and never reach them, leaving the
+    account reading "none on file" for ever (found on the live site, 2026-09-17)."""
+    from apps.credentials.models import LicenseRecord
+    from apps.credentials.uls import refresh_members
+
+    UlsLicense.objects.create(
+        callsign="N0BOOT",
+        first_name="Boot",
+        last_name="Strap",
+        operator_class="Extra",
+        status="active",
+        expiry_date=dt.date(2033, 7, 18),
+    )
+    u = User.objects.create_user(
+        "boot@example.org", "pw-Testing-123", first_name="Boot", last_name="Strap"
+    )
+    u.callsign = "N0BOOT"  # set directly, as bootstrap_sysadmin does
+    u.save()
+    assert not LicenseRecord.objects.filter(user=u).exists()
+
+    assert refresh_members() >= 1
+    lic = LicenseRecord.objects.get(user=u)
+    assert (
+        lic.operator_class == "Extra" and lic.status == "active" and lic.source == "fcc_uls_local"
+    )
+    assert lic.expiry_date == dt.date(2033, 7, 18)

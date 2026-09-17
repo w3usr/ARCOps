@@ -1208,3 +1208,26 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review. 166 tests pass; the accessibility check passes for
   the member, officer, and sysadmin views; both project checks clean.
 - **Git Hash**: 515be43
+
+## [2026-09-17 02:42 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four findings from the advisor on a member's page (2026-09-17). (1) His
+  own licence read "none on file" though his callsign is in the FCC table: the nightly sync
+  refreshed licence records but never created one, so an account whose callsign was set outside
+  the profile form (the first sysadmin, an import) never got a licence; the sync is now driven
+  by the member's callsign. (2) On his own page the licence override was hidden by the
+  not-yourself check that guards deletion and access removal; it is now available to a sysadmin
+  on any page, and, at his suggestion, a **Look this callsign up in the FCC table** button beside
+  the licence lets any officer re-read the table for one member, audited. (3) Student level and
+  graduation now appear only while the category is Student, and are cleared on save otherwise.
+  (4) Guardian is no longer a membership category: guardianship is a relationship, any adult
+  account can hold it, and a parent who joins only to manage a minor is a community member.
+- **Sections/Files Affected**: apps/credentials/uls.py (refresh_members), apps/accounts/
+  views_members.py, apps/accounts/views.py, apps/accounts/models.py, apps/events/services/
+  eligibility.py, apps/events/views_adults.py, apps/ops/management/commands/seed_demo.py,
+  templates/accounts/member_detail.html, static/js/app.js, config/club.example.yaml, tests in
+  apps/credentials/tests/test_uls.py, apps/accounts/tests/{test_members,test_phase7}.py.
+- **Nature of Contribution**: Bug fix, code generation, tests.
+- **Human Review Status**: Pending the advisor's look; his own page is the check. 169 tests pass;
+  ruff and both project checks clean.
+- **Git Hash**: [pending]

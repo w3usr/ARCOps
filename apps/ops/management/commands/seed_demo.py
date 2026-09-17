@@ -177,7 +177,7 @@ class Command(BaseCommand):
                 "first_name": "Pat",
                 "last_name": "Example",
                 "cell_phone": "555-0100",
-                "category": "guardian",
+                "category": "community",
                 "access_level": AccessLevel.MEMBER,
             },
         )

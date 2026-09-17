@@ -18,8 +18,6 @@ def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tu
     event = slot.event
     if user.under_18 and not by_captain and getattr(user, "acting_guardian", None) is None:
         return False, "a guardian signs up on a minor's behalf"
-    if getattr(user, "is_guardian_only", False):
-        return False, "a guardian account does not operate; ask an officer to admit you as a member"
 
     # Openings: if any opening exists for this role, one of them must have passed for this
     # person's category (an opening with no categories is for everyone).

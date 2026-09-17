@@ -201,3 +201,68 @@ def test_sysadmin_edits_contact_and_student_fields(people):
     assert b"already signs in with that address" in r.content
     m.refresh_from_db()
     assert m.email == "moved@example.org"
+
+
+def test_officer_looks_a_callsign_up_in_the_fcc_table(people):
+    """The advisor asked for this rather than an override: a button that re-reads the local FCC
+    table for a member's callsign, for officers as well as sysadmins."""
+    from apps.credentials.models import LicenseRecord, UlsLicense
+    from apps.ops.models import AuditLog
+
+    m = people["mem"]
+    m.callsign = "N0LOOK"
+    m.save()
+    UlsLicense.objects.create(
+        callsign="N0LOOK",
+        first_name="Mo",
+        last_name="Member",
+        operator_class="General",
+        status="active",
+    )
+    c = _as(people["off"])
+    assert b"Look this callsign up in the FCC table" in c.get(f"/members/{m.pk}/").content
+    r = c.post(f"/members/{m.pk}/", {"action": "license_lookup"}, follow=True)
+    assert r.status_code == 200 and b"N0LOOK: General, active" in r.content
+    assert LicenseRecord.objects.get(user=m).operator_class == "General"
+    assert AuditLog.objects.filter(action="license.looked_up").exists()
+    # a callsign the table does not know says so rather than inventing a class
+    m.callsign = "N0NONE"
+    m.save()
+    r = c.post(f"/members/{m.pk}/", {"action": "license_lookup"}, follow=True)
+    assert b"not in the local FCC table" in r.content
+
+
+def test_student_fields_are_cleared_when_the_category_is_not_student(people):
+    """They are hidden on the page while the category is anything else; the server makes it true."""
+    from apps.ops.models import ClubSetting
+
+    ClubSetting.objects.update_or_create(
+        key="member_categories",
+        defaults={
+            "value": [
+                {"key": "student", "label": "Student"},
+                {"key": "faculty", "label": "Faculty"},
+            ]
+        },
+    )
+    s, m = people["sys"], people["mem"]
+    m.category, m.student_level, m.graduation_year = "student", "undergraduate", 2028
+    m.save()
+    c = _as(s)
+    body = c.get(f"/members/{m.pk}/").content.decode()
+    assert 'data-reveal-when="#id_category" data-reveal-value="student"' in body
+    c.post(
+        f"/members/{m.pk}/",
+        {
+            "action": "save",
+            "first_name": m.first_name,
+            "last_name": m.last_name,
+            "category": "faculty",
+            "access_level": m.access_level,
+            "email": m.email,
+            "student_level": "undergraduate",
+            "graduation_year": "2028",
+        },
+    )
+    m.refresh_from_db()
+    assert m.category == "faculty" and m.student_level == "" and m.graduation_year is None

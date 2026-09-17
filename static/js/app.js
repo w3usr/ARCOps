@@ -52,13 +52,15 @@ document.addEventListener("click", (ev) => {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) setOpen(false); });
 })();
 
-// Progressive disclosure: an element with data-reveal-when="#checkbox" is shown only while
-// that checkbox is ticked (the guardian field on the invitation form). The server enforces
-// the underlying rule regardless.
+// Progressive disclosure: an element with data-reveal-when="#control" is shown only while that
+// control is ticked (the guardian field on the invitation form), or, with data-reveal-value,
+// while the control holds that value (the student fields on a member's page). The server
+// enforces the underlying rule regardless.
 document.querySelectorAll("[data-reveal-when]").forEach((el) => {
   const ctl = document.querySelector(el.dataset.revealWhen);
   if (!ctl) return;
-  const sync = () => { el.hidden = !ctl.checked; };
+  const want = el.dataset.revealValue;
+  const sync = () => { el.hidden = want === undefined ? !ctl.checked : ctl.value !== want; };
   ctl.addEventListener("change", sync);
   sync();
 });
