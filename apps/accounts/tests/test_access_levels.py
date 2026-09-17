@@ -58,3 +58,40 @@ def test_only_an_advisor_or_above_approves_an_access_agreement():
         c = Client()
         c.force_login(user)
         assert c.get("/credentials/approvals/").status_code == expected, user.email
+
+
+def test_the_advisor_contact_line_on_a_reminder_follows_the_access_level():
+    """A slot reminder carries "who to call": the captains and the faculty advisors. It read the
+    club position until the position stopped saying anything about what a person may do."""
+    from apps.events.services.notify import advisors
+
+    advisor = _user("adv@example.org", AccessLevel.ADVISOR)
+    _user("pres@example.org", AccessLevel.OFFICER, club_position="president")
+    _user("mem@example.org", AccessLevel.MEMBER, club_position="faculty_advisor")
+    assert [u.pk for u in advisors()] == [advisor.pk]
+
+
+def test_nothing_grants_a_capability_from_a_club_position():
+    """The advisor, 2026-09-17: "It seems like we are moving to a model where access is governed
+    by access level, rather than position." A position is a label now. Showing one is fine; this
+    reads the tree to catch a rule branching on one, which is how the old approver flag worked.
+    """
+    import pathlib
+    import re
+
+    root = pathlib.Path(__file__).resolve().parents[3]
+    # a query selecting people by position; a permission test on the viewer's own position; or
+    # anything reading an `approver` key back out of the configured positions
+    smells = re.compile(
+        r"club_position__in|if [^\n]*\b(?:request\.)?user\.club_position|get\(.approver.\)"
+    )
+    offenders = []
+    for path in sorted(root.glob("apps/**/*.py")) + sorted(root.glob("templates/**/*.html")):
+        if "migrations" in path.parts or "tests" in path.parts:
+            continue
+        for number, line in enumerate(path.read_text().splitlines(), 1):
+            if smells.search(line):
+                offenders.append(f"{path.relative_to(root)}:{number}")
+    assert not offenders, "a capability still derives from the club position: " + ", ".join(
+        offenders
+    )

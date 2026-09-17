@@ -35,13 +35,12 @@ def captains_of(event: Event) -> list[User]:
 
 
 def advisors() -> list[User]:
-    """Members in an approver position (§2.3): the faculty advisors, in the shipped configuration."""
-    keys = {p["key"] for p in (setting("club_positions", []) or []) if p.get("approver")}
-    if not keys:
-        return []
+    """The faculty advisors, for the "who to call" line in a slot reminder. This read the club
+    position until 2026-09-17, when approving access became an access level; the position no
+    longer says anything about what a person may do, so it cannot say who is on call either."""
     return list(
-        User.objects.filter(club_position__in=keys, is_active=True).exclude(
-            access_level=AccessLevel.NONE
+        User.objects.filter(
+            access_level__in=levels_at_least(AccessLevel.ADVISOR), is_active=True
         )
     )
 
