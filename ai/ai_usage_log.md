@@ -1277,3 +1277,22 @@ carries the actual running model ID.
   accessibility check passes for the member, officer, and sysadmin views; ruff and both project
   checks clean.
 - **Git Hash**: 8f14c3c
+
+## [2026-09-17 03:48 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Three things the advisor found on the rebuilt member page. A multi-line
+  {# #} renders as text in Django, so the two partials' opening comments were showing on the
+  page; they are {% comment %} blocks now and a test reads both pages for a leak. The read-only
+  card repeated what the form already offered as inputs: readonly_rows is now the complement of
+  editable_fields, so a field is an input where the viewer may change it and a line of text
+  where they may not, never both, with a skip for a field the page shows elsewhere (the name in
+  the heading). The unconfirmed address badge is now the button that sends the link, and each
+  address carries its delivery state, so the addresses appear in one place on both pages.
+- **Sections/Files Affected**: apps/accounts/account.py (readonly_rows), apps/accounts/
+  addresses.py (delivery in the list), apps/accounts/{views,views_members}.py,
+  templates/accounts/{_account_readonly.html (new),_account_form,_addresses,profile,
+  member_detail}.html, static/css/app.css, apps/accounts/tests/test_account_form.py.
+- **Nature of Contribution**: Bug fix and interface work.
+- **Human Review Status**: Pending the advisor's look. 183 tests pass; the accessibility check
+  passes for the member, officer, and sysadmin views; ruff and both project checks clean.
+- **Git Hash**: [pending]

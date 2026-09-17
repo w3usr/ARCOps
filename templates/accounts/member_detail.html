@@ -32,15 +32,10 @@
 <section class="card" aria-labelledby="d">
   <h2 id="d">Details</h2>
   <dl class="dl">
-    <dt>Sign-in email</dt><dd>{% if member.sign_in_only_address %}{{ member.email }} <span class="tag" title="Made from a guardian's address; receives nothing">sign-in only</span>{% else %}<a href="mailto:{{ member.email }}">{{ member.email }}</a>{% endif %}</dd>
-    {% if member.institution_email %}<dt>{{ club.institution_email_domain|default:"Institution" }} email</dt><dd>{{ member.institution_email }}{% if not member.institution_email_delivery %} <span class="tag">delivery off</span>{% endif %}</dd>{% endif %}
-    {% if member.personal_email %}<dt>Personal email</dt><dd>{{ member.personal_email }}{% if not member.personal_email_delivery %} <span class="tag">delivery off</span>{% endif %}</dd>{% endif %}
-    {% if member.cell_phone %}<dt>Cell phone</dt><dd>{{ member.cell_phone }}</dd>{% endif %}
-    {% if member.preferred_name %}<dt>Preferred name</dt><dd>{{ member.preferred_name }}</dd>{% endif %}
-    {% if member.category == 'student' %}<dt>Student</dt><dd>{{ member.get_student_level_display|default:"level not set" }}{% if member.graduation_year %} · graduating {{ member.get_graduation_semester_display }} {{ member.graduation_year }}{% endif %}</dd>{% endif %}
+    {% include "accounts/_account_readonly.html" %}
     <dt>Joined</dt><dd>{{ member.date_joined|date:"d M Y" }}{% if member.joined_via %} via {{ member.joined_via.label }}{% endif %}</dd>
-    <dt>License class</dt><dd>{{ member.license_letter }}</dd>
   </dl>
+
   {% include "accounts/_addresses.html" %}
 
   <h2>Standing</h2>

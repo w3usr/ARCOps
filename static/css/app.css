@@ -367,3 +367,13 @@ code, .copyrow code, .kv dd, .helptext { overflow-wrap: anywhere; }
 textarea, input:not([type="checkbox"]):not([type="radio"]), select { max-width: 100%; }
 pre { overflow-x: auto; max-width: 100%; }
 .brand-preview { height: 48px; max-width: 12rem; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: .2rem; }
+
+/* A state and the one action that changes it, in a single control: the badge is the button. */
+.tag-button {
+  font: inherit; font-size: .8rem; line-height: 1.2; padding: .2rem .5rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer;
+  width: auto;
+}
+.tag-button.warn { background: var(--tag-warn); border-color: var(--warn); }
+.tag-button:hover { filter: brightness(.96); }
+.addresses-list li { margin: .35rem 0; }

@@ -135,3 +135,40 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
         },
     )
     assert m.callsign_history.filter(callsign="N0PAGE").exists()
+
+
+def test_a_field_is_shown_once_as_an_input_or_as_text_but_never_both():
+    """The advisor, 2026-09-17: "I don't like the UI where the information is duplicated with a
+    read-only view and an edit view." The read-only rows are the complement of the form."""
+    from apps.accounts.account import editable_fields, readonly_rows
+
+    sys_user = _user("sys@example.org", AccessLevel.SYSADMIN)
+    off = _user("off@example.org", AccessLevel.OFFICER)
+    m = _user("mem@example.org", category="student", cell_phone="555-0100")
+
+    for actor in (m, off, sys_user):
+        editable = set(editable_fields(actor, m))
+        shown = {r["label"] for r in readonly_rows(actor, m)}
+        # nothing a person may type is also printed at them as settled text
+        if "cell_phone" in editable:
+            assert "Mobile number" not in shown
+        if "category" in editable:
+            assert "Category" not in shown
+        if "first_name" in editable:
+            assert "Name" not in shown
+
+    # a sysadmin edits everything, so there is nothing left to state as text
+    assert readonly_rows(sys_user, m) == []
+    # an officer edits only the club position, so the rest is text
+    labels = {r["label"] for r in readonly_rows(off, m)}
+    assert {"Name", "Category", "Access level", "Mobile number"} <= labels
+
+
+def test_no_template_comment_reaches_the_page():
+    """Django's {# #} is one line only; a multi-line one renders as text, which it did."""
+    sys_user = _user("sys@example.org", AccessLevel.SYSADMIN)
+    c = Client()
+    c.force_login(sys_user)
+    for url in ("/me/", f"/members/{sys_user.pk}/"):
+        body = c.get(url).content.decode()
+        assert "{#" not in body and "editable_fields" not in body, url

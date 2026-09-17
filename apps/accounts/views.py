@@ -15,7 +15,7 @@ from apps.credentials.models import LicenseRecord
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from .account import AccountForm, save_account
+from .account import AccountForm, readonly_rows, save_account
 from .models import AccessLevel, Invitation, User
 from .services import (
     admit_from_invitation,
@@ -80,6 +80,7 @@ def profile(request):
         {
             "form": form,
             "licence": licence,
+            "readonly_rows": readonly_rows(request.user, request.user),
             "notification_rows": rows,
             "mandatory_labels": list(MANDATORY.values()),
             "push_subscriptions": request.user.push_subscriptions.order_by("-created"),

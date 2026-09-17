@@ -211,3 +211,49 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
             after={f: getattr(user, f) for f in form.changed_data},
         )
     return {"callsign": callsign_result, "addresses_sent": sent}
+
+
+def _label(setting_key: str, key: str) -> str:
+    """The configured label for a category or position, rather than its key."""
+    for row in setting(setting_key, []) or []:
+        if row.get("key") == key:
+            return row.get("label", key)
+    return key or ""
+
+
+def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
+    """The account fields this person may not change.
+
+    `skip` drops a field the page shows elsewhere, such as the name in a page heading.
+
+    A page shows each field once: an input where they may change it, a line of text where they
+    may not. The two come from the same table, so nothing is shown twice and nothing is missed.
+    """
+    allowed = set(editable_fields(actor, subject))
+    rows: list[dict] = []
+
+    def add(field: str, label: str, value) -> None:
+        if field not in allowed and field not in skip and value:
+            rows.append({"label": label, "value": value})
+
+    name = subject.full_name
+    if subject.name_from_uls and subject.callsign:
+        name = f"{name} (from the FCC record for {subject.callsign})"
+    add("first_name", "Name", name)
+    add("preferred_name", "Preferred name", subject.preferred_name)
+    add("callsign", "Callsign", subject.callsign)
+    add("category", "Category", _label("member_categories", subject.category))
+    add("club_position", "Club position", _label("club_positions", subject.club_position))
+    add("access_level", "Access level", subject.get_access_level_display())
+    add("cell_phone", "Mobile number", subject.cell_phone)
+    if subject.under_18 and "under_18" not in allowed:
+        rows.append({"label": "Under 18", "value": "yes, a guardian acts for them"})
+    if subject.category == "student":
+        add("student_level", "Student level", subject.get_student_level_display())
+        graduation = " ".join(
+            str(p)
+            for p in (subject.get_graduation_semester_display(), subject.graduation_year)
+            if p
+        )
+        add("graduation_year", "Graduation", graduation)
+    return rows

@@ -8,14 +8,12 @@
   <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
 </div>
 {% endif %}
-<section class="card"><h2>Fixed details</h2>
+<section class="card"><h2>What you cannot change here</h2>
 <dl class="dl">
-<dt>Name</dt><dd>{{ user.full_name }}{% if user.name_from_uls %} <small class="muted">(from FCC ULS)</small>{% endif %}</dd>
-<dt>Sign-in email</dt><dd>{{ user.email }}</dd>
-<dt>Category</dt><dd>{{ user.category|capfirst }}</dd>
-<dt>Access level</dt><dd>{{ user.get_access_level_display }}</dd>
+{% include "accounts/_account_readonly.html" %}
 {% if licence %}<dt>License</dt><dd>{{ licence.callsign }} · {{ licence.effective_class|default:"class unknown" }} · {{ licence.effective_status }}{% if licence.effective_expiry %} · expires {{ licence.effective_expiry }}{% endif %} <small class="muted">({{ licence.effective_source }}{% if licence.retrieved_at %}, checked {{ licence.retrieved_at|date:"j M" }}{% endif %})</small></dd>{% endif %}
-</dl></section>
+</dl>
+<p class="helptext">A club officer sets these. Ask one if something here is wrong.</p></section>
 {% if my_wards %}
 <section class="card highlight" aria-labelledby="wards"><h2 id="wards">Members you act for</h2>
 <p>You are the guardian of the members below. <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>

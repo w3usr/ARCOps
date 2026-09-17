@@ -22,7 +22,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 
 from . import entry
-from .account import AccountForm, save_account
+from .account import AccountForm, readonly_rows, save_account
 from .models import AccessLevel, User
 from .services import issue_temporary_password, set_access_level
 
@@ -310,6 +310,7 @@ def member_detail(request, pk):
             "member": member,
             "form": form,
             "ladder": ctx_ladder,
+            "readonly_rows": readonly_rows(actor, member, skip=("first_name",)),
             "manage_heading": "Manage" if actor.is_sysadmin else "Club position",
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "deletion": __import__(

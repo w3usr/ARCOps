@@ -51,13 +51,20 @@ def verified(user: User) -> set[str]:
 def state(user: User) -> list[dict]:
     """Each address with its standing, for the profile and the member page."""
     proved = verified(user)
+    delivery = {
+        (user.institution_email or "").lower(): user.institution_email_delivery,
+        (user.personal_email or "").lower(): user.personal_email_delivery,
+    }
     out = []
     for address in on_file(user):
+        is_sign_in = address == (user.email or "").lower()
         out.append(
             {
                 "address": address,
-                "is_sign_in": address == (user.email or "").lower(),
+                "is_sign_in": is_sign_in,
                 "verified": address in proved,
+                # the sign-in address always receives what the others decline
+                "delivery": delivery.get(address, True) or is_sign_in,
             }
         )
     return out

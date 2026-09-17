@@ -1,7 +1,4 @@
-{# The account fields, on the member's own page and on an officer's view of them. Which fields
-   are here at all is decided by apps.accounts.account.editable_fields, so the two pages cannot
-   drift apart again. The email addresses keep their own group, each beside its delivery
-   switch. #}
+{% comment %}The account fields, on the member's own page and on an officer's view of them. Which fields are here at all is decided by apps.accounts.account.editable_fields, so the two pages cannot drift apart again. The email addresses keep their own group, each beside its delivery switch.{% endcomment %}
 <form method="post" class="{{ form_class|default:'card stack' }}">{% csrf_token %}
   <input type="hidden" name="action" value="save">
   {% if form_heading %}<h2>{{ form_heading }}</h2>{% endif %}
