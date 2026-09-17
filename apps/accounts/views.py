@@ -13,8 +13,9 @@ from django.views.decorators.http import require_http_methods
 
 from apps.credentials.models import LicenseRecord
 from apps.ops.audit import record
-from apps.ops.config import institution_email_domain, setting
+from apps.ops.config import setting
 
+from .account import AccountForm, save_account
 from .models import AccessLevel, Invitation, User
 from .services import (
     admit_from_invitation,
@@ -25,79 +26,41 @@ from .services import (
 )
 
 
-class ProfileForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = [
-            "preferred_name",
-            "callsign",
-            "institution_email",
-            "institution_email_delivery",
-            "personal_email",
-            "personal_email_delivery",
-            "cell_phone",
-            "student_level",
-            "graduation_semester",
-            "graduation_year",
-        ]
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(*args, **kwargs)
-        domain = institution_email_domain()
-        self.fields["institution_email"].label = (
-            f"{domain} email" if domain else "Institution email"
-        )
-        self.fields["personal_email"].label = "Personal email"
-        for f in ("institution_email_delivery", "personal_email_delivery"):
-            self.fields[f].label = "Send club email here"
-        if self.instance.category != "student":
-            for f in ("student_level", "graduation_semester", "graduation_year"):
-                self.fields.pop(f)
-
-
 @login_required
 def profile(request):
+    """A member's own account: the same fields and the same save path an officer's view of them
+    uses (apps.accounts.account), plus what is theirs alone: notifications, browser
+    notifications, security, closing the account."""
     if request.method == "POST":
-        form = ProfileForm(request.POST, instance=request.user)
+        form = AccountForm(request.POST, instance=request.user, actor=request.user)
         if form.is_valid():
-            old_call = User.objects.get(pk=request.user.pk).callsign
-            user = form.save(commit=False)
-            new_call = (user.callsign or "").upper().strip()
-            user.callsign = old_call  # apply_callsign owns the change
-            user.save()
-            if new_call != old_call:
-                from .services import apply_callsign
-
-                result = apply_callsign(user, new_call, previous=old_call)  # FR-102, FR-16
-                if result["state"] == "pending":
-                    messages.warning(
-                        request,
-                        f"The FCC lists {new_call} under the name {result['uls_name']}. Confirm below that this is you, or the callsign will not be kept.",
-                    )
-                elif result["state"] == "unverified":
-                    messages.info(
-                        request,
-                        f"{new_call} is not in the FCC table yet; it is held as unverified until the nightly import finds it.",
-                    )
-            changed = [f for f in ("institution_email", "personal_email") if f in form.changed_data]
-            if changed:
-                from . import addresses
-
-                sent = addresses.sync(user, base_url=f"{request.scheme}://{request.get_host()}")
-                if sent:
-                    messages.info(
-                        request,
-                        "Confirm "
-                        + " and ".join(sent)
-                        + " from the link we sent there and you can sign in with "
-                        + ("them" if len(sent) > 1 else "it")
-                        + " too. Club email goes there either way.",
-                    )
+            result = save_account(form, request.user, f"{request.scheme}://{request.get_host()}")
+            call = result["callsign"]
+            if call and call["state"] == "pending":
+                messages.warning(
+                    request,
+                    f"The FCC lists {request.user.callsign} under the name {call['uls_name']}. "
+                    "Confirm below that this is you, or the callsign will not be kept.",
+                )
+            elif call and call["state"] == "unverified":
+                messages.info(
+                    request,
+                    f"{request.user.callsign} is not in the FCC table yet; it is held as "
+                    "unverified until the nightly import finds it.",
+                )
+            if result["addresses_sent"]:
+                messages.info(
+                    request,
+                    "Confirm "
+                    + " and ".join(result["addresses_sent"])
+                    + " from the link we sent there and you can sign in with "
+                    + ("them" if len(result["addresses_sent"]) > 1 else "it")
+                    + " too. Club email goes there either way.",
+                )
             messages.success(request, "Profile saved.")
             return redirect("profile")
     else:
-        form = ProfileForm(instance=request.user)
+        form = AccountForm(instance=request.user, actor=request.user)
     licence = LicenseRecord.objects.filter(user=request.user).first()
     from apps.comms.categories import CONTROLLED, MANDATORY
 

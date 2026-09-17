@@ -1,0 +1,20 @@
+{# Every address on the account and what it does. `can_vouch` is true for an officer looking at
+   someone else: they may confirm an address without any mail, which is what keeps signing in
+   from depending on delivery. #}
+<h2 id="addr">{{ addresses_heading|default:"Addresses" }}</h2>
+<ul class="list">
+{% for a in addresses %}
+  <li>{{ a.address }}
+    {% if a.is_sign_in %}<span class="tag">sign-in</span>{% endif %}
+    {% if a.verified %}{% if not a.is_sign_in %}<span class="tag ok">confirmed</span>
+      {% if user.is_sysadmin and not is_self %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unverify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">stop it signing in</button></form>{% endif %}
+    {% endif %}
+    {% else %}<span class="tag warn">not confirmed</span>
+      {% if is_self %}<form method="post" action="{% url 'resend_address' %}" class="inline">{% csrf_token %}<input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">send the confirmation link</button></form>
+      {% else %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="verify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">confirm it yourself</button></form>
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="send_address_link"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">send them the link</button></form>{% endif %}
+    {% endif %}
+  </li>
+{% endfor %}
+</ul>
+<p class="helptext">Club email goes to every address with its delivery switch on, confirmed or not. Signing in and password resets use the sign-in address and any confirmed one.{% if not is_self %} Confirm one yourself when you know it is theirs.{% endif %}</p>

@@ -9,7 +9,6 @@ taken from the FCC record), issue a one-time temporary password, and close an ac
 set club position (§2.3) and nothing else on another account.
 """
 
-from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -23,95 +22,9 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 
 from . import entry
+from .account import AccountForm, save_account
 from .models import AccessLevel, User
 from .services import issue_temporary_password, set_access_level
-
-PRIVILEGE_FIELDS = (
-    "category",
-    "club_position",
-    "access_level",
-    "under_18",
-    "callsign",
-    "legal_hold",
-)
-NAME_FIELDS = ("first_name", "middle_name", "last_name")
-# Everything else a sysadmin may set on a member's behalf (the advisor, 2026-09-17: "Sysadmins
-# should be able to edit all fields"): the sign-in address, the contact details, the student
-# fields. Officers still edit the club position only (§2.3).
-STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
-CONTACT_FIELDS = (
-    "preferred_name",
-    "email",
-    "institution_email",
-    "institution_email_delivery",
-    "personal_email",
-    "personal_email_delivery",
-    "cell_phone",
-    "student_level",
-    "graduation_semester",
-    "graduation_year",
-)
-
-
-class MemberForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = [*NAME_FIELDS, "preferred_name", *PRIVILEGE_FIELDS, *CONTACT_FIELDS[1:]]
-        labels = {
-            "email": "Sign-in email",
-            "institution_email": "Institution email",
-            "institution_email_delivery": "Send club email to the institution address",
-            "personal_email": "Personal email",
-            "personal_email_delivery": "Send club email to the personal address",
-            "cell_phone": "Mobile number",
-            "student_level": "Student level",
-            "graduation_semester": "Graduation semester",
-            "graduation_year": "Graduation year",
-        }
-
-    def __init__(self, *args, actor: User, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(*args, **kwargs)
-        cats = setting("member_categories", []) or []
-        positions = setting("club_positions", []) or []
-        self.fields["category"] = forms.ChoiceField(
-            choices=[(c["key"], c["label"]) for c in cats], required=False
-        )
-        self.fields["club_position"] = forms.ChoiceField(
-            choices=[("", "None")] + [(p["key"], p["label"]) for p in positions], required=False
-        )
-        self.fields["access_level"] = forms.ChoiceField(choices=AccessLevel.choices)
-        if "email" in self.fields:
-            self.fields["email"].required = False
-        self.fields["under_18"].label = "Under 18"
-        self.fields[
-            "legal_hold"
-        ].label = "Legal hold: the retention job leaves this account's records alone"
-        if self.instance.name_from_uls:
-            for f in NAME_FIELDS:  # FR-4: the FCC record's name is read-only
-                self.fields.pop(f)
-        if not actor.is_sysadmin:  # §2.3: an officer sets club position, nothing else
-            for f in list(self.fields):
-                if f != "club_position":
-                    self.fields.pop(f)
-
-    def clean(self):
-        """The student fields belong to the Student category; a member moved out of it does not
-        keep a graduation year. The page hides them, and this makes it true on the server."""
-        data = super().clean()
-        if data.get("category") != "student":
-            for f in STUDENT_FIELDS:
-                if f in self.fields:
-                    data[f] = "" if f != "graduation_year" else None
-        return data
-
-    def clean_email(self):
-        email = (self.cleaned_data.get("email") or "").strip().lower()
-        if not email:  # a form posted without the field keeps the sign-in address as it is
-            return self.instance.email
-        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
-            raise forms.ValidationError("Another account already signs in with that address.")
-        return email
 
 
 def _standing(user) -> dict:
@@ -173,14 +86,13 @@ def member_detail(request, pk):
     member = get_object_or_404(User, pk=pk)
     actor = request.user
     temp_password = None
-    form = MemberForm(instance=member, actor=actor)
+    form = AccountForm(instance=member, actor=actor)
 
     if request.method == "POST":
         action = request.POST.get("action", "save")
         if action == "save":
-            form = MemberForm(request.POST, instance=member, actor=actor)
+            form = AccountForm(request.POST, instance=member, actor=actor)
             if form.is_valid():
-                before = {f: getattr(User.objects.get(pk=member.pk), f) for f in form.changed_data}
                 if (
                     "access_level" in form.changed_data
                     and member == actor
@@ -188,21 +100,28 @@ def member_detail(request, pk):
                 ):
                     form.add_error("access_level", "You cannot remove your own sysadmin access.")
                 else:
-                    user = form.save(commit=False)
-                    user.callsign = (user.callsign or "").upper().strip()
-                    user.save()
-                    if form.changed_data:
-                        record(
-                            actor,
-                            "member.edited",
-                            user,
-                            before=before,
-                            after={f: getattr(user, f) for f in form.changed_data},
+                    result = save_account(form, actor, f"{request.scheme}://{request.get_host()}")
+                    call = result["callsign"]
+                    if call and call["state"] == "pending":
+                        messages.warning(
+                            request,
+                            f"The FCC lists {member.callsign} under the name {call['uls_name']}. "
+                            f"{member.display_first} is asked to confirm it on their profile "
+                            "before it is kept.",
                         )
-                    if {"email", "institution_email", "personal_email"} & set(form.changed_data):
-                        from . import addresses
-
-                        addresses.sync(user, actor, f"{request.scheme}://{request.get_host()}")
+                    elif call and call["state"] == "unverified":
+                        messages.info(
+                            request,
+                            f"{member.callsign} is not in the FCC table yet; it is held as "
+                            "unverified until the nightly import finds it.",
+                        )
+                    if result["addresses_sent"]:
+                        messages.info(
+                            request,
+                            "A confirmation link has gone to "
+                            + " and ".join(result["addresses_sent"])
+                            + "; until it is followed that address does not sign them in.",
+                        )
                     messages.success(request, "Saved.")
                     return redirect("member_detail", pk=member.pk)
         elif action == "verify_address":  # an officer vouches for an address (no mail needed)
@@ -391,7 +310,7 @@ def member_detail(request, pk):
             "member": member,
             "form": form,
             "ladder": ctx_ladder,
-            "student_only": STUDENT_FIELDS,
+            "manage_heading": "Manage" if actor.is_sysadmin else "Club position",
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "deletion": __import__(
                 "apps.accounts.services", fromlist=["deletion_effects"]

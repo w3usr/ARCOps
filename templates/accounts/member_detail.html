@@ -29,7 +29,6 @@
 </section>
 {% endif %}
 
-<div class="cols">
 <section class="card" aria-labelledby="d">
   <h2 id="d">Details</h2>
   <dl class="dl">
@@ -42,15 +41,7 @@
     <dt>Joined</dt><dd>{{ member.date_joined|date:"d M Y" }}{% if member.joined_via %} via {{ member.joined_via.label }}{% endif %}</dd>
     <dt>License class</dt><dd>{{ member.license_letter }}</dd>
   </dl>
-  <h2>Addresses</h2>
-  <ul class="list">{% for a in addresses %}<li>{{ a.address }}{% if a.is_sign_in %} <span class="tag">sign-in</span>{% endif %}
-    {% if a.verified %}<span class="tag ok">confirmed</span>{% if not a.is_sign_in and user.is_sysadmin %}
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unverify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">stop it signing in</button></form>{% endif %}
-    {% else %}<span class="tag warn">not confirmed</span>
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="verify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">confirm it yourself</button></form>
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="send_address_link"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">send them the link</button></form>
-    {% endif %}</li>{% endfor %}</ul>
-  <p class="helptext">Club email goes to every address with its delivery switch on. Signing in and password resets use the sign-in address and any confirmed address. Confirm one yourself when you know it is theirs.</p>
+  {% include "accounts/_addresses.html" %}
 
   <h2>Standing</h2>
   <dl class="dl">
@@ -61,19 +52,8 @@
 </section>
 
 <section class="card" aria-labelledby="m">
-  <h2 id="m">{% if user.is_sysadmin %}Manage{% else %}Club position{% endif %}</h2>
-  <form method="post" class="stack">{% csrf_token %}
-    <input type="hidden" name="action" value="save">
-    {{ form.non_field_errors }}
-    {% for f in form %}
-      {% if f.name in student_only %}{# shown while the category is Student; cleared on save otherwise #}
-      <div class="field" data-reveal-when="#id_category" data-reveal-value="student">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>
-      {% elif f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
-      {% else %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endif %}
-    {% endfor %}
-    {% if member.name_from_uls and user.is_sysadmin %}<p class="helptext">The name comes from the FCC record for {{ member.callsign }} and is not edited here.</p>{% endif %}
-    <div><button type="submit">Save</button></div>
-  </form>
+  {% include "accounts/_account_form.html" with form_class="stack" form_heading=manage_heading %}
+
   {% if user.is_sysadmin and not is_self %}
   <h2>Sign-in</h2>
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
@@ -132,5 +112,4 @@
   {% endif %}
   {% endif %}
 </section>
-</div>
 {% endblock %}

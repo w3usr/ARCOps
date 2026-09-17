@@ -26,11 +26,6 @@
 </section>
 {% endif %}
 {% if guardians %}
-<section class="card" aria-labelledby="addr"><h2 id="addr">Where we write, and how you sign in</h2>
-<ul class="list">{% for a in addresses %}<li>{{ a.address }}{% if a.is_sign_in %} <span class="tag">sign-in address</span>{% endif %}{% if a.verified %}{% if not a.is_sign_in %} <span class="tag ok">confirmed: signs you in too</span>{% endif %}{% else %} <span class="tag warn">not confirmed</span>
-  <form method="post" action="{% url 'resend_address' %}" class="inline">{% csrf_token %}<input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">send the confirmation link</button></form>{% endif %}</li>{% endfor %}</ul>
-<p class="helptext">Club email goes to every address whose switch is on above, confirmed or not. Signing in and password resets use your sign-in address and any address you have confirmed.</p>
-</section>
 <section class="card" aria-labelledby="gds"><h2 id="gds">Your guardians</h2>
 <ul class="list">{% for g in guardians %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}</li>{% endfor %}</ul>
 <p class="muted">They sign you up, manage this profile, and receive every message sent to you. When you turn 18, tell a faculty advisor and the account becomes your own.</p>
@@ -39,37 +34,10 @@
 {% if minor_readonly %}
 <section class="card"><h2>Details you manage</h2><dl class="kv"><dt>Preferred name</dt><dd>{{ user.preferred_name|default:"—" }}</dd><dt>Mobile</dt><dd>{{ user.cell_phone|default:"—" }}</dd><dt>Callsign</dt><dd>{{ user.callsign|default:"none" }}</dd></dl><p class="muted">Your guardian edits these while acting for you.</p></section>
 {% else %}
-<form method="post" class="card stack">{% csrf_token %}
-<h2>Details you manage</h2>
-{{ form.non_field_errors }}
-<div class="field">{{ form.preferred_name.label_tag }}{{ form.preferred_name }}{{ form.preferred_name.errors }}</div>
-<div class="field">{{ form.callsign.label_tag }}{{ form.callsign }}{{ form.callsign.errors }}</div>
-<fieldset class="addresses">
-  <legend>Email addresses</legend>
-  <p class="helptext">Club email goes to every address with its switch on. With both off, it goes to your sign-in address.</p>
-  <div class="addr">
-    <div class="field">{{ form.institution_email.label_tag }}{{ form.institution_email }}{{ form.institution_email.errors }}</div>
-    <div class="check">{{ form.institution_email_delivery }}<label for="{{ form.institution_email_delivery.id_for_label }}">{{ form.institution_email_delivery.label }}</label></div>
-  </div>
-  <div class="addr">
-    <div class="field">{{ form.personal_email.label_tag }}{{ form.personal_email }}{{ form.personal_email.errors }}</div>
-    <div class="check">{{ form.personal_email_delivery }}<label for="{{ form.personal_email_delivery.id_for_label }}">{{ form.personal_email_delivery.label }}</label></div>
-  </div>
-</fieldset>
-<div class="field">{{ form.cell_phone.label_tag }}{{ form.cell_phone }}{{ form.cell_phone.errors }}</div>
-{% if form.student_level %}
-<fieldset>
-  <legend>Student details</legend>
-  <div class="field">{{ form.student_level.label_tag }}{{ form.student_level }}{{ form.student_level.errors }}</div>
-  <div class="row">
-    <div class="field">{{ form.graduation_semester.label_tag }}{{ form.graduation_semester }}{{ form.graduation_semester.errors }}</div>
-    <div class="field">{{ form.graduation_year.label_tag }}{{ form.graduation_year }}{{ form.graduation_year.errors }}</div>
-  </div>
-</fieldset>
+{% include "accounts/_account_form.html" with form_heading="Details you manage" %}
 {% endif %}
-<div><button type="submit">Save</button></div>
-</form>
-{% endif %}
+<section class="card">{% include "accounts/_addresses.html" with addresses_heading="Where we write, and how you sign in" %}</section>
+
 {% if not minor_readonly %}
 <form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}
 <h2>Notifications</h2>

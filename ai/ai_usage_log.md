@@ -1256,3 +1256,24 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's check with his two addresses. 175 tests pass;
   ruff and both project checks clean.
 - **Git Hash**: c0dcc34
+
+## [2026-09-17 03:30 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: On the advisor's instruction after the evaluation: one account form for
+  both pages, with the fields derived from one permission table rather than a form per page.
+  apps/accounts/account.py holds editable_fields (the requirements' editability rules in one
+  place), AccountForm, and save_account, the one save path; templates/accounts/_account_form.html
+  and _addresses.html are shared by the profile and the member page. Three faults the split had
+  hidden are closed: a callsign typed on the member page skipped the FCC lookup, the licence
+  record, the name check, and the history; the same field carried two labels; and a member with
+  no callsign could not edit their own name although FR-8 says they may. The member page is one
+  column now, matching the profile, at the advisor's preference.
+- **Sections/Files Affected**: apps/accounts/account.py (new), apps/accounts/{views,
+  views_members}.py, templates/accounts/{_account_form,_addresses}.html (new),
+  templates/accounts/{profile,member_detail}.html, tests
+  apps/accounts/tests/test_account_form.py (new).
+- **Nature of Contribution**: Refactor, bug fixes, tests.
+- **Human Review Status**: Pending the advisor's look at both pages. 181 tests pass; the
+  accessibility check passes for the member, officer, and sysadmin views; ruff and both project
+  checks clean.
+- **Git Hash**: [pending]
