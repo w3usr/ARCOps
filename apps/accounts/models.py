@@ -151,7 +151,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def has_access(self) -> bool:
         """Whether the account may be used at all. An account in no group can do nothing, which
-        is what losing access means now; a superuser always can."""
+        is what losing access means now; a superuser always can.
+
+        A group with no capabilities in it still counts, which is how a Provisional account signs
+        in and sees the club's events while holding nothing. Deliberately not cached on the
+        instance: the code that takes access away asks this before and after, and a cached answer
+        made the second one wrong."""
         return bool(self.is_superuser or self.groups.exists())
 
     @property
