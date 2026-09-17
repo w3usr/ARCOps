@@ -18,6 +18,7 @@ urlpatterns = [
     path("wards/<int:pk>/password/", guardian.ward_password, name="ward_password"),
     path("wards/<int:pk>/email/", guardian.ward_email, name="ward_email"),
     path("close/", views.request_closure, name="request_closure"),
+    path("addresses/resend/", views.resend_address, name="resend_address"),
     path("invitations/", views.invitations, name="invitations"),
     path("invitations/<int:pk>/", views.invitation_action, name="invitation_action"),
     path("entry-links/", views_entry.entry_links, name="entry_links"),

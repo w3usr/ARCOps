@@ -26,6 +26,11 @@
 </section>
 {% endif %}
 {% if guardians %}
+<section class="card" aria-labelledby="addr"><h2 id="addr">Where we write, and how you sign in</h2>
+<ul class="list">{% for a in addresses %}<li>{{ a.address }}{% if a.is_sign_in %} <span class="tag">sign-in address</span>{% endif %}{% if a.verified %}{% if not a.is_sign_in %} <span class="tag ok">confirmed: signs you in too</span>{% endif %}{% else %} <span class="tag warn">not confirmed</span>
+  <form method="post" action="{% url 'resend_address' %}" class="inline">{% csrf_token %}<input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">send the confirmation link</button></form>{% endif %}</li>{% endfor %}</ul>
+<p class="helptext">Club email goes to every address whose switch is on above, confirmed or not. Signing in and password resets use your sign-in address and any address you have confirmed.</p>
+</section>
 <section class="card" aria-labelledby="gds"><h2 id="gds">Your guardians</h2>
 <ul class="list">{% for g in guardians %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}</li>{% endfor %}</ul>
 <p class="muted">They sign you up, manage this profile, and receive every message sent to you. When you turn 18, tell a faculty advisor and the account becomes your own.</p>

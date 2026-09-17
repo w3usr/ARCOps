@@ -250,11 +250,12 @@ def test_password_changed_page_offers_sign_in(client):
     )
 
 
-def test_password_reset_works_with_any_address_on_file_and_says_nothing_to_strangers(settings):
-    """FR-107 as the advisor wants it: the personal address resets the account whose sign-in
-    address is the institution one; an unknown address gets no mail at all, and the page reads
-    the same either way."""
+def test_password_reset_follows_the_addresses_that_sign_you_in(settings):
+    """A confirmed address resets the account; one merely typed into a profile does not, and a
+    stranger's address gets no mail at all. The page reads the same in every case."""
     from django.core import mail
+
+    from apps.accounts import addresses
 
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     u = User.objects.create_user(
@@ -268,21 +269,25 @@ def test_password_reset_works_with_any_address_on_file_and_says_nothing_to_stran
     u.access_level = AccessLevel.MEMBER
     u.save()
     c = Client()
+
+    r = c.post("/accounts/password/reset/", {"email": "who.home@example.org"}, follow=True)
+    assert b"Check your email" in r.content  # the same page either way
+    assert len(mail.outbox) == 0  # not confirmed: it does not move a password
+
+    addresses.mark_verified(u, "who.home@example.org")
     r = c.post("/accounts/password/reset/", {"email": "Who.Home@example.org"}, follow=True)
-    assert (
-        b"Check your email" in r.content and b"If we have an account with that address" in r.content
-    )
+    assert b"Check your email" in r.content
     assert len(mail.outbox) == 1 and mail.outbox[0].to == ["who.home@example.org"]
     link = re.search(r"https?://\S+/accounts/password/reset/key/\S+/", mail.outbox[0].body).group(0)
     path = link[link.index("/accounts/") :]
-    r = c.get(path, follow=True)  # a valid key redirects to the set-password form; a bad one
-    assert r.status_code == 200  # renders "Bad Token" in place
-    assert b"Bad Token" not in r.content and b"password1" in r.content
+    r = c.get(path, follow=True)
+    assert r.status_code == 200 and b"Bad Token" not in r.content and b"password1" in r.content
     form_url = r.redirect_chain[-1][0]
     r = c.post(form_url, {"password1": "a-New-Password-123!", "password2": "a-New-Password-123!"})
     assert r.status_code == 302
     u.refresh_from_db()
     assert u.check_password("a-New-Password-123!")
+
     r = c.post("/accounts/password/reset/", {"email": "nobody@example.org"}, follow=True)
     assert b"Check your email" in r.content
     assert len(mail.outbox) == 1  # nothing sent to a stranger

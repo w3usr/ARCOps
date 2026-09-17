@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Confirm an address · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% if outcome == 'done' %}
+<h1>Address confirmed</h1>
+<p><strong>{{ address }}</strong> is confirmed. You can sign in with it as well as with your usual address, and a password reset asked for with it will work.</p>
+{% elif outcome == 'taken' %}
+<h1>That address belongs to another account</h1>
+<p><strong>{{ address }}</strong> is already confirmed on someone else's account, so it cannot also confirm this one. A club officer can sort it out.</p>
+{% else %}
+<h1>That link is no longer valid</h1>
+<p>It may have expired, or the address may have been changed since. Ask for a new link from your profile, or ask a club officer.</p>
+{% endif %}
+<p><a href="{% url 'profile' %}">Your profile</a> · <a href="{% url 'account_login' %}">Sign in</a></p>
+{% endblock %}

@@ -42,6 +42,16 @@
     <dt>Joined</dt><dd>{{ member.date_joined|date:"d M Y" }}{% if member.joined_via %} via {{ member.joined_via.label }}{% endif %}</dd>
     <dt>License class</dt><dd>{{ member.license_letter }}</dd>
   </dl>
+  <h2>Addresses</h2>
+  <ul class="list">{% for a in addresses %}<li>{{ a.address }}{% if a.is_sign_in %} <span class="tag">sign-in</span>{% endif %}
+    {% if a.verified %}<span class="tag ok">confirmed</span>{% if not a.is_sign_in and user.is_sysadmin %}
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unverify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">stop it signing in</button></form>{% endif %}
+    {% else %}<span class="tag warn">not confirmed</span>
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="verify_address"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">confirm it yourself</button></form>
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="send_address_link"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">send them the link</button></form>
+    {% endif %}</li>{% endfor %}</ul>
+  <p class="helptext">Club email goes to every address with its delivery switch on. Signing in and password resets use the sign-in address and any confirmed address. Confirm one yourself when you know it is theirs.</p>
+
   <h2>Standing</h2>
   <dl class="dl">
     <dt>License</dt><dd>{% if standing.licence %}{{ standing.licence.callsign }} · {{ standing.licence.effective_class|default:"class unknown" }} · {{ standing.licence.effective_status }}{% if standing.licence.effective_expiry %} · expires {{ standing.licence.effective_expiry }}{% endif %} <small class="muted">({{ standing.licence.effective_source }})</small>{% if standing.licence.has_override %}<br><small class="muted">Override by {{ standing.licence.override_by.short_name|default:"a sysadmin" }}: {{ standing.licence.override_reason }}</small>{% endif %}{% else %}none on file{% endif %}</dd>

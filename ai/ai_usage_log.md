@@ -1231,3 +1231,28 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look; his own page is the check. 169 tests pass;
   ruff and both project checks clean.
 - **Git Hash**: 749889e
+
+## [2026-09-17 03:04 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: On the advisor's instruction after we talked it through: either address
+  on an account signs a member in. REQUIREMENTS §2.6 already asked for this ("either on file")
+  and only one address had ever worked, so this is a defect closed rather than a feature added;
+  the condition we agreed, that an address must be confirmed before it carries the weight of a
+  credential, is recorded as a clarification with its reasoning. Built: apps/accounts/
+  addresses.py holds the rule (the sign-in address always works; another works once confirmed,
+  by the member's link or an officer's word, the same waiver as a class link, so nothing waits
+  on mail); confirmed addresses live in the sign-in library's own table, which is what it
+  consults and which holds a confirmed address to one account; a confirmed address is never
+  removed automatically, so a mistyped sign-in address cannot lock anyone out; password reset
+  now accepts exactly the addresses that sign a member in; the profile and the member page show
+  each address with its standing and the controls to confirm, resend, or withdraw it. Also
+  stopped the plain-text part of every message wrapping a long URL mid-link.
+- **Sections/Files Affected**: apps/accounts/addresses.py (new), apps/accounts/{views,
+  views_members,forms,urls}.py, apps/comms/{services,defaults}.py, config/urls.py,
+  templates/accounts/{verify_address (new),profile,member_detail}.html,
+  docs/REQUIREMENTS.md (§2.6 and the decision record), tests
+  apps/accounts/tests/{test_addresses (new),test_flows}.py.
+- **Nature of Contribution**: Code generation, tests, requirement clarification.
+- **Human Review Status**: Pending the advisor's check with his two addresses. 175 tests pass;
+  ruff and both project checks clean.
+- **Git Hash**: [pending]

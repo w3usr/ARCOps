@@ -258,7 +258,16 @@ The draft models this as follows:
 University login, so University SSO cannot be the only door, and the dictation describes
 passwords and sysadmin resets directly. Specifics:
 
-- Sign-in by email address (either on file) and password.
+- Sign-in by email address (either on file) and password. The account's sign-in address always
+  works; another address on the account works once it is **confirmed**, either by the member
+  following a link sent to that address or by an officer saying it is theirs (the same waiver as
+  FR-120). Until then the address still receives club mail, so nothing waits on delivery
+  (FR-103). A confirmed address belongs to one account, and is never taken away automatically,
+  so correcting a sign-in address cannot lock anyone out; the temporary password (FR-7) remains
+  the path that needs no mail at all. *(Clarified 2026-09-17 after the advisor asked why one of
+  his addresses would not sign him in: "either on file" had never been built, and confirmation
+  is the condition the assistant proposed and he accepted for the addresses that are not the
+  account's identity.)*
 - Password strength enforced; breached-password check **Should**.
 - Self-service reset from a "Forgot username or password?" link on the sign-in page (FR-107),
   which needs working email. The sysadmin temporary-password path (FR-7) is the fallback and
@@ -1587,6 +1596,7 @@ accept, amend, or strike.
 | Password never emailed (FR-32) | The agreement being signed forbids writing the password down or sharing it. Emailing it does both. |
 | Invitation expiry and application review (FR-3, FR-5) | Standard hygiene for an invitation-only system; the dictation is silent. |
 | Self-service password reset (section 2.6) | Removes routine work from the sysadmin; the sysadmin path the dictation asked for remains. |
+| Confirming an address before it signs a member in (section 2.6, 2026-09-17) | The dictation asks for sign-in by either address on file. Anyone can type any address into a profile, so an address only carries the weight of a credential once the member has followed a link sent to it or an officer has vouched for it; an officer's waiver keeps it independent of mail delivery. |
 | Audit log (FR-92) | The system approves access to a room and displays a shared password; who did what and when has to be recoverable. |
 | Waitlist (FR-57), calendar feed (FR-59), digest (FR-79), messages page (FR-82) | Cheap once the core exists; each closes a way a slot goes uncovered or a message goes unread. |
 | Positions and locations (FR-51) | Proposed as Should pending Q12; NAF confirmed both positions and locations on 2026-09-13, and FR-51 became Must with a per-location viability rule. |

@@ -43,6 +43,11 @@ urlpatterns = [
     path("mentors/<str:token>/", views_entry.mentor_needs_page, name="mentor_needs"),
     path("verify/<str:token>/", views_entry.verify_email, name="verify_email"),
     path("privacy/", views_settings.privacy, name="privacy"),
+    path(
+        "verify-address/<str:token>/",
+        __import__("apps.accounts.views", fromlist=["verify_address"]).verify_address,
+        name="verify_address",
+    ),
     path("sw.js", service_worker, name="service_worker"),
     path("branding/<str:name>", branding_file, name="branding_file"),
     path("", include("apps.ops.urls")),

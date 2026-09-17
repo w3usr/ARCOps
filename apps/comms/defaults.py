@@ -351,6 +351,18 @@ DEFAULT_TEMPLATES: list[dict] = [
         ),
         "variables": ["advisor.full_name", "user.display_first"],
     },
+    {
+        "key": "account.verify_address",
+        "subject": "Confirm {{ address }} for {{ club.short_name }}",
+        "body_html": (
+            "<p>{{ address }} is listed on your {{ club.short_name }} account. Confirm it and you "
+            "can sign in with it as well as with your usual address:</p>"
+            '<p><a href="{{ link }}">Confirm this address</a></p>'
+            "<p>Until you do, club email still comes to it; it simply does not sign you in. If you "
+            "did not add it, ignore this message and tell a club officer.</p>"
+        ),
+        "variables": ["address", "link", "club.short_name"],
+    },
 ]
 
 DEFAULTS_BY_KEY = {t["key"]: t for t in DEFAULT_TEMPLATES}

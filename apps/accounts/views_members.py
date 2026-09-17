@@ -199,8 +199,44 @@ def member_detail(request, pk):
                             before=before,
                             after={f: getattr(user, f) for f in form.changed_data},
                         )
+                    if {"email", "institution_email", "personal_email"} & set(form.changed_data):
+                        from . import addresses
+
+                        addresses.sync(user, actor, f"{request.scheme}://{request.get_host()}")
                     messages.success(request, "Saved.")
                     return redirect("member_detail", pk=member.pk)
+        elif action == "verify_address":  # an officer vouches for an address (no mail needed)
+            from . import addresses
+
+            address = request.POST.get("address", "").strip().lower()
+            try:
+                addresses.mark_verified(member, address, actor)
+                messages.success(
+                    request, f"{address} is confirmed; {member.display_first} can sign in with it."
+                )
+            except addresses.AddressInUse as exc:
+                messages.error(request, str(exc))
+            return redirect("member_detail", pk=member.pk)
+        elif action == "unverify_address" and actor.is_sysadmin:
+            from . import addresses
+
+            address = request.POST.get("address", "").strip().lower()
+            if address == (member.email or "").lower():
+                messages.error(request, "The sign-in address always signs this member in.")
+            else:
+                addresses.unverify(member, address, actor)
+                messages.success(request, f"{address} no longer signs this member in.")
+            return redirect("member_detail", pk=member.pk)
+        elif action == "send_address_link":
+            from . import addresses
+
+            address = request.POST.get("address", "").strip().lower()
+            if address in addresses.on_file(member):
+                addresses.send_confirmation(
+                    member, address, f"{request.scheme}://{request.get_host()}"
+                )
+                messages.success(request, f"A confirmation link is on its way to {address}.")
+            return redirect("member_detail", pk=member.pk)
         elif action == "license_lookup":  # any officer: FR-14, the local FCC table
             from apps.credentials.models import UlsLicense
             from apps.credentials.services import refresh_license_from_local_table
@@ -356,6 +392,7 @@ def member_detail(request, pk):
             "form": form,
             "ladder": ctx_ladder,
             "student_only": STUDENT_FIELDS,
+            "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "deletion": __import__(
                 "apps.accounts.services", fromlist=["deletion_effects"]
             ).deletion_effects(member)

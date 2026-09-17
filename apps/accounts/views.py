@@ -80,6 +80,20 @@ def profile(request):
                         request,
                         f"{new_call} is not in the FCC table yet; it is held as unverified until the nightly import finds it.",
                     )
+            changed = [f for f in ("institution_email", "personal_email") if f in form.changed_data]
+            if changed:
+                from . import addresses
+
+                sent = addresses.sync(user, base_url=f"{request.scheme}://{request.get_host()}")
+                if sent:
+                    messages.info(
+                        request,
+                        "Confirm "
+                        + " and ".join(sent)
+                        + " from the link we sent there and you can sign in with "
+                        + ("them" if len(sent) > 1 else "it")
+                        + " too. Club email goes there either way.",
+                    )
             messages.success(request, "Profile saved.")
             return redirect("profile")
     else:
@@ -106,6 +120,7 @@ def profile(request):
             "notification_rows": rows,
             "mandatory_labels": list(MANDATORY.values()),
             "push_subscriptions": request.user.push_subscriptions.order_by("-created"),
+            "addresses": addresses_state(request.user),
             "guardians": list(
                 request.user.guardianships.filter(active=True).select_related("guardian")
             )
@@ -486,3 +501,50 @@ def request_closure(request):
         "Your account is closed. The club keeps its records for the period in the privacy notice, then removes your contact details.",
     )
     return redirect("account_login")
+
+
+@require_http_methods(["GET"])
+def verify_address(request, token):
+    """A member proves one of their own addresses by opening the link sent to it. From then on
+    it signs them in as well as their usual address."""
+    from . import addresses
+
+    found = addresses.from_token(token)
+    if not found:
+        return render(request, "accounts/verify_address.html", {"outcome": "invalid"}, status=410)
+    user, address = found
+    try:
+        addresses.mark_verified(user, address)
+        outcome = "done"
+    except addresses.AddressInUse:
+        outcome = "taken"
+    return render(
+        request,
+        "accounts/verify_address.html",
+        {"outcome": outcome, "address": address, "person": user},
+    )
+
+
+def addresses_state(user):
+    from . import addresses
+
+    return addresses.state(user)
+
+
+@login_required
+@require_http_methods(["POST"])
+def resend_address(request):
+    """Send the confirmation link again, to the address itself."""
+    from . import addresses
+
+    address = request.POST.get("address", "").strip().lower()
+    if address not in addresses.on_file(request.user):
+        messages.error(request, "That address is not on your account.")
+    elif address in addresses.verified(request.user):
+        messages.info(request, f"{address} is already confirmed.")
+    else:
+        addresses.send_confirmation(
+            request.user, address, f"{request.scheme}://{request.get_host()}"
+        )
+        messages.success(request, f"A confirmation link is on its way to {address}.")
+    return redirect("profile")

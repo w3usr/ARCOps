@@ -49,6 +49,14 @@ def email_wanted(user, category: str) -> bool:
     return True if pref is None else bool(pref.email)
 
 
+def _plain_text(body_html: str) -> str:
+    """The text alternative. Wrapping is off because html2text's default breaks a long URL
+    across lines, which leaves the text-only reader with a link they cannot follow."""
+    converter = html2text.HTML2Text()
+    converter.body_width = 0
+    return converter.handle(body_html)
+
+
 def compose(
     user,
     category: str,
@@ -67,7 +75,7 @@ def compose(
         category=category,
         subject=subject[:200],
         body_html=body_html,
-        body_text=html2text.html2text(body_html),
+        body_text=_plain_text(body_html),
     )
     if deliver_now:
         deliver(msg)
