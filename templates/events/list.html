@@ -18,5 +18,5 @@
 {% if regular %}<section aria-labelledby="r"><h2 id="r">Regular meetings and nets</h2>
 <ul class="eventcards">{% for e in regular %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e.recurrence_text }}</p></li>{% endfor %}</ul></section>{% endif %}
 {% if past %}<section aria-labelledby="p"><h2 id="p">Past</h2>
-<ul class="eventcards">{% for e in past %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag">Cancelled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></li>{% endfor %}</ul></section>{% endif %}
+<ul class="eventcards">{% for e in past %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag">Canceled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></li>{% endfor %}</ul></section>{% endif %}
 {% endblock %}

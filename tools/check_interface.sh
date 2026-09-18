@@ -26,7 +26,13 @@ BRITISH = re.compile(
 )
 # Identifiers keep the spelling they were created with: renaming one is a migration, not a
 # proofread. The same goes for the HTML attribute aria-labelledby.
-SPELLING_EXEMPT = re.compile(r"(state|status|action|value|name|key|class)\s*==?\s*'?\"?cancelled|'cancelled'|\"cancelled\"|\.cancelled|cancelled=|labelledby")
+# Identifiers keep the spelling they were created with: renaming one is a migration, not a
+# proofread. Each identifier is blanked out of the line before the line is checked, so a line
+# carrying both a state key and visible text is still checked for the visible text. Exempting
+# the whole line let <span class="tag">Cancelled</span> sit beside state == 'cancelled' unseen.
+IDENTIFIER = re.compile(
+    r"'cancelled'|\"cancelled\"|\bcancelled\s*=|\.cancelled\b|\bcancelled__|labelledby"
+)
 
 fail = []
 
@@ -54,8 +60,8 @@ for path in sorted(pathlib.Path("templates").rglob("*.html")):
             fail.append(f"{path}:{n}: an inline event handler, which the policy blocks")
         if TITLE.search(line) and "block title" not in line:
             fail.append(f"{path}:{n}: a title attribute; put the words on the page instead")
-        hit = BRITISH.search(line)
-        if hit and not SPELLING_EXEMPT.search(line):
+        hit = BRITISH.search(IDENTIFIER.sub("", line))
+        if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
 for path in sorted(pathlib.Path("static/css").rglob("*.css")) + sorted(
@@ -64,8 +70,8 @@ for path in sorted(pathlib.Path("static/css").rglob("*.css")) + sorted(
     if path.name.endswith(".min.js"):
         continue  # vendored
     for n, line in enumerate(path.read_text().splitlines(), 1):
-        hit = BRITISH.search(line)
-        if hit and not SPELLING_EXEMPT.search(line):
+        hit = BRITISH.search(IDENTIFIER.sub("", line))
+        if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
 for line in dict.fromkeys(fail):

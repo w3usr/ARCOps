@@ -1535,3 +1535,24 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 241 tests pass, ruff clean, the axe sweep
   passes for all eight roles at 1280px and 390px, and the four repository guards pass.
 - **Git Hash**: f79ccee
+
+## [2026-09-18 01:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The requirements reconciled with the interface work of 2026-09-17. Six
+  requirements said something the code no longer does: FR-107 quoted the sign-in link as "Forgot
+  your username or password?", which is gone because an account has no username; FR-58 now
+  records that removing somebody else's sign-up is confirmed on its own page and requires a
+  reason; FR-89 that a settings submission with a bad value saves nothing and returns what was
+  typed; FR-95 that a stacked table cell carries its column heading, and why a scrolling wide
+  table was rejected; FR-62 that the rule against color carrying meaning alone reaches the four
+  feedback levels and destructive links. TR-44 is new: the interface standard in docs/INTERFACE.md
+  with tools/check_interface.sh enforcing the greppable half in CI. The interface guard itself
+  gained a fix: it exempted a whole line that mentioned an identifier, so
+  `{% if e.state == 'cancelled' %}<span class="tag">Cancelled</span>` hid visible British text
+  behind a state key. It now blanks the identifier and checks what is left, which caught that tag.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-58, FR-62, FR-89, FR-95, FR-107);
+  docs/TECHNICAL_REQUIREMENTS.md (TR-44 added, TR-38 amended); tools/check_interface.sh;
+  templates/events/list.html.
+- **Nature of Contribution**: Analysis and edit by the assistant.
+- **Human Review Status**: Pending the advisor's look. 241 tests pass and the four guards pass.
+- **Git Hash**: (filled in after committing)

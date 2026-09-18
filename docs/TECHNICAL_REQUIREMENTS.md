@@ -408,11 +408,23 @@ has a decade of documentation.
   pre-commit locally and by CI. Type hints on the service layer, checked with `mypy` in
   non-strict mode.
 - **TR-38 CI: GitHub Actions on the public repository** (free for public repositories): lint,
-  tests, accessibility checks, a `pip-audit` dependency scan, and the club-neutrality grep
-  (TR-40) on every push and pull request. CI never deploys; deployment stays a human action from the private repository.
+  tests, accessibility checks, a `pip-audit` dependency scan, the club-neutrality grep (TR-40)
+  and the interface check (TR-44) on every push and pull request. CI never deploys; deployment stays a human action from the private repository.
 - **TR-39 Definition of done for a change**: tests pass, accessibility checks pass, the
   requirement ID it implements is in the commit message, and if the change sends a message it
   has a row in the FR-103 table.
+- **TR-44 One interface, written down: `docs/INTERFACE.md`**, with the greppable half enforced
+  by `tools/check_interface.sh` in CI. It fixes the vocabulary (plain nouns for headings; no
+  count, dotted key, enum value, state name or Python repr on a page; American English, except
+  in an identifier, where renaming is a migration and not a proofread), the control hierarchy
+  (one solid button per form, outline for a side action, link for a row action), the three tiers
+  of destructive action and the friction each earns, the shape of a form and what happens to it
+  when it is refused, the `data-label` every table cell carries so it survives a phone, and the
+  four levels of feedback. *Why: the application was built requirement by requirement with
+  nothing saying how a page should read, and the result showed the shape of the code rather than
+  speaking to the person. The advisor, 2026-09-17, on a level offered as "Faculty Advisor · 16
+  capabilities": "no self-respecting UI would do that." A convention no tool checks is a
+  convention that lapses, so the parts a grep can see are checked on every push.*
 
 ---
 

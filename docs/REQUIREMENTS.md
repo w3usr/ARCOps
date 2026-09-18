@@ -976,7 +976,9 @@ Verbatim:
   If a place opens, the first waitlisted person is offered it by message and has a configurable
   window to accept before it passes to the next.
 - **FR-58 [Must]** Captains, officers, and sysadmins can add, move, or remove any sign-up, with
-  a notice to the person affected.
+  a notice to the person affected. Removing somebody else's sign-up is confirmed on its own page
+  first, which names the slot, warns where the slot stops being viable without them, and
+  **requires a reason**: the notice tells the member why, rather than only that it happened.
 - **FR-59 [Should]** A member sees "my schedule": every slot they hold across all events, with
   an iCalendar feed URL they can subscribe to from a phone or desktop calendar **(added)**: the
   cheapest possible reminder channel, and it works offline.
@@ -1014,7 +1016,10 @@ Verbatim:
   depends on one person (if they cancel, it fails). *(Reworded 2026-09-13 from empty / not viable
   / viable / at risk so that a newcomer reads an invitation, not a verdict.)* A slot also shows
   *over limit* when it would push the event past an FR-39 operating-time limit. Status is
-  conveyed by icon and text as well as color, in a color-blind-safe palette.
+  conveyed by icon and text as well as color, in a color-blind-safe palette. The same holds
+  everywhere else color would otherwise carry a meaning on its own: each of the four levels of
+  feedback carries its word (**Done**, **Note**, **Careful**, **Problem**) as well as its tint,
+  and a destructive link is underlined rather than left to be recognized by being red.
 - **FR-63 [Must] (added; FCC Part 97)** For each viable slot, the roster names the **control
   operator**: the licensed person whose license class governs what the station may do during
   that slot. Part 97 requires a control operator for every transmission and limits the station
@@ -1159,7 +1164,9 @@ made it likely that reliable delivery would take time to establish:
   (for the BCC field of their own mail client) and the message body. The announcement is still
   recorded per FR-75, marked *sent outside the system*. This shows addresses to people who may
   already see them (section 2.5) and to no one else.
-- **FR-107 [Must]** The sign-in page carries a **"Forgot your username or password?"** link. The
+- **FR-107 [Must]** The sign-in page carries a **"Forgot your password?"** link, reaching a page
+  headed **Password reset**. It does not offer to recover a username, because an account has
+  none: the account is its own key and any confirmed address signs it in (section 2.6). The
   member enters an address they have confirmed on their account. If it matches, reset
   instructions go to that address; an address merely typed into a profile moves nobody's
   password, which is the same rule that governs signing in (section 2.6). The page's response
@@ -1315,7 +1322,11 @@ made it likely that reliable delivery would take time to establish:
 - **FR-89 [Must]** Sysadmins edit club configuration in the interface: club identity, sending
   and reply-to addresses, member categories, club positions, access groups and what each may do, roles,
   credential types, license ladder, default slot length, default cutoffs and horizons, message
-  templates **(portability)**.
+  templates **(portability)**. Each value is named in words with one line saying what it does;
+  its dotted key is shown quietly beside that, for whoever edits the configuration file. A
+  submission with any value the application refuses **saves nothing**, and comes back with
+  everything that was typed and the reason against the field that carries it: saving the good
+  half of a form and discarding the rest leaves the sysadmin unable to tell which half took.
 - **FR-90 [Must]** Sysadmins manage agreement templates (FR-21) and the computer password
   (FR-32).
 - **FR-91 [Must]** Sysadmins can take an account out of every access group with a reason, and
@@ -1502,7 +1513,9 @@ See also `.claude/rules/web-development.md`.
 - **FR-95 [Must]** Every member-facing page (sign-in, my schedule, event list, roster, sign-up,
   agreements, computer password, messages) is designed for phone width first and works
   without horizontal scrolling. Officer and sysadmin pages work on a phone and are laid out
-  for a desktop.
+  for a desktop. A table stacks at phone width, and every cell carries its column heading with
+  it: a stacked cell without one has lost what it means. Letting a wide table keep its shape and
+  scroll inside a wrapper was tried and pushed the whole page sideways, which this forbids.
 - **FR-96 [Should]** The application is an installable **progressive web app**: a manifest,
   an icon, and a service worker that caches the shell and the member's own schedule for
   offline reading. This gives a home-screen icon on Android and iOS today, and is the
