@@ -1536,7 +1536,7 @@ carries the actual running model ID.
   passes for all eight roles at 1280px and 390px, and the four repository guards pass.
 - **Git Hash**: f79ccee
 
-## [2026-09-18 01:05 UTC]
+## [2026-09-18 00:49 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The requirements reconciled with the interface work of 2026-09-17. Six
   requirements said something the code no longer does: FR-107 quoted the sign-in link as "Forgot
@@ -1555,4 +1555,4 @@ carries the actual running model ID.
   templates/events/list.html.
 - **Nature of Contribution**: Analysis and edit by the assistant.
 - **Human Review Status**: Pending the advisor's look. 241 tests pass and the four guards pass.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: 7bb5e83
