@@ -2016,7 +2016,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: e5135df
 
-## [2026-09-19 21:30 UTC]
+## [2026-09-19 21:32 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Two things from the advisor's testing. A member who left and comes back
   gets their own record instead of a second account: an address that belongs to a closed or
@@ -2033,4 +2033,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 324 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 1db41d4
