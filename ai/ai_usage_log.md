@@ -2178,3 +2178,17 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 332 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: e179ba6
+
+## [2026-09-19 23:45 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The footer's last line was under the phone's navigation bar in the
+  installed app and fine in the browser. An installed app has no browser chrome, so the system's
+  own bars sit over the page, and a page shorter than the screen puts its footer exactly where
+  the navigation bar is. The page now says it is drawn edge to edge and pays for every edge that
+  meets a system bar: the footer, the top bar, and the drawer's foot. In a browser those insets
+  are zero and nothing moves.
+- **Sections/Files Affected**: templates/base.html (viewport-fit), static/css/app.css.
+- **Nature of Contribution**: Code by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look on a phone. 332 tests pass, the
+  accessibility sweep at both widths and the four guards pass.
+- **Git Hash**: pending

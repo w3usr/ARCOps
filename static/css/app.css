@@ -112,7 +112,7 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
   font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
   color: var(--muted);
 }
-.sidenav-foot { margin-top: auto; padding-top: .75rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: .125rem; }
+.sidenav-foot { margin-top: auto; padding-top: .75rem; padding-bottom: env(safe-area-inset-bottom, 0px); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: .125rem; }
 .whoami { display: flex; align-items: center; gap: .75rem; margin: 0; padding: .4rem .75rem; color: var(--muted); font-size: .9rem; min-width: 0; }
 .whoami span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidenav-foot form { margin: 0; }
@@ -170,7 +170,7 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
 /* Under 60rem: a top bar with the menu button; the sidebar becomes an off-canvas drawer. */
 @media (max-width: 60rem) {
   .shell { display: block; }
-  .topbar { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border-bottom: 1px solid var(--line); background: var(--side); position: sticky; top: 0; z-index: 20; }
+  .topbar { display: flex; align-items: center; gap: .5rem; padding: calc(.5rem + env(safe-area-inset-top, 0px)) .75rem .5rem; border-bottom: 1px solid var(--line); background: var(--side); position: sticky; top: 0; z-index: 20; }
   .topbar .brand img { width: 2.25rem; height: 2.25rem; }
   .only-desktop { display: none; }
   html.js .only-drawer { display: inline-flex; }
@@ -224,7 +224,16 @@ body.drawer-open { overflow: hidden; }
 }
 
 /* --------------------------------------------------------------- footer */
-footer.site { background: var(--brand); color: var(--brand-fg); text-align: center; padding: 1.25rem 1rem 1.35rem; }
+/* The page is drawn edge to edge (viewport-fit=cover in base.html), so every edge that meets
+   a system bar pays for it here. In a browser the insets are zero and nothing moves; in an
+   installed app they keep the footer clear of the navigation bar and the top bar clear of the
+   status bar. */
+footer.site {
+  background: var(--brand); color: var(--brand-fg); text-align: center;
+  padding: 1.25rem calc(1rem + env(safe-area-inset-right, 0px))
+           calc(1.35rem + env(safe-area-inset-bottom, 0px))
+           calc(1rem + env(safe-area-inset-left, 0px));
+}
 footer.site p { margin: 0; }
 footer.site .club { font-weight: 600; font-size: 1.05rem; }
 footer.site .club a { color: inherit; text-decoration: none; }

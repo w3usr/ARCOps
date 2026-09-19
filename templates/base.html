@@ -2,7 +2,10 @@
 <html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+{% comment %}viewport-fit=cover, with env(safe-area-inset-*) padding in the stylesheet: an
+installed app has no browser chrome, so the system's own bars sit over the page, and the
+footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment %}
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block title %}{{ club.short_name }} · {{ product.name }}{% endblock %}</title>
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="{{ club.branding.accent }}">
