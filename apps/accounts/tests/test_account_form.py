@@ -168,13 +168,13 @@ def test_a_field_is_shown_once_as_an_input_or_as_text_but_never_both():
         if "category" in editable:
             assert "Category" not in shown
         if "first_name" in editable:
-            assert "Name" not in shown
+            assert "First name" not in shown
 
-    # a sysadmin edits everything, so there is nothing left to state as text
-    assert readonly_rows(sys_user, m) == []
+    # a sysadmin edits every field there is; what is left as text is what nobody types
+    assert [r["field"] for r in readonly_rows(sys_user, m)] == ["date_joined"]
     # an officer edits only the club position, so the rest is text
     labels = {r["label"] for r in readonly_rows(off, m)}
-    assert {"Name", "Category", "Access", "Mobile number"} <= labels
+    assert {"First name", "Last name", "Category", "Access", "Mobile number"} <= labels
 
 
 def test_no_template_comment_reaches_the_page():

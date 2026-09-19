@@ -1872,3 +1872,25 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 295 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 7e779cb
+
+## [2026-09-19 19:35 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four changes the advisor asked for while testing. The name is printed in
+  the three fields it is stored in, read-only where a callsign makes it the FCC's, with the
+  explanation and the sysadmin-override note beside it rather than at the foot of the form; the
+  License card names the licensee as the FCC holds it; both pages head themselves with the name
+  the person is called by, the preferred name where there is one; and the edit page has one
+  Details card holding what cannot be changed as text and what can as fields, instead of two
+  cards with the same heading. Then two rules narrowed: forcing a callsign lookup is a
+  sysadmin's, because the nightly import refreshes every licensed member anyway and the page now
+  says so; and only a sysadmin has acting levels at all, the page answering 404 to everybody
+  else, because an officer rehearsing as a member is a way to lose an afternoon.
+- **Sections/Files Affected**: apps/accounts/{account,acting,views_acting,views_members}.py,
+  apps/credentials/models.py, templates/accounts/{_account_form,member_detail,member_edit}.html,
+  docs/REQUIREMENTS.md (FR-8, FR-14), docs/TECHNICAL_REQUIREMENTS.md (TR-43), tools/a11y, and
+  the tests across apps/accounts.
+- **Nature of Contribution**: Code, tests, and documentation by the assistant, at the advisor's
+  direction.
+- **Human Review Status**: Pending the advisor's look. 298 tests pass, the accessibility sweep
+  passes for all eight roles at both widths, and the four guards pass.
+- **Git Hash**: pending

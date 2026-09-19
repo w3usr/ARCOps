@@ -331,9 +331,12 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
     assert b"not on the account" in r.content  # a sysadmin cannot hand over someone else's
 
 
-def test_officer_looks_a_callsign_up_in_the_fcc_table(people):
-    """The advisor asked for this rather than an override: a button that re-reads the local FCC
-    table for a member's callsign, for officers as well as sysadmins."""
+def test_a_sysadmin_looks_a_callsign_up_in_the_fcc_table(people):
+    """A button that re-reads the local FCC table for a member's callsign.
+
+    It was any officer's until the advisor narrowed it on 2026-09-19: the nightly import
+    refreshes every licensed member anyway, so forcing one is the sysadmin's.
+    """
     from apps.credentials.models import LicenseRecord, UlsLicense
     from apps.ops.models import AuditLog
 
@@ -347,8 +350,8 @@ def test_officer_looks_a_callsign_up_in_the_fcc_table(people):
         operator_class="General",
         status="active",
     )
-    c = _as(people["off"])
-    assert b"Look this callsign up in the FCC table" in c.get(f"/members/{m.pk}/edit/").content
+    c = _as(people["sys"])
+    assert b"Look this callsign up now" in c.get(f"/members/{m.pk}/edit/").content
     r = c.post(f"/members/{m.pk}/edit/", {"action": "license_lookup"}, follow=True)
     assert r.status_code == 200 and b"N0LOOK: General, active" in r.content
     assert LicenseRecord.objects.get(user=m).operator_class == "General"
@@ -394,3 +397,21 @@ def test_student_fields_are_cleared_when_the_category_is_not_student(people):
     )
     m.refresh_from_db()
     assert m.category == "faculty" and m.student_level == "" and m.graduation_year is None
+
+
+def test_only_a_sysadmin_forces_a_callsign_lookup(people):
+    """NAF, 2026-09-19: "only sysadmins should be able to force a call-sign relook up."
+
+    The nightly import refreshes every licensed member, so the button is for impatience rather
+    than for correctness, and it is the sysadmin's.
+    """
+    off, mem = people["off"], people["mem"]
+    body = _as(off).get(f"/members/{mem.pk}/edit/").content.decode()
+    assert "refreshed from the FCC's own file overnight" in body, "the page says the import does it"
+    assert "license_lookup" not in body
+    assert (
+        _as(off).post(f"/members/{mem.pk}/edit/", {"action": "license_lookup"}).status_code == 404
+    )
+
+    c = _as(people["sys"])
+    assert "license_lookup" in c.get(f"/members/{mem.pk}/edit/").content.decode()

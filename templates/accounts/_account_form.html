@@ -2,6 +2,10 @@
 <form method="post" class="{{ form_class|default:'card stack' }}">{% csrf_token %}
   <input type="hidden" name="action" value="save">
   {% if form_heading %}<h2>{{ form_heading }}</h2>{% endif %}
+  {% comment %}One card, holding both what this reader may change and what they may not, so a
+  field is never hunted for on a second card. The locked ones come first, as text.{% endcomment %}
+  {% if readonly_rows %}<dl class="dl">{% include "accounts/_account_readonly.html" %}</dl>{% endif %}
+  {% if form.instance.name_from_uls %}<p class="helptext">The name above is the FCC's record for <strong>{{ form.instance.callsign }}</strong>. It is refreshed from the FCC and is not edited here. To be known by another name in the club, set <strong>Preferred name</strong> below; where the FCC's record is wrong, a sysadmin can override it with a reason.</p>{% endif %}
   {{ form.non_field_errors }}
   {% for f in form %}
     {% if f.name in form.student_fields %}
@@ -12,9 +16,5 @@
     {% elif f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}</div>
     {% else %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endif %}
   {% endfor %}
-  {% comment %}Read from the form's own instance rather than a variable the including page has
-  to remember to pass: it never did, on either page, so the one explanation of why the name
-  fields are absent has never reached anybody (found by the advisor, 2026-09-19).{% endcomment %}
-  {% if form.instance.name_from_uls %}<p class="helptext">The name is the FCC's record for {{ form.instance.callsign }}: <strong>{{ form.instance.full_name }}</strong>. It is refreshed from the FCC and is not edited here. To be known by another name in the club, set <strong>Preferred name</strong>; a sysadmin can override the FCC's name where it is wrong.</p>{% endif %}
   <div><button type="submit">Save</button></div>
 </form>

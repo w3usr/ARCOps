@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
@@ -26,9 +27,9 @@ def acting_view(request):
     user = request.user
     views = available_views(user)
     if len(views) < 2:
-        # nothing to choose between: this account holds one view's worth of capabilities
-        messages.info(request, "Your account has one level, so there is nothing to switch.")
-        return redirect("profile")
+        # Nothing to choose between: either this is not a sysadmin's account, which has no
+        # levels at all (§2.1), or it holds one level's worth of capabilities.
+        raise Http404
 
     now = current_view(request)
     if request.method == "POST":

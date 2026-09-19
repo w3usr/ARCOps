@@ -60,8 +60,16 @@ def capabilities_of(view: str) -> set[str]:
 
 def available_views(user) -> list[dict]:
     """The views this account may act at: every group whose capabilities it already holds, and
-    the sysadmin view for a sysadmin. Nobody can pick a view above themselves, because a view is
-    only offered when its capabilities are a subset of what the account holds."""
+    the sysadmin view. Nobody can pick a view above themselves, because a view is only offered
+    when its capabilities are a subset of what the account holds.
+
+    **Only a sysadmin has views at all.** The advisor, 2026-09-19: "Only people with sysadmin
+    privileges should be able to change their access view, even to something lower." An officer
+    dropping to Member is a rehearsal nobody asked for, and it leaves them wondering why the
+    application has stopped working; the feature exists so that somebody who holds everything
+    can put the dangerous half of it away (§2.1)."""
+    if not user.is_superuser:
+        return []
     from apps.ops.capabilities import LABELS
     from apps.ops.config import setting
     from apps.ops.groups import label_of, summary_of
@@ -108,6 +116,8 @@ def default_view(user) -> str | None:
     because dropping somebody to a view they could not otherwise reach would be surprising."""
     from apps.ops.config import setting
 
+    if not user.is_superuser:
+        return None  # only a sysadmin acts at a view at all
     wanted = str(setting("defaults.default_view", "") or "").strip()
     if not wanted:
         return None
@@ -148,6 +158,11 @@ class ActingViewMiddleware(MiddlewareMixin):
         if user is None or not user.is_authenticated:
             return None
         view = request.session.get(SESSION_KEY)
+        if view is not None and not user.is_superuser:
+            # A view left in a session that is no longer a sysadmin's grants nothing and hides
+            # nothing: the account acts as itself.
+            request.session.pop(SESSION_KEY, None)
+            view = None
         if view is None:
             view = default_view(user)
             if view is not None:

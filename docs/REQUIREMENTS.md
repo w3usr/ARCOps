@@ -507,7 +507,7 @@ officer admits or declines them (FR-121). Every account records the link it join
 
   | Field | Required | Editable by member | Notes |
   |---|---|---|---|
-  | First name | yes | only if no callsign | With a callsign, this is the ULS licensee name, filled by lookup (FR-4), refreshed by sync and on callsign change (FR-102), and read-only to the member; a sysadmin can override it with a reason (FR-15). Without a callsign, entered and edited by the member |
+  | First name | yes | only if no callsign | With a callsign, this is the ULS licensee name, filled by lookup (FR-4), refreshed by sync and on callsign change (FR-102), and read-only to the member; a sysadmin can override it with a reason (FR-15). Without a callsign, entered and edited by the member. The three name fields are **shown as text where they cannot be typed**, with one line beside them saying which callsign the name comes from and that Preferred name is how to be known by another name in the club; the licensee's name is also printed in the License card, which is what an officer checks a callsign against (2026-09-19) |
   | Middle name | no | only if no callsign | As first name |
   | Last name | yes | only if no callsign | As first name |
   | Preferred name | no | yes | Always the member's to set. Used in the short name (FR-67) and in salutations where set; people are addressed by the name they use |
@@ -576,7 +576,15 @@ Verbatim:
   type** (what kind of licensee holds the callsign: a person, a club, a RACES station, or a
   military recreation station) from FCC ULS data and records the result with its source and
   retrieval time. The applicant type is what a station's letter comes from (FR-67), because the
-  FCC issues an operator class to a person only. The mechanism is decided
+  FCC issues an operator class to a person only. **The daily import is what keeps a license
+  current**: an upgrade or a renewal reaches the account the night after the FCC publishes it,
+  with no action by anybody. Looking a callsign up by hand, for when somebody cannot wait for
+  the night's run, is a sysadmin's (the capability that governs the license record, FR-15); the
+  member's page says that the overnight refresh is what ordinarily does it.
+
+  > we automatically refresh call signs overnight? So new license upgrades will automatically
+  > refresh each night? I think that is how it should work. Then, only sysadmins should be able
+  > to force a call-sign relook up. — NAF, 2026-09-19 The mechanism is decided
   (TR-13, 2026-09-13): the FCC's own bulk ULS files imported daily into a local table, so every
   lookup is local and instant; the requirement is that the data are FCC data and are no more
   than a day stale.

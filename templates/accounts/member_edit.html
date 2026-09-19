@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 {% load labels %}
-{% block title %}Editing {{ member.full_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block title %}Editing {{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> · {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.full_name }}</a></p>
-<div class="titlerow"><h1>Editing {{ member.full_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div>
+{% comment %}The heading calls people what they are called: the preferred name where they have
+set one (NAF, 2026-09-19). The name on the record is in Details, in the three fields it is
+stored in.{% endcomment %}
+<p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> · {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
+<div class="titlerow"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div>
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
 {% if member.verification_deadline and not member.has_confirmed_address %}
 <div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>
@@ -31,23 +34,18 @@
 </section>
 {% endif %}
 
-<section class="card" aria-labelledby="d">
-  <h2 id="d">Details</h2>
-  <dl class="dl">
-    {% include "accounts/_account_readonly.html" %}
-    <dt>Joined</dt><dd>{{ member.date_joined|date:"d M Y" }}{% if member.joined_via %} via {{ member.joined_via.label }}{% endif %}</dd>
-  </dl>
-</section>
-
 <section class="card">{% include "accounts/_addresses.html" %}</section>
 
 <section class="card" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
   <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
+  {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
   <p class="helptext">{{ standing.license.source_label|capfirst }}.{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>
   {% else %}<p class="muted">None on file.</p>{% endif %}
-  {% if member.callsign %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="license_lookup"><button type="submit" class="secondary">Look this callsign up in the FCC table</button></form>{% endif %}
+  <p class="helptext">Every licensed member is refreshed from the FCC's own file overnight, so an upgrade appears here the night after the FCC publishes it.</p>
+  {% if member.callsign and perms.ops.override_license %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="license_lookup"><button type="submit" class="secondary">Look this callsign up now</button></form>
+  <p class="helptext">For when somebody cannot wait for tonight's import.</p>{% endif %}
   {% if perms.ops.override_license %}
   <details>
     <summary>Set the license by hand</summary>

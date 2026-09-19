@@ -88,18 +88,32 @@ def test_the_lower_level_refuses_the_action_rather_than_hiding_the_button():
 
 
 def test_nobody_may_act_above_themselves():
+    c = _signed_in(_sysadmin())
+    c.post("/me/level/", {"view": "member"})  # a sysadmin drops to a member's view
+    r = c.post("/me/level/", {"view": "nonesuch", "password": PASSWORD}, follow=True)
+    assert b"not a level your account can act at" in r.content
+    assert c.session["acting_view"] == "member"
+    assert c.get("/me/invitations/").status_code == 404
+
+
+def test_only_a_sysadmin_has_levels_at_all():
+    """NAF, 2026-09-19: "Only people with sysadmin privileges should be able to change their
+    access view, even to something lower."
+
+    An officer rehearsing as a member is a way to lose an afternoon wondering why the
+    application has stopped working. The feature is there so somebody holding everything can
+    put the dangerous half of it away.
+    """
     officer = User.objects.create_user(
         "off@example.org", PASSWORD, first_name="Off", last_name="Icer", groups=["officer"]
     )
     c = _signed_in(officer)
-    r = c.post("/me/level/", {"view": "advisor", "password": PASSWORD}, follow=True)
-    assert b"not a level your account can act at" in r.content
-    assert c.get("/credentials/approvals/").status_code == 404
-
-    # an officer may still drop to a member's view, which is below them
-    c.post("/me/level/", {"view": "member"})
-    assert c.session["acting_view"] == "member"
-    assert c.get("/me/invitations/").status_code == 404
+    assert c.get("/me/level/").status_code == 404
+    assert c.post("/me/level/", {"view": "member"}).status_code == 404
+    assert "acting_view" not in c.session
+    body = c.get("/").content.decode()
+    assert "/me/level/" not in body, "and no way to reach it from the sidebar"
+    assert c.get("/me/invitations/").status_code == 200, "an officer is simply an officer"
 
 
 def test_the_page_offers_only_the_levels_the_account_holds():
@@ -109,11 +123,7 @@ def test_the_page_offers_only_the_levels_the_account_holds():
         assert label in body, label
     assert "asks for your password" in body
 
-    officer = User.objects.create_user(
-        "off@example.org", PASSWORD, first_name="Off", last_name="Icer", groups=["officer"]
-    )
-    body = _signed_in(officer).get("/me/level/").content.decode()
-    assert "Club officer" in body and "Faculty advisor" not in body and "Sysadmin" not in body
+    # and a sysadmin is offered every level, because a sysadmin holds everything
 
 
 def test_the_sidebar_names_the_level_on_every_page():

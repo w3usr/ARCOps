@@ -53,7 +53,6 @@ def pages_for(role: str) -> list[str]:
         f"/events/{ev.pk}/slot/{slot.pk}/",
         "/credentials/agreements/",
         "/credentials/computer-password/",
-        "/me/level/",
         "/privacy/",
     ]
     if role == "minor":
@@ -88,6 +87,7 @@ def pages_for(role: str) -> list[str]:
     if role == "advisor":
         return common + officer + advisor
     sysadmin = [
+        "/me/level/",  # only a sysadmin has levels at all (TR-43)
         "/ops/status/",
         "/ops/settings/",
         "/ops/groups/",

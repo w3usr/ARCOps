@@ -304,6 +304,13 @@ has a decade of documentation.
   refuses requests rather than hiding controls. Raising asks for the password, both directions
   are audited, and no view is offered whose capabilities the account does not already hold. The
   permission matrix covers a sysadmin at the everyday level and the same account raised.
+  **Only a sysadmin has levels at all** (2026-09-19): the page answers 404 to everybody else and
+  no link to it appears, because an officer rehearsing as a member is a way to lose an afternoon
+  wondering why the application has stopped working. The feature exists so that an account
+  holding everything can put the dangerous half of it away.
+
+  > Only people with sysadmin privileges should be able to change their access view, even to
+  > something lower. — NAF, 2026-09-19
 - **TR-28 Retention**: `retention:apply` (TR-11) implements §4.3 exactly: it deletes on schedule
   what is not a member's own record, logs what it did to the audit log by count, and never
   touches a row under a legal hold flag (added for the case where a record must be kept). A

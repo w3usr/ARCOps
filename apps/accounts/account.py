@@ -251,6 +251,10 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     the directory opens "a read-only view of their profile page"), and editing is a page of its
     own. Each row carries the field it came from, so `readonly_rows` can take the same list and
     drop what the reader is about to be given an input for.
+
+    The name is three rows, because it is three fields: the advisor asked on 2026-09-19 for
+    "the stored user first, middle, and last names printed read-only in the details box", where
+    a callsign makes them the FCC's and nobody's to type (FR-8).
     """
     from apps.ops.templatetags.labels import phone
 
@@ -260,10 +264,9 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
         if field not in skip and value:
             rows.append({"field": field, "label": label, "value": value})
 
-    name = subject.full_name
-    if subject.name_from_uls and subject.callsign:
-        name = f"{name} (from the FCC record for {subject.callsign})"
-    add("first_name", "Name", name)
+    add("first_name", "First name", subject.first_name)
+    add("middle_name", "Middle name", subject.middle_name)
+    add("last_name", "Last name", subject.last_name)
     add("preferred_name", "Preferred name", subject.preferred_name)
     add("callsign", "Callsign", subject.callsign)
     add("category", "Category", _label("member_categories", subject.category))
@@ -280,6 +283,10 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
             if p
         )
         add("graduation_year", "Graduation", graduation)
+    joined = subject.date_joined.strftime("%d %b %Y") if subject.date_joined else ""
+    if subject.joined_via_id and subject.joined_via:
+        joined += f" via {subject.joined_via.label}"
+    add("date_joined", "Joined", joined)
     return rows
 
 

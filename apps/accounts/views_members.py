@@ -355,8 +355,9 @@ def member_detail(request, pk):
         "accounts/member_detail.html",
         {
             "member": member,
-            # The name is the heading, on your own page and on an officer's view alike.
-            "rows": profile_rows(member, skip=("first_name",)),
+            # The heading calls them what they are called; these are the fields as stored,
+            # the name among them, because with a callsign the name is the FCC's (FR-8).
+            "rows": profile_rows(member),
             **(_preferences(member) if is_self else {}),
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "standing": _standing(member),
@@ -425,7 +426,11 @@ def member_edit(request, pk):
                     return redirect("member_detail", pk=member.pk)
         elif views_addresses.handle(request, member):
             return redirect("member_edit", pk=member.pk)
-        elif action == "license_lookup":  # any officer: FR-14, the local FCC table
+        elif action == "license_lookup" and actor.may("override_license"):
+            # FR-14: the nightly import refreshes every licensed member, so a lookup by hand is
+            # for when somebody cannot wait for it. The advisor, 2026-09-19: "only sysadmins
+            # should be able to force a call-sign relook up." The capability that governs the
+            # license record is the one that governs forcing its refresh.
             from apps.credentials.models import UlsLicense
             from apps.credentials.services import refresh_license_from_local_table
 
@@ -602,7 +607,7 @@ def member_edit(request, pk):
             "member": member,
             "form": form,
             "ladder": ctx_ladder,
-            "readonly_rows": readonly_rows(actor, member, skip=("first_name",)),
+            "readonly_rows": readonly_rows(actor, member),
             # What the card over these fields is called. On your own account they are your
             # details; on somebody else's they are what this officer may manage, which for most
             # officers is the club position alone.

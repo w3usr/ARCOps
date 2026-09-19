@@ -102,6 +102,16 @@ class LicenseRecord(models.Model):
     }
 
     @property
+    def licensee(self) -> str:
+        """The name on the license, which is not always the name the person uses.
+
+        The advisor, 2026-09-19: "we should print out the license name in the License box." It
+        is what an officer checks a callsign against, and where a member's own name comes from
+        while they hold a callsign (FR-4, FR-8).
+        """
+        return (self.override_name or self.licensee_name or "").strip()
+
+    @property
     def class_label(self) -> str:
         """The operator class in words, or what kind of station holds the callsign instead."""
         if self.effective_class:

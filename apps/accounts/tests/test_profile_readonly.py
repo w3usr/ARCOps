@@ -141,8 +141,10 @@ def test_a_name_from_the_fcc_says_so_where_the_fields_would_be(pair):
     )
     body = _as(member).get("/me/edit/", follow=True).content.decode()
     assert 'name="first_name"' not in body, "the FCC's name is not typed here (FR-8)"
-    assert "The name is the FCC's record for N0MEM" in body
+    assert "The name above is the FCC's record for" in body and "N0MEM" in body
     assert "Preferred name" in body, "and it says what to set instead"
+    # and the name itself is printed above the note, in the three fields it is stored in
+    assert ">First name</dt>" in body and ">Last name</dt>" in body
 
 
 def test_your_own_fields_are_headed_details(pair):
