@@ -89,6 +89,12 @@ loads, because a live region that is already there when the page arrives announc
 A standing fact ("you are acting for a member under 18") is a banner, not a flash message. A
 flash message is something that just happened.
 
+**Say nothing when the page already says it.** "Successfully signed in as Kay Craigie" above a
+page headed "Hello, Kay", with the account named in the sidebar, tells the reader what they can
+see. Worse, it costs more than nothing: a bar that usually carries noise is a bar people learn
+to skim, and the warnings share it. Confirm an action when its result is **not** visible (a
+password changed, mail sent, a setting saved) and stay quiet when it is.
+
 ## Checking the work
 
 `tools/check.sh` runs all of it in about two minutes:

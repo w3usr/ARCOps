@@ -1631,3 +1631,21 @@ carries the actual running model ID.
   sweep passes, and the four guards pass. The new tests were checked against the unfixed code:
   three of the five fail without it.
 - **Git Hash**: 86bc92a
+
+## [2026-09-19 15:32 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The sign-in confirmation removed. The advisor, on "Done: Successfully
+  signed in as Kay Craigie (N3KN).": "We don't need a notification saying you successfully signed
+  in." The page it sits above is headed "Hello, Kay" and names the account in the sidebar, so the
+  message repeated what the reader could see. Suppressed by overriding allauth's logged_in
+  template with an empty one, which allauth reads as "say nothing". Signing out keeps its
+  message, because the page it lands on is also the page an expired session lands on and the two
+  are worth telling apart. The principle is now in docs/INTERFACE.md, since this is the second
+  time a message has been noise: confirm an action when its result is not visible, stay quiet
+  when it is.
+- **Sections/Files Affected**: templates/account/messages/logged_in.txt (new, deliberately
+  empty), apps/accounts/tests/test_signin_messages.py (new), docs/INTERFACE.md.
+- **Nature of Contribution**: Edit and tests by the assistant, at the advisor's instruction.
+- **Human Review Status**: Pending the advisor's look. 255 tests pass, the sweep passes, the four
+  guards pass.
+- **Git Hash**: (filled in after committing)

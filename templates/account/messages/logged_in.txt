@@ -1,0 +1,12 @@
+{% comment %}
+Deliberately empty, which allauth reads as "say nothing": it only adds a message when the
+template renders something.
+
+Its default is "Successfully signed in as <name>.", and the page you land on already says
+"Hello, <name>" with the account named in the sidebar. A message that repeats what the page
+shows is noise, and it costs more than nothing: it trains the reader to skim past the bar where
+the real warnings appear (NAF, 2026-09-19).
+
+Signing *out* keeps its message, because the sign-in page you land on is the same page you
+would see if the session had simply expired, and the two are worth telling apart.
+{% endcomment %}
