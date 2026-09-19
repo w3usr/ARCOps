@@ -57,10 +57,19 @@ def _as(user, view="sysadmin"):
 
 
 def test_members_see_short_names_and_officers_see_everything(people):
+    """Everyone gets the same table; a member gets fewer columns in it (NAF, 2026-09-19).
+
+    What a member may see is unchanged from when this was a list of cards: a first name and a
+    last initial, or a callsign, and no addresses (FR-67).
+    """
     body = _as(people["mem"]).get("/members/").content.decode()
-    directory = re.search(r'<ul class="directory">(.*?)</ul>', body, re.S).group(1)
-    assert "Mo N0MEM" in directory and "Ann O." in directory
-    assert "@" not in directory  # no addresses for members (FR-67)
+    rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
+    assert "<table" in body, "a member reads the same shape of page as an officer"
+    assert "Ann O." in rows and "Officer" not in rows, "a last name is an initial to a member"
+    assert "@" not in rows  # no addresses for members (FR-67)
+    for withheld in ("Category", "Access", "Email", "Phone", "First", "Last", "Preferred"):
+        assert f'data-label="{withheld}"' not in rows, f"{withheld} is an officer's column"
+
     from apps.accounts import addresses
 
     addresses.add(people["mem"], "mo@uni.example", confirmed=True)

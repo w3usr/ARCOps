@@ -1,33 +1,57 @@
 {% extends "base.html" %}
-{% load dicts labels %}
+{% load labels %}
 {% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Members</h1>{% if perms.ops.view_reports %}<span><a class="button secondary" href="{% url 'member_roster' %}">Roster and credentials</a> <a class="button secondary" href="{% url 'access_rosters' %}">Access rosters</a> <a class="button secondary" href="{% url 'hours' %}">Hours by course</a></span>{% endif %}</div>
+
+{% comment %}One table for everyone. What a member may see is fewer columns, not a different
+shape of page: the officer-only ones are absent rather than empty, so nothing hints at what is
+being withheld. Sorting and narrowing are plain GET, so both work without JavaScript and both
+survive a bookmark.{% endcomment %}
 <form method="get" class="searchrow" role="search">
   <label class="sr-only" for="q">Search members</label>
   <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}">
+  {% if full %}
+  <label class="sr-only" for="f-cat">Category</label>
+  <select id="f-cat" name="category"><option value="">Any category</option>{% for key, label in category_choices %}<option value="{{ key }}"{% if chosen.category == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  {% endif %}
+  <label class="sr-only" for="f-pos">Position</label>
+  <select id="f-pos" name="position"><option value="">Any position</option>{% for key, label in position_choices %}<option value="{{ key }}"{% if chosen.position == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  {% if full %}
+  <label class="sr-only" for="f-acc">Access</label>
+  <select id="f-acc" name="access"><option value="">Any access</option>{% for key, label in access_choices %}<option value="{{ key }}"{% if chosen.access == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  {% endif %}
+  <input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ dir }}">
   <button type="submit">Search</button>
-  {% if q %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
+  {% if q or chosen.category or chosen.position or chosen.access %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
 </form>
-{% if full %}
+
+<div class="table-wrap">
 <table class="table">
-<thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Category</th><th scope="col">Position</th><th scope="col">Access</th><th scope="col">Joined via</th><th scope="col">Contact</th></tr></thead>
+<thead><tr>
+  {% for c in columns %}<th scope="col" aria-sort="{{ c.aria }}"><a class="sortlink{% if c.here %} here{% endif %}" href="{{ c.url }}">{{ c.label }}<span class="arrow" aria-hidden="true">{% if c.here %}{% if dir == 'desc' %}↓{% else %}↑{% endif %}{% endif %}</span><span class="sr-only">{% if c.here %}, sorted {{ c.aria }}; select to reverse{% else %}, select to sort by this{% endif %}</span></a></th>{% endfor %}
+</tr></thead>
 <tbody>
 {% for m in members %}
 <tr>
-  <th scope="row"><a href="{% url 'member_detail' m.pk %}">{{ m.full_name }}</a>{% if m.preferred_name %} <span class="muted">({{ m.preferred_name }})</span>{% endif %}{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</th>
+  {% if full %}
+  <th scope="row"><a href="{% url 'member_detail' m.pk %}">{{ m.display_first }} {{ m.last_name }}</a>{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</th>
+  <td data-label="First">{{ m.first_name }}</td>
+  <td data-label="Last">{{ m.last_name }}</td>
+  <td data-label="Preferred">{{ m.preferred_name|default:"—" }}</td>
+  {% else %}
+  <th scope="row">{{ m.display_first }}{% if m.last_name %} {{ m.last_name|slice:":1" }}.{% endif %}</th>
+  {% endif %}
   <td data-label="Callsign">{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
-  <td data-label="Category">{{ m.category|category_label }}</td>
+  {% if full %}<td data-label="Category">{{ m.category|category_label }}</td>{% endif %}
   <td data-label="Position">{{ m.club_position|position_label|default:"—" }}</td>
+  {% if full %}
   <td data-label="Access">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
-  <td data-label="Joined via">{% if m.joined_via %}{{ m.joined_via.label }}{% else %}<span class="muted">invitation</span>{% endif %}</td>
-  <td data-label="Contact">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
+  <td data-label="Email">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}</td>
+  <td data-label="Phone">{% if m.cell_phone %}<a href="tel:{{ m.cell_phone }}">{{ m.cell_phone }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
+  {% endif %}
 </tr>
-{% empty %}<tr><td colspan="7" class="empty">{% if q %}Nobody matches "{{ q }}". <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="{{ columns|length }}" class="empty">{% if q or chosen.category or chosen.position or chosen.access %}Nobody matches what you have picked. <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
 </tbody></table>
-{% else %}
-<ul class="directory">
-{% for m in members %}<li>{{ m.short_name_lettered }}{% if m.club_position %} <span class="muted">· {{ m.club_position|position_label }}</span>{% endif %}</li>{% empty %}<li class="empty">{% if q %}Nobody matches "{{ q }}". <a href="{% url 'members' %}">Show every member.</a>{% else %}No members yet.{% endif %}</li>{% endfor %}
-</ul>
-{% endif %}
+</div>
 {% endblock %}

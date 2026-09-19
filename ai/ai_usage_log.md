@@ -1681,3 +1681,23 @@ carries the actual running model ID.
 - **Human Review Status**: Reviewed by the advisor, who made the call on each field. 260 tests
   pass and the guards pass.
 - **Git Hash**: cb553a8
+
+## [2026-09-19 16:03 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The members directory rebuilt to the advisor's specification: first, last
+  and preferred name in their own columns, every column sortable and defaulting to last name,
+  phone in its own column beside email, filters on category, position and access, the access
+  column for officers and above only, "joined via" dropped, and the same table for every access
+  level rather than a table for officers and a list of cards for members. The redaction is
+  unchanged: a member still sees a first name and a last initial and no addresses, and the
+  columns they may not see are absent rather than empty, so nothing on the page hints at what is
+  being withheld. Sorting reads the value shown rather than the key stored behind it, which is
+  why it happens in Python: three of the columns show a label the database does not hold. Every
+  sort ends in the same tiebreaker, so reversing a column reverses the page exactly.
+- **Sections/Files Affected**: apps/accounts/views_members.py (DIRECTORY_COLUMNS, _sort_keys,
+  members), templates/accounts/members.html, static/css/app.css,
+  apps/accounts/tests/test_directory.py (new, nine tests), apps/accounts/tests/test_members.py.
+- **Nature of Contribution**: Design and code by the assistant, to the advisor's specification.
+- **Human Review Status**: Pending the advisor's look. 269 tests pass, the accessibility sweep
+  passes for all eight roles at both widths, and the four guards pass.
+- **Git Hash**: (filled in after committing)

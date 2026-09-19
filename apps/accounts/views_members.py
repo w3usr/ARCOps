@@ -41,9 +41,76 @@ def _standing(user) -> dict:
     return {"license": lic, "agreements": list(latest.values())}
 
 
+# The directory's columns. `key` is what ?sort= carries, `full` marks the ones only an officer
+# may see, and `sort` reads the value a reader actually sees, so a column sorts by what is in
+# it rather than by the key stored behind it ("Community Member", not "community").
+DIRECTORY_COLUMNS = [
+    {"key": "name", "label": "Name", "full": False},
+    {"key": "first", "label": "First", "full": True},
+    {"key": "last", "label": "Last", "full": True},
+    {"key": "preferred", "label": "Preferred", "full": True},
+    {"key": "callsign", "label": "Callsign", "full": False},
+    {"key": "category", "label": "Category", "full": True},
+    {"key": "position", "label": "Position", "full": False},
+    {"key": "access", "label": "Access", "full": True},
+    {"key": "email", "label": "Email", "full": True},
+    {"key": "phone", "label": "Phone", "full": True},
+]
+
+
+def _sort_keys(positions: dict, cats: dict):
+    """One key function per column, over the displayed value.
+
+    Sorting happens in Python rather than in SQL because three of these columns show a label
+    the database does not hold: the category and position labels come from the club's
+    configuration, and access is the groups an account is in. A club directory is tens of rows,
+    or low hundreds; the honest sort is worth more here than the query.
+    """
+
+    def text(v) -> str:
+        return (v or "").strip().lower()
+
+    def settled(fn):
+        """Every sort ends in the same tiebreaker, so no two rows ever compare equal.
+
+        Without it the order among ties is whatever the database happened to return, which
+        means reversing a column does not reverse the page and a reader watching two names
+        swap places wonders what else moved.
+        """
+        return lambda m: (*fn(m), text(m.last_name), text(m.first_name), m.pk)
+
+    return {key: settled(fn) for key, fn in _columns(text, positions, cats).items()}
+
+
+def _columns(text, positions: dict, cats: dict):
+    return {
+        "name": lambda m: (text(m.display_first), text(m.last_name)),
+        "first": lambda m: (text(m.first_name), text(m.last_name)),
+        "last": lambda m: (text(m.last_name), text(m.first_name)),
+        "preferred": lambda m: (text(m.preferred_name), text(m.last_name)),
+        # A blank is not a small callsign: no-callsign sorts after every callsign going up,
+        # and before them coming down, rather than mixing in among the As.
+        "callsign": lambda m: (not m.callsign, text(m.callsign)),
+        "category": lambda m: (text(cats.get(m.category, m.category)), text(m.last_name)),
+        "position": lambda m: (
+            not m.club_position,
+            text(positions.get(m.club_position, m.club_position)),
+            text(m.last_name),
+        ),
+        "access": lambda m: (text(m.access_label), text(m.last_name)),
+        "email": lambda m: (
+            not m.addresses.all(),
+            text(min((a.address for a in m.addresses.all()), default="")),
+        ),
+        "phone": lambda m: (not m.cell_phone, text(m.cell_phone)),
+    }
+
+
 @login_required
 def members(request):
     full = request.user.may("view_member_records")
+    if not request.user.is_member:
+        raise Http404  # FR-121: a Provisional member sees no directory
     q = request.GET.get("q", "").strip()
     # The directory is who the club has now. A former member is in the archive (FR-125), which
     # is read by a faculty advisor or a sysadmin, so they are out of this list for everyone. A
@@ -52,14 +119,12 @@ def members(request):
     current = User.objects.filter(archived_at__isnull=True, deleted_at__isnull=True)
     users = (
         # the directory shows every address an officer may write to, so they come in one query
-        current.select_related("joined_via", "license").prefetch_related("addresses")
+        current.select_related("license").prefetch_related("addresses", "groups")
         if full
         else current.filter(groups__permissions__codename="view_directory")
         .distinct()
         .select_related("license")
     )
-    if not request.user.is_member:
-        raise Http404  # FR-121: a Provisional member sees no directory
     if q:
         cond = (
             Q(first_name__icontains=q)
@@ -69,14 +134,79 @@ def members(request):
         )
         if full:
             cond |= Q(addresses__address__icontains=q)
-        users = users.filter(cond)
-    users = users.order_by("last_name", "first_name")
+        users = users.filter(cond).distinct()
+
     positions = {p["key"]: p["label"] for p in (setting("club_positions", []) or [])}
     cats = {c["key"]: c["label"] for c in (setting("member_categories", []) or [])}
+
+    # Narrowing. Category and access are an officer's to filter by, because they are an
+    # officer's to see; position is on the page for everyone.
+    chosen = {
+        "category": request.GET.get("category", "") if full else "",
+        "position": request.GET.get("position", ""),
+        "access": request.GET.get("access", "") if full else "",
+    }
+    if chosen["category"]:
+        users = users.filter(category=chosen["category"])
+    if chosen["position"]:
+        users = users.filter(club_position=chosen["position"])
+
+    rows = list(users)
+    if chosen["access"]:
+        want = chosen["access"]
+        rows = [
+            m
+            for m in rows
+            if (want == "sysadmin" and m.is_superuser)
+            or (want == "none" and not m.is_superuser and not m.groups.all())
+            or any(g.name == want for g in m.groups.all())
+        ]
+
+    sort = request.GET.get("sort", "last")
+    keys = _sort_keys(positions, cats)
+    if sort not in keys:
+        sort = "last"
+    descending = request.GET.get("dir") == "desc"
+    rows.sort(key=keys[sort], reverse=descending)
+
+    columns = []
+    for col in DIRECTORY_COLUMNS:
+        if col["full"] and not full:
+            continue
+        here = col["key"] == sort
+        params = request.GET.copy()
+        params["sort"] = col["key"]
+        # Clicking the column you are already sorted by turns it round.
+        params["dir"] = "desc" if here and not descending else "asc"
+        params.pop("page", None)
+        columns.append(
+            {
+                **col,
+                "url": f"?{params.urlencode()}",
+                "here": here,
+                "aria": ("descending" if descending else "ascending") if here else "none",
+            }
+        )
+
+    access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
+    access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
     return render(
         request,
         "accounts/members.html",
-        {"members": users, "q": q, "full": full, "positions": positions, "categories": cats},
+        {
+            "members": rows,
+            "q": q,
+            "full": full,
+            "positions": positions,
+            "categories": cats,
+            "columns": columns,
+            "sort": sort,
+            "dir": "desc" if descending else "asc",
+            "chosen": chosen,
+            "category_choices": sorted(cats.items(), key=lambda kv: kv[1]),
+            "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
+            "access_choices": access_choices,
+        },
     )
 
 

@@ -463,6 +463,13 @@ pre { overflow-x: auto; max-width: 100%; }
 .checkset > ul input { width: 1.15rem; }
 /* Removing something in place: the confirmation is the disclosure, so it needs no second page
    and still works with JavaScript turned off. */
+/* A sortable column heading. The whole heading is the control, and the arrow shows only on the
+   column in force; aria-sort on the th tells a screen reader the same thing. */
+.sortlink { color: inherit; text-decoration: none; display: inline-flex; align-items: baseline; gap: .3rem; }
+.sortlink:hover { text-decoration: underline; }
+.sortlink.here { color: var(--accent); }
+.sortlink .arrow { font-size: .8em; }
+
 /* An empty state names what belongs there and how it gets there. Quiet, but not so quiet the
    reader takes it for a rendering fault. */
 .empty { color: var(--muted); }
