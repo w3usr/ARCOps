@@ -2,7 +2,10 @@
 at once ("the officers and the advisors"). A drop-down holds one answer; this holds a set, needs
 no JavaScript, opens from the keyboard, and submits `?name=a&name=b`. The summary says what is
 ticked, so a narrowed table says so without being opened (NAF, 2026-09-19).{% endcomment %}
-<details class="filter"{% if open %} open{% endif %}>
+{% comment %}`name` makes the five panels an exclusive set, so opening one closes the last: they
+sit over the table, and two open at once overlap each other. A browser that does not know the
+attribute simply allows both, which is what it did before.{% endcomment %}
+<details class="filter" name="members-filter"{% if open %} open{% endif %}>
   <summary aria-label="{{ label }}">{% if summary %}{{ summary }}{% else %}Any {{ label|lower }}{% endif %}</summary>
   <fieldset>
     <legend class="sr-only">{{ label }}</legend>

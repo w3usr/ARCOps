@@ -1994,3 +1994,24 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 316 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: e5e8d84
+
+## [2026-09-19 21:20 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four more narrowings and two pieces of polish from the advisor's testing.
+  An officer may promote but never demote: the Access list only goes up for somebody who cannot
+  lift a suspension, and "No access" is not among their answers, because shutting an account out
+  is the suspension, where the act carries a reason and somebody answerable for lifting it.
+  Taking an address away, its confirmation, or its club mail is nobody else's business: a new
+  capability covers those three, an officer keeps adding an address and confirming one, and a
+  member sets their own club mail. The dashboard stopped saying that mail is being sent, which
+  is the ordinary state and whose outbox is in the menu, and the events link moved under
+  Upcoming events where it belongs. The filter panels became an exclusive set, so opening one
+  closes the last rather than overlapping it, and their checkboxes sit beside their words.
+- **Sections/Files Affected**: apps/ops/{capabilities,groups}.py, apps/accounts/account.py,
+  apps/accounts/views_addresses.py, migrations accounts/0018 and ops/0006,
+  templates/accounts/{_addresses,_filter}.html, templates/ops/dashboard.html,
+  static/css/app.css, config/club.example.yaml, and the tests across apps/accounts.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 317 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

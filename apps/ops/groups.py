@@ -37,7 +37,7 @@ def capabilities_held(user) -> set[str]:
     return full_capabilities(user)
 
 
-def assignable_groups(actor):
+def assignable_groups(actor, subject=None):
     """The groups this person may put an account into.
 
     The rule, the advisor's on 2026-09-19: *"Faculty advisors should be able to appoint
@@ -46,13 +46,25 @@ def assignable_groups(actor):
     application has never heard of: **a group is yours to grant when everything it grants is
     something you already hold, and it does not hold everything you do.** A proper subset, so
     nobody appoints their own peer, and nobody appoints above themselves.
+
+    Given an account, the list also **only goes up** for somebody who cannot lift a suspension.
+    The advisor, 2026-09-19: "club officers should only be able to promote Provisional to
+    Member. They should never have a reason to demote to provisional... If a club officer needs
+    to deny an account, they need to do so through the suspend mechanism." Taking something away
+    is an act with a name, a reason and somebody answerable for lifting it (FR-91), not a
+    quieter setting of a drop-down.
     """
     mine = capabilities_held(actor)
+    theirs = capabilities_held(subject) if subject is not None else set()
+    may_lower = subject is None or actor.may("lift_suspension")
     out = []
     for group in Group.objects.order_by("name"):
         granted = {p.codename for p in group.permissions.all()}
-        if granted < mine:
-            out.append(group)
+        if not granted < mine:
+            continue
+        if not may_lower and not theirs <= granted:
+            continue  # promotions only
+        out.append(group)
     return out
 
 

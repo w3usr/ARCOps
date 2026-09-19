@@ -13,7 +13,7 @@ depending on delivery.{% endcomment %}
     </p>
     <div class="addr-actions">
       {% if a.confirmed %}
-        {% if perms.ops.manage_member_addresses and not address_subject_is_self %}
+        {% if perms.ops.correct_member_addresses and not address_subject_is_self %}
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">Stop it signing them in</button></form>
         {% endif %}
       {% else %}
@@ -24,9 +24,12 @@ depending on delivery.{% endcomment %}
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Confirm it myself</button></form>
         {% endif %}
       {% endif %}
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>
+      {% comment %}A member sets their own club mail and takes their own addresses off; an
+      officer who needs to shut an account out suspends it, where the act is named and reasoned
+      (NAF, 2026-09-19).{% endcomment %}
+      {% if address_subject_is_self or perms.ops.correct_member_addresses %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>{% endif %}
     </div>
-    {% if a.can_remove %}
+    {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}
     <details class="confirm">
       <summary>Remove this address</summary>
       <p>Club mail stops going to {{ a.address }}{% if a.confirmed %}, and it stops signing {% if address_subject_is_self %}you{% else %}them{% endif %} in{% endif %}. It can be added again afterwards, and confirmed again.</p>

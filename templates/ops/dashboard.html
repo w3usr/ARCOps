@@ -15,7 +15,9 @@
 </div>
 {% endif %}
 {% if perms.ops.view_member_records %}
-{% if delivery_mode != 'on' %}<p class="note"><strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all in the <a href="{% url 'outbox' %}">outbox</a>.</p>{% else %}<p class="muted">Mail is being sent. <a href="{% url 'outbox' %}">Outbox</a>.</p>{% endif %}
+{% comment %}Only the unusual state is worth saying. Mail going out is what is meant to
+happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% endcomment %}
+{% if delivery_mode != 'on' %}<p class="note"><strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all in the <a href="{% url 'outbox' %}">outbox</a>.</p>{% endif %}
 {% endif %}
 {% if pending_review %}
 <section class="card highlight" aria-labelledby="rev">
@@ -50,7 +52,7 @@
       {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
     {% endfor %}
   </ul>
-  {% else %}<p>You have no upcoming slots. <a href="{% url 'event_list' %}">See what is coming up.</a></p>{% endif %}
+  {% else %}<p>You have no upcoming slots.</p>{% endif %}
 </section>
 
 <section aria-labelledby="up">
@@ -58,5 +60,6 @@
   {% if upcoming_events %}
   <ul class="list">{% for e in upcoming_events %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.starts_at %}<br>{% when e.starts_at e.ends_at e year=True %}{% endif %}</li>{% endfor %}</ul>
   {% else %}<p>Nothing published yet.</p>{% endif %}
+  <p><a href="{% url 'event_list' %}">See all events</a></p>
 </section>
 {% endblock %}

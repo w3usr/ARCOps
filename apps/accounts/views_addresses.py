@@ -25,9 +25,21 @@ ACTIONS = (
 
 
 def may_edit(actor: User, subject: User) -> bool:
-    """A member holds their own addresses; an officer or sysadmin holds anyone's, because
-    someone has to be able to help a member who has lost the mailbox they signed up with."""
+    """A member holds their own addresses; an officer can add one and confirm one, because
+    somebody has to be able to help a member who has lost the mailbox they signed up with."""
     return actor.pk == subject.pk or actor.may("manage_member_addresses")
+
+
+def may_correct(actor: User, subject: User) -> bool:
+    """Whether this person may take an address, its confirmation, or its club mail off somebody
+    else's account.
+
+    An officer may not: the advisor, 2026-09-19, "They should not be able to stop an email
+    address from signing them in, or turn off a users club email... Users can adjust email
+    settings in their own accounts." An officer who needs to shut an account out suspends it,
+    where the act is named, reasoned and lifted by somebody answerable for it (FR-91).
+    """
+    return actor.pk == subject.pk or actor.may("correct_member_addresses")
 
 
 def handle(request, subject: User) -> bool:
@@ -63,6 +75,14 @@ def handle(request, subject: User) -> bool:
                     f"until {who} open{'' if is_self else 's'} that link it receives club mail "
                     "without signing anyone in.",
                 )
+        return True
+
+    if action in ("address_remove", "address_delivery") and not may_correct(actor, subject):
+        messages.error(
+            request,
+            "A member sets their own club mail and takes their own addresses off. To shut an "
+            "account out, suspend it.",
+        )
         return True
 
     if action == "address_remove":
@@ -106,8 +126,12 @@ def handle(request, subject: User) -> bool:
         return True
 
     if action == "address_unconfirm":
-        if not actor.may("manage_member_addresses"):
-            messages.error(request, "Only a sysadmin can take an address's confirmation away.")
+        if not may_correct(actor, subject) or is_self:
+            messages.error(
+                request,
+                "Taking an address's confirmation away is a sysadmin's. To shut an account out, "
+                "suspend it.",
+            )
         elif len(addresses.confirmed(subject)) == 1 and address in addresses.confirmed(subject):
             messages.error(
                 request,

@@ -115,13 +115,19 @@ class AccountForm(forms.ModelForm):
             # One level at a time, chosen from a list (the advisor, 2026-09-19: "Access should be
             # a drop-down. You should only be able to pick one."), and only the groups this
             # person may grant are in it, whatever the page was made to submit.
-            allowed = assignable_groups(actor)
+            allowed = assignable_groups(actor, self.instance)
+            # Somebody who cannot lift a suspension cannot lower a level either, and "No access"
+            # is not among their answers: shutting an account out is the suspension, where the
+            # act carries a reason (FR-91, 2026-09-19).
+            may_lower = actor.may("lift_suspension")
             self.fields["groups"] = forms.ModelChoiceField(
                 queryset=Group.objects.filter(pk__in=[g.pk for g in allowed]).order_by("name"),
-                required=False,
-                empty_label="No access",
+                required=not may_lower,
+                empty_label="No access" if may_lower else None,
                 label="Access",
-                help_text="What this account may do. An account in no group can do nothing.",
+                help_text="What this account may do. An account in no group can do nothing."
+                if may_lower
+                else "What this account may do. To shut an account out, suspend it instead.",
             )
             configured = setting("access_groups", []) or []
             self.fields["groups"].label_from_instance = lambda g: label_of(g, configured)

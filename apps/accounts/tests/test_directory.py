@@ -367,7 +367,8 @@ def test_a_filter_takes_more_than_one_answer(directory):
     _licensed(directory)
     c = _as(directory)
     body = c.get("/members/").content.decode()
-    assert '<details class="filter">' in body and 'type="checkbox"' in body
+    assert '<details class="filter" name="members-filter"' in body, "one panel open at a time"
+    assert 'type="checkbox"' in body
     assert 'name="license" value="Extra"' in body
     # two classes at once, which a drop-down holding one answer cannot do
     assert _names(c.get("/members/?license=Extra&license=Technician").content.decode()) == [

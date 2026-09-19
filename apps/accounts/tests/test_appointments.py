@@ -255,3 +255,53 @@ def test_the_card_over_somebody_elses_fields_is_called_manage(club_people):
     advisor, member = club_people["advisor"], club_people["member"]
     assert ">Manage</h2>" in _as(advisor).get(f"/members/{member.pk}/edit/").content.decode()
     assert ">Details</h2>" in _as(advisor).get("/me/edit/", follow=True).content.decode()
+
+
+def test_an_officer_promotes_and_never_demotes(club_people):
+    """NAF, 2026-09-19: "club officers should only be able to promote Provisional to Member.
+    They should never have a reason to demote to provisional... If a club officer needs to deny
+    an account, they need to do so through the suspend mechanism."
+    """
+    officer = club_people["officer"]
+    provisional = _user("prov@example.org", ["provisional"])
+    member = club_people["member"]
+
+    assert _names(assignable_groups(officer, provisional)) == ["member", "provisional"]
+    assert _names(assignable_groups(officer, member)) == ["member"], "nowhere to go but up"
+
+    c = _as(officer)
+    body = c.get(f"/members/{member.pk}/edit/").content.decode()
+    assert ">No access</option>" not in body, "shutting an account out is the suspension"
+    assert "To shut an account out, suspend it instead." in body
+
+    c.post(
+        f"/members/{provisional.pk}/edit/",
+        {
+            "action": "save",
+            "first_name": provisional.first_name,
+            "last_name": provisional.last_name,
+            "groups": Group.objects.get(name="member").pk,
+        },
+    )
+    provisional.refresh_from_db()
+    assert provisional.in_group("member"), "promoting is the officer's own job"
+
+    c.post(
+        f"/members/{member.pk}/edit/",
+        {
+            "action": "save",
+            "first_name": member.first_name,
+            "last_name": member.last_name,
+            "groups": Group.objects.get(name="provisional").pk,
+        },
+    )
+    member.refresh_from_db()
+    assert member.in_group("member") and not member.in_group("provisional")
+
+    # an advisor may lower, because an advisor may lift what lowering amounts to
+    _as(club_people["advisor"]).post(
+        f"/members/{member.pk}/edit/",
+        {"action": "save", "first_name": member.first_name, "last_name": member.last_name},
+    )
+    member.refresh_from_db()
+    assert not member.has_access, "and No access is among an advisor's answers"

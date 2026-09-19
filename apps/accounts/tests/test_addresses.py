@@ -163,6 +163,9 @@ def test_only_a_sysadmin_takes_a_confirmation_away_and_never_the_last_one():
     addresses.add(m, "mem.home@example.org", confirmed=True)
     c = Client()
     c.force_login(sysadmin)
+    session = c.session  # address surgery is a sysadmin's, so it needs the raised level
+    session["acting_view"] = "sysadmin"
+    session.save()
     c.post(
         f"/members/{m.pk}/edit/", {"action": "address_unconfirm", "address": "mem.home@example.org"}
     )
@@ -173,3 +176,40 @@ def test_only_a_sysadmin_takes_a_confirmation_away_and_never_the_last_one():
         follow=True,
     )
     assert b"only way in" in r.content and addresses.confirmed(m) == {"mem@example.edu"}
+
+
+def test_an_officer_adds_and_confirms_but_does_not_take_away():
+    """NAF, 2026-09-19: "They should not be able to stop an email address from signing them in,
+    or turn off a users club email... Users can adjust email settings in their own accounts."
+
+    An officer who needs to shut an account out suspends it, where the act is named and reasoned.
+    """
+    off = _member("off@example.edu", groups=["officer"])
+    m = _member()
+    addresses.add(m, "mem.home@example.org", confirmed=True)
+    addresses.add(m, "mem.new@example.org")  # unconfirmed, so the officer's waiver shows
+    c = Client()
+    c.force_login(off)
+
+    body = c.get(f"/members/{m.pk}/edit/").content.decode()
+    assert "Confirm it myself" in body and "Send them the link" in body
+    assert "Turn club mail" not in body and "Stop it signing them in" not in body
+    assert "Remove this address" not in body
+
+    for action, address in (
+        ("address_unconfirm", "mem.home@example.org"),
+        ("address_delivery", "mem.home@example.org"),
+        ("address_remove", "mem.home@example.org"),
+    ):
+        c.post(f"/members/{m.pk}/edit/", {"action": action, "address": address})
+        assert "mem.home@example.org" in addresses.confirmed(m), action
+        assert [a for a in addresses.on_file(m) if a.address == address][0].delivery, action
+
+    # their own, though, is their own
+    own = Client()
+    own.force_login(m)
+    own.post(
+        f"/members/{m.pk}/edit/",
+        {"action": "address_delivery", "address": "mem.home@example.org"},
+    )
+    assert not [a for a in addresses.on_file(m) if a.address == "mem.home@example.org"][0].delivery

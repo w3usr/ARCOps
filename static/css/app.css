@@ -149,8 +149,11 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
   position: absolute; z-index: 20; top: calc(100% + .25rem); left: 0; min-width: 100%;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg);
   padding: .5rem .7rem; box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .12); margin: 0;
+  min-width: max-content;
 }
-.filter .check { margin: .2rem 0; white-space: nowrap; }
+/* The panel is as wide as its longest label, so the box stays beside the word rather than
+   wrapping above it (NAF, 2026-09-19). */
+.filter .check { margin: .2rem 0; flex-wrap: nowrap; white-space: nowrap; }
 @media (max-width: 40rem) {
   /* No room to float a panel over a phone: it opens in the flow and pushes the table down. */
   .filter > fieldset { position: static; box-shadow: none; }
