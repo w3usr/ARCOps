@@ -2123,3 +2123,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 329 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 73133fa
+
+## [2026-09-19 23:13 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The documents follow the last three changes: FR-13a and FR-125 describe
+  one roster with the Archived column for whoever may read an archived record and no second menu
+  entry; TR-13 records that the staging table is walked a slice at a time and why, which is the
+  fault that had been failing the weekly import; and docs/NAME.md records the repository's
+  rename to ARCOps together with the three identifiers that keep the lower-case spelling.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-13a), docs/TECHNICAL_REQUIREMENTS.md
+  (TR-13), docs/NAME.md.
+- **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: pending

@@ -571,8 +571,15 @@ officer admits or declines them (FR-121). Every account records the link it join
   four are on the members list, and the status is a column and a filter for officers and above,
   sorted in that order rather than alphabetically. **Archived is a flag beside the status, not a
   value of it** (FR-125): an archived record keeps the status it had, leaves the default list,
-  and is read by narrowing the list to it, through a filter of its own rather than a column,
-  and only by whoever may read the archive. A **deleted** row (FR-118) is a sysadmin's alone.
+  and is read by narrowing the list to it, through a filter of its own beside the status, and
+  only by whoever may read the archive. **One roster, not two**: no separate archive page and no
+  second menu entry, with an **Archived** column carrying the date for that same reader, because
+  they can ask for archived and live rows together and the column is what tells them apart. An
+  officer gets neither the column nor the filter.
+
+  > I think I want it to be a unified roster page. Faculty advisors and above can see the
+  > archived column. Officers cannot. No separate sidebar navigation entry for Archived Members.
+  > — NAF, 2026-09-19 A **deleted** row (FR-118) is a sysadmin's alone.
   **Status and access cannot disagree**: giving an account a level clears the closure or the
   suspension on it.
 

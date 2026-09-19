@@ -171,7 +171,12 @@ has a decade of documentation.
   class, status, grant and expiry dates, FRN) built from the FCC's weekly complete Amateur file
   (`l_amat.zip`, 198 MB compressed, produced Sundays) and kept current by the daily transaction
   files (`l_am_<day>.zip`, tens of kilobytes), both streamed from the pipe-delimited `HD`, `AM`,
-  and `EN` records without ever holding the file in memory. `uls:sync` (TR-11) applies the daily
+  and `EN` records without ever holding the file in memory. The staging table is then walked a
+  slice at a time, each slice read in full before the winners in it are written: SQLite refuses
+  a write on a connection whose own read cursor is still open, and this database opens its
+  transactions in IMMEDIATE mode, so streaming the walk while writing failed the weekly import
+  with *database is locked* thirty-three minutes in (2026-09-19). No other process was involved;
+  the import was blocking itself, which is why the busy timeout never helped. `uls:sync` (TR-11) applies the daily
   file each night and the full file each week. Every lookup the application makes, at
   registration (FR-4), on a callsign change (FR-102), and in the nightly credential refresh
   (FR-14), is a local query and therefore instant and free of any third party; a callsign not
