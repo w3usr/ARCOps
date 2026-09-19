@@ -62,7 +62,6 @@ access_groups:
       - view_member_records
       - view_participant_contacts
       - invite_members
-      - set_club_position
       - assign_groups          # bounded: only groups below your own, on accounts below you
       - manage_member_addresses
       - create_events

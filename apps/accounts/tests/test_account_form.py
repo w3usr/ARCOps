@@ -44,15 +44,17 @@ def test_a_member_with_a_name_from_the_fcc_does_not_type_their_name():
     assert "first_name" not in fields and "preferred_name" in fields
 
 
-def test_an_officer_sets_a_club_position_and_who_is_a_member():
+def test_an_officer_says_who_is_a_member_and_nothing_else():
     """An officer holds the bounded form of "decide which groups an account is in" (§2.3, the
-    advisor's rule of 2026-09-19), and nothing else on somebody else's account."""
+    advisor's rule of 2026-09-19). Who holds which office is the advisor's to record, from the
+    same day: "Only Faculty Advisors and above should be able to set club position."
+    """
     off, m = _user("off@example.org", "officer"), _user("mem@example.org")
-    assert editable_fields(off, m) == ["club_position", "groups"]
+    assert editable_fields(off, m) == ["groups"]
     other = _user("off2@example.org", "officer")
-    assert editable_fields(off, other) == ["club_position"], (
-        "a peer's club position is club business; their access is not theirs to change"
-    )
+    assert editable_fields(off, other) == [], "a peer is not theirs to change at all"
+    advisor = _user("adv@example.org", "advisor")
+    assert editable_fields(advisor, m) == ["club_position", "groups"]
 
 
 def test_a_sysadmin_sets_everything_on_any_account_including_their_own():

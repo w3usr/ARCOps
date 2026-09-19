@@ -56,9 +56,7 @@ def test_the_edit_button_is_there_for_whoever_may_edit(pair):
     officer, member = pair
     body = _as(officer).get(f"/members/{member.pk}/").content.decode()
     assert f'href="/members/{member.pk}/edit/"' in body and "Edit profile" in body
-    assert (
-        'name="club_position"' in _as(officer).get(f"/members/{member.pk}/edit/").content.decode()
-    )
+    assert 'name="groups"' in _as(officer).get(f"/members/{member.pk}/edit/").content.decode()
 
 
 def test_your_own_page_is_a_member_page(pair):

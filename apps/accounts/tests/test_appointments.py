@@ -229,3 +229,29 @@ def test_the_status_column_is_an_officers_and_sorts_down_the_list(club_people):
     names = _as(advisor).get("/members/?sort=status&dir=asc").content.decode()
     order = [n for n in ("Active", "Closed", "Suspended") if n in names]
     assert order == ["Active", "Closed", "Suspended"]
+
+
+def test_access_is_one_choice_from_a_list(club_people):
+    """NAF, 2026-09-19: "Access should be a drop-down. You should only be able to pick one." """
+    advisor, member = club_people["advisor"], club_people["member"]
+    body = _as(advisor).get(f"/members/{member.pk}/edit/").content.decode()
+    assert '<select name="groups"' in body and 'type="checkbox" name="groups"' not in body
+    assert ">No access</option>" in body, "and no access is one of the answers"
+
+    _as(advisor).post(
+        f"/members/{member.pk}/edit/",
+        {
+            "action": "save",
+            "first_name": member.first_name,
+            "last_name": member.last_name,
+            "groups": Group.objects.get(name="officer").pk,
+        },
+    )
+    member.refresh_from_db()
+    assert [g.name for g in member.groups.all()] == ["officer"], "one level, not two"
+
+
+def test_the_card_over_somebody_elses_fields_is_called_manage(club_people):
+    advisor, member = club_people["advisor"], club_people["member"]
+    assert ">Manage</h2>" in _as(advisor).get(f"/members/{member.pk}/edit/").content.decode()
+    assert ">Details</h2>" in _as(advisor).get("/me/edit/", follow=True).content.decode()

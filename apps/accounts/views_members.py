@@ -727,11 +727,8 @@ def member_edit(request, pk):
             "ladder": ctx_ladder,
             "readonly_rows": readonly_rows(actor, member),
             # What the card over these fields is called. On your own account they are your
-            # details; on somebody else's they are what this officer may manage, which for most
-            # officers is the club position alone.
-            "manage_heading": "Details"
-            if member == actor
-            else ("Manage" if actor.may("edit_member_privileges") else "Club position"),
+            # details; on somebody else's they are what this reader may manage.
+            "manage_heading": "Details" if member == actor else "Manage",
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "address_subject_is_self": member == actor,
             "deletion": __import__(

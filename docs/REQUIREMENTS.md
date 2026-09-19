@@ -214,8 +214,11 @@ event generates. An event has one or more captains.
 ### 2.3 Club positions and derived capabilities
 
 Club position (Faculty Advisor, Associate Faculty Advisor, President, Vice President, Secretary,
-Treasurer, Trustee, and so on) is a profile field set by a sysadmin or officer, from a
-configurable list **(portability)**. It is displayed, and one capability derives from it:
+Treasurer, Trustee, and so on) is a profile field set by a **faculty advisor or a sysadmin**,
+from a configurable list **(portability)**. An officer says who is a member (FR-91); who holds
+which office is the advisor's to record.
+
+> Only Faculty Advisors and above should be able to set club position. — NAF, 2026-09-19 It is displayed, and one capability derives from it:
 
 - **Default reply-to.** Announcement replies route to the sender, the event's captains, and the
   club address (`w3usr@scranton.edu`), per the dictation.
@@ -1391,6 +1394,11 @@ made it likely that reliable delivery would take time to establish:
   **member**: whoever held an officer's place is re-appointed deliberately.
 
   > officer can suspend but only advisor can lift — NAF, 2026-09-19
+
+  **One level at a time.** Access is a single choice from a list, not a set of tick boxes: an
+  account is in one group or in none, and "No access" is one of the answers.
+
+  > Access should be a drop-down. You should only be able to pick one. — NAF, 2026-09-19
 
   **Who may, and over whom** (the advisor's rule, 2026-09-19): a group is yours to grant when
   everything it grants is something you already hold and it does not hold everything you do, and

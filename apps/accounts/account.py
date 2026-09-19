@@ -112,18 +112,21 @@ class AccountForm(forms.ModelForm):
 
             from apps.ops.groups import assignable_groups, label_of
 
-            # Only the groups this person may grant are offered, and the field refuses anything
-            # else whatever the page was made to submit.
+            # One level at a time, chosen from a list (the advisor, 2026-09-19: "Access should be
+            # a drop-down. You should only be able to pick one."), and only the groups this
+            # person may grant are in it, whatever the page was made to submit.
             allowed = assignable_groups(actor)
-            self.fields["groups"] = forms.ModelMultipleChoiceField(
+            self.fields["groups"] = forms.ModelChoiceField(
                 queryset=Group.objects.filter(pk__in=[g.pk for g in allowed]).order_by("name"),
                 required=False,
-                widget=forms.CheckboxSelectMultiple,
+                empty_label="No access",
                 label="Access",
                 help_text="What this account may do. An account in no group can do nothing.",
             )
             configured = setting("access_groups", []) or []
             self.fields["groups"].label_from_instance = lambda g: label_of(g, configured)
+            self.initial["groups"] = self.instance.groups.first() if self.instance.pk else None
+
         if "is_superuser" in self.fields:
             self.fields["is_superuser"] = forms.BooleanField(
                 required=False,
@@ -148,6 +151,11 @@ class AccountForm(forms.ModelForm):
                 "A guardian acts for them, every message reaches the guardian too, and they sign "
                 "in read-only."
             )
+
+    def clean_groups(self):
+        """The field holds one group; the relation behind it holds a list."""
+        group = self.cleaned_data.get("groups")
+        return [group] if group else []
 
     @property
     def student_fields(self) -> list[str]:

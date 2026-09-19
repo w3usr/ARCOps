@@ -160,14 +160,21 @@ def test_nobody_changes_their_own_access(people):
     assert not keeper.in_group("trusted")
 
 
-def test_officer_sets_club_position_and_membership_but_no_more(people):
+def test_officer_says_who_is_a_member_but_not_who_holds_an_office(people):
     c, mem = _as(people["off"]), people["mem"]
     body = c.get(f"/members/{mem.pk}/edit/").content.decode()
-    assert 'name="club_position"' in body
+    assert 'name="club_position"' not in body, "the position is the advisor's (2026-09-19)"
     assert 'name="groups"' in body and "Club Officer" not in body  # members and below (§2.3)
     assert 'name="is_superuser"' not in body
     assert "temporary password" not in body.lower()
     c.post(f"/members/{mem.pk}/edit/", {"action": "save", "club_position": "president"})
+    mem.refresh_from_db()
+    assert mem.club_position == "", "a forged position is ignored: the field is not on the form"
+
+    advisor = User.objects.create_user(
+        "adv@example.org", "pw-Testing-123", groups=["advisor"], first_name="Ada", last_name="Visor"
+    )
+    _as(advisor).post(f"/members/{mem.pk}/edit/", {"action": "save", "club_position": "president"})
     mem.refresh_from_db()
     assert mem.club_position == "president"
     # A forged privilege change is ignored: the field is not on an officer's form.

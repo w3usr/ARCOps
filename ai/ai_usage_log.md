@@ -1977,3 +1977,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 314 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 0c55a5f
+
+## [2026-09-19 21:00 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two narrowings from the advisor's testing. Access is one choice from a
+  drop-down rather than a set of tick boxes, so an account holds one level or none, with "No
+  access" among the answers; the field still offers only what this person may grant. And setting
+  a club position became the faculty advisor's: an officer says who is a member, while who holds
+  which office is the advisor's to record. The card over somebody else's fields is called
+  Manage, since "Club position" no longer describes what is in it.
+- **Sections/Files Affected**: apps/accounts/account.py, apps/accounts/views_members.py,
+  migration 0017, config/club.example.yaml, docs/REQUIREMENTS.md (§2.3, FR-91), and the tests
+  across apps/accounts.
+- **Nature of Contribution**: Code, tests, and documentation by the assistant, at the advisor's
+  direction.
+- **Human Review Status**: Pending the advisor's look. 316 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending
