@@ -1589,4 +1589,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: config/club.example.yaml (privacy_notice_html).
 - **Nature of Contribution**: Edit by the assistant, at the advisor's instruction.
 - **Human Review Status**: Reviewed by the advisor, who asked for it.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: b475868
