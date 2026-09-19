@@ -58,7 +58,12 @@
 /* ------------------------------------------------------------------ base */
 * { box-sizing: border-box; }
 html { font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); -webkit-text-size-adjust: 100%; }
-body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; }
+/* svh, not dvh: the *small* viewport is the one that is always visible, whatever the phone's
+   own bars are doing. In an installed app on Android, 100dvh can be the whole screen including
+   the strip the navigation bar occupies, which pushed the footer's last line out of sight
+   (NAF, 2026-09-19, twice). svh can only ever be smaller, so nothing is pinned to a height we
+   cannot see. */
+body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; }
 a { color: var(--accent); }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--focus-halo); }
 h1 { font-size: 1.9rem; line-height: 1.2; letter-spacing: -.01em; margin: 0 0 1rem; }
@@ -79,7 +84,7 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .topbar { display: none; }
 
 .sidenav {
-  position: sticky; top: 0; align-self: start; height: 100dvh;
+  position: sticky; top: 0; align-self: start; height: 100svh;
   display: flex; flex-direction: column; gap: .5rem;
   background: var(--side); border-right: 1px solid var(--line);
   padding: 1rem .75rem;
@@ -175,7 +180,7 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
   .only-desktop { display: none; }
   html.js .only-drawer { display: inline-flex; }
   html.js .sidenav {
-    position: fixed; inset: 0 auto 0 0; width: min(var(--sidebar-w), 85vw); height: 100dvh;
+    position: fixed; inset: 0 auto 0 0; width: min(var(--sidebar-w), 85vw); height: 100svh;
     transform: translateX(-100%); transition: transform .2s ease; z-index: 40;
     box-shadow: var(--shadow);
   }

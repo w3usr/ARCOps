@@ -2203,3 +2203,19 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 9353502
+
+## [2026-09-19 23:55 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The footer was still cut off in the installed app after the safe-area
+  padding, because the phone reports no inset: its navigation bar is beside the window rather
+  than over it, so `env(safe-area-inset-bottom)` is zero and the padding added nothing. What was
+  wrong is the unit: `100dvh` in an installed app on Android can be the whole screen, including
+  the strip the navigation bar occupies, so the page was pinned to a height that is not visible.
+  The layout uses `100svh`, the small viewport, which can only ever be smaller than what is
+  shown. The safe-area padding stays, because it is what an iPhone's home indicator needs, and
+  the service worker's cache name is bumped so an installed copy takes the new stylesheet.
+- **Sections/Files Affected**: static/css/app.css, static/sw.js.
+- **Nature of Contribution**: Code by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look on the phone. 332 tests pass, the
+  accessibility sweep and the four guards pass.
+- **Git Hash**: pending

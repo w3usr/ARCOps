@@ -1,6 +1,6 @@
 // Minimal service worker (FR-96): caches the shell; pages stay network-first so schedules are
 // never stale. Push handling (FR-112) is added when VAPID keys are configured.
-const CACHE = "ops-shell-v3";
+const CACHE = "ops-shell-v4";
 const SHELL = ["/static/css/app.css", "/static/js/app.js"];
 // Pages kept for offline reading (FR-96): the member's own schedule and messages. Network first,
 // so nothing is stale while online; the last good copy is served when the network is gone.
