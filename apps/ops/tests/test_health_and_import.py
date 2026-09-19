@@ -62,3 +62,30 @@ def test_service_worker_is_served_at_the_root_uncached(client):
     r = client.get("/sw.js")
     assert r.status_code == 200 and b"ops-shell-v" in r.content
     assert "no-cache" in r["Cache-Control"] and r["Service-Worker-Allowed"] == "/"
+
+
+@pytest.mark.django_db
+def test_the_manifest_declares_each_icon_at_its_real_size():
+    """A browser decides whether a site can be installed, and which icon to put on the home
+    screen, from the sizes a manifest declares. "any" means scalable, which a PNG is not, so the
+    club's 512px logo was being passed over for the smaller one (2026-09-19)."""
+    import json
+
+    from django.core.management import call_command
+    from django.test import Client
+
+    call_command("club_import")
+    body = json.loads(Client().get("/manifest.webmanifest", HTTP_HOST="testserver").content)
+    icons = {i["src"]: i for i in body["icons"]}
+    assert icons, "a manifest with no icon cannot be installed"
+    for icon in icons.values():
+        assert icon["type"] in ("image/png", "image/svg+xml")
+        if icon["type"] == "image/png":
+            width, _, height = icon["sizes"].partition("x")
+            assert width.isdigit() and height.isdigit(), icon
+    big_enough = [
+        i
+        for i in icons.values()
+        if i["type"] == "image/svg+xml" or int(i["sizes"].split("x")[0]) >= 192
+    ]
+    assert big_enough, "one icon at least as large as a launcher wants, or a scalable one"

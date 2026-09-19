@@ -2163,3 +2163,18 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 331 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: d84cefd
+
+## [2026-09-19 23:36 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The manifest declares each icon at its real pixel size, read from the
+  PNG's own header rather than trusted from a file name, and says it once where the shipped
+  configuration points twice at the same file. A browser decides whether a site can be installed,
+  and which icon to put on a home screen, from those declarations, and the club's 512px seal was
+  being passed over because it was declared "any", which means scalable and is not true of a PNG.
+  Also in this entry: the weekly FCC import completed for the first time since the applicant type
+  was added, 1,602,418 callsigns written, with the self-lock fixed.
+- **Sections/Files Affected**: apps/ops/views.py, apps/ops/tests/test_health_and_import.py.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 332 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

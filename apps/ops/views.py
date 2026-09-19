@@ -104,6 +104,39 @@ def dashboard(request):
     )
 
 
+def _png_size(url: str) -> str:
+    """ "WIDTHxHEIGHT" from a PNG's header, or "" when it cannot be read.
+
+    The header is the first 24 bytes: an 8-byte signature, the IHDR length and name, then the
+    width and height as big-endian 32-bit integers. Reading them beats trusting a file name.
+    """
+    import struct
+    from pathlib import Path
+
+    from django.conf import settings as dj
+    from django.contrib.staticfiles import finders
+
+    name = url.split("/static/", 1)[-1] if "/static/" in url else ""
+    path = finders.find(name) if name else None
+    if path is None:
+        candidate = Path(str(getattr(dj, "STATIC_ROOT", "") or "")) / name
+        path = str(candidate) if name and candidate.exists() else None
+    if path is None and url.startswith("/") and getattr(dj, "MEDIA_ROOT", ""):
+        candidate = Path(dj.MEDIA_ROOT) / url.split("/media/", 1)[-1]
+        path = str(candidate) if candidate.exists() else None
+    if path is None:
+        return ""
+    try:
+        with open(path, "rb") as fh:
+            head = fh.read(24)
+        if head[:8] != b"\x89PNG\r\n\x1a\n":
+            return ""
+        width, height = struct.unpack(">II", head[16:24])
+    except (OSError, struct.error):
+        return ""
+    return f"{width}x{height}"
+
+
 def manifest(request):
     """The web app manifest (FR-96), rendered from the club's configuration so an installed
     copy and its notification prompts carry this installation's name, never the product's. A
@@ -114,18 +147,23 @@ def manifest(request):
     short = setting("club.short_name", "Club")
     host = request.get_host()
     icons = []
-    for key, sizes, mime in (
-        ("apple_touch_icon", "180x180", "image/png"),
-        ("logo", "any", None),
-    ):
+    seen: set[str] = set()
+    for key in ("apple_touch_icon", "logo"):
         url = b.get(key)  # already a URL: static (hashed) or an uploaded file (FR-89)
-        if url:
-            entry = {"src": url, "sizes": sizes}
-            if mime:
-                entry["type"] = mime
-            elif ".svg" in url:
-                entry["type"] = "image/svg+xml"
-            icons.append(entry)
+        if not url or url in seen:
+            continue  # the shipped configuration points both at one file; say it once
+        seen.add(url)
+        entry = {"src": url}
+        if ".svg" in url:
+            entry["sizes"], entry["type"] = "any", "image/svg+xml"
+        else:
+            # The real pixel size, read from the file. A browser decides whether a site can be
+            # installed, and which icon to use, from the sizes a manifest declares; "any" means
+            # "scalable", which a PNG is not, so the club's 512px logo was being passed over.
+            size = _png_size(url)
+            entry["sizes"] = size or "192x192"
+            entry["type"] = "image/png"
+        icons.append(entry)
     body = {
         "name": f"{short} Operations ({host})",
         "short_name": short[:12],
