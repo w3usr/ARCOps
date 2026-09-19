@@ -17,7 +17,7 @@ see [`config/README.md`](config/README.md). The name is explained in [`docs/NAME
 ## Run it locally
 
 ```bash
-git clone https://github.com/w3usr/arcops.git && cd arcops
+git clone https://github.com/w3usr/ARCOps.git && cd ARCOps
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
 python manage.py migrate && python manage.py club_import && python manage.py seed_demo
@@ -31,7 +31,7 @@ is `config/`; a real club supplies its own (see `config/README.md`).
 ## Repository layout
 
 ```
-arcops/
+ARCOps/
 |-- docs/REQUIREMENTS.md      <- functional requirements; start here
 |-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
 |-- docs/JOBS.md              <- scheduled jobs: how they run, how to add one

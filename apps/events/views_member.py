@@ -201,6 +201,8 @@ def ical_feed(request, token):
             continue
         lines += [
             "BEGIN:VEVENT",
+            # The UID identifies this entry to every calendar that has already subscribed; it is not
+            # the product's name and does not follow its spelling.
             f"UID:signup-{su.pk}@arcops",
             f"DTSTAMP:{_ics_dt(su.created)}",
             f"DTSTART:{_ics_dt(slot.start)}",

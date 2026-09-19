@@ -27,6 +27,8 @@ from apps.ops.groups import people_who_may
 
 from .models import EntryLink, User
 
+# An identifier rather than the product's name (see apps/accounts/addresses.py): changing it
+# would invalidate every verification link already sent.
 VERIFY_SALT = "arcops.verify-email"
 VERIFY_MAX_AGE = 30 * 24 * 3600  # a link in an old email still works for a month
 

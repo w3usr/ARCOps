@@ -438,7 +438,7 @@ has a decade of documentation.
 ## 8. Repository layout (public application repository)
 
 ```
-arcops/
+ARCOps/
 |-- manage.py
 |-- config/                 <- Django settings (base, dev, prod), urls, wsgi
 |   |-- club.example.yaml   <- generic configuration seed (TR-40); club.yaml in a fork, or an overlay (TR-41)
@@ -464,7 +464,7 @@ document, with the TR it supersedes.
 ## 9. Development environment
 
 ```bash
-git clone https://github.com/w3usr/arcops.git && cd arcops
+git clone https://github.com/w3usr/ARCOps.git && cd ARCOps
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
 cp config/env.example .env            # dev secrets, gitignored

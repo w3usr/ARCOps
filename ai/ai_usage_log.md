@@ -2088,3 +2088,19 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 228518c
+
+## [2026-09-19 22:30 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The product is **ARCOps** everywhere it is read, including its own
+  repository: `w3usr/arcops` is renamed `w3usr/ARCOps` (GitHub redirects the old name, so every
+  clone and link keeps working), and the links, the clone line, the tree diagrams and the
+  product URL follow it. Three lowercase uses stay and now say why: two signing salts and a
+  calendar UID, which are identifiers rather than the product's name, and changing them would
+  invalidate every outstanding verification link and every calendar entry already subscribed.
+- **Sections/Files Affected**: apps/ops/branding.py, README.md, CLAUDE.md, docs/NAME.md,
+  docs/TECHNICAL_REQUIREMENTS.md, and comments in apps/accounts/{addresses,entry}.py and
+  apps/events/views_member.py.
+- **Nature of Contribution**: Edit by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 328 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

@@ -11,7 +11,7 @@ from here. tools/check_club_neutral.sh excludes this file for that reason.
 PRODUCT_NAME = "ARCOps"
 PRODUCT_LONG_NAME = "Amateur Radio Club Operations"  # spelled out where the name is first met
 PRODUCT_TAGLINE = "operations software for amateur radio clubs"
-PRODUCT_URL = "https://github.com/w3usr/arcops"
+PRODUCT_URL = "https://github.com/w3usr/ARCOps"
 PRODUCT_CREDIT = "free software from W3USR"
 SCHEDULE_FEATURE_NAME = "Sked"  # the schedule and roster inside the application
 

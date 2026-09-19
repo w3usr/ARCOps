@@ -1,4 +1,4 @@
-# ARCOps, Amateur Radio Club Operations (repository `w3usr/arcops`)
+# ARCOps, Amateur Radio Club Operations (repository `w3usr/ARCOps`)
 
 A project of the **University of Scranton Amateur Radio Club (W3USR)**.
 
@@ -60,7 +60,7 @@ is fine. Aggregating a member's callsign with their address, schedule, or dorm i
 ## Repository Structure
 
 ```
-arcops/
+ARCOps/
 |-- CLAUDE.md
 |-- README.md
 |-- LICENSE                       <- GNU GPL v3

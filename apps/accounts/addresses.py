@@ -23,6 +23,8 @@ from apps.ops.config import institution_email_domain
 
 from .models import Address, User
 
+# Lower case on purpose: a salt is an identifier, not the product's name. Changing it would
+# invalidate every confirmation link already in somebody's mailbox.
 SALT = "arcops.verify-address"
 MAX_AGE = 14 * 24 * 3600
 
