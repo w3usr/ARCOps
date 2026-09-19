@@ -220,7 +220,7 @@ def test_no_page_carries_an_inline_event_handler(event):
         f"/events/{ev.pk}/slot/{slot.pk}/",
         f"/events/{ev.pk}/manage/",
         "/ops/settings/",
-        "/me/",
+        f"/members/{sysadmin.pk}/",  # your own profile, which /me/ forwards to
     ):
         r = c.get(url)
         assert r.status_code == 200, f"{url} gave {r.status_code}"

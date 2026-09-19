@@ -11,12 +11,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from apps.credentials.models import LicenseRecord
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from . import views_addresses
-from .account import AccountForm, profile_rows, save_account
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
 from .models import Invitation, User
@@ -29,100 +26,22 @@ from .services import (
 )
 
 
-def _preferences(user) -> dict:
-    """What reaches this person: the controlled categories with their switches, the categories
-    that are always sent, and the devices that have allowed browser notifications. The profile
-    shows it as text and the edit page as switches, from the one place."""
-    from apps.comms.categories import CONTROLLED, MANDATORY
-
-    prefs = {p.category: p for p in user.notification_preferences.all()}
-    return {
-        "notification_rows": [
-            {
-                "key": k,
-                "label": label,
-                "email": prefs[k].email if k in prefs else True,
-                "push": prefs[k].push if k in prefs else True,
-            }
-            for k, label in CONTROLLED.items()
-        ],
-        "mandatory_labels": list(MANDATORY.values()),
-        "push_subscriptions": user.push_subscriptions.order_by("-created"),
-    }
-
-
 @login_required
 def profile(request):
-    """A member's own account, read-only: their details, addresses, standing, what reaches them,
-    and the way to their password and two-step verification.
+    """Your own account, which is a member page like everyone else's.
 
-    Nothing on it changes anything. Everything that does is behind the button, on `profile_edit`.
-    NAF, 2026-09-19, seeing notification switches still here: "I'm seeing editable options even
-    on the read-only profile. Those should only show up when you press Edit profile."
+    The advisor, 2026-09-19, on his own profile page and his member page: "These should be the
+    same thing... /me/ should redirect to /members/<his own number>/ ... That way there is a
+    more unified codebase and interface." `/me/` stays as the name the menu, the messages, and
+    any bookmark use, and sends you to your own page; a fragment on it survives the redirect.
     """
-    return render(
-        request,
-        "accounts/profile.html",
-        {
-            "license": LicenseRecord.objects.filter(user=request.user).first(),
-            "rows": profile_rows(request.user),
-            "addresses": addresses_state(request.user),
-            "guardians": _guardians(request.user),
-            **_preferences(request.user),
-        },
-    )
+    return redirect("member_detail", pk=request.user.pk)
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def profile_edit(request):
-    """The member's own details and addresses, with the same form and the same save path an
-    officer's view of them uses (apps.accounts.account)."""
-    # A member under 18 signs in read-only; their guardian edits this while acting for them
-    # (§2.4). The middleware already refuses the POST; this keeps the page itself away too.
-    if request.user.under_18 and getattr(request, "acting_guardian", None) is None:
-        raise Http404
-    if request.method == "POST":
-        if views_addresses.handle(request, request.user):
-            return redirect(reverse("profile_edit") + "#addr")
-        form = AccountForm(request.POST, instance=request.user, actor=request.user)
-        if form.is_valid():
-            result = save_account(form, request.user, f"{request.scheme}://{request.get_host()}")
-            call = result["callsign"]
-            if call and call["state"] == "pending":
-                messages.warning(
-                    request,
-                    f"The FCC lists {request.user.callsign} under the name {call['uls_name']}. "
-                    "Confirm on your profile that this is you, or the callsign will not be kept.",
-                )
-            elif call and call["state"] == "unverified":
-                messages.info(
-                    request,
-                    f"{request.user.callsign} is not in the FCC table yet; it is held as "
-                    "unverified until the nightly import finds it.",
-                )
-            messages.success(request, "Profile saved.")
-            return redirect("profile")
-    else:
-        form = AccountForm(instance=request.user, actor=request.user)
-    return render(
-        request,
-        "accounts/profile_edit.html",
-        {
-            "form": form,
-            "addresses": addresses_state(request.user),
-            "address_subject_is_self": True,
-            **_preferences(request.user),
-        },
-    )
-
-
-def _guardians(user):
-    return (
-        list(user.guardianships.filter(active=True).select_related("guardian"))
-        if user.under_18
-        else []
-    )
+    """The editing page for your own account, which is the member edit page."""
+    return redirect("member_edit", pk=request.user.pk)
 
 
 @login_required

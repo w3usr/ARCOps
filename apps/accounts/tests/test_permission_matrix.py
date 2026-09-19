@@ -97,6 +97,7 @@ def _pages(world):
     """Every page worth gating, with what each kind of account should get."""
     ev, slot = world["event"].pk, world["slot"].pk
     mem = world["people"]["member"].pk
+    officer_pk = world["people"]["officer"].pk
     tpl = world["template"].pk
     everyone_in = dict.fromkeys(ROLES[1:], OK)
     officer_up = {
@@ -131,7 +132,8 @@ def _pages(world):
         ("my schedule", "/events/mine/", {"anonymous": AWAY, **everyone_in}),
         ("event detail", f"/events/{ev}/", {"anonymous": AWAY, **everyone_in}),
         ("slot detail", f"/events/{ev}/slot/{slot}/", {"anonymous": AWAY, **everyone_in}),
-        ("profile", "/me/", {"anonymous": AWAY, **everyone_in}),
+        # /me/ forwards everyone signed in to their own member page, which is the profile
+        ("profile", "/me/", dict.fromkeys(("anonymous", *ROLES[1:]), AWAY)),
         ("messages", "/me/messages/", {"anonymous": AWAY, **everyone_in}),
         ("privacy", "/privacy/", dict.fromkeys(("anonymous", *ROLES[1:]), OK)),
         # a provisional member sees no directory and no agreements (FR-121)
@@ -175,7 +177,10 @@ def _pages(world):
             {"anonymous": AWAY, **dict.fromkeys(ROLES[1:], NO_CREDENTIAL)},
         ),
         # officer tools
-        ("member page", f"/members/{mem}/", {"anonymous": AWAY, **officer_up}),
+        # Somebody else's page is an officer's to read. Your own is always yours, whoever you
+        # are, because /me/ is now that page (NAF, 2026-09-19).
+        ("member page", f"/members/{officer_pk}/", {"anonymous": AWAY, **officer_up}),
+        ("own page", f"/members/{mem}/", {"anonymous": AWAY, **officer_up, "member": OK}),
         ("invitations", "/me/invitations/", {"anonymous": AWAY, **officer_up}),
         ("entry links", "/me/entry-links/", {"anonymous": AWAY, **officer_up}),
         ("announcements", "/announcements/", {"anonymous": AWAY, **officer_up}),

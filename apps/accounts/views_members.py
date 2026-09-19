@@ -298,11 +298,40 @@ def archive(request):
     return render(request, "accounts/archive.html", {"people": people, "q": q, "categories": cats})
 
 
+def _preferences(user) -> dict:
+    """What reaches this person: the controlled categories with their switches, the ones that
+    are always sent, and the devices that have allowed browser notifications. The page shows it
+    as text and the edit page as switches, from the one place."""
+    from apps.comms.categories import CONTROLLED, MANDATORY
+
+    prefs = {p.category: p for p in user.notification_preferences.all()}
+    return {
+        "notification_rows": [
+            {
+                "key": k,
+                "label": label,
+                "email": prefs[k].email if k in prefs else True,
+                "push": prefs[k].push if k in prefs else True,
+            }
+            for k, label in CONTROLLED.items()
+        ],
+        "mandatory_labels": list(MANDATORY.values()),
+        "push_subscriptions": user.push_subscriptions.order_by("-created"),
+    }
+
+
 def _member_or_404(request, pk):
-    """The account this page is about, for a reader entitled to see it."""
+    """The account this page is about, for a reader entitled to see it.
+
+    Your own account is one of these pages: `/me/` redirects here (NAF, 2026-09-19, "These
+    should be the same thing"), so a member who may read nobody else's record may always read
+    their own.
+    """
+    member = get_object_or_404(User, pk=pk)
+    if member == request.user:
+        return member
     if not request.user.may("view_member_records"):
         raise Http404
-    member = get_object_or_404(User, pk=pk)
     if member.is_archived and not request.user.may("view_archive"):
         raise Http404  # the archive is the advisor's to read, and so is a page within it
     return member
@@ -320,21 +349,34 @@ def member_detail(request, pk):
     """
     member = _member_or_404(request, pk)
     actor = request.user
+    is_self = member == actor
     return render(
         request,
         "accounts/member_detail.html",
         {
             "member": member,
+            # The name is the heading, on your own page and on an officer's view alike.
             "rows": profile_rows(member, skip=("first_name",)),
+            **(_preferences(member) if is_self else {}),
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "standing": _standing(member),
             "guardian_links": list(
                 member.guardianships.select_related("guardian").order_by("-active", "created")
             ),
             "wards": list(member.wards.filter(active=True).select_related("minor")),
-            "can_edit": may_manage(actor, member),
-            "is_self": member == actor,
+            "can_edit": may_manage(actor, member) and not _minor_readonly(request, member),
+            "is_self": is_self,
         },
+    )
+
+
+def _minor_readonly(request, member) -> bool:
+    """A member under 18 signs in read-only; a guardian acting for them does the editing
+    (§2.4). The middleware refuses their POSTs; this keeps the page and the button away too."""
+    return bool(
+        member == request.user
+        and member.under_18
+        and getattr(request, "acting_guardian", None) is None
     )
 
 
@@ -345,7 +387,7 @@ def member_edit(request, pk):
     guardians, access, archiving, and deletion. Reached from the profile page's Edit button."""
     member = _member_or_404(request, pk)
     actor = request.user
-    if not may_manage(actor, member):
+    if not may_manage(actor, member) or _minor_readonly(request, member):
         raise Http404
     temp_password = None
     form = AccountForm(instance=member, actor=actor)
@@ -378,7 +420,9 @@ def member_edit(request, pk):
                             "unverified until the nightly import finds it.",
                         )
                     messages.success(request, "Saved.")
-                    return redirect("member_edit", pk=member.pk)
+                    # Saving returns to the page that reads (docs/INTERFACE.md); the other
+                    # actions on this page stay here, because they are usually done in a run.
+                    return redirect("member_detail", pk=member.pk)
         elif views_addresses.handle(request, member):
             return redirect("member_edit", pk=member.pk)
         elif action == "license_lookup":  # any officer: FR-14, the local FCC table
@@ -579,6 +623,7 @@ def member_edit(request, pk):
             "is_approver": _is_approver(actor),
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
+            **(_preferences(member) if member == actor else {}),
         },
     )
 

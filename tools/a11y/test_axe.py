@@ -44,7 +44,7 @@ def pages_for(role: str) -> list[str]:
     minor_su = SignUp.objects.filter(user__under_18=True).first()
     common = [
         "/",
-        "/me/",
+        "/me/",  # forwards to your own member page, which is the profile
         "/me/edit/",
         "/events/mine/",
         "/me/messages/",

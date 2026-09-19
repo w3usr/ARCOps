@@ -62,7 +62,9 @@ def test_a_member_adds_an_address_and_confirms_it_from_the_link_sent_to_it(setti
     c = Client()
     c.force_login(u)
     r = c.post(
-        "/me/edit/", {"action": "address_add", "address": "mem.home@example.org"}, follow=True
+        f"/members/{u.pk}/edit/",
+        {"action": "address_add", "address": "mem.home@example.org"},
+        follow=True,
     )
     assert r.status_code == 200
     assert {a.address for a in addresses.on_file(u)} == {
@@ -118,7 +120,11 @@ def test_an_account_keeps_its_last_address():
         addresses.remove(m, "mem@example.edu", actor=m)
     c = Client()
     c.force_login(m)
-    r = c.post("/me/edit/", {"action": "address_remove", "address": "mem@example.edu"}, follow=True)
+    r = c.post(
+        f"/members/{m.pk}/edit/",
+        {"action": "address_remove", "address": "mem@example.edu"},
+        follow=True,
+    )
     assert b"keeps at least one address" in r.content
     assert addresses.on_file(m)
 
@@ -139,11 +145,11 @@ def test_club_mail_follows_the_delivery_switch_and_one_address_always_receives()
     addresses.add(m, "mem.home@example.org", confirmed=True)
     c = Client()
     c.force_login(m)
-    c.post("/me/edit/", {"action": "address_delivery", "address": "mem@example.edu"})
+    c.post(f"/members/{m.pk}/edit/", {"action": "address_delivery", "address": "mem@example.edu"})
     assert recipient_addresses(m) == ["mem.home@example.org"]
 
     r = c.post(
-        "/me/edit/",
+        f"/members/{m.pk}/edit/",
         {"action": "address_delivery", "address": "mem.home@example.org"},
         follow=True,
     )

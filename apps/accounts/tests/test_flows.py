@@ -174,7 +174,7 @@ def test_every_page_has_one_h1_and_labelled_inputs():
         "/",
         "/events/",
         "/events/mine/",
-        "/me/",
+        f"/members/{a.pk}/",  # your own profile, which /me/ forwards to
         "/me/invitations/",
         "/credentials/agreements/",
         "/credentials/approvals/",

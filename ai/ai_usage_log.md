@@ -1817,3 +1817,25 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 292 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 10c2edd
+
+## [2026-09-19 18:22 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: One profile page instead of two, at the advisor's instruction: "These
+  should be the same thing. i.e. [/me/] should redirect to [/members/1/] ... That way there is a
+  more unified codebase and interface." `/me/` and `/me/edit/` are now redirects to your own
+  member page and its edit page, which keeps every existing link, menu entry, and bookmark
+  working. A member may always read and edit their own record whatever else they may see, and
+  the sections that are yours alone (the FCC name question, the members you act for, what
+  reaches you, your password, closing your account) appear on that page only when it is your
+  own. Two templates were deleted rather than kept in step by hand. Saving the account form now
+  returns to the page that reads, which is what the interface rules already said.
+- **Sections/Files Affected**: apps/accounts/views.py (profile and profile_edit are redirects),
+  apps/accounts/views_members.py (self-access, preferences, the minor guard),
+  templates/accounts/member_detail.html and member_edit.html, templates/base.html (which menu
+  entry is current), templates/accounts/profile.html and profile_edit.html deleted, and the
+  tests across apps/accounts, apps/comms, apps/credentials, apps/ops and tools/a11y.
+- **Nature of Contribution**: Code, tests, and documentation by the assistant, at the advisor's
+  direction.
+- **Human Review Status**: Pending the advisor's look. 293 tests pass, the accessibility sweep
+  passes for all eight roles at both widths, and the four guards pass.
+- **Git Hash**: pending

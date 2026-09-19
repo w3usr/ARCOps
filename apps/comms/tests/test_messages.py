@@ -108,10 +108,10 @@ def test_notification_form_writes_preferences_and_profile_shows_them():
         session["acting_view"] = "sysadmin"
         session.save()
     # the profile says what reaches you; the switches are on the edit page (NAF, 2026-09-19)
-    body = c.get("/me/").content.decode()
+    body = c.get("/me/", follow=True).content.decode()
     assert "Notifications" in body and "always sent" in body.lower()
     assert 'name="email" value="reminder"' not in body
-    edit = c.get("/me/edit/").content.decode()
+    edit = c.get("/me/edit/", follow=True).content.decode()
     assert 'name="email" value="reminder"' in edit and "always sent" in edit.lower()
     r = c.post("/me/notifications/", {"email": ["warning", "digest"]})
     assert r.status_code == 302
@@ -119,7 +119,7 @@ def test_notification_form_writes_preferences_and_profile_shows_them():
     assert prefs["reminder"] is False and prefs["warning"] is True and prefs["digest"] is True
     assert u.reminders_off
     # and the profile reads back what was saved
-    body = c.get("/me/").content.decode()
+    body = c.get("/me/", follow=True).content.decode()
     assert '<td data-label="Email">off</td>' in body and '<td data-label="Email">on</td>' in body
 
 

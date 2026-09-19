@@ -153,7 +153,7 @@ def test_minor_signs_in_read_only():
     assert c.post(f"/events/slot/{slot.pk}/signup/", {"role": "observer"}).status_code == 403
     assert c.post("/me/edit/", {"first_name": "X"}).status_code == 403
     assert not SignUp.objects.filter(user=minor).exists()
-    r = c.get("/me/")
+    r = c.get("/me/", follow=True)
     assert (
         b">Guardians</h2>" in r.content
         and b"Parent Tester" in r.content
@@ -165,7 +165,7 @@ def test_guardian_acts_for_minor_signs_up_names_adult_and_the_audit_names_both()
     officer, guardian, minor = _family()
     slot = _slot(officer)
     c = _as(guardian)
-    assert b"Act for Kid" in c.get("/me/").content
+    assert b"Act for Kid" in c.get("/me/", follow=True).content
     assert c.post(f"/me/wards/{minor.pk}/act/").status_code == 302
     r = c.get("/")
     assert r.context["user"] == minor and b"Acting for Kid" in r.content
@@ -341,11 +341,11 @@ def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
     parent = User.objects.by_address("parent@example.org").get()
     assert not minor.addresses.exists() and minor.email == ""
     assert recipient_addresses(minor) == ["parent@example.org"]
-    assert b"no address of their own" in g.get("/me/").content
+    assert b"no address of their own" in g.get("/me/", follow=True).content
 
     # the guardian acts for the minor and adds one from the minor's own profile
     g.post(f"/me/wards/{minor.pk}/act/")
-    g.post("/me/edit/", {"action": "address_add", "address": "kim@example.org"})
+    g.post(f"/members/{minor.pk}/edit/", {"action": "address_add", "address": "kim@example.org"})
     minor.refresh_from_db()
     assert minor.email == "kim@example.org"
     assert set(recipient_addresses(minor)) == {"parent@example.org", "kim@example.org"}

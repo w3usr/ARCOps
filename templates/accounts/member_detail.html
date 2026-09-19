@@ -5,17 +5,33 @@
 {% comment %}A profile, read-only. Nothing on this page changes anything: every control lives on
 the edit page behind the button, so a page opened to read somebody's callsign cannot alter their
 access on the way past. The officer's view and the member's own profile are the same page.{% endcomment %}
-<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
+{% if perms.ops.view_directory %}<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>{% endif %}
 <div class="titlerow">
   <h1>{{ member.full_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
-  {% if can_edit %}<a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit profile</a>{% endif %}
+  {% if can_edit %}<a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit {% if is_self %}profile and preferences{% else %}profile{% endif %}</a>{% endif %}
 </div>
+
+{% if is_self and user.pending_uls_name %}
+<div class="banner" role="status">
+  <p><strong>Is this you?</strong> The FCC lists <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which differs from the name on your account. If it is you, your name becomes the FCC's; if not, the callsign is not kept.</p>
+  <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
+</div>
+{% endif %}
+{% if is_self and my_wards %}
+<section class="card highlight" aria-labelledby="wards"><h2 id="wards">Members you act for</h2>
+<p>You are the guardian of the members below. <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>
+<ul class="list">{% for w in my_wards %}<li><strong>{{ w.full_name }}</strong>{% if w.callsign %} {{ w.callsign }}{% endif %} · {% if w.email %}signs in read-only with {{ w.email }}{% else %}<span class="tag">no address of their own; everything reaches you</span>{% endif %}
+  <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit">Act for {{ w.display_first }}</button></form>
+  <form method="post" action="{% url 'ward_password' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Set a temporary password</button></form>
+  </li>{% endfor %}</ul>
+</section>
+{% endif %}
 
 {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|date:"j M Y" }}. The row stays so past rosters keep their shape.</p>{% endif %}
 {% if member.is_archived %}<p class="note">In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>{% endif %}
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
-{% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. They joined {{ member.date_joined|date:"d M Y" }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
-{% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>{% endif %}
+{% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. {% if is_self %}You{% else %}They{% endif %} joined {{ member.date_joined|date:"d M Y" }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
+{% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> {% if is_self %}your{% else %}their{% endif %} address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>{% endif %}
 
 <section class="card" aria-labelledby="d">
   <h2 id="d">Details</h2>
@@ -56,14 +72,34 @@ access on the way past. The officer's view and the member's own profile are the 
 {% if member.under_18 or guardian_links %}
 <section class="card" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
-  {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
+  {% if member.under_18 %}<p>{% if is_self %}You are under 18: a guardian acts for you, every message to you goes to every active guardian, and you sign in read-only. A responsible adult named by your guardian accompanies you at every slot.{% else %}This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.{% endif %}</p>{% endif %}
   <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
 </section>
 {% endif %}
 
-{% if wards %}
+{% if wards and not is_self %}
 <section class="card"><h2>Acts for</h2>
 <ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
 </section>
+{% endif %}
+
+{% if is_self %}
+{% comment %}Yours alone: what reaches you, and the way to your password. Both read here; the
+switches are on the edit page.{% endcomment %}
+<section class="card" id="notifications"><h2>Notifications</h2>
+<p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose.</p>
+<table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
+{% for row in notification_rows %}
+<tr><th scope="row">{{ row.label }}</th>
+<td data-label="Email">{{ row.email|yesno:"on,off" }}</td>
+{% if vapid_public_key %}<td data-label="Browser">{{ row.push|yesno:"on,off" }}</td>{% endif %}</tr>
+{% endfor %}
+</tbody></table>
+<p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
+{% if vapid_public_key %}<p class="helptext">Browser notifications are {{ user.push_enabled|yesno:"on,off" }} for this account, on {{ push_subscriptions|length }} device{{ push_subscriptions|length|pluralize }} that has allowed them.</p>{% endif %}
+</section>
+<section class="card"><h2>Security</h2>
+<ul class="list"><li><a href="{% url 'account_change_password' %}">Change password</a></li><li><a href="{% url 'mfa_index' %}">Two-step verification and passkeys</a></li></ul></section>
+{% if minor_readonly %}<p class="note">Your guardian makes changes to this account while acting for you. You can change your own password.</p>{% endif %}
 {% endif %}
 {% endblock %}

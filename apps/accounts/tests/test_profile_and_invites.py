@@ -41,12 +41,12 @@ def test_profile_shows_every_address_once_with_its_standing_and_a_way_to_add_one
     addresses.add(u, "ann@home.example")
     c = Client()
     c.force_login(u)
-    body = c.get("/me/").content.decode()
+    body = c.get("/me/", follow=True).content.decode()
     assert ">Email</h2>" in body  # a plain noun, not a sentence
     # the profile reads; nothing on it changes anything (NAF, 2026-09-19)
     assert "address_delivery" not in body and "address_add" not in body
     assert "Not confirmed, so it cannot sign you in yet" in body
-    edit = c.get("/me/edit/").content.decode()
+    edit = c.get("/me/edit/", follow=True).content.decode()
     assert edit.count('value="address_delivery"') == 2  # one switch per address
     # what each address does, said in words rather than in a row of badges
     assert "Send the confirmation link" in edit

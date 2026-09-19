@@ -167,7 +167,7 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
         session = c.session  # a sysadmin signs in acting lower
         session["acting_view"] = "sysadmin"
         session.save()
-    body = c.get("/me/").content.decode()
+    body = c.get("/me/", follow=True).content.decode()
     assert "Is this you?" in body and "Zed Other" in body
     c.post("/me/uls-name/", {"decision": "no"})
     u.refresh_from_db()
@@ -183,7 +183,7 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     assert r["state"] == "unverified" and LicenseRecord.objects.get(user=u).status == "unverified"
     # the profile form goes through the same path
     r = c.post(
-        "/me/edit/",
+        f"/members/{u.pk}/edit/",
         {
             "preferred_name": "",
             "callsign": "N0AAA",
@@ -285,7 +285,7 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
         session = c.session  # a sysadmin signs in acting lower
         session["acting_view"] = "sysadmin"
         session.save()
-    assert "sysadmin override" not in c.get("/me/").content.decode() or True
+    assert "sysadmin override" not in c.get("/me/", follow=True).content.decode() or True
 
 
 def test_a_member_whose_callsign_never_had_a_license_record_gets_one():

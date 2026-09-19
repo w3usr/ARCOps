@@ -61,27 +61,41 @@ def test_the_edit_button_is_there_for_whoever_may_edit(pair):
     )
 
 
+def test_your_own_page_is_a_member_page(pair):
+    """NAF, 2026-09-19: "These should be the same thing. i.e. /me/ should redirect to
+    /members/1/ [...] That way there is a more unified codebase and interface." """
+    _, member = pair
+    c = _as(member)
+    r = c.get("/me/")
+    assert r.status_code == 302 and r["Location"] == f"/members/{member.pk}/"
+    assert c.get("/me/edit/")["Location"] == f"/members/{member.pk}/edit/"
+
+
 def test_your_own_profile_reads_and_the_edit_page_holds_the_form(pair):
     _, member = pair
     c = _as(member)
-    body = c.get("/me/").content.decode()
-    assert "Edit profile and preferences" in body and 'href="/me/edit/"' in body
+    body = c.get("/me/", follow=True).content.decode()
+    assert "Edit profile and preferences" in body
+    assert f'href="/members/{member.pk}/edit/"' in body
     # nothing on it changes anything, preferences included (NAF, 2026-09-19)
     assert "<form" not in body.split("<main", 1)[1]
     assert "N0MEM" in body, "the account is shown, whether or not it is being edited"
     assert 'name="callsign"' not in body
-    edit = c.get("/me/edit/").content.decode()
+    assert "Notifications" in body and 'name="email" value="reminder"' not in body
+    edit = c.get("/me/edit/", follow=True).content.decode()
     assert 'name="callsign"' in edit and 'name="preferred_name"' in edit
+    assert 'name="email" value="reminder"' in edit  # your preferences, on the same edit page
+    assert "Close my account" in edit
 
 
 def test_editing_your_profile_lands_back_on_it(pair):
     _, member = pair
     c = _as(member)
     r = c.post(
-        "/me/edit/",
+        f"/members/{member.pk}/edit/",
         {"action": "save", "first_name": "Mo", "last_name": "Member", "preferred_name": "Moe"},
     )
-    assert r.status_code == 302 and r["Location"] == "/me/"
+    assert r.status_code == 302 and r["Location"] == f"/members/{member.pk}/"
     assert User.objects.get(pk=member.pk).preferred_name == "Moe"
 
 
@@ -96,10 +110,11 @@ def test_a_member_under_18_has_no_edit_page(pair):
     officer, _ = pair
     minor = _user("kid@example.org", ["member"], first_name="Kim", last_name="Young", under_18=True)
     c = _as(minor)
-    assert c.get("/me/").status_code == 200
-    assert c.get("/me/edit/").status_code == 404
-    assert "Edit profile" not in c.get("/me/").content.decode()
-    assert "guardian edits these" in c.get("/me/").content.decode()
+    assert c.get("/me/", follow=True).status_code == 200
+    assert c.get("/me/edit/", follow=True).status_code == 404
+    body = c.get("/me/", follow=True).content.decode()
+    assert "Edit profile" not in body
+    assert "Your guardian makes changes to this account" in body
 
 
 def test_a_member_cannot_reach_anybody_elses_page(pair):
@@ -107,3 +122,4 @@ def test_a_member_cannot_reach_anybody_elses_page(pair):
     c = _as(member)
     assert c.get(f"/members/{officer.pk}/").status_code == 404
     assert c.get(f"/members/{officer.pk}/edit/").status_code == 404
+    assert c.get(f"/members/{member.pk}/").status_code == 200, "their own is always theirs"
