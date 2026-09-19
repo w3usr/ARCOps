@@ -2089,7 +2089,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 228518c
 
-## [2026-09-19 22:30 UTC]
+## [2026-09-19 22:29 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The product is **ARCOps** everywhere it is read, including its own
   repository: `w3usr/arcops` is renamed `w3usr/ARCOps` (GitHub redirects the old name, so every
@@ -2103,4 +2103,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 328 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 49d2fe6
