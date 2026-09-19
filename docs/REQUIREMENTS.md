@@ -1089,6 +1089,17 @@ Verbatim:
 - **FR-59 [Should]** A member sees "my schedule": every slot they hold across all events, with
   an iCalendar feed URL they can subscribe to from a phone or desktop calendar **(added)**: the
   cheapest possible reminder channel, and it works offline.
+
+  **The address is a key on the account**, generated once and shown unchanged every time. It was
+  a signed string, and a signature carries a timestamp, so the address differed on every page
+  view: a member could not tell a fresh address from one that had leaked, and every view left
+  another live credential behind. A key can also be **replaced**, which the page offers behind a
+  confirmation: the old address stops working at once, and anything subscribed to it stops
+  receiving. Addresses handed out before the key existed are still accepted, so no subscription
+  made earlier quietly stops.
+
+  > Is this calendar address supposed to change every time I reload the page? It does, but I
+  > feel like it shouldn't. — NAF, 2026-09-19
 - **FR-60 [Could]** A member can record a **preference** without committing to a slot ("I could do any
   two hours Saturday afternoon"), which captains see as they fill gaps. Deferred unless captains
   ask for it.
@@ -1699,6 +1710,15 @@ See also `.claude/rules/web-development.md`.
   an icon, and a service worker that caches the shell and the member's own schedule for
   offline reading. This gives a home-screen icon on Android and iOS today, and is the
   prerequisite for web push (FR-83), with no app-store dependency.
+
+  The manifest carries **this installation's** name and the club's own icons, each declared at
+  its real pixel size, read from the file rather than trusted from its name: a browser decides
+  whether a site can be installed, and which icon belongs on a home screen, from those sizes,
+  and "any" means scalable, which is true of an SVG and not of a PNG. An installed copy is drawn
+  **edge to edge**, with no browser chrome between the page and the system's own status and
+  navigation bars, so every edge of the page that meets one pays for it through the safe-area
+  insets; in a browser those insets are zero and nothing moves. Without that, the footer of a
+  page shorter than the screen sits under the navigation bar (2026-09-19).
 - **FR-97 [Later]** A native app, if the club still wants one after the PWA is in use, talks
   to the same API the web front end shares its logic with. **Design consequence for section
   6**: the server exposes its functionality through a documented API from the start, and both

@@ -2192,3 +2192,14 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look on a phone. 332 tests pass, the
   accessibility sweep at both widths and the four guards pass.
 - **Git Hash**: 26bc37e
+
+## [2026-09-19 23:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The documents follow the evening's last batch: FR-59 records that the
+  calendar address is a key on the account, shown unchanged and replaceable, with the older
+  signed addresses still accepted; FR-96 records the manifest's real icon sizes and the edge-to-
+  edge layout that pays for the system's bars; INTERFACE.md says the same for any page.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-59, FR-96), docs/INTERFACE.md.
+- **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: pending

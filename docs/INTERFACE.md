@@ -70,6 +70,13 @@ landing there is your own level.
 > level permission. I want to either see a nicely themed permission denied screen, or just be
 > redirected back to my home. I don't want a Not Found. — NAF, 2026-09-19
 
+## The installed app
+
+The same pages run in a window with no browser chrome, so the system's status and navigation
+bars sit over them rather than beside them. Any edge of the page that meets one pays for it
+with `env(safe-area-inset-*)`; in a browser those are zero. A page shorter than the screen is
+where this shows first, because its footer lands exactly where the navigation bar is.
+
 ## Filters
 
 A filter that can sensibly take two answers takes a set: a disclosure holding a checkbox each,
