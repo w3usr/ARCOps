@@ -1978,7 +1978,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: 0c55a5f
 
-## [2026-09-19 21:00 UTC]
+## [2026-09-19 20:54 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Two narrowings from the advisor's testing. Access is one choice from a
   drop-down rather than a set of tick boxes, so an account holds one level or none, with "No
@@ -1993,4 +1993,4 @@ carries the actual running model ID.
   direction.
 - **Human Review Status**: Pending the advisor's look. 316 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: e5e8d84
