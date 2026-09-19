@@ -124,14 +124,17 @@ stored in.{% endcomment %}
 <section class="card" aria-labelledby="mb">
   <h2 id="mb">Membership</h2>
   {% if member.is_archived %}
-  <p>In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Bring them back as a member</button></form>
-  {% else %}
+  <p>In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted, and they are still {{ member.status_label|lower|cut:" · archived" }}.</p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Take them out of the archive</button></form>
+  <p class="helptext">The record comes back as it went in. Giving them access again is a separate step.</p>
+  {% elif can_archive %}
   <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="archive">
     <div class="field"><label for="ar-reason">Why they are leaving</label><input id="ar-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept with the record.</span></div>
     <div><button type="submit" class="secondary">Archive this member</button></div>
   </form>
-  <p class="helptext">Archiving keeps everything and ends access: they leave the directory and every audience, and their record is read in the <a href="{% url 'archive' %}">archive</a> by a faculty advisor or a sysadmin. An advisor can bring them back.</p>
+  <p class="helptext">Archiving keeps everything: they leave the members list and every audience, and their record is read by a faculty advisor or a sysadmin under <a href="{% url 'members' %}?status=archived">Archived</a>. An advisor can take them out again.</p>
+  {% else %}
+  <p class="helptext">An account is closed or suspended before it is archived, so that every account somebody can still use is on the members list.</p>
   {% endif %}
 </section>
 {% endif %}
@@ -142,19 +145,23 @@ stored in.{% endcomment %}
   {% if can_set_access and not is_self and not member.is_archived %}
   {% if member.has_access %}
   <details class="confirm">
-    <summary>Remove their access</summary>
-    <p>They stay on the books and sign-in is refused: a suspension rather than a departure. An officer can restore it here. Archiving is what a member who has left gets.</p>
+    <summary>Suspend this account</summary>
+    <p>They stay on the books and sign-in is refused: a suspension rather than a departure. The reason is kept on the account, where whoever lifts it will read it. Only a faculty advisor can lift a suspension.</p>
     <form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="close">
       <label for="reason">Reason <span class="req" aria-hidden="true">*</span></label>
-      <input id="reason" name="reason" placeholder="suspended pending a decision…" required>
-      <button type="submit" class="danger">Remove access</button>
+      <input id="reason" name="reason" placeholder="pending a decision…" required>
+      <button type="submit" class="danger">Suspend</button>
     </form>
-    <p class="helptext">Kept in the audit log.</p>
+    <p class="helptext">Kept on the account and in the audit log.</p>
   </details>
   {% else %}
   {% if no_access_because %}<p>{{ no_access_because }}</p>{% endif %}
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Restore access as a member</button></form>
-  <p class="helptext">They come back as a member. A club officer, the faculty advisor, or a sysadmin can do this; a level above member is granted separately, by somebody who holds it.</p>
+  {% if can_readmit %}
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Let them back in as a member</button></form>
+  <p class="helptext">They come back as a member. A level above that is granted separately, by somebody who holds it.</p>
+  {% elif member.status == 'suspended' %}
+  <p class="note">A suspension is lifted by a faculty advisor.</p>
+  {% endif %}
   {% endif %}
   {% endif %}
   {% if perms.ops.delete_accounts and not is_self %}

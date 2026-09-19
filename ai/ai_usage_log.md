@@ -1919,3 +1919,27 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 306 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 3ceea88
+
+## [2026-09-19 20:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Where an account stands with the club, as the advisor settled it on
+  2026-09-19. Four statuses on one axis, Provisional, Active, Closed and Suspended, all of them
+  on the members list, because an account somebody could still use should never be off it.
+  Archiving is a flag beside the status rather than a value of it: the record keeps the status
+  it went in with, and taking it out of the archive and letting the person back in are two acts.
+  Closed and Suspended part company: a member who asked to leave is readmitted by an officer, a
+  member somebody suspended by a faculty advisor, through a new capability. Suspension is a fact
+  on the account now, with who did it and why, so the person deciding can read it. The archive
+  page is folded into the members list as a filter, its URL forwarding, its audit row kept. The
+  list gained a Status column for officers and above, sortable down the list rather than down
+  the alphabet, with archived shown to whoever may read the archive and deleted to a sysadmin.
+  The sidebar tells everybody the level they hold; only a sysadmin's is a link.
+- **Sections/Files Affected**: apps/accounts/{models,services,acting,views_members}.py and
+  migrations 0015 and 0016, apps/ops/{capabilities,groups}.py and migration 0005,
+  templates/accounts/{members,member_detail,member_edit}.html, templates/base.html,
+  templates/accounts/archive.html deleted, config/club.example.yaml, seed_demo, tools/a11y, and
+  the tests across apps/accounts and apps/ops.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 307 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

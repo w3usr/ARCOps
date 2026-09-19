@@ -340,6 +340,13 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
         raise ArchiveRefused(
             "a guardian is archived once every linked minor has been converted, re-linked, or archived"
         )
+    # An account is closed or suspended before it is archived (the advisor, 2026-09-19), which
+    # is what keeps every account that can be used visible in the directory.
+    if user.has_access:
+        raise ArchiveRefused(
+            "an account is closed or suspended before it is archived, so that every account "
+            "somebody can still use is on the members list"
+        )
     if not _someone_else_can_administer(user):
         raise ArchiveRefused("the last account that can run the site cannot be archived")
     user.archived_at = timezone.now()
@@ -348,15 +355,17 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
     # nobody is a member of should not authenticate at all.
     user.is_active = False
     user.save(update_fields=["archived_at", "archived_reason", "is_active"])
-    set_access(actor, user, [], reason or "archived")
     record(actor, "member.archived", user, after={"reason": user.archived_reason})
 
 
-def restore_member(actor: User, user: User, groups: list[str] | None = None) -> None:
-    """Take a former member out of the archive and give them access again. Nothing was lost while
-    they were in it, so they come back as themselves, in the groups they are given (Member by
-    default, whatever they held before)."""
-    groups = ["member"] if groups is None else groups
+def restore_member(actor: User, user: User) -> None:
+    """Take a record out of the archive, and **leave its status alone**.
+
+    Archiving and closing are two dimensions now (the advisor, 2026-09-19): the archive is
+    where a record is put away, and the status is where the person stands with the club. So an
+    account comes out of the archive exactly as it went in, Closed or Suspended, and somebody
+    gives it access back as a separate, deliberate act. Nothing was lost while it was away.
+    """
     if not user.is_archived:
         return
     before = {"archived_at": user.archived_at.isoformat(), "reason": user.archived_reason}
@@ -364,8 +373,53 @@ def restore_member(actor: User, user: User, groups: list[str] | None = None) -> 
     user.archived_reason = ""
     user.is_active = True
     user.save(update_fields=["archived_at", "archived_reason", "is_active"])
-    set_access(actor, user, groups, "restored from the archive")
-    record(actor, "member.restored", user, before=before, after={"groups": groups})
+    record(actor, "member.restored", user, before=before, after={"status": user.status})
+
+
+def suspend(actor: User, user: User, reason: str) -> None:
+    """Take an account's access away, with a reason (FR-91).
+
+    An officer may do this to an account below them, because something can happen at the station
+    on a Tuesday night; only a faculty advisor lifts it (§2.3, the advisor's rule of
+    2026-09-19). The reason is kept on the account, not only in the audit log, because the
+    person deciding whether to let them back in needs to read it.
+    """
+    user.suspended_at = timezone.now()
+    user.suspended_by = actor if actor.pk != user.pk else None
+    user.suspended_reason = (reason or "").strip()[:200]
+    user.closure_requested_at = None  # a suspension supersedes a request to leave
+    user.save(
+        update_fields=[
+            "suspended_at",
+            "suspended_by",
+            "suspended_reason",
+            "closure_requested_at",
+        ]
+    )
+    set_access(actor, user, [], reason or "suspended")
+
+
+def readmit(actor: User, user: User, groups: list[str] | None = None) -> None:
+    """Give a closed or suspended account access again, as a member.
+
+    Whoever held an officer's place before comes back a member and is re-appointed by somebody
+    who may appoint one (§2.3): coming back is not the moment to hand privileges out.
+    """
+    was = user.status
+    user.suspended_at = None
+    user.suspended_by = None
+    user.suspended_reason = ""
+    user.closure_requested_at = None
+    user.save(
+        update_fields=[
+            "suspended_at",
+            "suspended_by",
+            "suspended_reason",
+            "closure_requested_at",
+        ]
+    )
+    set_access(actor, user, groups or ["member"], "readmitted")
+    record(actor, "member.readmitted", user, before={"status": was})
 
 
 def _someone_else_can_administer(user: User) -> bool:

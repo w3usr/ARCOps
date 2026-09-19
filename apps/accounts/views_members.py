@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.credentials.models import LicenseRecord, SignedAgreement
@@ -25,7 +26,7 @@ from apps.ops.groups import may_set_access
 from . import entry, views_addresses
 from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
 from .models import User
-from .services import issue_temporary_password, set_access
+from .services import issue_temporary_password
 
 # The classes the ladder does not hold: a station the FCC gives no operator class, and no
 # license at all. The key narrows the directory; the letter is what the Class column shows.
@@ -67,6 +68,7 @@ DIRECTORY_COLUMNS = [
     {"key": "class", "label": "Class", "show": "all"},
     {"key": "category", "label": "Category", "show": "full"},
     {"key": "position", "label": "Position", "show": "all"},
+    {"key": "status", "label": "Status", "show": "full"},
     {"key": "access", "label": "Access", "show": "full"},
     {"key": "email", "label": "Email", "show": "full"},
     {"key": "phone", "label": "Phone", "show": "full"},
@@ -133,6 +135,12 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
             text(positions.get(m.club_position, m.club_position)),
             text(m.last_name),
         ),
+        # Down the list in the order the club reads it, rather than down the alphabet.
+        "status": lambda m: (
+            [k for k, _ in User.STATUSES].index(m.status),
+            bool(m.archived_at),
+            text(m.last_name),
+        ),
         "access": lambda m: (text(m.access_label), text(m.last_name)),
         "email": lambda m: (
             not m.addresses.all(),
@@ -148,11 +156,22 @@ def members(request):
     if not request.user.is_member:
         raise Http404  # FR-121: a Provisional member sees no directory
     q = request.GET.get("q", "").strip()
-    # The directory is who the club has now. A former member is in the archive (FR-125), which
-    # is read by a faculty advisor or a sysadmin, so they are out of this list for everyone. A
-    # deleted account is out too: its row survives only so past rosters keep their shape, and it
-    # was appearing here as "Deleted member" with no address and no access (NAF, 2026-09-19).
-    current = User.objects.filter(archived_at__isnull=True, deleted_at__isnull=True)
+    # The directory is everyone the club has: active, provisional, closed and suspended alike,
+    # because an account somebody could still use should never be off the list (the advisor,
+    # 2026-09-19). Two things are put away rather than listed. An **archived** record is asked
+    # for by name and read by whoever may read the archive (FR-125); a **deleted** row survives
+    # only so past rosters keep their shape, holds no name or address, and is a sysadmin's.
+    wanted = request.GET.get("status", "") if full else ""
+    may_see_archive = request.user.may("view_archive")
+    may_see_deleted = request.user.may("delete_accounts")
+    if wanted == "archived" and may_see_archive:
+        current = User.objects.filter(archived_at__isnull=False, deleted_at__isnull=True)
+    elif wanted == "deleted" and may_see_deleted:
+        current = User.objects.filter(deleted_at__isnull=False)
+    else:
+        current = User.objects.filter(archived_at__isnull=True, deleted_at__isnull=True)
+        if wanted not in dict(User.STATUSES):
+            wanted = ""
     users = (
         # the directory shows every address an officer may write to, so they come in one query
         current.select_related("license").prefetch_related("addresses", "groups")
@@ -183,13 +202,19 @@ def members(request):
         # The class is on the page for everyone, so everyone can narrow by it.
         "license": request.GET.get("license", ""),
         "access": request.GET.get("access", "") if full else "",
+        "status": wanted,
     }
     if chosen["category"]:
         users = users.filter(category=chosen["category"])
     if chosen["position"]:
         users = users.filter(club_position=chosen["position"])
 
+    if wanted in ("archived", "deleted"):
+        # Reading the archive is recorded, as it was when the archive was a page (FR-125).
+        record(request.user, "archive.viewed", None, after={"search": q} if q else None)
     rows = list(users)
+    if wanted in dict(User.STATUSES):
+        rows = [m for m in rows if m.status == wanted]
     if chosen["license"]:
         want = chosen["license"].strip().lower()
         rows = [
@@ -242,6 +267,12 @@ def members(request):
 
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
     license_choices += list(STATION_CHOICES)
+    # The statuses anybody may narrow by, then the two that are put away rather than listed.
+    status_choices = [(k, label) for k, label in User.STATUSES if k != "deleted"]
+    if may_see_archive:
+        status_choices.append(("archived", "Archived"))
+    if may_see_deleted:
+        status_choices.append(("deleted", "Deleted"))
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
     return render(
@@ -259,6 +290,7 @@ def members(request):
             "chosen": chosen,
             "category_choices": sorted(cats.items(), key=lambda kv: kv[1]),
             "license_choices": license_choices,
+            "status_choices": status_choices,
             "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
             "access_choices": access_choices,
         },
@@ -276,27 +308,15 @@ def _still_assigns_groups(form, actor, member) -> bool:
 
 @login_required
 def archive(request):
-    """The club's record of its former members (FR-125). Only a faculty advisor or a sysadmin
-    reads it: it holds contact details and history for people who have left, which is the most
-    that anyone here holds about someone who is no longer around to ask."""
+    """The archive is a filter on the members list now, not a page of its own.
+
+    It held the same rows with fewer columns, which meant two places to keep in step and two
+    places to look. The advisor, 2026-09-19: "Fold in and drop the page." The URL stays, because
+    it is in the menu, in old links, and in the test plan.
+    """
     if not request.user.may("view_archive"):
         raise Http404
-    from .services import archived_members
-
-    q = request.GET.get("q", "").strip()
-    people = archived_members().select_related("license").prefetch_related("addresses")
-    if q:
-        people = people.filter(
-            Q(first_name__icontains=q)
-            | Q(last_name__icontains=q)
-            | Q(preferred_name__icontains=q)
-            | Q(callsign__icontains=q)
-            | Q(addresses__address__icontains=q)
-            | Q(archived_reason__icontains=q)
-        ).distinct()
-    record(request.user, "archive.viewed", None, after={"search": q} if q else None)
-    cats = {c["key"]: c["label"] for c in (setting("member_categories", []) or [])}
-    return render(request, "accounts/archive.html", {"people": people, "q": q, "categories": cats})
+    return redirect(f"{reverse('members')}?status=archived")
 
 
 def _preferences(user) -> dict:
@@ -376,27 +396,32 @@ def member_detail(request, pk):
 def _no_access_because(member) -> str:
     """Why this account cannot be used, in words.
 
-    An account that asked to be closed and an account somebody suspended look identical on the
-    page, and whoever is about to restore one should know which they are undoing (the advisor,
-    2026-09-19). The fact is on the account for a closure and in the audit log for a removal.
+    Closed and suspended are two different states with two different ways back (§2.3), and
+    whoever is about to let somebody in should be able to read which one they are undoing.
     """
     if member.has_access or member.deleted_at:
         return ""
+    if member.suspended_at:
+        who = member.suspended_by.short_name if member.suspended_by else "an officer"
+        said = f": {member.suspended_reason}" if member.suspended_reason else ""
+        return f"Suspended by {who} on {member.suspended_at:%d %b %Y}{said}."
     if member.closure_requested_at:
         return f"Closed at their own request on {member.closure_requested_at:%d %b %Y}."
-    from apps.ops.models import AuditLog
+    return ""
 
-    row = (
-        AuditLog.objects.filter(action="access.changed", subject_id=str(member.pk))
-        .order_by("-at")
-        .first()
-    )
-    if row is None:
-        return ""
-    reason = (row.after or {}).get("reason", "")
-    who = row.actor.short_name if row.actor else "somebody"
-    when = f"{row.at:%d %b %Y}"
-    return f"Access removed by {who} on {when}" + (f": {reason}." if reason else ".")
+
+def _may_readmit(actor, member) -> bool:
+    """Who may let an account back in.
+
+    A member who closed their own account is readmitted by an officer; one somebody suspended
+    needs a faculty advisor, because letting them back in overturns another officer's decision
+    (the advisor, 2026-09-19: "officer can suspend but only advisor can lift").
+    """
+    if not may_set_access(actor, member):
+        return False
+    if member.status == "suspended":
+        return actor.may("lift_suspension")
+    return member.status == "closed"
 
 
 def _minor_readonly(request, member) -> bool:
@@ -577,19 +602,20 @@ def member_edit(request, pk):
                 f"Temporary password issued. It works once, within {hours} hours, and is shown only here.",
             )
         elif action == "close" and may_set_access(actor, member):
+            from .services import suspend
+
             if member == actor:
-                messages.error(request, "You cannot close your own account.")
+                messages.error(request, "You cannot suspend your own account.")
             else:
-                set_access(actor, member, [], request.POST.get("reason", ""))
-                messages.success(request, f"{member.short_name} no longer has access.")
+                suspend(actor, member, request.POST.get("reason", ""))
+                messages.success(request, f"{member.short_name} is suspended.")
                 return redirect("member_edit", pk=member.pk)
-        elif action == "reopen" and may_set_access(actor, member):
+        elif action == "reopen" and _may_readmit(actor, member):
+            from .services import readmit
+
             # Back as a member, whether they asked to leave or somebody suspended them; a level
             # above that is granted deliberately, by somebody who holds it (§2.3).
-            set_access(actor, member, ["member"], "reopened")
-            if member.closure_requested_at:
-                member.closure_requested_at = None
-                member.save(update_fields=["closure_requested_at"])
+            readmit(actor, member)
             messages.success(request, f"{member.short_name} is a member again.")
             return redirect("member_edit", pk=member.pk)
         elif action == "archive" and actor.may("archive_members"):  # FR-125
@@ -613,7 +639,11 @@ def member_edit(request, pk):
             from .services import restore_member
 
             restore_member(actor, member)
-            messages.success(request, f"{member.short_name} is a member again.")
+            messages.success(
+                request,
+                f"{member.short_name} is out of the archive, still {member.status_label.lower()}. "
+                "Give them access back when they are a member again.",
+            )
             return redirect("member_edit", pk=member.pk)
         elif action == "admit" and member.is_provisional:  # FR-121: any officer reviews
             entry.admit(actor, member)
@@ -667,6 +697,8 @@ def member_edit(request, pk):
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
             "can_set_access": may_set_access(actor, member),
+            "can_readmit": _may_readmit(actor, member),
+            "can_archive": actor.may("archive_members") and not member.has_access,
             "no_access_because": _no_access_because(member),
             **(_preferences(member) if member == actor else {}),
         },

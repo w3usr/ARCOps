@@ -64,8 +64,12 @@ def test_an_archived_account_is_out_of_the_directory_too():
     left = User.objects.create_user(
         "left@example.org", PASSWORD, groups=["member"], first_name="Ann", last_name="Former"
     )
-    archive_member(sysadmin, left, "graduated")
+    from apps.accounts.services import request_closure
+
+    request_closure(left)  # closed or suspended before archived (2026-09-19)
+    archive_member(sysadmin, User.objects.get(pk=left.pk), "graduated")
     assert "Former" not in _as(sysadmin).get("/members/").content.decode()
+    assert "Former" in _as(sysadmin).get("/members/?status=archived").content.decode()
 
 
 def test_a_deleted_member_still_holds_their_place_on_a_past_roster():

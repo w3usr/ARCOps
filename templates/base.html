@@ -61,7 +61,9 @@
     <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
     <ul class="navlist" aria-labelledby="nav-advisor">
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
-      <li><a href="{% url 'archive' %}"{% nav_active 'archive' %}>{% icon 'archive' %}<span>Archive</span></a></li>
+      {% comment %}The archive is the members list narrowed to it, rather than a page of its
+      own holding the same rows with fewer columns (NAF, 2026-09-19).{% endcomment %}
+      <li><a href="{% url 'members' %}?status=archived">{% icon 'archive' %}<span>Archive</span></a></li>
     </ul>
     {% endif %}
     {% if perms.ops.edit_club_settings or perms.ops.view_job_status %}
@@ -80,7 +82,7 @@
       reader who clicks their own name expects to arrive (NAF, 2026-09-19).{% endcomment %}
       <div class="whoami">{% icon 'user' %}<span>
         <a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
-        {% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% endif %}
+        {% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% elif acting_label %}<span class="level">{{ acting_label }}</span>{% endif %}
       </span></div>
       <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>
       <button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>

@@ -62,7 +62,7 @@ def test_a_sysadmin_changes_what_a_group_may_do():
 
     officer = User.objects.get(pk=officer.pk)  # permissions are cached on the instance
     assert officer.may("view_archive")
-    assert _as(officer).get("/members/archive/").status_code == 200
+    assert _as(officer).get("/members/archive/", follow=True).status_code == 200
     assert AuditLog.objects.filter(action="group.capabilities_changed").exists()
 
 

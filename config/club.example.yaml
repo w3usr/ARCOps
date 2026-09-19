@@ -89,6 +89,7 @@ access_groups:
       - view_outbox
       - view_reports
       - approve_agreements
+      - lift_suspension        # an officer suspends; only an advisor lets them back in
       - convert_minor_accounts
       - archive_members
       - view_archive

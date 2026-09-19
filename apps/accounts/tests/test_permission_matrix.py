@@ -195,7 +195,16 @@ def _pages(world):
         ("access rosters", "/credentials/access-rosters/", {"anonymous": AWAY, **officer_up}),
         # advisor tools
         ("approvals", "/credentials/approvals/", {"anonymous": AWAY, **advisor_up}),
-        ("archive", "/members/archive/", {"anonymous": AWAY, **advisor_up}),
+        # The archive is the members list narrowed to it; the old URL forwards there for
+        # whoever may read it, and is not there at all for anybody else (2026-09-19).
+        (
+            "archive",
+            "/members/archive/",
+            {
+                "anonymous": AWAY,
+                **{**advisor_up, "advisor": AWAY, "sysadmin": AWAY, "raised": AWAY},
+            },
+        ),
         # sysadmin tools
         ("job status", "/ops/status/", {"anonymous": AWAY, **sysadmin_only}),
         ("club settings", "/ops/settings/", {"anonymous": AWAY, **sysadmin_only}),
@@ -219,13 +228,18 @@ def test_every_page_answers_each_kind_of_account_the_same_way(role, world):
     assert not wrong, "\n".join(wrong)
 
 
+def _user_by_pk(user):
+    return type(user).objects.get(pk=user.pk)
+
+
 def test_an_account_with_no_access_and_an_archived_one_reach_nothing(world):
     """Two ways of being outside the club, and neither is a role."""
     closed = _user("closed@example.org", "none")
     archived = _user("gone@example.org", "member")
-    from apps.accounts.services import archive_member
+    from apps.accounts.services import archive_member, request_closure
 
-    archive_member(world["people"]["advisor"], archived, "graduated")
+    request_closure(archived)  # closed before archived (2026-09-19)
+    archive_member(world["people"]["advisor"], _user_by_pk(archived), "graduated")
     for person in (closed, archived):
         c = Client()
         c.force_login(person)

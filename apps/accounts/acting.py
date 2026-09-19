@@ -199,13 +199,30 @@ class ActingViewMiddleware(MiddlewareMixin):
 
 
 def context(request):
-    """The level this session is acting at, for the sidebar on every page."""
+    """What the sidebar says under somebody's name, on every page.
+
+    Everybody is told where they stand, because it explains what they can and cannot see; only
+    a sysadmin's is a link, because only a sysadmin has levels to move between (the advisor,
+    2026-09-19: "the Permission level can be listed under everyone's name... But, only sysadmins
+    will have that text linked and have the ability to switch roles").
+    """
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated or getattr(request, "impersonator", None):
         return {}
     views = available_views(user)
+    if not views:
+        from apps.ops.config import setting
+        from apps.ops.groups import label_of
+
+        configured = setting("access_groups", []) or []
+        labels = [label_of(g, configured) for g in user.groups.all()]
+        return {
+            "acting_views": 0,
+            "acting_label": ", ".join(sorted(labels)) or "No access",
+            "acting_now": None,
+        }
     now = current_view(request)
     label = next((v["label"] for v in views if v["key"] == now), "")
-    if not label and views:
+    if not label:
         label = views[-1]["label"]
     return {"acting_views": len(views), "acting_label": label, "acting_now": now}

@@ -35,6 +35,7 @@ CAPABILITIES: list[tuple[str, str]] = [
     ("set_club_position", "Set another member's club position"),
     ("edit_member_privileges", "Edit another member's category, name, and student details"),
     ("assign_groups", "Decide which groups an account is in"),
+    ("lift_suspension", "Let a suspended account back in"),
     ("manage_groups", "Create and change the groups themselves"),
     ("manage_member_addresses", "Add, confirm, or remove the addresses on another account"),
     ("issue_temporary_password", "Issue a one-time password for someone who cannot get in"),

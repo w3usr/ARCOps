@@ -227,9 +227,11 @@ class Command(BaseCommand):
         if gone_new:
             gone.set_password("demo-password-please-change")
             gone.save()
-            from apps.accounts.services import archive_member
+            from apps.accounts.services import archive_member, request_closure
 
-            archive_member(users["Ada"], gone, "graduated in May")
+            # Closed first: an account somebody can still use is never archived (2026-09-19).
+            request_closure(gone)
+            archive_member(users["Ada"], User.objects.get(pk=gone.pk), "graduated in May")
 
         if not EntryLink.objects.exists():
             create_link(

@@ -25,7 +25,7 @@ def club():
     call_command("club_import")
 
 
-def _user(address, groups=(), **extra):
+def _user(address, groups=(), **extra):  # noqa: D103
     extra.setdefault("first_name", address.split("@")[0].title())
     extra.setdefault("last_name", "Tester")
     return User.objects.create_user(address, PASSWORD, groups=list(groups), **extra)
@@ -94,7 +94,8 @@ def test_a_suspended_account_says_who_suspended_it_and_why(club_people):
     member.refresh_from_db()
     assert not member.has_access
     body = _as(officer).get(f"/members/{member.pk}/").content.decode()
-    assert "Access removed by" in body and "pending a decision" in body
+    assert "Suspended by" in body and "pending a decision" in body
+    assert ">Suspended<" in _as(club_people["advisor"]).get("/members/").content.decode()
 
 
 def test_an_officer_is_offered_only_the_groups_they_may_grant(club_people):
@@ -147,3 +148,84 @@ def test_a_sysadmin_is_made_by_a_sysadmin(club_people):
     body = c.get(f"/members/{advisor.pk}/edit/").content.decode()
     assert 'name="is_superuser"' in body, "a sysadmin is made by a sysadmin"
     assert "Advisor" in body, "and a sysadmin may appoint an advisor"
+
+
+def test_the_four_statuses_and_the_archive_flag_beside_them(club_people):
+    """NAF, 2026-09-19: Provisional, Active, Closed and Suspended are where somebody stands with
+    the club; archiving is a flag beside that, and the record keeps the status it went in with.
+    """
+    from apps.accounts.services import archive_member, readmit, request_closure, suspend
+
+    advisor, officer, member = (club_people[k] for k in ("advisor", "officer", "member"))
+    assert member.status == "active" and member.status_label == "Active"
+    provisional = _user("prov@example.org", ["provisional"])
+    assert provisional.status == "provisional"
+
+    request_closure(member)
+    member.refresh_from_db()
+    assert member.status == "closed" and not member.has_access
+
+    archive_member(advisor, member, "graduated")
+    member.refresh_from_db()
+    assert member.status == "closed" and member.is_archived
+    assert member.status_label == "Closed · Archived", "two dimensions, said in one cell"
+
+    other = _user("two@example.org", ["member"])
+    suspend(officer, other, "pending a decision")
+    other.refresh_from_db()
+    assert other.status == "suspended" and other.suspended_by == officer
+    assert other.suspended_reason == "pending a decision"
+
+    readmit(advisor, other)
+    other.refresh_from_db()
+    assert other.status == "active" and other.suspended_at is None
+
+
+def test_an_officer_suspends_but_only_an_advisor_lifts_it(club_people):
+    """ "Officer can suspend but only advisor can lift" — NAF, 2026-09-19."""
+    officer, member = club_people["officer"], club_people["member"]
+    _as(officer).post(f"/members/{member.pk}/edit/", {"action": "close", "reason": "pending"})
+    member.refresh_from_db()
+    assert member.status == "suspended"
+
+    body = _as(officer).get(f"/members/{member.pk}/edit/").content.decode()
+    assert "A suspension is lifted by a faculty advisor" in body
+    _as(officer).post(f"/members/{member.pk}/edit/", {"action": "reopen"})
+    member.refresh_from_db()
+    assert member.status == "suspended", "an officer cannot lift what an officer imposed"
+
+    _as(club_people["advisor"]).post(f"/members/{member.pk}/edit/", {"action": "reopen"})
+    member.refresh_from_db()
+    assert member.status == "active" and member.in_group("member")
+
+
+def test_an_officer_lets_a_closed_account_back_in(club_people):
+    from apps.accounts.services import request_closure
+
+    officer, member = club_people["officer"], club_people["member"]
+    request_closure(member)
+    _as(officer).post(f"/members/{member.pk}/edit/", {"action": "reopen"})
+    member.refresh_from_db()
+    assert member.status == "active"
+
+
+def test_the_status_column_is_an_officers_and_sorts_down_the_list(club_people):
+    from apps.accounts.services import request_closure, suspend
+
+    advisor, officer, member = (club_people[k] for k in ("advisor", "officer", "member"))
+    request_closure(member)
+    suspended = _user("sus@example.org", ["member"], last_name="Suspended")
+    suspend(officer, suspended, "pending")
+
+    body = _as(officer).get("/members/").content.decode()
+    assert ">Status<" in body and ">Closed<" in body and ">Suspended<" in body
+    assert 'name="status"' in body, "and it narrows by it"
+
+    # a member sees neither the column nor the filter
+    plain = _user("plain@example.org", ["member"])
+    body = _as(plain).get("/members/").content.decode()
+    assert ">Status<" not in body and 'name="status"' not in body
+
+    names = _as(advisor).get("/members/?sort=status&dir=asc").content.decode()
+    order = [n for n in ("Active", "Closed", "Suspended") if n in names]
+    assert order == ["Active", "Closed", "Suspended"]

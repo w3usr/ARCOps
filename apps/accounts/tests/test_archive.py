@@ -2,6 +2,11 @@
 
 The advisor, 2026-09-17: "I don't really like the automatic deletion. Instead, can we have a
 method to archive members? Only faculty advisors and above can view the archive."
+
+Two things changed on 2026-09-19. An account is closed or suspended **before** it is archived,
+so that every account somebody could still use stays on the members list; and the archive is a
+filter on that list rather than a page of its own, with the status it went in with kept intact,
+so taking a record out of the archive and letting the person back in are two acts.
 """
 
 import pytest
@@ -38,9 +43,33 @@ def _as(user, view="sysadmin"):
     return c
 
 
+def _closed(member):
+    """The state an account is in before it can be archived: the member asked to leave."""
+    from apps.accounts.services import request_closure
+
+    request_closure(member)
+    member.refresh_from_db()
+    return member
+
+
+def test_an_account_in_use_is_not_archived():
+    """Every account somebody can still use stays on the members list (the advisor,
+    2026-09-19)."""
+    advisor = _user("adv@example.org", "advisor")
+    member = _user("mem@example.org")
+    with pytest.raises(ArchiveRefused):
+        archive_member(advisor, member, "graduated")
+    r = _as(advisor).post(
+        f"/members/{member.pk}/edit/", {"action": "archive", "reason": "graduated"}, follow=True
+    )
+    member.refresh_from_db()
+    assert not member.is_archived
+    assert b"closed or suspended before it is archived" in r.content
+
+
 def test_archiving_keeps_everything_and_ends_access():
     advisor = _user("adv@example.org", "advisor")
-    member = _user("mem@example.org", callsign="N0ARC", cell_phone="555-0100")
+    member = _closed(_user("mem@example.org", callsign="N0ARC", cell_phone="555-0100"))
     c = _as(advisor)
     r = c.post(
         f"/members/{member.pk}/edit/", {"action": "archive", "reason": "graduated"}, follow=True
@@ -57,18 +86,19 @@ def test_archiving_keeps_everything_and_ends_access():
     assert AuditLog.objects.filter(action="member.archived").exists()
 
 
-def test_a_former_member_leaves_the_directory_and_appears_in_the_archive():
+def test_a_former_member_leaves_the_list_until_it_is_asked_for_them():
     advisor = _user("adv@example.org", "advisor")
-    member = _user("mem@example.org", callsign="N0ARC")
+    member = _closed(_user("mem@example.org", callsign="N0ARC"))
     archive_member(advisor, member, "moved away")
 
     c = _as(advisor)
     assert b"N0ARC" not in c.get("/members/").content
-    body = c.get("/members/archive/").content
-    assert b"N0ARC" in body and b"moved away" in body
-    # and an ordinary member's directory never held them either
+    body = c.get("/members/?status=archived").content
+    assert b"N0ARC" in body and b"Archived" in body
+    assert b"N0ARC" in c.get("/members/archive/", follow=True).content, "the old URL still works"
+    # and an ordinary member's list never held them either
     other = _user("other@example.org")
-    assert b"N0ARC" not in _as(other).get("/members/").content
+    assert b"N0ARC" not in _as(other).get("/members/?status=archived").content
 
 
 def test_only_a_faculty_advisor_or_above_reads_the_archive():
@@ -76,8 +106,12 @@ def test_only_a_faculty_advisor_or_above_reads_the_archive():
     advisor = _user("adv@example.org", "advisor")
     officer = _user("off@example.org", "officer")
     member = _user("mem@example.org")
-    for user, expected in ((sysadmin, 200), (advisor, 200), (officer, 404), (member, 404)):
+    for user, expected in ((sysadmin, 302), (advisor, 302), (officer, 404), (member, 404)):
         assert _as(user).get("/members/archive/").status_code == expected, user.email
+    # and an officer asking for the archived rows by hand gets the ordinary list instead
+    archived = _closed(_user("gone@example.org", callsign="N0GON"))
+    archive_member(advisor, archived, "graduated")
+    assert b"N0GON" not in _as(officer).get("/members/?status=archived").content
     # the sidebar offers it to exactly those people
     assert b"Archive" in _as(advisor).get("/").content
     assert b"Archive" not in _as(officer).get("/").content
@@ -88,7 +122,7 @@ def test_an_officer_cannot_reach_a_former_member_by_url():
     member by number."""
     advisor = _user("adv@example.org", "advisor")
     officer = _user("off@example.org", "officer")
-    member = _user("mem@example.org")
+    member = _closed(_user("mem@example.org"))
     archive_member(advisor, member, "graduated")
     assert _as(officer).get(f"/members/{member.pk}/").status_code == 404
     assert _as(advisor).get(f"/members/{member.pk}/").status_code == 200
@@ -98,26 +132,35 @@ def test_opening_the_archive_is_recorded():
     """It holds contact details for people who are no longer around to ask, so who reads it is
     part of the record."""
     advisor = _user("adv@example.org", "advisor")
-    _as(advisor).get("/members/archive/?q=smith")
+    _as(advisor).get("/members/?status=archived&q=smith")
     row = AuditLog.objects.get(action="archive.viewed")
     assert row.actor == advisor and row.after == {"search": "smith"}
 
 
-def test_an_advisor_brings_a_former_member_back():
+def test_taking_a_record_out_of_the_archive_leaves_its_status_alone():
+    """Two dimensions, two acts (the advisor, 2026-09-19): the record comes back Closed, and
+    somebody lets the person in afterwards."""
     advisor = _user("adv@example.org", "advisor")
-    member = _user("mem@example.org")
+    member = _closed(_user("mem@example.org"))
     archive_member(advisor, member, "graduated")
     r = _as(advisor).post(f"/members/{member.pk}/edit/", {"action": "restore"}, follow=True)
     assert r.status_code == 200
     member.refresh_from_db()
-    assert not member.is_archived and member.in_group("member")
-    assert Client().login(email="mem@example.org", password=PASSWORD)
+    assert not member.is_archived and member.status == "closed" and not member.has_access
+    back = Client()
+    back.force_login(member)
+    assert back.get("/").status_code == 302, "no access is still no access"
     assert AuditLog.objects.filter(action="member.restored").exists()
+
+    _as(advisor).post(f"/members/{member.pk}/edit/", {"action": "reopen"})
+    member.refresh_from_db()
+    assert member.status == "active" and member.in_group("member")
+    assert Client().login(email="mem@example.org", password=PASSWORD)
 
 
 def test_an_officer_cannot_archive_anyone():
     officer = _user("off@example.org", "officer")
-    member = _user("mem@example.org")
+    member = _closed(_user("mem@example.org"))
     _as(officer).post(f"/members/{member.pk}/edit/", {"action": "archive"})
     member.refresh_from_db()
     assert not member.is_archived
@@ -125,7 +168,7 @@ def test_an_officer_cannot_archive_anyone():
 
 def test_a_guardian_with_a_minor_and_the_last_sysadmin_are_refused():
     advisor = _user("adv@example.org", "advisor")
-    guardian = _user("guard@example.org")
+    guardian = _closed(_user("guard@example.org"))
     minor = _user("kid@example.org", under_18=True)
     Guardianship.objects.create(minor=minor, guardian=guardian)
     with pytest.raises(ArchiveRefused):
@@ -148,7 +191,7 @@ def test_restoring_returns_the_record_untouched():
     """Nothing ages out while someone is in the archive, so there is nothing to restore but the
     access itself."""
     advisor = _user("adv@example.org", "advisor")
-    member = _user("mem@example.org", callsign="N0ARC", cell_phone="555-0100")
+    member = _closed(_user("mem@example.org", callsign="N0ARC", cell_phone="555-0100"))
     archive_member(advisor, member, "graduated")
     restore_member(advisor, member)
     member.refresh_from_db()

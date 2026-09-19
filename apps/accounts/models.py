@@ -105,6 +105,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     # faculty advisor and the sysadmins; a deleted one is anonymised in place so past rosters and
     # counts stay right.
     closure_requested_at = models.DateTimeField(null=True, blank=True)
+    # Suspension is an officer's act and a faculty advisor's to lift (§2.3, 2026-09-19). It is a
+    # fact on the account rather than an inference from an empty group list, because the two
+    # ways of losing access lead back in through different doors.
+    suspended_at = models.DateTimeField(null=True, blank=True)
+    suspended_by = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    suspended_reason = models.CharField(max_length=200, blank=True)
     archived_at = models.DateTimeField(null=True, blank=True)
     archived_reason = models.CharField(max_length=200, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -223,6 +231,40 @@ class User(AbstractBaseUser, PermissionsMixin):
         return any(
             p.category == "reminder" and not p.email for p in self.notification_preferences.all()
         )
+
+    # Where this account stands with the club, in the order the directory sorts them. Archiving
+    # is a flag beside this rather than a value of it: an archived record keeps everything,
+    # including the status it had when it was put away (the advisor, 2026-09-19).
+    STATUSES = [
+        ("provisional", "Provisional"),
+        ("active", "Active"),
+        ("closed", "Closed"),
+        ("suspended", "Suspended"),
+        ("deleted", "Deleted"),
+    ]
+    STATUS_LABELS = dict(STATUSES)
+
+    @property
+    def status(self) -> str:
+        """One of STATUSES. `archived` is asked separately, because it is a flag."""
+        if self.deleted_at:
+            return "deleted"
+        if self.suspended_at:
+            return "suspended"
+        if self.closure_requested_at:
+            return "closed"
+        if self.is_provisional:
+            return "provisional"
+        if self.has_access:
+            return "active"
+        # No groups and neither flag: access was taken away before suspension was a fact of its
+        # own, or by a path that did not record it. It is a suspension all the same.
+        return "suspended"
+
+    @property
+    def status_label(self) -> str:
+        label = self.STATUS_LABELS[self.status]
+        return f"{label} · Archived" if self.archived_at else label
 
     @property
     def is_provisional(self) -> bool:
