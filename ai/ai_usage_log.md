@@ -1607,4 +1607,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis from the live audit log, code, and tests by the assistant.
 - **Human Review Status**: Pending the advisor's retest of T3. 248 tests pass, the accessibility
   sweep passes, and the four guards pass.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: 05cc0c3
