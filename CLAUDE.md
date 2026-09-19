@@ -89,8 +89,14 @@ arcops/
 The application was scaffolded on 2026-09-13 on the advisor's instruction ("build and deploy the
 best you can"), against the decided stack in `docs/TECHNICAL_REQUIREMENTS.md`. Layout: `config/`
 (settings, urls, generic club defaults), `apps/{ops,accounts,credentials,events,comms}/` each with
-models, services, views, and tests, `templates/`, `static/`. Run `pytest` and `ruff check .`
-before committing; CI runs both plus the club-neutrality grep (`tools/check_club_neutral.sh`).
+models, services, views, and tests, `templates/`, `static/`.
+
+**Before committing, run `tools/check.sh`**: lint, format, the three repository guards, the
+migration check, the 244 application tests and the accessibility sweep. It is everything CI runs
+and takes about two minutes, because both suites fan out across cores (`pytest-xdist`) and run at
+the same time as each other. `tools/check.sh quick` skips the browser and takes about twenty
+seconds. While iterating on one page, `pytest tools/a11y -k sysadmin` checks a single role in
+about ninety seconds instead of all eight.
 
 Anything that changes a page follows [`docs/INTERFACE.md`](docs/INTERFACE.md): plain nouns for
 headings, nothing from inside the program on a page, one solid button per form, the three tiers

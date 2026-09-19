@@ -22,7 +22,7 @@ jobs:
       - name: Interface house rules (docs/INTERFACE.md)
         run: bash tools/check_interface.sh
       - name: Tests
-        run: pytest
+        run: pytest -n auto
       - name: Dependency audit
         run: pip install pip-audit && pip-audit -r requirements.txt || true
   accessibility:
@@ -38,4 +38,5 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: playwright install --with-deps chromium
       - name: Accessibility (axe-core) and phone-width check
-        run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q
+        # One worker per role: each is mostly waiting on a browser, not computing.
+        run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q -n auto

@@ -91,7 +91,10 @@ flash message is something that just happened.
 
 ## Checking the work
 
+`tools/check.sh` runs all of it in about two minutes:
+
 - `pytest apps` — the permission matrix is the guard that no gate moved.
 - `pytest tools/a11y` — axe across eight roles at 1280px and 390px, serious and critical.
+- `tools/check_interface.sh` — the rules above that a grep can see.
 - `tools/check_club_neutral.sh`, `tools/check_no_requirement_ids.sh` — no club name in code, no
   FR- or TR- numbers in the interface.
