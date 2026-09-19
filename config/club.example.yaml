@@ -18,6 +18,10 @@ club:
   sending_address: "ops@example.org"          # From: on all system mail (FR-69)
   sending_display_name: "Example ARC Operations"
   timezone: "UTC"                             # default event display zone (FR-36)
+  # How a phone number typed without a country code is read, and written back out: "US" turns
+  # 9735551234 into (973) 555-1234. Any ISO country code. A number from elsewhere keeps its
+  # own country's shape, with the international prefix.
+  phone_region: "US"
   station_location_name: "Club station"
 
 branding:

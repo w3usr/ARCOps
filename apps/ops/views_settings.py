@@ -29,6 +29,7 @@ GROUPS = [
             "club.public_page",
             "club.contact_email",
             "club.timezone",
+            "club.phone_region",
             "club.station_location_name",
         ],
     ),
@@ -116,6 +117,11 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
     "club.contact_email": (
         "General contact address",
         "Published as the way to reach the club, and used as the reply address when nothing better fits.",
+    ),
+    "club.phone_region": (
+        "Where phone numbers are",
+        "How a number typed without a country code is read and written back: US turns "
+        "9735551234 into (973) 555-1234. A number from elsewhere keeps its own country's shape.",
     ),
     "club.timezone": (
         "The club's time zone",

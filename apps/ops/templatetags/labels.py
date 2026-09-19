@@ -76,6 +76,39 @@ def message_category(key) -> str:
 
 
 @register.filter
+def phone(value) -> str:
+    """A phone number written the way its own country writes it.
+
+    Google's libphonenumber, through `phonenumbers`, rather than a regular expression of our
+    own: the club is at a US university but its community members are not all in it, and a
+    home-made formatter would put brackets round a London number. What the member typed is
+    stored untouched; this is only how it is shown.
+
+    A number the library cannot make sense of is shown exactly as typed. Guessing at it would
+    be worse than leaving it alone, because somebody has to dial it.
+    """
+    import phonenumbers
+
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    region = str(setting("club.phone_region", "US") or "US").upper()
+    try:
+        parsed = phonenumbers.parse(raw, region)
+    except phonenumbers.NumberParseException:
+        return raw
+    if not phonenumbers.is_valid_number(parsed):
+        return raw
+    at_home = phonenumbers.region_code_for_number(parsed) == region
+    style = (
+        phonenumbers.PhoneNumberFormat.NATIONAL
+        if at_home
+        else phonenumbers.PhoneNumberFormat.INTERNATIONAL
+    )
+    return phonenumbers.format_number(parsed, style)
+
+
+@register.filter
 def duration(value) -> str:
     """A timedelta in words. The job page showed "0:15:00", which is a Python repr."""
     if not isinstance(value, timedelta):

@@ -237,6 +237,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         return LICENSE_LETTERS.get(cls.strip().lower(), "U" if not cls else cls[:1].upper())
 
     @property
+    def license_class(self) -> str:
+        """The class in full ("Extra"), or empty when there is no license on file.
+
+        `license_letter` abbreviates the same fact for a roster badge, where space is tight.
+        A column has room for the word.
+        """
+        lic = getattr(self, "license", None)
+        return ((getattr(lic, "effective_class", "") or "") if lic else "").strip()
+
+    @property
     def short_name_lettered(self) -> str:
         return f"{self.short_name} ({self.license_letter})"
 

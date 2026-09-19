@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load labels %}
 {% block title %}Profile · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Your profile</h1>
@@ -19,12 +20,12 @@
 {% endif %}
 {% if guardians %}
 <section class="card" aria-labelledby="gds"><h2 id="gds">Guardians</h2>
-<ul class="list">{% for g in guardians %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}</li>{% endfor %}</ul>
+<ul class="list">{% for g in guardians %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}</li>{% endfor %}</ul>
 <p class="muted">They sign you up, manage this profile, and receive every message sent to you. When you turn 18, tell a faculty advisor and the account becomes your own.</p>
 </section>
 {% endif %}
 {% if minor_readonly %}
-<section class="card"><h2>Details</h2><dl class="kv"><dt>Preferred name</dt><dd>{{ user.preferred_name|default:"—" }}</dd><dt>Mobile</dt><dd>{{ user.cell_phone|default:"—" }}</dd><dt>Callsign</dt><dd>{{ user.callsign|default:"none" }}</dd></dl><p class="muted">Your guardian edits these while acting for you.</p></section>
+<section class="card"><h2>Details</h2><dl class="kv"><dt>Preferred name</dt><dd>{{ user.preferred_name|default:"—" }}</dd><dt>Mobile</dt><dd>{{ user.cell_phone|phone|default:"—" }}</dd><dt>Callsign</dt><dd>{{ user.callsign|default:"none" }}</dd></dl><p class="muted">Your guardian edits these while acting for you.</p></section>
 {% else %}
 {% include "accounts/_account_form.html" with form_heading="Details" %}
 {% endif %}

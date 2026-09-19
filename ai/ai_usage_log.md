@@ -1701,3 +1701,26 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 269 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: dde98a8
+
+## [2026-09-19 16:38 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four more changes to the members directory, at the advisor's direction. The
+  name column is back for officers, showing the same redacted name a member sees rather than the
+  full one: "so the officers can quickly see what is on public view", without signing in as
+  somebody else. The license class is its own column, on the page for everyone, and it sorts up
+  the ladder rather than down the alphabet, because sorted as words Advanced would file above
+  Technician. It can be filtered, including for members holding no license at all. And phone
+  numbers are written the way their own country writes them, through Google's libphonenumber
+  (the `phonenumbers` package) rather than a regular expression of our own: the club is at a US
+  university but its community members are not all in it, and a home-made formatter would put
+  brackets round a London number. What a member typed is stored untouched; a number the library
+  cannot make sense of is shown exactly as typed, because somebody has to dial it. The region a
+  bare number is read in is a club setting, so another club is not assumed to be in the US.
+- **Sections/Files Affected**: requirements.txt (phonenumbers), apps/ops/templatetags/labels.py
+  (phone), apps/accounts/models.py (license_class), apps/accounts/views_members.py,
+  apps/ops/views_settings.py, config/club.example.yaml, templates/accounts/members.html and five
+  other templates showing a number, apps/accounts/tests/test_directory.py.
+- **Nature of Contribution**: Design and code by the assistant, to the advisor's specification.
+- **Human Review Status**: Pending the advisor's look. 278 tests pass, the accessibility sweep
+  passes, and the four guards pass.
+- **Git Hash**: (filled in after committing)

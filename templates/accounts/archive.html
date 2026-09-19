@@ -23,7 +23,7 @@ opened is recorded.</p>
   <td data-label="Category">{{ m.category|category_label }}</td>
   <td data-label="Archived">{{ m.archived_at|date:"j M Y" }}</td>
   <td data-label="Why">{{ m.archived_reason|default:"—" }}</td>
-  <td data-label="Contact">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone }}{% endif %}</td>
+  <td data-label="Contact">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %} · {% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}{% if m.cell_phone %} · {{ m.cell_phone|phone }}{% endif %}</td>
 </tr>
 {% empty %}<tr><td colspan="6">{% if q %}No one in the archive matches.{% else %}Nobody has been archived.{% endif %}</td></tr>{% endfor %}
 </tbody></table>

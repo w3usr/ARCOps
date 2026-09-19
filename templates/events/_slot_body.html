@@ -19,8 +19,8 @@
     {% if is_captain and s.user != user %}<a class="linklike danger" href="{% url 'confirm_remove_signup' s.pk %}">Remove them</a>{% endif %}
     {% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}
       {% if is_captain or cell.mine or s.user == user %}<details class="inline"><summary>under 18: who accompanies</summary>
-        {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %} · {{ a.phone }}{% endif %}{% if is_captain and a.email %} · {{ a.email }}{% endif %}{% if a.present_at %} · <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
-        {% if is_captain %}<p class="muted">Guardians: {% for g in s.user.guardianships.all %}{% if g.active %}{{ g.guardian.full_name }} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone }}{% endif %}{% if not forloop.last %}; {% endif %}{% endif %}{% empty %}none linked{% endfor %}</p>
+        {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %} · {{ a.phone|phone }}{% endif %}{% if is_captain and a.email %} · {{ a.email }}{% endif %}{% if a.present_at %} · <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
+        {% if is_captain %}<p class="muted">Guardians: {% for g in s.user.guardianships.all %}{% if g.active %}{{ g.guardian.full_name }} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not forloop.last %}; {% endif %}{% endif %}{% empty %}none linked{% endfor %}</p>
         <a href="{% url 'signup_adults' s.pk %}">Edit the designation</a>{% elif s.user == user and not minor_readonly %}<a href="{% url 'signup_adults' s.pk %}">Name or change the adult</a>{% endif %}</details>
       {% else %}<span class="tag">under 18, with an adult</span>{% endif %}
     {% endwith %}{% endif %}

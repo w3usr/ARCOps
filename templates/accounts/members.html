@@ -15,6 +15,8 @@ survive a bookmark.{% endcomment %}
   <label class="sr-only" for="f-cat">Category</label>
   <select id="f-cat" name="category"><option value="">Any category</option>{% for key, label in category_choices %}<option value="{{ key }}"{% if chosen.category == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
   {% endif %}
+  <label class="sr-only" for="f-lic">License class</label>
+  <select id="f-lic" name="license"><option value="">Any class</option>{% for key, label in license_choices %}<option value="{{ key }}"{% if chosen.license == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
   <label class="sr-only" for="f-pos">Position</label>
   <select id="f-pos" name="position"><option value="">Any position</option>{% for key, label in position_choices %}<option value="{{ key }}"{% if chosen.position == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
   {% if full %}
@@ -23,7 +25,7 @@ survive a bookmark.{% endcomment %}
   {% endif %}
   <input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ dir }}">
   <button type="submit">Search</button>
-  {% if q or chosen.category or chosen.position or chosen.access %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
+  {% if q or chosen.category or chosen.position or chosen.license or chosen.access %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
 </form>
 
 <div class="table-wrap">
@@ -34,24 +36,27 @@ survive a bookmark.{% endcomment %}
 <tbody>
 {% for m in members %}
 <tr>
-  {% if full %}
-  <th scope="row"><a href="{% url 'member_detail' m.pk %}">{{ m.display_first }} {{ m.last_name }}</a>{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</th>
-  <td data-label="First">{{ m.first_name }}</td>
-  <td data-label="Last">{{ m.last_name }}</td>
-  <td data-label="Preferred">{{ m.preferred_name|default:"—" }}</td>
-  {% else %}
+  {% comment %}The same redacted name for everyone, so an officer sees what the club sees. Both
+  halves of the full name open the member's page: whichever one the reader's eye is on is the
+  one they will click, and a name split across two columns should not have one live half and one
+  dead one.{% endcomment %}
   <th scope="row">{{ m.display_first }}{% if m.last_name %} {{ m.last_name|slice:":1" }}.{% endif %}</th>
+  {% if full %}
+  <td data-label="First"><a href="{% url 'member_detail' m.pk %}">{{ m.first_name }}</a></td>
+  <td data-label="Last"><a href="{% url 'member_detail' m.pk %}">{{ m.last_name }}</a>{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</td>
+  <td data-label="Preferred">{{ m.preferred_name|default:"—" }}</td>
   {% endif %}
-  <td data-label="Callsign">{{ m.callsign|default:"—" }} <span class="muted">({{ m.license_letter }})</span></td>
+  <td data-label="Callsign">{{ m.callsign|default:"—" }}</td>
+  <td data-label="Class">{{ m.license_class|default:"—" }}</td>
   {% if full %}<td data-label="Category">{{ m.category|category_label }}</td>{% endif %}
   <td data-label="Position">{{ m.club_position|position_label|default:"—" }}</td>
   {% if full %}
   <td data-label="Access">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
   <td data-label="Email">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}</td>
-  <td data-label="Phone">{% if m.cell_phone %}<a href="tel:{{ m.cell_phone }}">{{ m.cell_phone }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
+  <td data-label="Phone">{% if m.cell_phone %}<a href="tel:{{ m.cell_phone }}">{{ m.cell_phone|phone }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
   {% endif %}
 </tr>
-{% empty %}<tr><td colspan="{{ columns|length }}" class="empty">{% if q or chosen.category or chosen.position or chosen.access %}Nobody matches what you have picked. <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="{{ columns|length }}" class="empty">{% if q or chosen.category or chosen.position or chosen.license or chosen.access %}Nobody matches what you have picked. <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
 </tbody></table>
 </div>
 {% endblock %}

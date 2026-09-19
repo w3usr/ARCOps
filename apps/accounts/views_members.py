@@ -45,16 +45,20 @@ def _standing(user) -> dict:
 # may see, and `sort` reads the value a reader actually sees, so a column sorts by what is in
 # it rather than by the key stored behind it ("Community Member", not "community").
 DIRECTORY_COLUMNS = [
-    {"key": "name", "label": "Name", "full": False},
-    {"key": "first", "label": "First", "full": True},
-    {"key": "last", "label": "Last", "full": True},
-    {"key": "preferred", "label": "Preferred", "full": True},
-    {"key": "callsign", "label": "Callsign", "full": False},
-    {"key": "category", "label": "Category", "full": True},
-    {"key": "position", "label": "Position", "full": False},
-    {"key": "access", "label": "Access", "full": True},
-    {"key": "email", "label": "Email", "full": True},
-    {"key": "phone", "label": "Phone", "full": True},
+    # The redacted name, and everybody gets it, officers included: it is how this person appears
+    # to the rest of the club, so an officer can see at a glance what is on public view without
+    # signing in as somebody else (NAF, 2026-09-19).
+    {"key": "name", "label": "Name", "show": "all"},
+    {"key": "first", "label": "First", "show": "full"},
+    {"key": "last", "label": "Last", "show": "full"},
+    {"key": "preferred", "label": "Preferred", "show": "full"},
+    {"key": "callsign", "label": "Callsign", "show": "all"},
+    {"key": "class", "label": "Class", "show": "all"},
+    {"key": "category", "label": "Category", "show": "full"},
+    {"key": "position", "label": "Position", "show": "all"},
+    {"key": "access", "label": "Access", "show": "full"},
+    {"key": "email", "label": "Email", "show": "full"},
+    {"key": "phone", "label": "Phone", "show": "full"},
 ]
 
 
@@ -79,10 +83,11 @@ def _sort_keys(positions: dict, cats: dict):
         """
         return lambda m: (*fn(m), text(m.last_name), text(m.first_name), m.pk)
 
-    return {key: settled(fn) for key, fn in _columns(text, positions, cats).items()}
+    ladder = [text(c) for c in (setting("license_ladder", []) or [])]
+    return {key: settled(fn) for key, fn in _columns(text, positions, cats, ladder).items()}
 
 
-def _columns(text, positions: dict, cats: dict):
+def _columns(text, positions: dict, cats: dict, ladder: list):
     return {
         "name": lambda m: (text(m.display_first), text(m.last_name)),
         "first": lambda m: (text(m.first_name), text(m.last_name)),
@@ -91,6 +96,12 @@ def _columns(text, positions: dict, cats: dict):
         # A blank is not a small callsign: no-callsign sorts after every callsign going up,
         # and before them coming down, rather than mixing in among the As.
         "callsign": lambda m: (not m.callsign, text(m.callsign)),
+        # Up the ladder, not down the alphabet: Novice before Extra, because that is what the
+        # class means. Sorting these as words would file Advanced above Technician.
+        "class": lambda m: (
+            ladder.index(text(m.license_class)) if text(m.license_class) in ladder else len(ladder),
+            text(m.license_class),
+        ),
         "category": lambda m: (text(cats.get(m.category, m.category)), text(m.last_name)),
         "position": lambda m: (
             not m.club_position,
@@ -144,6 +155,8 @@ def members(request):
     chosen = {
         "category": request.GET.get("category", "") if full else "",
         "position": request.GET.get("position", ""),
+        # The class is on the page for everyone, so everyone can narrow by it.
+        "license": request.GET.get("license", ""),
         "access": request.GET.get("access", "") if full else "",
     }
     if chosen["category"]:
@@ -152,6 +165,13 @@ def members(request):
         users = users.filter(club_position=chosen["position"])
 
     rows = list(users)
+    if chosen["license"]:
+        want = chosen["license"].strip().lower()
+        rows = [
+            m
+            for m in rows
+            if (want == "none" and not m.license_class) or m.license_class.lower() == want
+        ]
     if chosen["access"]:
         want = chosen["access"]
         rows = [
@@ -162,16 +182,22 @@ def members(request):
             or any(g.name == want for g in m.groups.all())
         ]
 
-    sort = request.GET.get("sort", "last")
+    # Last name by default; a member has no last-name column, so theirs sorts by the name they
+    # do see, which is that first name and initial.
+    default_sort = "last" if full else "name"
+    sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
-    if sort not in keys:
-        sort = "last"
+    shown = {
+        c["key"] for c in DIRECTORY_COLUMNS if c["show"] == "all" or (c["show"] == "full") == full
+    }
+    if sort not in keys or sort not in shown:
+        sort = default_sort
     descending = request.GET.get("dir") == "desc"
     rows.sort(key=keys[sort], reverse=descending)
 
     columns = []
     for col in DIRECTORY_COLUMNS:
-        if col["full"] and not full:
+        if col["show"] != "all" and (col["show"] == "full") != full:
             continue
         here = col["key"] == sort
         params = request.GET.copy()
@@ -188,6 +214,8 @@ def members(request):
             }
         )
 
+    license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
+    license_choices.append(("none", "No license"))
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
     return render(
@@ -204,6 +232,7 @@ def members(request):
             "dir": "desc" if descending else "asc",
             "chosen": chosen,
             "category_choices": sorted(cats.items(), key=lambda kv: kv[1]),
+            "license_choices": license_choices,
             "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
             "access_choices": access_choices,
         },

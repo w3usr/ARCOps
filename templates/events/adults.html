@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load times %}
+{% load times labels %}
 {% block title %}Responsible adults · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{% url 'slot_detail' event.pk slot.pk %}">{{ slot.position }}</a></p>
@@ -7,7 +7,7 @@
 <p>{% when slot.start slot.end event %} · {{ su.role }}. A member under 18 is accompanied for the whole slot by a responsible adult their guardian has named. The adult takes no seat and is not counted. Until one is named, the slot shows <em>Needs a responsible adult for {{ su.user.short_name }}</em>.</p>
 
 <section class="card" aria-labelledby="named"><h2 id="named">Named for this slot</h2>
-{% if adults %}<ul class="list">{% for a in adults %}<li><strong>{{ a.name }}</strong>{% if a.phone %} · {{ a.phone }}{% endif %}{% if a.email %} · {{ a.email }}{% endif %}{% if a.member %} · member{% endif %}{% if a.present_at %} · <span class="tag ok">present at check-in</span>{% endif %}
+{% if adults %}<ul class="list">{% for a in adults %}<li><strong>{{ a.name }}</strong>{% if a.phone %} · {{ a.phone|phone }}{% endif %}{% if a.email %} · {{ a.email }}{% endif %}{% if a.member %} · member{% endif %}{% if a.present_at %} · <span class="tag ok">present at check-in</span>{% endif %}
 <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="remove"><input type="hidden" name="adult" value="{{ a.pk }}"><button class="linklike">Remove</button></form></li>{% endfor %}</ul>
 {% else %}<p class="msg warning"><span class="lvl">Careful:</span> nobody is named yet. A member under 18 needs a responsible adult named for the slot before they can be checked in.</p>{% endif %}
 </section>
@@ -25,7 +25,7 @@
 {% if saved %}<section class="card" aria-labelledby="sv"><h2 id="sv">Named before</h2>
 <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="pick">
   <label for="a-saved">Pick</label>
-  <select id="a-saved" name="saved">{% for s in saved %}<option value="{{ s.name }}|{{ s.email }}|{{ s.phone }}|{{ s.member_id|default_if_none:'' }}">{{ s.name }}{% if s.phone %} · {{ s.phone }}{% endif %}</option>{% endfor %}</select>
+  <select id="a-saved" name="saved">{% for s in saved %}<option value="{{ s.name }}|{{ s.email }}|{{ s.phone }}|{{ s.member_id|default_if_none:'' }}">{{ s.name }}{% if s.phone %} · {{ s.phone|phone }}{% endif %}</option>{% endfor %}</select>
   <button type="submit" class="secondary">Add</button>
 </form></section>{% endif %}
 <section class="card" aria-labelledby="mem"><h2 id="mem">A member, by name</h2>
