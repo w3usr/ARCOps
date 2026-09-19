@@ -1818,7 +1818,7 @@ carries the actual running model ID.
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 10c2edd
 
-## [2026-09-19 18:22 UTC]
+## [2026-09-19 18:13 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: One profile page instead of two, at the advisor's instruction: "These
   should be the same thing. i.e. [/me/] should redirect to [/members/1/] ... That way there is a
@@ -1838,4 +1838,4 @@ carries the actual running model ID.
   direction.
 - **Human Review Status**: Pending the advisor's look. 293 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 12f894f
