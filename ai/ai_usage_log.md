@@ -1608,3 +1608,26 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's retest of T3. 248 tests pass, the accessibility
   sweep passes, and the four guards pass.
 - **Git Hash**: 05cc0c3
+
+## [2026-09-19 15:35 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A Server Error (500) the advisor hit while testing T3, and the data damage
+  behind it. He completed an invitation, made a second one to the same address, and tried it three
+  times; each attempt answered 500 and left an account behind. The log named the cause:
+  AddressInUse raised out of create_user, uncaught. Three faults, one root: create_user saved the
+  account and then added the address, with nothing holding the two together, so a refused address
+  left a member with no address, in a group, in the directory, unable to sign in. Fixed by making
+  account creation atomic, which closes it for every path in, not only invitations; by catching
+  the refusal in the invitation and guardian views and putting it on the form with a route
+  forward; and by refusing at the Invite page to issue an invitation to an address that already
+  has an account, so nobody is sent a link certain to fail. The three orphan rows on the live
+  server were removed, each with an audit row saying what it was.
+- **Sections/Files Affected**: apps/accounts/models.py (create_user), apps/accounts/views.py
+  (InviteForm.clean, accept_invitation, _accept_as_guardian),
+  apps/accounts/tests/test_address_clash.py (new, five tests), docs/TEST_PLAN.md (T3 step 8).
+- **Nature of Contribution**: Diagnosis from the production traceback, code, and tests by the
+  assistant; the orphan removal was checked against each row before it ran.
+- **Human Review Status**: Pending the advisor's retest of T3. 253 tests pass, the accessibility
+  sweep passes, and the four guards pass. The new tests were checked against the unfixed code:
+  three of the five fail without it.
+- **Git Hash**: (filled in after committing)

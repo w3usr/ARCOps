@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 LICENSE_LETTERS = {  # FR-67: the class after a name; U when there is no license
@@ -29,17 +29,22 @@ class UserManager(BaseUserManager):
         hold none: their guardians are written to instead (FR-70), and the account is its key."""
         confirmed = extra.pop("confirmed", True)  # the path that made the account vouches for it
         groups = extra.pop("groups", None)  # the access groups this account starts in
-        user = self.model(**extra)
-        user.set_password(password)
-        user.save(using=self._db)
-        if groups:
-            from django.contrib.auth.models import Group
+        # All of it or none of it. Adding the address can be refused (another account has
+        # already confirmed it), and without this the account row was already saved by then:
+        # three accounts with no address at all survived three refused attempts on 2026-09-19,
+        # each in a group, each in the directory, none able to sign in.
+        with transaction.atomic(using=self._db):
+            user = self.model(**extra)
+            user.set_password(password)
+            user.save(using=self._db)
+            if groups:
+                from django.contrib.auth.models import Group
 
-            user.groups.set(Group.objects.filter(name__in=list(groups)))
-        if email:
-            from .addresses import add
+                user.groups.set(Group.objects.filter(name__in=list(groups)))
+            if email:
+                from .addresses import add
 
-            add(user, self.normalize_email(email).lower(), confirmed=confirmed)
+                add(user, self.normalize_email(email).lower(), confirmed=confirmed)
         return user
 
     def with_access(self):

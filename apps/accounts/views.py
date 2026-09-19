@@ -17,6 +17,7 @@ from apps.ops.config import setting
 
 from . import views_addresses
 from .account import AccountForm, readonly_rows, save_account
+from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
 from .models import Invitation, User
 from .services import (
@@ -148,6 +149,20 @@ class InviteForm(forms.Form):
             data["guardian_email"] = ""
             if not data.get("email"):
                 self.add_error("email", "An adult's invitation needs their email address.")
+        # An invitation to an address that already has an account cannot be completed: the
+        # join form refuses it at the far end. Say so here rather than sending somebody a link
+        # that is certain to fail.
+        for field in ("email", "guardian_email"):
+            address = (data.get(field) or "").strip()
+            if not address:
+                continue
+            held = User.objects.by_address(address).first()
+            if held is not None and field == "email":
+                self.add_error(
+                    field,
+                    f"{held.full_name} already has an account with that address. "
+                    "Invite a different address, or find them under Members.",
+                )
         return data
 
 
@@ -317,29 +332,42 @@ def _accept_as_guardian(request, inv):
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
         guardian = existing
-        if guardian is None:
-            guardian = User.objects.create_user(
-                email=inv.guardian_email,
-                password=d["guardian_password1"],
-                first_name=d["guardian_first_name"],
-                last_name=d["guardian_last_name"],
-                cell_phone=d["guardian_phone"],
-                category=guardian_category(),
-                groups=["member"],
-            )
-            record(guardian, "account.guardian_created", guardian, after={"invitation": inv.pk})
         own = (d.get("minor_email") or "").lower()
-        minor = admit_from_invitation(
-            inv,
-            d["password1"],
-            email=own,  # a minor may hold no address: the guardians are reached instead (FR-70)
-            first_name=d["first_name"],
-            middle_name=d["middle_name"],
-            last_name=d["last_name"],
-            preferred_name=d["preferred_name"],
-            callsign="",
-            cell_phone=d["cell_phone"],
-        )
+        try:
+            if guardian is None:
+                guardian = User.objects.create_user(
+                    email=inv.guardian_email,
+                    password=d["guardian_password1"],
+                    first_name=d["guardian_first_name"],
+                    last_name=d["guardian_last_name"],
+                    cell_phone=d["guardian_phone"],
+                    category=guardian_category(),
+                    groups=["member"],
+                )
+                record(guardian, "account.guardian_created", guardian, after={"invitation": inv.pk})
+            minor = admit_from_invitation(
+                inv,
+                d["password1"],
+                email=own,  # a minor may hold none: the guardians are reached instead (FR-70)
+                first_name=d["first_name"],
+                middle_name=d["middle_name"],
+                last_name=d["last_name"],
+                preferred_name=d["preferred_name"],
+                callsign="",
+                cell_phone=d["cell_phone"],
+            )
+        except AddressInUse:
+            taken = own if own else inv.guardian_email
+            form.add_error(
+                None,
+                f"There is already an account for {taken}. Sign in instead, or ask a club "
+                "officer if you cannot get in.",
+            )
+            return render(
+                request,
+                "accounts/accept_invitation_guardian.html",
+                {"form": form, "invitation": inv, "guardian": existing},
+            )
         link_guardian(guardian, minor, guardian, d["relationship"])
         if d["callsign"].strip():
             apply_callsign(minor, d["callsign"])
@@ -376,16 +404,29 @@ def accept_invitation(request, token):
         form = AcceptForm(request.POST)
         if form.is_valid():
             d = form.cleaned_data
-            user = admit_from_invitation(
-                inv,
-                d["password1"],
-                first_name=d["first_name"],
-                middle_name=d["middle_name"],
-                last_name=d["last_name"],
-                preferred_name=d["preferred_name"],
-                callsign="",
-                cell_phone=d["cell_phone"],
-            )
+            try:
+                user = admit_from_invitation(
+                    inv,
+                    d["password1"],
+                    first_name=d["first_name"],
+                    middle_name=d["middle_name"],
+                    last_name=d["last_name"],
+                    preferred_name=d["preferred_name"],
+                    callsign="",
+                    cell_phone=d["cell_phone"],
+                )
+            except AddressInUse:
+                # Somebody already has an account at this address, so this invitation cannot
+                # make a second one. Say so on the form: it used to reach the person as a
+                # Django 500, and left an account behind with no address on it.
+                form.add_error(
+                    None,
+                    f"There is already an account for {inv.email}. "
+                    "Sign in instead, or ask a club officer if you cannot get in.",
+                )
+                return render(
+                    request, "accounts/accept_invitation.html", {"form": form, "invitation": inv}
+                )
             if d["callsign"].strip():
                 from .services import apply_callsign
 
