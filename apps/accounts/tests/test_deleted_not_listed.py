@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from django.core.management import call_command
 from django.test import Client
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.accounts.services import archive_member, delete_account
@@ -88,6 +89,28 @@ def test_a_deleted_member_still_holds_their_place_on_a_past_roster():
     assert SignUp.objects.filter(slot=slot).count() == 1, "the past sign-up survives"
     gone.refresh_from_db()
     assert gone.full_name == "Deleted member"
+
+
+def test_deletion_clears_the_notification_switch_and_keeps_the_last_sign_in():
+    """What the retained row may and may not hold.
+
+    The subscriptions go with the account, so the switch that governed them is a leftover
+    preference. `last_login` stays on purpose: NAF, 2026-09-19, "last_login may still be good
+    for audit or investigation purposes."
+    """
+    sysadmin = _sysadmin()
+    gone = User.objects.create_user(
+        "push@example.org", PASSWORD, groups=["member"], first_name="Kay", last_name="Craigie"
+    )
+    gone.push_enabled = True
+    gone.last_login = timezone.now()
+    gone.save(update_fields=["push_enabled", "last_login"])
+
+    delete_account(sysadmin, gone, "testing")
+
+    gone.refresh_from_db()
+    assert gone.push_enabled is False, "a dead switch on an account that cannot sign in"
+    assert gone.last_login is not None, "kept deliberately; do not tidy this away"
 
 
 def test_a_deleted_account_cannot_be_named_as_a_responsible_adult():

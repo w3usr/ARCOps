@@ -1665,3 +1665,19 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 259 tests pass, the sweep passes, the four
   guards pass. The new test was checked against the unfixed code and fails without it.
 - **Git Hash**: 423d1c3
+
+## [2026-09-19 15:48 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: What a deleted account's retained row may hold. Reviewing the row left by
+  FR-118, two fields were doing no work: push_enabled, a notification switch on an account that
+  cannot sign in and whose subscriptions the deletion already removes, and last_login. The
+  advisor kept the second: "last_login may still be good for audit or investigation purposes."
+  So deletion now clears push_enabled, and a comment records why last_login stays, so that a
+  later tidying pass does not remove the one fact kept on purpose. The single existing row on
+  the live server was corrected the same way, with an audit entry.
+- **Sections/Files Affected**: apps/accounts/services.py (delete_account),
+  apps/accounts/tests/test_deleted_not_listed.py.
+- **Nature of Contribution**: Code and test by the assistant, at the advisor's decision.
+- **Human Review Status**: Reviewed by the advisor, who made the call on each field. 260 tests
+  pass and the guards pass.
+- **Git Hash**: (filled in after committing)

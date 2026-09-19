@@ -451,8 +451,14 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
     user.name_from_uls = False
     user.pending_uls_name = {}
     user.club_position = ""
+    # The subscriptions are already gone above; the switch that governed them is a preference
+    # of the person's, and means nothing on an account that cannot sign in.
+    user.push_enabled = False
     user.groups.clear()
     user.is_active = False
+    # `last_login` stays. It is the one fact about the person kept on purpose: the advisor,
+    # 2026-09-19, "last_login may still be good for audit or investigation purposes." Without
+    # it there is no way to answer when a deleted account was last used.
     user.deleted_at = timezone.now()
     user.set_unusable_password()
     user.save()
