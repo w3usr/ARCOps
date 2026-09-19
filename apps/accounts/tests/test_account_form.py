@@ -44,9 +44,15 @@ def test_a_member_with_a_name_from_the_fcc_does_not_type_their_name():
     assert "first_name" not in fields and "preferred_name" in fields
 
 
-def test_an_officer_sets_a_club_position_and_nothing_else():
+def test_an_officer_sets_a_club_position_and_who_is_a_member():
+    """An officer holds the bounded form of "decide which groups an account is in" (§2.3, the
+    advisor's rule of 2026-09-19), and nothing else on somebody else's account."""
     off, m = _user("off@example.org", "officer"), _user("mem@example.org")
-    assert editable_fields(off, m) == ["club_position"]
+    assert editable_fields(off, m) == ["club_position", "groups"]
+    other = _user("off2@example.org", "officer")
+    assert editable_fields(off, other) == ["club_position"], (
+        "a peer's club position is club business; their access is not theirs to change"
+    )
 
 
 def test_a_sysadmin_sets_everything_on_any_account_including_their_own():
@@ -169,12 +175,15 @@ def test_a_field_is_shown_once_as_an_input_or_as_text_but_never_both():
             assert "Category" not in shown
         if "first_name" in editable:
             assert "First name" not in shown
+        if "groups" in editable:
+            assert "Access" not in shown
 
     # a sysadmin edits every field there is; what is left as text is what nobody types
     assert [r["field"] for r in readonly_rows(sys_user, m)] == ["date_joined"]
-    # an officer edits only the club position, so the rest is text
+    # an officer edits the club position and who is a member, so the rest is text
     labels = {r["label"] for r in readonly_rows(off, m)}
-    assert {"First name", "Last name", "Category", "Access", "Mobile number"} <= labels
+    assert {"First name", "Last name", "Category", "Mobile number"} <= labels
+    assert "Access" not in labels, "which they may set, so it is a field rather than a line"
 
 
 def test_no_template_comment_reaches_the_page():

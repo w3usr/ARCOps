@@ -340,8 +340,8 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
         raise ArchiveRefused(
             "a guardian is archived once every linked minor has been converted, re-linked, or archived"
         )
-    if user.may("assign_groups") and not _someone_else_can_assign_groups(user):
-        raise ArchiveRefused("the last account that can decide who may do what cannot be archived")
+    if not _someone_else_can_administer(user):
+        raise ArchiveRefused("the last account that can run the site cannot be archived")
     user.archived_at = timezone.now()
     user.archived_reason = (reason or "").strip()[:200]
     # The password stops working too. No access already refuses every page, but an account
@@ -368,11 +368,20 @@ def restore_member(actor: User, user: User, groups: list[str] | None = None) -> 
     record(actor, "member.restored", user, before=before, after={"groups": groups})
 
 
-def _someone_else_can_assign_groups(user: User) -> bool:
-    """Whether anyone but this account can still decide who may do what. Losing that is how a
-    club locks itself out of its own site, so archiving and deletion both check it."""
+def _someone_else_can_administer(user: User) -> bool:
+    """Whether anybody but this account can still run the site.
+
+    Two things have to survive, and they stopped being the same thing on 2026-09-19, when
+    officers and advisors gained a **bounded** form of "decide which groups an account is in"
+    (§2.3): it appoints members and officers, and it cannot make a sysadmin, reach the club's
+    settings, or open the Django admin. So the last sysadmin is still the last sysadmin even in
+    a club full of officers who can appoint.
+    """
     from apps.ops.groups import people_who_may
 
+    others = User.objects.filter(is_active=True).exclude(pk=user.pk)
+    if user.is_superuser and not others.filter(is_superuser=True).exists():
+        return False
     return people_who_may("assign_groups").exclude(pk=user.pk).exists()
 
 
@@ -413,7 +422,7 @@ def deletion_effects(user: User) -> dict:
         "past_signups": SignUp.objects.filter(user=user, slot__end__lt=now).count(),
         "agreements": SignedAgreement.objects.filter(user=user).count(),
         "wards": user.wards.filter(active=True).count() if hasattr(user, "wards") else 0,
-        "is_last_sysadmin": user.may("assign_groups") and not _someone_else_can_assign_groups(user),
+        "is_last_sysadmin": not _someone_else_can_administer(user),
     }
 
 

@@ -58,8 +58,14 @@ def editable_fields(actor: User, subject: User) -> list[str]:
     if actor.may("edit_member_privileges"):
         fields += [f for f in POSITION_FIELDS if f not in fields]
         fields += list(PRIVILEGE_FIELDS)
-    if actor.may("assign_groups"):
-        fields += list(GROUP_FIELDS)
+    # Who may be appointed to what (§2.3): a group is yours to grant when everything it grants
+    # is something you already hold, and only an account below you is yours to change.
+    from apps.ops.groups import may_set_access
+
+    if may_set_access(actor, subject):
+        fields.append("groups")
+    if actor.is_superuser and getattr(actor, "acting_capabilities", None) is None:
+        fields.append("is_superuser")  # a sysadmin is made by a sysadmin, at the top level
     # the model's own order, so the page reads the same however the lists are built
     order = [f.name for f in User._meta.get_fields() if hasattr(f, "name")]
     return sorted(set(fields), key=lambda f: order.index(f) if f in order else 99)
@@ -104,10 +110,13 @@ class AccountForm(forms.ModelForm):
         if "groups" in self.fields:
             from django.contrib.auth.models import Group
 
-            from apps.ops.groups import label_of
+            from apps.ops.groups import assignable_groups, label_of
 
+            # Only the groups this person may grant are offered, and the field refuses anything
+            # else whatever the page was made to submit.
+            allowed = assignable_groups(actor)
             self.fields["groups"] = forms.ModelMultipleChoiceField(
-                queryset=Group.objects.order_by("name"),
+                queryset=Group.objects.filter(pk__in=[g.pk for g in allowed]).order_by("name"),
                 required=False,
                 widget=forms.CheckboxSelectMultiple,
                 label="Access",

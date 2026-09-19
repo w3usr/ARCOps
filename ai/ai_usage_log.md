@@ -1894,3 +1894,28 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 298 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 3bb9b67
+
+## [2026-09-19 20:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Who may appoint whom, to the advisor's rule of 2026-09-19: "Faculty
+  advisors should be able to appoint officers, members, and below. Officers should be able to
+  appoint members, and below." Written against capabilities rather than a ladder, so a club that
+  invents a group gets the same rule: a group is yours to grant when everything it grants is
+  something you already hold and it does not hold everything you do, and an account is yours to
+  change when what it holds is a proper subset of what you hold. The second half is what stops
+  an officer editing the advisor's account and dropping them to Member. The bounded capability
+  reaches the existing groups through a data migration, because the configuration import leaves
+  an existing group alone by design. An account with no access now says why: closed at its own
+  request with the date, or removed by a named person with their reason, so whoever restores it
+  knows which of the two they are undoing; restoring clears a closure request. The last account
+  that can run the site is protected by the sysadmin flag rather than by the capability, which
+  officers now hold.
+- **Sections/Files Affected**: apps/ops/groups.py (assignable_groups, may_set_access),
+  apps/accounts/{account,services,views_members}.py, migration 0014,
+  templates/accounts/{member_detail,member_edit}.html, config/club.example.yaml,
+  docs/REQUIREMENTS.md (FR-91), and the tests across apps/accounts.
+- **Nature of Contribution**: Code, tests, and documentation by the assistant, at the advisor's
+  direction.
+- **Human Review Status**: Pending the advisor's look. 306 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

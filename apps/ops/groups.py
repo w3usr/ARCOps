@@ -23,6 +23,58 @@ class GroupRefused(Exception):
     """A change that would leave the club unable to run itself."""
 
 
+def capabilities_held(user) -> set[str]:
+    """What this account may do **right now**, which is the level its session acts at.
+
+    A sysadmin who has dropped to Faculty Advisor appoints what an advisor appoints; that is
+    what acting at a level means (apps.accounts.acting).
+    """
+    acting = getattr(user, "acting_capabilities", None)
+    if acting is not None:
+        return set(acting)
+    from apps.accounts.acting import full_capabilities
+
+    return full_capabilities(user)
+
+
+def assignable_groups(actor):
+    """The groups this person may put an account into.
+
+    The rule, the advisor's on 2026-09-19: *"Faculty advisors should be able to appoint
+    officers, members, and below. Officers should be able to appoint members, and below."*
+    Written against capabilities rather than a ladder, because a club may invent a group this
+    application has never heard of: **a group is yours to grant when everything it grants is
+    something you already hold, and it does not hold everything you do.** A proper subset, so
+    nobody appoints their own peer, and nobody appoints above themselves.
+    """
+    mine = capabilities_held(actor)
+    out = []
+    for group in Group.objects.order_by("name"):
+        granted = {p.codename for p in group.permissions.all()}
+        if granted < mine:
+            out.append(group)
+    return out
+
+
+def may_set_access(actor, subject) -> bool:
+    """Whether this person may decide which groups that account is in.
+
+    Two halves, and the second matters as much as the first: you may only change an account
+    that is **below** you. Without it an officer could edit the advisor's account and drop
+    them to Member, taking the club over by demotion rather than by promotion.
+    """
+    if not actor.may("assign_groups"):
+        return False
+    at_the_top = actor.is_superuser and getattr(actor, "acting_capabilities", None) is None
+    if subject.is_superuser:
+        return at_the_top  # a sysadmin's account is a sysadmin's to change
+    if subject.pk == actor.pk:
+        # Your own access is yours to change only when you hold everything anyway, so there is
+        # nothing to gain by it.
+        return at_the_top
+    return capabilities_held(subject) < capabilities_held(actor)
+
+
 def permission(codename: str) -> Permission:
     return Permission.objects.get(content_type__app_label=APP_LABEL, codename=codename)
 

@@ -105,9 +105,14 @@ def test_a_sysadmin_sets_what_another_account_may_do(people):
     assert mem.may("manage_events") and not mem.may("approve_agreements")
 
 
-def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
-    """A sysadmin keeps every capability whatever group they are in, so their own edit is
-    harmless. Anyone else the club has trusted with it can lock everyone out in one save."""
+def test_nobody_changes_their_own_access(people):
+    """Your own access is yours to change only if you hold everything anyway.
+
+    An account that holds "decide which groups an account is in" through a group could once
+    lock everyone out in a single save of its own page; under the rule the advisor set on
+    2026-09-19 it cannot edit its own groups at all, because an account is never a proper
+    subset of itself.
+    """
     from django.contrib.auth.models import Permission
 
     from apps.ops.capabilities import APP_LABEL
@@ -137,12 +142,13 @@ def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
         "under_18": "",
     }
     c = _as(keeper)
-    r = c.post(
+    assert 'name="groups"' not in c.get(f"/members/{keeper.pk}/edit/").content.decode()
+    c.post(
         f"/members/{keeper.pk}/edit/",
         {**fields, "groups": [Group.objects.get(name="member").pk]},
     )
     keeper.refresh_from_db()
-    assert keeper.in_group("trusted") and b"your own ability" in r.content
+    assert keeper.in_group("trusted"), "a forged field changes nothing"
 
     # a sysadmin may do it to them, because a sysadmin still holds it
     c = _as(people["sys"])
@@ -154,10 +160,12 @@ def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
     assert not keeper.in_group("trusted")
 
 
-def test_officer_sets_club_position_only(people):
+def test_officer_sets_club_position_and_membership_but_no_more(people):
     c, mem = _as(people["off"]), people["mem"]
     body = c.get(f"/members/{mem.pk}/edit/").content.decode()
-    assert 'name="club_position"' in body and 'name="groups"' not in body
+    assert 'name="club_position"' in body
+    assert 'name="groups"' in body and "Club Officer" not in body  # members and below (§2.3)
+    assert 'name="is_superuser"' not in body
     assert "temporary password" not in body.lower()
     c.post(f"/members/{mem.pk}/edit/", {"action": "save", "club_position": "president"})
     mem.refresh_from_db()

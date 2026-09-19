@@ -29,7 +29,7 @@ access on the way past. The officer's view and the member's own profile are the 
 
 {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|date:"j M Y" }}. The row stays so past rosters keep their shape.</p>{% endif %}
 {% if member.is_archived %}<p class="note">In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>{% endif %}
-{% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
+{% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.{% if no_access_because %} {{ no_access_because }}{% endif %}</p>{% endif %}
 {% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. {% if is_self %}You{% else %}They{% endif %} joined {{ member.date_joined|date:"d M Y" }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
 {% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> {% if is_self %}your{% else %}their{% endif %} address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>{% endif %}
 

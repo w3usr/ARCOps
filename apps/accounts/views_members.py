@@ -20,6 +20,7 @@ from apps.credentials.models import LicenseRecord, SignedAgreement
 from apps.credentials.views import _is_approver
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.groups import may_set_access
 
 from . import entry, views_addresses
 from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
@@ -367,8 +368,35 @@ def member_detail(request, pk):
             "wards": list(member.wards.filter(active=True).select_related("minor")),
             "can_edit": may_manage(actor, member) and not _minor_readonly(request, member),
             "is_self": is_self,
+            "no_access_because": _no_access_because(member),
         },
     )
+
+
+def _no_access_because(member) -> str:
+    """Why this account cannot be used, in words.
+
+    An account that asked to be closed and an account somebody suspended look identical on the
+    page, and whoever is about to restore one should know which they are undoing (the advisor,
+    2026-09-19). The fact is on the account for a closure and in the audit log for a removal.
+    """
+    if member.has_access or member.deleted_at:
+        return ""
+    if member.closure_requested_at:
+        return f"Closed at their own request on {member.closure_requested_at:%d %b %Y}."
+    from apps.ops.models import AuditLog
+
+    row = (
+        AuditLog.objects.filter(action="access.changed", subject_id=str(member.pk))
+        .order_by("-at")
+        .first()
+    )
+    if row is None:
+        return ""
+    reason = (row.after or {}).get("reason", "")
+    who = row.actor.short_name if row.actor else "somebody"
+    when = f"{row.at:%d %b %Y}"
+    return f"Access removed by {who} on {when}" + (f": {reason}." if reason else ".")
 
 
 def _minor_readonly(request, member) -> bool:
@@ -548,15 +576,20 @@ def member_edit(request, pk):
                 request,
                 f"Temporary password issued. It works once, within {hours} hours, and is shown only here.",
             )
-        elif action == "close" and actor.may("assign_groups"):
+        elif action == "close" and may_set_access(actor, member):
             if member == actor:
                 messages.error(request, "You cannot close your own account.")
             else:
                 set_access(actor, member, [], request.POST.get("reason", ""))
                 messages.success(request, f"{member.short_name} no longer has access.")
                 return redirect("member_edit", pk=member.pk)
-        elif action == "reopen" and actor.may("assign_groups"):
+        elif action == "reopen" and may_set_access(actor, member):
+            # Back as a member, whether they asked to leave or somebody suspended them; a level
+            # above that is granted deliberately, by somebody who holds it (§2.3).
             set_access(actor, member, ["member"], "reopened")
+            if member.closure_requested_at:
+                member.closure_requested_at = None
+                member.save(update_fields=["closure_requested_at"])
             messages.success(request, f"{member.short_name} is a member again.")
             return redirect("member_edit", pk=member.pk)
         elif action == "archive" and actor.may("archive_members"):  # FR-125
@@ -633,6 +666,8 @@ def member_edit(request, pk):
             "is_approver": _is_approver(actor),
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
+            "can_set_access": may_set_access(actor, member),
+            "no_access_because": _no_access_because(member),
             **(_preferences(member) if member == actor else {}),
         },
     )

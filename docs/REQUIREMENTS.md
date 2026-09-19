@@ -1380,9 +1380,32 @@ made it likely that reliable delivery would take time to establish:
   half of a form and discarding the rest leaves the sysadmin unable to tell which half took.
 - **FR-90 [Must]** Sysadmins manage agreement templates (FR-21) and the computer password
   (FR-32).
-- **FR-91 [Must]** Sysadmins can take an account out of every access group with a reason, and
-  restore it. Doing so removes the person from future slots and notifies the captains of those
-  events.
+- **FR-91 [Must]** An account can be taken out of every access group with a reason, and restored.
+  Doing so removes the person from future slots and notifies the captains of those events.
+
+  **Who may, and over whom** (the advisor's rule, 2026-09-19): a group is yours to grant when
+  everything it grants is something you already hold and it does not hold everything you do, and
+  an account is yours to change when what it holds is a proper subset of what you hold. Against
+  the club's configuration that means a faculty advisor appoints officers, members and
+  provisionals; an officer appoints members and provisionals; neither appoints a peer, nobody
+  appoints above themselves, and only a sysadmin makes a sysadmin. The second half matters as
+  much as the first: without it an officer could edit the advisor's account and drop them to
+  Member, taking the club over by demotion. Restoring puts an account back **as a member**; a
+  level above that is granted deliberately by somebody who holds it. Your own access is yours to
+  change only if you hold everything anyway.
+
+  > Faculty advisors should be able to appoint officers, members, and below. Officers should be
+  > able to appoint members, and below. — NAF, 2026-09-19
+
+  > if they can invite members, why can't they re-enable an account that has been voluntarily
+  > closed? — NAF, 2026-09-19
+
+  An account with no access says **why** on its page: closed at their own request with the date,
+  or removed by a named person on a date with their reason, so whoever restores it knows which of
+  the two they are undoing. Restoring an account that asked to be closed clears that request.
+  The **last account that can run the site** can be neither archived nor deleted, and since the
+  appointing capability above cannot make a sysadmin, the last sysadmin still counts as the last
+  one however many officers hold it.
 - **FR-118 [Must]** A sysadmin can **delete a user account**, with a required reason and a
   confirmation that names what will happen, since the action is irreversible. Deletion is
   distinct from setting No access (FR-91), which keeps everything, and from member-requested
