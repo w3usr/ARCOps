@@ -2035,7 +2035,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: 1db41d4
 
-## [2026-09-19 21:52 UTC]
+## [2026-09-19 21:56 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The greeting now names the member as the club does, callsign and all. The
   filter panels' checkboxes were being stretched across their rows by the rule that makes the
@@ -2053,4 +2053,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 325 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: b58fd2a
