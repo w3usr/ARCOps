@@ -1816,4 +1816,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 292 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 10c2edd
