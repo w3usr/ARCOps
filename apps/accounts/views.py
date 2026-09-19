@@ -168,6 +168,13 @@ def invitations(request):
                 form.cleaned_data["guardian_email"] or "",
                 base_url=f"{request.scheme}://{request.get_host()}",
             )
+            if created.superseded:
+                n = created.superseded
+                messages.info(
+                    request,
+                    f"{n} earlier invitation{'' if n == 1 else 's'} to that address "
+                    f"{'was' if n == 1 else 'were'} withdrawn, so only the link below works.",
+                )
             form = InviteForm()
     else:
         form = InviteForm()

@@ -14,6 +14,30 @@ from apps.ops.groups import people_who_may
 from .models import CallsignHistory, Invitation, User
 
 
+def _supersede_open_invitations(
+    actor: User, email: str, guardian_email: str, is_minor: bool
+) -> int:
+    """Withdraw any invitation to this person that is still open, and say how many.
+
+    Nobody should hold two live links to the same account. Without this, pressing "Create
+    invitation" twice left both working, so revoking one withdrew nothing, and the person was
+    sent the invitation twice (the advisor found six of them on 2026-09-19). "Make a new link"
+    has always replaced the old one; this is the same rule reached from the other button.
+    """
+    open_ones = Invitation.objects.filter(state=Invitation.State.CREATED)
+    if email:
+        open_ones = open_ones.filter(email=email.lower())
+    elif is_minor and guardian_email:  # a minor with no address of their own (§2.4)
+        open_ones = open_ones.filter(is_minor=True, guardian_email=guardian_email.lower())
+    else:
+        return 0
+    count = 0
+    for old in open_ones:
+        revoke_invitation(actor, old)
+        count += 1
+    return count
+
+
 def create_invitation(
     issuer: User,
     email: str,
@@ -27,6 +51,7 @@ def create_invitation(
     (FR-76); `emailed_at` is set only if it was actually sent, so the issuer knows when delivery
     is theirs to do."""
     days = int(setting("defaults.invitation_expiry_days", 14))
+    superseded = _supersede_open_invitations(issuer, email, guardian_email, is_minor)
     inv = Invitation.objects.create(
         email=email.lower(),
         category=category,
@@ -36,6 +61,7 @@ def create_invitation(
         expires_at=timezone.now() + timedelta(days=days),
     )
     record(issuer, "invitation.created", inv, after={"email": inv.email, "category": category})
+    inv.superseded = superseded  # for the page to say so; not a stored field
     from django.conf import settings as dj
 
     from apps.comms.services import send

@@ -7,6 +7,7 @@
 {% if created %}
 <section class="card highlight" aria-labelledby="c"><h2 id="c">Invitation created for {{ created.email|default:"a member under 18, via their guardian" }}</h2>
 <p>{% if created.emailed_at %}It has been sent to them.{% else %}Mail is not being sent, so <strong>pass this on yourself</strong>, by any means you trust.{% endif %}</p>
+<p class="helptext">One link at a time: making an invitation withdraws any earlier one still open to that address.</p>
 <div class="field"><label for="lnk">Link</label><div class="copyrow"><input id="lnk" readonly value="{{ created_link }}"> <button type="button" class="secondary" data-copy="#lnk">Copy link</button></div></div>
 <div class="field"><label for="txt">Ready-to-send text</label><textarea id="txt" rows="7" readonly>{{ created_text }}</textarea> <button type="button" class="secondary" data-copy="#txt">Copy text</button></div>
 </section>

@@ -406,7 +406,11 @@ officer admits or declines them (FR-121). Every account records the link it join
   revoke it, and always sees the link itself and a text to send by hand (FR-104). The system
   shows the issuer the state of each invitation (created, emailed or not, opened, completed,
   expired, revoked). **(added)**: the dictation does not mention expiry; an unexpiring invite in
-  a mailbox is a standing door.
+  a mailbox is a standing door. **(added 2026-09-19)**: one live link per person. Issuing an
+  invitation withdraws any earlier one still open to the same address, and the page says how
+  many it withdrew; a minor with no address of their own is matched by their guardian's (§2.4).
+  Two live links to one account mean that revoking either withdraws nothing, and that the
+  person is invited twice.
 - **FR-4 [Must]** The application opens by asking for a callsign. On entry, the system looks it
   up in FCC ULS immediately (FR-14) and fills in the licensee's first, middle, and last name,
   license class, expiration, and status; the applicant confirms it is them and continues. The

@@ -1590,3 +1590,21 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit by the assistant, at the advisor's instruction.
 - **Human Review Status**: Reviewed by the advisor, who asked for it.
 - **Git Hash**: b475868
+
+## [2026-09-19 14:25 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: One live invitation link per person. The advisor, testing T3, found six
+  rows for one address and asked what was going on. The audit log separated two things: two of
+  them were "Make a new link" working exactly as designed, revoking and replacing in the same
+  instant, and three more were plain presses of Create invitation, eleven seconds apart, each
+  making another independently valid link. Four links worked at once, revoking any one withdrew
+  nothing, and six invitation emails reached the mailbox. Creating an invitation now withdraws
+  any earlier one still open to the same address, matched by the guardian's address for a minor
+  who has none of their own, and the page says how many it withdrew.
+- **Sections/Files Affected**: apps/accounts/services.py (_supersede_open_invitations,
+  create_invitation), apps/accounts/views.py, templates/accounts/invitations.html,
+  apps/accounts/tests/test_members.py (four tests added), docs/REQUIREMENTS.md (FR-3).
+- **Nature of Contribution**: Diagnosis from the live audit log, code, and tests by the assistant.
+- **Human Review Status**: Pending the advisor's retest of T3. 248 tests pass, the accessibility
+  sweep passes, and the four guards pass.
+- **Git Hash**: (filled in after committing)

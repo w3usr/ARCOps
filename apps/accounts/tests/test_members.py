@@ -178,6 +178,65 @@ def test_temporary_password_shown_once_and_access_removed_and_restored(people):
     assert mem.in_group("member")
 
 
+def test_a_second_invitation_withdraws_the_first(people):
+    """Nobody holds two live links to the same account.
+
+    The advisor pressed Create invitation three more times while testing on 2026-09-19 and
+    ended with four working links and six invitation emails in one inbox; revoking any one of
+    them withdrew nothing.
+    """
+    c = _as(people["off"])
+    for _ in range(3):
+        c.post("/me/invitations/", {"email": "new@uni.example", "category": "student"})
+
+    live = Invitation.objects.filter(email="new@uni.example", state="created")
+    assert live.count() == 1, "only the newest invitation may still work"
+    assert Invitation.objects.filter(email="new@uni.example", state="revoked").count() == 2
+
+    # the two that were replaced are refused, and the survivor opens the form
+    for dead in Invitation.objects.filter(email="new@uni.example", state="revoked"):
+        assert Client().get(f"/me/invite/{dead.token}/").status_code == 410
+    assert Client().get(f"/me/invite/{live.get().token}/").status_code == 200
+
+
+def test_the_page_says_when_it_withdrew_an_earlier_invitation(people):
+    c = _as(people["off"])
+    c.post("/me/invitations/", {"email": "twice@uni.example", "category": "student"})
+    body = c.post(
+        "/me/invitations/", {"email": "twice@uni.example", "category": "student"}, follow=True
+    ).content.decode()
+    assert "1 earlier invitation to that address was withdrawn" in body
+
+
+def test_an_invitation_to_somebody_else_is_left_alone(people):
+    """Superseding matches on the address, not on the act of inviting."""
+    c = _as(people["off"])
+    c.post("/me/invitations/", {"email": "first@uni.example", "category": "student"})
+    c.post("/me/invitations/", {"email": "second@uni.example", "category": "student"})
+    assert Invitation.objects.filter(state="created").count() == 2
+
+
+def test_a_minor_without_an_address_is_matched_by_their_guardian(people):
+    """A minor may hold no address of their own, so the guardian's is what identifies them."""
+    c = _as(people["off"])
+    for _ in range(2):
+        c.post(
+            "/me/invitations/",
+            {
+                "email": "",
+                "category": "student",
+                "is_minor": "on",
+                "guardian_email": "parent@uni.example",
+            },
+        )
+    assert (
+        Invitation.objects.filter(guardian_email="parent@uni.example", state="created").count() == 1
+    )
+    assert (
+        Invitation.objects.filter(guardian_email="parent@uni.example", state="revoked").count() == 1
+    )
+
+
 def test_invitation_reissue_and_acceptance_places_the_sign_in_address(people):
     c = _as(people["off"])
     c.post("/me/invitations/", {"email": "new@uni.example", "category": "student"})
