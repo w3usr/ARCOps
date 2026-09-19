@@ -1556,3 +1556,25 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis and edit by the assistant.
 - **Human Review Status**: Pending the advisor's look. 241 tests pass and the four guards pass.
 - **Git Hash**: 7bb5e83
+
+## [2026-09-19 13:47 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two things. First, the privacy notice is now linked from the box that
+  consents to it, on all three ways into the club. The advisor, looking at the invitation page
+  during T3: "We need to link to the privacy notice if we are going to ask people to agree to
+  it." The invitation path linked it nowhere, the guardian path linked it only in a trailing
+  sentence, and the entry-link path had gained a link the day before. The link now sits inside
+  the consent label itself and opens in a new tab, so reading it does not cost a half-filled
+  form. Second, the test cycle: it ran about thirteen minutes, which was discouraging changes.
+  Measurement showed one accessibility role taking 96s wall for 31s of CPU, so two thirds of it
+  was waiting on a browser, and the machine has 64 cores running one. With pytest-xdist the
+  application tests go 82s to 15s and the accessibility sweep 11 minutes to 98s; tools/check.sh
+  runs the whole gate, both suites at once, in 1m48s.
+- **Sections/Files Affected**: apps/accounts/consent.py (new), apps/accounts/tests/test_consent.py
+  (new), apps/accounts/views.py, apps/accounts/views_entry.py, templates/accounts/
+  accept_invitation.html, accept_invitation_guardian.html, join.html; tools/check.sh (new),
+  requirements-dev.txt, .github/workflows/ci.yml, CLAUDE.md, docs/INTERFACE.md.
+- **Nature of Contribution**: Code, tests, and measurement by the assistant.
+- **Human Review Status**: Pending the advisor's look. 244 tests pass, the accessibility sweep
+  passes for all eight roles, and the four guards pass.
+- **Git Hash**: a7ebb50 (consent), d93f2e3 (test speed)
