@@ -1995,7 +1995,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: e5e8d84
 
-## [2026-09-19 21:20 UTC]
+## [2026-09-19 21:14 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Four more narrowings and two pieces of polish from the advisor's testing.
   An officer may promote but never demote: the Access list only goes up for somebody who cannot
@@ -2014,4 +2014,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 317 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: e5135df
