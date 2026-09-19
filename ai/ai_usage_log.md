@@ -1958,7 +1958,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: f923885
 
-## [2026-09-19 21:05 UTC]
+## [2026-09-19 20:42 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Filters that take more than one answer, and the archive as a flag of its
   own. Each drop-down is now a disclosure holding a checkbox per value: no script, no
@@ -1976,4 +1976,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 314 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 0c55a5f
