@@ -1578,3 +1578,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 244 tests pass, the accessibility sweep
   passes for all eight roles, and the four guards pass.
 - **Git Hash**: a7ebb50 (consent), d93f2e3 (test speed)
+
+## [2026-09-19 14:10 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The retention section cut from the generic privacy notice this repository
+  ships. The advisor removed it from the club's own notice first, on the grounds that a retention
+  policy should not be published before it is vetted; the same holds with more force for the
+  default a different club would publish under its own name without reading it. The notice's other
+  sections do not refer to it, so nothing was left dangling.
+- **Sections/Files Affected**: config/club.example.yaml (privacy_notice_html).
+- **Nature of Contribution**: Edit by the assistant, at the advisor's instruction.
+- **Human Review Status**: Reviewed by the advisor, who asked for it.
+- **Git Hash**: (filled in after committing)
