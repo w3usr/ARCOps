@@ -1920,7 +1920,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: 3ceea88
 
-## [2026-09-19 20:50 UTC]
+## [2026-09-19 20:25 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Where an account stands with the club, as the advisor settled it on
   2026-09-19. Four statuses on one axis, Provisional, Active, Closed and Suspended, all of them
@@ -1942,4 +1942,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 307 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 70a2cd5
