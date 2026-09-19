@@ -38,7 +38,7 @@ access on the way past. The officer's view and the member's own profile are the 
 <section class="card" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
-  <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.effective_class|default:"no operator class, as a club station holds" }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
+  <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
   <p class="helptext">{{ standing.license.source_label|capfirst }}.{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>
   {% else %}<p class="muted">None on file.</p>{% endif %}
 </section>

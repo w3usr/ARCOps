@@ -135,6 +135,7 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
     if row:
         lic.licensee_name = row.licensee_name
         lic.operator_class = row.operator_class
+        lic.licensee_type = row.applicant_type
         lic.status = row.status or "active"
         lic.grant_date = row.grant_date
         lic.expiry_date = row.expiry_date

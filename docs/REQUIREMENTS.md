@@ -548,8 +548,11 @@ Verbatim:
 
 - **FR-14 [Must]** When an account with a callsign is admitted, when a callsign is entered or
   changed (FR-102), and daily thereafter for every account with a callsign, the system
-  retrieves license class, expiration date, status, and the licensee name from FCC ULS data
-  and records the result with its source and retrieval time. The mechanism is decided
+  retrieves license class, expiration date, status, the licensee name, and the **applicant
+  type** (what kind of licensee holds the callsign: a person, a club, a RACES station, or a
+  military recreation station) from FCC ULS data and records the result with its source and
+  retrieval time. The applicant type is what a station's letter comes from (FR-67), because the
+  FCC issues an operator class to a person only. The mechanism is decided
   (TR-13, 2026-09-13): the FCC's own bulk ULS files imported daily into a local table, so every
   lookup is local and instant; the requirement is that the data are FCC data and are no more
   than a day stale.
@@ -1074,9 +1077,11 @@ Verbatim:
   and the number of unconfirmed sign-ups in the next 48 hours.
 - **FR-67 [Must]** On rosters, members see each person's **short name**: first name (the
   preferred name where one is set) and callsign, or first name and last initial for a person
-  with no callsign; then the **license class in parentheses** (N, T, G, A, E; C for a club
-  station, which the FCC gives no operator class; U for none): `Nathaniel W2NAF (E)`,
-  `Nathaniel F. (U)`, `W3USR Club (C)`; and their role. Captains and officers see the full
+  with no callsign; then the **license class in parentheses**: N, T, G, A, E for a person; C, R,
+  or M for a club, a RACES station, or a military recreation station, which the FCC gives no
+  operator class because it issues one to a person only; U for none. `Nathaniel W2NAF (E)`,
+  `Nathaniel F. (U)`, `W3USR Club (C)`; and their role. Which of the three a station is comes
+  from the applicant type on the FCC record (EN24 in its file, FR-14). Captains and officers see the full
   name with the same suffix. A Provisional member (FR-121) sees no names but their own, and a
   count by class per slot.
 

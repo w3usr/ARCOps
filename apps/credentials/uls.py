@@ -162,6 +162,7 @@ def stage(zip_path: Path) -> dict:
                 _flush_update(pending, ["class_code"])
         _flush_update(pending, ["class_code"])
 
+        en_fields = ["entity_name", "first_name", "last_name", "frn", "applicant_type"]
         for f in _lines(zf, "EN.dat"):
             if len(f) < 11 or f[5].strip() != "L":  # the licensee entity only
                 continue
@@ -172,12 +173,14 @@ def stage(zip_path: Path) -> dict:
                     first_name=f[8].strip()[:80],
                     last_name=f[10].strip()[:80],
                     frn=(f[22].strip()[:20] if len(f) > 22 else ""),
+                    # EN24, the applicant type: what kind of licensee holds the callsign.
+                    applicant_type=(f[23].strip().upper()[:2] if len(f) > 23 else ""),
                 )
             )
             counts["en"] += 1
             if len(pending) >= BATCH:
-                _flush_update(pending, ["entity_name", "first_name", "last_name", "frn"])
-        _flush_update(pending, ["entity_name", "first_name", "last_name", "frn"])
+                _flush_update(pending, en_fields)
+        _flush_update(pending, en_fields)
     return counts
 
 
@@ -201,6 +204,7 @@ def _winners():
         "first_name",
         "last_name",
         "frn",
+        "applicant_type",
     )
     current = None
     best = None
@@ -231,6 +235,7 @@ def apply_staging(now=None) -> dict:
         "first_name",
         "last_name",
         "operator_class",
+        "applicant_type",
         "status",
         "grant_date",
         "expiry_date",
@@ -261,6 +266,7 @@ def apply_staging(now=None) -> dict:
         first,
         last,
         frn,
+        applicant_type,
     ) in _winners():
         name = entity_name or " ".join(p for p in (first, last) if p)
         objs.append(
@@ -270,6 +276,7 @@ def apply_staging(now=None) -> dict:
                 first_name=first,
                 last_name=last,
                 operator_class=CLASS.get(class_code, ""),
+                applicant_type=applicant_type,
                 status=STATUS.get(status_code, status_code.lower() or "unknown"),
                 grant_date=grant,
                 expiry_date=expiry,

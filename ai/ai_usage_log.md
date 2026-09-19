@@ -1775,3 +1775,26 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 289 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 6ac4f41
+
+## [2026-09-19 17:22 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Give a RACES station R and a military recreation station M, keeping C for
+  a club, at the advisor's instruction. The FCC issues an operator class to a person only, so
+  all three hold a callsign with the class field empty and nothing else in the record tells them
+  apart; the applicant type (EN24 in the FCC's entity file) does, and it was not being imported.
+  The import now carries it into the local table and into each member's license record, the
+  letter follows from it, and a matched record whose applicant type is still blank reads C,
+  which is what nearly every one of them is and what every row holds until the next import.
+  The three sort below the license ladder in that order and each has its own entry in the
+  directory's class filter; the rosters a Provisional member sees count them separately. Where
+  a page has room for words rather than a letter it now says "club station", "RACES station",
+  or "military recreation station" in place of the empty class.
+- **Sections/Files Affected**: apps/credentials/{models,uls,services}.py and migration 0004,
+  apps/accounts/models.py (license_letter), apps/accounts/views_members.py (rank and filters),
+  apps/events/services/roster.py, templates/accounts/{member_detail,member_edit,profile}.html,
+  docs/REQUIREMENTS.md (FR-14, FR-67), and the tests in apps/accounts and apps/credentials.
+- **Nature of Contribution**: Code, tests, and documentation by the assistant, at the advisor's
+  direction. The applicant type codes were read from the FCC's own ULS code definitions.
+- **Human Review Status**: Pending the advisor's look. 292 tests pass, the accessibility sweep
+  passes for all eight roles at both widths, and the four guards pass.
+- **Git Hash**: pending

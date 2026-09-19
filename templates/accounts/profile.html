@@ -39,7 +39,7 @@ what keeps a page opened to check your own callsign from changing it (NAF, 2026-
 <section class="card"><h2>Membership</h2>
 <dl class="dl">
 <dt>Joined</dt><dd>{{ user.date_joined|date:"d M Y" }}{% if user.joined_via %} via {{ user.joined_via.label }}{% endif %}</dd>
-{% if license %}<dt>License</dt><dd>{{ license.callsign }} · {{ license.effective_class|default:"class unknown" }} · {{ license.status_label }}{% if license.effective_expiry %} · expires {{ license.effective_expiry }}{% endif %} <small class="muted">({{ license.source_label }}{% if license.retrieved_at %}, checked {{ license.retrieved_at|date:"j M" }}{% endif %})</small></dd>{% endif %}
+{% if license %}<dt>License</dt><dd>{{ license.callsign }} · {{ license.class_label }} · {{ license.status_label }}{% if license.effective_expiry %} · expires {{ license.effective_expiry }}{% endif %} <small class="muted">({{ license.source_label }}{% if license.retrieved_at %}, checked {{ license.retrieved_at|date:"j M" }}{% endif %})</small></dd>{% endif %}
 </dl>
 <p class="helptext">What the club records about you. A club officer sets the category, position, and access; ask one if something here is wrong.</p></section>
 

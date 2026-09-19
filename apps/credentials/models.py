@@ -33,6 +33,10 @@ class LicenseRecord(models.Model):
     callsign = models.CharField(max_length=12)
     licensee_name = models.CharField(max_length=120, blank=True)
     operator_class = models.CharField(max_length=20, blank=True)
+    # What kind of licensee this is, from the FCC record (UlsLicense.applicant_type): B a club,
+    # R a RACES station, M a military recreation station, I a person. Blank until the import
+    # has seen the callsign, or for a license from outside the United States.
+    licensee_type = models.CharField(max_length=2, blank=True)
     status = models.CharField(
         max_length=20, default="unverified"
     )  # active | expired | cancelled | not_found | unverified
@@ -89,6 +93,25 @@ class LicenseRecord(models.Model):
         "unverified": "not checked against the FCC yet",
     }
 
+    # The FCC issues an operator class to a person only. Where the class field is empty, what
+    # the applicant type says the licensee is, is the honest thing to show in its place.
+    LICENSEE_WORDS = {
+        "B": "club station",
+        "R": "RACES station",
+        "M": "military recreation station",
+    }
+
+    @property
+    def class_label(self) -> str:
+        """The operator class in words, or what kind of station holds the callsign instead."""
+        if self.effective_class:
+            return self.effective_class
+        if self.effective_status in {"active", "expired", "cancelled"}:
+            return self.LICENSEE_WORDS.get(
+                (self.licensee_type or "").strip().upper(), "club station"
+            )
+        return "class unknown"
+
     @property
     def status_label(self) -> str:
         status = self.effective_status
@@ -124,6 +147,10 @@ class UlsLicense(models.Model):
     first_name = models.CharField(max_length=80, blank=True)
     last_name = models.CharField(max_length=80, blank=True)
     operator_class = models.CharField(max_length=20, blank=True)
+    # EN24 in the FCC file: B a club, R a RACES station, M a military recreation station, I a
+    # person. It is what tells a station apart from a person where there is no operator class,
+    # because the FCC issues a class to a person only.
+    applicant_type = models.CharField(max_length=2, blank=True)
     status = models.CharField(max_length=20, blank=True)
     grant_date = models.DateField(null=True, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
@@ -238,6 +265,7 @@ class UlsStaging(models.Model):
     grant_date = models.DateField(null=True, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
     class_code = models.CharField(max_length=2, blank=True)
+    applicant_type = models.CharField(max_length=2, blank=True)
     entity_name = models.CharField(max_length=160, blank=True)
     first_name = models.CharField(max_length=80, blank=True)
     last_name = models.CharField(max_length=80, blank=True)

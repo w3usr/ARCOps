@@ -15,7 +15,11 @@ from apps.accounts.models import CallsignHistory, User
 from apps.accounts.services import apply_callsign, decide_uls_name
 from apps.comms.models import Outbox
 from apps.credentials.models import LicenseRecord, UlsLicense, UlsStaging
-from apps.credentials.services import expiry_notices, names_match
+from apps.credentials.services import (
+    expiry_notices,
+    names_match,
+    refresh_license_from_local_table,
+)
 from apps.credentials.uls import run
 from apps.ops.models import AuditLog
 
@@ -37,9 +41,9 @@ def _zip(tmp_path, hd, am, en, name="l_am_test.zip"):
         f[0], f[1], f[4], f[5] = "AM", usi, call, cls
         return "|".join(f)
 
-    def en_row(usi, call, first, last, frn, etype="L"):
+    def en_row(usi, call, first, last, frn, etype="L", applicant_type="I"):
         f = [""] * 30
-        f[0], f[1], f[4], f[5], f[7], f[8], f[10], f[22] = (
+        f[0], f[1], f[4], f[5], f[7], f[8], f[10], f[22], f[23] = (
             "EN",
             usi,
             call,
@@ -48,6 +52,7 @@ def _zip(tmp_path, hd, am, en, name="l_am_test.zip"):
             first,
             last,
             frn,
+            applicant_type,  # EN24: I a person, B a club, R RACES, M military recreation
         )
         return "|".join(f)
 
@@ -311,3 +316,35 @@ def test_a_member_whose_callsign_never_had_a_license_record_gets_one():
         lic.operator_class == "Extra" and lic.status == "active" and lic.source == "fcc_uls_local"
     )
     assert lic.expiry_date == dt.date(2033, 7, 18)
+
+
+def test_the_applicant_type_comes_through_the_import_and_becomes_the_letter(tmp_path):
+    """A station holds a callsign with no operator class; EN24 says which kind it is.
+
+    NAF, 2026-09-19, asked for C, R, and M after a club callsign read U. Without the applicant
+    type all three look alike in the file, because the FCC issues an operator class to a person
+    only, and there is nothing else in the record to tell them apart.
+    """
+    hd = [
+        ("400", "W0CLUB", "A", "01/01/2020", "01/01/2030"),
+        ("500", "W0RACES", "A", "01/01/2020", "01/01/2030"),
+        ("600", "W0MIL", "A", "01/01/2020", "01/01/2030"),
+    ]
+    en = [
+        ("400", "W0CLUB", "", "", "0044", "L", "B"),
+        ("500", "W0RACES", "", "", "0055", "L", "R"),
+        ("600", "W0MIL", "", "", "0066", "L", "M"),
+    ]
+    run(file=str(_zip(tmp_path, hd, [], en)))
+    assert UlsLicense.objects.get(callsign="W0CLUB").applicant_type == "B"
+    assert UlsLicense.objects.get(callsign="W0RACES").applicant_type == "R"
+
+    letters = {}
+    for n, (call, letter) in enumerate((("W0CLUB", "C"), ("W0RACES", "R"), ("W0MIL", "M"))):
+        u = User.objects.create_user(
+            f"s{n}@example.org", "pw-Testing-123", first_name="S", last_name=call, callsign=call
+        )
+        lic = refresh_license_from_local_table(u)
+        assert lic.licensee_type and not lic.operator_class
+        letters[call] = User.objects.get(pk=u.pk).license_letter
+        assert letters[call] == letter

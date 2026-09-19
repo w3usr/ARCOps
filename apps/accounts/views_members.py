@@ -26,6 +26,16 @@ from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_
 from .models import User
 from .services import issue_temporary_password, set_access
 
+# The classes the ladder does not hold: a station the FCC gives no operator class, and no
+# license at all. The key narrows the directory; the letter is what the Class column shows.
+STATION_CHOICES = (
+    ("club", "Club station"),
+    ("races", "RACES station"),
+    ("military", "Military recreation"),
+    ("none", "No license"),
+)
+STATION_FILTERS = {"club": "C", "races": "R", "military": "M", "none": "U"}
+
 
 def _standing(user) -> dict:
     """What an officer needs at a glance: license and agreements."""
@@ -87,11 +97,19 @@ def _sort_keys(positions: dict, cats: dict):
     return {key: settled(fn) for key, fn in _columns(text, positions, cats, ladder).items()}
 
 
+# Below the ladder, in the order the rosters count them: the stations the FCC gives no
+# operator class, then the accounts with no license at all.
+STATION_ORDER = ["C", "R", "M"]
+
+
 def _class_rank(m, ladder: list, text) -> int:
     cls = text(m.license_class)
     if cls in ladder:
         return ladder.index(cls)
-    return len(ladder) if m.license_letter == "C" else len(ladder) + 1
+    letter = m.license_letter
+    if letter in STATION_ORDER:
+        return len(ladder) + STATION_ORDER.index(letter)
+    return len(ladder) + len(STATION_ORDER)
 
 
 def _columns(text, positions: dict, cats: dict, ladder: list):
@@ -176,7 +194,7 @@ def members(request):
         rows = [
             m
             for m in rows
-            if (want in ("none", "club") and m.license_letter == ("U" if want == "none" else "C"))
+            if (want in STATION_FILTERS and m.license_letter == STATION_FILTERS[want])
             or m.license_class.lower() == want
         ]
     if chosen["access"]:
@@ -222,8 +240,7 @@ def members(request):
         )
 
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
-    license_choices.append(("club", "Club station"))
-    license_choices.append(("none", "No license"))
+    license_choices += list(STATION_CHOICES)
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
     return render(

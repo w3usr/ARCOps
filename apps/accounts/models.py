@@ -10,8 +10,12 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models, transaction
 from django.utils import timezone
 
-# FR-67: the class after a name; C for a club station, U when there is no license on file.
+# FR-67: the class after a name; a station letter where the FCC issues no class, U when there
+# is no license on file.
 MATCHED_STATUSES = frozenset({"active", "expired", "cancelled"})  # the FCC has a record
+# The FCC's applicant type (EN24 in its file) for the licensees that are not a person, and the
+# letter each one gets. A person's letter is their operator class; these have none to hold.
+STATION_LETTERS = {"B": "C", "R": "R", "M": "M"}  # club, RACES, military recreation
 LICENSE_LETTERS = {
     "novice": "N",
     "technician": "T",
@@ -233,18 +237,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def license_letter(self) -> str:
-        """N, T, G, A, E, C, or U (FR-67), from the license record when there is one.
+        """The class after a name (FR-67): N, T, G, A, E for a person, C, R, or M for a station,
+        U where there is no license on file.
 
-        **C is a club station.** The FCC issues no operator class to a club, because a club is
-        not a person, so a club's record carries a callsign and a status and nothing in the
-        class field. The advisor, 2026-09-19, on the club callsign W2FSR reading U: "It's not
-        technically true... that is a Club call sign."
+        **The FCC issues an operator class to a person only.** A club, a RACES station, and a
+        military recreation station each hold a callsign with the class field empty, so the
+        letter comes from the applicant type on the record instead: C a club, R a RACES station,
+        M a military recreation station. The advisor asked for the three letters on 2026-09-19,
+        starting from the club callsign W2FSR reading U: "It's not technically true... that is a
+        Club call sign."
 
-        Blank class alone does not mean club: an account whose callsign has never been checked,
-        or that the FCC has no record of, is blank for the opposite reason. So C needs a matched
-        FCC record as well, and everything else stays U. RACES and military-recreation licenses
-        also carry no operator class and will read C; all three are a station rather than a
-        person, which is what C says.
+        An empty class is also what "the FCC has no record of this callsign" looks like, so a
+        station letter needs a matched record; everything else is U. A matched record with no
+        class and no applicant type reads C, which is what the great majority of them are and
+        what every row held before the applicant type was imported.
         """
         lic = getattr(self, "license", None)
         if lic is None:
@@ -252,11 +258,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         cls = (getattr(lic, "effective_class", "") or "").strip()
         if cls:
             return LICENSE_LETTERS.get(cls.lower(), cls[:1].upper())
-        return "C" if lic.effective_status in MATCHED_STATUSES else "U"
+        if lic.effective_status not in MATCHED_STATUSES:
+            return "U"
+        return STATION_LETTERS.get((getattr(lic, "licensee_type", "") or "").strip().upper(), "C")
 
     @property
     def license_class(self) -> str:
-        """The class in full ("Extra"), or empty for a club station and for no license at all.
+        """The class in full ("Extra"), or empty for a station and for no license at all.
 
         `license_letter` abbreviates the same fact for a roster badge, where space is tight.
         A column has room for the word.

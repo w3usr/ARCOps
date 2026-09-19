@@ -266,19 +266,27 @@ def test_a_phone_number_is_shown_the_way_its_country_writes_it(directory):
     assert u.cell_phone == "9737874506", "what they typed is what is stored"
 
 
-def _club_station(directory):
+def _station(directory, callsign="W2FSR", licensee_type="B"):
     """W2FSR on the live site: a club callsign, matched at the FCC, with no operator class.
 
-    The FCC issues no class to a club, so the record is a callsign and a status and nothing
-    else. NAF, 2026-09-19: "It's not technically true... that is a Club call sign."
+    The FCC issues a class to a person only, so a station's record is a callsign, a status, and
+    the applicant type that says what kind of licensee holds it. NAF, 2026-09-19: "It's not
+    technically true... that is a Club call sign."
     """
     from apps.credentials.models import LicenseRecord
 
     u = User.objects.by_address("alpha@example.org").get()
-    u.callsign = "W2FSR"
+    u.callsign = callsign
     u.save(update_fields=["callsign"])
-    LicenseRecord.objects.create(user=u, callsign="W2FSR", operator_class="", status="active")
-    return u
+    LicenseRecord.objects.filter(user=u).delete()
+    LicenseRecord.objects.create(
+        user=u, callsign=callsign, operator_class="", licensee_type=licensee_type, status="active"
+    )
+    return User.objects.get(pk=u.pk)
+
+
+def _club_station(directory):
+    return _station(directory)
 
 
 def test_a_club_callsign_reads_c_and_an_unlicensed_account_reads_u(directory):
@@ -315,6 +323,36 @@ def test_club_stations_filter_and_sort_apart_from_the_unlicensed(directory):
     assert _names(c.get("/members/?license=club").content.decode()) == ["Zephyr"]
     assert _names(c.get("/members/?license=none").content.decode()) == [], "a club holds a license"
     # Technician, Extra, then the club station, which sits below the ladder it is not on
+    assert _names(c.get("/members/?sort=class&dir=asc").content.decode()) == [
+        "Adams",
+        "Officer",
+        "Zephyr",
+    ]
+
+
+def test_the_three_stations_the_fcc_gives_no_class_get_their_own_letters(directory):
+    """C a club, R a RACES station, M a military recreation station (NAF, 2026-09-19).
+
+    The FCC issues an operator class to a person, so these three hold a callsign with the class
+    field empty; the applicant type on the record (EN24 in its file) is what tells them apart.
+    """
+    for licensee_type, letter in (("B", "C"), ("R", "R"), ("M", "M")):
+        assert _station(directory, licensee_type=licensee_type).license_letter == letter
+    # a matched record whose applicant type the import has not reached yet: still a station,
+    # and a club is what nearly all of them are
+    assert _station(directory, licensee_type="").license_letter == "C"
+
+
+def test_each_station_letter_filters_and_sorts_on_its_own(directory):
+    _licensed(directory)
+    _station(directory, licensee_type="R")
+    c = _as(directory)
+    body = c.get("/members/").content.decode()
+    for word in ("Club station", "RACES station", "Military recreation"):
+        assert f">{word}<" in body, "its own entry in the class filter"
+    assert _names(c.get("/members/?license=races").content.decode()) == ["Zephyr"]
+    assert _names(c.get("/members/?license=club").content.decode()) == []
+    # Technician, Extra, then the RACES station, which sits below the ladder it is not on
     assert _names(c.get("/members/?sort=class&dir=asc").content.decode()) == [
         "Adams",
         "Officer",
