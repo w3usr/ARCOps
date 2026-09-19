@@ -1944,7 +1944,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: 70a2cd5
 
-## [2026-09-19 20:35 UTC]
+## [2026-09-19 20:28 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The requirements and the technical requirements catch up with the status
   work: FR-13a describes the four statuses and the archive flag beside them, FR-11 says an
@@ -1956,4 +1956,4 @@ carries the actual running model ID.
   docs/TECHNICAL_REQUIREMENTS.md (TR-43).
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
-- **Git Hash**: pending
+- **Git Hash**: f923885
