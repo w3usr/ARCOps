@@ -2073,7 +2073,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: 72d50d6
 
-## [2026-09-19 22:20 UTC]
+## [2026-09-19 22:17 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The requirements catch up with a long testing round: FR-126 (an officer
   adds and confirms an address, and correcting one is a sysadmin's) and FR-13a (four statuses,
@@ -2087,4 +2087,4 @@ carries the actual running model ID.
   FR-112, FR-125, FR-126), docs/INTERFACE.md.
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
-- **Git Hash**: pending
+- **Git Hash**: 228518c
