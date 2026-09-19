@@ -1700,4 +1700,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Design and code by the assistant, to the advisor's specification.
 - **Human Review Status**: Pending the advisor's look. 269 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: dde98a8
