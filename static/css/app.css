@@ -133,6 +133,9 @@ html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn, html[data-nav="
 html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
 
 .content { padding: 1.75rem clamp(1rem, 4vw, 3rem) 3rem; max-width: 72rem; width: 100%; }
+/* 72rem is a measure for reading prose. A page whose point is a wide table takes the window it
+   is given, because the alternative is scrolling a table sideways inside a half-empty screen. */
+.content.wide { max-width: none; }
 
 /* Under 60rem: a top bar with the menu button; the sidebar becomes an off-canvas drawer. */
 @media (max-width: 60rem) {
@@ -469,6 +472,10 @@ pre { overflow-x: auto; max-width: 100%; }
 .sortlink:hover { text-decoration: underline; }
 .sortlink.here { color: var(--accent); }
 .sortlink .arrow { font-size: .8em; }
+/* A phone number broken across two lines reads as two numbers, and it is the one column here
+   somebody copies by eye to dial. */
+.table td[data-label="Phone"], .table td[data-label="Callsign"] { white-space: nowrap; }
+@media (max-width: 40rem) { .table td[data-label="Phone"] { white-space: normal; } }
 
 /* An empty state names what belongs there and how it gets there. Quiet, but not so quiet the
    reader takes it for a rendering fault. */

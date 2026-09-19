@@ -208,7 +208,12 @@ def test_the_class_is_its_own_column_and_members_see_it(directory):
         head = re.search(r"<thead>(.*?)</thead>", body, re.S).group(1)
         assert ">Class<" in head, "the class is on the page for everyone"
         assert '<td data-label="Class">' in body
-    assert "Technician" in _as(directory).get("/members/").content.decode()
+    # the letter, not the word: the club reads N/T/G/A/E on every roster, and the column is
+    # narrow enough to matter (NAF, 2026-09-19)
+    body = _as(directory).get("/members/").content.decode()
+    rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
+    assert '<td data-label="Class">T</td>' in rows and '<td data-label="Class">E</td>' in rows
+    assert "Technician</td>" not in rows, "the word belongs in the filter, not the cell"
 
 
 def test_the_class_sorts_up_the_ladder_not_down_the_alphabet(directory):
@@ -242,6 +247,12 @@ def test_a_member_may_filter_by_class_too(directory):
     assert 'name="license"' in body
     rows = _as(member).get("/members/?license=Extra").content.decode()
     assert re.search(r"<tbody>(.*?)</tbody>", rows, re.S).group(1).count("<tr>") == 1
+
+
+def test_the_directory_takes_the_whole_window(directory):
+    """72rem is a measure for reading prose, not for a table this wide."""
+    body = _as(directory).get("/members/").content.decode()
+    assert 'class="content wide"' in body
 
 
 def test_a_phone_number_is_shown_the_way_its_country_writes_it(directory):

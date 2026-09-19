@@ -1724,3 +1724,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 278 tests pass, the accessibility sweep
   passes, and the four guards pass.
 - **Git Hash**: 68e6c7c
+
+## [2026-09-19 16:52 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Three layout corrections to the members directory, from the advisor
+  reading it on a wide screen. The page was capped at 72rem, which is a measure for reading
+  prose, so a table eleven columns wide scrolled sideways inside a half-empty window; a page
+  whose point is a wide table now takes the window it is given, through a block in the base
+  template rather than a rule aimed at one page. Phone numbers no longer wrap, because a number
+  broken across two lines reads as two numbers and it is the column somebody copies by eye to
+  dial; the same holds for a callsign. And the license class shows its letter rather than its
+  word, which is what the club already reads on every roster and saves the column most of its
+  width. The filter keeps the full words, where there is room for them.
+- **Sections/Files Affected**: templates/base.html (a main_class block), static/css/app.css,
+  templates/accounts/members.html, apps/accounts/tests/test_directory.py.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 279 tests pass, the accessibility sweep
+  passes at both widths, and the four guards pass.
+- **Git Hash**: (filled in after committing)

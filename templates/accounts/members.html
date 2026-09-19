@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load labels %}
 {% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block main_class %} wide{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Members</h1>{% if perms.ops.view_reports %}<span><a class="button secondary" href="{% url 'member_roster' %}">Roster and credentials</a> <a class="button secondary" href="{% url 'access_rosters' %}">Access rosters</a> <a class="button secondary" href="{% url 'hours' %}">Hours by course</a></span>{% endif %}</div>
 
@@ -47,7 +48,7 @@ survive a bookmark.{% endcomment %}
   <td data-label="Preferred">{{ m.preferred_name|default:"—" }}</td>
   {% endif %}
   <td data-label="Callsign">{{ m.callsign|default:"—" }}</td>
-  <td data-label="Class">{{ m.license_class|default:"—" }}</td>
+  <td data-label="Class">{{ m.license_letter }}</td>
   {% if full %}<td data-label="Category">{{ m.category|category_label }}</td>{% endif %}
   <td data-label="Position">{{ m.club_position|position_label|default:"—" }}</td>
   {% if full %}
