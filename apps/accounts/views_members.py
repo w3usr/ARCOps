@@ -69,23 +69,15 @@ DIRECTORY_COLUMNS = [
     {"key": "category", "label": "Category", "show": "full"},
     {"key": "position", "label": "Position", "show": "all"},
     {"key": "status", "label": "Status", "show": "full"},
-    # The archive is a flag beside the status, so it is a column of its own, and only for a
-    # reader who may see an archived record at all (the advisor, 2026-09-19).
-    {"key": "archived", "label": "Archived", "show": "archive"},
     {"key": "access", "label": "Access", "show": "full"},
     {"key": "email", "label": "Email", "show": "full"},
     {"key": "phone", "label": "Phone", "show": "full"},
 ]
 
 
-def _shows(column: dict, full: bool, may_see_archive: bool) -> bool:
-    """Whether this reader gets this column: everyone, officers and above, or whoever may read
-    an archived record at all."""
-    if column["show"] == "all":
-        return True
-    if column["show"] == "archive":
-        return full and may_see_archive
-    return full
+def _shows(column: dict, full: bool) -> bool:
+    """Whether this reader gets this column: everyone, or officers and above."""
+    return column["show"] == "all" or full
 
 
 def _sort_keys(positions: dict, cats: dict):
@@ -149,7 +141,6 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
             text(m.last_name),
         ),
         # Down the list in the order the club reads it, rather than down the alphabet.
-        "archived": lambda m: (not m.archived_at, text(m.last_name)),
         "status": lambda m: (
             [k for k, _ in User.STATUSES].index(m.status),
             bool(m.archived_at),
@@ -266,7 +257,7 @@ def members(request):
     default_sort = "last" if full else "name"
     sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
-    shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)}
+    shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full)}
     if sort not in keys or sort not in shown:
         sort = default_sort
     descending = request.GET.get("dir") == "desc"
@@ -281,7 +272,7 @@ def members(request):
 
     columns = []
     for col in DIRECTORY_COLUMNS:
-        if not _shows(col, full, may_see_archive):
+        if not _shows(col, full):
             continue
         here = col["key"] == sort
         params = request.GET.copy()
@@ -461,7 +452,10 @@ def _no_access_because(member) -> str:
         said = f": {member.suspended_reason}" if member.suspended_reason else ""
         return f"Suspended by {who} on {member.suspended_at:%d %b %Y}{said}."
     if member.closure_requested_at:
-        return f"Closed at their own request on {member.closure_requested_at:%d %b %Y}."
+        when = f"{member.closure_requested_at:%d %b %Y}"
+        if member.closed_by:
+            return f"Closed by {member.closed_by.short_name} on {when}."
+        return f"Closed at their own request on {when}."
     return ""
 
 
@@ -656,6 +650,16 @@ def member_edit(request, pk):
                 request,
                 f"Temporary password issued. It works once, within {hours} hours, and is shown only here.",
             )
+        elif action == "shut" and actor.may("archive_members") and member != actor:
+            from .services import close_account
+
+            close_account(actor, member, request.POST.get("reason", ""))
+            messages.success(
+                request,
+                f"{member.short_name}'s account is closed. Their record is kept; archive it "
+                "when you are ready to file them away.",
+            )
+            return redirect("member_edit", pk=member.pk)
         elif action == "close" and may_set_access(actor, member):
             from .services import suspend
 
@@ -750,7 +754,9 @@ def member_edit(request, pk):
             "is_self": member == actor,
             "can_set_access": may_set_access(actor, member),
             "can_readmit": _may_readmit(actor, member),
-            "can_archive": actor.may("archive_members") and not member.has_access,
+            # Archiving closes an account that is still open, so it is offered either way.
+            "can_archive": actor.may("archive_members") and member != actor,
+            "can_close": actor.may("archive_members") and member != actor and member.has_access,
             "no_access_because": _no_access_because(member),
             **(_preferences(member) if member == actor else {}),
         },

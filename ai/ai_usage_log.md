@@ -2034,3 +2034,23 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 324 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 1db41d4
+
+## [2026-09-19 21:52 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The greeting now names the member as the club does, callsign and all. The
+  filter panels' checkboxes were being stretched across their rows by the rule that makes the
+  search box grow, which left every label ragged down the right edge; the rule is scoped to the
+  search input, and a browser test measures the rows rather than trusting the markup. The
+  Archived column is gone, since the archive is a menu entry and a filter. A faculty advisor can
+  now close an account outright, and archiving one that is still open closes it in the same act,
+  so filing a member who has left takes one action and no suspension; the card holding those is
+  called Leaving the club and appears only when there is something in it. Deletion was already a
+  sysadmin's alone.
+- **Sections/Files Affected**: templates/ops/dashboard.html, static/css/app.css,
+  apps/accounts/{models,services,views_members}.py and migration 0019,
+  templates/accounts/{members,member_edit}.html, tools/a11y/test_filter_layout.py (new), and
+  the tests in apps/accounts.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 325 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

@@ -104,7 +104,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     # access; an archived one is the club's record of a former member, kept whole and read by the
     # faculty advisor and the sysadmins; a deleted one is anonymised in place so past rosters and
     # counts stay right.
+    # When the account was closed, and by whom when it was not the member themselves: a faculty
+    # advisor closes the account of somebody who has left without suspending them first (the
+    # advisor, 2026-09-19). Null `closed_by` with a date means they asked for it (FR-11).
     closure_requested_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
     # Suspension is an officer's act and a faculty advisor's to lift (§2.3, 2026-09-19). It is a
     # fact on the account rather than an inference from an empty group list, because the two
     # ways of losing access lead back in through different doors.

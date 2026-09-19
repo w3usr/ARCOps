@@ -401,4 +401,6 @@ def test_the_status_panel_starts_with_everything_but_the_archive(directory):
     body = _as(advisor).get("/members/").content.decode()
     assert 'name="archived" value="no" checked' in body
     assert 'name="archived" value="yes" checked' not in body
-    assert ">Archived</a>" in body or ">Archived<" in body, "and a column beside the status"
+    # the archive is a filter and a menu entry, not a column: there is nothing to say in a cell
+    # about a list that is either all archived or none (NAF, 2026-09-19)
+    assert ">Archived</a>" not in body

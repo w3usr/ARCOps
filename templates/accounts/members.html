@@ -49,7 +49,6 @@ survive a bookmark.{% endcomment %}
   <td data-label="Position">{{ m.club_position|position_label|default:"—" }}</td>
   {% if full %}
   <td data-label="Status">{{ m.status_label }}</td>
-  {% if may_see_archive %}<td data-label="Archived">{% if m.archived_at %}{{ m.archived_at|date:"d M Y" }}{% else %}—{% endif %}</td>{% endif %}
   <td data-label="Access">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
   <td data-label="Email">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}</td>
   <td data-label="Phone">{% if m.cell_phone %}<a href="tel:{{ m.cell_phone }}">{{ m.cell_phone|phone }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>

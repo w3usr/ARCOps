@@ -2,7 +2,9 @@
 {% load times labels %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Hello, {{ user.display_first }}</h1>
+{% comment %}The name the club knows you by, callsign and all (FR-67), rather than a first name
+on its own: the advisor, 2026-09-19, "It should say Hello, Kay N3KN".{% endcomment %}
+<h1>Hello, {{ user.short_name }}</h1>
 {% if user.is_provisional %}
 <section class="card" aria-labelledby="pv"><h2 id="pv">Your account is provisional</h2>
 <p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p></section>

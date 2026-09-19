@@ -52,19 +52,42 @@ def _closed(member):
     return member
 
 
-def test_an_account_in_use_is_not_archived():
-    """Every account somebody can still use stays on the members list (the advisor,
-    2026-09-19)."""
+def test_archiving_an_open_account_closes_it_in_the_same_act():
+    """An archived account is never one somebody can still use.
+
+    The advisor, 2026-09-19: "Faculty Advisors and above should be able to Close and archive
+    accounts without suspending." A departure is not a decision about somebody's conduct, so
+    filing a graduating member takes one action and no suspension.
+    """
     advisor = _user("adv@example.org", "advisor")
     member = _user("mem@example.org")
-    with pytest.raises(ArchiveRefused):
-        archive_member(advisor, member, "graduated")
     r = _as(advisor).post(
         f"/members/{member.pk}/edit/", {"action": "archive", "reason": "graduated"}, follow=True
     )
+    assert r.status_code == 200
     member.refresh_from_db()
-    assert not member.is_archived
-    assert b"closed or suspended before it is archived" in r.content
+    assert member.is_archived and member.status == "closed" and not member.has_access
+    assert member.closed_by == advisor and member.suspended_at is None
+
+
+def test_an_advisor_closes_an_account_without_suspending_it():
+    advisor = _user("adv@example.org", "advisor")
+    member = _user("mem@example.org")
+    _as(advisor).post(
+        f"/members/{member.pk}/edit/", {"action": "shut", "reason": "graduated"}, follow=True
+    )
+    member.refresh_from_db()
+    assert member.status == "closed" and not member.is_archived
+    body = _as(advisor).get(f"/members/{member.pk}/").content.decode()
+    assert "Closed by" in body and "Suspended" not in body
+
+    # an officer has no such button, and a forged post does nothing
+    officer = _user("off@example.org", "officer")
+    other = _user("two@example.org")
+    assert 'value="shut"' not in _as(officer).get(f"/members/{other.pk}/edit/").content.decode()
+    _as(officer).post(f"/members/{other.pk}/edit/", {"action": "shut"})
+    other.refresh_from_db()
+    assert other.has_access
 
 
 def test_archiving_keeps_everything_and_ends_access():

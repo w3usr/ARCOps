@@ -149,11 +149,14 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
   position: absolute; z-index: 20; top: calc(100% + .25rem); left: 0; min-width: 100%;
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg);
   padding: .5rem .7rem; box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .12); margin: 0;
-  min-width: max-content;
+  /* As wide as its longest label, and every row starting at the same edge: the panel sits in a
+     flex row, and without saying so its rows were ragged down the right (NAF, 2026-09-19). */
+  min-width: max-content; display: flex; flex-direction: column; align-items: stretch;
+  text-align: left;
 }
 /* The panel is as wide as its longest label, so the box stays beside the word rather than
    wrapping above it (NAF, 2026-09-19). */
-.filter .check { margin: .2rem 0; flex-wrap: nowrap; white-space: nowrap; }
+.filter .check { margin: .2rem 0; flex-wrap: nowrap; white-space: nowrap; justify-content: flex-start; }
 @media (max-width: 40rem) {
   /* No room to float a panel over a phone: it opens in the flow and pushes the table down. */
   .filter > fieldset { position: static; box-shadow: none; }
@@ -336,7 +339,11 @@ label .req { margin-left: .15rem; }
 .crumbs { margin: 0 0 .5rem; font-size: .9rem; color: var(--muted); }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; align-items: start; }
 .cols > .card, .cols > .stack > .card { margin: 0; }
-.searchrow { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; } .searchrow input { max-width: 24rem; flex: 1 1 14rem; }
+.searchrow { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+/* The search box grows; a checkbox inside a filter panel is not a search box, and this rule
+   used to stretch each one across its row, leaving the labels ragged down the right edge
+   (found by the advisor, 2026-09-19). */
+.searchrow > input[type="search"] { max-width: 24rem; flex: 1 1 14rem; }
 .directory { columns: 14rem; list-style: none; padding: 0; } .directory li { padding: .25rem 0; break-inside: avoid; }
 button.danger { background: var(--bad); color: var(--bad-fg); }
 button.danger:hover { filter: brightness(1.1); }

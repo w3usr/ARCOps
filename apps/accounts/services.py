@@ -408,13 +408,12 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
         raise ArchiveRefused(
             "a guardian is archived once every linked minor has been converted, re-linked, or archived"
         )
-    # An account is closed or suspended before it is archived (the advisor, 2026-09-19), which
-    # is what keeps every account that can be used visible in the directory.
+    # An archived account is never one somebody can still use, so archiving one that still has
+    # access closes it in the same act (the advisor, 2026-09-19: "Faculty Advisors and above
+    # should be able to Close and archive accounts without suspending").
     if user.has_access:
-        raise ArchiveRefused(
-            "an account is closed or suspended before it is archived, so that every account "
-            "somebody can still use is on the members list"
-        )
+        close_account(actor, user, reason or "archived")
+        user.refresh_from_db()
     if not _someone_else_can_administer(user):
         raise ArchiveRefused("the last account that can run the site cannot be archived")
     user.archived_at = timezone.now()
@@ -444,6 +443,30 @@ def restore_member(actor: User, user: User) -> None:
     record(actor, "member.restored", user, before=before, after={"status": user.status})
 
 
+def close_account(actor: User, user: User, reason: str = "") -> None:
+    """Close somebody's account for them: they have left, without anybody being suspended.
+
+    The advisor, 2026-09-19: "Faculty Advisors and above should be able to Close and archive
+    accounts without suspending." A closure is a departure, a suspension is a decision about
+    somebody's conduct, and the two should not have to be confused to file a graduating member.
+    """
+    user.closure_requested_at = timezone.now()
+    user.closed_by = actor if actor.pk != user.pk else None
+    user.suspended_at = None
+    user.suspended_by = None
+    user.suspended_reason = ""
+    user.save(
+        update_fields=[
+            "closure_requested_at",
+            "closed_by",
+            "suspended_at",
+            "suspended_by",
+            "suspended_reason",
+        ]
+    )
+    set_access(actor, user, [], reason or "closed")
+
+
 def suspend(actor: User, user: User, reason: str) -> None:
     """Take an account's access away, with a reason (FR-91).
 
@@ -455,13 +478,15 @@ def suspend(actor: User, user: User, reason: str) -> None:
     user.suspended_at = timezone.now()
     user.suspended_by = actor if actor.pk != user.pk else None
     user.suspended_reason = (reason or "").strip()[:200]
-    user.closure_requested_at = None  # a suspension supersedes a request to leave
+    user.closure_requested_at = None  # a suspension supersedes a closure
+    user.closed_by = None
     user.save(
         update_fields=[
             "suspended_at",
             "suspended_by",
             "suspended_reason",
             "closure_requested_at",
+            "closed_by",
         ]
     )
     set_access(actor, user, [], reason or "suspended")
@@ -478,12 +503,14 @@ def readmit(actor: User, user: User, groups: list[str] | None = None) -> None:
     user.suspended_by = None
     user.suspended_reason = ""
     user.closure_requested_at = None
+    user.closed_by = None
     user.save(
         update_fields=[
             "suspended_at",
             "suspended_by",
             "suspended_reason",
             "closure_requested_at",
+            "closed_by",
         ]
     )
     set_access(actor, user, groups or ["member"], "readmitted")
