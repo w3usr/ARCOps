@@ -1680,4 +1680,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and test by the assistant, at the advisor's decision.
 - **Human Review Status**: Reviewed by the advisor, who made the call on each field. 260 tests
   pass and the guards pass.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: cb553a8
