@@ -1609,7 +1609,7 @@ carries the actual running model ID.
   sweep passes, and the four guards pass.
 - **Git Hash**: 05cc0c3
 
-## [2026-09-19 15:35 UTC]
+## [2026-09-19 15:20 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: A Server Error (500) the advisor hit while testing T3, and the data damage
   behind it. He completed an invitation, made a second one to the same address, and tried it three
