@@ -1895,7 +1895,7 @@ carries the actual running model ID.
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 3bb9b67
 
-## [2026-09-19 20:05 UTC]
+## [2026-09-19 19:51 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Who may appoint whom, to the advisor's rule of 2026-09-19: "Faculty
   advisors should be able to appoint officers, members, and below. Officers should be able to
@@ -1918,4 +1918,4 @@ carries the actual running model ID.
   direction.
 - **Human Review Status**: Pending the advisor's look. 306 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 3ceea88
