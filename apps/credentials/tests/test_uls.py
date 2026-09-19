@@ -374,3 +374,38 @@ def test_the_middle_initial_comes_through_and_reaches_the_account(tmp_path):
     u.refresh_from_db()
     assert (u.first_name, u.middle_name, u.last_name) == ("Mary", "L", "West")
     assert u.full_name == "Mary L West" and u.name_from_uls
+
+
+def test_the_import_writes_while_walking_a_table_larger_than_one_slice():
+    """The winners are written while the staging table is still being read.
+
+    Nothing may hold a read cursor open across those writes: SQLite refuses a write on a
+    connection whose own read statement is still stepping, and this database opens its
+    transactions in IMMEDIATE mode. Streaming the table with `.iterator()` raised *database is
+    locked* thirty-three minutes into the weekly import on 2026-09-19, with no other process
+    involved. This walks more rows than one slice and more than one write batch.
+    """
+    from apps.credentials.uls import apply_staging
+
+    rows = [
+        UlsStaging(
+            usi=f"{n:09d}",
+            callsign=f"W{n:06d}",
+            status_code="A",
+            class_code="G",
+            entity_name=f"Tester {n}",
+            applicant_type="I",
+        )
+        for n in range(6000)
+    ]
+    UlsStaging.objects.bulk_create(rows, batch_size=1000)
+    # two records for one callsign, so the winner logic is exercised across the slices too
+    UlsStaging.objects.create(usi="999999999", callsign="W000010", status_code="C", class_code="E")
+
+    result = apply_staging()
+    assert result["written"] == 6000
+    assert UlsLicense.objects.count() == 6000
+    assert UlsLicense.objects.get(callsign="W000010").operator_class == "General", (
+        "the active record wins wherever the slice boundary happens to fall"
+    )
+    assert UlsStaging.objects.count() == 0

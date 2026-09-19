@@ -69,15 +69,25 @@ DIRECTORY_COLUMNS = [
     {"key": "category", "label": "Category", "show": "full"},
     {"key": "position", "label": "Position", "show": "all"},
     {"key": "status", "label": "Status", "show": "full"},
+    # One roster, and an advisor may ask for the archived rows alongside the live ones, so the
+    # column is what tells them apart. Only a reader who may see an archived record gets it
+    # (the advisor, 2026-09-19: "Faculty advisors and above can see the archived column.
+    # Officers cannot.").
+    {"key": "archived", "label": "Archived", "show": "archive"},
     {"key": "access", "label": "Access", "show": "full"},
     {"key": "email", "label": "Email", "show": "full"},
     {"key": "phone", "label": "Phone", "show": "full"},
 ]
 
 
-def _shows(column: dict, full: bool) -> bool:
-    """Whether this reader gets this column: everyone, or officers and above."""
-    return column["show"] == "all" or full
+def _shows(column: dict, full: bool, may_see_archive: bool = False) -> bool:
+    """Whether this reader gets this column: everyone, officers and above, or whoever may read
+    an archived record at all."""
+    if column["show"] == "all":
+        return True
+    if column["show"] == "archive":
+        return full and may_see_archive
+    return full
 
 
 def _sort_keys(positions: dict, cats: dict):
@@ -141,6 +151,7 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
             text(m.last_name),
         ),
         # Down the list in the order the club reads it, rather than down the alphabet.
+        "archived": lambda m: (not m.archived_at, text(m.last_name)),
         "status": lambda m: (
             [k for k, _ in User.STATUSES].index(m.status),
             bool(m.archived_at),
@@ -257,7 +268,7 @@ def members(request):
     default_sort = "last" if full else "name"
     sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
-    shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full)}
+    shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)}
     if sort not in keys or sort not in shown:
         sort = default_sort
     descending = request.GET.get("dir") == "desc"
@@ -272,7 +283,7 @@ def members(request):
 
     columns = []
     for col in DIRECTORY_COLUMNS:
-        if not _shows(col, full):
+        if not _shows(col, full, may_see_archive):
             continue
         here = col["key"] == sort
         params = request.GET.copy()
@@ -298,7 +309,7 @@ def members(request):
     status_choices = [(k, label) for k, label in User.STATUSES if k != "deleted"]
     if may_see_deleted:
         status_choices.append(("deleted", "Deleted"))
-    archived_choices = [("no", "Not archived"), ("yes", "In the archive")]
+    archived_choices = [("no", "Not archived"), ("yes", "Archived")]
     archived_ticked = archived or {"no"}
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]

@@ -135,9 +135,13 @@ def test_only_a_faculty_advisor_or_above_reads_the_archive():
     archived = _closed(_user("gone@example.org", callsign="N0GON"))
     archive_member(advisor, archived, "graduated")
     assert b"N0GON" not in _as(officer).get("/members/?archived=yes").content
-    # the sidebar offers it to exactly those people
-    assert b"Archive" in _as(advisor).get("/").content
-    assert b"Archive" not in _as(officer).get("/").content
+    # one roster, so no second menu entry: the archived rows are a filter and a column on the
+    # members list, and only a reader who may see one gets either (NAF, 2026-09-19)
+    assert b"Archived members" not in _as(advisor).get("/").content
+    body = _as(advisor).get("/members/").content.decode()
+    assert "sort=archived" in body and 'name="archived"' in body, "the column and the filter"
+    officer_body = _as(officer).get("/members/").content.decode()
+    assert "sort=archived" not in officer_body and 'name="archived"' not in officer_body
 
 
 def test_an_officer_cannot_reach_a_former_member_by_url():

@@ -199,38 +199,65 @@ def _rank(status_code: str, grant) -> tuple:
     return (0 if status_code == "A" else 1, -(grant.toordinal() if grant else 0))
 
 
+STAGED_FIELDS = (
+    "usi",
+    "callsign",
+    "status_code",
+    "grant_date",
+    "expiry_date",
+    "class_code",
+    "entity_name",
+    "first_name",
+    "middle_initial",
+    "last_name",
+    "frn",
+    "applicant_type",
+)
+
+
+def _staged_slices(size: int = 5000):
+    """Walk the staging table in slices, each one read in full before it is handed over.
+
+    **Nothing may hold a read cursor open while the winners are written.** SQLite refuses a
+    write on a connection whose own read statement is still stepping, and this database opens
+    its transactions in IMMEDIATE mode, so streaming the staging table with `.iterator()` and
+    writing inside that loop raised *database is locked* thirty-three minutes into the weekly
+    import (2026-09-19). No other process was involved: the import was blocking itself, which
+    is why the busy timeout could not help and why the smaller daily files never showed it.
+
+    The walk is by key rather than by offset, so it stays honest however large the table is.
+    """
+    from django.db.models import Q
+
+    last_call, last_usi = "", ""
+    while True:
+        after = Q(callsign__gt=last_call) | Q(callsign=last_call, usi__gt=last_usi)
+        rows = list(
+            UlsStaging.objects.filter(after)
+            .order_by("callsign", "usi")
+            .values_list(*STAGED_FIELDS)[:size]
+        )
+        if not rows:
+            return
+        yield rows
+        last_usi, last_call = rows[-1][0], rows[-1][1]
+
+
 def _winners():
     """Yield the winning staging row per callsign: the active record, else the latest grant.
-    One ordered pass over the staging table in chunks, so memory holds one callsign's records
-    at a time however large the table is."""
-    fields = (
-        "usi",
-        "callsign",
-        "status_code",
-        "grant_date",
-        "expiry_date",
-        "class_code",
-        "entity_name",
-        "first_name",
-        "middle_initial",
-        "last_name",
-        "frn",
-        "applicant_type",
-    )
+    One ordered pass over the staging table, a slice at a time, so memory holds one slice and
+    no cursor is open when the caller writes."""
     current = None
     best = None
-    for row in (
-        UlsStaging.objects.order_by("callsign", "usi")
-        .values_list(*fields)
-        .iterator(chunk_size=BATCH)
-    ):
-        call = row[1]
-        if call != current:
-            if best is not None:
-                yield best
-            current, best = call, row
-        elif _rank(row[2], row[3]) < _rank(best[2], best[3]):
-            best = row
+    for rows in _staged_slices():
+        for row in rows:
+            call = row[1]
+            if call != current:
+                if best is not None:
+                    yield best
+                current, best = call, row
+            elif _rank(row[2], row[3]) < _rank(best[2], best[3]):
+                best = row
     if best is not None:
         yield best
 

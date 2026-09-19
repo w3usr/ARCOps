@@ -401,6 +401,6 @@ def test_the_status_panel_starts_with_everything_but_the_archive(directory):
     body = _as(advisor).get("/members/").content.decode()
     assert 'name="archived" value="no" checked' in body
     assert 'name="archived" value="yes" checked' not in body
-    # the archive is a filter and a menu entry, not a column: there is nothing to say in a cell
-    # about a list that is either all archived or none (NAF, 2026-09-19)
-    assert ">Archived</a>" not in body
+    # One roster: an advisor may ask for the archived rows beside the live ones, so a column
+    # tells them apart (NAF, 2026-09-19). An officer gets neither the column nor the filter.
+    assert "sort=archived" in body

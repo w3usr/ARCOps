@@ -2104,3 +2104,22 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 328 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 49d2fe6
+
+## [2026-09-19 22:54 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The weekly FCC import was failing with "database is locked" thirty-three
+  minutes in, and the full traceback named the cause: the winners are written while the staging
+  table is still being read, and SQLite refuses a write on a connection whose own read cursor is
+  open, this database opening its transactions in IMMEDIATE mode. No other process was involved,
+  which is why the busy timeout never helped. The walk now reads a slice at a time by key, so no
+  cursor is open when a batch is written; a test walks more rows than one slice and more than
+  one write batch. And the roster is one page, as the advisor decided: the Archived column
+  returns for whoever may read an archived record, an officer gets neither it nor the filter,
+  the second menu entry is gone, and the filter reads "Archived".
+- **Sections/Files Affected**: apps/credentials/uls.py, apps/accounts/views_members.py,
+  templates/accounts/members.html, templates/base.html, and the tests in apps/accounts and
+  apps/credentials.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 329 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending
