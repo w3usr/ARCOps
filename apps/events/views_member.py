@@ -165,7 +165,19 @@ def waitlist_accept(request, pk):
 
 
 def feed_token(user) -> str:
-    return signing.dumps({"u": user.pk}, salt=FEED_SALT)
+    """The member's own calendar address, which does not change when they look at it again.
+
+    It was a signed string, and Django's signatures carry a timestamp, so the address on the
+    page was different on every load: alarming to read, impossible to tell apart from a leak,
+    and it left one live credential per page view. The key is on the account now, and replacing
+    it is a deliberate act (FR-59).
+    """
+    if not user.calendar_key:
+        from apps.accounts.models import new_calendar_key
+
+        user.calendar_key = new_calendar_key()
+        user.save(update_fields=["calendar_key"])
+    return user.calendar_key
 
 
 def _ics_dt(dt) -> str:
@@ -178,11 +190,15 @@ def _ics_escape(text: str) -> str:
 
 def ical_feed(request, token):
     """A per-member signed URL; works without signing in so a phone calendar can subscribe."""
-    try:
-        data = signing.loads(token, salt=FEED_SALT)
-    except signing.BadSignature as exc:
-        raise Http404 from exc
-    user = get_object_or_404(User, pk=data.get("u"), is_active=True)
+    user = User.objects.filter(calendar_key=token, is_active=True).first()
+    if user is None:
+        # The addresses handed out before the key existed were signed strings; they keep working,
+        # so a calendar somebody subscribed last week does not quietly stop (2026-09-19).
+        try:
+            data = signing.loads(token, salt=FEED_SALT)
+        except signing.BadSignature as exc:
+            raise Http404 from exc
+        user = get_object_or_404(User, pk=data.get("u"), is_active=True)
     club = setting("club.short_name", "Club")
     lines = [
         "BEGIN:VCALENDAR",

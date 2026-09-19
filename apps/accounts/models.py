@@ -27,6 +27,11 @@ LICENSE_LETTERS = {
 }
 
 
+def new_calendar_key() -> str:
+    """A secret in a URL, so it is long and random; 32 bytes is what a calendar feed wants."""
+    return secrets.token_urlsafe(32)
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -100,6 +105,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     callsign = models.CharField(max_length=12, blank=True, db_index=True)
     cell_phone = models.CharField(max_length=30, blank=True)
     push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default
+    # FR-59: the calendar feed's address. A key on the account rather than a signed string, so
+    # the address a member subscribes to stays the same every time they look at it, and so there
+    # is one live credential to replace if it leaks (the advisor, 2026-09-19: "Is this calendar
+    # address supposed to change every time I reload the page?").
+    calendar_key = models.CharField(max_length=64, unique=True, default=new_calendar_key)
     # Closure, archiving, and deletion (FR-11, FR-118, FR-125, §4.3). A closed account is No
     # access; an archived one is the club's record of a former member, kept whole and read by the
     # faculty advisor and the sysadmins; a deleted one is anonymised in place so past rosters and

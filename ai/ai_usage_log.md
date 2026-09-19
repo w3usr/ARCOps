@@ -2136,3 +2136,18 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: f8a9c13
+
+## [2026-09-19 23:22 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The calendar feed's address changed on every page load, which the advisor
+  noticed on his phone. It was a signed string, and Django's signatures carry a timestamp, so
+  every view produced a different address and left another live credential behind; a member
+  could not tell a new address from a leaked one, and there was nothing to revoke. The address
+  is now a key on the account, generated once, the same every time it is read, and the
+  signed addresses handed out before today keep working so nobody's subscription stops.
+- **Sections/Files Affected**: apps/accounts/models.py and migration 0020,
+  apps/events/views_member.py, apps/events/tests/test_roster.py.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 330 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

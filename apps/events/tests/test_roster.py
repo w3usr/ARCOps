@@ -241,3 +241,36 @@ def test_events_list_and_home_show_both_zones(world):
     c.get(f"/events/{world['ev'].pk}/tz/?tz=utc")
     body = c.get("/").content.decode()
     assert 'class="when1">Sat 26 Sep 2026 00:00–04:00 UTC' in body
+
+
+@pytest.mark.django_db
+def test_the_calendar_address_is_the_same_every_time_you_look():
+    """NAF, 2026-09-19: "Is this calendar address supposed to change every time I reload the
+    page? It does, but I feel like it shouldn't."
+
+    It should not: a subscription address that changes on every page load is impossible to tell
+    apart from one that has leaked, and it left a live credential behind on every view.
+    """
+    from django.core import signing
+    from django.test import Client
+
+    from apps.accounts.models import User
+    from apps.events.views_member import FEED_SALT, feed_token
+
+    member = User.objects.create_user(
+        "sked@example.org", "pw-Testing-123", groups=["member"], first_name="Sam", last_name="Key"
+    )
+    c = Client()
+    c.force_login(member)
+    first = c.get("/events/mine/").content.decode()
+    second = c.get("/events/mine/").content.decode()
+    key = feed_token(member)
+    assert key in first and key in second, "the same address, twice"
+    assert len(key) >= 40, "and long enough to be a secret in a URL"
+
+    assert Client().get(f"/events/feed/{key}.ics").status_code == 200
+    assert Client().get("/events/feed/not-a-key.ics").status_code == 404
+
+    # an address handed out before the key existed keeps working
+    old = signing.dumps({"u": member.pk}, salt=FEED_SALT)
+    assert Client().get(f"/events/feed/{old}.ics").status_code == 200
