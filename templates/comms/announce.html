@@ -6,7 +6,7 @@
 {% if event %}<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>{% endif %}
 <h1>Announcement</h1>
 <p class="lede">{% if event %}To the people on {{ event.title }}.{% else %}To the club.{% endif %}</p>
-<p>{% if event %}Everyone signed up for a slot still to come, or a smaller group if you narrow it below.{% else %}Every member whose account is in use, or a smaller group if you narrow it below.{% endif %} Replies come to you{% if event %}, to the captains,{% endif %} and to the club address.</p>
+<p>{% if event %}Everyone signed up for a slot still to come, or a smaller group if you narrow it below.{% else %}Every active member, or a smaller group if you narrow it below. An account that is closed, suspended or archived is not written to.{% endif %} Replies come to you{% if event %}, to the captains,{% endif %} and to the club address.</p>
 
 {% comment %}Recount is deliberately the first submit button in the form, so pressing Enter in the subject field counts again rather than sending to everybody.{% endcomment %}
 <form method="post" class="card stack">{% csrf_token %}

@@ -2054,3 +2054,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 325 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: b58fd2a
+
+## [2026-09-19 22:11 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four from the advisor's testing. A join notice names the person as the
+  club does, callsign in the subject line. A button on the profile's edit page sends a test
+  notification to every device that has allowed one, and says what happened, because browser
+  notifications depend on a permission, a service worker and a push service that may be asleep,
+  and the only honest way to know they work is to send one. Announcements reach active members
+  only. And the fault behind that last one: an account closed and then given a level again read
+  Closed while being perfectly usable, because the status flags and the group list could
+  disagree; granting access now clears them.
+- **Sections/Files Affected**: apps/comms/defaults.py, apps/comms/announce.py,
+  apps/accounts/{services,views_push,urls}.py, templates/accounts/member_edit.html,
+  templates/comms/announce.html, and the tests in apps/accounts and apps/comms.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 328 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

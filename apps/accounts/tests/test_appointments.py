@@ -305,3 +305,37 @@ def test_an_officer_promotes_and_never_demotes(club_people):
     )
     member.refresh_from_db()
     assert not member.has_access, "and No access is among an advisor's answers"
+
+
+def test_an_account_given_access_back_is_no_longer_closed(club_people):
+    """Status and access cannot disagree.
+
+    An account closed and then given a level again read **Closed** while being perfectly
+    usable, and was in the announcement audience (found by the advisor, 2026-09-19).
+    """
+    from apps.accounts.services import request_closure, set_access
+
+    advisor, member = club_people["advisor"], club_people["member"]
+    request_closure(member)
+    member.refresh_from_db()
+    assert member.status == "closed"
+
+    set_access(advisor, member, ["member"], "back on the books")
+    member.refresh_from_db()
+    assert member.status == "active" and member.closure_requested_at is None
+
+
+def test_an_announcement_reaches_active_members_only(club_people):
+    """NAF, 2026-09-19: "Announcements should only go to active members." """
+    from apps.accounts.services import request_closure, suspend
+    from apps.comms.announce import resolve_audience
+
+    advisor, officer, member = (club_people[k] for k in ("advisor", "officer", "member"))
+    closed = _user("left@example.org", ["member"], last_name="Gone")
+    suspended = _user("paused@example.org", ["member"], last_name="Sus")
+    request_closure(closed)
+    suspend(officer, suspended, "pending")
+
+    reached = {u.pk for u in resolve_audience(None, {})}
+    assert member.pk in reached
+    assert closed.pk not in reached and suspended.pk not in reached

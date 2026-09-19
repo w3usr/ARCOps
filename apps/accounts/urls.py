@@ -14,6 +14,7 @@ urlpatterns = [
     path("push/subscribe/", views_push.push_subscribe, name="push_subscribe"),
     path("push/<int:pk>/revoke/", views_push.push_revoke, name="push_revoke"),
     path("push/toggle/", views_push.push_toggle, name="push_toggle"),
+    path("push/test/", views_push.push_test, name="push_test"),
     path("view-as/stop/", impersonate.stop, name="impersonate_stop"),
     path("wards/<int:pk>/act/", guardian.act_start, name="act_start"),
     path("act/stop/", guardian.act_stop, name="act_stop"),

@@ -215,6 +215,8 @@ account. An officer editing somebody else does not see these; they are not the c
 <p class="helptext">Each device asks once for permission. On iPhone and iPad this works only after adding the site to the home screen. Notifications carry the subject and a link, never the computer password or anyone's contact details.</p>
 <p id="push-status" class="muted" data-push-enabled="{{ user.push_enabled|yesno:'1,0' }}"></p>
 <button type="button" id="push-enable-here" class="secondary" hidden>Allow notifications on this device</button>
+<form method="post" action="{% url 'push_test' %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Send a test notification</button></form>
+<p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
 {% if push_subscriptions %}
 <ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.user_agent|truncatechars:60|default:"a browser" }} · since {{ sub.created|date:"j M Y" }}{% if sub.failures %} · {{ sub.failures }} failed{% endif %}
 <form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Forget this device</button></form></li>{% endfor %}</ul>

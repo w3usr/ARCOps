@@ -233,3 +233,22 @@ def test_delivered_html_carries_the_site_layout_and_styled_links(settings):
     assert "EXAMPLE Operations</td>" in html and "club@example.org" in html
     assert '<a style="color:#' in html and 'href="https://x.example/p/"' in html
     assert "See" in mail.outbox[-1].body  # the text part is the bare body
+
+
+def test_a_join_notice_names_the_person_the_way_the_club_does():
+    """NAF, 2026-09-19: "Include the person's call sign in join emails", with the subject line
+    naming the person and their callsign. An officer reading it should know who it is about."""
+    from apps.accounts.services import create_invitation
+    from apps.comms.models import Outbox
+
+    officer = _user()
+    inv = create_invitation(officer, "kay@example.org", "student", False, "")
+    from apps.accounts.services import admit_from_invitation
+
+    admit_from_invitation(
+        inv, "a-Long-Password-77!", first_name="Kay", last_name="Craigie", callsign="N3KN"
+    )
+    subjects = [m.subject for m in Outbox.objects.all()]
+    assert any("Kay Craigie N3KN joined" in s for s in subjects), subjects
+    body = Outbox.objects.filter(subject__contains="joined").first().body_html
+    assert "Kay Craigie N3KN completed the invitation" in body

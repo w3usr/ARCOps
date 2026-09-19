@@ -64,8 +64,8 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "account.completed",
-        "subject": "{{ person.full_name }} joined {{ club.short_name }}",
-        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} ({{ person.callsign }}{% if uls_name %}, ULS name {{ uls_name }}{% endif %}){% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}.</p><p>If that is not who you expected, set the account to No access from their page: <a href="{{ link }}">Open their page</a></p>',
+        "subject": "{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} joined {{ club.short_name }}",
+        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}{% if uls_name %}. The FCC lists that callsign under the name {{ uls_name }}{% endif %}.</p><p>If that is not who you expected, set the account to No access from their page: <a href="{{ link }}">Open their page</a></p>',
         "variables": [
             "person.full_name",
             "person.callsign",

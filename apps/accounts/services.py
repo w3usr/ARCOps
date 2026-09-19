@@ -121,6 +121,24 @@ def set_access(actor: User, user: User, groups: list[str], reason: str = "") -> 
 
     had_access = user.has_access
     set_groups(actor, user, groups)
+    if user.has_access and (user.closure_requested_at or user.suspended_at):
+        # An account somebody can use is not closed and not suspended, whichever way the access
+        # was given back. Without this the two could disagree, and an account reading Closed
+        # was in the announcement audience (found by the advisor, 2026-09-19).
+        user.closure_requested_at = None
+        user.closed_by = None
+        user.suspended_at = None
+        user.suspended_by = None
+        user.suspended_reason = ""
+        user.save(
+            update_fields=[
+                "closure_requested_at",
+                "closed_by",
+                "suspended_at",
+                "suspended_by",
+                "suspended_reason",
+            ]
+        )
     if reason:
         record(actor, "access.changed", user, after={"groups": sorted(groups), "reason": reason})
     if had_access and not user.has_access:

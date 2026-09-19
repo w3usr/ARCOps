@@ -55,7 +55,14 @@ def resolve_audience(event: Event | None, filters: dict) -> list[User]:
     confirmation state, and category. Without: every active member, narrowed by category."""
     cats = [c for c in filters.get("categories", []) if c]
     if event is None:
-        qs = people_who_may("view_directory")
+        # Active members only: an account that is closed, suspended, archived or deleted is not
+        # somebody the club is writing to (the advisor, 2026-09-19).
+        qs = people_who_may("view_directory").filter(
+            archived_at__isnull=True,
+            deleted_at__isnull=True,
+            closure_requested_at__isnull=True,
+            suspended_at__isnull=True,
+        )
         if cats:
             qs = qs.filter(category__in=cats)
         return list(qs.order_by("last_name", "first_name"))
