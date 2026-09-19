@@ -59,6 +59,23 @@ it. The profile, the officer's view of a member, and any public view later are t
 Saving returns to the reading page. What decides whether the button is there is
 `apps.accounts.account.may_manage`, so the button and the page it opens cannot disagree.
 
+## Refusals
+
+A page the session may not open answers **404**, so that a page nobody may see and a page you
+may not see look alike from outside. It is still one of the club's own pages: it says which
+level you are acting at, and offers Home and the level page, because the commonest reason for
+landing there is your own level.
+
+> When I am on a page that requires a certain permission level, and then I switch to a lower
+> level permission. I want to either see a nicely themed permission denied screen, or just be
+> redirected back to my home. I don't want a Not Found. — NAF, 2026-09-19
+
+## Filters
+
+A filter that can sensibly take two answers takes a set: a disclosure holding a checkbox each,
+with the summary naming what is ticked. One panel is open at a time. A drop-down that holds one
+answer is for a choice that is genuinely one of a kind.
+
 ## Destructive actions
 
 Three tiers, and the friction matches what is lost. (After GitLab's Pajamas and the VA design

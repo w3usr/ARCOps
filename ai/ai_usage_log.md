@@ -2072,3 +2072,19 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 328 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 72d50d6
+
+## [2026-09-19 22:20 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The requirements catch up with a long testing round: FR-126 (an officer
+  adds and confirms an address, and correcting one is a sysadmin's) and FR-13a (four statuses,
+  the archive as a flag, filters that take a set) are new; FR-3 gains the member who comes back
+  to their own record, FR-11 and FR-125 the closing and archiving rules, FR-75 the active-members
+  audience, FR-112 the test notification, FR-14 the middle initial, FR-91 the promote-only rule.
+  INTERFACE.md gains what a refusal looks like and what a filter is. Three amendments made
+  earlier today had been lost by a script that raised on its last anchor and wrote nothing, so
+  they were rewritten.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-3, FR-11, FR-13a, FR-14, FR-75, FR-91,
+  FR-112, FR-125, FR-126), docs/INTERFACE.md.
+- **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: pending

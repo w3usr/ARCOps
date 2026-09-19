@@ -412,6 +412,20 @@ officer admits or declines them (FR-121). Every account records the link it join
   a mailbox is a standing door. **(added 2026-09-19)**: one live link per person. Issuing an
   invitation withdraws any earlier one still open to the same address, and the page says how
   many it withdrew; a minor with no address of their own is matched by their guardian's (§2.4).
+
+  **(added 2026-09-19) A member who left comes back to their own record.** An address that
+  belongs to a **closed or archived** account may be invited, and completing that invitation
+  brings the record back rather than starting an empty one: their callsign, agreements,
+  addresses, participation and history are all still there, and the password they choose is set
+  on the account they already had. The officer is told so before they send it. An address that
+  signs somebody in already is refused, as before, and a **suspended** account is refused with
+  the reason, because a suspension is lifted by a faculty advisor (FR-91) and not by inviting
+  somebody again. The same rule governs an entry link (FR-119).
+
+  > We need some mechanism that if an archived member decides to come back (and is eligible to
+  > do so, i.e. not suspended), when an officer or someone else sends them an invite or that
+  > person tries to join, it searches the closed and archived membership to bring that account
+  > back, rather than creating a completely new account. — NAF, 2026-09-19
   Two live links to one account mean that revoking either withdraws nothing, and that the
   person is invited twice.
 - **FR-4 [Must]** The application opens by asking for a callsign. On entry, the system looks it
@@ -541,9 +555,38 @@ officer admits or declines them (FR-121). Every account records the link it join
 - **FR-11 [Should]** A member can ask for their account to be closed. Closure takes the account
   out of every access group, so it can do nothing and sign-in is refused, and it removes the
   person from future slots with a notice to the captains. Nothing of theirs ages out: a member's
-  own record is kept, and a member who has left is archived (FR-125).
+  own record is kept, and a member who has left is archived (FR-125). A closed account stays on
+  the members list reading **Closed**, and **an officer may let them back in** (FR-91): if an
+  officer may invite a member, they may readmit one who asked to leave. A **faculty advisor may
+  close an account for somebody** who has left without asking; the page says which of the two it
+  was, and who did it.
+
+  > if they can invite members, why can't they re-enable an account that has been voluntarily
+  > closed? — NAF, 2026-09-19
 - **FR-12 [Should] (portability)** Member categories and club positions are configurable lists.
   W3USR ships with the values in FR-8.
+- **FR-13a [Must] Status.** Every account has one **status**: **Provisional** (joined through a
+  community link, awaiting review), **Active**, **Closed** (they asked to leave, or an advisor
+  closed it for them, FR-11), or **Suspended** (somebody took their access away, FR-91). All
+  four are on the members list, and the status is a column and a filter for officers and above,
+  sorted in that order rather than alphabetically. **Archived is a flag beside the status, not a
+  value of it** (FR-125): an archived record keeps the status it had, leaves the default list,
+  and is read by narrowing the list to it, through a filter of its own rather than a column,
+  and only by whoever may read the archive. A **deleted** row (FR-118) is a sysadmin's alone.
+  **Status and access cannot disagree**: giving an account a level clears the closure or the
+  suspension on it.
+
+  **Every filter on that list takes a set**: each is a panel of checkboxes rather than a
+  drop-down holding one answer, so "the officers and the advisors" is a question the page can
+  take. The status panel starts with everything ticked but Deleted.
+
+  > Provisional, Active, Closed, and Suspended should by default be visible to Officers and
+  > Above. Once an account is archived, it is not visible in the default membership list.
+  > Perhaps Archive carries its own flag. Once an account is closed or suspended, it can be
+  > archived. — NAF, 2026-09-19
+
+  > Is it possible to have checkboxes in the drop-down so you can select more than one to filter
+  > on? — NAF, 2026-09-19
 - **FR-13 [Must]** A member directory, visible to members, showing each member's short name
   (FR-67), callsign, license class, and club position, searchable by name and callsign. No contact
   details; officers and sysadmins reach those through the member roster (FR-87).
@@ -577,8 +620,8 @@ Verbatim:
   changed (FR-102), and daily thereafter for every account with a callsign, the system
   retrieves license class, expiration date, status, the licensee name, and the **applicant
   type** (what kind of licensee holds the callsign: a person, a club, a RACES station, or a
-  military recreation station) from FCC ULS data and records the result with its source and
-  retrieval time. The applicant type is what a station's letter comes from (FR-67), because the
+  military recreation station) and the **middle initial** from FCC ULS data and records the
+  result with its source and retrieval time. The applicant type is what a station's letter comes from (FR-67), because the
   FCC issues an operator class to a person only. **The daily import is what keeps a license
   current**: an upgrade or a renewal reaches the account the night after the FCC publishes it,
   with no action by anybody. Looking a callsign up by hand, for when somebody cannot wait for
@@ -995,11 +1038,18 @@ Verbatim:
   callsign, addresses, phone, participation, signed agreements. It ends access (the account is
   set to No access and stops authenticating), takes the person out of the member directory and
   out of every message audience, and puts their record in the **archive**, a page only a faculty
-  advisor or a sysadmin can open. Opening the archive is written to the audit log, because it
-  holds contact details for people who are no longer around to be asked. An advisor restores an
-  archived member, and the record comes back untouched, because nothing ages out while they are
-  in it. Archiving is refused for a guardian with a minor still linked, for the last remaining
-  sysadmin, and for the archiver's own account. This is what the club does instead of deleting
+  advisor or a sysadmin can read by narrowing the members list to it. Reading those rows is
+  written to the audit log, because they hold contact details for people who are no longer
+  around to be asked. **An archived account is never one somebody can still use**, so archiving
+  an account that is still open **closes it in the same act**: filing a member who has left is
+  one action and involves no suspension, which is a decision about conduct rather than a
+  departure. Archiving is a flag beside the status rather than a status of its own (FR-13a), so
+  taking a record out of the archive returns it untouched, **still closed**, and letting the
+  person back in is a separate, deliberate act (FR-91). Archiving is refused for a guardian with
+  a minor still linked, for the last account that can run the site, and for the archiver's own.
+
+  > Faculty Advisors and above should be able to Close and archive accounts without suspending.
+  > Only sysadmins should be able to delete. — NAF, 2026-09-19 This is what the club does instead of deleting
   people; FR-118's deliberate deletion remains for the case where a record must actually go.
 
   > I don't really like the automatic deletion. Instead, can we have a method to archive
@@ -1217,6 +1267,14 @@ made it likely that reliable delivery would take time to establish:
   (for the BCC field of their own mail client) and the message body. The announcement is still
   recorded per FR-75, marked *sent outside the system*. This shows addresses to people who may
   already see them (section 2.5) and to no one else.
+- **FR-126 [Must] Somebody else's addresses.** An officer may **add** an address to another
+  account and **confirm** one (the waiver that keeps signing in from depending on mail arriving,
+  FR-120). Taking an address off an account, taking its confirmation away, or turning its club
+  mail off is a **sysadmin's**: those are the member's own settings, and an officer who needs to
+  shut an account out suspends it (FR-91).
+
+  > They should not be able to stop an email address from signing them in, or turn off a users
+  > club email... Users can adjust email settings in their own accounts. — NAF, 2026-09-19
 - **FR-107 [Must]** The sign-in page carries a **"Forgot your password?"** link, reaching a page
   headed **Password reset**. It does not offer to recover a username, because an account has
   none: the account is its own key and any confirmed address signs it in (section 2.6). The
@@ -1283,6 +1341,8 @@ made it likely that reliable delivery would take time to establish:
   day, role, slot status, confirmation state, or member category, or all members. The sender
   sees the recipient count before sending. Every announcement is recorded (sender, audience
   definition, resolved recipient list, body, time) and is visible to officers afterwards.
+  "All members" means the **active** ones: an account that is closed, suspended, archived or
+  deleted is not somebody the club is writing to (2026-09-19).
 - **FR-76 [Must]** Account and credential messages: invitation, application received,
   completed (to inviter and officers), welcome, password reset, agreement submitted (to approvers), agreement
   approved, declined, expiring, expired, revoked (to signer), computer password
@@ -1338,7 +1398,10 @@ made it likely that reliable delivery would take time to establish:
   person has granted permission on that device, so at first sign-in on each device the site
   asks for it; granting activates the subscription, declining leaves the setting shown as
   *blocked by this browser* with how to allow it. One subscription per device, each revocable
-  from the profile page, where the member can also turn the setting off entirely. When on,
+  from the profile page, where the member can also turn the setting off entirely. The page can
+  **send a test notification** and says what happened, because a notification depends on a
+  permission granted per device, a service worker, and a push service that may be asleep, and
+  sending one is the only honest way to know they arrive (2026-09-19). When on,
   every message the member would receive by email under their preferences (FR-71) is also
   delivered as a browser notification, with the mandatory categories included, and tapping it
   opens the relevant page. Browser notifications never carry the computer password or
@@ -1396,7 +1459,17 @@ made it likely that reliable delivery would take time to establish:
   > officer can suspend but only advisor can lift — NAF, 2026-09-19
 
   **One level at a time.** Access is a single choice from a list, not a set of tick boxes: an
-  account is in one group or in none, and "No access" is one of the answers.
+  account is in one group or in none, and "No access" is one of the answers for somebody who may
+  lower a level.
+
+  **An officer promotes; taking access away is the suspension.** Somebody who cannot lift a
+  suspension is offered only the levels **at or above** the account's own, and no "No access":
+  shutting an account out is an act with a name, a reason, and somebody answerable for lifting
+  it.
+
+  > club officers should only be able to promote Provisional to Member. They should never have a
+  > reason to demote to provisional... If a club officer needs to deny an account, they need to
+  > do so through the suspend mechanism. — NAF, 2026-09-19
 
   > Access should be a drop-down. You should only be able to pick one. — NAF, 2026-09-19
 
