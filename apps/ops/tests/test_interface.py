@@ -227,3 +227,31 @@ def test_no_page_carries_an_inline_event_handler(event):
         body = r.content.decode()
         for attr in ("onchange=", "onclick=", "onsubmit=", "onload="):
             assert attr not in body, f"{attr} on {url}"
+
+
+@pytest.mark.django_db
+def test_a_refused_page_is_the_clubs_own_page_and_says_what_to_do():
+    """NAF, 2026-09-19, after dropping a level on a sysadmin page: "I don't want a Not Found."
+
+    The application answers 404 where a session may not open a page, so that a page nobody may
+    see and a page you may not see look alike from outside (§2.1). That is worth keeping; the
+    bare server page it used to render is not.
+    """
+    from django.core.management import call_command
+
+    call_command("club_import")
+    sysadmin = User.objects.create_user(
+        "sys@example.org", "pw-Testing-123", first_name="Sy", last_name="Sadmin"
+    )
+    sysadmin.is_superuser = True
+    sysadmin.save(update_fields=["is_superuser"])
+    c = Client()
+    c.force_login(
+        sysadmin
+    )  # signed in at the club's everyday level, so /ops/settings/ is not theirs
+    r = c.get("/ops/settings/")
+    assert r.status_code == 404
+    body = r.content.decode()
+    assert "Page not found" in body and "Go to Home" in body
+    assert "Change your level" in body and "Faculty advisor" in body
+    assert "<html" in body and "sidenav" in body, "the club's own page, not the server's"

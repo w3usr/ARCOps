@@ -67,6 +67,7 @@ def notifications(request):
 
 
 class InviteForm(forms.Form):
+    returning = None  # set by clean() when the address belongs to a member who left
     email = forms.EmailField(
         required=False,
         label="Invitee's email",
@@ -102,20 +103,18 @@ class InviteForm(forms.Form):
             data["guardian_email"] = ""
             if not data.get("email"):
                 self.add_error("email", "An adult's invitation needs their email address.")
-        # An invitation to an address that already has an account cannot be completed: the
-        # join form refuses it at the far end. Say so here rather than sending somebody a link
-        # that is certain to fail.
-        for field in ("email", "guardian_email"):
-            address = (data.get(field) or "").strip()
-            if not address:
-                continue
-            held = User.objects.by_address(address).first()
-            if held is not None and field == "email":
-                self.add_error(
-                    field,
-                    f"{held.full_name} already has an account with that address. "
-                    "Invite a different address, or find them under Members.",
-                )
+        # An address that already signs somebody in cannot be invited; one that belongs to a
+        # member who left can, and the invitation brings their record back rather than starting
+        # an empty one (FR-125, 2026-09-19).
+        from .services import returning_account
+
+        address = (data.get("email") or "").strip()
+        if address:
+            returning, refusal = returning_account(address)
+            if refusal:
+                self.add_error("email", refusal)
+            elif returning is not None:
+                self.returning = returning
         return data
 
 
@@ -142,6 +141,13 @@ def invitations(request):
                     request,
                     f"{n} earlier invitation{'' if n == 1 else 's'} to that address "
                     f"{'was' if n == 1 else 'were'} withdrawn, so only the link below works.",
+                )
+            if form.returning is not None:
+                messages.info(
+                    request,
+                    f"That address belongs to {form.returning.full_name}, who left the club. "
+                    "Accepting this invitation brings their record back, with their callsign, "
+                    "agreements and history, rather than starting an empty one.",
                 )
             form = InviteForm()
     else:

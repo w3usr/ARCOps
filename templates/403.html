@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Not allowed · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Not allowed</h1>
+{% if minor_readonly %}
+<p>A member under 18 signs in read-only: sign-ups, changes, and profile edits are made by a
+  guardian from their own account. You can change your own password.</p>
+{% elif impersonator %}
+<p>You are viewing the application as somebody else, and nothing can be changed from that view.</p>
+{% else %}
+<p>That is not something this account may do{% if acting_views > 1 %} at the level you are acting
+  at, which is <strong>{{ acting_label }}</strong>{% endif %}.</p>
+{% endif %}
+<p><a class="button" href="{% url 'dashboard' %}">Go to Home</a>{% if acting_views > 1 %} <a class="button secondary" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">Change your level</a>{% endif %}</p>
+{% endblock %}

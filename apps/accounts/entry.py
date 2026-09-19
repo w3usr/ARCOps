@@ -114,6 +114,19 @@ def join_through_link(
     return user
 
 
+def returned_through(link: EntryLink, user: User) -> None:
+    """A member who left came back through this link.
+
+    They come back as a member whatever kind of link it was: an officer admitted them once
+    already, and the link is only the door they walked through (FR-125, 2026-09-19). Their old
+    address is confirmed on the account, so there is nothing to verify either.
+    """
+    user.joined_via = link
+    user.verification_deadline = None
+    user.save(update_fields=["joined_via", "verification_deadline"])
+    record(user, "account.returned_via_link", user, after={"link": link.pk, "kind": link.kind})
+
+
 def complete_verification(user: User, base_url: str, address: str = "") -> str:
     """Marks the address verified; a community account becomes Provisional and officers are told.
     Returns a short description of what happened for the page."""

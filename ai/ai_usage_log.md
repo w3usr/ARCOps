@@ -2015,3 +2015,22 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 317 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: e5135df
+
+## [2026-09-19 21:30 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two things from the advisor's testing. A member who left and comes back
+  gets their own record instead of a second account: an address that belongs to a closed or
+  archived account is recognised when an officer sends an invitation and when the person joins
+  through an entry link, and completing either brings the record back with its callsign,
+  agreements and history. A suspended account is not a returning member, and the refusal says
+  that a faculty advisor lifts a suspension. And a page the session may not open is now the
+  club's own page rather than the server's bare Not Found: it says the level you are acting at
+  and offers Home and the level page, which is what happens when somebody drops a level while
+  standing on a sysadmin page. The menu entry reads Archived members.
+- **Sections/Files Affected**: apps/accounts/{services,entry,views,views_entry}.py,
+  templates/{404,403}.html (new), templates/base.html, and the tests in apps/accounts and
+  apps/ops.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 324 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

@@ -145,8 +145,76 @@ def reissue_invitation(actor: User, inv: Invitation, base_url: str = "") -> Invi
     )
 
 
+def returning_account(address: str):
+    """The account this address already belongs to, if the person is coming back.
+
+    A member who left is **archived, not deleted** (FR-125), so inviting them again should find
+    the record they had rather than start an empty one. The advisor, 2026-09-19: "if an archived
+    member decides to come back... it searches the closed and archived membership to bring that
+    account back, rather than creating a completely new account."
+
+    Returns (account, why-not): an account that may be brought back, or None and a sentence
+    saying why this address cannot be invited. A **suspended** account is not a returning
+    member: somebody took its access away on purpose, and a faculty advisor lifts that (FR-91).
+    """
+    held = User.objects.by_address((address or "").strip()).first()
+    if held is None:
+        return None, ""
+    if held.deleted_at:
+        return None, "That address belonged to an account that was deleted."
+    if held.status == "suspended":
+        return None, (
+            f"{held.full_name}'s account is suspended, so it cannot be invited back. "
+            "A faculty advisor lifts a suspension."
+        )
+    if held.has_access:
+        return None, (
+            f"{held.full_name} already has an account with that address. "
+            "Invite a different address, or find them under Members."
+        )
+    return held, ""
+
+
+def bring_back(actor, user: User, password: str = "", **profile) -> User:
+    """Return a closed or archived member to the club, with everything they had.
+
+    Their callsign, agreements, participation and addresses are all still there; what changed
+    is that they are a member again. A password is set when the person themselves is at the
+    form, because they have just proved they hold the address.
+    """
+    was = user.status
+    if user.is_archived:
+        restore_member(actor, user)
+    for field, value in profile.items():
+        if value:
+            setattr(user, field, value)
+    if password:
+        user.set_password(password)
+    user.is_active = True
+    user.save()
+    readmit(actor, user)
+    record(actor, "member.returned", user, before={"status": was, "archived": bool(was)})
+    return User.objects.get(pk=user.pk)
+
+
 def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
-    """FR-5: completing the form admits the person as a Member with the invitation's category."""
+    """FR-5: completing the form admits the person as a Member with the invitation's category.
+
+    An address that already belongs to a closed or archived account brings that account back
+    instead of starting a new one (FR-125, 2026-09-19).
+    """
+    address = profile.get("email", "") or inv.email
+    returning, _ = returning_account(address)
+    if returning is not None:
+        profile.pop("email", None)
+        user = bring_back(inv.issued_by or returning, returning, password, **profile)
+        inv.state = Invitation.State.COMPLETED
+        inv.completed_at = timezone.now()
+        inv.accepted_by = user
+        inv.save(update_fields=["state", "completed_at", "accepted_by"])
+        record(user, "application.completed", user, after={"invitation": inv.pk, "returned": True})
+        _completion_notices(inv, user)
+        return user
     user = User.objects.create_user(
         email=profile.pop("email", "") or inv.email,  # a minor's may differ (§2.4)
         password=password,

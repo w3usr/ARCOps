@@ -238,28 +238,47 @@ def join_form(request, token):
             d = form.cleaned_data
             if d.get("under_18"):
                 return render(request, "accounts/invitation_minor.html", {"link": link}, status=200)
-            existing = User.objects.by_address(d["email"]).first()
-            if existing:
+            from .services import bring_back, returning_account
+
+            returning, refusal = returning_account(d["email"])
+            if returning is not None:
+                # A member who left, coming back: their record is still here, so it is brought
+                # back rather than duplicated (FR-125, 2026-09-19). The link's own rules still
+                # apply, so a class link admits them at once and a community link does not.
+                user = bring_back(
+                    link.created_by or returning,
+                    returning,
+                    d["password1"],
+                    first_name=d["first_name"],
+                    last_name=d["last_name"],
+                    preferred_name=d["preferred_name"],
+                    cell_phone=d["cell_phone"],
+                )
+                entry.returned_through(link, user)
+            elif refusal or User.objects.by_address(d["email"]).first():
                 # The same page as success (FR-107); the person is told by email instead.
                 from apps.comms.services import send
 
-                send("account.address_in_use", existing, "account")
+                existing = User.objects.by_address(d["email"]).first()
+                if existing:
+                    send("account.address_in_use", existing, "account")
                 return render(
                     request, "accounts/join_sent.html", {"link": link, "email": d["email"]}
                 )
-            user = entry.join_through_link(
-                link,
-                email=d["email"],
-                password=d["password1"],
-                category=d.get("category") or "student",
-                base_url=_base(request),
-                first_name=d["first_name"],
-                middle_name=d["middle_name"],
-                last_name=d["last_name"],
-                preferred_name=d["preferred_name"],
-                callsign=d["callsign"].upper().strip(),
-                cell_phone=d["cell_phone"],
-            )
+            else:
+                user = entry.join_through_link(
+                    link,
+                    email=d["email"],
+                    password=d["password1"],
+                    category=d.get("category") or "student",
+                    base_url=_base(request),
+                    first_name=d["first_name"],
+                    middle_name=d["middle_name"],
+                    last_name=d["last_name"],
+                    preferred_name=d["preferred_name"],
+                    callsign=d["callsign"].upper().strip(),
+                    cell_phone=d["cell_phone"],
+                )
             if user.callsign:
                 from .services import apply_callsign
 
