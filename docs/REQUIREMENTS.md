@@ -437,12 +437,20 @@ officer admits or declines them (FR-121). Every account records the link it join
   field. An account's page **reads**: the name, callsign, license, agreements, addresses, and
   guardians, with no control on it that changes anything. Everything that does change something
   is on an edit page behind an **Edit profile** button, which appears only for a reader who may
-  change something on that account. The member's own profile works the same way. A member under
-  18 has no edit page: their guardian edits the account while acting for them (§2.4).
+  change something on that account. **A member's own profile is that same page**: `/me/` forwards
+  to their own member page and `/me/edit/` to its edit page, so there is one page, one template,
+  and one set of rules, and a member may always read and edit their own record whatever else they
+  may see. The sections that are nobody else's business (the FCC name question, the members they
+  act for, what reaches them, their password, closing the account) appear only when the page is
+  their own. A member under 18 has no edit page: their guardian edits the account while acting
+  for them (§2.4). Saving returns to the page that reads.
 
   > When you click on someone's name, it should take the person to a read-only view of their
   > profile page. […] This will allow for potential public views of profiles, as well as make it
   > more difficult to accidentally change information. — NAF, 2026-09-19
+
+  > These should be the same thing. […] That way there is a more unified codebase and interface.
+  > — NAF, 2026-09-19, on his profile page beside his member page
 - **FR-7 [Must]** Sysadmins can reset any account's password to a generated temporary,
   one-time password. It works for exactly one sign-in, which must set a new password before
   anything else; it expires unused after a configurable period (default 72 hours); and it is
@@ -534,10 +542,26 @@ officer admits or declines them (FR-121). Every account records the link it join
 - **FR-12 [Should] (portability)** Member categories and club positions are configurable lists.
   W3USR ships with the values in FR-8.
 - **FR-13 [Must]** A member directory, visible to members, showing each member's short name
-  (FR-67), callsign, category, and club position, searchable by name and callsign. No contact
+  (FR-67), callsign, license class, and club position, searchable by name and callsign. No contact
   details; officers and sysadmins reach those through the member roster (FR-87).
 
   > Yes, I want this. — NAF, 2026-09-13, Q10
+
+  **One table for everyone** (2026-09-19). What a member may see is fewer columns, not a different
+  shape of page, and the redacted **Name** column is the first column at every level, so an officer
+  sees at a glance what the club sees. Officers also see first, last, and preferred name in full,
+  category, access, email, and phone; **access** is officers-only. Every column sorts, by last name
+  unless asked otherwise, with a total order so that reversing a column reverses the page. The
+  directory narrows by category, position, license class, and access, and the class column carries
+  the letter rather than the word (FR-67) because the club reads letters on every roster. A phone
+  number is shown the way its own country writes it, from the licensed libphonenumber data rather
+  than a pattern of our own, and is stored exactly as it was typed. The table takes the width of
+  the window; 72 rem is a measure for reading prose.
+
+  > Let's do a little work on the Members directory table [...] All columns should be sortable,
+  > with default by last name [...] Should be able to filter on Category, Position, Access [...]
+  > make sure the name column the officers sees is the same one the members see [...] so the
+  > officers can quickly see what is on public view. — NAF, 2026-09-19
 
 ### 3.2 Licenses and credentials
 
@@ -1206,9 +1230,10 @@ made it likely that reliable delivery would take time to establish:
   is on, confirmed or not. Every message to a minor is delivered to the guardian's address(es), with the
   minor's own address included only if one is on file. There is no path by which a minor is
   messaged without the guardian.
-- **FR-71 [Must]** **Notification preferences** live on the member's profile page: one row per
-  message category, with a switch for email and, where enabled (FR-112), for browser
-  notifications. The in-application copy (FR-82) is always kept. Categories a member controls:
+- **FR-71 [Must]** **Notification preferences** belong to the member's own account: the profile
+  page shows what reaches them as plain text, and the switches, one row per message category with
+  email and, where enabled (FR-112), browser notifications, are on its edit page with everything
+  else that changes something (FR-6). The in-application copy (FR-82) is always kept. Categories a member controls:
   automated slot reminders (FR-72); at-risk warnings for slots they hold (FR-73); role-opening
   announcements (FR-80); general announcements (FR-75); the weekly digest (FR-79); license
   expiry notices (FR-17). Categories that **go out no matter what**, because they change
@@ -1361,7 +1386,15 @@ made it likely that reliable delivery would take time to establish:
   nothing identifies them. Signed agreements and their PDFs are kept indefinitely (section 4.3),
   because who was cleared for the station, and when, is the club's answer to the University
   years later; the audit log (FR-92) keeps its entries, with
-  the deleted account's identifier and the deletion itself recorded. A sysadmin cannot delete
+  the deleted account's identifier and the deletion itself recorded. **The row itself stays**,
+  emptied: the audit log names a subject by identifier rather than by a foreign key, so deleting
+  the row would orphan its own record of the deletion. What the row keeps is the last sign-in,
+  which an investigation may need, and what it loses includes the browser-notification switch,
+  because nothing should ever be sent to it again. A deleted account is in no list of people: not
+  the directory, not the archive, not an audience.
+
+  > last_login may still be good for audit or investigation purposes. I think we can clear
+  > push_enabled. — NAF, 2026-09-19 A sysadmin cannot delete
   the last remaining sysadmin account. Deleting a minor's account also deletes the
   responsible-adult records attached to their sign-ups; a guardian account is deleted only
   after every linked minor has been converted (FR-109), re-linked to another guardian, or

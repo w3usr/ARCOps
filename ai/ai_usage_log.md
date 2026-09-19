@@ -1839,3 +1839,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 293 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 12f894f
+
+## [2026-09-19 18:40 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The requirements side of the day's reconciliation. FR-6 now describes a
+  page that reads with the editing behind a button, and a member's own profile being that same
+  page; FR-13 describes the rebuilt directory; FR-14 adds the FCC applicant type; FR-67 gives a
+  club, a RACES station and a military recreation station their letters; FR-71 says where the
+  notification switches live; FR-118 records why a deleted account keeps an emptied row. The
+  advisor's words are quoted with their date in each case.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-6, FR-13, FR-14, FR-67, FR-71, FR-118).
+- **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: pending
