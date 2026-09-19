@@ -1873,7 +1873,7 @@ carries the actual running model ID.
   and the four guards pass.
 - **Git Hash**: 7e779cb
 
-## [2026-09-19 19:35 UTC]
+## [2026-09-19 19:22 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Four changes the advisor asked for while testing. The name is printed in
   the three fields it is stored in, read-only where a callsign makes it the FCC's, with the
@@ -1893,4 +1893,4 @@ carries the actual running model ID.
   direction.
 - **Human Review Status**: Pending the advisor's look. 298 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 3bb9b67
