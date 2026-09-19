@@ -1664,4 +1664,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis, code, and tests by the assistant.
 - **Human Review Status**: Pending the advisor's look. 259 tests pass, the sweep passes, the four
   guards pass. The new test was checked against the unfixed code and fails without it.
-- **Git Hash**: (filled in after committing)
+- **Git Hash**: 423d1c3
