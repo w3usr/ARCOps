@@ -1853,7 +1853,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: e6f8886
 
-## [2026-09-19 19:05 UTC]
+## [2026-09-19 18:53 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: Three faults the advisor found while testing a member's edit page. The
   page never said why the name fields are absent: the partial looked for a `subject` variable
@@ -1871,4 +1871,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look. 295 tests pass, the accessibility sweep
   and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 7e779cb
