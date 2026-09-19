@@ -1840,7 +1840,7 @@ carries the actual running model ID.
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: 12f894f
 
-## [2026-09-19 18:40 UTC]
+## [2026-09-19 18:36 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The requirements side of the day's reconciliation. FR-6 now describes a
   page that reads with the editing behind a button, and a member's own profile being that same
@@ -1851,4 +1851,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-6, FR-13, FR-14, FR-67, FR-71, FR-118).
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
-- **Git Hash**: pending
+- **Git Hash**: e6f8886
