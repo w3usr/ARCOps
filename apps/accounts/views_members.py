@@ -46,8 +46,10 @@ def members(request):
     full = request.user.may("view_member_records")
     q = request.GET.get("q", "").strip()
     # The directory is who the club has now. A former member is in the archive (FR-125), which
-    # is read by a faculty advisor or a sysadmin, so they are out of this list for everyone.
-    current = User.objects.filter(archived_at__isnull=True)
+    # is read by a faculty advisor or a sysadmin, so they are out of this list for everyone. A
+    # deleted account is out too: its row survives only so past rosters keep their shape, and it
+    # was appearing here as "Deleted member" with no address and no access (NAF, 2026-09-19).
+    current = User.objects.filter(archived_at__isnull=True, deleted_at__isnull=True)
     users = (
         # the directory shows every address an officer may write to, so they come in one query
         current.select_related("joined_via", "license").prefetch_related("addresses")

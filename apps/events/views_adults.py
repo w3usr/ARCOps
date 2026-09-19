@@ -113,6 +113,10 @@ def adults(request, signup_id):
             "slot": su.slot,
             "adults": list(su.responsible_adults.all()),
             "saved": previously_named(su),
-            "members": User.objects.filter(under_18=False).order_by("last_name", "first_name"),
+            # with_access(), not every row: an archived or deleted account is no longer somebody
+            # who can be named as the adult accompanying a member under 18.
+            "members": User.objects.with_access()
+            .filter(under_18=False)
+            .order_by("last_name", "first_name"),
         },
     )

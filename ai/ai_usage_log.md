@@ -1649,3 +1649,19 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 255 tests pass, the sweep passes, the four
   guards pass.
 - **Git Hash**: 1f9a447
+
+## [2026-09-19 15:40 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A deleted account was still listed among the members. The advisor deleted a
+  test account and found "a remnant Deleted member" in the directory, with no address and no
+  access. The row itself is right: FR-118 keeps it so a past roster still adds up. What was wrong
+  is that the directory filtered out archived accounts and not deleted ones, and the same slip
+  sat in the responsible-adult picker, which listed every adult row rather than the accounts that
+  can be used. Both now exclude them; archiving and deleting both clear is_active, so
+  with_access() was already right everywhere else it was used.
+- **Sections/Files Affected**: apps/accounts/views_members.py, apps/events/views_adults.py,
+  apps/accounts/tests/test_deleted_not_listed.py (new, four tests).
+- **Nature of Contribution**: Diagnosis, code, and tests by the assistant.
+- **Human Review Status**: Pending the advisor's look. 259 tests pass, the sweep passes, the four
+  guards pass. The new test was checked against the unfixed code and fails without it.
+- **Git Hash**: (filled in after committing)
