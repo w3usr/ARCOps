@@ -25,5 +25,12 @@
 <section class="card" aria-labelledby="feed"><h2 id="feed">Calendar feed</h2>
 <p>Subscribe your phone or desktop calendar to this address and every slot you hold appears there, updated as you sign up or cancel. The address is yours alone; do not share it.</p>
 <p class="copyrow"><code id="feed-url">{{ feed_url }}</code> <button type="button" class="secondary" data-copy="#feed-url">Copy</button></p>
+{% comment %}The address is a key, so it can be replaced: the other half of not being a signed
+string that changed on every page load (NAF, 2026-09-19).{% endcomment %}
+<details class="confirm">
+  <summary>Replace this address</summary>
+  <p>Use this if the address has been shared by accident. You get a new one, and any calendar subscribed to the old address stops receiving your slots until you subscribe it again.</p>
+  <form method="post" action="{% url 'replace_feed' %}">{% csrf_token %}<button type="submit" class="danger">Replace my calendar address</button></form>
+</details>
 </section>
 {% endblock %}

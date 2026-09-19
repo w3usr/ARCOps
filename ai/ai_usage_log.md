@@ -2151,3 +2151,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 330 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: da4a8e3
+
+## [2026-09-19 23:30 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The other half of a calendar address that is a key rather than a
+  signature: a member can replace one that has been shared by accident, behind a disclosure that
+  says what it costs, and the old address stops working at once. Audited.
+- **Sections/Files Affected**: apps/events/{views_member,urls}.py,
+  templates/events/my_schedule.html, apps/events/tests/test_roster.py.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 331 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

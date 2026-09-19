@@ -84,6 +84,7 @@ urlpatterns = [
     path("slot/<int:slot_id>/waitlist/", views_member.waitlist_join, name="waitlist_join"),
     path("waitlist/<int:pk>/withdraw/", views_member.waitlist_withdraw, name="waitlist_withdraw"),
     path("waitlist/<int:pk>/accept/", views_member.waitlist_accept, name="waitlist_accept"),
+    path("feed/replace/", views_member.replace_feed, name="replace_feed"),
     path("feed/<str:token>.ics", views_member.ical_feed, name="ical_feed"),
     path("health/", views_member.health_overview, name="health_overview"),
     path("cannot/<str:token>/", views.cannot_by_token, name="cannot_by_token"),

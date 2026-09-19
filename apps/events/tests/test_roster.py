@@ -274,3 +274,32 @@ def test_the_calendar_address_is_the_same_every_time_you_look():
     # an address handed out before the key existed keeps working
     old = signing.dumps({"u": member.pk}, salt=FEED_SALT)
     assert Client().get(f"/events/feed/{old}.ics").status_code == 200
+
+
+@pytest.mark.django_db
+def test_a_member_can_replace_a_calendar_address_that_has_leaked():
+    """The other half of holding a key rather than a signature: it can be revoked."""
+    from django.test import Client
+
+    from apps.accounts.models import User
+    from apps.events.views_member import feed_token
+    from apps.ops.models import AuditLog
+
+    member = User.objects.create_user(
+        "leak@example.org", "pw-Testing-123", groups=["member"], first_name="Lee", last_name="Key"
+    )
+    old = feed_token(member)
+    assert Client().get(f"/events/feed/{old}.ics").status_code == 200
+
+    c = Client()
+    c.force_login(member)
+    assert "Replace this address" in c.get("/events/mine/").content.decode()
+    r = c.post("/events/feed/replace/", follow=True)
+    assert r.status_code == 200 and b"Your calendar address is new" in r.content
+
+    member.refresh_from_db()
+    new = member.calendar_key
+    assert new != old
+    assert Client().get(f"/events/feed/{old}.ics").status_code == 404, "the old one stops working"
+    assert Client().get(f"/events/feed/{new}.ics").status_code == 200
+    assert AuditLog.objects.filter(action="calendar.address_replaced").exists()

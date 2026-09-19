@@ -180,6 +180,28 @@ def feed_token(user) -> str:
     return user.calendar_key
 
 
+@login_required
+@require_POST
+def replace_feed(request):
+    """Give this account a new calendar address, which stops the old one working.
+
+    The other half of holding a key rather than a signature: an address that has been shared by
+    accident can be replaced, and the calendars subscribed to the old one stop receiving.
+    """
+    from apps.accounts.models import new_calendar_key
+    from apps.ops.audit import record
+
+    request.user.calendar_key = new_calendar_key()
+    request.user.save(update_fields=["calendar_key"])
+    record(request.user, "calendar.address_replaced", request.user)
+    messages.success(
+        request,
+        "Your calendar address is new. Subscribe your calendar to it again; anything subscribed "
+        "to the old address stops receiving your slots.",
+    )
+    return redirect("my_schedule")
+
+
 def _ics_dt(dt) -> str:
     return dt.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
 
