@@ -261,6 +261,62 @@ def test_a_phone_number_is_shown_the_way_its_country_writes_it(directory):
     u.save(update_fields=["cell_phone"])
     body = _as(directory).get("/members/").content.decode()
     assert "(973) 787-4506" in body, "formatted for display"
-    assert 'href="tel:9737874506"' in body, "dialled as stored"
+    assert 'href="tel:9737874506"' in body, "dialed as stored"
     u.refresh_from_db()
     assert u.cell_phone == "9737874506", "what they typed is what is stored"
+
+
+def _club_station(directory):
+    """W2FSR on the live site: a club callsign, matched at the FCC, with no operator class.
+
+    The FCC issues no class to a club, so the record is a callsign and a status and nothing
+    else. NAF, 2026-09-19: "It's not technically true... that is a Club call sign."
+    """
+    from apps.credentials.models import LicenseRecord
+
+    u = User.objects.by_address("alpha@example.org").get()
+    u.callsign = "W2FSR"
+    u.save(update_fields=["callsign"])
+    LicenseRecord.objects.create(user=u, callsign="W2FSR", operator_class="", status="active")
+    return u
+
+
+def test_a_club_callsign_reads_c_and_an_unlicensed_account_reads_u(directory):
+    club = _club_station(directory)
+    assert club.license_letter == "C"
+    assert User.objects.by_address("zeta@example.org").get().license_letter == "U"
+    rows = re.search(
+        r"<tbody>(.*?)</tbody>", _as(directory).get("/members/").content.decode(), re.S
+    ).group(1)
+    assert '<td data-label="Class">C</td>' in rows
+    assert '<td data-label="Class">U</td>' in rows
+
+
+def test_a_callsign_the_fcc_has_no_record_of_is_not_a_club(directory):
+    """Blank class is also what "never checked" looks like, so C needs a matched record."""
+    from apps.credentials.models import LicenseRecord
+
+    u = User.objects.by_address("zeta@example.org").get()
+    u.callsign = "W1ZZZ"
+    u.save(update_fields=["callsign"])
+    lic = LicenseRecord.objects.create(user=u, callsign="W1ZZZ", status="unverified")
+    assert User.objects.get(pk=u.pk).license_letter == "U"
+    lic.status = "not_found"
+    lic.save(update_fields=["status"])
+    assert User.objects.get(pk=u.pk).license_letter == "U"
+
+
+def test_club_stations_filter_and_sort_apart_from_the_unlicensed(directory):
+    _licensed(directory)
+    _club_station(directory)
+    c = _as(directory)
+    body = c.get("/members/").content.decode()
+    assert ">Club station<" in body, "its own entry in the class filter"
+    assert _names(c.get("/members/?license=club").content.decode()) == ["Zephyr"]
+    assert _names(c.get("/members/?license=none").content.decode()) == [], "a club holds a license"
+    # Technician, Extra, then the club station, which sits below the ladder it is not on
+    assert _names(c.get("/members/?sort=class&dir=asc").content.decode()) == [
+        "Adams",
+        "Officer",
+        "Zephyr",
+    ]

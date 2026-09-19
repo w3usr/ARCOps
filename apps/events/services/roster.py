@@ -133,8 +133,12 @@ class Cell:
 
     @property
     def class_counts(self) -> str:
-        """FR-121: what a Provisional member sees of a slot's people, e.g. '1 G, 2 U'."""
-        order = "EAGTNU"
+        """FR-121: what a Provisional member sees of a slot's people, e.g. '1 G, 2 U'.
+
+        C is a club station, which the FCC gives no operator class, so it sits below the
+        ladder and above the people holding no license at all.
+        """
+        order = "EAGTNCU"
         counts: dict[str, int] = {}
         for su in self.signups:
             letter = su.user.license_letter

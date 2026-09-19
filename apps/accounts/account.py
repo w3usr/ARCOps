@@ -218,20 +218,47 @@ def _label(setting_key: str, key: str) -> str:
     return key or ""
 
 
-def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
-    """The account fields this person may not change.
+# Beyond the fields: what else a person can do on somebody's account page. A reader who holds
+# none of these and no editable field sees the profile and no way to change it.
+MANAGING_CAPABILITIES = (
+    "manage_member_addresses",
+    "override_license",
+    "assign_groups",
+    "archive_members",
+    "delete_accounts",
+    "issue_temporary_password",
+    "impersonate_members",
+    "convert_minor_accounts",
+    "edit_member_privileges",
+)
 
-    `skip` drops a field the page shows elsewhere, such as the name in a page heading.
 
-    A page shows each field once: an input where they may change it, a line of text where they
-    may not. The two come from the same table, so nothing is shown twice and nothing is missed.
+def may_manage(actor: User, subject: User) -> bool:
+    """Whether this person has anything to change on that account.
+
+    What decides whether the profile page offers `Edit profile` (NAF, 2026-09-19: "If they have
+    the permission to edit a profile... there should be a button").
     """
-    allowed = set(editable_fields(actor, subject))
+    if bool(editable_fields(actor, subject)):
+        return True
+    return any(actor.may(c) for c in MANAGING_CAPABILITIES)
+
+
+def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
+    """Every account field as a line of text, whoever is reading.
+
+    A profile page shows the account without a form in front of it (NAF, 2026-09-19: a name in
+    the directory opens "a read-only view of their profile page"), and editing is a page of its
+    own. Each row carries the field it came from, so `readonly_rows` can take the same list and
+    drop what the reader is about to be given an input for.
+    """
+    from apps.ops.templatetags.labels import phone
+
     rows: list[dict] = []
 
     def add(field: str, label: str, value) -> None:
-        if field not in allowed and field not in skip and value:
-            rows.append({"label": label, "value": value})
+        if field not in skip and value:
+            rows.append({"field": field, "label": label, "value": value})
 
     name = subject.full_name
     if subject.name_from_uls and subject.callsign:
@@ -242,9 +269,9 @@ def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> lis
     add("category", "Category", _label("member_categories", subject.category))
     add("club_position", "Club position", _label("club_positions", subject.club_position))
     add("groups", "Access", _groups_line(subject))
-    add("cell_phone", "Mobile number", subject.cell_phone)
-    if subject.under_18 and "under_18" not in allowed:
-        rows.append({"label": "Under 18", "value": "yes, a guardian acts for them"})
+    add("cell_phone", "Mobile number", phone(subject.cell_phone))
+    if subject.under_18:
+        add("under_18", "Under 18", "yes, a guardian acts for them")
     if subject.category == "student":
         add("student_level", "Student level", subject.get_student_level_display())
         graduation = " ".join(
@@ -254,3 +281,15 @@ def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> lis
         )
         add("graduation_year", "Graduation", graduation)
     return rows
+
+
+def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
+    """The account fields this person may not change.
+
+    `skip` drops a field the page shows elsewhere, such as the name in a page heading.
+
+    A page shows each field once: an input where they may change it, a line of text where they
+    may not. The two come from the same table, so nothing is shown twice and nothing is missed.
+    """
+    allowed = set(editable_fields(actor, subject))
+    return [r for r in profile_rows(subject, skip=skip) if r["field"] not in allowed]

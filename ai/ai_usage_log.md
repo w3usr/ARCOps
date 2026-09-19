@@ -1742,3 +1742,36 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 279 tests pass, the accessibility sweep
   passes at both widths, and the four guards pass.
 - **Git Hash**: c7b019a
+
+## [2026-09-19 17:07 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two things the advisor asked for while testing the members directory. A
+  club callsign was reading **U** in the Class column, which is not true: the FCC issues no
+  operator class to a club, because a club is not a person, so a club's record carries a
+  callsign and a status and an empty class field. That empty field is also what "never checked"
+  looks like, so the letter is now C only where the FCC has a matched record and no class, and
+  U everywhere else. C sorts below the ladder and above the unlicensed, has its own entry in
+  the class filter, and is counted on the rosters a Provisional member sees. RACES and
+  military-recreation licenses carry no operator class either and will read C as well; all
+  three are a station rather than a person, which is what the letter says.
+
+  Second, a profile page now **reads**. Clicking a name opens the record with no control on it
+  that changes anything, and an **Edit profile** button appears for a reader entitled to change
+  something; every form that was on that page moved to an edit page of its own. The same split
+  applies to a member's own profile, and a member under 18 has no edit page, because their
+  guardian edits the account while acting for them. The advisor's reason, 2026-09-19: it "will
+  allow for potential public views of profiles, as well as make it more difficult to
+  accidentally change information". The name and callsign in the corner of the sidebar now open
+  the profile, with the acting level beside it as its own link.
+- **Sections/Files Affected**: apps/accounts/models.py (license_letter), apps/accounts/account.py
+  (profile_rows, may_manage), apps/accounts/views.py (profile, profile_edit),
+  apps/accounts/views_members.py (member_detail read-only, member_edit), apps/accounts/urls.py,
+  config/urls.py, apps/events/services/roster.py, templates/accounts/{member_detail,member_edit,
+  profile,profile_edit}.html, templates/base.html, static/css/app.css, docs/INTERFACE.md,
+  docs/REQUIREMENTS.md (FR-6, FR-67), tools/a11y/test_axe.py, and the tests across
+  apps/accounts and apps/credentials.
+- **Nature of Contribution**: Code, tests, and documentation by the assistant, at the advisor's
+  direction.
+- **Human Review Status**: Pending the advisor's look. 289 tests pass, the accessibility sweep
+  passes for all eight roles at both widths, and the four guards pass.
+- **Git Hash**: pending

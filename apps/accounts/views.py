@@ -16,7 +16,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 
 from . import views_addresses
-from .account import AccountForm, readonly_rows, save_account
+from .account import AccountForm, profile_rows, save_account
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
 from .models import Invitation, User
@@ -31,33 +31,13 @@ from .services import (
 
 @login_required
 def profile(request):
-    """A member's own account: the same fields and the same save path an officer's view of them
-    uses (apps.accounts.account), plus what is theirs alone: notifications, browser
-    notifications, security, closing the account."""
-    if request.method == "POST":
-        if views_addresses.handle(request, request.user):
-            return redirect(reverse("profile") + "#addr")
-        form = AccountForm(request.POST, instance=request.user, actor=request.user)
-        if form.is_valid():
-            result = save_account(form, request.user, f"{request.scheme}://{request.get_host()}")
-            call = result["callsign"]
-            if call and call["state"] == "pending":
-                messages.warning(
-                    request,
-                    f"The FCC lists {request.user.callsign} under the name {call['uls_name']}. "
-                    "Confirm below that this is you, or the callsign will not be kept.",
-                )
-            elif call and call["state"] == "unverified":
-                messages.info(
-                    request,
-                    f"{request.user.callsign} is not in the FCC table yet; it is held as "
-                    "unverified until the nightly import finds it.",
-                )
-            messages.success(request, "Profile saved.")
-            return redirect("profile")
-    else:
-        form = AccountForm(instance=request.user, actor=request.user)
-    license = LicenseRecord.objects.filter(user=request.user).first()
+    """A member's own account, read-only, plus what is theirs alone: notifications, browser
+    notifications, security, closing the account.
+
+    The details and the addresses are edited on a page of their own (`profile_edit`), so
+    reading your own profile cannot change it by accident. NAF asked for this on 2026-09-19,
+    for everybody's profile page at once.
+    """
     from apps.comms.categories import CONTROLLED, MANDATORY
 
     prefs = {p.category: p for p in request.user.notification_preferences.all()}
@@ -74,20 +54,65 @@ def profile(request):
         request,
         "accounts/profile.html",
         {
-            "form": form,
-            "license": license,
-            "readonly_rows": readonly_rows(request.user, request.user),
+            "license": LicenseRecord.objects.filter(user=request.user).first(),
+            "rows": profile_rows(request.user),
             "notification_rows": rows,
             "mandatory_labels": list(MANDATORY.values()),
             "push_subscriptions": request.user.push_subscriptions.order_by("-created"),
             "addresses": addresses_state(request.user),
-            "address_subject_is_self": True,
-            "guardians": list(
-                request.user.guardianships.filter(active=True).select_related("guardian")
-            )
-            if request.user.under_18
-            else [],
+            "guardians": _guardians(request.user),
         },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def profile_edit(request):
+    """The member's own details and addresses, with the same form and the same save path an
+    officer's view of them uses (apps.accounts.account)."""
+    # A member under 18 signs in read-only; their guardian edits this while acting for them
+    # (§2.4). The middleware already refuses the POST; this keeps the page itself away too.
+    if request.user.under_18 and getattr(request, "acting_guardian", None) is None:
+        raise Http404
+    if request.method == "POST":
+        if views_addresses.handle(request, request.user):
+            return redirect(reverse("profile_edit") + "#addr")
+        form = AccountForm(request.POST, instance=request.user, actor=request.user)
+        if form.is_valid():
+            result = save_account(form, request.user, f"{request.scheme}://{request.get_host()}")
+            call = result["callsign"]
+            if call and call["state"] == "pending":
+                messages.warning(
+                    request,
+                    f"The FCC lists {request.user.callsign} under the name {call['uls_name']}. "
+                    "Confirm on your profile that this is you, or the callsign will not be kept.",
+                )
+            elif call and call["state"] == "unverified":
+                messages.info(
+                    request,
+                    f"{request.user.callsign} is not in the FCC table yet; it is held as "
+                    "unverified until the nightly import finds it.",
+                )
+            messages.success(request, "Profile saved.")
+            return redirect("profile")
+    else:
+        form = AccountForm(instance=request.user, actor=request.user)
+    return render(
+        request,
+        "accounts/profile_edit.html",
+        {
+            "form": form,
+            "addresses": addresses_state(request.user),
+            "address_subject_is_self": True,
+        },
+    )
+
+
+def _guardians(user):
+    return (
+        list(user.guardianships.filter(active=True).select_related("guardian"))
+        if user.under_18
+        else []
     )
 
 

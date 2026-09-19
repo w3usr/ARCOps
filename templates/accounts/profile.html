@@ -2,7 +2,9 @@
 {% load labels %}
 {% block title %}Profile · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Your profile</h1>
+{% comment %}Read-only. The details and the addresses are edited behind the button, which is
+what keeps a page opened to check your own callsign from changing it (NAF, 2026-09-19).{% endcomment %}
+<div class="titlerow"><h1>Your profile</h1>{% if not minor_readonly %}<a class="button secondary" href="{% url 'profile_edit' %}">Edit profile</a>{% endif %}</div>
 {% if user.pending_uls_name %}
 <div class="banner" role="status">
   <p><strong>Is this you?</strong> The FCC lists <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which differs from the name on your account. If it is you, your name becomes the FCC's; if not, the callsign is not kept.</p>
@@ -24,18 +26,22 @@
 <p class="muted">They sign you up, manage this profile, and receive every message sent to you. When you turn 18, tell a faculty advisor and the account becomes your own.</p>
 </section>
 {% endif %}
-{% if minor_readonly %}
-<section class="card"><h2>Details</h2><dl class="kv"><dt>Preferred name</dt><dd>{{ user.preferred_name|default:"—" }}</dd><dt>Mobile</dt><dd>{{ user.cell_phone|phone|default:"—" }}</dd><dt>Callsign</dt><dd>{{ user.callsign|default:"none" }}</dd></dl><p class="muted">Your guardian edits these while acting for you.</p></section>
-{% else %}
-{% include "accounts/_account_form.html" with form_heading="Details" %}
-{% endif %}
-<section class="card">{% include "accounts/_addresses.html" with addresses_heading="Email" %}</section>
+<section class="card"><h2>Details</h2>
+<dl class="dl">{% for r in rows %}<dt>{{ r.label }}</dt><dd>{{ r.value }}</dd>{% endfor %}</dl>
+{% if minor_readonly %}<p class="muted">Your guardian edits these while acting for you.</p>{% endif %}</section>
+<section class="card"><h2 id="addr">Email</h2>
+<ul class="list addresses-list">
+{% for a in addresses %}
+  <li><p class="address">{{ a.address }}{% if a.kind %} <span class="tag">{{ a.kind }}</span>{% endif %}</p>
+  <p class="addr-state">{% if a.confirmed %}Signs you in{% else %}<span class="needs">Not confirmed, so it cannot sign you in yet</span>{% endif %} · Club mail {% if a.delivery %}on{% else %}off{% endif %}</p></li>
+{% empty %}<li class="empty">No address of your own. Everything the club sends reaches your guardian.</li>{% endfor %}
+</ul></section>
 <section class="card"><h2>Membership</h2>
 <dl class="dl">
-{% include "accounts/_account_readonly.html" %}
+<dt>Joined</dt><dd>{{ user.date_joined|date:"d M Y" }}{% if user.joined_via %} via {{ user.joined_via.label }}{% endif %}</dd>
 {% if license %}<dt>License</dt><dd>{{ license.callsign }} · {{ license.effective_class|default:"class unknown" }} · {{ license.status_label }}{% if license.effective_expiry %} · expires {{ license.effective_expiry }}{% endif %} <small class="muted">({{ license.source_label }}{% if license.retrieved_at %}, checked {{ license.retrieved_at|date:"j M" }}{% endif %})</small></dd>{% endif %}
 </dl>
-<p class="helptext">What the club records about you. A club officer sets these; ask one if something here is wrong.</p></section>
+<p class="helptext">What the club records about you. A club officer sets the category, position, and access; ask one if something here is wrong.</p></section>
 
 {% if not minor_readonly %}
 <form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}

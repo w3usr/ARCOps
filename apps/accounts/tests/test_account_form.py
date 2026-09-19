@@ -82,14 +82,14 @@ def test_both_pages_render_the_same_fields_for_the_same_person():
         session = c.session  # acting at the raised level
         session["acting_view"] = "sysadmin"
         session.save()
-    profile = c.get("/me/").content.decode()
+    profile = c.get("/me/edit/").content.decode()
     c2 = Client()
     c2.force_login(sys_user)
     if sys_user.is_superuser:
         session = c2.session  # acting at the raised level
         session["acting_view"] = "sysadmin"
         session.save()
-    member_page = c2.get(f"/members/{m.pk}/").content.decode()
+    member_page = c2.get(f"/members/{m.pk}/edit/").content.decode()
     # the member's own fields appear on their page; the privilege fields only on the officer's
     assert 'name="preferred_name"' in profile and 'name="category"' not in profile
     assert 'name="preferred_name"' in member_page and 'name="category"' in member_page
@@ -117,7 +117,7 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
         session["acting_view"] = "sysadmin"
         session.save()
     r = c.post(
-        f"/members/{m.pk}/",
+        f"/members/{m.pk}/edit/",
         {
             "action": "save",
             "first_name": "Mem",
@@ -136,7 +136,7 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
 
     # changing it again keeps the old one in the history, as the profile always did
     c.post(
-        f"/members/{m.pk}/",
+        f"/members/{m.pk}/edit/",
         {
             "action": "save",
             "first_name": "Mem",
@@ -186,6 +186,6 @@ def test_no_template_comment_reaches_the_page():
         session = c.session  # acting at the raised level
         session["acting_view"] = "sysadmin"
         session.save()
-    for url in ("/me/", f"/members/{sys_user.pk}/"):
+    for url in ("/me/", "/me/edit/", f"/members/{sys_user.pk}/edit/"):
         body = c.get(url).content.decode()
         assert "{#" not in body and "editable_fields" not in body, url

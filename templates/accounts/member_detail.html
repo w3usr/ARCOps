@@ -2,69 +2,45 @@
 {% load labels %}
 {% block title %}{{ member.full_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
+{% comment %}A profile, read-only. Nothing on this page changes anything: every control lives on
+the edit page behind the button, so a page opened to read somebody's callsign cannot alter their
+access on the way past. The officer's view and the member's own profile are the same page.{% endcomment %}
 <p class="crumbs"><a href="{% url 'members' %}">Members</a></p>
-<h1>{{ member.full_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
+<div class="titlerow">
+  <h1>{{ member.full_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
+  {% if can_edit %}<a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit profile</a>{% endif %}
+</div>
+
+{% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|date:"j M Y" }}. The row stays so past rosters keep their shape.</p>{% endif %}
+{% if member.is_archived %}<p class="note">In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>{% endif %}
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
-{% if member.verification_deadline and not member.has_confirmed_address %}
-<div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>
-<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="mark_verified"><button type="submit" class="secondary">Mark address verified</button></form></div>
-{% endif %}
-
-{% if member.is_provisional %}
-<section class="card highlight" aria-labelledby="rv">
-  <h2 id="rv">Waiting for review</h2>
-  <p>Joined {{ member.date_joined|date:"d M Y" }} through <strong>{{ member.joined_via.label|default:"a community link" }}</strong>{% if member.callsign %}; callsign {{ member.callsign }} ({{ member.license_letter }}){% endif %}. As a member they will see other members' names and may sign the agreements.</p>
-  <div class="row">
-    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="admit"><button type="submit">Admit as member</button></form>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="decline">
-      <div class="field"><label for="dreason">Reason</label><input id="dreason" name="reason"><span class="helptext">Sent to the person.</span></div>
-      <div><button type="submit" class="danger">Decline</button></div></form>
-  </div>
-</section>
-{% endif %}
-
-{% if temp_password %}
-<section class="card highlight secret" aria-labelledby="tp">
-  <h2 id="tp">Temporary password for {{ member.display_first }}</h2>
-  <p><code id="tpv">{{ temp_password }}</code> <button type="button" class="secondary" data-copy="#tpv">Copy</button></p>
-  <p class="muted">Hand it over in person or by any means you trust. It signs in once and must be replaced at that sign-in; it is not stored and will not be shown again.</p>
-</section>
-{% endif %}
+{% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. They joined {{ member.date_joined|date:"d M Y" }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
+{% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>{% endif %}
 
 <section class="card" aria-labelledby="d">
   <h2 id="d">Details</h2>
   <dl class="dl">
-    {% include "accounts/_account_readonly.html" %}
+    {% for r in rows %}<dt>{{ r.label }}</dt><dd>{{ r.value }}</dd>{% endfor %}
     <dt>Joined</dt><dd>{{ member.date_joined|date:"d M Y" }}{% if member.joined_via %} via {{ member.joined_via.label }}{% endif %}</dd>
   </dl>
 </section>
 
-<section class="card">{% include "accounts/_addresses.html" %}</section>
+<section class="card" aria-labelledby="em">
+  <h2 id="em">Email</h2>
+  <ul class="list addresses-list">
+  {% for a in addresses %}
+    <li><p class="address">{{ a.address }}{% if a.kind %} <span class="tag">{{ a.kind }}</span>{% endif %}</p>
+    <p class="addr-state">{% if a.confirmed %}Signs {% if is_self %}you{% else %}them{% endif %} in{% else %}<span class="needs">Not confirmed, so it cannot sign {% if is_self %}you{% else %}them{% endif %} in yet</span>{% endif %} · Club mail {% if a.delivery %}on{% else %}off{% endif %}</p></li>
+  {% empty %}<li class="empty">No address. A member under 18 may hold none: their guardians are written to instead.</li>{% endfor %}
+  </ul>
+</section>
 
 <section class="card" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
-  <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.effective_class|default:"class unknown" }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
+  <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.effective_class|default:"no operator class, as a club station holds" }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
   <p class="helptext">{{ standing.license.source_label|capfirst }}.{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>
   {% else %}<p class="muted">None on file.</p>{% endif %}
-  {% if member.callsign %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="license_lookup"><button type="submit" class="secondary">Look this callsign up in the FCC table</button></form>{% endif %}
-  {% if perms.ops.override_license %}
-  <details>
-    <summary>Set the license by hand</summary>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="license_override">
-      <p class="helptext">Where the FCC table is out of date or wrong, or for a license issued outside the United States. What you set here is shown wherever the license appears, and the nightly import never replaces it. A blank field leaves the FCC value in force.</p>
-      <div class="row">
-        <div class="field"><label for="ov-class">Class</label><select id="ov-class" name="override_class"><option value="">FCC value</option>{% for l in ladder %}<option value="{{ l }}"{% if standing.license and standing.license.override_class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-        <div class="field"><label for="ov-status">Status</label><select id="ov-status" name="override_status"><option value="">FCC value</option><option value="active"{% if standing.license.override_status == 'active' %} selected{% endif %}>Active</option><option value="expired"{% if standing.license.override_status == 'expired' %} selected{% endif %}>Expired</option><option value="cancelled"{% if standing.license.override_status == 'cancelled' %} selected{% endif %}>Canceled</option></select></div>
-        <div class="field"><label for="ov-expiry">Expires</label><input id="ov-expiry" type="date" name="override_expiry" value="{{ standing.license.override_expiry|date:'Y-m-d' }}"></div>
-        <div class="field"><label for="ov-name">Licensee name</label><input id="ov-name" name="override_name" maxlength="120" value="{{ standing.license.override_name }}"></div>
-        <div class="field"><label for="ov-country">Issuing country</label><input id="ov-country" name="override_country" maxlength="60" value="{{ standing.license.override_country }}" placeholder="Canada"><span class="helptext">Only for a license issued outside the United States.</span></div>
-      </div>
-      <div class="field"><label for="ov-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="ov-reason" name="override_reason" maxlength="500" value="{{ standing.license.override_reason }}" required></div>
-      <div><button type="submit">Save</button>{% if standing.license.has_override %} <button type="submit" name="lift" value="1" class="linklike">Go back to the FCC value</button>{% endif %}</div>
-    </form>
-  </details>
-  {% endif %}
 </section>
 
 <section class="card" aria-labelledby="ag">
@@ -72,16 +48,7 @@
   {% if standing.agreements %}
   <dl class="dl">
     {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-    <dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %} · <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
-      {% if a.state == 'approved' and can_revoke %}
-      <details class="confirm"><summary>Revoke this approval</summary>
-        <p>They lose the access this agreement grants, and are told why.</p>
-        <form method="post" action="{% url 'agreement_revoke' a.pk %}" class="row-form">{% csrf_token %}<input type="hidden" name="next" value="{% url 'member_detail' member.pk %}">
-          <label for="rv-{{ a.pk }}">Reason <span class="req" aria-hidden="true">*</span></label>
-          <input id="rv-{{ a.pk }}" name="reason" required>
-          <button class="danger">Revoke</button></form>
-      </details>
-      {% endif %}</dd>{% endfor %}
+    <dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %} · <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
   </dl>
   {% else %}<p class="muted">None signed.</p>{% endif %}
 </section>
@@ -90,89 +57,13 @@
 <section class="card" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="linklike">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
-  {% if member.under_18 and perms.ops.edit_member_privileges %}<form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="an address on their account" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
-  {% if member.under_18 and can_convert %}<details><summary>Convert to an adult account</summary>
-    <p>For when the member or a guardian reports that they have turned 18. This clears the under-18 flag, ends the guardian links (they stay in the history), issues a one-time temporary password for the member to set their own, tells the guardians, and writes an audit row. Nothing happens on its own: no date of birth is stored.</p>
-    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="convert_adult"><button type="submit">Convert to adult account</button></form></details>{% endif %}
+  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
 </section>
 {% endif %}
 
 {% if wards %}
 <section class="card"><h2>Acts for</h2>
 <ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
-</section>
-{% endif %}
-
-<section class="card">
-  {% include "accounts/_account_form.html" with form_class="stack" form_heading=manage_heading %}
-</section>
-
-{% if perms.ops.issue_temporary_password and not is_self or perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
-<section class="card" aria-labelledby="si">
-  <h2 id="si">Signing in</h2>
-  {% if perms.ops.issue_temporary_password and not is_self %}
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
-  <p class="helptext">For a member who cannot get in. Shown once, works once, and replaces their password.</p>
-  {% endif %}
-  {% if perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
-  <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member</button></form>
-  <p class="helptext">Read-only: nothing can be changed from that view, and it is recorded.</p>
-  {% endif %}
-</section>
-{% endif %}
-
-{% if perms.ops.archive_members and not is_self %}
-<section class="card" aria-labelledby="mb">
-  <h2 id="mb">Membership</h2>
-  {% if member.is_archived %}
-  <p>In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Bring them back as a member</button></form>
-  {% else %}
-  <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="archive">
-    <div class="field"><label for="ar-reason">Why they are leaving</label><input id="ar-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept with the record.</span></div>
-    <div><button type="submit" class="secondary">Archive this member</button></div>
-  </form>
-  <p class="helptext">Archiving keeps everything and ends access: they leave the directory and every audience, and their record is read in the <a href="{% url 'archive' %}">archive</a> by a faculty advisor or a sysadmin. An advisor can bring them back.</p>
-  {% endif %}
-</section>
-{% endif %}
-
-{% if perms.ops.assign_groups and not is_self and not member.is_archived or perms.ops.delete_accounts and not is_self %}
-<section class="card dangerzone" aria-labelledby="dz">
-  <h2 id="dz">Danger zone</h2>
-  {% if perms.ops.assign_groups and not is_self and not member.is_archived %}
-  {% if member.has_access %}
-  <details class="confirm">
-    <summary>Remove their access</summary>
-    <p>They stay on the books and sign-in is refused: a suspension rather than a departure. An officer can restore it here. Archiving is what a member who has left gets.</p>
-    <form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="close">
-      <label for="reason">Reason <span class="req" aria-hidden="true">*</span></label>
-      <input id="reason" name="reason" placeholder="suspended pending a decision…" required>
-      <button type="submit" class="danger">Remove access</button>
-    </form>
-    <p class="helptext">Kept in the audit log.</p>
-  </details>
-  {% else %}
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Restore access as a member</button></form>
-  {% endif %}
-  {% endif %}
-  {% if perms.ops.delete_accounts and not is_self %}
-  {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|date:"j M Y" }}. The row stays so past rosters keep their shape.</p>
-  {% else %}
-  <details class="confirm">
-    <summary>Delete this account</summary>
-    <p>This cannot be undone. Deleting will cancel <strong>{{ deletion.future_signups }}</strong> future sign-up{{ deletion.future_signups|pluralize }} and tell their captains; remove the name, callsign, emails, phone, preferences, browser subscriptions, guardian links, and responsible-adult designations; replace the person on <strong>{{ deletion.past_signups }}</strong> past sign-up{{ deletion.past_signups|pluralize }} with "Deleted member" so the counts stay right; keep <strong>{{ deletion.agreements }}</strong> signed agreement{{ deletion.agreements|pluralize }} and their PDFs, which are kept indefinitely; and keep the audit log. Archiving instead keeps everything and can be undone.</p>
-    {% if deletion.is_last_sysadmin %}<p class="msg error"><span class="lvl">Problem:</span> this is the last sysadmin account, so it cannot be deleted.</p>{% endif %}
-    {% if deletion.wards %}<p class="msg error"><span class="lvl">Problem:</span> this guardian has {{ deletion.wards }} linked minor{{ deletion.wards|pluralize }}. Convert, re-link, or delete them first.</p>{% endif %}
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="delete">
-      <div class="field"><label for="del-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="del-reason" name="reason" maxlength="500" required><span class="helptext">Kept in the audit log.</span></div>
-      <div class="check"><input type="checkbox" name="confirm" value="yes" id="del-confirm"><label for="del-confirm">I understand this cannot be undone</label></div>
-      <div><button type="submit" class="danger">Delete this account</button></div>
-    </form>
-  </details>
-  {% endif %}
-  {% endif %}
 </section>
 {% endif %}
 {% endblock %}

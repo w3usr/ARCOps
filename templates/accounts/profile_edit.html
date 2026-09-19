@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Edit your profile · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{% url 'profile' %}">Your profile</a></p>
+<div class="titlerow"><h1>Edit your profile</h1><a class="button secondary" href="{% url 'profile' %}">Done</a></div>
+{% include "accounts/_account_form.html" with form_heading="Details" subject=user %}
+<section class="card">{% include "accounts/_addresses.html" with addresses_heading="Email" %}</section>
+{% endblock %}

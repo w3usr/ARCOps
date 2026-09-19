@@ -42,7 +42,9 @@ def test_archiving_keeps_everything_and_ends_access():
     advisor = _user("adv@example.org", "advisor")
     member = _user("mem@example.org", callsign="N0ARC", cell_phone="555-0100")
     c = _as(advisor)
-    r = c.post(f"/members/{member.pk}/", {"action": "archive", "reason": "graduated"}, follow=True)
+    r = c.post(
+        f"/members/{member.pk}/edit/", {"action": "archive", "reason": "graduated"}, follow=True
+    )
     assert r.status_code == 200 and b"is in the archive" in r.content
 
     member.refresh_from_db()
@@ -105,7 +107,7 @@ def test_an_advisor_brings_a_former_member_back():
     advisor = _user("adv@example.org", "advisor")
     member = _user("mem@example.org")
     archive_member(advisor, member, "graduated")
-    r = _as(advisor).post(f"/members/{member.pk}/", {"action": "restore"}, follow=True)
+    r = _as(advisor).post(f"/members/{member.pk}/edit/", {"action": "restore"}, follow=True)
     assert r.status_code == 200
     member.refresh_from_db()
     assert not member.is_archived and member.in_group("member")
@@ -116,7 +118,7 @@ def test_an_advisor_brings_a_former_member_back():
 def test_an_officer_cannot_archive_anyone():
     officer = _user("off@example.org", "officer")
     member = _user("mem@example.org")
-    _as(officer).post(f"/members/{member.pk}/", {"action": "archive"})
+    _as(officer).post(f"/members/{member.pk}/edit/", {"action": "archive"})
     member.refresh_from_db()
     assert not member.is_archived
 
@@ -136,7 +138,7 @@ def test_a_guardian_with_a_minor_and_the_last_sysadmin_are_refused():
 
 def test_archiving_your_own_account_is_refused():
     advisor = _user("adv@example.org", "advisor")
-    r = _as(advisor).post(f"/members/{advisor.pk}/", {"action": "archive"}, follow=True)
+    r = _as(advisor).post(f"/members/{advisor.pk}/edit/", {"action": "archive"}, follow=True)
     assert b"cannot archive your own account" in r.content
     advisor.refresh_from_db()
     assert not advisor.is_archived

@@ -168,7 +168,7 @@ def test_overdue_verification_pauses_sign_in_until_an_officer_waives_it(world):
     u.save()
     r = c.get("/events/")
     assert r.status_code == 302 and "/accounts/login/" in r["Location"]
-    _as(world["off"]).post(f"/members/{u.pk}/", {"action": "mark_verified"})
+    _as(world["off"]).post(f"/members/{u.pk}/edit/", {"action": "mark_verified"})
     u.refresh_from_db()
     assert u.has_confirmed_address and not u.verification_overdue
     c2 = _as(u)
@@ -248,7 +248,7 @@ def test_provisional_sees_counts_not_names_and_no_directory_or_agreements(world)
     )
     assert ">Members<" not in body and ">Agreements<" not in body
     # once admitted, names appear
-    _as(world["off"]).post(f"/members/{prov.pk}/", {"action": "admit"})
+    _as(world["off"]).post(f"/members/{prov.pk}/edit/", {"action": "admit"})
     prov.refresh_from_db()
     assert prov.in_group("member")
     body = _as(prov).get(f"/events/{world['ev'].pk}/").content.decode()
@@ -265,7 +265,7 @@ def test_decline_sets_no_access_with_a_reason(world):
         last_name="R",
     )
     _as(world["off"]).post(
-        f"/members/{prov.pk}/", {"action": "decline", "reason": "not this season"}
+        f"/members/{prov.pk}/edit/", {"action": "decline", "reason": "not this season"}
     )
     prov.refresh_from_db()
     assert not prov.has_access

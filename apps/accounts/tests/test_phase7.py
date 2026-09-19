@@ -151,7 +151,7 @@ def test_minor_signs_in_read_only():
     r = c.get("/")
     assert r.status_code == 200 and b"Read-only" in r.content
     assert c.post(f"/events/slot/{slot.pk}/signup/", {"role": "observer"}).status_code == 403
-    assert c.post("/me/", {"first_name": "X"}).status_code == 403
+    assert c.post("/me/edit/", {"first_name": "X"}).status_code == 403
     assert not SignUp.objects.filter(user=minor).exists()
     r = c.get("/me/")
     assert (
@@ -252,11 +252,11 @@ def test_conversion_at_18_by_an_approver():
     officer, guardian, minor = _family()
     sys = _user("sys@example.org", "sysadmin")
     c = _as(officer)
-    assert b"Convert to adult account" not in c.get(f"/members/{minor.pk}/").content
+    assert b"Convert to adult account" not in c.get(f"/members/{minor.pk}/edit/").content
     c = _as(sys)
-    r = c.get(f"/members/{minor.pk}/")
+    r = c.get(f"/members/{minor.pk}/edit/")
     assert b"Convert to adult account" in r.content and b"parent@example.org" in r.content
-    r = c.post(f"/members/{minor.pk}/", {"action": "convert_adult"})
+    r = c.post(f"/members/{minor.pk}/edit/", {"action": "convert_adult"})
     assert r.status_code == 200 and b"Temporary password for Kid" in r.content
     minor.refresh_from_db()
     link = Guardianship.objects.get(minor=minor, guardian=guardian)
@@ -276,16 +276,16 @@ def test_sysadmin_links_and_unlinks_guardians():
     aunt = _user("aunt@example.org")
     c = _as(sys)
     c.post(
-        f"/members/{minor.pk}/",
+        f"/members/{minor.pk}/edit/",
         {"action": "link_guardian", "guardian_email": "aunt@example.org", "relationship": "aunt"},
     )
     assert Guardianship.objects.filter(minor=minor, guardian=aunt, active=True).exists()
     first = Guardianship.objects.get(minor=minor, guardian=guardian)
-    c.post(f"/members/{minor.pk}/", {"action": "unlink_guardian", "link": first.pk})
+    c.post(f"/members/{minor.pk}/edit/", {"action": "unlink_guardian", "link": first.pk})
     first.refresh_from_db()
     assert not first.active
     last = Guardianship.objects.get(minor=minor, guardian=aunt)
-    c.post(f"/members/{minor.pk}/", {"action": "unlink_guardian", "link": last.pk})
+    c.post(f"/members/{minor.pk}/edit/", {"action": "unlink_guardian", "link": last.pk})
     last.refresh_from_db()
     assert last.active  # the last guardian of a minor stays
 
@@ -345,7 +345,7 @@ def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
 
     # the guardian acts for the minor and adds one from the minor's own profile
     g.post(f"/me/wards/{minor.pk}/act/")
-    g.post("/me/", {"action": "address_add", "address": "kim@example.org"})
+    g.post("/me/edit/", {"action": "address_add", "address": "kim@example.org"})
     minor.refresh_from_db()
     assert minor.email == "kim@example.org"
     assert set(recipient_addresses(minor)) == {"parent@example.org", "kim@example.org"}

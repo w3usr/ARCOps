@@ -10,7 +10,9 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models, transaction
 from django.utils import timezone
 
-LICENSE_LETTERS = {  # FR-67: the class after a name; U when there is no license
+# FR-67: the class after a name; C for a club station, U when there is no license on file.
+MATCHED_STATUSES = frozenset({"active", "expired", "cancelled"})  # the FCC has a record
+LICENSE_LETTERS = {
     "novice": "N",
     "technician": "T",
     "technician plus": "T",
@@ -231,14 +233,30 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def license_letter(self) -> str:
-        """N, T, G, A, E, or U (FR-67), from the license record when there is one."""
+        """N, T, G, A, E, C, or U (FR-67), from the license record when there is one.
+
+        **C is a club station.** The FCC issues no operator class to a club, because a club is
+        not a person, so a club's record carries a callsign and a status and nothing in the
+        class field. The advisor, 2026-09-19, on the club callsign W2FSR reading U: "It's not
+        technically true... that is a Club call sign."
+
+        Blank class alone does not mean club: an account whose callsign has never been checked,
+        or that the FCC has no record of, is blank for the opposite reason. So C needs a matched
+        FCC record as well, and everything else stays U. RACES and military-recreation licenses
+        also carry no operator class and will read C; all three are a station rather than a
+        person, which is what C says.
+        """
         lic = getattr(self, "license", None)
-        cls = (getattr(lic, "effective_class", "") or "") if lic else ""
-        return LICENSE_LETTERS.get(cls.strip().lower(), "U" if not cls else cls[:1].upper())
+        if lic is None:
+            return "U"
+        cls = (getattr(lic, "effective_class", "") or "").strip()
+        if cls:
+            return LICENSE_LETTERS.get(cls.lower(), cls[:1].upper())
+        return "C" if lic.effective_status in MATCHED_STATUSES else "U"
 
     @property
     def license_class(self) -> str:
-        """The class in full ("Extra"), or empty when there is no license on file.
+        """The class in full ("Extra"), or empty for a club station and for no license at all.
 
         `license_letter` abbreviates the same fact for a roster badge, where space is tight.
         A column has room for the word.

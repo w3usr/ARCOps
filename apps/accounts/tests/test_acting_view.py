@@ -81,8 +81,8 @@ def test_the_lower_level_refuses_the_action_rather_than_hiding_the_button():
     )
     c = _signed_in(_sysadmin())
     c.post("/me/level/", {"view": "member"})
-    assert c.get(f"/members/{member.pk}/").status_code == 404
-    assert c.post(f"/members/{member.pk}/", {"action": "archive"}).status_code == 404
+    assert c.get(f"/members/{member.pk}/edit/").status_code == 404
+    assert c.post(f"/members/{member.pk}/edit/", {"action": "archive"}).status_code == 404
     member.refresh_from_db()
     assert not member.is_archived
 
@@ -167,7 +167,7 @@ def test_converting_a_minor_follows_its_own_capability():
     Guardianship.objects.create(minor=minor, guardian=guardian)
 
     c = _signed_in(keeper)
-    assert b"Convert to adult account" in c.get(f"/members/{minor.pk}/").content
-    c.post(f"/members/{minor.pk}/", {"action": "convert_adult"})
+    assert b"Convert to adult account" in c.get(f"/members/{minor.pk}/edit/").content
+    c.post(f"/members/{minor.pk}/edit/", {"action": "convert_adult"})
     minor.refresh_from_db()
     assert not minor.under_18

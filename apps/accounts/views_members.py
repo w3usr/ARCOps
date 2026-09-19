@@ -22,7 +22,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 
 from . import entry, views_addresses
-from .account import AccountForm, readonly_rows, save_account
+from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
 from .models import User
 from .services import issue_temporary_password, set_access
 
@@ -87,6 +87,13 @@ def _sort_keys(positions: dict, cats: dict):
     return {key: settled(fn) for key, fn in _columns(text, positions, cats, ladder).items()}
 
 
+def _class_rank(m, ladder: list, text) -> int:
+    cls = text(m.license_class)
+    if cls in ladder:
+        return ladder.index(cls)
+    return len(ladder) if m.license_letter == "C" else len(ladder) + 1
+
+
 def _columns(text, positions: dict, cats: dict, ladder: list):
     return {
         "name": lambda m: (text(m.display_first), text(m.last_name)),
@@ -97,11 +104,10 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
         # and before them coming down, rather than mixing in among the As.
         "callsign": lambda m: (not m.callsign, text(m.callsign)),
         # Up the ladder, not down the alphabet: Novice before Extra, because that is what the
-        # class means. Sorting these as words would file Advanced above Technician.
-        "class": lambda m: (
-            ladder.index(text(m.license_class)) if text(m.license_class) in ladder else len(ladder),
-            text(m.license_class),
-        ),
+        # class means. Sorting these as words would file Advanced above Technician. A club
+        # station (C) holds no class at all, so it sorts after the ladder and ahead of the
+        # accounts with no license.
+        "class": lambda m: (_class_rank(m, ladder, text), text(m.license_class)),
         "category": lambda m: (text(cats.get(m.category, m.category)), text(m.last_name)),
         "position": lambda m: (
             not m.club_position,
@@ -170,7 +176,8 @@ def members(request):
         rows = [
             m
             for m in rows
-            if (want == "none" and not m.license_class) or m.license_class.lower() == want
+            if (want in ("none", "club") and m.license_letter == ("U" if want == "none" else "C"))
+            or m.license_class.lower() == want
         ]
     if chosen["access"]:
         want = chosen["access"]
@@ -215,6 +222,7 @@ def members(request):
         )
 
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
+    license_choices.append(("club", "Club station"))
     license_choices.append(("none", "No license"))
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
@@ -273,15 +281,55 @@ def archive(request):
     return render(request, "accounts/archive.html", {"people": people, "q": q, "categories": cats})
 
 
-@login_required
-@require_http_methods(["GET", "POST"])
-def member_detail(request, pk):
+def _member_or_404(request, pk):
+    """The account this page is about, for a reader entitled to see it."""
     if not request.user.may("view_member_records"):
         raise Http404
     member = get_object_or_404(User, pk=pk)
-    actor = request.user
-    if member.is_archived and not actor.may("view_archive"):
+    if member.is_archived and not request.user.may("view_archive"):
         raise Http404  # the archive is the advisor's to read, and so is a page within it
+    return member
+
+
+@login_required
+def member_detail(request, pk):
+    """A member's profile, read-only.
+
+    Nothing here changes anything. NAF, 2026-09-19: a name in the directory should open "a
+    read-only view of their profile page", with an Edit profile button for the people entitled
+    to change it, because it "will allow for potential public views of profiles, as well as
+    make it more difficult to accidentally change information". Every form that was on this
+    page is now on `member_edit`.
+    """
+    member = _member_or_404(request, pk)
+    actor = request.user
+    return render(
+        request,
+        "accounts/member_detail.html",
+        {
+            "member": member,
+            "rows": profile_rows(member, skip=("first_name",)),
+            "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
+            "standing": _standing(member),
+            "guardian_links": list(
+                member.guardianships.select_related("guardian").order_by("-active", "created")
+            ),
+            "wards": list(member.wards.filter(active=True).select_related("minor")),
+            "can_edit": may_manage(actor, member),
+            "is_self": member == actor,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def member_edit(request, pk):
+    """The same account with every control on it: the account fields, addresses, the license,
+    guardians, access, archiving, and deletion. Reached from the profile page's Edit button."""
+    member = _member_or_404(request, pk)
+    actor = request.user
+    if not may_manage(actor, member):
+        raise Http404
     temp_password = None
     form = AccountForm(instance=member, actor=actor)
 
@@ -313,9 +361,9 @@ def member_detail(request, pk):
                             "unverified until the nightly import finds it.",
                         )
                     messages.success(request, "Saved.")
-                    return redirect("member_detail", pk=member.pk)
+                    return redirect("member_edit", pk=member.pk)
         elif views_addresses.handle(request, member):
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "license_lookup":  # any officer: FR-14, the local FCC table
             from apps.credentials.models import UlsLicense
             from apps.credentials.services import refresh_license_from_local_table
@@ -339,7 +387,7 @@ def member_detail(request, pk):
                         f"{member.callsign} is not in the local FCC table. The nightly import may "
                         "not have reached it yet; a sysadmin can set an override below.",
                     )
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "license_override" and actor.may("override_license"):  # FR-15, FR-20
             from apps.credentials.models import LicenseRecord
             from apps.credentials.services import apply_override, lift_override
@@ -372,7 +420,7 @@ def member_detail(request, pk):
                     request,
                     "License override saved; it shows as such wherever the value appears and the nightly import leaves it alone.",
                 )
-            return redirect("member_detail", pk=pk)
+            return redirect("member_edit", pk=pk)
         elif action == "convert_adult" and member.under_18 and actor.may("convert_minor_accounts"):
             from .guardian import convert_to_adult
 
@@ -416,12 +464,12 @@ def member_detail(request, pk):
             reason = request.POST.get("reason", "").strip()
             if request.POST.get("confirm") != "yes" or not reason:
                 messages.error(request, "Deletion needs the confirmation ticked and a reason.")
-                return redirect("member_detail", pk=pk)
+                return redirect("member_edit", pk=pk)
             try:
                 result = delete_account(actor, member, reason[:500])
             except DeletionRefused as exc:
                 messages.error(request, f"Not deleted: {exc}.")
-                return redirect("member_detail", pk=pk)
+                return redirect("member_edit", pk=pk)
             messages.success(
                 request,
                 f"Account deleted. {result['withdrawn']} future sign-up(s) withdrawn; {result['agreements']} signed agreement(s) kept.",
@@ -440,17 +488,17 @@ def member_detail(request, pk):
             else:
                 set_access(actor, member, [], request.POST.get("reason", ""))
                 messages.success(request, f"{member.short_name} no longer has access.")
-                return redirect("member_detail", pk=member.pk)
+                return redirect("member_edit", pk=member.pk)
         elif action == "reopen" and actor.may("assign_groups"):
             set_access(actor, member, ["member"], "reopened")
             messages.success(request, f"{member.short_name} is a member again.")
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "archive" and actor.may("archive_members"):  # FR-125
             from .services import ArchiveRefused, archive_member
 
             if member == actor:
                 messages.error(request, "You cannot archive your own account.")
-                return redirect("member_detail", pk=member.pk)
+                return redirect("member_edit", pk=member.pk)
             try:
                 archive_member(actor, member, request.POST.get("reason", ""))
             except ArchiveRefused as exc:
@@ -461,25 +509,25 @@ def member_detail(request, pk):
                     f"{member.short_name} is in the archive. Nothing of theirs was deleted, and "
                     "an advisor can bring them back.",
                 )
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "restore" and actor.may("archive_members"):
             from .services import restore_member
 
             restore_member(actor, member)
             messages.success(request, f"{member.short_name} is a member again.")
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "admit" and member.is_provisional:  # FR-121: any officer reviews
             entry.admit(actor, member)
             messages.success(request, f"{member.short_name} is now a member.")
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "decline" and member.is_provisional:
             entry.decline(actor, member, request.POST.get("reason", "").strip()[:300])
             messages.success(request, f"{member.short_name} declined.")
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         elif action == "mark_verified":  # FR-120: the officer's waiver
             entry.mark_verified(actor, member)
             messages.success(request, "Address marked verified.")
-            return redirect("member_detail", pk=member.pk)
+            return redirect("member_edit", pk=member.pk)
         else:
             raise Http404
 
@@ -488,7 +536,7 @@ def member_detail(request, pk):
     ctx_ladder = ladder()
     return render(
         request,
-        "accounts/member_detail.html",
+        "accounts/member_edit.html",
         {
             "member": member,
             "form": form,

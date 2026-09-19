@@ -522,5 +522,8 @@ details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 /* The level a session is acting at, under the name in the sidebar. A link, because that is where
    it is changed (apps/accounts/acting.py). */
 a.whoami { text-decoration: none; color: inherit; display: flex; }
-a.whoami:hover .level { text-decoration: underline; }
-.whoami .level { display: block; font-size: .78rem; opacity: .75; }
+.whoami a { color: inherit; text-decoration: none; }
+.whoami a:hover { text-decoration: underline; }
+/* The level under the name: smaller, and no dimmer than the muted color it already uses.
+   An opacity on top of that took it below 4.5:1 against the sidebar. */
+.whoami .level { display: block; font-size: .78rem; }

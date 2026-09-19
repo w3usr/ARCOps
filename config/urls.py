@@ -30,6 +30,7 @@ urlpatterns = [
     path("me/", include("apps.accounts.urls")),
     path("members/", views_members.members, name="members"),
     path("members/<int:pk>/", views_members.member_detail, name="member_detail"),
+    path("members/<int:pk>/edit/", views_members.member_edit, name="member_edit"),
     path("members/<int:pk>/view-as/", impersonate.start, name="impersonate_start"),
     path("members/archive/", views_members.archive, name="archive"),
     path("members/hours/", views_members.hours, name="hours"),

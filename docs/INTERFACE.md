@@ -44,6 +44,21 @@ notifications to signups".
 If a page seems to need two solid buttons, it is two forms, or one of them is not the primary
 action. The safe choice comes first in the source order, so the keyboard reaches it first.
 
+## Reading and editing
+
+A page that shows a person's record **reads**; the controls that change it live on a page of
+its own, reached by an **Edit profile** button that appears only for a reader entitled to use
+it. The profile, the officer's view of a member, and any public view later are the same page.
+
+> When you click on someone's name, it should take the person to a read-only view of their
+> profile page. If they have the permission to edit a profile (such as a member looking at
+> their own page, an officer, or a sysadmin), there should be a button to "Edit Profile". This
+> will allow for potential public views of profiles, as well as make it more difficult to
+> accidentally change information. — NAF, 2026-09-19
+
+Saving returns to the reading page. What decides whether the button is there is
+`apps.accounts.account.may_manage`, so the button and the page it opens cannot disagree.
+
 ## Destructive actions
 
 Three tiers, and the friction matches what is lost. (After GitLab's Pajamas and the VA design

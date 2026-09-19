@@ -61,7 +61,9 @@ def test_a_member_adds_an_address_and_confirms_it_from_the_link_sent_to_it(setti
     u = _member()
     c = Client()
     c.force_login(u)
-    r = c.post("/me/", {"action": "address_add", "address": "mem.home@example.org"}, follow=True)
+    r = c.post(
+        "/me/edit/", {"action": "address_add", "address": "mem.home@example.org"}, follow=True
+    )
     assert r.status_code == 200
     assert {a.address for a in addresses.on_file(u)} == {
         "mem@example.edu",
@@ -88,7 +90,7 @@ def test_an_officer_can_confirm_an_address_without_any_mail():
     c = Client()
     c.force_login(off)
     r = c.post(
-        f"/members/{m.pk}/",
+        f"/members/{m.pk}/edit/",
         {"action": "address_confirm", "address": "mem.home@example.org"},
         follow=True,
     )
@@ -116,7 +118,7 @@ def test_an_account_keeps_its_last_address():
         addresses.remove(m, "mem@example.edu", actor=m)
     c = Client()
     c.force_login(m)
-    r = c.post("/me/", {"action": "address_remove", "address": "mem@example.edu"}, follow=True)
+    r = c.post("/me/edit/", {"action": "address_remove", "address": "mem@example.edu"}, follow=True)
     assert b"keeps at least one address" in r.content
     assert addresses.on_file(m)
 
@@ -137,11 +139,13 @@ def test_club_mail_follows_the_delivery_switch_and_one_address_always_receives()
     addresses.add(m, "mem.home@example.org", confirmed=True)
     c = Client()
     c.force_login(m)
-    c.post("/me/", {"action": "address_delivery", "address": "mem@example.edu"})
+    c.post("/me/edit/", {"action": "address_delivery", "address": "mem@example.edu"})
     assert recipient_addresses(m) == ["mem.home@example.org"]
 
     r = c.post(
-        "/me/", {"action": "address_delivery", "address": "mem.home@example.org"}, follow=True
+        "/me/edit/",
+        {"action": "address_delivery", "address": "mem.home@example.org"},
+        follow=True,
     )
     assert b"at least one address" in r.content
     assert recipient_addresses(m) == ["mem.home@example.org"]
@@ -153,10 +157,12 @@ def test_only_a_sysadmin_takes_a_confirmation_away_and_never_the_last_one():
     addresses.add(m, "mem.home@example.org", confirmed=True)
     c = Client()
     c.force_login(sysadmin)
-    c.post(f"/members/{m.pk}/", {"action": "address_unconfirm", "address": "mem.home@example.org"})
+    c.post(
+        f"/members/{m.pk}/edit/", {"action": "address_unconfirm", "address": "mem.home@example.org"}
+    )
     assert addresses.confirmed(m) == {"mem@example.edu"}
     r = c.post(
-        f"/members/{m.pk}/",
+        f"/members/{m.pk}/edit/",
         {"action": "address_unconfirm", "address": "mem@example.edu"},
         follow=True,
     )

@@ -77,13 +77,13 @@ def test_members_see_short_names_and_officers_see_everything(people):
     assert '<td data-label="Last"><a' in body and ">Member</a>" in body and ">Mo</a>" in body
     # every address an officer may write to, not one of them chosen for them
     assert "mem@home.example" in body and "mo@uni.example" in body
-    assert _as(people["mem"]).get(f"/members/{people['off'].pk}/").status_code == 404
+    assert _as(people["mem"]).get(f"/members/{people['off'].pk}/edit/").status_code == 404
 
 
 def test_a_sysadmin_sets_what_another_account_may_do(people):
     c, mem = _as(people["sys"]), people["mem"]
     c.post(
-        f"/members/{mem.pk}/",
+        f"/members/{mem.pk}/edit/",
         {
             "action": "save",
             "first_name": "Mo",
@@ -138,7 +138,7 @@ def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
     }
     c = _as(keeper)
     r = c.post(
-        f"/members/{keeper.pk}/",
+        f"/members/{keeper.pk}/edit/",
         {**fields, "groups": [Group.objects.get(name="member").pk]},
     )
     keeper.refresh_from_db()
@@ -147,7 +147,7 @@ def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
     # a sysadmin may do it to them, because a sysadmin still holds it
     c = _as(people["sys"])
     c.post(
-        f"/members/{keeper.pk}/",
+        f"/members/{keeper.pk}/edit/",
         {**fields, "groups": [Group.objects.get(name="member").pk]},
     )
     keeper.refresh_from_db()
@@ -156,33 +156,33 @@ def test_nobody_takes_away_their_own_ability_to_decide_who_may_do_what(people):
 
 def test_officer_sets_club_position_only(people):
     c, mem = _as(people["off"]), people["mem"]
-    body = c.get(f"/members/{mem.pk}/").content.decode()
+    body = c.get(f"/members/{mem.pk}/edit/").content.decode()
     assert 'name="club_position"' in body and 'name="groups"' not in body
     assert "temporary password" not in body.lower()
-    c.post(f"/members/{mem.pk}/", {"action": "save", "club_position": "president"})
+    c.post(f"/members/{mem.pk}/edit/", {"action": "save", "club_position": "president"})
     mem.refresh_from_db()
     assert mem.club_position == "president"
     # A forged privilege change is ignored: the field is not on an officer's form.
     c.post(
-        f"/members/{mem.pk}/",
+        f"/members/{mem.pk}/edit/",
         {"action": "save", "club_position": "", "groups": [Group.objects.get(name="member").pk]},
     )
     mem.refresh_from_db()
     assert mem.in_group("member")
-    assert c.post(f"/members/{mem.pk}/", {"action": "temporary_password"}).status_code == 404
+    assert c.post(f"/members/{mem.pk}/edit/", {"action": "temporary_password"}).status_code == 404
 
 
 def test_temporary_password_shown_once_and_access_removed_and_restored(people):
     c, mem = _as(people["sys"]), people["mem"]
-    body = c.post(f"/members/{mem.pk}/", {"action": "temporary_password"}).content.decode()
+    body = c.post(f"/members/{mem.pk}/edit/", {"action": "temporary_password"}).content.decode()
     shown = re.search(r'<code id="tpv">([^<]+)</code>', body).group(1)
     mem.refresh_from_db()
     assert mem.password_is_temporary and mem.check_password(shown)
-    assert shown not in c.get(f"/members/{mem.pk}/").content.decode()
-    c.post(f"/members/{mem.pk}/", {"action": "close", "reason": "graduated"})
+    assert shown not in c.get(f"/members/{mem.pk}/edit/").content.decode()
+    c.post(f"/members/{mem.pk}/edit/", {"action": "close", "reason": "graduated"})
     mem.refresh_from_db()
     assert not mem.has_access
-    c.post(f"/members/{mem.pk}/", {"action": "reopen"})
+    c.post(f"/members/{mem.pk}/edit/", {"action": "reopen"})
     mem.refresh_from_db()
     assert mem.in_group("member")
 
@@ -299,7 +299,7 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
 
     s, m = people["sys"], people["mem"]
     c = _as(s)
-    body = c.get(f"/members/{m.pk}/").content.decode()
+    body = c.get(f"/members/{m.pk}/edit/").content.decode()
     for label in ("Mobile number", "Graduation year", "Category", "Access"):
         assert label in body
     assert "Sign-in email" not in body  # every confirmed address signs in; none of them is special
@@ -313,7 +313,7 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
         "student_level": "undergraduate",
         "graduation_year": "2028",
     }
-    r = c.post(f"/members/{m.pk}/", data)
+    r = c.post(f"/members/{m.pk}/edit/", data)
     assert r.status_code in (200, 302)
     m.refresh_from_db()
     assert m.cell_phone == "555-0199" and m.graduation_year == 2028
@@ -321,10 +321,10 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
     assert "cell_phone" in row.after
 
     # and the addresses are changed from the same page, through their own controls
-    c.post(f"/members/{m.pk}/", {"action": "address_add", "address": "Moved@example.org"})
+    c.post(f"/members/{m.pk}/edit/", {"action": "address_add", "address": "Moved@example.org"})
     assert m.addresses.filter(address="moved@example.org").exists()
     r = c.post(
-        f"/members/{m.pk}/",
+        f"/members/{m.pk}/edit/",
         {"action": "address_confirm", "address": s.email},
         follow=True,
     )
@@ -348,15 +348,15 @@ def test_officer_looks_a_callsign_up_in_the_fcc_table(people):
         status="active",
     )
     c = _as(people["off"])
-    assert b"Look this callsign up in the FCC table" in c.get(f"/members/{m.pk}/").content
-    r = c.post(f"/members/{m.pk}/", {"action": "license_lookup"}, follow=True)
+    assert b"Look this callsign up in the FCC table" in c.get(f"/members/{m.pk}/edit/").content
+    r = c.post(f"/members/{m.pk}/edit/", {"action": "license_lookup"}, follow=True)
     assert r.status_code == 200 and b"N0LOOK: General, active" in r.content
     assert LicenseRecord.objects.get(user=m).operator_class == "General"
     assert AuditLog.objects.filter(action="license.looked_up").exists()
     # a callsign the table does not know says so rather than inventing a class
     m.callsign = "N0NONE"
     m.save()
-    r = c.post(f"/members/{m.pk}/", {"action": "license_lookup"}, follow=True)
+    r = c.post(f"/members/{m.pk}/edit/", {"action": "license_lookup"}, follow=True)
     assert b"not in the local FCC table" in r.content
 
 
@@ -377,10 +377,10 @@ def test_student_fields_are_cleared_when_the_category_is_not_student(people):
     m.category, m.student_level, m.graduation_year = "student", "undergraduate", 2028
     m.save()
     c = _as(s)
-    body = c.get(f"/members/{m.pk}/").content.decode()
+    body = c.get(f"/members/{m.pk}/edit/").content.decode()
     assert 'data-reveal-when="#id_category" data-reveal-value="student"' in body
     c.post(
-        f"/members/{m.pk}/",
+        f"/members/{m.pk}/edit/",
         {
             "action": "save",
             "first_name": m.first_name,

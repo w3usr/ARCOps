@@ -434,7 +434,15 @@ officer admits or declines them (FR-121). Every account records the link it join
 
   > completing the form admits — NAF, 2026-09-13, Q3
 - **FR-6 [Must]** Sysadmins can create and edit any account manually, including every privilege
-  field.
+  field. An account's page **reads**: the name, callsign, license, agreements, addresses, and
+  guardians, with no control on it that changes anything. Everything that does change something
+  is on an edit page behind an **Edit profile** button, which appears only for a reader who may
+  change something on that account. The member's own profile works the same way. A member under
+  18 has no edit page: their guardian edits the account while acting for them (§2.4).
+
+  > When you click on someone's name, it should take the person to a read-only view of their
+  > profile page. […] This will allow for potential public views of profiles, as well as make it
+  > more difficult to accidentally change information. — NAF, 2026-09-19
 - **FR-7 [Must]** Sysadmins can reset any account's password to a generated temporary,
   one-time password. It works for exactly one sign-in, which must set a new password before
   anything else; it expires unused after a configurable period (default 72 hours); and it is
@@ -1066,8 +1074,9 @@ Verbatim:
   and the number of unconfirmed sign-ups in the next 48 hours.
 - **FR-67 [Must]** On rosters, members see each person's **short name**: first name (the
   preferred name where one is set) and callsign, or first name and last initial for a person
-  with no callsign; then the **license class in parentheses** (N, T, G, A, E; U for none):
-  `Nathaniel W2NAF (E)`, `Nathaniel F. (U)`; and their role. Captains and officers see the full
+  with no callsign; then the **license class in parentheses** (N, T, G, A, E; C for a club
+  station, which the FCC gives no operator class; U for none): `Nathaniel W2NAF (E)`,
+  `Nathaniel F. (U)`, `W3USR Club (C)`; and their role. Captains and officers see the full
   name with the same suffix. A Provisional member (FR-121) sees no names but their own, and a
   count by class per slot.
 

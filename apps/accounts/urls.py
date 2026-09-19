@@ -6,6 +6,7 @@ from . import guardian, impersonate, views, views_acting, views_entry, views_pus
 
 urlpatterns = [
     path("", views.profile, name="profile"),
+    path("edit/", views.profile_edit, name="profile_edit"),
     path("level/", views_acting.acting_view, name="acting_view"),
     path("notifications/", views.notifications, name="notifications"),
     path("uls-name/", views.uls_name_decide, name="uls_name_decide"),

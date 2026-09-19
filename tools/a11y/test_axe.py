@@ -45,6 +45,7 @@ def pages_for(role: str) -> list[str]:
     common = [
         "/",
         "/me/",
+        "/me/edit/",
         "/events/mine/",
         "/me/messages/",
         "/events/",
@@ -56,7 +57,8 @@ def pages_for(role: str) -> list[str]:
         "/privacy/",
     ]
     if role == "minor":
-        return common
+        # A member under 18 reads their profile; the guardian edits it while acting (§2.4).
+        return [u for u in common if u != "/me/edit/"]
     if role == "member":
         return common
     if role == "guardian":
@@ -73,6 +75,7 @@ def pages_for(role: str) -> list[str]:
         "/me/entry-links/",
         "/members/",
         f"/members/{member.pk}/",
+        f"/members/{member.pk}/edit/",
         "/members/roster/",
         "/members/hours/",
         "/credentials/access-rosters/",

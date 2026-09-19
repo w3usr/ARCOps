@@ -42,7 +42,7 @@
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
       {% if perms.ops.view_directory %}
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
-      <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' 'hours' %}>{% icon 'users' %}<span>Members</span></a></li>
+      <li><a href="{% url 'members' %}"{% nav_active 'members' 'member_detail' 'member_edit' 'hours' %}>{% icon 'users' %}<span>Members</span></a></li>
       {% endif %}
       <li><a href="{% url 'my_messages' %}"{% nav_active 'my_messages' %}>{% icon 'mail' %}<span>Messages{% if unread_count %} <span class="badge" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</span></a></li>
       <li><a href="{% url 'profile' %}"{% nav_active 'profile' 'notifications' %}>{% icon 'user' %}<span>Profile</span></a></li>
@@ -73,11 +73,13 @@
     </ul>
     {% endif %}
     <div class="sidenav-foot">
-      {% if acting_views > 1 %}
-      <a class="whoami" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}<span class="level">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></span></span></a>
-      {% else %}
-      <p class="whoami">{% icon 'user' %}<span>{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}</span></p>
-      {% endif %}
+      {% comment %}Your name opens your profile and the level below it opens the level page: two
+      destinations, so two links. They were one link to the level page, which is not where a
+      reader who clicks their own name expects to arrive (NAF, 2026-09-19).{% endcomment %}
+      <div class="whoami">{% icon 'user' %}<span>
+        <a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
+        {% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% endif %}
+      </span></div>
       <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>
       <button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>
     </div>

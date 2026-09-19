@@ -43,15 +43,19 @@ def test_profile_shows_every_address_once_with_its_standing_and_a_way_to_add_one
     c.force_login(u)
     body = c.get("/me/").content.decode()
     assert ">Email</h2>" in body  # a plain noun, not a sentence
-    assert body.count('value="address_delivery"') == 2  # one switch per address
-    # what each address does, said in words rather than in a row of badges
+    # the profile reads; nothing on it changes anything (NAF, 2026-09-19)
+    assert "address_delivery" not in body and "address_add" not in body
     assert "Not confirmed, so it cannot sign you in yet" in body
-    assert "Send the confirmation link" in body
-    assert "Turn club mail off" in body
-    assert 'name="action" value="address_add"' in body
-    # each address is written out once at the head of its block
-    assert body.count('<p class="address">o@example.org ') == 1
-    assert body.count('<p class="address">ann@home.example ') == 1
+    edit = c.get("/me/edit/").content.decode()
+    assert edit.count('value="address_delivery"') == 2  # one switch per address
+    # what each address does, said in words rather than in a row of badges
+    assert "Send the confirmation link" in edit
+    assert "Turn club mail off" in edit
+    assert 'name="action" value="address_add"' in edit
+    # each address is written out once at the head of its block, on both pages
+    for page in (body, edit):
+        assert page.count('<p class="address">o@example.org ') == 1
+        assert page.count('<p class="address">ann@home.example ') == 1
 
 
 def test_a_minor_needs_a_guardian_and_an_adult_never_stores_one():

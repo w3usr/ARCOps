@@ -74,7 +74,7 @@ def test_sysadmin_views_as_member_read_only_and_audited():
     assert r.context["user"] == m and r.context["impersonator"] == s
     assert b"Viewing as" in r.content
     # every state change is refused while viewing
-    assert c.post("/me/", {"first_name": "X"}).status_code == 403
+    assert c.post("/me/edit/", {"first_name": "X"}).status_code == 403
     assert m.refresh_from_db() is None and m.first_name == "Mem"
     r = c.post("/me/view-as/stop/")
     assert r.status_code == 302
@@ -129,10 +129,11 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
         expires_on=timezone.localdate() + dt.timedelta(days=100),
     )
     c = _as(s)
-    r = c.get(f"/members/{m.pk}/")
+    r = c.get(f"/members/{m.pk}/edit/")
     assert b"Delete this account" in r.content
     r = c.post(
-        f"/members/{m.pk}/", {"action": "delete", "confirm": "yes", "reason": "asked in writing"}
+        f"/members/{m.pk}/edit/",
+        {"action": "delete", "confirm": "yes", "reason": "asked in writing"},
     )
     assert r.status_code == 302
     m.refresh_from_db()

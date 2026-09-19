@@ -178,7 +178,7 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     assert r["state"] == "unverified" and LicenseRecord.objects.get(user=u).status == "unverified"
     # the profile form goes through the same path
     r = c.post(
-        "/me/",
+        "/me/edit/",
         {
             "preferred_name": "",
             "callsign": "N0AAA",
@@ -242,7 +242,7 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
         session["acting_view"] = "sysadmin"
         session.save()
     r = c.post(
-        f"/members/{u.pk}/",
+        f"/members/{u.pk}/edit/",
         {
             "action": "license_override",
             "override_class": "General",
@@ -259,7 +259,7 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     )
     assert lic.effective_source == "sysadmin override, Canada" and lic.override_by == s
     assert AuditLog.objects.filter(action="license.override", subject_id=str(lic.pk)).exists()
-    body = c.get(f"/members/{u.pk}/").content.decode()
+    body = c.get(f"/members/{u.pk}/edit/").content.decode()
     assert "Set by a sysadmin, Canada" in body and "Go back to the FCC value" in body
     # a refresh from the (still empty) table does not touch the override
     from apps.credentials.services import refresh_license_from_local_table
@@ -269,11 +269,11 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert lic.effective_class == "General" and lic.status == "unverified"
     # a reason is required; lifting clears
     r = c.post(
-        f"/members/{u.pk}/",
+        f"/members/{u.pk}/edit/",
         {"action": "license_override", "override_class": "Extra", "override_reason": ""},
     )
     assert LicenseRecord.objects.get(user=u).override_class == "General"
-    c.post(f"/members/{u.pk}/", {"action": "license_override", "lift": "1"})
+    c.post(f"/members/{u.pk}/edit/", {"action": "license_override", "lift": "1"})
     assert not LicenseRecord.objects.get(user=u).has_override
     c.force_login(u)
     if u.is_superuser:
