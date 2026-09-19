@@ -1579,7 +1579,7 @@ carries the actual running model ID.
   passes for all eight roles, and the four guards pass.
 - **Git Hash**: a7ebb50 (consent), d93f2e3 (test speed)
 
-## [2026-09-19 14:10 UTC]
+## [2026-09-19 14:06 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
 - **Session Purpose**: The retention section cut from the generic privacy notice this repository
   ships. The advisor removed it from the club's own notice first, on the grounds that a retention
