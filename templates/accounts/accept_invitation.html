@@ -1,11 +1,19 @@
 {% extends "base.html" %}
+{% load labels %}
 {% block title %}Join · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Join {{ club.name }}</h1>
-<p>This invitation is for <strong>{{ invitation.email }}</strong> as a {{ invitation.category }}. Start with your callsign if you have one; your name and license details are filled from the FCC record.</p>
-<form method="post" class="card">{% csrf_token %}
-{{ form.as_div }}
-<p class="muted">By joining you agree to the privacy notice: we hold the details above so the club can schedule and contact you, we show other members only your first name and callsign, and you can ask to close your account at any time.</p>
+<p>This invitation is for <strong>{{ invitation.email }}</strong> as a {{ invitation.category|category_label|lower }}. Start with your callsign if you have one; your name and license details are filled from the FCC record.</p>
+<form method="post" class="card stack">{% csrf_token %}
+{{ form.non_field_errors }}
+{% for f in form %}
+  {% if f.field.widget.input_type == 'checkbox' %}
+  <div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}</div>
+  {% else %}
+  <div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>
+  {% endif %}
+{% endfor %}
+<p class="note">The club holds the details above so it can schedule you and reach you. Other members see only your first name, callsign, and license class. You can ask for your account to be closed at any time. The <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> has the rest.</p>
 <button type="submit">Create my account</button>
 </form>
 {% endblock %}

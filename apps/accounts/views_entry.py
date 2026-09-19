@@ -21,6 +21,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 
 from . import entry
+from .consent import PrivacyConsentMixin, consent_field
 from .models import EntryLink, User
 
 
@@ -137,7 +138,7 @@ def entry_link_action(request, pk):
     return redirect("entry_links")
 
 
-class JoinForm(forms.Form):
+class JoinForm(PrivacyConsentMixin, forms.Form):
     """The invitation's join form plus the address, the category (class links), and the age question."""
 
     email = forms.EmailField(label="Email address")
@@ -155,7 +156,7 @@ class JoinForm(forms.Form):
     under_18 = forms.BooleanField(required=False, label="I am under 18")
     password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Password, again")
-    consent = forms.BooleanField(label="I have read the privacy notice")
+    consent = consent_field()
 
     def __init__(self, *args, link: EntryLink, **kwargs):
         kwargs.setdefault("label_suffix", "")

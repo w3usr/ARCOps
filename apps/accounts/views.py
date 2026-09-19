@@ -17,6 +17,7 @@ from apps.ops.config import setting
 
 from . import views_addresses
 from .account import AccountForm, readonly_rows, save_account
+from .consent import PrivacyConsentMixin, consent_field
 from .models import Invitation, User
 from .services import (
     admit_from_invitation,
@@ -185,7 +186,7 @@ def invitations(request):
     )
 
 
-class AcceptForm(forms.Form):
+class AcceptForm(PrivacyConsentMixin, forms.Form):
     callsign = forms.CharField(
         max_length=12, required=False, help_text="Leave blank if you do not have one."
     )
@@ -196,7 +197,7 @@ class AcceptForm(forms.Form):
     cell_phone = forms.CharField(max_length=30, required=False)
     password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Password, again")
-    consent = forms.BooleanField(label="I have read the privacy notice")
+    consent = consent_field()
 
     def clean(self):
         data = super().clean()
@@ -207,7 +208,7 @@ class AcceptForm(forms.Form):
         return data
 
 
-class GuardianAcceptForm(forms.Form):
+class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
     """§2.4: the guardian completes a minor's application. The guardian's own details are asked
     only when no account holds their address."""
 
@@ -241,9 +242,8 @@ class GuardianAcceptForm(forms.Form):
     )
     password1 = forms.CharField(widget=forms.PasswordInput, label="Member's initial password")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Member's password, again")
-    consent = forms.BooleanField(
-        label="I have read the privacy notice and consent on the member's behalf"
-    )
+    consent = consent_field()
+    consent_after = "and consent on the member's behalf"
 
     def __init__(self, *args, guardian_exists: bool, guardian_email: str = "", **kwargs):
         super().__init__(*args, **kwargs)
