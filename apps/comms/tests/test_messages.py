@@ -107,17 +107,20 @@ def test_notification_form_writes_preferences_and_profile_shows_them():
         session = c.session  # a sysadmin signs in acting lower
         session["acting_view"] = "sysadmin"
         session.save()
+    # the profile says what reaches you; the switches are on the edit page (NAF, 2026-09-19)
     body = c.get("/me/").content.decode()
-    assert (
-        "Notifications" in body
-        and 'name="email" value="reminder"' in body
-        and "always sent" in body.lower()
-    )
+    assert "Notifications" in body and "always sent" in body.lower()
+    assert 'name="email" value="reminder"' not in body
+    edit = c.get("/me/edit/").content.decode()
+    assert 'name="email" value="reminder"' in edit and "always sent" in edit.lower()
     r = c.post("/me/notifications/", {"email": ["warning", "digest"]})
     assert r.status_code == 302
     prefs = {p.category: p.email for p in u.notification_preferences.all()}
     assert prefs["reminder"] is False and prefs["warning"] is True and prefs["digest"] is True
     assert u.reminders_off
+    # and the profile reads back what was saved
+    body = c.get("/me/").content.decode()
+    assert '<td data-label="Email">off</td>' in body and '<td data-label="Email">on</td>' in body
 
 
 def test_outbox_is_officers_only_and_filters_by_state():

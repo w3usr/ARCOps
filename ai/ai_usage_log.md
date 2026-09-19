@@ -1798,3 +1798,22 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 292 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
 - **Git Hash**: ca060f4
+
+## [2026-09-19 17:45 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Finish the read-only profile. The notification switches, the browser-
+  notification controls, and the close-my-account form were still on the profile page, which the
+  advisor caught on the live site: "I'm seeing editable options even on the read-only profile.
+  Those should only show up when you press Edit profile." All three moved to the edit page, and
+  the button says what it opens. The profile now shows what reaches you as plain text, read from
+  the same place the switches are built from, so the two cannot drift. The password and
+  two-step-verification links stay on the profile: they lead somewhere rather than change
+  anything, and a member under 18, who has no edit page, reaches their password through them.
+- **Sections/Files Affected**: apps/accounts/views.py (a shared `_preferences`, and the
+  preference forms now return to the edit page), apps/accounts/views_push.py,
+  templates/accounts/profile.html, templates/accounts/profile_edit.html, and the tests in
+  apps/accounts and apps/comms.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 292 tests pass, the accessibility sweep
+  passes for all eight roles at both widths, and the four guards pass.
+- **Git Hash**: pending

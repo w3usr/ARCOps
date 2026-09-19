@@ -1,8 +1,54 @@
 {% extends "base.html" %}
 {% block title %}Edit your profile · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
+{% comment %}Everything about your own account that you can change: the details, the addresses,
+what reaches you, and closing the account. Your profile page holds the same things as plain
+text, so a page opened to read cannot change them.{% endcomment %}
 <p class="crumbs"><a href="{% url 'profile' %}">Your profile</a></p>
-<div class="titlerow"><h1>Edit your profile</h1><a class="button secondary" href="{% url 'profile' %}">Done</a></div>
+<div class="titlerow"><h1>Edit your profile and preferences</h1><a class="button secondary" href="{% url 'profile' %}">Done</a></div>
 {% include "accounts/_account_form.html" with form_heading="Details" subject=user %}
 <section class="card">{% include "accounts/_addresses.html" with addresses_heading="Email" %}</section>
+
+<form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}
+<h2>Notifications</h2>
+<p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>
+<table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
+{% for row in notification_rows %}
+<tr><th scope="row"><label for="pref-{{ row.key }}">{{ row.label }}</label></th>
+<td data-label="Email"><input type="checkbox" name="email" value="{{ row.key }}" id="pref-{{ row.key }}"{% if row.email %} checked{% endif %}></td>
+{% if vapid_public_key %}<td data-label="Browser"><input type="checkbox" name="push" value="{{ row.key }}" id="push-{{ row.key }}" aria-label="Browser notification for {{ row.label|lower }}"{% if row.push %} checked{% endif %}></td>{% endif %}</tr>
+{% endfor %}
+</tbody></table>
+<p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
+<div><button type="submit">Save notification settings</button></div>
+</form>
+
+{% if vapid_public_key %}
+<section class="card stack" id="browser-notifications">
+<h2>Browser notifications</h2>
+<form method="post" action="{% url 'push_toggle' %}" class="inline">{% csrf_token %}
+  <div class="check"><input type="checkbox" name="push_enabled" id="push_enabled"{% if user.push_enabled %} checked{% endif %}><label for="push_enabled">Show my messages as browser notifications on devices where I have allowed it</label></div>
+  <button type="submit">Save</button>
+</form>
+<p class="helptext">Each device asks once for permission. On iPhone and iPad this works only after adding the site to the home screen. Notifications carry the subject and a link, never the computer password or anyone's contact details.</p>
+<p id="push-status" class="muted" data-push-enabled="{{ user.push_enabled|yesno:'1,0' }}"></p>
+<button type="button" id="push-enable-here" class="secondary" hidden>Allow notifications on this device</button>
+{% if push_subscriptions %}
+<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.user_agent|truncatechars:60|default:"a browser" }} · since {{ sub.created|date:"j M Y" }}{% if sub.failures %} · {{ sub.failures }} failed{% endif %}
+<form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Forget this device</button></form></li>{% endfor %}</ul>
+{% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
+</section>
+{% endif %}
+
+<section class="card dangerzone"><h2>Closing your account</h2>
+<p>You can ask for your account to be closed at any time; the <a href="{% url 'privacy' %}">privacy notice</a> says what that means.</p>
+<details class="confirm">
+  <summary>Close my account</summary>
+  <p>Your access ends at once and your record is archived. Your name, callsign, contact details, signed agreements, and what you took part in are kept as the club's record of its members, where the faculty advisor and the people who administer this site can read them. If you would rather it were deleted outright than archived, say so and an administrator can do that.</p>
+  <form method="post" action="{% url 'request_closure' %}" class="stack">{% csrf_token %}
+    <div class="check"><input type="checkbox" name="confirm" value="yes" id="close-confirm"><label for="close-confirm">I want my account closed</label></div>
+    <div><button type="submit" class="danger">Close my account</button></div>
+  </form>
+</details>
+</section>
 {% endblock %}

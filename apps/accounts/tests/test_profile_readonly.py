@@ -65,7 +65,9 @@ def test_your_own_profile_reads_and_the_edit_page_holds_the_form(pair):
     _, member = pair
     c = _as(member)
     body = c.get("/me/").content.decode()
-    assert "Edit profile" in body and 'href="/me/edit/"' in body
+    assert "Edit profile and preferences" in body and 'href="/me/edit/"' in body
+    # nothing on it changes anything, preferences included (NAF, 2026-09-19)
+    assert "<form" not in body.split("<main", 1)[1]
     assert "N0MEM" in body, "the account is shown, whether or not it is being edited"
     assert 'name="callsign"' not in body
     edit = c.get("/me/edit/").content.decode()

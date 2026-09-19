@@ -35,8 +35,9 @@ def test_subscribe_revoke_and_toggle():
         == 400
     )
     with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
-        body = c.get("/me/").content.decode()
+        body = c.get("/me/edit/").content.decode()  # the switches live on the edit page
         assert "Browser notifications" in body and "revoke" in body and 'data-vapid="pub"' in body
+        assert "Browser notifications are on" in c.get("/me/").content.decode()
     c.post("/me/push/toggle/", {})
     u.refresh_from_db()
     assert u.push_enabled is False

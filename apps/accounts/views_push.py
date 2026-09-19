@@ -43,7 +43,7 @@ def push_revoke(request, pk):
     sub = get_object_or_404(PushSubscription, pk=pk, user=request.user)
     sub.delete()
     messages.success(request, "That device will get no more browser notifications.")
-    return redirect(reverse("profile") + "#notifications")
+    return redirect(reverse("profile_edit") + "#notifications")
 
 
 @login_required
@@ -56,4 +56,4 @@ def push_toggle(request):
         request,
         "Browser notifications on." if request.user.push_enabled else "Browser notifications off.",
     )
-    return redirect(reverse("profile") + "#notifications")
+    return redirect(reverse("profile_edit") + "#notifications")

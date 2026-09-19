@@ -29,38 +29,46 @@ from .services import (
 )
 
 
-@login_required
-def profile(request):
-    """A member's own account, read-only, plus what is theirs alone: notifications, browser
-    notifications, security, closing the account.
-
-    The details and the addresses are edited on a page of their own (`profile_edit`), so
-    reading your own profile cannot change it by accident. NAF asked for this on 2026-09-19,
-    for everybody's profile page at once.
-    """
+def _preferences(user) -> dict:
+    """What reaches this person: the controlled categories with their switches, the categories
+    that are always sent, and the devices that have allowed browser notifications. The profile
+    shows it as text and the edit page as switches, from the one place."""
     from apps.comms.categories import CONTROLLED, MANDATORY
 
-    prefs = {p.category: p for p in request.user.notification_preferences.all()}
-    rows = [
-        {
-            "key": k,
-            "label": label,
-            "email": prefs[k].email if k in prefs else True,
-            "push": prefs[k].push if k in prefs else True,
-        }
-        for k, label in CONTROLLED.items()
-    ]
+    prefs = {p.category: p for p in user.notification_preferences.all()}
+    return {
+        "notification_rows": [
+            {
+                "key": k,
+                "label": label,
+                "email": prefs[k].email if k in prefs else True,
+                "push": prefs[k].push if k in prefs else True,
+            }
+            for k, label in CONTROLLED.items()
+        ],
+        "mandatory_labels": list(MANDATORY.values()),
+        "push_subscriptions": user.push_subscriptions.order_by("-created"),
+    }
+
+
+@login_required
+def profile(request):
+    """A member's own account, read-only: their details, addresses, standing, what reaches them,
+    and the way to their password and two-step verification.
+
+    Nothing on it changes anything. Everything that does is behind the button, on `profile_edit`.
+    NAF, 2026-09-19, seeing notification switches still here: "I'm seeing editable options even
+    on the read-only profile. Those should only show up when you press Edit profile."
+    """
     return render(
         request,
         "accounts/profile.html",
         {
             "license": LicenseRecord.objects.filter(user=request.user).first(),
             "rows": profile_rows(request.user),
-            "notification_rows": rows,
-            "mandatory_labels": list(MANDATORY.values()),
-            "push_subscriptions": request.user.push_subscriptions.order_by("-created"),
             "addresses": addresses_state(request.user),
             "guardians": _guardians(request.user),
+            **_preferences(request.user),
         },
     )
 
@@ -104,6 +112,7 @@ def profile_edit(request):
             "form": form,
             "addresses": addresses_state(request.user),
             "address_subject_is_self": True,
+            **_preferences(request.user),
         },
     )
 
@@ -121,7 +130,7 @@ def notifications(request):
     """FR-71: one switch per controlled category; unticked means email off. Absence of a row
     means on, so a row is written only when the member turns something off (or back on)."""
     if request.method != "POST":
-        return redirect("profile")
+        return redirect("profile_edit")
     from apps.comms.categories import CONTROLLED
 
     from .models import NotificationPreference
@@ -135,7 +144,7 @@ def notifications(request):
             defaults={"email": key in wanted, "push": key in pushed},
         )
     messages.success(request, "Notification settings saved.")
-    return redirect(reverse("profile") + "#notifications")
+    return redirect(reverse("profile_edit") + "#notifications")
 
 
 class InviteForm(forms.Form):
@@ -527,7 +536,7 @@ def request_closure(request):
 
     if request.POST.get("confirm") != "yes":
         messages.error(request, "Tick the confirmation to close your account.")
-        return redirect("profile")
+        return redirect("profile_edit")
     close(request.user)
     logout(request)
     messages.info(
