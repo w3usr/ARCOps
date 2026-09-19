@@ -1774,4 +1774,4 @@ carries the actual running model ID.
   direction.
 - **Human Review Status**: Pending the advisor's look. 289 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: 6ac4f41
