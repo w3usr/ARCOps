@@ -1943,3 +1943,17 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 307 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 70a2cd5
+
+## [2026-09-19 20:35 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The requirements and the technical requirements catch up with the status
+  work: FR-13a describes the four statuses and the archive flag beside them, FR-11 says an
+  officer may readmit somebody who asked to leave, FR-91 says an officer suspends and a faculty
+  advisor lifts, FR-125 says an account is closed or suspended before it is archived and that
+  taking a record out of the archive leaves its status alone, and TR-43 records that the sidebar
+  names everybody's level while only a sysadmin's is a link.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-11, FR-13a, FR-91, FR-125),
+  docs/TECHNICAL_REQUIREMENTS.md (TR-43).
+- **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: pending

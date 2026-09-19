@@ -1383,6 +1383,15 @@ made it likely that reliable delivery would take time to establish:
 - **FR-91 [Must]** An account can be taken out of every access group with a reason, and restored.
   Doing so removes the person from future slots and notifies the captains of those events.
 
+  Taking access away is a **suspension**: the reason, the date and who imposed it are kept on the
+  account, where the person deciding whether to lift it will read them. **An officer may suspend
+  an account below them; only a faculty advisor may lift one**, because lifting overturns another
+  officer's decision, while suspending may have to happen on a Tuesday night. A **closed**
+  account (FR-11) is readmitted by an officer instead. Either way the account comes back as a
+  **member**: whoever held an officer's place is re-appointed deliberately.
+
+  > officer can suspend but only advisor can lift — NAF, 2026-09-19
+
   **Who may, and over whom** (the advisor's rule, 2026-09-19): a group is yours to grant when
   everything it grants is something you already hold and it does not hold everything you do, and
   an account is yours to change when what it holds is a proper subset of what you hold. Against
