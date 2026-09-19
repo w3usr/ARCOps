@@ -145,6 +145,7 @@ class UlsLicense(models.Model):
     callsign = models.CharField(max_length=12, primary_key=True)
     licensee_name = models.CharField(max_length=160, blank=True)
     first_name = models.CharField(max_length=80, blank=True)
+    middle_initial = models.CharField(max_length=2, blank=True)  # EN10: "L" of MARY L WEST
     last_name = models.CharField(max_length=80, blank=True)
     operator_class = models.CharField(max_length=20, blank=True)
     # EN24 in the FCC file: B a club, R a RACES station, M a military recreation station, I a
@@ -268,5 +269,6 @@ class UlsStaging(models.Model):
     applicant_type = models.CharField(max_length=2, blank=True)
     entity_name = models.CharField(max_length=160, blank=True)
     first_name = models.CharField(max_length=80, blank=True)
+    middle_initial = models.CharField(max_length=2, blank=True)
     last_name = models.CharField(max_length=80, blank=True)
     frn = models.CharField(max_length=20, blank=True)

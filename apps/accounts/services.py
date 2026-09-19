@@ -238,12 +238,14 @@ def apply_callsign(user: User, new_callsign: str, previous: str = "") -> dict:
             user.first_name = row.first_name
         if row.last_name:
             user.last_name = row.last_name
+        user.middle_name = row.middle_initial  # FR-4: the licensee's first, middle, and last
         user.name_from_uls = True
         user.save(
             update_fields=[
                 "callsign",
                 "pending_uls_name",
                 "first_name",
+                "middle_name",
                 "last_name",
                 "name_from_uls",
             ]
@@ -252,6 +254,7 @@ def apply_callsign(user: User, new_callsign: str, previous: str = "") -> dict:
         return {"state": "matched"}
     user.pending_uls_name = {
         "first": row.first_name,
+        "middle": row.middle_initial,
         "last": row.last_name,
         "callsign": new_callsign,
         "previous": previous,
@@ -272,10 +275,19 @@ def decide_uls_name(user: User, accept: bool) -> str:
     if accept:
         before = {"first_name": user.first_name, "last_name": user.last_name}
         user.first_name = pending.get("first") or user.first_name
+        user.middle_name = pending.get("middle", user.middle_name)
         user.last_name = pending.get("last") or user.last_name
         user.name_from_uls = True
         user.pending_uls_name = {}
-        user.save(update_fields=["first_name", "last_name", "name_from_uls", "pending_uls_name"])
+        user.save(
+            update_fields=[
+                "first_name",
+                "middle_name",
+                "last_name",
+                "name_from_uls",
+                "pending_uls_name",
+            ]
+        )
         record(
             user,
             "name.replaced_from_uls",

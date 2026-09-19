@@ -162,7 +162,14 @@ def stage(zip_path: Path) -> dict:
                 _flush_update(pending, ["class_code"])
         _flush_update(pending, ["class_code"])
 
-        en_fields = ["entity_name", "first_name", "last_name", "frn", "applicant_type"]
+        en_fields = [
+            "entity_name",
+            "first_name",
+            "middle_initial",
+            "last_name",
+            "frn",
+            "applicant_type",
+        ]
         for f in _lines(zf, "EN.dat"):
             if len(f) < 11 or f[5].strip() != "L":  # the licensee entity only
                 continue
@@ -171,6 +178,9 @@ def stage(zip_path: Path) -> dict:
                     usi=f[1].strip()[:12],
                     entity_name=f[7].strip()[:160],
                     first_name=f[8].strip()[:80],
+                    # EN10, the middle initial: FR-4 wants the licensee's first, middle and
+                    # last name, and "MARY L WEST" loses the L without it.
+                    middle_initial=f[9].strip()[:2],
                     last_name=f[10].strip()[:80],
                     frn=(f[22].strip()[:20] if len(f) > 22 else ""),
                     # EN24, the applicant type: what kind of licensee holds the callsign.
@@ -202,6 +212,7 @@ def _winners():
         "class_code",
         "entity_name",
         "first_name",
+        "middle_initial",
         "last_name",
         "frn",
         "applicant_type",
@@ -233,6 +244,7 @@ def apply_staging(now=None) -> dict:
     fields = [
         "licensee_name",
         "first_name",
+        "middle_initial",
         "last_name",
         "operator_class",
         "applicant_type",
@@ -264,6 +276,7 @@ def apply_staging(now=None) -> dict:
         class_code,
         entity_name,
         first,
+        middle,
         last,
         frn,
         applicant_type,
@@ -274,6 +287,7 @@ def apply_staging(now=None) -> dict:
                 callsign=call,
                 licensee_name=name[:160],
                 first_name=first,
+                middle_initial=middle,
                 last_name=last,
                 operator_class=CLASS.get(class_code, ""),
                 applicant_type=applicant_type,

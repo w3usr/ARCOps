@@ -41,8 +41,9 @@ def _zip(tmp_path, hd, am, en, name="l_am_test.zip"):
         f[0], f[1], f[4], f[5] = "AM", usi, call, cls
         return "|".join(f)
 
-    def en_row(usi, call, first, last, frn, etype="L", applicant_type="I"):
+    def en_row(usi, call, first, last, frn, etype="L", applicant_type="I", mi="L"):
         f = [""] * 30
+        f[9] = mi  # EN10, the middle initial
         f[0], f[1], f[4], f[5], f[7], f[8], f[10], f[22], f[23] = (
             "EN",
             usi,
@@ -348,3 +349,28 @@ def test_the_applicant_type_comes_through_the_import_and_becomes_the_letter(tmp_
         assert lic.licensee_type and not lic.operator_class
         letters[call] = User.objects.get(pk=u.pk).license_letter
         assert letters[call] == letter
+
+
+def test_the_middle_initial_comes_through_and_reaches_the_account(tmp_path):
+    """FR-4 asks for the licensee's first, middle, and last name.
+
+    KC2NMC is MARY L WEST at the FCC. Without EN10 the L was dropped, and the advisor, testing
+    on 2026-09-19, found the account reading "Mary West" with no way to correct it.
+    """
+    u = User.objects.create_user(
+        "mary@example.org", "pw-Testing-123", first_name="Mary", last_name="West"
+    )
+    path = _zip(
+        tmp_path,
+        [("700", "N0MLW", "A", "01/01/2020", "01/01/2030")],
+        [("700", "N0MLW", "T")],
+        [("700", "N0MLW", "Mary", "West", "0077")],
+    )
+    run(file=str(path))
+    assert UlsLicense.objects.get(callsign="N0MLW").middle_initial == "L"
+    from apps.accounts.services import apply_callsign
+
+    apply_callsign(u, "N0MLW")
+    u.refresh_from_db()
+    assert (u.first_name, u.middle_name, u.last_name) == ("Mary", "L", "West")
+    assert u.full_name == "Mary L West" and u.name_from_uls

@@ -152,6 +152,9 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
             if row.last_name and user.last_name != row.last_name:
                 user.last_name = row.last_name
                 changed.append("last_name")
+            if user.middle_name != row.middle_initial:
+                user.middle_name = row.middle_initial  # FR-4: the middle initial the FCC holds
+                changed.append("middle_name")
             if changed:
                 user.save(update_fields=changed)
     else:

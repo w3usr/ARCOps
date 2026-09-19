@@ -1852,3 +1852,23 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: e6f8886
+
+## [2026-09-19 19:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Three faults the advisor found while testing a member's edit page. The
+  page never said why the name fields are absent: the partial looked for a `subject` variable
+  that neither including page passed, so the one sentence explaining that the name is the FCC's
+  has never reached anybody; it now reads the form's own instance and names the callsign, the
+  name on file, and what to set instead. The card over a member's own fields was headed "Club
+  position", which is what an officer may set on somebody else; on your own account it is
+  "Details". And the import dropped the middle initial (EN10 in the FCC's entity record),
+  although FR-4 asks for the licensee's first, middle, and last name, so KC2NMC's MARY L WEST
+  reached the account as "Mary West"; it is carried through the staging table, the local table,
+  the callsign lookup, the member's confirmation, and the nightly refresh.
+- **Sections/Files Affected**: templates/accounts/_account_form.html,
+  apps/accounts/views_members.py, apps/accounts/services.py, apps/credentials/{models,uls,
+  services}.py and migration 0005, and the tests in apps/accounts and apps/credentials.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 295 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

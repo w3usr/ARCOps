@@ -123,3 +123,30 @@ def test_a_member_cannot_reach_anybody_elses_page(pair):
     assert c.get(f"/members/{officer.pk}/").status_code == 404
     assert c.get(f"/members/{officer.pk}/edit/").status_code == 404
     assert c.get(f"/members/{member.pk}/").status_code == 200, "their own is always theirs"
+
+
+def test_a_name_from_the_fcc_says_so_where_the_fields_would_be(pair):
+    """The advisor, 2026-09-19: "I see no way to edit first, middle, or last name."
+
+    With a callsign the name is the FCC's (FR-8), and the page never said so: the partial
+    looked for a `subject` variable that neither page passed.
+    """
+    from apps.credentials.models import LicenseRecord
+
+    _, member = pair
+    member.name_from_uls = True
+    member.save(update_fields=["name_from_uls"])
+    LicenseRecord.objects.create(
+        user=member, callsign="N0MEM", operator_class="Extra", status="active"
+    )
+    body = _as(member).get("/me/edit/", follow=True).content.decode()
+    assert 'name="first_name"' not in body, "the FCC's name is not typed here (FR-8)"
+    assert "The name is the FCC's record for N0MEM" in body
+    assert "Preferred name" in body, "and it says what to set instead"
+
+
+def test_your_own_fields_are_headed_details(pair):
+    _, member = pair
+    body = _as(member).get("/me/edit/", follow=True).content.decode()
+    assert ">Details</h2>" in body
+    assert "Club position" not in body, "your own fields are not somebody else's to assign"
