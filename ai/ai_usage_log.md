@@ -1797,4 +1797,4 @@ carries the actual running model ID.
   direction. The applicant type codes were read from the FCC's own ULS code definitions.
 - **Human Review Status**: Pending the advisor's look. 292 tests pass, the accessibility sweep
   passes for all eight roles at both widths, and the four guards pass.
-- **Git Hash**: pending
+- **Git Hash**: ca060f4
