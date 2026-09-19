@@ -358,3 +358,46 @@ def test_each_station_letter_filters_and_sorts_on_its_own(directory):
         "Officer",
         "Zephyr",
     ]
+
+
+def test_a_filter_takes_more_than_one_answer(directory):
+    """NAF, 2026-09-19: "Is it possible to have checkboxes in the drop-down so you can select
+    more than one to filter on?" A disclosure of checkboxes, so no JavaScript and no ctrl-click.
+    """
+    _licensed(directory)
+    c = _as(directory)
+    body = c.get("/members/").content.decode()
+    assert '<details class="filter">' in body and 'type="checkbox"' in body
+    assert 'name="license" value="Extra"' in body
+    # two classes at once, which a drop-down holding one answer cannot do
+    assert _names(c.get("/members/?license=Extra&license=Technician").content.decode()) == [
+        "Adams",
+        "Officer",
+    ]
+    # and an old single-value link still means what it meant
+    assert _names(c.get("/members/?license=Extra").content.decode()) == ["Officer"]
+
+
+def test_the_panel_says_what_is_ticked(directory):
+    body = _as(directory).get("/members/?category=student&category=faculty").content.decode()
+    assert "2 categorys" not in body, "a count of two reads worse than the two names"
+    assert "Student, Faculty" in body or "Faculty, Student" in body
+
+
+def test_the_status_panel_starts_with_everything_but_the_archive(directory):
+    """NAF, 2026-09-19: "By default, Officers and above should have everything checked except
+    archived." """
+    body = _as(directory).get("/members/").content.decode()
+    for key in ("active", "closed", "suspended", "provisional"):
+        assert f'name="status" value="{key}" checked' in body, key
+    assert 'name="status" value="deleted" checked' not in body, "a deleted row is not clutter"
+    assert 'name="archived"' not in body, "and an officer has no archive filter at all"
+
+    # the archive is a flag with a filter of its own, for whoever may read one
+    advisor = User.objects.create_user(
+        "adv@example.org", PASSWORD, groups=["advisor"], first_name="Ada", last_name="Visor"
+    )
+    body = _as(advisor).get("/members/").content.decode()
+    assert 'name="archived" value="no" checked' in body
+    assert 'name="archived" value="yes" checked' not in body
+    assert ">Archived</a>" in body or ">Archived<" in body, "and a column beside the status"

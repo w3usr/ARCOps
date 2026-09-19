@@ -1957,3 +1957,23 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation by the assistant, at the advisor's direction.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: f923885
+
+## [2026-09-19 21:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Filters that take more than one answer, and the archive as a flag of its
+  own. Each drop-down is now a disclosure holding a checkbox per value: no script, no
+  ctrl-clicking, it opens from the keyboard, the summary says what is ticked, and it submits the
+  same name twice, so every link anybody already has still means what it meant. Officers and
+  above start with every status ticked but Deleted, which is a sysadmin's and stays unticked so
+  that ordinary work is not cluttered with it. The archive stopped being a status: it is a
+  column and a filter beside the status, ticked to "not archived" to begin with, and shown only
+  to a reader who may read an archived record at all. The guard that forbids a capability
+  deriving from a club position learned that narrowing a list by position is not that.
+- **Sections/Files Affected**: apps/accounts/views_members.py, apps/accounts/models.py
+  (status_label), templates/accounts/_filter.html (new) and members.html, static/css/app.css,
+  templates/base.html, templates/accounts/member_edit.html, tools/a11y, and the tests across
+  apps/accounts.
+- **Nature of Contribution**: Code and tests by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 314 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

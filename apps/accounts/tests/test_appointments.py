@@ -168,7 +168,7 @@ def test_the_four_statuses_and_the_archive_flag_beside_them(club_people):
     archive_member(advisor, member, "graduated")
     member.refresh_from_db()
     assert member.status == "closed" and member.is_archived
-    assert member.status_label == "Closed · Archived", "two dimensions, said in one cell"
+    assert member.status_label == "Closed", "the archive is a flag beside the status"
 
     other = _user("two@example.org", ["member"])
     suspend(officer, other, "pending a decision")

@@ -63,7 +63,7 @@
       <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
       {% comment %}The archive is the members list narrowed to it, rather than a page of its
       own holding the same rows with fewer columns (NAF, 2026-09-19).{% endcomment %}
-      <li><a href="{% url 'members' %}?status=archived">{% icon 'archive' %}<span>Archive</span></a></li>
+      <li><a href="{% url 'members' %}?archived=yes">{% icon 'archive' %}<span>Archive</span></a></li>
     </ul>
     {% endif %}
     {% if perms.ops.edit_club_settings or perms.ops.view_job_status %}

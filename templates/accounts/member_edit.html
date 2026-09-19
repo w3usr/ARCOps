@@ -132,7 +132,7 @@ stored in.{% endcomment %}
     <div class="field"><label for="ar-reason">Why they are leaving</label><input id="ar-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept with the record.</span></div>
     <div><button type="submit" class="secondary">Archive this member</button></div>
   </form>
-  <p class="helptext">Archiving keeps everything: they leave the members list and every audience, and their record is read by a faculty advisor or a sysadmin under <a href="{% url 'members' %}?status=archived">Archived</a>. An advisor can take them out again.</p>
+  <p class="helptext">Archiving keeps everything: they leave the members list and every audience, and their record is read by a faculty advisor or a sysadmin under <a href="{% url 'members' %}?archived=yes">Archived</a>. An advisor can take them out again.</p>
   {% else %}
   <p class="helptext">An account is closed or suspended before it is archived, so that every account somebody can still use is on the members list.</p>
   {% endif %}

@@ -12,23 +12,17 @@ survive a bookmark.{% endcomment %}
 <form method="get" class="searchrow" role="search">
   <label class="sr-only" for="q">Search members</label>
   <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}">
+  {% if full %}{% include "accounts/_filter.html" with name="category" label="Category" choices=category_choices ticked=chosen.category summary=summaries.category %}{% endif %}
+  {% include "accounts/_filter.html" with name="license" label="Class" choices=license_choices ticked=chosen.license summary=summaries.license %}
+  {% include "accounts/_filter.html" with name="position" label="Position" choices=position_choices ticked=chosen.position summary=summaries.position %}
   {% if full %}
-  <label class="sr-only" for="f-cat">Category</label>
-  <select id="f-cat" name="category"><option value="">Any category</option>{% for key, label in category_choices %}<option value="{{ key }}"{% if chosen.category == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-  {% endif %}
-  <label class="sr-only" for="f-lic">License class</label>
-  <select id="f-lic" name="license"><option value="">Any class</option>{% for key, label in license_choices %}<option value="{{ key }}"{% if chosen.license == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-  <label class="sr-only" for="f-pos">Position</label>
-  <select id="f-pos" name="position"><option value="">Any position</option>{% for key, label in position_choices %}<option value="{{ key }}"{% if chosen.position == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-  {% if full %}
-  <label class="sr-only" for="f-status">Status</label>
-  <select id="f-status" name="status"><option value="">Any status</option>{% for key, label in status_choices %}<option value="{{ key }}"{% if chosen.status == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-  <label class="sr-only" for="f-acc">Access</label>
-  <select id="f-acc" name="access"><option value="">Any access</option>{% for key, label in access_choices %}<option value="{{ key }}"{% if chosen.access == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  {% include "accounts/_filter.html" with name="status" label="Status" choices=status_choices ticked=status_ticked summary=summaries.status %}
+  {% if may_see_archive %}{% include "accounts/_filter.html" with name="archived" label="Archive" choices=archived_choices ticked=archived_ticked summary=summaries.archived %}{% endif %}
+  {% include "accounts/_filter.html" with name="access" label="Access" choices=access_choices ticked=chosen.access summary=summaries.access %}
   {% endif %}
   <input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ dir }}">
   <button type="submit">Search</button>
-  {% if q or chosen.category or chosen.position or chosen.license or chosen.access or chosen.status %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
+  {% if q or chosen.category or chosen.position or chosen.license or chosen.access or chosen.status or chosen.archived %}<a class="button secondary" href="{% url 'members' %}">Clear</a>{% endif %}
 </form>
 
 <div class="table-wrap">
@@ -55,12 +49,13 @@ survive a bookmark.{% endcomment %}
   <td data-label="Position">{{ m.club_position|position_label|default:"—" }}</td>
   {% if full %}
   <td data-label="Status">{{ m.status_label }}</td>
+  {% if may_see_archive %}<td data-label="Archived">{% if m.archived_at %}{{ m.archived_at|date:"d M Y" }}{% else %}—{% endif %}</td>{% endif %}
   <td data-label="Access">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
   <td data-label="Email">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}</td>
   <td data-label="Phone">{% if m.cell_phone %}<a href="tel:{{ m.cell_phone }}">{{ m.cell_phone|phone }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
   {% endif %}
 </tr>
-{% empty %}<tr><td colspan="{{ columns|length }}" class="empty">{% if q or chosen.category or chosen.position or chosen.license or chosen.access or chosen.status %}Nobody matches what you have picked. <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="{{ columns|length }}" class="empty">{% if q or chosen.category or chosen.position or chosen.license or chosen.access or chosen.status or chosen.archived %}Nobody matches what you have picked. <a href="{% url 'members' %}">Show every member.</a>{% else %}The directory is empty. Members appear here once they have accepted an invitation.{% endif %}</td></tr>{% endfor %}
 </tbody></table>
 </div>
 {% endblock %}

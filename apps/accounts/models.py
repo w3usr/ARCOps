@@ -263,8 +263,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def status_label(self) -> str:
-        label = self.STATUS_LABELS[self.status]
-        return f"{label} · Archived" if self.archived_at else label
+        """Where they stand. Whether the record is archived is a flag beside this, with a
+        column of its own (the advisor, 2026-09-19)."""
+        return self.STATUS_LABELS[self.status]
 
     @property
     def is_provisional(self) -> bool:

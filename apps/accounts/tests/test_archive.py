@@ -93,12 +93,12 @@ def test_a_former_member_leaves_the_list_until_it_is_asked_for_them():
 
     c = _as(advisor)
     assert b"N0ARC" not in c.get("/members/").content
-    body = c.get("/members/?status=archived").content
+    body = c.get("/members/?archived=yes").content
     assert b"N0ARC" in body and b"Archived" in body
     assert b"N0ARC" in c.get("/members/archive/", follow=True).content, "the old URL still works"
     # and an ordinary member's list never held them either
     other = _user("other@example.org")
-    assert b"N0ARC" not in _as(other).get("/members/?status=archived").content
+    assert b"N0ARC" not in _as(other).get("/members/?archived=yes").content
 
 
 def test_only_a_faculty_advisor_or_above_reads_the_archive():
@@ -111,7 +111,7 @@ def test_only_a_faculty_advisor_or_above_reads_the_archive():
     # and an officer asking for the archived rows by hand gets the ordinary list instead
     archived = _closed(_user("gone@example.org", callsign="N0GON"))
     archive_member(advisor, archived, "graduated")
-    assert b"N0GON" not in _as(officer).get("/members/?status=archived").content
+    assert b"N0GON" not in _as(officer).get("/members/?archived=yes").content
     # the sidebar offers it to exactly those people
     assert b"Archive" in _as(advisor).get("/").content
     assert b"Archive" not in _as(officer).get("/").content
@@ -132,7 +132,7 @@ def test_opening_the_archive_is_recorded():
     """It holds contact details for people who are no longer around to ask, so who reads it is
     part of the record."""
     advisor = _user("adv@example.org", "advisor")
-    _as(advisor).get("/members/?status=archived&q=smith")
+    _as(advisor).get("/members/?archived=yes&q=smith")
     row = AuditLog.objects.get(action="archive.viewed")
     assert row.actor == advisor and row.after == {"search": "smith"}
 

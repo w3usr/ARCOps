@@ -83,7 +83,7 @@ def pages_for(role: str) -> list[str]:
     if role == "officer":
         return common + officer
     tpl = MessageTemplate.objects.order_by("pk").first()
-    advisor = ["/credentials/approvals/", "/members/?status=archived"]
+    advisor = ["/credentials/approvals/", "/members/?archived=yes"]
     if role == "advisor":
         return common + officer + advisor
     sysadmin = [

@@ -69,10 +69,23 @@ DIRECTORY_COLUMNS = [
     {"key": "category", "label": "Category", "show": "full"},
     {"key": "position", "label": "Position", "show": "all"},
     {"key": "status", "label": "Status", "show": "full"},
+    # The archive is a flag beside the status, so it is a column of its own, and only for a
+    # reader who may see an archived record at all (the advisor, 2026-09-19).
+    {"key": "archived", "label": "Archived", "show": "archive"},
     {"key": "access", "label": "Access", "show": "full"},
     {"key": "email", "label": "Email", "show": "full"},
     {"key": "phone", "label": "Phone", "show": "full"},
 ]
+
+
+def _shows(column: dict, full: bool, may_see_archive: bool) -> bool:
+    """Whether this reader gets this column: everyone, officers and above, or whoever may read
+    an archived record at all."""
+    if column["show"] == "all":
+        return True
+    if column["show"] == "archive":
+        return full and may_see_archive
+    return full
 
 
 def _sort_keys(positions: dict, cats: dict):
@@ -136,6 +149,7 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
             text(m.last_name),
         ),
         # Down the list in the order the club reads it, rather than down the alphabet.
+        "archived": lambda m: (not m.archived_at, text(m.last_name)),
         "status": lambda m: (
             [k for k, _ in User.STATUSES].index(m.status),
             bool(m.archived_at),
@@ -161,17 +175,29 @@ def members(request):
     # 2026-09-19). Two things are put away rather than listed. An **archived** record is asked
     # for by name and read by whoever may read the archive (FR-125); a **deleted** row survives
     # only so past rosters keep their shape, holds no name or address, and is a sysadmin's.
-    wanted = request.GET.get("status", "") if full else ""
     may_see_archive = request.user.may("view_archive")
     may_see_deleted = request.user.may("delete_accounts")
-    if wanted == "archived" and may_see_archive:
-        current = User.objects.filter(archived_at__isnull=False, deleted_at__isnull=True)
-    elif wanted == "deleted" and may_see_deleted:
-        current = User.objects.filter(deleted_at__isnull=False)
+    # Every filter takes a set: "show me the officers and the advisors" is a question somebody
+    # asks (the advisor, 2026-09-19), and a drop-down that holds one answer cannot take it.
+    # Nothing ticked means no narrowing at all, so an old single-value link still works.
+    statuses = set(request.GET.getlist("status")) if full else set()
+    statuses &= {k for k, _ in User.STATUSES}
+    if not may_see_deleted:
+        statuses.discard("deleted")
+    # The archive is a **flag**, not a status, so it has a column and a filter of its own (the
+    # advisor, 2026-09-19). Unasked, the list is the live one: an archived record is put away,
+    # and a deleted row survives only so past rosters keep their shape (FR-125, FR-118).
+    archived = set(request.GET.getlist("archived")) if full and may_see_archive else set()
+    archived &= {"yes", "no"}
+    if archived == {"yes"}:
+        where = Q(archived_at__isnull=False)
+    elif archived == {"yes", "no"}:
+        where = Q()
     else:
-        current = User.objects.filter(archived_at__isnull=True, deleted_at__isnull=True)
-        if wanted not in dict(User.STATUSES):
-            wanted = ""
+        where = Q(archived_at__isnull=True)
+    if "deleted" not in statuses:
+        where &= Q(deleted_at__isnull=True)
+    current = User.objects.filter(where)
     users = (
         # the directory shows every address an officer may write to, so they come in one query
         current.select_related("license").prefetch_related("addresses", "groups")
@@ -197,40 +223,42 @@ def members(request):
     # Narrowing. Category and access are an officer's to filter by, because they are an
     # officer's to see; position is on the page for everyone.
     chosen = {
-        "category": request.GET.get("category", "") if full else "",
-        "position": request.GET.get("position", ""),
+        "category": set(request.GET.getlist("category")) if full else set(),
+        "position": set(request.GET.getlist("position")),
         # The class is on the page for everyone, so everyone can narrow by it.
-        "license": request.GET.get("license", ""),
-        "access": request.GET.get("access", "") if full else "",
-        "status": wanted,
+        "license": {v.strip().lower() for v in request.GET.getlist("license")},
+        "access": set(request.GET.getlist("access")) if full else set(),
+        "status": statuses,
+        "archived": archived,
     }
     if chosen["category"]:
-        users = users.filter(category=chosen["category"])
+        users = users.filter(category__in=chosen["category"])
     if chosen["position"]:
-        users = users.filter(club_position=chosen["position"])
+        users = users.filter(club_position__in=chosen["position"])
 
-    if wanted in ("archived", "deleted"):
-        # Reading the archive is recorded, as it was when the archive was a page (FR-125).
+    if "yes" in archived or "deleted" in statuses:
+        # Reading an archived or deleted record is recorded, as it was when the archive was a
+        # page of its own (FR-125).
         record(request.user, "archive.viewed", None, after={"search": q} if q else None)
     rows = list(users)
-    if wanted in dict(User.STATUSES):
-        rows = [m for m in rows if m.status == wanted]
+    if statuses:
+        rows = [m for m in rows if m.status in statuses]
     if chosen["license"]:
-        want = chosen["license"].strip().lower()
+        want = chosen["license"]
         rows = [
             m
             for m in rows
-            if (want in STATION_FILTERS and m.license_letter == STATION_FILTERS[want])
-            or m.license_class.lower() == want
+            if {STATION_FILTERS.get(w, "") for w in want} & {m.license_letter}
+            or m.license_class.lower() in want
         ]
     if chosen["access"]:
         want = chosen["access"]
         rows = [
             m
             for m in rows
-            if (want == "sysadmin" and m.is_superuser)
-            or (want == "none" and not m.is_superuser and not m.groups.all())
-            or any(g.name == want for g in m.groups.all())
+            if ("sysadmin" in want and m.is_superuser)
+            or ("none" in want and not m.is_superuser and not m.groups.all())
+            or any(g.name in want for g in m.groups.all())
         ]
 
     # Last name by default; a member has no last-name column, so theirs sorts by the name they
@@ -238,17 +266,22 @@ def members(request):
     default_sort = "last" if full else "name"
     sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
-    shown = {
-        c["key"] for c in DIRECTORY_COLUMNS if c["show"] == "all" or (c["show"] == "full") == full
-    }
+    shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)}
     if sort not in keys or sort not in shown:
         sort = default_sort
     descending = request.GET.get("dir") == "desc"
     rows.sort(key=keys[sort], reverse=descending)
 
+    # What each panel's summary says, so a narrowed table says so without being opened.
+    def _summary(choices, ticked, label) -> str:
+        names = [text for key, text in choices if key in ticked]
+        if not names or len(names) == len(choices):
+            return f"Any {label}"
+        return ", ".join(names) if len(names) < 3 else f"{len(names)} {label}s"
+
     columns = []
     for col in DIRECTORY_COLUMNS:
-        if col["show"] != "all" and (col["show"] == "full") != full:
+        if not _shows(col, full, may_see_archive):
             continue
         here = col["key"] == sort
         params = request.GET.copy()
@@ -267,12 +300,15 @@ def members(request):
 
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
     license_choices += list(STATION_CHOICES)
-    # The statuses anybody may narrow by, then the two that are put away rather than listed.
+    # Where somebody stands with the club, everything but Deleted ticked to begin with (the
+    # advisor, 2026-09-19: "everything checked except archived"). A deleted row is a sysadmin's
+    # alone and stays unticked: normal operations are not cluttered with it.
+    status_ticked = statuses or {k for k, _ in User.STATUSES if k != "deleted"}
     status_choices = [(k, label) for k, label in User.STATUSES if k != "deleted"]
-    if may_see_archive:
-        status_choices.append(("archived", "Archived"))
     if may_see_deleted:
         status_choices.append(("deleted", "Deleted"))
+    archived_choices = [("no", "Not archived"), ("yes", "In the archive")]
+    archived_ticked = archived or {"no"}
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
     return render(
@@ -288,9 +324,28 @@ def members(request):
             "sort": sort,
             "dir": "desc" if descending else "asc",
             "chosen": chosen,
+            "summaries": {
+                "category": _summary(
+                    sorted(cats.items(), key=lambda kv: kv[1]), chosen["category"], "category"
+                ),
+                "license": _summary(license_choices, chosen["license"], "class"),
+                "position": _summary(
+                    sorted(positions.items(), key=lambda kv: kv[1]), chosen["position"], "position"
+                ),
+                "status": _summary(status_choices, status_ticked, "status"),
+                "archived": _summary(archived_choices, archived_ticked, "archive"),
+                "access": _summary(access_choices, chosen["access"], "access"),
+            },
             "category_choices": sorted(cats.items(), key=lambda kv: kv[1]),
             "license_choices": license_choices,
             "status_choices": status_choices,
+            "archived_choices": archived_choices,
+            "archived_ticked": archived_ticked,
+            "may_see_archive": may_see_archive,
+            # What the status panel shows ticked when nothing has been asked for: everything
+            # that is not put away (the advisor, 2026-09-19, "everything checked except
+            # archived"). The query already reads an empty set that way.
+            "status_ticked": status_ticked,
             "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
             "access_choices": access_choices,
         },
@@ -316,7 +371,7 @@ def archive(request):
     """
     if not request.user.may("view_archive"):
         raise Http404
-    return redirect(f"{reverse('members')}?status=archived")
+    return redirect(f"{reverse('members')}?archived=yes")
 
 
 def _preferences(user) -> dict:

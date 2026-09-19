@@ -69,7 +69,7 @@ def test_an_archived_account_is_out_of_the_directory_too():
     request_closure(left)  # closed or suspended before archived (2026-09-19)
     archive_member(sysadmin, User.objects.get(pk=left.pk), "graduated")
     assert "Former" not in _as(sysadmin).get("/members/").content.decode()
-    assert "Former" in _as(sysadmin).get("/members/?status=archived").content.decode()
+    assert "Former" in _as(sysadmin).get("/members/?archived=yes").content.decode()
 
 
 def test_a_deleted_member_still_holds_their_place_on_a_past_roster():

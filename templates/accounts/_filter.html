@@ -1,0 +1,13 @@
+{% comment %}One filter: a disclosure holding a checkbox each, so a reader can ask for two things
+at once ("the officers and the advisors"). A drop-down holds one answer; this holds a set, needs
+no JavaScript, opens from the keyboard, and submits `?name=a&name=b`. The summary says what is
+ticked, so a narrowed table says so without being opened (NAF, 2026-09-19).{% endcomment %}
+<details class="filter"{% if open %} open{% endif %}>
+  <summary aria-label="{{ label }}">{% if summary %}{{ summary }}{% else %}Any {{ label|lower }}{% endif %}</summary>
+  <fieldset>
+    <legend class="sr-only">{{ label }}</legend>
+    {% for key, text in choices %}
+    <div class="check"><input type="checkbox" id="f-{{ name }}-{{ key }}" name="{{ name }}" value="{{ key }}"{% if key in ticked %} checked{% endif %}><label for="f-{{ name }}-{{ key }}">{{ text }}</label></div>
+    {% endfor %}
+  </fieldset>
+</details>
