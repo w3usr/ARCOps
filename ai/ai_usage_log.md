@@ -2579,4 +2579,4 @@ carries the actual running model ID.
   assistant, from the advisor's instruction and his collaborator's point.
 - **Human Review Status**: Pending the advisor's look; the club's postal address is his to
   confirm before it goes out. 370 tests, the accessibility sweep and the four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 8c0ce87
