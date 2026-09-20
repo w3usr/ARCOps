@@ -56,7 +56,7 @@ access on the way past. The officer's view and the member's own profile are the 
   {% if standing.license %}
   <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
   {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
-  <p class="helptext">{{ standing.license.source_label|capfirst }}.{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>
+  {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
   {% else %}<p class="muted">None on file.</p>{% endif %}
 </section>
 

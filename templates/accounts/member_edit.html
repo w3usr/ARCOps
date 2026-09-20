@@ -41,7 +41,7 @@ stored in.{% endcomment %}
   {% if standing.license %}
   <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
   {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
-  <p class="helptext">{{ standing.license.source_label|capfirst }}.{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>
+  {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} Set by {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
   {% else %}<p class="muted">None on file.</p>{% endif %}
   <p class="helptext">Every licensed member is refreshed from the FCC's own file overnight, so an upgrade appears here the night after the FCC publishes it.</p>
   {% if member.callsign and perms.ops.override_license %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="license_lookup"><button type="submit" class="secondary">Look this callsign up now</button></form>

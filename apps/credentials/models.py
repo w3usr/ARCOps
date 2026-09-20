@@ -127,7 +127,12 @@ class LicenseRecord(models.Model):
         status = self.effective_status
         return self.STATUS_WORDS.get(status, status.replace("_", " "))
 
+    # `source` is a stored key and never reaches a page as one (TR-44). `fcc_uls_local` is what
+    # the import writes; `uls` is the name it had before the local table, kept for rows written
+    # then. A key with no words here is a fault in this map, so the line goes rather than the
+    # key: the advisor met "Fcc_uls_local." on his own member page (2026-09-20).
     SOURCE_WORDS = {
+        "fcc_uls_local": "from the FCC",
         "uls": "from the FCC",
         "unverified": "not checked yet",
         "manual": "entered here",
@@ -139,7 +144,7 @@ class LicenseRecord(models.Model):
             return "set by a sysadmin" + (
                 f", {self.override_country}" if self.override_country else ""
             )
-        return self.SOURCE_WORDS.get(self.source or "unverified", self.source)
+        return self.SOURCE_WORDS.get(self.source or "unverified", "")
 
     @property
     def effective_expiry(self):

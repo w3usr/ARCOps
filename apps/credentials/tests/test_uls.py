@@ -453,3 +453,34 @@ def test_a_callsign_the_fcc_does_not_hold_keeps_nothing_of_the_one_before_it():
     assert u.license_letter == "U"  # FR-67: no FCC record is not a station
     # The name stays; the claim that the FCC wrote it does not, so the member can correct it.
     assert u.last_name == "Carter" and not u.name_from_uls
+
+
+@pytest.mark.django_db
+def test_the_license_source_reads_as_words_and_never_as_its_stored_key():
+    """TR-44: what a page shows is words. The advisor met "Fcc_uls_local." on his own member
+    page on 2026-09-20, because the import's key was missing from the map that turns it into
+    a sentence and the raw value fell through."""
+    UlsLicense.objects.create(
+        callsign="N2BSA", operator_class="Extra", status="active", licensee_name="Nitkowski"
+    )
+    u = User.objects.create_user("src@example.org", "pw-Testing-123")
+    apply_callsign(u, "N2BSA")
+    lic = LicenseRecord.objects.get(user=u)
+    assert lic.source == "fcc_uls_local"  # the stored key is unchanged
+    assert lic.source_label == "from the FCC"
+
+    apply_callsign(u, "WC1XYZ", previous="N2BSA")  # not in the table
+    lic.refresh_from_db()
+    assert lic.source_label == "from the FCC"
+
+    c = Client()
+    c.force_login(u)
+    for url in (f"/members/{u.pk}/", f"/members/{u.pk}/edit/"):
+        body = c.get(url).content.decode()
+        assert "uls_local" not in body.lower(), url
+
+    # A key nobody has written words for leaves the line out rather than printing the key.
+    lic.source = "some_new_source"
+    lic.save(update_fields=["source"])
+    assert lic.source_label == ""
+    assert "some_new_source" not in c.get(f"/members/{u.pk}/").content.decode()
