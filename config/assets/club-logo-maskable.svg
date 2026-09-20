@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="t d">
+  <title id="t">Generic club mark, drawn for an installed app</title>
+  <desc id="d">The placeholder logo on a filled square, sized to the safe area a phone leaves after it applies its own mask. Replace with the club's own artwork.</desc>
+  <!-- Full bleed: a maskable icon owns the whole tile, and the phone crops it to the shape it
+       uses. Only the middle eight tenths is guaranteed to survive that crop, so the mark is
+       scaled to fit inside it. -->
+  <rect width="512" height="512" fill="#ffffff"/>
+  <g transform="translate(51.2 51.2) scale(0.8)">
+    <circle cx="256" cy="256" r="232" fill="none" stroke="#1f3a5f" stroke-width="24"/>
+    <rect x="244" y="200" width="24" height="200" rx="6" fill="#1f3a5f"/>
+    <rect x="176" y="392" width="160" height="24" rx="8" fill="#1f3a5f"/>
+    <rect x="152" y="216" width="208" height="20" rx="6" fill="#1f3a5f"/>
+    <rect x="184" y="262" width="144" height="20" rx="6" fill="#1f3a5f"/>
+    <path d="M176 152a112 112 0 0 1 160 0" fill="none" stroke="#e0a100" stroke-width="20" stroke-linecap="round"/>
+    <path d="M136 112a168 168 0 0 1 240 0" fill="none" stroke="#e0a100" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="256" cy="190" r="22" fill="#e0a100"/>
+  </g>
+</svg>

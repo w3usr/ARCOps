@@ -137,6 +137,19 @@ def _png_size(url: str) -> str:
     return f"{width}x{height}"
 
 
+def _icon_entry(url: str, purpose: str) -> dict:
+    entry = {"src": url, "purpose": purpose}
+    if ".svg" in url:
+        entry["sizes"], entry["type"] = "any", "image/svg+xml"
+    else:
+        # The real pixel size, read from the file. A browser decides whether a site can be
+        # installed, and which icon to use, from the sizes a manifest declares; "any" means
+        # "scalable", which a PNG is not, so the club's 512px logo was being passed over.
+        entry["sizes"] = _png_size(url) or "192x192"
+        entry["type"] = "image/png"
+    return entry
+
+
 def manifest(request):
     """The web app manifest (FR-96), rendered from the club's configuration so an installed
     copy and its notification prompts carry this installation's name, never the product's. A
@@ -153,17 +166,15 @@ def manifest(request):
         if not url or url in seen:
             continue  # the shipped configuration points both at one file; say it once
         seen.add(url)
-        entry = {"src": url}
-        if ".svg" in url:
-            entry["sizes"], entry["type"] = "any", "image/svg+xml"
-        else:
-            # The real pixel size, read from the file. A browser decides whether a site can be
-            # installed, and which icon to use, from the sizes a manifest declares; "any" means
-            # "scalable", which a PNG is not, so the club's 512px logo was being passed over.
-            size = _png_size(url)
-            entry["sizes"] = size or "192x192"
-            entry["type"] = "image/png"
-        icons.append(entry)
+        icons.append(_icon_entry(url, "any"))
+    # A phone that installs the site puts the icon under its own mask. An icon that does not
+    # say it can be masked is treated as artwork of unknown shape: the launcher shrinks it and
+    # sets it on a white tile, which is where the margin around the club's logo came from (the
+    # advisor, 2026-09-20). A maskable icon is drawn to the edge, so the club supplies one with
+    # its mark inside the safe area and the rest filled.
+    masked = b.get("maskable_icon")
+    if masked:
+        icons.append(_icon_entry(masked, "maskable"))
     body = {
         "name": f"{short} Operations ({host})",
         "short_name": short[:12],

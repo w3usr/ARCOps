@@ -2232,3 +2232,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 333 tests pass, the accessibility sweep
   and the four guards pass.
 - **Git Hash**: 43911b3
+
+## [2026-09-20 00:12 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two faults the advisor met in acceptance testing. First, confirming a
+  password before adding two-factor or a passkey refused the correct password: the sign-in
+  library rebuilds the credentials from its own username field and the primary row of its
+  address table, and this installation has neither, so it had nothing to look the account up
+  by. The adapter now hands it the account's own key. Second, the installed app's home-screen
+  icon sat small on a white tile, because the manifest declared no icon a phone may crop to its
+  own shape; it now offers one, and the club's configuration supplies it.
+- **Sections/Files Affected**: apps/accounts/adapter.py, apps/accounts/tests/test_reauthenticate.py,
+  apps/ops/views.py, apps/ops/config.py, apps/ops/views_settings.py, config/club.example.yaml,
+  config/assets/club-logo-maskable.svg, apps/ops/tests/test_health_and_import.py.
+- **Nature of Contribution**: Diagnosis, code, a placeholder icon, and tests by the assistant,
+  from the advisor's two reports.
+- **Human Review Status**: Pending the advisor's look on his own phone. 338 tests pass, with
+  the accessibility sweep and the four guards.
+- **Git Hash**: {{pending}}

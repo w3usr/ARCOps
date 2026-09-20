@@ -124,7 +124,14 @@ def accent_color() -> str:
     return value
 
 
-BRANDING_IMAGES = ("logo", "logo_monochrome", "favicon", "apple_touch_icon", "qsl_card")
+BRANDING_IMAGES = (
+    "logo",
+    "logo_monochrome",
+    "favicon",
+    "apple_touch_icon",
+    "maskable_icon",
+    "qsl_card",
+)
 
 
 def branding_url(value: str | None) -> str | None:

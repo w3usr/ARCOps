@@ -89,3 +89,20 @@ def test_the_manifest_declares_each_icon_at_its_real_size():
         if i["type"] == "image/svg+xml" or int(i["sizes"].split("x")[0]) >= 192
     ]
     assert big_enough, "one icon at least as large as a launcher wants, or a scalable one"
+
+
+@pytest.mark.django_db
+def test_an_installed_icon_is_offered_for_the_phones_own_mask():
+    """NAF, 2026-09-20, of the club seal on his home screen: "Can we have less whitespace on the
+    app icon?" A launcher shrinks an icon of unknown shape onto a white tile. One declared
+    maskable is drawn to the edge and cropped to the launcher's shape instead."""
+    import json
+
+    from django.core.management import call_command
+    from django.test import Client
+
+    call_command("club_import")
+    body = json.loads(Client().get("/manifest.webmanifest", HTTP_HOST="testserver").content)
+    purposes = {i.get("purpose") for i in body["icons"]}
+    assert "maskable" in purposes, "without one the phone pads the icon itself"
+    assert "any" in purposes, "and one that is not cropped, for everywhere else"

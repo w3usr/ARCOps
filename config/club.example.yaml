@@ -29,6 +29,10 @@ branding:
   logo_monochrome: "assets/club-logo.svg"
   favicon: "assets/club-logo.svg"
   apple_touch_icon: "assets/club-logo.svg"
+  # Drawn to the edge of the tile when the site is installed as an app: the phone applies its
+  # own mask, so the mark sits inside the middle eight tenths and the rest of the square is
+  # filled. A logo used here unchanged comes back shrunk on a white tile.
+  maskable_icon: "assets/club-logo-maskable.svg"
   qsl_card: null
   # The club's color: footer, sign-in panel, buttons, links, and the active menu entry. A
   # six-digit hex; it must carry white text at WCAG AA (4.5:1) or the application's own

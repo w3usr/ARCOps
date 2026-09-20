@@ -3,6 +3,7 @@
 from email.utils import formataddr
 
 from allauth.account.adapter import DefaultAccountAdapter
+from allauth.core import context
 from django.contrib import messages
 from django.urls import reverse
 
@@ -25,6 +26,22 @@ class AccountAdapter(DefaultAccountAdapter):
             )
             return reverse("dashboard")
         return reverse("profile")
+
+    def reauthenticate(self, user, password: str) -> bool:
+        """Confirm the person at the keyboard knows this account's password, before they add a
+        passkey or turn on two-factor.
+
+        The library rebuilds the credentials from what it expects an account to have: its own
+        username field, and the primary row in its address table. This installation has neither.
+        The account's key is its public identifier, and sign-in addresses are our own rows
+        mirrored into the library's table with no primary among them, so the library handed
+        Django a password and nothing to look the account up by. Every correct password came
+        back "Incorrect password." (the advisor, 2026-09-20). The account's own key is the
+        credential Django's model backend understands.
+        """
+        credentials = {"username": str(user.get_username()), "password": password}
+        reauth_user = self.authenticate(context.request, **credentials)
+        return reauth_user is not None and reauth_user.pk == user.pk
 
     def get_client_ip(self, request) -> str:
         """allauth's rate limiter (TR-18) keys on the client IP and refuses the request when it

@@ -69,6 +69,7 @@ GROUPS = [
             "branding.logo_monochrome",
             "branding.favicon",
             "branding.apple_touch_icon",
+            "branding.maskable_icon",
             "branding.qsl_card",
             "branding.accent",
         ],
@@ -218,6 +219,10 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
     "branding.apple_touch_icon": (
         "Home screen icon",
         "Used when somebody adds the site to an iPhone or iPad home screen.",
+    ),
+    "branding.maskable_icon": (
+        "Installed app icon",
+        "Used when somebody installs the site as an app on a phone. The phone crops it to its own shape, so the mark belongs in the middle eight tenths and the rest of the square is filled.",
     ),
     "branding.qsl_card": (
         "QSL card",
