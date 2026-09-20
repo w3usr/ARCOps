@@ -263,7 +263,9 @@ def test_access_is_one_choice_from_a_list(club_people):
     advisor, member = club_people["advisor"], club_people["member"]
     body = _as(advisor).get(f"/members/{member.pk}/edit/").content.decode()
     assert '<select name="groups"' in body and 'type="checkbox" name="groups"' not in body
-    assert ">No access</option>" in body, "and no access is one of the answers"
+    # NAF, 2026-09-20: "there should not be a No Access option through the Access menu. That
+    # should be set through Close Account or Suspend Account, both of which require explanations."
+    assert "No access" not in body.split("Danger zone")[0], "not for an advisor either now"
 
     _as(advisor).post(
         f"/members/{member.pk}/edit/",
@@ -299,7 +301,7 @@ def test_an_officer_promotes_and_never_demotes(club_people):
     c = _as(officer)
     body = c.get(f"/members/{member.pk}/edit/").content.decode()
     assert ">No access</option>" not in body, "shutting an account out is the suspension"
-    assert "To shut an account out, suspend it instead." in body
+    assert "close or suspend the account: both of those record a reason" in body
 
     c.post(
         f"/members/{provisional.pk}/edit/",
@@ -325,13 +327,42 @@ def test_an_officer_promotes_and_never_demotes(club_people):
     member.refresh_from_db()
     assert member.in_group("member") and not member.in_group("provisional")
 
-    # an advisor may lower, because an advisor may lift what lowering amounts to
+    # and an advisor cannot empty the field either: a form with no level is refused rather than
+    # taken as "no access", which is what closing and suspending are for (2026-09-20).
     _as(club_people["advisor"]).post(
         f"/members/{member.pk}/edit/",
         {"action": "save", "first_name": member.first_name, "last_name": member.last_name},
     )
     member.refresh_from_db()
-    assert not member.has_access, "and No access is among an advisor's answers"
+    assert member.has_access, "an empty Access field takes nothing away"
+
+
+def test_a_closed_account_has_no_access_menu_at_all(club_people):
+    """NAF, 2026-09-20: "Once the account is closed, the Access menu should disappear or be
+    disabled. It should only be granted again through 'Let them back in as a member'."
+
+    So the field is on the form only while there is access to change, and the rest of the page
+    still works: correcting a name on a closed record is not a readmission.
+    """
+    from apps.accounts.services import request_closure
+
+    advisor, member = club_people["advisor"], club_people["member"]
+    request_closure(member)
+    member.refresh_from_db()
+    body = _as(advisor).get(f"/members/{member.pk}/edit/").content.decode()
+    assert '<select name="groups"' not in body, "no menu while the account is closed"
+    assert "Let them back in as a member" in body, "that is the way back"
+
+    _as(advisor).post(
+        f"/members/{member.pk}/edit/",
+        {"action": "save", "first_name": "Corrected", "last_name": member.last_name},
+    )
+    member.refresh_from_db()
+    assert member.first_name == "Corrected" and not member.has_access
+
+    _as(advisor).post(f"/members/{member.pk}/edit/", {"action": "reopen"})
+    member.refresh_from_db()
+    assert member.in_group("member") and member.status == "active"
 
 
 def test_an_account_given_access_back_is_no_longer_closed(club_people):

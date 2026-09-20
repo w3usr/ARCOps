@@ -2423,3 +2423,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 349 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 3e64ff9
+
+## [2026-09-20 03:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Access is no longer something the drop-down can take away. "No access" is
+  gone from the menu at every level, because closing and suspending both carry a reason and a
+  name, and on an account that is already shut out the menu is not rendered at all: the way back
+  is the control that says so.
+- **Sections/Files Affected**: apps/accounts/account.py, docs/REQUIREMENTS.md (FR-91),
+  apps/accounts/tests/test_appointments.py.
+- **Nature of Contribution**: Code and tests by the assistant, from the advisor's two decisions.
+- **Human Review Status**: Pending the advisor's look. 350 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

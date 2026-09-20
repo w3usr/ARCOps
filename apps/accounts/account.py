@@ -64,7 +64,12 @@ def editable_fields(actor: User, subject: User) -> list[str]:
     # is something you already hold, and only an account below you is yours to change.
     from apps.ops.groups import may_set_access
 
-    if may_set_access(actor, subject):
+    # Only while there is access to change. Once an account is closed or suspended the way back
+    # is the control that says so, which records who let them in (FR-91):
+    #
+    # > Once the account is closed, the Access menu should disappear or be disabled. It should
+    # > only be granted again through "Let them back in as a member". — NAF, 2026-09-20
+    if may_set_access(actor, subject) and subject.pk and subject.has_access:
         fields.append("groups")
     if actor.is_superuser and getattr(actor, "acting_capabilities", None) is None:
         fields.append("is_superuser")  # a sysadmin is made by a sysadmin, at the top level
@@ -124,18 +129,23 @@ class AccountForm(forms.ModelForm):
             # a drop-down. You should only be able to pick one."), and only the groups this
             # person may grant are in it, whatever the page was made to submit.
             allowed = assignable_groups(actor, self.instance)
-            # Somebody who cannot lift a suspension cannot lower a level either, and "No access"
-            # is not among their answers: shutting an account out is the suspension, where the
-            # act carries a reason (FR-91, 2026-09-19).
-            may_lower = actor.may("lift_suspension")
+            # **No access is not one of the answers.** Taking access away is closing or
+            # suspending the account, and both of those carry a reason and a name (FR-91):
+            #
+            # > I think there should not be a No Access option through the Access menu. That
+            # > should be set through Close Account or Suspend Account, both of which require
+            # > explanations. — NAF, 2026-09-20, extending to everyone what an officer already
+            # > met on 2026-09-19
+            #
+            # The field is only here while the account has access at all (editable_fields), so
+            # it always holds one of the levels and never an empty answer.
             self.fields["groups"] = forms.ModelChoiceField(
                 queryset=Group.objects.filter(pk__in=[g.pk for g in allowed]).order_by("name"),
-                required=not may_lower,
-                empty_label="No access" if may_lower else None,
+                required=True,
+                empty_label=None,
                 label="Access",
-                help_text="What this account may do. An account in no group can do nothing."
-                if may_lower
-                else "What this account may do. To shut an account out, suspend it instead.",
+                help_text="What this account may do. To take access away, close or suspend the "
+                "account: both of those record a reason.",
             )
             configured = setting("access_groups", []) or []
             self.fields["groups"].label_from_instance = lambda g: label_of(g, configured)

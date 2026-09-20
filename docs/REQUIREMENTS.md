@@ -1580,6 +1580,20 @@ made it likely that reliable delivery would take time to establish:
   account and drop them to Member, taking the club over by demotion. Restoring puts an account
   back **as a member**; a level above that is granted deliberately by somebody who holds it.
 
+  **No access is not one of the answers in the Access menu, for anybody** (2026-09-20, extending
+  to every level what an officer met on 2026-09-19). Taking access away is closing or suspending
+  the account, and each of those carries a reason, a date and a name, so the page can always say
+  why an account can do nothing. Once an account is shut out the menu is not there at all: the
+  way back is **Let them back in as a member**, which is one act with a record, rather than a
+  drop-down that quietly readmits somebody while a name is being corrected.
+
+  > I think there should not be a No Access option through the Access menu. That should be set
+  > through Close Account or Suspend Account, both of which require explanations. — NAF,
+  > 2026-09-20
+
+  > Once the account is closed, the Access menu should disappear or be disabled. It should only
+  > be granted again through "Let them back in as a member". — NAF, 2026-09-20
+
   > Faculty advisors should be able to appoint officers, members, and below. Officers should be
   > able to appoint members, and below. — NAF, 2026-09-19
 
