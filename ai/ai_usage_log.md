@@ -2281,3 +2281,17 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit by the assistant.
 - **Human Review Status**: Pending the advisor's look; the repository guards and 339 tests pass.
 - **Git Hash**: 45763c8
+
+## [2026-09-20 00:52 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The invite page told officers that a member under 18 with no address of
+  their own "signs in with an address made from the guardian's". Nothing has done that since the
+  account stopped being its own address; the advisor caught the sentence. The help text now says
+  what happens: with an address of their own a minor signs in read-only, and with none they do
+  not sign in and the guardian acts for them.
+- **Sections/Files Affected**: apps/accounts/views.py (InviteForm help text),
+  apps/accounts/tests/test_phase7.py.
+- **Nature of Contribution**: Edit and a test by the assistant, from the advisor's reading.
+- **Human Review Status**: Pending the advisor's look. 340 tests, the accessibility sweep and
+  the four guards pass.
+- **Git Hash**: {{pending}}

@@ -71,7 +71,14 @@ class InviteForm(forms.Form):
     email = forms.EmailField(
         required=False,
         label="Invitee's email",
-        help_text="Required for an adult. Optional for a member under 18, who need not have one: with none, they sign in with an address made from the guardian's.",
+        # A minor once got a made-up address derived from the guardian's so that the old
+        # account-is-an-address model had something unique to hold; migration 0009 removed
+        # both that fabrication and the need for it, and this text outlived it.
+        help_text=(
+            "Required for an adult. Optional for a member under 18: with one they sign in "
+            "read-only, and with none they do not sign in at all and their guardian acts "
+            "for them."
+        ),
     )
     category = forms.ChoiceField()
     is_minor = forms.BooleanField(required=False, label="The invitee is under 18")

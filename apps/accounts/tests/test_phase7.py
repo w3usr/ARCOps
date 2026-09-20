@@ -350,3 +350,45 @@ def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
     assert minor.email == "kim@example.org"
     assert set(recipient_addresses(minor)) == {"parent@example.org", "kim@example.org"}
     assert AuditLog.objects.filter(action="address.added", actor=parent).exists()
+
+
+def test_a_minor_with_no_address_of_their_own_holds_none_and_cannot_sign_in():
+    """NAF, 2026-09-20, reading the invite page: "How can a minor sign in with a guardian email?
+    That doesn't make sense. The guardians email will take them to the guardian account."
+
+    Right, and nothing does that: the made-up address derived from a guardian's went with
+    migration 0009. A minor invited without one holds no address, so nothing signs them in, and
+    the guardian acts for them (FR-10, FR-70). Only the help text still described the old way.
+    """
+    officer = _user("off@example.org", "officer")
+    page = _as(officer).get("/me/invitations/").content.decode()
+    assert "address made from the guardian" not in page
+    assert "they do not sign in at all and their guardian acts for them" in page
+
+    inv = create_invitation(
+        officer, "", "student", is_minor=True, guardian_email="parent@example.org"
+    )
+    c = Client()
+    c.post(
+        f"/me/invite/{inv.token}/",
+        {
+            "guardian_first_name": "Pat",
+            "guardian_last_name": "Parent",
+            "guardian_phone": "555-0100",
+            "relationship": "parent",
+            "guardian_password1": "pw-Testing-123!",
+            "guardian_password2": "pw-Testing-123!",
+            "first_name": "Kim",
+            "last_name": "Kid",
+            "minor_email": "",
+            "password1": "pw-Kid-Testing-123!",
+            "password2": "pw-Kid-Testing-123!",
+            "consent": "on",
+        },
+    )
+    guardian = User.objects.by_address("parent@example.org").get()
+    minor = Guardianship.objects.get(guardian=guardian).minor
+    assert minor.addresses.count() == 0, "no address of their own, and none invented"
+    assert User.objects.by_address("parent@example.org").get() == guardian, (
+        "the guardian's address still reaches only the guardian's account"
+    )
