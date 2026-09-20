@@ -2853,3 +2853,14 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
   accessibility sweep pass; a document was rendered and its text extracted again.
 - **Git Hash**: ddc3c67
+
+## [2026-09-20 21:57 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The unanswered FCC-name question follows the member on every page until
+  they answer it, rather than sitting on a profile they may never open.
+- **Sections/Files Affected**: templates/base.html, templates/accounts/member_detail.html
+  (its duplicate removed), apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Change by the assistant, from the advisor's point on issue #93.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

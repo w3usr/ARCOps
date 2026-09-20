@@ -11,12 +11,6 @@ access on the way past. The officer's view and the member's own profile are the 
   {% if can_edit %}<a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit {% if is_self %}profile and preferences{% else %}profile{% endif %}</a>{% endif %}
 </div>
 
-{% if is_self and user.pending_uls_name %}
-<div class="banner" role="status">
-  <p><strong>Is this you?</strong> The FCC records <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which is not the name on this account. Say it is you and the account takes the FCC's name, because a licensed member's name is the one on the license; say it is not and the callsign comes off. Until you answer, the callsign counts for nothing: it does not appear on a roster and it does not meet a slot's license requirement.</p>
-  <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
-</div>
-{% endif %}
 {% if is_self and my_wards %}
 <section class="card highlight" aria-labelledby="wards"><h2 id="wards">Members you act for</h2>
 <p>You are the guardian of the members below. <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>

@@ -405,5 +405,9 @@ def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
     assert "not the name you gave" in body
     assert "counts for nothing" in body, "it says what the callsign does until answered"
     assert 'href="/me/"' in body or "Answer it on your profile" in body
-    # and the profile carries the question itself
-    assert "Is this you?" in c.get("/me/", follow=True).content.decode()
+    # The question follows them until it is answered, rather than waiting on the profile page:
+    # a callsign that counts for nothing is too consequential to hide there (2026-09-20).
+    for page in ("/", "/events/", "/me/"):
+        assert "Is this you?" in c.get(page, follow=True).content.decode(), page
+    c.post("/me/uls-name/", {"decision": "yes"})
+    assert "Is this you?" not in c.get("/", follow=True).content.decode()
