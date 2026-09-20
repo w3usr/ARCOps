@@ -2920,4 +2920,4 @@ carries the actual running model ID.
   his decision on the rule.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 395 tests and the
   accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: 07e8310
