@@ -106,3 +106,26 @@ def test_an_installed_icon_is_offered_for_the_phones_own_mask():
     purposes = {i.get("purpose") for i in body["icons"]}
     assert "maskable" in purposes, "without one the phone pads the icon itself"
     assert "any" in purposes, "and one that is not cropped, for everywhere else"
+
+
+@pytest.mark.django_db
+def test_a_club_overlay_is_laid_over_the_shipped_defaults(tmp_path, settings):
+    """TR-41 calls it an overlay, and it had been a replacement: a setting added to the
+    application never reached an installation with its own club.yaml. Found on 2026-09-20, when
+    the two-step verification settings were invisible on the club's own server.
+    """
+    from apps.ops.config import load_yaml
+
+    (tmp_path / "club.yaml").write_text(
+        "club:\n  name: Overlay Radio Club\nmember_categories:\n  - { key: only, label: Only }\n",
+        encoding="utf-8",
+    )
+    settings.CLUB_OVERLAY_DIR = tmp_path
+    data = load_yaml(tmp_path)
+
+    assert data["club"]["name"] == "Overlay Radio Club", "the overlay's own answer wins"
+    assert "short_name" in data["club"], "and the shipped answer fills the gap beside it"
+    assert data["member_categories"] == [{"key": "only", "label": "Only"}], (
+        "a list the club states is taken whole, not added to ours"
+    )
+    assert "security" in data, "a namespace the overlay has never heard of still arrives"

@@ -408,7 +408,14 @@ has a decade of documentation.
   `agreements/…`) before the shipped defaults, for every club-specific thing: configuration,
   logo and icons, QSL card, agreement texts, message-template overrides. `club_import` loads
   the overlay's `club.yaml` and agreement files, versioning each agreement by content hash
-  (FR-21, FR-30); `collectstatic` places `static/club/` ahead of the defaults. Removing the
+  (FR-21, FR-30); `collectstatic` places `static/club/` ahead of the defaults.
+
+  **It is laid over them, key by key**: a club's own answer wins, and anything it does not
+  mention comes from the shipped file, so a setting added to the application reaches an
+  installation that has its own `club.yaml`. A list the club states is taken whole rather than
+  added to ours, because a club that names its categories means those. Until 2026-09-20 the
+  overlay *replaced* the defaults, and two settings added that day were invisible on the club's
+  own server. Removing the
   overlay yields the generic club, which is how the public repository is tested. The W3USR
   overlay is held in the club's private orchestration repository with a **manifest** that
   traces every asset to its master (the club's image library, the paper agreements), records

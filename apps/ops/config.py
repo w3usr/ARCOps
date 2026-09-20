@@ -26,14 +26,44 @@ def config_dir() -> Path:
     return dj.CLUB_DEFAULTS_DIR
 
 
-def load_yaml(directory: Path | None = None) -> dict[str, Any]:
-    directory = directory or config_dir()
+def _read(directory: Path) -> dict[str, Any] | None:
     for name in ("club.yaml", "club.example.yaml"):
         path = directory / name
         if path.exists():
             with path.open(encoding="utf-8") as fh:
                 return yaml.safe_load(fh) or {}
-    raise FileNotFoundError(f"no club.yaml or club.example.yaml in {directory}")
+    return None
+
+
+def _under(defaults: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+    """The overlay's answers, with the shipped ones filling the gaps.
+
+    Dictionaries are merged key by key; a list or a value the overlay states is taken whole,
+    because a club that lists its own categories, groups or agreements means *those* and not
+    those plus ours.
+    """
+    merged = dict(defaults)
+    for key, value in overlay.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _under(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def load_yaml(directory: Path | None = None) -> dict[str, Any]:
+    """The club's configuration: an overlay laid over the shipped defaults (TR-41).
+
+    It is an overlay rather than a replacement, so a setting added to the application reaches an
+    installation that has its own club.yaml. Without this, `security.two_factor_required_groups`
+    was invisible on the club's own server on the day it was added (2026-09-20).
+    """
+    directory = directory or config_dir()
+    overlay = _read(directory)
+    if overlay is None:
+        raise FileNotFoundError(f"no club.yaml or club.example.yaml in {directory}")
+    defaults = _read(dj.CLUB_DEFAULTS_DIR) if directory != dj.CLUB_DEFAULTS_DIR else None
+    return _under(defaults, overlay) if defaults else overlay
 
 
 def flatten(data: dict[str, Any], prefix: str = "") -> dict[str, Any]:

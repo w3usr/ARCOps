@@ -2473,3 +2473,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 361 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 6adca39
+
+## [2026-09-20 04:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The club overlay is laid over the shipped defaults rather than replacing
+  them. Found on deploying the two-step verification settings: the rows were never created,
+  because an installation with its own club.yaml never sees a key the application has added.
+- **Sections/Files Affected**: apps/ops/config.py, apps/ops/tests/test_health_and_import.py,
+  docs/TECHNICAL_REQUIREMENTS.md (TR-41).
+- **Nature of Contribution**: Defect found on the server and fixed by the assistant, with a test.
+- **Human Review Status**: Pending the advisor's look. 362 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}
