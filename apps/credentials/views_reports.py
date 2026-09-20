@@ -8,6 +8,7 @@ import datetime as dt
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -16,6 +17,8 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
 from apps.ops.audit import record
+from apps.ops.config import setting
+from apps.ops.tables import chosen, export_url, sorted_columns, summary
 
 from .models import CredentialType, SharedSecret, SignedAgreement
 from .services import revoke, rotate_shared_secret, store_agreement_pdf
@@ -49,27 +52,104 @@ def password_manage(request):
     return render(request, "credentials/password_manage.html", {"current": current})
 
 
+# Who holds access, one row per approved agreement. Every column sorts and every column
+# narrows, in the words the members directory uses, because a reader who has learned one table
+# has learned this one (the advisor, 2026-09-20, issue #92).
+ROSTER_COLUMNS = [
+    {"key": "credential", "label": "Credential"},
+    {"key": "first", "label": "First"},
+    {"key": "last", "label": "Last"},
+    {"key": "callsign", "label": "Callsign"},
+    {"key": "category", "label": "Category"},
+    {"key": "approved", "label": "Approved"},
+    {"key": "approver", "label": "Approver"},
+    {"key": "expires", "label": "Expires"},
+    {"key": "days", "label": "Days"},
+]
+
+# How long until expiry, in the buckets the panel offers. Ticking none is every row.
+EXPIRY_BUCKETS = [
+    ("30", "Within 30 days"),
+    ("60", "31 to 60 days"),
+    ("90", "61 to 90 days"),
+    ("later", "More than 90 days"),
+    ("none", "No expiry date"),
+]
+
+
+def _bucket(days: int | None) -> str:
+    if days is None:
+        return "none"
+    if days <= 30:
+        return "30"
+    if days <= 60:
+        return "60"
+    if days <= 90:
+        return "90"
+    return "later"
+
+
 @login_required
 def access_rosters(request):
-    """FR-31, FR-84: who holds station and computer access, with expiry; filterable; CSV."""
+    """FR-31, FR-84: who holds station and computer access, with expiry; sortable, filterable, CSV."""
     if not request.user.may("view_reports"):
         raise Http404
     today = timezone.now().date()
-    within = request.GET.get("expiring", "")
-    qs = (
-        SignedAgreement.objects.filter(state=SignedAgreement.State.APPROVED)
-        .select_related("user", "credential", "approver", "template")
-        .order_by("credential__label", "expires_on", "user__last_name")
+    q = request.GET.get("q", "").strip()
+    picked = chosen(request, "credential", "category", "approver", "expiring")
+
+    qs = SignedAgreement.objects.filter(state=SignedAgreement.State.APPROVED).select_related(
+        "user", "credential", "approver", "template"
     )
-    if within.isdigit():
-        qs = qs.filter(expires_on__lte=today + dt.timedelta(days=int(within)))
-    rows = [
-        {
-            "a": a,
-            "days": (a.expires_on - today).days if a.expires_on else None,
-        }
-        for a in qs
-    ]
+    if q:
+        qs = qs.filter(
+            Q(user__first_name__icontains=q)
+            | Q(user__last_name__icontains=q)
+            | Q(user__preferred_name__icontains=q)
+            | Q(user__callsign__icontains=q)
+        ).distinct()
+    if picked["credential"]:
+        qs = qs.filter(credential__key__in=picked["credential"])
+    if picked["category"]:
+        qs = qs.filter(user__category__in=picked["category"])
+    if picked["approver"]:
+        qs = qs.filter(approver__public_id__in=picked["approver"])
+
+    rows = [{"a": a, "days": (a.expires_on - today).days if a.expires_on else None} for a in qs]
+    wanted = set(picked["expiring"])
+    if wanted:
+        rows = [r for r in rows if _bucket(r["days"]) in wanted]
+
+    def text(value) -> str:
+        return (value or "").strip().lower()
+
+    def settled(fn):
+        # Every sort ends the same way, so reversing a column truly reverses the page.
+        return lambda r: (
+            *fn(r),
+            text(r["a"].user.last_name),
+            text(r["a"].user.first_name),
+            r["a"].pk,
+        )
+
+    keys = {
+        "credential": settled(lambda r: (text(r["a"].credential.label),)),
+        "first": settled(lambda r: (text(r["a"].user.first_name),)),
+        "last": settled(lambda r: (text(r["a"].user.last_name),)),
+        "callsign": settled(lambda r: (not r["a"].user.callsign, text(r["a"].user.callsign))),
+        "category": settled(lambda r: (text(r["a"].user.category),)),
+        "approved": settled(
+            lambda r: (r["a"].approved_at is None, r["a"].approved_at or dt.datetime.min)
+        ),
+        "approver": settled(
+            lambda r: (text(r["a"].approver.last_name if r["a"].approver else ""),)
+        ),
+        "expires": settled(lambda r: (r["a"].expires_on is None, r["a"].expires_on or dt.date.max)),
+        "days": settled(lambda r: (r["days"] is None, r["days"] if r["days"] is not None else 0)),
+    }
+    sort, descending, columns = sorted_columns(request, ROSTER_COLUMNS, keys, "last")
+    rows.sort(key=keys[sort], reverse=descending)
+
     if request.GET.get("format") == "csv":
         resp = HttpResponse(content_type="text/csv")
         resp["Content-Disposition"] = 'attachment; filename="access-rosters.csv"'
@@ -102,18 +182,48 @@ def access_rosters(request):
                     r["days"],
                 ]
             )
-        record(request.user, "report.access_rosters_exported", after={"rows": len(rows)})
+        # The export is what is on the screen: it follows the search, every filter and the sort.
+        record(
+            request.user,
+            "report.access_rosters_exported",
+            after={"rows": len(rows), "narrowed": bool(q or any(picked.values()))},
+        )
         return resp
+
+    credential_choices = [
+        (c.key, c.label)
+        for c in CredentialType.objects.filter(established_by="agreement").order_by("label")
+    ]
+    category_choices = [
+        (c["key"], c.get("label", c["key"])) for c in (setting("member_categories", []) or [])
+    ]
+    approver_choices = sorted(
+        {(str(a.approver.public_id), a.approver.short_name) for a in qs if a.approver},
+        key=lambda pair: pair[1].lower(),
+    )
     return render(
         request,
         "credentials/access_rosters.html",
         {
             "rows": rows,
-            "within": within,
-            "credentials": CredentialType.objects.filter(established_by="agreement").order_by(
-                "label"
-            ),
             "today": today,
+            "q": q,
+            "chosen": picked,
+            "columns": columns,
+            "sort": sort,
+            "dir": "desc" if descending else "asc",
+            "credential_choices": credential_choices,
+            "category_choices": category_choices,
+            "approver_choices": approver_choices,
+            "expiry_choices": EXPIRY_BUCKETS,
+            "summaries": {
+                "credential": summary(credential_choices, picked["credential"], "credential"),
+                "category": summary(category_choices, picked["category"], "category"),
+                "approver": summary(approver_choices, picked["approver"], "approver"),
+                "expiring": summary(EXPIRY_BUCKETS, picked["expiring"], "expiry"),
+            },
+            "narrowed": bool(q or any(picked.values())),
+            "csv_url": export_url(request),
         },
     )
 

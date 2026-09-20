@@ -2724,3 +2724,18 @@ carries the actual running model ID.
   advisor's instructions quoted in place.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 175052c
+
+## [2026-09-20 20:00 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The access rosters sort and narrow the way the members directory does:
+  every column sortable, four filter panels and a search box in the same words, the name split
+  into First, Last and Callsign, the credential linked to the signed PDF, and a download that
+  follows the filters.
+- **Sections/Files Affected**: apps/ops/tables.py (new, the shared sort/filter helpers),
+  apps/credentials/views_reports.py (`access_rosters`),
+  templates/credentials/access_rosters.html, apps/credentials/tests/test_phase4.py.
+- **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
+  five points on issue #92.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 386 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

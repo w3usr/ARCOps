@@ -165,15 +165,39 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
         session["acting_view"] = "sysadmin"
         session.save()
     body = c.get("/credentials/access-rosters/").content.decode()
-    assert body.count("Mo Member") == 2 and "Revoke" in body
+    # First, Last and Callsign are columns of their own now (issue #92, 2026-09-20).
+    assert body.count(">Member</a>") == 2 and body.count(">N0MEM<") == 2
+    assert "Revoke" in body
+    # The credential opens what they signed, for somebody who may read it.
+    assert f"/credentials/agreements/{a.pk}/pdf/" in body
+
     body = c.get("/credentials/access-rosters/?expiring=30").content.decode()
-    assert body.count("Mo Member") == 1
+    assert body.count(">N0MEM<") == 1, "the expiry bucket narrows it"
+    body = c.get("/credentials/access-rosters/?credential=it_access").content.decode()
+    assert body.count(">N0MEM<") == 1 and "Computer access" in body
+    body = c.get("/credentials/access-rosters/?q=N0MEM").content.decode()
+    assert body.count(">N0MEM<") == 2
+    body = c.get("/credentials/access-rosters/?q=nobody-by-that-name").content.decode()
+    assert ">N0MEM<" not in body and "Show everyone who holds access" in body
+
+    # Every column sorts, and the link back carries the narrowing with it.
+    body = c.get("/credentials/access-rosters/?credential=it_access&sort=callsign").content.decode()
+    assert "credential=it_access" in body and "sort=first" in body
+    first = c.get("/credentials/access-rosters/?sort=expires&dir=asc").content.decode()
+    last = c.get("/credentials/access-rosters/?sort=expires&dir=desc").content.decode()
+    assert first != last, "reversing a column reverses the page"
+
     csv_body = c.get("/credentials/access-rosters/?format=csv").content.decode()
     assert (
         "Station access" in csv_body
         and "Computer access" in csv_body
         and AuditLog.objects.filter(action="report.access_rosters_exported").exists()
     )
+    # The download is what is on the screen: it follows the filters (issue #92).
+    narrowed = c.get(
+        "/credentials/access-rosters/?credential=it_access&format=csv"
+    ).content.decode()
+    assert "Computer access" in narrowed and "Station access" not in narrowed
     r = c.post(
         f"/credentials/agreements/{a.pk}/revoke/",
         {"reason": "left the club", "next": "/credentials/access-rosters/"},
