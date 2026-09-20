@@ -2580,3 +2580,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look; the club's postal address is his to
   confirm before it goes out. 370 tests, the accessibility sweep and the four guards pass.
 - **Git Hash**: 8c0ce87
+
+## [2026-09-20 16:25 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The surname gets a column of its own at every level, in full for an
+  officer and as the initial for a member, and the directory opens sorted on it. A member had
+  nothing to sort a roster by but the first name.
+- **Sections/Files Affected**: apps/accounts/views_members.py, templates/accounts/members.html,
+  docs/REQUIREMENTS.md (FR-13), apps/accounts/tests/{test_directory,test_members}.py.
+- **Nature of Contribution**: Code, tests and documentation by the assistant, from the advisor's
+  observation while walking T7.
+- **Human Review Status**: Pending the advisor's look; he is the assignee of the scenario.
+  371 tests, the accessibility sweep and the four guards pass.
+- **Git Hash**: {{pending}}

@@ -57,6 +57,12 @@ def directory():
     return officer
 
 
+def _member_names(body: str) -> list[str]:
+    """The redacted Name column, in the order a member sees it."""
+    rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
+    return [t.strip() for t in re.findall(r'<th scope="row">(.*?)</th>', rows, re.S)]
+
+
 def _names(body: str) -> list[str]:
     """The Last column, in the order the table shows it."""
     rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
@@ -145,15 +151,21 @@ def test_an_officer_sees_the_redacted_name_beside_the_real_one(directory):
     assert "Zed A." in zoe, "the name column is the redacted form, not the full name"
 
 
-def test_a_member_gets_that_column_and_no_other_name(directory):
+def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
+    """NAF, 2026-09-20, testing T7: "Last initials are going to need their own column to sort by
+    last name by default." A member may see an initial and no more of a surname, and a roster is
+    read by surname, so the initial is a column and the table opens sorted on it.
+    """
     member = User.objects.by_address("zeta@example.org").get()
-    head = re.search(
-        r"<thead>(.*?)</thead>",
-        _as(member).get("/members/").content.decode(),
-        re.S,
-    ).group(1)
-    assert ">Name<" in head, "the redacted name is the only name a member has"
-    assert ">First<" not in head and ">Last<" not in head
+    body = _as(member).get("/members/").content.decode()
+    head = re.search(r"<thead>(.*?)</thead>", body, re.S).group(1)
+    assert ">Name<" in head and ">Last<" in head
+    assert ">First<" not in head, "a member sees no first name column and no full surname"
+    rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
+    assert 'data-label="Last">A.' in rows, "the initial, with its stop"
+    assert "Adams" not in rows, "and never the surname itself"
+    # Adams, Officer, Zephyr: by surname, which is what the reader is looking at
+    assert _member_names(body) == ["Zed A.", "Ann O.", "Al Z."]
 
 
 def test_both_halves_of_the_name_open_the_member(directory):
@@ -167,13 +179,14 @@ def test_both_halves_of_the_name_open_the_member(directory):
 
 
 def test_a_members_sort_falls_back_to_a_column_they_have(directory):
-    """ "last" is not theirs to sort by, so asking for it lands on the name they do see."""
+    """A column a member does not have is not theirs to sort by; asking for it lands on the one
+    the table opens with, which is the surname initial (2026-09-20)."""
     member = User.objects.by_address("zeta@example.org").get()
-    body = _as(member).get("/members/?sort=last").content.decode()
+    body = _as(member).get("/members/?sort=email").content.decode()
     assert 'aria-sort="ascending"' in body
     head = re.search(r"<thead>(.*?)</thead>", body, re.S).group(1)
     sorted_col = re.search(r'aria-sort="ascending"[^>]*><a[^>]*>([A-Za-z]+)', head).group(1)
-    assert sorted_col == "Name"
+    assert sorted_col == "Last"
 
 
 def test_joined_via_is_gone(directory):

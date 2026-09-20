@@ -67,16 +67,11 @@ def test_members_see_short_names_and_officers_see_everything(people):
     assert "<table" in body, "a member reads the same shape of page as an officer"
     assert "Ann O." in rows and "Officer" not in rows, "a last name is an initial to a member"
     assert "@" not in rows  # no addresses for members (FR-67)
-    for withheld in (
-        "Category",
-        "Permission level",
-        "Email",
-        "Phone",
-        "First",
-        "Last",
-        "Preferred",
-    ):
+    for withheld in ("Category", "Permission level", "Email", "Phone", "First", "Preferred"):
         assert f'data-label="{withheld}"' not in rows, f"{withheld} is an officer's column"
+    # Last is a column at every level since 2026-09-20, holding the initial for a member so the
+    # roster sorts by surname; the surname itself is still an officer's.
+    assert 'data-label="Last">O.' in rows and "Officer" not in rows
 
     from apps.accounts import addresses
 

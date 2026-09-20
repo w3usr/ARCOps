@@ -86,7 +86,11 @@ DIRECTORY_COLUMNS = [
     # signing in as somebody else (NAF, 2026-09-19).
     {"key": "name", "label": "Name", "show": "all"},
     {"key": "first", "label": "First", "show": "full"},
-    {"key": "last", "label": "Last", "show": "full"},
+    # Everybody gets the last name, an initial where that is all a member may see, because a
+    # roster is read by surname and there was nothing to sort by at that level (the advisor,
+    # 2026-09-20, testing T7: "Last initials are going to need their own column to sort by last
+    # name by default.").
+    {"key": "last", "label": "Last", "show": "all"},
     {"key": "preferred", "label": "Preferred", "show": "full"},
     {"key": "callsign", "label": "Callsign", "show": "all"},
     {"key": "class", "label": "Class", "show": "all"},
@@ -291,9 +295,9 @@ def members(request):
             or any(g.name in want for g in m.groups.all())
         ]
 
-    # Last name by default; a member has no last-name column, so theirs sorts by the name they
-    # do see, which is that first name and initial.
-    default_sort = "last" if full else "name"
+    # Last name by default, at every level: the column is there for everyone now, and a club
+    # roster is read by surname.
+    default_sort = "last"
     sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
     shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)}

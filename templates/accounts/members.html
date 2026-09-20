@@ -42,6 +42,10 @@ survive a bookmark.{% endcomment %}
   <td data-label="First"><a href="{% url 'member_detail' m.pk %}">{{ m.first_name }}</a></td>
   <td data-label="Last"><a href="{% url 'member_detail' m.pk %}">{{ m.last_name }}</a>{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</td>
   <td data-label="Preferred">{{ m.preferred_name|default:"—" }}</td>
+  {% else %}
+  {% comment %}The initial is all a member may see of a surname, and it is a column of its own
+  so the roster sorts by surname the way a roster does (2026-09-20).{% endcomment %}
+  <td data-label="Last">{% if m.last_name %}{{ m.last_name|slice:":1" }}.{% else %}—{% endif %}</td>
   {% endif %}
   <td data-label="Callsign">{{ m.callsign|default:"—" }}</td>
   <td data-label="Class">{{ m.license_letter }}</td>
