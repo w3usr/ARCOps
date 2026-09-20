@@ -196,7 +196,9 @@ what the account holds is never offered, so this grants nothing.
 
 **The proof is the sign-in library's**, on the page it already uses before a second factor is
 added, so it accepts **a password or a passkey**, whichever the account carries, and it does not
-ask twice inside the window that guards those other acts (TR-17).
+ask twice inside the window that guards those other acts (TR-17). **Both are offered on the one
+page that asks**: the library gives each method a page of its own and links between them, which
+made confirming with a passkey two Confirm Access screens in a row (2026-09-20).
 
 > I should be able to use a passkey in addition to a password here. — NAF, 2026-09-20
 

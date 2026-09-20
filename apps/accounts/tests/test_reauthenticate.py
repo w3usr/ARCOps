@@ -103,3 +103,50 @@ def test_the_librarys_own_pages_use_the_sites_controls():
     body = client.get("/accounts/2fa/recovery-codes/generate/").content.decode()
     assert 'class="button libctl' in body, "the library's controls carry the site's button"
     assert "Generate" in body
+
+
+def test_confirm_access_offers_the_passkey_on_the_page_that_asks(monkeypatch):
+    """NAF, 2026-09-20: "Why can't I just click Use passkey on the first page, and then it
+    automatically uses the passkey without going through a separate screen?"
+
+    It can. The page carries the library's own passkey form and challenge, so the button raises
+    the browser prompt where the question was asked; the credential still posts to the library's
+    endpoint, which verifies it.
+    """
+    from allauth.mfa.models import Authenticator
+    from allauth.mfa.webauthn.internal import auth as webauthn_auth
+
+    monkeypatch.setattr(webauthn_auth, "begin_authentication", lambda user: {"challenge": "x"})
+    user, client = _signed_in()
+    Authenticator.objects.create(
+        user=user, type=Authenticator.Type.WEBAUTHN, data={"name": "Key", "credential": {}}
+    )
+    page = client.get("/accounts/reauthenticate/?next=/me/level/").content.decode()
+
+    assert 'id="mfa_webauthn_reauthenticate"' in page, "the button is here"
+    assert 'action="/accounts/2fa/webauthn/reauthenticate/"' in page, "and posts to the library"
+    assert 'id="js_data"' in page and "id_credential" in page
+    assert page.count("mfa/js/webauthn.js") == 1, "one include, or two prompts on one press"
+    assert page.count('value="/me/level/"') == 2, "next rides in both forms, or it is lost"
+    assert (
+        "Alternative options" not in page or "webauthn" not in page.split("Alternative options")[1]
+    )
+    assert 'name="password"' in page, "and the password is still on the page"
+
+
+def test_confirm_access_without_a_passkey_is_the_page_it_always_was():
+    _, client = _signed_in()
+    page = client.get("/accounts/reauthenticate/").content.decode()
+    assert 'name="password"' in page and "mfa_webauthn_reauthenticate" not in page
+    assert "webauthn.js" not in page, "nothing is loaded for a method this account does not have"
+
+
+def test_the_club_s_own_word_reaches_the_librarys_pages():
+    """The catalogue (locale/en/LC_MESSAGES/django.po): a passkey is a passkey wherever it is
+    named, including on pages the library draws (NAF, 2026-09-20: "I do want our UI to always say
+    Passkey instead of Security key")."""
+    from django.utils.translation import gettext
+
+    assert gettext("Security Keys") == "Passkeys"
+    assert gettext("Use a security key") == "Use a passkey"
+    assert gettext("Add Security Key") == "Add a passkey"

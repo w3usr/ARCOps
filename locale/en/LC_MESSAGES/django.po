@@ -1,0 +1,56 @@
+# The club's own words for strings a dependency words differently.
+#
+# The sign-in library calls a WebAuthn credential a "security key", which since 2023 has meant
+# the hardware rather than the credential; what a member enrolls here is a **passkey**, and the
+# advisor asked for that word everywhere (2026-09-20). This catalogue is the supported way to
+# say so without forking the library's templates: one file to delete when the library catches
+# up, rather than six templates to carry.
+#
+# It is compiled by `manage.py compile_locale` (tools/check.sh and the deploy both run it), so
+# no machine needs gettext installed.
+msgid ""
+msgstr ""
+"Project-Id-Version: ARCOps\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Security Keys"
+msgstr "Passkeys"
+
+msgid "Add Security Key"
+msgstr "Add a passkey"
+
+msgid "Edit Security Key"
+msgstr "Rename a passkey"
+
+msgid "Remove Security Key"
+msgstr "Remove a passkey"
+
+msgid "Use a security key"
+msgstr "Use a passkey"
+
+msgid "No security keys have been added."
+msgstr "No passkeys have been added."
+
+msgid "Are you sure you want to remove this security key?"
+msgstr "Are you sure you want to remove this passkey?"
+
+msgid "You have added %(count)s security key."
+msgid_plural "You have added %(count)s security keys."
+msgstr[0] "You have added %(count)s passkey."
+msgstr[1] "You have added %(count)s passkeys."
+
+msgid "Security Key Added"
+msgstr "Passkey added"
+
+msgid "Security Key Removed"
+msgstr "Passkey removed"
+
+msgid "A new security key has been added."
+msgstr "A new passkey has been added."
+
+msgid "A security key has been removed."
+msgstr "A passkey has been removed."

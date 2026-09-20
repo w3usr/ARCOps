@@ -27,6 +27,9 @@ urlpatterns = [
     # lead with the method the account holds (apps.accounts.views_mfa). It has to come first:
     # the last pattern with a name never wins.
     path("accounts/2fa/authenticate/", views_mfa.second_step, name="mfa_authenticate"),
+    # Confirm Access offers the passkey on the page that asks, rather than behind a link to a
+    # second page of the same name (apps.accounts.views_mfa).
+    path("accounts/reauthenticate/", views_mfa.confirm_access, name="account_reauthenticate"),
     path("accounts/", include("allauth.urls")),
     path("api/v1/", api.urls),
     path("events/", include("apps.events.urls")),

@@ -43,22 +43,6 @@ class AccountAdapter(DefaultAccountAdapter):
         reauth_user = self.authenticate(context.request, **credentials)
         return reauth_user is not None and reauth_user.pk == user.pk
 
-    def get_reauthentication_methods(self, user) -> list[dict]:
-        """The ways this person can confirm it is them, in the club's words.
-
-        The library calls a WebAuthn credential a security key, which since 2023 has meant the
-        hardware rather than the credential; what a member enrolls here is a **passkey**, and
-        that is the word on every page the club writes (the advisor, 2026-09-20).
-
-        This is a hook the library offers, not a copy of its markup: the library's own pages keep
-        the library's words, and when it catches up there is nothing here to unwind.
-        """
-        methods = super().get_reauthentication_methods(user)
-        for method in methods:
-            if method.get("id", "").endswith("webauthn"):
-                method["description"] = "Use a passkey"
-        return methods
-
     def get_login_stages(self) -> list[str]:
         """The steps between a correct password and a signed-in session.
 

@@ -182,6 +182,9 @@ CSRF_COOKIE_SAMESITE = "Lax"
 
 # ------------------------------------------------------------- i18n / time ---
 LANGUAGE_CODE = "en-us"
+# The club's own words for strings a dependency words differently (locale/en/LC_MESSAGES/django.po,
+# TR-45): a passkey is a passkey, whatever the sign-in library calls it.
+LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "UTC"  # storage and logic in UTC (TR-14); display zones come from the event
 USE_I18N = True
 USE_TZ = True

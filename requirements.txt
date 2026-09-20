@@ -25,3 +25,6 @@ zopfli==0.4.3
 # django-tinymce (TR-6, FR-115): the WYSIWYG editor; bundles TinyMCE 6.8.4 (LGPL-2.1).
 django-tinymce==4.1.0
 phonenumbers==9.0.39   # Google libphonenumber, for showing a number the way its country writes it
+# polib (MIT): compiles locale/en/LC_MESSAGES/django.po to the .mo Django reads, so the club's
+# own words for a dependency's strings need no gettext on the machine (TR-45).
+polib==1.2.0

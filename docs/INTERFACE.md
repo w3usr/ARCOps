@@ -99,17 +99,20 @@ member page, the directory column, its filter and the sysadmin page all call it.
 its own names (`groups`, `access_groups`), because those are Django's and the reader never sees
 them.
 
-**A library's own pages keep the library's words.** Where the application draws a page, it uses
-the club's vocabulary; where a dependency draws one, rewording it means either forking its
-markup or carrying a translation catalog, and both are a thing to maintain until the dependency
-catches up. So the sign-in library's enrollment pages say "security key" and every page written
-here says **passkey**, which is what the FIDO Alliance has called the credential since 2023.
-Where the library offers a hook for the wording, as it does for the ways to confirm access, the
-hook is used; nothing is copied for the sake of a word.
+**One word for one thing, on every page a member sees, including the ones a dependency draws.**
+The club's word for a WebAuthn credential is **passkey**, which is what the FIDO Alliance has
+called it since 2023; the sign-in library still says "security key", which now means the
+hardware. Where the application draws the page, it says passkey. Where a dependency draws it, the
+message catalogue says it for us (TR-45): one small file, no forked markup, deleted whole when
+the library catches up.
 
-> Let's make this simpler... how about if we leave the library language alone, and just use the
-> term Passkey on our website. That way when the library catches up with the times, we won't
-> have a useless catalog and it is one less thing to break. — NAF, 2026-09-20
+> And I do want our UI to always say Passkey instead of Security key. — NAF, 2026-09-20
+
+*(This supersedes "a library's own pages keep the library's words", earlier the same day. That
+was decided when the only alternative on the table was forking six templates; the catalogue is
+the third option, and it reaches the library's mail as well.)* A library's page is still never
+**copied** for the sake of a word: copying is for behaviour the library cannot be asked for, such
+as offering the passkey on the page that asks rather than behind a link to a second one.
 
 ## Filters
 

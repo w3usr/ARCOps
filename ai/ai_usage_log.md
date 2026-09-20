@@ -2617,3 +2617,22 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 372 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: f191a89
+
+## [2026-09-20 17:10 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Confirm Access becomes one page: the library's password view with the
+  passkey form and its challenge added, so the button is where the question is asked instead of
+  behind a link to a second page of the same name. And a message catalogue gives the club's word
+  for a WebAuthn credential to the library's own pages and mail, so the interface says passkey
+  everywhere; it compiles with polib, because neither this machine nor the server has gettext.
+- **Sections/Files Affected**: apps/accounts/views_mfa.py, templates/account/reauthenticate.html
+  (new), config/urls.py, apps/accounts/adapter.py, locale/en/LC_MESSAGES/django.po (new),
+  apps/ops/management/commands/compile_locale.py (new), config/settings/base.py, requirements.txt,
+  tools/check.sh, .gitignore, docs/REQUIREMENTS.md (§2.1), docs/TECHNICAL_REQUIREMENTS.md (TR-17,
+  TR-45 new), docs/INTERFACE.md, apps/accounts/tests/test_reauthenticate.py.
+- **Nature of Contribution**: Design against the library's own extension points, code and tests
+  by the assistant, from the advisor's two instructions.
+- **Human Review Status**: Pending the advisor's look; the passkey prompt itself is his to try,
+  since WebAuthn cannot be exercised from a test. 375 tests, the accessibility sweep and the four
+  guards pass.
+- **Git Hash**: {{pending}}

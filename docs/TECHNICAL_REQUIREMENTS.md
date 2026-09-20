@@ -238,7 +238,10 @@ has a decade of documentation.
 
   The same re-entry guards enrolling or removing a second factor (TR-16) and **raising the level
   a session acts at** (§2.1): both go through the library's Confirm Access page, so a passkey
-  serves where a password would, and neither asks again inside the window. Checking it goes
+  serves where a password would, and neither asks again inside the window. That page is the
+  library's view with the passkey form and its challenge added, so the button is on the page that
+  asks rather than behind a link to a second page of the same name; the credential still posts to
+  the library, which verifies it and resumes whatever was interrupted (2026-09-20). Checking it goes
   through the account's own key rather than through an identifier the sign-in library expects an
   account to have: accounts here are keyed on `public_id` (TR-15) and sign in from any address
   they have confirmed, so the library had nothing to look the account up by and refused every
@@ -463,6 +466,24 @@ has a decade of documentation.
   speaking to the person. The advisor, 2026-09-17, on a level offered as "Faculty Advisor · 16
   capabilities": "no self-respecting UI would do that." A convention no tool checks is a
   convention that lapses, so the parts a grep can see are checked on every push.*
+- **TR-45 The club's own words for a dependency's strings: a message catalogue**,
+  `locale/en/LC_MESSAGES/django.po`, compiled by `manage.py compile_locale`, which `tools/check.sh`
+  and the deploy both run. It holds only the strings the club words differently, and today it
+  holds one idea: a WebAuthn credential is a **passkey**, which is what the FIDO Alliance has
+  called it since 2023 and what a member is offered when they enrol one; the sign-in library
+  still says "security key", which now means the hardware.
+
+  > And I do want our UI to always say Passkey instead of Security key. — NAF, 2026-09-20
+
+  *Why a catalogue rather than forked templates:* the phrase is in six of the library's templates
+  and two of its mails. Django's translation machinery is the supported way to change any of
+  them without owning their markup, and when the library catches up the file is deleted and
+  nothing else moves. *Why `compile_locale` rather than `compilemessages`:* the latter shells out
+  to GNU gettext, which is on neither this project's machines nor its server, and a catalogue
+  that silently fails to compile is worse than none; `polib` does the same job inside the Python
+  environment the project already controls. This supersedes the decision of the same morning to
+  leave a dependency's wording alone, which was taken when the alternative on the table was
+  forking three hundred lines of its templates.
 
 ---
 

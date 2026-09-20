@@ -78,3 +78,5 @@ db.sqlite3
 # Installation-side directories that live beside the checkout (TR-31, TR-41)
 club/
 backup/
+# Compiled message catalogues: built from the .po by manage.py compile_locale
+*.mo
