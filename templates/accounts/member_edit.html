@@ -203,6 +203,23 @@ once the account is already closed or suspended, because it is the second step.{
 {% if is_self %}
 {% comment %}Yours alone: what reaches you, the devices that may show it, and closing your own
 account. An officer editing somebody else does not see these; they are not the club's to set.{% endcomment %}
+{% comment %}Two-step verification is turned on and off here, because it is a control and the
+page that reads holds none (NAF, 2026-09-19). What it is, and whether the club requires it, is
+said on the profile beside the passkeys.{% endcomment %}
+<section class="card" aria-labelledby="sec" id="security">
+  <h2 id="sec">Two-step verification</h2>
+  <p>{% if security.on %}<strong>On</strong>: after your password, sign-in asks for a code or a security key.{% else %}<strong>Off</strong>: sign-in asks for your password alone. A passkey still signs you in without one.{% endif %}{% if security.required %} Your access level requires it, so it cannot be turned off.{% endif %}</p>
+  {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> set it up before {{ security.deadline|date:"j F Y" }}, after which sign-in will ask you to.</p>{% endif %}
+  {% if not security.required or not security.on %}
+  <form method="post" action="{% url 'two_factor' %}" class="inline">{% csrf_token %}
+    <input type="hidden" name="state" value="{% if security.on %}off{% else %}on{% endif %}">
+    {% if security.on %}<button type="submit" class="danger">Turn it off</button>
+    {% else %}<button type="submit">Turn it on</button>{% endif %}
+  </form>
+  {% endif %}
+  <p class="helptext">{% if security.on %}Turning it off leaves your passkeys and authenticator alone; they simply stop being asked for.{% else %}You need an authenticator app or a security key to answer with. <a href="{% url 'mfa_index' %}">Add one</a>.{% endif %}</p>
+</section>
+
 <form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}
 <h2>Notifications</h2>
 <p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>

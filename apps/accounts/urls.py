@@ -9,6 +9,7 @@ urlpatterns = [
     path("edit/", views.profile_edit, name="profile_edit"),
     path("level/", views_acting.acting_view, name="acting_view"),
     path("notifications/", views.notifications, name="notifications"),
+    path("two-step/", views.two_factor, name="two_factor"),
     path("uls-name/", views.uls_name_decide, name="uls_name_decide"),
     path("messages/", comms_views.my_messages, name="my_messages"),
     path("push/subscribe/", views_push.push_subscribe, name="push_subscribe"),

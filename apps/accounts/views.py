@@ -45,6 +45,44 @@ def profile_edit(request):
 
 
 @login_required
+@require_http_methods(["POST"])
+def two_factor(request):
+    """Turn two-step verification on or off, which is a deliberate act rather than a side effect
+    of enrolling a key (§2.6, the advisor 2026-09-20). Turning it on needs something that can
+    answer the second step; turning it off is refused where the club requires it."""
+    from . import mfa
+
+    user = request.user
+    wanted = request.POST.get("state") == "on"
+    if wanted:
+        if not mfa.has_factor(user):
+            messages.error(
+                request,
+                "Add an authenticator app or a security key first; two-step verification turns "
+                "on once there is something to answer with.",
+            )
+            return redirect("mfa_index")
+        user.two_factor_enabled = True
+        user.two_factor_enabled_at = timezone.now()
+        user.save(update_fields=["two_factor_enabled", "two_factor_enabled_at"])
+        record(user, "two_factor.enabled", user)
+        messages.success(request, "Two-step verification is on. Sign-in will ask for it.")
+    elif mfa.is_required(user):
+        messages.error(
+            request, "Your access level requires two-step verification, so it cannot be turned off."
+        )
+    else:
+        user.two_factor_enabled = False
+        user.save(update_fields=["two_factor_enabled"])
+        record(user, "two_factor.disabled", user)
+        messages.success(
+            request,
+            "Two-step verification is off. Any passkey you hold still signs you in.",
+        )
+    return redirect("profile")
+
+
+@login_required
 def notifications(request):
     """FR-71: one switch per controlled category; unticked means email off. Absence of a row
     means on, so a row is written only when the member turns something off (or back on)."""

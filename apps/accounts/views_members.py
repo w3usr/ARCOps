@@ -47,6 +47,22 @@ def _position_text(user, labels: dict) -> str:
     return ", ".join(label for key, label in labels.items() if key in held)
 
 
+def _security(user) -> dict:
+    """What the Security card says about this account: the keys it holds, whether the second
+    step is on, and whether the club requires it (§2.6)."""
+    from allauth.mfa.models import Authenticator
+
+    from . import mfa
+
+    return {
+        "keys": Authenticator.objects.filter(user=user, type=Authenticator.Type.WEBAUTHN).count(),
+        "factor": mfa.has_factor(user),
+        "on": user.two_factor_enabled or mfa.is_required(user),
+        "required": mfa.is_required(user),
+        "deadline": mfa.deadline(user),
+    }
+
+
 def _standing(user) -> dict:
     """What an officer needs at a glance: license and agreements."""
     lic = LicenseRecord.objects.filter(user=user).first()
@@ -464,6 +480,7 @@ def member_detail(request, pk):
             "wards": list(member.wards.filter(active=True).select_related("minor")),
             "can_edit": may_manage(actor, member) and not _minor_readonly(request, member),
             "is_self": is_self,
+            "security": _security(member) if is_self else None,
             "no_access_because": _no_access_because(member),
         },
     )
@@ -782,6 +799,7 @@ def member_edit(request, pk):
             "is_approver": _is_approver(actor),
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
+            "security": _security(member) if member == actor else None,
             "can_set_access": may_set_access(actor, member),
             "can_readmit": _may_readmit(actor, member),
             # Archiving is the second step, offered once the account is out of service: "The

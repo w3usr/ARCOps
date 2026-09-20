@@ -63,6 +63,13 @@ GROUPS = [
         ],
     ),
     (
+        "Signing in",
+        [
+            "security.two_factor_required_groups",
+            "security.two_factor_grace_days",
+        ],
+    ),
+    (
         "Branding",
         [
             "branding.logo",
@@ -204,6 +211,17 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
         "Keep unanswered invitations for",
         "Days after it expires before an invitation nobody completed is removed.",
     ),
+    "security.two_factor_required_groups": (
+        "Two-step verification is required of",
+        "The access groups whose holders must use a second factor to sign in, as a list of their "
+        'keys: ["advisor", "sysadmin"]. Empty means nobody has to, and any member may still turn '
+        'it on for themselves. "sysadmin" covers the accounts holding that flag.',
+    ),
+    "security.two_factor_grace_days": (
+        "Days to enroll before sign-in stops",
+        "How long somebody newly required to use a second factor is told about it before they "
+        "are made to set one up.",
+    ),
     "branding.logo": (
         "Logo",
         "Shown in the menu and on the sign-in page.",
@@ -274,6 +292,7 @@ RICH = ["privacy_notice_html"]
 # gets an uploader with a preview, stored under MEDIA_ROOT/branding/ (FR-89).
 KIND_OF = {
     "club.timezone": "tz",
+    "security.two_factor_required_groups": "json",
     "branding.accent": "color",
     **{f"branding.{k}": "image" for k in BRANDING_IMAGES},
 }
@@ -374,7 +393,7 @@ def settings_page(request):
                     if not re.fullmatch(r"#[0-9a-f]{6}", new):
                         errors[key] = "A color like #401068 is needed."
                         continue
-                elif group == "The club's own lists":
+                elif kind == "json" or group == "The club's own lists":
                     try:
                         new = json.loads(raw) if raw.strip() else []
                     except ValueError as exc:

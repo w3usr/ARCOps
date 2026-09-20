@@ -24,6 +24,13 @@ club:
   phone_region: "US"
   station_location_name: "Club station"
 
+# Signing in. Two-step verification is each member's own choice (§2.6); a club can require it of
+# the levels it trusts with the most, by naming their access-group keys here. "sysadmin" covers
+# the accounts holding that flag, which is not a group. Empty requires it of nobody.
+security:
+  two_factor_required_groups: []
+  two_factor_grace_days: 14                   # told for this long before sign-in stops
+
 branding:
   logo: "assets/club-logo.svg"
   logo_monochrome: "assets/club-logo.svg"

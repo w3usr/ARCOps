@@ -353,6 +353,35 @@ passwords and sysadmin resets directly. Specifics:
   (sysadmin, officer, member); a passkey can also sign a member in with no password at all
   (NAF, 2026-09-13; TR-16). The application displays a shared password to eligible members
   (FR-33), which raises the value of any compromised account.
+
+  **A passkey is a way to sign in. Two-step verification is a switch of its own**, and nothing
+  turns it on but the member (2026-09-20). The sign-in library asks for a second factor as soon
+  as an account holds any enrolled authenticator, which made adding a passkey turn on something
+  nobody asked for:
+
+  > I created a passkey, but did not enroll an authenticator app. So, I did not actually enable
+  > 2fa. — NAF, 2026-09-20
+
+  > We should make enabling 2fa explicit. I also want to make it optional right now. So, a user
+  > can enable or disable it. There should be a sysop option to make 2fa mandatory. — NAF,
+  > 2026-09-20
+
+  So: the account carries the answer, the member turns it on and off from their own page, and
+  turning it off leaves the keys alone, because they are how the member signs in. Turning it on
+  needs something that can answer the second step, and the page says so rather than switching on
+  an empty promise.
+
+  **A club can require it of an access group**, by naming the group keys in a setting (FR-89),
+  with `sysadmin` standing for the accounts holding that flag. Shipped empty: nobody has to. Where
+  it is required, the member cannot turn it off, is told on their own page with the date, and is
+  sent to enroll once the club's grace period (a setting, a fortnight by default) has passed.
+  Nobody is shut out without having been told.
+
+  **The second step offers what the account holds.** The library's page leads with an
+  authenticator code whatever is enrolled and demotes the security key to an alternative; a
+  member whose only factor is a key met a box they could not fill. The page leads with the key
+  where there is one, and calls the code box what it is for an account with no authenticator
+  app: a recovery code.
 - Sessions expire; "remember this device" is allowed on members' own devices.
 - University SSO as an *additional* sign-in method for `@scranton.edu` accounts: **not pursued
   in this version**, by NAF's decision of 2026-09-13; the option stays open for a future

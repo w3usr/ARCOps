@@ -43,6 +43,20 @@ class AccountAdapter(DefaultAccountAdapter):
         reauth_user = self.authenticate(context.request, **credentials)
         return reauth_user is not None and reauth_user.pk == user.pk
 
+    def get_login_stages(self) -> list[str]:
+        """The steps between a correct password and a signed-in session.
+
+        The shipped list asks for a second factor whenever an account holds any enrolled
+        authenticator, which counts a passkey as one. Ours asks when the person turned two-step
+        verification on, or when the club requires it of their level (apps.accounts.mfa).
+        """
+        return [
+            "apps.accounts.mfa.TwoFactorStage"
+            if stage == "allauth.mfa.stages.AuthenticateStage"
+            else stage
+            for stage in super().get_login_stages()
+        ]
+
     def get_client_ip(self, request) -> str:
         """allauth's rate limiter (TR-18) keys on the client IP and refuses the request when it
         cannot find one. gunicorn listens on a unix socket, so REMOTE_ADDR is empty; nginx passes

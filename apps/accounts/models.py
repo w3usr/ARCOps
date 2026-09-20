@@ -160,6 +160,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         "EntryLink", null=True, blank=True, on_delete=models.SET_NULL, related_name="joined"
     )
     verification_deadline = models.DateTimeField(null=True, blank=True)  # class links: seven days
+    # Two-step verification, asked for rather than inferred. The sign-in library treats any
+    # enrolled key as a second factor; here a passkey is a way to sign in, and the second step
+    # happens because somebody turned it on (§2.6, apps/accounts/mfa.py).
+    #
+    # > We should make enabling 2fa explicit. I also want to make it optional right now. So, a
+    # > user can enable or disable it. — NAF, 2026-09-20
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_enabled_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
 

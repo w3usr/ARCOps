@@ -2451,3 +2451,25 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 351 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 9a4df91
+
+## [2026-09-20 03:55 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two-step verification becomes something a member asks for. The sign-in
+  library treats any enrolled key as a second factor, so adding a passkey turned it on by
+  accident; the login stage is replaced through the adapter so the second step happens when the
+  member turned it on or the club requires it of their access group. With it: a switch on the
+  member's own page, two settings (which groups, and how many days of grace), a gate that tells
+  somebody required for a fortnight and then sends them to enroll, and a second-step page that
+  leads with the method the account actually holds.
+- **Sections/Files Affected**: apps/accounts/mfa.py (new), apps/accounts/views_mfa.py (new),
+  templates/mfa/authenticate.html (new), apps/accounts/adapter.py, apps/accounts/models.py,
+  apps/accounts/migrations/0023_two_step_verification_is_asked_for.py, apps/accounts/views.py,
+  apps/accounts/urls.py, apps/accounts/views_members.py, apps/accounts/middleware.py,
+  apps/ops/views_settings.py, config/club.example.yaml, config/urls.py,
+  templates/accounts/{member_detail,member_edit}.html, docs/REQUIREMENTS.md (§2.6),
+  docs/TECHNICAL_REQUIREMENTS.md (TR-16), apps/accounts/tests/test_two_factor.py (new).
+- **Nature of Contribution**: Design, code, migration and tests by the assistant, from the
+  advisor's report and his two decisions on where a passkey belongs and who can be required.
+- **Human Review Status**: Pending the advisor's look. 361 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

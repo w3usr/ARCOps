@@ -1,0 +1,83 @@
+{% extends "mfa/base_entrance.html" %}
+{% load i18n %}
+{% load allauth %}
+{% load allauth static %}
+{% comment %}The library's own page leads with an authenticator code whatever the account holds,
+and demotes the security key to "Alternative options". Somebody whose only factor is a key met a
+box they could not fill (NAF, 2026-09-20). This is the same page with the two halves ordered by
+what is enrolled, which apps.accounts.views_mfa puts in the context. The JavaScript contract is
+the library's and is kept exactly: the button id, the form id, the js_data script tag and the
+scripts snippet.{% endcomment %}
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+{% block content %}
+    {% element h1 %}Confirm it is you{% endelement %}
+    {% url 'mfa_authenticate' as action_url %}
+
+    {% if has_key %}
+        {% element p %}
+            Your account asks for a second step. Use your security key or passkey:
+        {% endelement %}
+        {% element button_group vertical=True %}
+            {% element button form="webauthn_form" id="mfa_webauthn_authenticate" type="button" tags="primary,mfa,login" %}
+                {% trans "Use a security key" %}
+            {% endelement %}
+        {% endelement %}
+    {% endif %}
+
+    {% if has_totp or has_recovery_codes or not has_key %}
+        {% if has_key %}
+            {% element hr %}{% endelement %}
+            {% element h2 %}Or type a code{% endelement %}
+        {% endif %}
+        {% element p %}
+            {% if has_totp %}Your account asks for a second step. Enter the code from your authenticator app:
+            {% else %}Enter one of your recovery codes:{% endif %}
+        {% endelement %}
+        {% element form form=form method="post" action=action_url %}
+            {% slot body %}
+                {% csrf_token %}
+                {% element fields form=form unlabeled=True %}
+                {% endelement %}
+            {% endslot %}
+            {% slot actions %}
+                {% element button type="submit" tags="primary,mfa,login" %}
+                    {% trans "Sign In" %}
+                {% endelement %}
+            {% endslot %}
+        {% endelement %}
+    {% endif %}
+
+    {% element button_group vertical=True %}
+        {% element button type="submit" form="logout-from-stage" tags="link,mfa,cancel" %}
+            {% trans "Cancel" %}
+        {% endelement %}
+    {% endelement %}
+
+    {% if "webauthn" in MFA_SUPPORTED_TYPES %}
+        {% element form id="webauthn_form" form=webauthn_form method="post" action=action_url no_visible_fields=True %}
+            {% slot body %}
+                {% csrf_token %}
+                {% element fields form=webauthn_form %}
+                {% endelement %}
+            {% endslot %}
+        {% endelement %}
+        {{ js_data|json_script:"js_data" }}
+        {% include "mfa/webauthn/snippets/scripts.html" %}
+        <script data-allauth-onload="allauth.webauthn.forms.authenticateForm" type="application/json">{
+    "ids": {
+        "authenticate": "mfa_webauthn_authenticate",
+        "credential": "{{ webauthn_form.credential.auto_id }}",
+        "data": "js_data"
+    }
+}
+        </script>
+    {% endif %}
+    <form id="logout-from-stage"
+          method="post"
+          action="{% url 'account_logout' %}">
+        <input type="hidden" name="next" value="{% url 'account_login' %}">
+        {% csrf_token %}
+    </form>
+{% endblock content %}

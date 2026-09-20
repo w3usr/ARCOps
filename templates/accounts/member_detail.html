@@ -99,8 +99,23 @@ switches are on the edit page.{% endcomment %}
 <p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
 {% if vapid_public_key %}<p class="helptext">Browser notifications are {{ user.push_enabled|yesno:"on,off" }} for this account, on {{ push_subscriptions|length }} device{{ push_subscriptions|length|pluralize }} that has allowed them.</p>{% endif %}
 </section>
+{% comment %}Three separate things, each with its state in words. A passkey is a way to sign in,
+and two-step verification is asked for rather than inferred from one (NAF, 2026-09-20).{% endcomment %}
 <section class="card"><h2>Security</h2>
-<ul class="list"><li><a href="{% url 'account_change_password' %}">Change password</a></li><li><a href="{% url 'mfa_index' %}">Two-step verification and passkeys</a></li></ul></section>
+<dl class="dl">
+  <dt>Password</dt>
+  <dd><a href="{% url 'account_change_password' %}">Change password</a></dd>
+  <dt>Passkeys</dt>
+  <dd>{% if security.keys %}{{ security.keys }} on this account.{% else %}None yet.{% endif %} <a href="{% url 'mfa_index' %}">Manage passkeys</a> · they sign you in without a password.</dd>
+  <dt>Two-step verification</dt>
+  <dd>
+    {% if security.on %}<strong>On</strong>{% else %}<strong>Off</strong>{% endif %}{% if security.required %} · required for your access level{% endif %}.
+    {% if security.on %}After your password, sign-in asks for a code or a security key.{% else %}Sign-in asks for your password alone.{% endif %}
+    {% if security.on %}{% if not security.required %}<a href="{% url 'member_edit' member.pk %}#security">Turn it off</a>{% endif %}{% else %}<a href="{% url 'member_edit' member.pk %}#security">Turn it on</a>{% endif %}
+    {% if not security.on and not security.factor %}<span class="helptext">You will be asked to add an authenticator app or a security key first.</span>{% endif %}
+    {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> your access level requires this. Set it up before {{ security.deadline|date:"j F Y" }}, after which sign-in will ask you to.</p>{% endif %}
+  </dd>
+</dl></section>
 {% if minor_readonly %}<p class="note">Your guardian makes changes to this account while acting for you. You can change your own password.</p>{% endif %}
 {% endif %}
 {% endblock %}

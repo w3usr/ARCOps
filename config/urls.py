@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
-from apps.accounts import impersonate, views_entry, views_members
+from apps.accounts import impersonate, views_entry, views_members, views_mfa
 from apps.ops import views_settings
 from apps.ops.api import api
 from apps.ops.views import branding_file, healthz, manifest, service_worker
@@ -23,6 +23,10 @@ urlpatterns = [
         TemplateView.as_view(template_name="account/signup_closed.html"),
         name="account_signup",
     ),
+    # The second step at sign-in is the library's view with two facts added, so the page can
+    # lead with the method the account holds (apps.accounts.views_mfa). It has to come first:
+    # the last pattern with a name never wins.
+    path("accounts/2fa/authenticate/", views_mfa.second_step, name="mfa_authenticate"),
     path("accounts/", include("allauth.urls")),
     path("api/v1/", api.urls),
     path("events/", include("apps.events.urls")),

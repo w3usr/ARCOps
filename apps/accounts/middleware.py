@@ -6,6 +6,8 @@ Two small gates on every request:
 * An account at access level "none" is signed out and shown a plain explanation (§2.1).
 * A class-link account whose address is unverified past its deadline is signed out until it is
   verified or an officer waives it (FR-120).
+* An account whose access level requires two-step verification (§2.6) is told for as long as the
+  club's grace period lasts, and then sent to enroll before anything else.
 """
 
 from django.contrib import messages
@@ -20,6 +22,8 @@ ALLOWED_WHILE_TEMPORARY = (
     "/static/",
     "/healthz",
 )
+# Everything the library's own pages need, so somebody being made to enroll can actually do it.
+ALLOWED_WHILE_ENROLLING = ("/accounts/", "/me/two-step/", "/static/", "/healthz")
 
 
 class AccountGateMiddleware:
@@ -55,6 +59,9 @@ class AccountGateMiddleware:
                     "you, or ask a club officer to mark it verified.",
                 )
                 return redirect(reverse("account_login"))
+            gate = _two_factor_gate(request, user)
+            if gate is not None:
+                return gate
             if user.password_is_temporary and not request.path.startswith(ALLOWED_WHILE_TEMPORARY):
                 messages.info(
                     request, "You signed in with a temporary password. Set your own to continue."
@@ -62,3 +69,27 @@ class AccountGateMiddleware:
                 request.session["forced_password_change"] = True
                 return redirect("/accounts/password/change/")
         return self.get_response(request)
+
+
+def _two_factor_gate(request, user):
+    """§2.6: a level the club requires it of is told first and made to enroll afterwards.
+
+    The countdown starts the first time the requirement meets the account, which is here; the
+    date is kept on the account so the same one is shown and enforced.
+    """
+    from . import mfa
+
+    if not mfa.is_required(user) or mfa.has_factor(user):
+        return None
+    if not user.two_factor_enabled_at:
+        user.two_factor_enabled_at = timezone.now()
+        user.save(update_fields=["two_factor_enabled_at"])
+    due = mfa.deadline(user)
+    if due is None or timezone.now() < due or request.path.startswith(ALLOWED_WHILE_ENROLLING):
+        return None
+    messages.error(
+        request,
+        "Your access level requires two-step verification. Add an authenticator app or a "
+        "security key to carry on.",
+    )
+    return redirect(reverse("mfa_index"))

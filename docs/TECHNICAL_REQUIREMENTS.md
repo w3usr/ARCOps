@@ -215,6 +215,15 @@ has a decade of documentation.
   period with a banner before sign-in is blocked. A passkey-only account has no password to
   forget; FR-107's reset path still works for accounts that have one.
 
+  **Built 2026-09-20, and one thing had to be taken off the library.** Its login stages ask for a
+  second factor as soon as an account holds any enrolled authenticator, so a passkey counted as
+  one. `apps/accounts/mfa.py` replaces that stage through the adapter's `get_login_stages`, and
+  it fires when `user.two_factor_enabled` is set or the club requires it of the account's group
+  (§2.6). Everything else stays the library's: enrollment, the recovery codes, the second-step
+  form, and the reauthentication that raising a level uses (TR-17). The second-step page is the
+  library's view with two facts added, so the template can lead with the method the account
+  holds; the ordering is ours because the library has no per-user notion of a primary factor.
+
   > Implement totp and passkey now, but make optional. Add the ability to turn on required for
   > certain permission levels. Also allow for password less login using passkeys.
   > — NAF, 2026-09-13
