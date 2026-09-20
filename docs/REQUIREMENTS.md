@@ -179,8 +179,14 @@ configuration, which reproduce the ladder this section used to describe:
 So a session carries a **view**: one of the groups whose capabilities the account already holds.
 Signing in sets it to the club's configured everyday view (`defaults.default_view`; Faculty
 advisor for W3USR), and the name in the sidebar shows it and leads to the page that changes it.
-Raising the view asks for the password again; lowering it does not. A view above what the account
-holds is never offered, so this grants nothing.
+Raising the view asks the person to prove who they are again; lowering it does not. A view above
+what the account holds is never offered, so this grants nothing.
+
+**The proof is the sign-in library's**, on the page it already uses before a second factor is
+added, so it accepts **a password or a passkey**, whichever the account carries, and it does not
+ask twice inside the window that guards those other acts (TR-17).
+
+> I should be able to use a passkey in addition to a password here. — NAF, 2026-09-20
 
 **The lower view is real.** `User.has_perm` answers from it, so a request the view does not allow
 is refused exactly as it would be for somebody who genuinely held that group; it is not a filter
@@ -1082,9 +1088,16 @@ Verbatim:
   advisor or a sysadmin can read by narrowing the members list to it. Reading those rows is
   written to the audit log, because they hold contact details for people who are no longer
   around to be asked. **An archived account is never one somebody can still use**, so archiving
-  an account that is still open **closes it in the same act**: filing a member who has left is
-  one action and involves no suspension, which is a decision about conduct rather than a
-  departure. Archiving is a flag beside the status rather than a status of its own (FR-13a), so
+  an account that is still open **closes it in the same act**: filing a member who has left
+  involves no suspension, which is a decision about conduct rather than a departure.
+
+  **The control is offered only once the account is closed or suspended** (2026-09-20), so the
+  page asks for the two steps in order even though the service behind it can do both:
+
+  > The option to Archive should only appear for accounts that are already Closed or Suspended.
+  > — NAF, 2026-09-20
+
+  Archiving is a flag beside the status rather than a status of its own (FR-13a), so
   taking a record out of the archive returns it untouched, **still closed**, and letting the
   person back in is a separate, deliberate act (FR-91). Archiving is refused for a guardian with
   a minor still linked, for the last account that can run the site, and for the archiver's own.

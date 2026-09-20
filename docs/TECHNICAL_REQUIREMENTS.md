@@ -227,7 +227,9 @@ has a decade of documentation.
   requires the member's password again within the last five minutes (FR-33). Cookies `Secure`,
   `HttpOnly`, `SameSite=Lax`.
 
-  The same re-entry guards enrolling or removing a second factor (TR-16). Checking it goes
+  The same re-entry guards enrolling or removing a second factor (TR-16) and **raising the level
+  a session acts at** (§2.1): both go through the library's Confirm Access page, so a passkey
+  serves where a password would, and neither asks again inside the window. Checking it goes
   through the account's own key rather than through an identifier the sign-in library expects an
   account to have: accounts here are keyed on `public_id` (TR-15) and sign in from any address
   they have confirmed, so the library had nothing to look the account up by and refused every

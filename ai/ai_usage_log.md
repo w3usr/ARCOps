@@ -2405,3 +2405,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 347 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 7c7a4c9
+
+## [2026-09-20 02:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Three from the advisor's testing. Closing an account moves into the Danger
+  zone beside suspending and deleting, and the card it used to live in is gone; archiving is
+  offered only once an account is closed or suspended, since it is the second step; and raising
+  the level a session acts at now goes through the sign-in library's Confirm Access, which takes
+  a passkey as readily as a password, so the page carries no password field of its own.
+- **Sections/Files Affected**: templates/accounts/member_edit.html,
+  templates/accounts/acting_view.html, apps/accounts/views_members.py,
+  apps/accounts/views_acting.py, docs/REQUIREMENTS.md (§2.1, FR-125),
+  docs/TECHNICAL_REQUIREMENTS.md (TR-17), docs/INTERFACE.md, tools/a11y/test_axe.py, and the
+  archive and acting-view tests.
+- **Nature of Contribution**: Code, interface change and tests by the assistant, from three of
+  the advisor's reports.
+- **Human Review Status**: Pending the advisor's look. 349 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

@@ -784,8 +784,16 @@ def member_edit(request, pk):
             "is_self": member == actor,
             "can_set_access": may_set_access(actor, member),
             "can_readmit": _may_readmit(actor, member),
-            # Archiving closes an account that is still open, so it is offered either way.
-            "can_archive": actor.may("archive_members") and member != actor,
+            # Archiving is the second step, offered once the account is out of service: "The
+            # option to Archive should only appear for accounts that are already Closed or
+            # Suspended." (the advisor, 2026-09-20).
+            "can_archive": (
+                actor.may("archive_members")
+                and member != actor
+                and not member.is_archived
+                and member.status in ("closed", "suspended")
+            ),
+            "can_restore": actor.may("archive_members") and member.is_archived,
             "can_close": actor.may("archive_members") and member != actor and member.has_access,
             "no_access_because": _no_access_because(member),
             **(_preferences(member) if member == actor else {}),

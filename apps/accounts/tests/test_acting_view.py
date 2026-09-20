@@ -5,7 +5,10 @@ though my account has superuser capabilities... By default, it is set to the hig
 superuser. To get superuser, the user has to explicitly change the view and re-authenticate."
 """
 
+import time
+
 import pytest
+from allauth.account.internal.flows.login import AUTHENTICATION_METHODS_SESSION_KEY
 from django.core.management import call_command
 from django.test import Client
 
@@ -33,6 +36,15 @@ def _signed_in(user):
     return c
 
 
+def _just_confirmed(client):
+    """Stamp the session the way the sign-in library does, so the level rises without being
+    asked again. force_login leaves no such record, which is why it is written by hand here."""
+    session = client.session
+    session[AUTHENTICATION_METHODS_SESSION_KEY] = [{"method": "password", "at": time.time()}]
+    session.save()
+    return client
+
+
 def test_a_sysadmin_signs_in_acting_at_the_clubs_everyday_level():
     c = _signed_in(_sysadmin())
     c.get("/")  # the level is settled on the first request
@@ -45,25 +57,48 @@ def test_a_sysadmin_signs_in_acting_at_the_clubs_everyday_level():
     assert c.get("/credentials/approvals/").status_code == 200
 
 
-def test_raising_the_level_asks_for_the_password_and_is_recorded():
-    c = _signed_in(_sysadmin())
+def test_raising_the_level_asks_you_to_confirm_and_is_recorded():
+    """NAF, 2026-09-20: "I should be able to use a passkey in addition to a password here." The
+    page no longer holds a password field of its own; it hands the person to the sign-in
+    library's Confirm Access, which offers whatever the account carries.
+    """
+    user = _sysadmin()
+    c = _signed_in(user)
     c.get("/")
 
-    r = c.post("/me/level/", {"view": "sysadmin", "password": "not-the-password"}, follow=True)
-    assert b"password is not right" in r.content
+    r = c.post("/me/level/", {"view": "sysadmin"})
+    assert r.status_code == 302 and r["Location"].startswith("/accounts/reauthenticate/")
+    assert "next=%2Fme%2Flevel%2F" in r["Location"], "and it comes back here"
+    assert c.session["acting_view"] == "advisor", "nothing has changed yet"
+
+    # walking away without confirming leaves the level alone, and says so
+    r = c.get("/me/level/", follow=True)
+    assert b"not confirmed" in r.content
     assert c.session["acting_view"] == "advisor"
     assert c.get("/ops/settings/").status_code == 404
     assert AuditLog.objects.filter(action="view.raise_refused").exists()
 
-    c.post("/me/level/", {"view": "sysadmin", "password": PASSWORD}, follow=True)
+    # and with the password accepted on that page, the level rises
+    c.post("/me/level/", {"view": "sysadmin"})
+    c.post("/accounts/reauthenticate/", {"password": PASSWORD})
+    c.get("/me/level/")
     assert c.session["acting_view"] == "sysadmin"
     assert c.get("/ops/settings/").status_code == 200
     assert AuditLog.objects.filter(action="view.raised").exists()
 
 
-def test_dropping_the_level_needs_no_password_and_takes_the_capability_away():
-    c = _signed_in(_sysadmin())
-    c.post("/me/level/", {"view": "sysadmin", "password": PASSWORD})
+def test_a_level_raised_a_moment_after_confirming_is_not_asked_twice():
+    """The same window that guards adding a second factor: confirm once, then work."""
+    c = _just_confirmed(_signed_in(_sysadmin()))
+    c.get("/")
+    r = c.post("/me/level/", {"view": "sysadmin"})
+    assert r.status_code == 302 and "/accounts/reauthenticate/" not in r["Location"]
+    assert c.session["acting_view"] == "sysadmin"
+
+
+def test_dropping_the_level_is_never_asked_about_and_takes_the_capability_away():
+    c = _just_confirmed(_signed_in(_sysadmin()))
+    c.post("/me/level/", {"view": "sysadmin"})
     assert c.get("/ops/settings/").status_code == 200
 
     c.post("/me/level/", {"view": "member"})  # nothing is asked for on the way down
@@ -90,7 +125,7 @@ def test_the_lower_level_refuses_the_action_rather_than_hiding_the_button():
 def test_nobody_may_act_above_themselves():
     c = _signed_in(_sysadmin())
     c.post("/me/level/", {"view": "member"})  # a sysadmin drops to a member's view
-    r = c.post("/me/level/", {"view": "nonesuch", "password": PASSWORD}, follow=True)
+    r = c.post("/me/level/", {"view": "nonesuch"}, follow=True)
     assert b"not a level your account can act at" in r.content
     assert c.session["acting_view"] == "member"
     assert c.get("/me/invitations/").status_code == 404
@@ -121,7 +156,7 @@ def test_the_page_offers_only_the_levels_the_account_holds():
     body = c.get("/me/level/").content.decode()
     for label in ("Provisional", "Member", "Club officer", "Faculty advisor", "Sysadmin"):
         assert label in body, label
-    assert "asks for your password" in body
+    assert "asks you to confirm" in body
 
     # and a sysadmin is offered every level, because a sysadmin holds everything
 
@@ -141,7 +176,7 @@ def test_the_django_admin_says_what_to_do_instead_of_looping():
     assert r.redirect_chain[0][0].startswith("/me/level/?next=/admin/")
     assert b"opens at the Sysadmin level" in r.content
 
-    c.post("/me/level/", {"view": "sysadmin", "password": PASSWORD})
+    _just_confirmed(c).post("/me/level/", {"view": "sysadmin"})
     assert c.get("/admin/").status_code == 200
 
 

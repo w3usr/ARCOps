@@ -224,3 +224,30 @@ def test_restoring_returns_the_record_untouched():
     member.refresh_from_db()
     assert member.callsign == "N0ARC" and member.cell_phone == "555-0100"
     assert member.archived_reason == "" and member.archived_at is None
+
+
+def test_taking_an_account_out_of_service_is_all_in_one_place():
+    """NAF, 2026-09-20: "Account closing should also be under the Danger Zone" and "The option to
+    Archive should only appear for accounts that are already Closed or Suspended."
+
+    So the Danger zone holds closing, suspension, archiving and deletion, and archiving is the
+    second step: an active account offers no way to skip straight to it.
+    """
+    from django.core.management import call_command
+
+    call_command("club_import")
+    sysadmin = _user("sys@example.org", "sysadmin")
+    member = _user("mem@example.org")
+    page = _as(sysadmin).get(f"/members/{member.pk}/edit/").content.decode()
+    zone = page[page.index("Danger zone") :]
+    assert "Close this account" in zone, "closing is a danger-zone control now"
+    assert "Leaving the club" not in page, "and has no card of its own"
+    assert "Archive this member" not in page, "not while the account is active"
+
+    from apps.accounts.services import close_account
+
+    close_account(sysadmin, member, "graduated")
+    page = _as(sysadmin).get(f"/members/{member.pk}/edit/").content.decode()
+    zone = page[page.index("Danger zone") :]
+    assert "Archive this member" in zone, "offered once the account is closed"
+    assert "Close this account" not in zone, "and closing is done"

@@ -122,6 +122,12 @@ system, both of which say the same thing.)
 
 A destructive control never sits between two reversible ones styled the same way.
 
+**Everything that takes an account out of service lives in one place**, the bordered **Danger
+zone** at the foot of the page: closing, suspending, archiving, deleting. A member's page had
+closing and archiving in a card of their own, above it, which read as ordinary editing (the
+advisor, 2026-09-20). Where one of those acts is the step after another, the later one appears
+only once the earlier has happened, rather than sitting there refusing.
+
 ## Forms
 
 - Label, then input, then one line of help, then the error. In that order.
