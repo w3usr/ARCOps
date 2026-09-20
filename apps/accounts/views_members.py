@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods
 
 from apps.credentials.models import LicenseRecord, SignedAgreement
@@ -569,9 +570,16 @@ def member_edit(request, pk):
                     if call and call["state"] == "pending":
                         messages.warning(
                             request,
-                            f"The FCC lists {member.callsign} under the name {call['uls_name']}. "
-                            f"{member.display_first} is asked to confirm it on their profile "
-                            "before it is kept.",
+                            format_html(
+                                "The FCC records {} under the name {}, which is not the name on "
+                                'this account. {} is asked "Is this you?" on their own profile; '
+                                "until they answer, the callsign counts for nothing. "
+                                '<a href="{}">Open their profile</a>.',
+                                member.callsign,
+                                call["uls_name"],
+                                member.display_first,
+                                reverse("member_detail", args=[member.pk]),
+                            ),
                         )
                     elif call and call["state"] == "unverified":
                         messages.info(

@@ -9,6 +9,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods
 
 from apps.ops.audit import record
@@ -441,7 +442,16 @@ def accept_invitation(request, token):
                 if result["state"] == "pending":
                     messages.warning(
                         request,
-                        f"The FCC lists {user.callsign} under the name {result['uls_name']}. Confirm on your profile that this is you.",
+                        format_html(
+                            "The FCC records {} under the name {}, which is not the name you "
+                            'gave. Your profile asks "Is this you?": answer it and the callsign '
+                            "is kept with the FCC's name, or say it is not yours and the "
+                            "callsign comes off. Until then the callsign counts for nothing. "
+                            '<a href="{}">Answer it on your profile</a>.',
+                            user.callsign,
+                            result["uls_name"],
+                            reverse("profile"),
+                        ),
                     )
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, "Welcome. Your account is ready.")

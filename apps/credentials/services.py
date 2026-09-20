@@ -102,7 +102,7 @@ def log_decision(agreement, action: str, actor=None, note: str = "", expires_on=
 
 
 def approve(
-    actor, agreement: SignedAgreement, expires_on: dt.date | None = None
+    actor, agreement: SignedAgreement, expires_on: dt.date | None = None, note: str = ""
 ) -> SignedAgreement:
     after_decline = agreement.state == SignedAgreement.State.DECLINED
     rule = agreement.credential.default_expiry
@@ -123,6 +123,7 @@ def approve(
         if after_decline
         else CredentialDecision.Action.APPROVED,
         actor,
+        note=note,
         expires_on=agreement.expires_on,
     )
     from apps.comms.services import send
@@ -564,6 +565,15 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
             "built_at": timezone.now(),
             # The watermark's colour, as six hex digits: the template writes it into an SVG
             # background, where a "#" would have to be escaped anyway.
+            "watermark": watermark_background(
+                agreement.get_state_display().upper(),
+                {
+                    "approved": "1b6e3a",
+                    "revoked": "9b1c1c",
+                    "declined": "8a5a00",
+                    "expired": "8a5a00",
+                }.get(agreement.state, "555555"),
+            ),
             "watermark_color": {
                 "approved": "1b6e3a",
                 "revoked": "9b1c1c",
@@ -575,6 +585,148 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
     return weasyprint.HTML(string=html, base_url="/").write_pdf(
         pdf_variant="pdf/ua-1", pdf_tags=True
     )
+
+
+# --------------------------------------------------------------------- watermark ---
+# The document's standing, drawn across the page, and the club's seal behind it.
+#
+# The advisor asked for it back as vector graphics, with the club's own seal behind it
+# (2026-09-20).
+#
+# The first attempt used rotated HTML text and the second an SVG <text>; this renderer draws
+# both as text, so "APPROVED" went into the text layer one glyph at a time and threaded itself
+# through the signature block for anyone extracting or narrating the file. Glyph **outlines**
+# carry no text at all, and neither does an image, so the whole thing is decorative by
+# construction and the word still says what it says to a reader's eye.
+
+_WATERMARK_CACHE: dict[tuple, str] = {}
+
+
+def _word_outline(word: str, size: float) -> tuple[str, float]:
+    """The word as one SVG path, plus its width, from the outlines of a real font.
+
+    fontTools comes with the PDF renderer, so this costs no new dependency.
+    """
+    from fontTools.pens.svgPathPen import SVGPathPen
+    from fontTools.ttLib import TTFont
+
+    path = _watermark_font()
+    if not path:
+        return "", 0.0
+    font = TTFont(path, fontNumber=0, lazy=True)
+    glyphs = font.getGlyphSet()
+    cmap = font.getBestCmap()
+    scale = size / font["head"].unitsPerEm
+    parts, x = [], 0.0
+    for ch in word:
+        name = cmap.get(ord(ch))
+        if name is None:
+            x += size * 0.4
+            continue
+        pen = SVGPathPen(glyphs)
+        glyphs[name].draw(pen)
+        d = pen.getCommands()
+        if d:
+            parts.append(f'<path d="{d}" transform="translate({x / scale:.1f} 0)"/>')
+        x += glyphs[name].width * scale
+    font.close()
+    if not parts:
+        return "", 0.0
+    # The glyph box grows downward in font space, so the group is flipped and scaled at once.
+    inner = "".join(parts)
+    return f'<g transform="scale({scale:.5f} -{scale:.5f})">{inner}</g>', x
+
+
+def _watermark_font() -> str:
+    """A bold sans font on this machine, asked of fontconfig rather than guessed at."""
+    import shutil
+    import subprocess
+
+    fc_match = shutil.which("fc-match")
+    if not fc_match:
+        return ""
+    try:
+        out = subprocess.run(  # noqa: S603 - fontconfig's own binary, resolved by which()
+            [fc_match, "-f", "%{file}", "DejaVu Sans:bold"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        ).stdout.strip()
+    except Exception:  # noqa: BLE001 - a watermark is never worth failing a document for
+        return ""
+    return out if out.endswith((".ttf", ".otf", ".ttc")) else ""
+
+
+def _seal_data_uri() -> str:
+    """The club's own mark, as a data URI, or nothing if the club has not set one."""
+    import base64
+    import mimetypes
+    from pathlib import Path
+
+    from django.contrib.staticfiles import finders
+
+    for key in ("branding.logo_monochrome", "branding.logo"):
+        name = setting(key, "") or ""
+        if not name:
+            continue
+        found = finders.find(str(name).removeprefix("static/")) or (
+            str(name) if Path(str(name)).exists() else None
+        )
+        if not found:
+            continue
+        kind = mimetypes.guess_type(found)[0] or "image/png"
+        if kind == "image/svg+xml":
+            continue  # nesting an SVG inside an SVG is not worth the escaping
+        data = base64.b64encode(Path(found).read_bytes()).decode("ascii")
+        return f"data:{kind};base64,{data}"
+    return ""
+
+
+def watermark_background(word: str, color: str) -> str:
+    """A `background-image` value: the club's seal, and the standing across it.
+
+    Returns an empty string where neither can be drawn, and the page simply has no watermark.
+    """
+    key = (word, color)
+    if key in _WATERMARK_CACHE:
+        return _WATERMARK_CACHE[key]
+
+    w, h = 720.0, 900.0
+    outline, width = _word_outline(word, 86.0)
+    seal = _seal_data_uri()
+    layers = []
+    if seal:
+        side = 330.0
+        layers.append(
+            f'<image href="{seal}" x="{(w - side) / 2:.0f}" y="{(h - side) / 2:.0f}" '
+            f'width="{side:.0f}" height="{side:.0f}" opacity="0.09"/>'
+        )
+    if outline:
+        x = (w - width) / 2
+        y = h / 2 + 30
+        layers.append(
+            f'<g transform="rotate(-22 {w / 2:.0f} {h / 2:.0f}) translate({x:.1f} {y:.1f})" '
+            f'fill="#{color}" fill-opacity="0.13">{outline}</g>'
+        )
+    if not layers:
+        _WATERMARK_CACHE[key] = ""
+        return ""
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
+        f'width="{w:.0f}" height="{h:.0f}">{"".join(layers)}</svg>'
+    )
+    # Base64 rather than percent-escaping: a raw SVG in a CSS url() has to survive the CSS
+    # tokenizer as well as the URL parser, and it did not — WeasyPrint reported "Stop token
+    # reached before {} block" and drew nothing. Base64 is [A-Za-z0-9+/=] and has no opinions.
+    import base64 as _b64
+
+    encoded = _b64.b64encode(svg.encode("utf-8")).decode("ascii")
+    # No quotes around it: base64 needs none, and a template's autoescaping turned them into
+    # &#x27; so the renderer went looking for a file of that name (2026-09-20).
+    value = f"url(data:image/svg+xml;base64,{encoded})"
+    _WATERMARK_CACHE[key] = value
+    return value
 
 
 def store_agreement_pdf(agreement: SignedAgreement) -> None:

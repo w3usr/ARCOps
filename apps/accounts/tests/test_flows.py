@@ -369,3 +369,41 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
     c.post(f"/me/invitations/{inv.pk}/", {"action": "revoke"})
     body = c.get("/me/invitations/").content.decode()
     assert f"/me/invite/{inv.token}/" not in body
+
+
+def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
+    """A warning that sends somebody somewhere carries the way there.
+
+    The advisor, 2026-09-20: the wording should be better, "and if you are going to tell someone
+    to go somewhere to do something, provide them a link right in the warning."
+    """
+    from apps.credentials.models import UlsLicense
+
+    UlsLicense.objects.create(
+        callsign="N0DIF",
+        operator_class="Extra",
+        status="active",
+        licensee_name="Other, Someone",
+        first_name="Someone",
+        last_name="Other",
+    )
+    inv = create_invitation(officer(), "mismatch@example.org", "student")
+    c = Client()
+    r = c.post(
+        f"/me/invite/{inv.token}/",
+        {
+            "first_name": "Not",
+            "last_name": "Thesame",
+            "callsign": "n0dif",
+            "password1": "a-long-password-123",
+            "password2": "a-long-password-123",
+            "consent": "on",
+        },
+        follow=True,
+    )
+    body = r.content.decode()
+    assert "not the name you gave" in body
+    assert "counts for nothing" in body, "it says what the callsign does until answered"
+    assert 'href="/me/"' in body or "Answer it on your profile" in body
+    # and the profile carries the question itself
+    assert "Is this you?" in c.get("/me/", follow=True).content.decode()

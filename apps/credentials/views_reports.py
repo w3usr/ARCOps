@@ -19,6 +19,7 @@ from apps.accounts.models import User
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.tables import chosen, export_url, sorted_columns, summary
+from apps.ops.templatetags.labels import phone
 
 from .models import CredentialType, SharedSecret, SignedAgreement
 from .services import revoke, rotate_shared_secret, store_agreement_pdf
@@ -214,7 +215,7 @@ def access_rosters(request):
                     a.user.category,
                     r["institution_email"],
                     r["personal_email"],
-                    a.user.cell_phone,
+                    phone(a.user.cell_phone),
                     a.approved_at.date().isoformat() if a.approved_at else "",
                     a.approver.full_name if a.approver else "",
                     a.expires_on.isoformat() if a.expires_on else "",

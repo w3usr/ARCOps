@@ -579,6 +579,10 @@ details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 .decide-row details.decide-decline { margin: 0; }
 .decide-row details.decide-decline > summary { font-size: inherit; }
 .decide-row details.decide-decline .row-form { margin-top: .4rem; }
+/* Turning a decline round, from its own row in the log: an ordinary action rather than
+   a destructive one, so it is not red. */
+details.reverse > summary { color: var(--accent, inherit); text-decoration: none; white-space: nowrap; }
+details.reverse .field { margin-top: .4rem; } details.reverse input { min-width: 12rem; }
 @media (max-width: 560px) { .decide-decline input { min-width: 0; width: 100%; } }
 
 /* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a

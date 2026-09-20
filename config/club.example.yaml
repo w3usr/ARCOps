@@ -132,6 +132,11 @@ slot_roles:                                   # FR-49, FR-50, FR-122
 # account that arrives through one is admitted at once. Empty means class links cannot be made.
 trusted_email_domains: []
 
+# Which credentials may not be approved without an address at one of the domains above. Station
+# and computer access both open a real door, and an institution address is the evidence somebody
+# has been through the institution's own checks. Empty asks for none.
+credentials_needing_institution_email: ["station_access", "it_access"]
+
 non_operating_slot_kinds:                     # FR-47
   - { key: setup,     label: "Setup",               viability: [station_access] }
   - { key: breakdown, label: "Breakdown",           viability: [station_access] }

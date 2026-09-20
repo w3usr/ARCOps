@@ -434,7 +434,14 @@ def test_the_approvals_page_carries_the_pdf_the_badge_and_a_way_back_from_a_decl
     assert "Approve after all" in page and "wrong button" in page
     assert "1 waiting for approval" not in page  # the badge counts what is waiting, not this
 
+    # A reversal says why: without a reason it is refused and nothing changes.
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.DECLINED
+    c.post(
+        f"/credentials/approvals/{signed.pk}/decide/",
+        {"decision": "approve", "reversal_reason": "mis-click; the signature was in order"},
+    )
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.APPROVED
     assert signed.decision_reason == ""  # the reason it was declined for no longer describes it
@@ -535,7 +542,10 @@ def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
     assert f"/credentials/agreements/{signed.pk}/pdf/" in waiting, "read what they signed"
 
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "decline", "reason": "typo"})
-    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    c.post(
+        f"/credentials/approvals/{signed.pk}/decide/",
+        {"decision": "approve", "reversal_reason": "mis-click"},
+    )
     actions = list(CredentialDecision.objects.order_by("pk").values_list("action", flat=True))
     assert actions == ["declined", "approved_after_decline"], "both, in the order they happened"
 
@@ -583,3 +593,60 @@ def test_the_decision_log_is_only_for_somebody_who_may_approve():
     c.force_login(officer)
     assert c.get("/credentials/approvals/").status_code == 404
     assert c.get("/credentials/approvals/?format=csv&report=decisions").status_code == 404
+
+
+def test_station_and_computer_access_need_an_institution_address_from_anyone():
+    """FR-27, widened 2026-09-20.
+
+    The advisor, 2026-09-20, having approved station access for somebody with no institution
+    address and finding that he could: require one first, for the computer agreement as well,
+    so everybody granted real access is at least in the institution's own directory.
+
+    It was asked of a community member's station access alone, so a student or a faculty member
+    holding only a personal address was approved without one, and so was anybody at all for
+    computer access.
+    """
+    from apps.accounts import addresses
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv5@example.org", "advisor", category="faculty")
+    c = Client()
+    c.force_login(advisor)
+
+    # One member per credential: granting one puts an institution address on the account, and
+    # the second credential then has no reason to ask again, which is the point of asking.
+    for n, template in enumerate((t_st, t_it)):
+        # A student, not a community member, and holding only a personal address.
+        member = _user(f"nobadge{n}@example.org", first_name="No", last_name=f"Badge{n}")
+        addresses.add(member, f"nobadge{n}@example.org", kind="personal", confirmed=True)
+        signed = SignedAgreement.objects.create(
+            user=member, template=template, credential=template.credential, signer_name="No Badge"
+        )
+        body = c.get("/credentials/approvals/").content.decode()
+        assert "Institution email" in body, template.credential.key
+
+        r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+        signed.refresh_from_db()
+        assert signed.state == SignedAgreement.State.SIGNED, "refused without one"
+        assert "institution email address" in c.get(r["Location"]).content.decode()
+
+        # A personal address is not one, however it is typed in.
+        c.post(
+            f"/credentials/approvals/{signed.pk}/decide/",
+            {"decision": "approve", "institution_email": f"no.badge{n}@gmail.com"},
+        )
+        signed.refresh_from_db()
+        assert signed.state == SignedAgreement.State.SIGNED, "and not any address will do"
+
+        # The institution's own domain grants it, and is put on the account.
+        c.post(
+            f"/credentials/approvals/{signed.pk}/decide/",
+            {"decision": "approve", "institution_email": f"no.badge{n}@example.edu"},
+        )
+        signed.refresh_from_db()
+        assert signed.state == SignedAgreement.State.APPROVED

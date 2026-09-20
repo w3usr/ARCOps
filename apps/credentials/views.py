@@ -21,7 +21,8 @@ from apps.ops.tables import chosen, export_url, sorted_columns, summary
 from .models import AgreementTemplate, CredentialDecision, CredentialType, SignedAgreement
 from .services import approve, holds, log_decision, reveal_shared_secret
 
-# How long a declined signature stays in reach of the approver who declined it.
+# How long a decline can still be turned round from the log. Past it, the member signs again;
+# a decision nobody corrected within a month was a decision rather than a slip.
 DECLINED_WINDOW_DAYS = 30
 
 # The record of what has been decided, under the queue. Every column sorts and every column
@@ -142,6 +143,44 @@ def sign(request, template_id):
     return redirect("agreements")
 
 
+# Which credentials may not be approved without an institution address on the account. Station
+# and computer access both open a real door, and an address at the institution's own domain is
+# the evidence that somebody has been through the institution's own checks.
+#
+# The advisor, 2026-09-20, having approved station access for somebody holding no institution
+# address and finding that he could: the workflow should require one first, for the computer
+# agreement as well as the station one, so that everybody granted real access has been through
+# the institution's own checks or is at least in its directory.
+#
+# It was asked of a community member's station access alone (FR-27), which let everybody else
+# through: a student or a faculty member with only a personal address was approved without one.
+
+
+def institution_domains() -> list[str]:
+    """The domains that count as the institution's own, from the club's configuration."""
+    domains = [
+        str(d).strip().lower().lstrip("@") for d in (setting("trusted_email_domains", []) or [])
+    ]
+    if domains:
+        return [d for d in domains if d]
+    # Older configurations carried it on the student category instead.
+    for c in setting("member_categories", []) or []:
+        if c.get("key") == "student" and c.get("email_domain"):
+            return [str(c["email_domain"]).strip().lower().lstrip("@")]
+    return []
+
+
+def needs_institution_email(agreement) -> bool:
+    """Whether this credential may not be granted without one."""
+    wanted = setting("credentials_needing_institution_email", ["station_access", "it_access"]) or []
+    return agreement.credential.key in set(wanted) and bool(institution_domains())
+
+
+def institution_address_ok(address: str) -> bool:
+    address = (address or "").strip().lower()
+    return any(address.endswith("@" + d) for d in institution_domains())
+
+
 @login_required
 def approvals(request):
     if not _is_approver(request.user):
@@ -150,28 +189,21 @@ def approvals(request):
         "user", "template", "credential"
     )
     # the institution address is a row on the account now, so the page is handed it per agreement
-    rows = [{"a": a, "institution_address": _institution_address(a.user)} for a in queue]
-    # A decline is one press away from an approval, so the ones declined lately stay in reach
-    # rather than waiting on the member to sign again (NAF, 2026-09-20: "we need some way to
-    # approve after an accidental decline").
+    rows = [
+        {
+            "a": a,
+            "institution_address": _institution_address(a.user),
+            "needs_institution": needs_institution_email(a)
+            and not institution_address_ok(_institution_address(a.user)),
+        }
+        for a in queue
+    ]
     if request.GET.get("format") == "csv" and request.GET.get("report") == "decisions":
         return _decisions_csv(request)
-    since = timezone.now() - dt.timedelta(days=DECLINED_WINDOW_DAYS)
-    declined = [
-        {"a": a, "institution_address": _institution_address(a.user)}
-        for a in SignedAgreement.objects.filter(
-            state=SignedAgreement.State.DECLINED, approved_at__gte=since
-        ).select_related("user", "template", "credential", "approver")
-    ]
     return render(
         request,
         "credentials/approvals.html",
-        {
-            "queue": rows,
-            "declined": declined,
-            "declined_days": DECLINED_WINDOW_DAYS,
-            **_decision_log(request),
-        },
+        {"queue": rows, **_decision_log(request)},
     )
 
 
@@ -270,6 +302,19 @@ def _decision_log(request) -> dict:
     ]
     narrowed = bool(q or any(picked.values()))
     page = Paginator(qs, 50).get_page(request.GET.get("page"))
+    # A decline is reversible from its own row, while it is still what stands and still recent.
+    since = timezone.now() - dt.timedelta(days=DECLINED_WINDOW_DAYS)
+    for d in page:
+        d.reversible = (
+            d.action == CredentialDecision.Action.DECLINED
+            and d.agreement.state == SignedAgreement.State.DECLINED
+            and d.at >= since
+        )
+        d.needs_institution = (
+            d.reversible
+            and needs_institution_email(d.agreement)
+            and not (institution_address_ok(_institution_address(d.agreement.user)))
+        )
     pager = request.GET.copy()
     pager.pop("page", None)
     return {
@@ -308,25 +353,20 @@ def decide(request, pk):
         messages.error(request, "That agreement is already declined.")
         return redirect("approvals")
     if request.POST.get("decision") == "approve":
-        if a.user.category == "community" and a.credential.key == "station_access":
-            # FR-27: the institution's address is the evidence HR is done
+        if needs_institution_email(a):
+            # FR-27: the institution's address is the evidence its own checks are done.
             addr = (
                 (request.POST.get("institution_email") or _institution_address(a.user) or "")
                 .strip()
                 .lower()
             )
-            domain = next(
-                (
-                    c.get("email_domain")
-                    for c in setting("member_categories", []) or []
-                    if c["key"] == "student"
-                ),
-                None,
-            )
-            if not addr or (domain and not addr.endswith("@" + domain)):
+            if not institution_address_ok(addr):
+                domains = ", ".join(institution_domains())
                 messages.error(
                     request,
-                    "A community member needs an institution email address on file before approval.",
+                    f"{a.user.display_first} needs an institution email address "
+                    f"({domains}) on file before {a.credential.label.lower()} is granted. "
+                    "Add it here, or on their own page.",
                 )
                 return redirect("approvals")
             if addr and addr != _institution_address(a.user):
@@ -334,8 +374,22 @@ def decide(request, pk):
                 from apps.accounts.models import Address
 
                 add(a.user, addr, kind=Address.Kind.INSTITUTION, actor=request.user)
+        if was_declined:
+            # Reversing a decline says why, so the record tells a mis-click from a change of
+            # mind. Both are legitimate; only one of them is an error, and a log that cannot
+            # tell them apart is the thing that made the reversal feel unsafe (NAF, 2026-09-20).
+            why = (request.POST.get("reversal_reason") or "").strip()
+            if not why:
+                messages.error(
+                    request,
+                    "Say why this is being approved after all: a slip and a change of mind "
+                    "read the same in the record otherwise.",
+                )
+                return redirect("approvals")
+        else:
+            why = ""
         a.decision_reason = ""  # the reason it was declined for no longer describes it
-        approve(request.user, a)
+        approve(request.user, a, note=why)
         messages.success(
             request,
             ("Approved after all; expires " if was_declined else "Approved; expires ")

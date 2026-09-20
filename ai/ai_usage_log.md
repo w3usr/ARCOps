@@ -2818,3 +2818,22 @@ carries the actual running model ID.
   reading its text back with pdftotext.
 - **Human Review Status**: Reviewed here; verified by extraction, one page, no scattered glyphs.
 - **Git Hash**: 56c0dc5
+
+## [2026-09-20 21:36 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Station and computer access now require an institution address from
+  anyone; reversing a decline says why and is done from its own row in the log; the watermark is
+  back as glyph outlines with the club's seal behind it; the roster's phone numbers are
+  formatted; and the FCC name-mismatch warning says what happens and links where to answer it.
+- **Sections/Files Affected**: apps/credentials/views.py (the institution rule, the reversal
+  reason, the log's reversible flag), apps/credentials/services.py (approve's note, the
+  watermark builder), templates/credentials/approvals.html and access_rosters.html and
+  agreement_pdf.html, apps/accounts/views.py and views_members.py and
+  templates/accounts/member_detail.html (the warning), static/css/app.css, config/club.example.yaml,
+  club.yaml in the private repo, tests.
+- **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
+  points on issues #8, #92 and #93.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 391 tests and the
+  accessibility sweep pass; the PDF was rendered and its text extracted to check the watermark
+  stays out of the text layer.
+- **Git Hash**: [pending]
