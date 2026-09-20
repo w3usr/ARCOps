@@ -225,6 +225,13 @@ has a decade of documentation.
   "remember this device" and a 12-hour idle timeout otherwise; viewing the computer password
   requires the member's password again within the last five minutes (FR-33). Cookies `Secure`,
   `HttpOnly`, `SameSite=Lax`.
+
+  The same re-entry guards enrolling or removing a second factor (TR-16). Checking it goes
+  through the account's own key rather than through an identifier the sign-in library expects an
+  account to have: accounts here are keyed on `public_id` (TR-15) and sign in from any address
+  they have confirmed, so the library had nothing to look the account up by and refused every
+  correct password, reported as *"Trying to add 2fa or a passkey doesn't accept my password."*
+  (NAF, 2026-09-20).
 - **TR-18 Rate limiting: nginx `limit_req` on the sign-in, reset, and invitation endpoints**,
   plus application-level lockout after repeated failures with a notice to the account owner
   (FR-99). *Why:* nginx stops the flood before Python sees it; the application handles the

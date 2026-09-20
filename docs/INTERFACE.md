@@ -44,6 +44,12 @@ notifications to signups".
 If a page seems to need two solid buttons, it is two forms, or one of them is not the primary
 action. The safe choice comes first in the source order, so the keyboard reaches it first.
 
+A page drawn by a library takes the same controls. The sign-in library renders its own
+two-step-verification, passkey and Confirm Access pages, and its shipped controls carry no
+styling at all, so two of them in a row read as one underlined phrase. Its button element is
+overridden once, in `templates/allauth/elements/button.html`, which maps the tags the library
+passes onto the three styles above; nothing on those pages is styled page by page.
+
 ## Reading and editing
 
 A page that shows a person's record **reads**; the controls that change it live on a page of
@@ -76,12 +82,24 @@ The same pages run in a window with no browser chrome, so the system's status an
 bars sit over them rather than beside them. Any edge of the page that meets one pays for it
 with `env(safe-area-inset-*)`; in a browser those are zero. A page shorter than the screen is
 where this shows first, because its footer lands exactly where the navigation bar is.
+A phone that draws its bars over the page may report those insets as zero, so the page is
+measured against the viewport it is actually showing rather than the tallest one it could show
+with the bars hidden.
+
+The home-screen icon is cropped to whatever shape the launcher uses. An icon offered for that
+crop is drawn to the edge of the tile with its mark inside the middle eight tenths; one that is
+not gets shrunk onto a tile the launcher draws, with a margin nobody asked for.
 
 ## Filters
 
 A filter that can sensibly take two answers takes a set: a disclosure holding a checkbox each,
 with the summary naming what is ticked. One panel is open at a time. A drop-down that holds one
 answer is for a choice that is genuinely one of a kind.
+
+**An empty panel is a filter that is off**, and it starts empty. A panel that opens with its
+boxes already ticked, under a summary reading "Any status", tells the reader two different
+things at once. Where the unnarrowed list leaves something out, the panel still starts empty and
+the thing left out is named in the requirement, not drawn as an absent tick.
 
 ## Destructive actions
 

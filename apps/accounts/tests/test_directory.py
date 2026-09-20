@@ -319,7 +319,7 @@ def test_club_stations_filter_and_sort_apart_from_the_unlicensed(directory):
     _club_station(directory)
     c = _as(directory)
     body = c.get("/members/").content.decode()
-    assert ">Club station<" in body, "its own entry in the class filter"
+    assert ">Club station<" not in body, "no entry of its own in the class filter (2026-09-20)"
     assert _names(c.get("/members/?license=club").content.decode()) == ["Zephyr"]
     assert _names(c.get("/members/?license=none").content.decode()) == [], "a club holds a license"
     # Technician, Extra, then the club station, which sits below the ladder it is not on
@@ -349,7 +349,7 @@ def test_each_station_letter_filters_and_sorts_on_its_own(directory):
     c = _as(directory)
     body = c.get("/members/").content.decode()
     for word in ("Club station", "RACES station", "Military recreation"):
-        assert f">{word}<" in body, "its own entry in the class filter"
+        assert f">{word}<" not in body, "the filter list holds people, not stations (2026-09-20)"
     assert _names(c.get("/members/?license=races").content.decode()) == ["Zephyr"]
     assert _names(c.get("/members/?license=club").content.decode()) == []
     # Technician, Extra, then the RACES station, which sits below the ladder it is not on
@@ -385,13 +385,17 @@ def test_the_panel_says_what_is_ticked(directory):
     assert "Student, Faculty" in body or "Faculty, Student" in body
 
 
-def test_the_status_panel_starts_with_everything_but_the_archive(directory):
-    """NAF, 2026-09-19: "By default, Officers and above should have everything checked except
-    archived." """
+def test_the_status_panel_starts_empty_like_every_other_panel(directory):
+    """NAF, 2026-09-20: "I think the convention we are using is that the filter is turned off if
+    everything is unchecked. The status filter seems to be the opposite right now. Fix it."
+
+    The list is unchanged: every live account, with a deleted row left out until it is asked
+    for. What changed is that the page no longer draws four ticks under "Any status".
+    """
     body = _as(directory).get("/members/").content.decode()
-    for key in ("active", "closed", "suspended", "provisional"):
-        assert f'name="status" value="{key}" checked' in body, key
-    assert 'name="status" value="deleted" checked' not in body, "a deleted row is not clutter"
+    for key in ("active", "closed", "suspended", "provisional", "deleted"):
+        assert f'name="status" value="{key}" checked' not in body, key
+    assert "Any status" in body, "the summary says the filter is off"
     assert 'name="archived"' not in body, "and an officer has no archive filter at all"
 
     # the archive is a flag with a filter of its own, for whoever may read one

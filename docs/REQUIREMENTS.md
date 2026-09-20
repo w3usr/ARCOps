@@ -585,7 +585,14 @@ officer admits or declines them (FR-121). Every account records the link it join
 
   **Every filter on that list takes a set**: each is a panel of checkboxes rather than a
   drop-down holding one answer, so "the officers and the advisors" is a question the page can
-  take. The status panel starts with everything ticked but Deleted.
+  take. Every panel starts empty, because an empty panel is a filter that is off; the status
+  panel is no exception, and the unnarrowed list is every live account with a deleted row left
+  out until Deleted is ticked. (2026-09-20, superseding "the status panel starts with everything
+  ticked but Deleted" of 2026-09-19, which asked for the same list and drew it the other way
+  round.)
+
+  > I think the convention we are using is that the filter is turned off if everything is
+  > unchecked. The status filter seems to be the opposite right now. Fix it. — NAF, 2026-09-20
 
   > Provisional, Active, Closed, and Suspended should by default be visible to Officers and
   > Above. Once an account is archived, it is not visible in the default membership list.
@@ -605,11 +612,19 @@ officer admits or declines them (FR-121). Every account records the link it join
   sees at a glance what the club sees. Officers also see first, last, and preferred name in full,
   category, access, email, and phone; **access** is officers-only. Every column sorts, by last name
   unless asked otherwise, with a total order so that reversing a column reverses the page. The
-  directory narrows by category, position, license class, and access, and the class column carries
-  the letter rather than the word (FR-67) because the club reads letters on every roster. A phone
-  number is shown the way its own country writes it, from the licensed libphonenumber data rather
-  than a pattern of our own, and is stored exactly as it was typed. The table takes the width of
-  the window; 72 rem is a measure for reading prose.
+  directory narrows by category, position, license class, status, the archive, and access, and
+  the class column carries the letter rather than the word (FR-67) because the club reads letters
+  on every roster. The class filter offers the operator ladder and **No license**: the three
+  station types (FR-67) keep their letters in the column and their keys in the address, and are
+  left out of the list of things to tick, because a member account belongs to a person.
+
+  > Aside from testing, I can't think of any non-individuals having member accounts. So, to
+  > clean up the UI, let's remove Club, RACES, and Mil Rec from the filter list. Leave all the
+  > other functionality in place. — NAF, 2026-09-20
+
+  A phone number is shown the way its own country writes it, from the licensed libphonenumber
+  data rather than a pattern of our own, and is stored exactly as it was typed. The table takes
+  the width of the window; 72 rem is a measure for reading prose.
 
   > Let's do a little work on the Members directory table [...] All columns should be sortable,
   > with default by last name [...] Should be able to filter on Category, Position, Access [...]
@@ -1719,6 +1734,22 @@ See also `.claude/rules/web-development.md`.
   navigation bars, so every edge of the page that meets one pays for it through the safe-area
   insets; in a browser those insets are zero and nothing moves. Without that, the footer of a
   page shorter than the screen sits under the navigation bar (2026-09-19).
+
+  The insets alone did not settle it. A phone that draws its navigation bar over the page can
+  report those insets as zero, so a page measured against the tallest viewport the phone could
+  show, with the bars hidden, still ends underneath them. The page is measured against the
+  viewport the phone is actually showing at that moment (2026-09-19).
+
+  A phone also crops the home-screen icon to a shape of its own choosing. An icon that does not
+  say it may be cropped is treated as artwork of unknown shape: the launcher shrinks it and sets
+  it on a tile it draws itself, which is where the margin around the club's seal came from.
+
+  > Can we have less whitespace on the app icon? — NAF, 2026-09-20
+
+  The manifest therefore also offers an icon declared **maskable**: drawn to the edge of the
+  tile, with the mark inside the middle eight tenths, the area every mask is guaranteed to keep.
+  It is a branding setting of its own (FR-89), so each club supplies its own artwork for it and
+  the generic configuration ships a placeholder of the same shape.
 - **FR-97 [Later]** A native app, if the club still wants one after the PWA is in use, talks
   to the same API the web front end shares its logic with. **Design consequence for section
   6**: the server exposes its functionality through a documented API from the start, and both

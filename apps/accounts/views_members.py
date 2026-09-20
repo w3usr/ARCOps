@@ -30,12 +30,14 @@ from .services import issue_temporary_password
 
 # The classes the ladder does not hold: a station the FCC gives no operator class, and no
 # license at all. The key narrows the directory; the letter is what the Class column shows.
-STATION_CHOICES = (
-    ("club", "Club station"),
-    ("races", "RACES station"),
-    ("military", "Military recreation"),
-    ("none", "No license"),
-)
+#
+# Only "No license" is offered as a filter. The club, RACES and military-recreation keys still
+# narrow the list for anyone who asks for them, and the Class column still shows C, R and M:
+#
+# > Aside from testing, I can't think of any non-individuals having member accounts. So, to
+# > clean up the UI, let's remove Club, RACES, and Mil Rec from the filter list. Leave all the
+# > other functionality in place. — NAF, 2026-09-20
+STATION_CHOICES = (("none", "No license"),)
 STATION_FILTERS = {"club": "C", "races": "R", "military": "M", "none": "U"}
 
 
@@ -302,10 +304,18 @@ def members(request):
 
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
     license_choices += list(STATION_CHOICES)
-    # Where somebody stands with the club, everything but Deleted ticked to begin with (the
-    # advisor, 2026-09-19: "everything checked except archived"). A deleted row is a sysadmin's
-    # alone and stays unticked: normal operations are not cluttered with it.
-    status_ticked = statuses or {k for k, _ in User.STATUSES if k != "deleted"}
+    # Nothing is ticked until somebody ticks it, as in every other panel: an empty filter is a
+    # filter that is off, and a page that draws four ticked boxes under the words "Any status"
+    # says two different things at once.
+    #
+    # > I think the convention we are using is that the filter is turned off if everything is
+    # > unchecked. The status filter seems to be the opposite right now. Fix it. — NAF,
+    # > 2026-09-20, superseding "everything checked except archived" (2026-09-19), which asked
+    # > for the same list and drew it the other way round.
+    #
+    # The list this leaves is the same one: a deleted row is left out until Deleted is ticked,
+    # because it holds no name and survives only so past rosters keep their shape.
+    status_ticked = statuses
     status_choices = [(k, label) for k, label in User.STATUSES if k != "deleted"]
     if may_see_deleted:
         status_choices.append(("deleted", "Deleted"))
@@ -344,9 +354,8 @@ def members(request):
             "archived_choices": archived_choices,
             "archived_ticked": archived_ticked,
             "may_see_archive": may_see_archive,
-            # What the status panel shows ticked when nothing has been asked for: everything
-            # that is not put away (the advisor, 2026-09-19, "everything checked except
-            # archived"). The query already reads an empty set that way.
+            # What the status panel shows ticked: what was asked for, and nothing when
+            # nothing was (2026-09-20). The query reads an empty set as no narrowing.
             "status_ticked": status_ticked,
             "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
             "access_choices": access_choices,

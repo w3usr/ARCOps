@@ -92,3 +92,14 @@ def test_adding_a_passkey_asks_the_same_way():
     client.post("/accounts/reauthenticate/", {"password": PASSWORD})
     r = client.get("/accounts/2fa/webauthn/add/")
     assert r.status_code == 200
+
+
+def test_the_librarys_own_pages_use_the_sites_controls():
+    """NAF, 2026-09-20, of the recovery codes page: "Should Download Codes Generate New Codes be
+    on 2 separate lines?" They were two bare links with a space between them, which reads as one
+    phrase. Every control the library draws is now one of the site's buttons."""
+    _, client = _signed_in()
+    client.post("/accounts/reauthenticate/", {"password": PASSWORD})
+    body = client.get("/accounts/2fa/recovery-codes/generate/").content.decode()
+    assert 'class="button libctl' in body, "the library's controls carry the site's button"
+    assert "Generate" in body

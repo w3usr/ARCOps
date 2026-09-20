@@ -1,0 +1,19 @@
+{% load allauth %}
+{% comment %}The library draws its own pages (two-step verification, passkeys, Confirm Access)
+and every control on them comes through this element, whose shipped version carries no class at
+all. Two of them in a row therefore read as one underlined phrase: "Download codes Generate new
+codes" (NAF, 2026-09-20). Each control now takes the site's own button, chosen from the tags the
+library passes with it: red for a destructive one, outline for anything that navigates, solid
+for the one that commits the form (INTERFACE.md).{% endcomment %}
+{% comment %} djlint:off {% endcomment %}
+<{% if attrs.href %}a href="{{ attrs.href }}"{% else %}button{% endif %}
+class="{% if "link" in attrs.tags %}linklike{% else %}button libctl{% if "danger" in attrs.tags %} danger{% elif attrs.href or "outline" in attrs.tags or "secondary" in attrs.tags or "cancel" in attrs.tags %} secondary{% endif %}{% endif %}"
+{% if attrs.form %}form="{{ attrs.form }}"{% endif %}
+{% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+{% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+{% if attrs.value %}value="{{ attrs.value }}"{% endif %}
+{% if attrs.type %}type="{{ attrs.type }}"{% endif %}
+>
+{% slot %}
+{% endslot %}
+</{% if attrs.href %}a{% else %}button{% endif %}>

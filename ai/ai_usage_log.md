@@ -2250,3 +2250,21 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look on his own phone. 338 tests pass, with
   the accessibility sweep and the four guards.
 - **Git Hash**: 3784623
+
+## [2026-09-20 00:34 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: `/reconcile` after the evening's fixes, and three more faults the advisor
+  found while it ran. The documents follow the re-authentication fix, the viewport unit, the
+  maskable icon and the footer credit. Then: the sign-in library's own pages now use the site's
+  buttons, because two of its controls in a row read as one underlined phrase; the class filter
+  drops the three station types, since a member account belongs to a person; and the status
+  panel starts with nothing ticked, like every other panel.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-13, FR-96), docs/TECHNICAL_REQUIREMENTS.md
+  (TR-17), docs/INTERFACE.md, docs/NAME.md, templates/allauth/elements/button.html (new),
+  static/css/app.css, apps/accounts/views_members.py, apps/accounts/tests/test_directory.py,
+  apps/accounts/tests/test_reauthenticate.py.
+- **Nature of Contribution**: Documentation, code and tests by the assistant, from the advisor's
+  reports; decisions his.
+- **Human Review Status**: Pending the advisor's look. 339 tests pass, with the accessibility
+  sweep and the four guards.
+- **Git Hash**: {{pending}}
