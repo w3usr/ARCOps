@@ -303,7 +303,10 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "password.rotated",
         "subject": "The {{ club.short_name }} station computer password has changed",
-        "body_html": "<p>{{ user.display_first }}, a new password for the shared station computer account is in effect from {{ effective|date:'j F Y' }}. View it in the application after re-entering your own password; it is never sent by email.</p><p><a href=\"{{ link }}\">View the password</a></p>",
+        # The sentence names the page and carries the link, rather than pointing vaguely at "the
+        # application" (NAF, 2026-09-20). "Confirming it is you" replaces "re-entering your own
+        # password", which stopped being the whole truth when Confirm Access took passkeys too.
+        "body_html": '<p>{{ user.display_first }}, a new password for the shared station computer account is in effect from {{ effective|date:\'j F Y\' }}. View it on the <a href="{{ link }}">computer password page</a> after confirming it is you; it is never sent by email.</p><p><a href="{{ link }}">View the password</a></p>',
         "variables": ["user.display_first", "effective", "link"],
     },
     {

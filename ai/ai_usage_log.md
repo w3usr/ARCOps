@@ -2796,3 +2796,13 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look; one question is his to answer. Lint, the
   four guards, 389 tests and the accessibility sweep pass.
 - **Git Hash**: 2323185
+
+## [2026-09-20 21:02 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The rotation page and its notice name the page a member reads the password
+  on, and stop promising a password prompt that now takes a passkey too.
+- **Sections/Files Affected**: templates/credentials/password_manage.html,
+  apps/comms/defaults.py (`password.rotated`).
+- **Nature of Contribution**: Wording fix by the assistant, from the advisor's note on issue #76.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: [pending]
