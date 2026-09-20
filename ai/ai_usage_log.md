@@ -2435,4 +2435,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests by the assistant, from the advisor's two decisions.
 - **Human Review Status**: Pending the advisor's look. 350 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: dbe3779
