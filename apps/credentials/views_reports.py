@@ -22,7 +22,12 @@ from apps.ops.tables import chosen, export_url, sorted_columns, summary
 from apps.ops.templatetags.labels import phone
 
 from .models import CredentialType, SharedSecret, SignedAgreement
-from .services import revoke, rotate_shared_secret, store_agreement_pdf
+from .services import (
+    PDF_RENDER_VERSION,
+    revoke,
+    rotate_shared_secret,
+    store_agreement_pdf,
+)
 from .views import _is_approver
 
 
@@ -292,7 +297,9 @@ def agreement_pdf(request, pk):
     # Rebuilding here rather than on every decision keeps the nightly expiry job from rendering
     # a document per lapsed agreement, and still hands nobody a stale one (2026-09-20).
     latest = a.decisions.order_by("-at").first()
-    stale = latest and (a.pdf_built_at is None or latest.at > a.pdf_built_at)
+    stale = (latest and (a.pdf_built_at is None or latest.at > a.pdf_built_at)) or (
+        a.pdf_render_version < PDF_RENDER_VERSION
+    )
     if not a.pdf or stale:
         store_agreement_pdf(a)
         a.refresh_from_db()

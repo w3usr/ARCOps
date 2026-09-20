@@ -382,7 +382,7 @@ def decide(request, pk):
             if not why:
                 messages.error(
                     request,
-                    "Say why this is being approved after all: a slip and a change of mind "
+                    "Say why the decision is being reversed: a slip and a change of mind "
                     "read the same in the record otherwise.",
                 )
                 return redirect("approvals")
@@ -392,7 +392,7 @@ def decide(request, pk):
         approve(request.user, a, note=why)
         messages.success(
             request,
-            ("Approved after all; expires " if was_declined else "Approved; expires ")
+            ("Decision reversed. Approved, expires " if was_declined else "Approved; expires ")
             + f"{a.expires_on:%d %B %Y}.",
         )
     else:

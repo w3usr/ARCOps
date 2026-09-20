@@ -2837,3 +2837,19 @@ carries the actual running model ID.
   accessibility sweep pass; the PDF was rendered and its text extracted to check the watermark
   stays out of the text layer.
 - **Git Hash**: ce3ac29
+
+## [2026-09-20 21:47 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four on the signed document: every stored PDF rebuilds when the rendering
+  changes rather than only when a decision does, an agreement awaiting approval carries no
+  watermark, the watermark is larger, the download is named after who signed what and when, and
+  "Approve after all" becomes "Reverse this decision".
+- **Sections/Files Affected**: apps/credentials/models.py (`pdf_render_version`, the action's
+  label), migrations 0011 and 0012, apps/credentials/services.py (`PDF_RENDER_VERSION`,
+  `agreement_pdf_name`, the watermark's size), apps/credentials/views_reports.py,
+  apps/credentials/views.py, templates/credentials/approvals.html and agreement_pdf.html, tests.
+- **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
+  three notes on issue #8.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
+  accessibility sweep pass; a document was rendered and its text extracted again.
+- **Git Hash**: [pending]

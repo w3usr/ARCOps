@@ -431,7 +431,7 @@ def test_the_approvals_page_carries_the_pdf_the_badge_and_a_way_back_from_a_decl
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.DECLINED
     page = c.get("/credentials/approvals/").content.decode()
-    assert "Approve after all" in page and "wrong button" in page
+    assert "Reverse this decision" in page and "wrong button" in page
     assert "1 waiting for approval" not in page  # the badge counts what is waiting, not this
 
     # A reversal says why: without a reason it is refused and nothing changes.
@@ -551,7 +551,7 @@ def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
 
     body = c.get("/credentials/approvals/").content.decode()
     assert "Decisions taken" in body
-    assert "Approved after a decline" in body and "Declined" in body and "typo" in body
+    assert "Approved on reversal" in body and "Declined" in body and "typo" in body
     # The stored key never reaches the reader; only the words do (TR-44). It is allowed in a
     # filter checkbox's value, which is a form value rather than something anybody reads.
     body_rows = body.split("<tbody>")[-1].split("</tbody>")[0]
@@ -650,3 +650,19 @@ def test_station_and_computer_access_need_an_institution_address_from_anyone():
         )
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.APPROVED
+
+
+def test_a_downloaded_agreement_is_named_after_who_signed_what_and_when():
+    """ "agreement-6-v2.pdf" says nothing in a folder of them (NAF, 2026-09-20)."""
+    from apps.credentials.services import agreement_pdf_name
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(key="club.short_name", defaults={"value": "Test ARC"})
+    st, _it, t_st, _t_it = _setup()
+    member = _user("named@example.org", first_name="Gregory", last_name="Nitkowski")
+    a = _approved(member, t_st, timezone.now().date())
+    name = agreement_pdf_name(a)
+    assert name.startswith("test-arc-nitkowski-gregory-")
+    assert "-v1-" in name and name.endswith(".pdf")
+    assert str(a.pk) not in name.replace(".pdf", "").split("-")[-1]

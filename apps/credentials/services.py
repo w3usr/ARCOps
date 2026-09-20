@@ -547,6 +547,11 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
 # ------------------------------------------------------------- signed agreement PDF (FR-23) ---
 
 
+# Raise this whenever the rendered document changes, so every stored file is rebuilt the next
+# time it is asked for. 1: the standing band, the record of decisions, and the watermark.
+PDF_RENDER_VERSION = 1
+
+
 def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
     """FR-23, TR-10: the text as signed plus the signature block, as a tagged PDF (PDF/UA-1).
     WeasyPrint is imported here so the web worker pays for it only when a PDF is made."""
@@ -565,7 +570,9 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
             "built_at": timezone.now(),
             # The watermark's colour, as six hex digits: the template writes it into an SVG
             # background, where a "#" would have to be escaped anyway.
-            "watermark": watermark_background(
+            "watermark": ""
+            if agreement.state == SignedAgreement.State.SIGNED
+            else watermark_background(
                 agreement.get_state_display().upper(),
                 {
                     "approved": "1b6e3a",
@@ -693,21 +700,21 @@ def watermark_background(word: str, color: str) -> str:
         return _WATERMARK_CACHE[key]
 
     w, h = 720.0, 900.0
-    outline, width = _word_outline(word, 86.0)
+    outline, width = _word_outline(word, 132.0)
     seal = _seal_data_uri()
     layers = []
     if seal:
-        side = 330.0
+        side = 480.0
         layers.append(
             f'<image href="{seal}" x="{(w - side) / 2:.0f}" y="{(h - side) / 2:.0f}" '
-            f'width="{side:.0f}" height="{side:.0f}" opacity="0.09"/>'
+            f'width="{side:.0f}" height="{side:.0f}" opacity="0.08"/>'
         )
     if outline:
         x = (w - width) / 2
         y = h / 2 + 30
         layers.append(
             f'<g transform="rotate(-22 {w / 2:.0f} {h / 2:.0f}) translate({x:.1f} {y:.1f})" '
-            f'fill="#{color}" fill-opacity="0.13">{outline}</g>'
+            f'fill="#{color}" fill-opacity="0.11">{outline}</g>'
         )
     if not layers:
         _WATERMARK_CACHE[key] = ""
@@ -729,16 +736,39 @@ def watermark_background(word: str, color: str) -> str:
     return value
 
 
+def agreement_pdf_name(agreement: SignedAgreement) -> str:
+    """What the file is called when somebody downloads it.
+
+    "agreement-6-v2.pdf" says nothing in a folder of them. The club, the person, the agreement,
+    its version and the date it was signed do (NAF, 2026-09-20), and in that order the folder
+    sorts by club then by surname, which is how a roster is read.
+    """
+    from django.utils.text import slugify
+
+    user = agreement.user
+    bits = [
+        slugify(setting("club.short_name", "") or ""),
+        slugify(user.last_name or ""),
+        slugify(user.first_name or ""),
+        slugify(
+            (agreement.template.title if agreement.template else "") or agreement.credential.label
+        ),
+        f"v{agreement.template.version}" if agreement.template else "",
+        agreement.signed_at.strftime("%Y-%m-%d") if agreement.signed_at else "",
+    ]
+    stem = "-".join(b for b in bits if b) or f"agreement-{agreement.pk}"
+    return f"{stem}.pdf"
+
+
 def store_agreement_pdf(agreement: SignedAgreement) -> None:
     """Render and attach the PDF; re-rendered on approval so the approval block is in it."""
     from django.core.files.base import ContentFile
 
     data = render_agreement_pdf(agreement)
-    name = (
-        f"agreement-{agreement.pk}-v{agreement.template.version if agreement.template else 0}.pdf"
-    )
+    name = agreement_pdf_name(agreement)
     if agreement.pdf:
         agreement.pdf.delete(save=False)
     agreement.pdf.save(name, ContentFile(data), save=False)
     agreement.pdf_built_at = timezone.now()
-    agreement.save(update_fields=["pdf", "pdf_built_at"])
+    agreement.pdf_render_version = PDF_RENDER_VERSION
+    agreement.save(update_fields=["pdf", "pdf_built_at", "pdf_render_version"])

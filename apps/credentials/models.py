@@ -251,6 +251,10 @@ class SignedAgreement(models.Model):
     notice_expiry_sent_on = models.DateField(null=True, blank=True)  # FR-28
     revoked_at = models.DateTimeField(null=True, blank=True)  # FR-29
     pdf_built_at = models.DateTimeField(null=True, blank=True)  # when the stored PDF was rendered
+    # Which rendering produced the stored file. A decision is not the only thing that dates a
+    # PDF: changing the document itself dates every one of them, and comparing timestamps alone
+    # left agreements decided before a change carrying the old rendering for ever (2026-09-20).
+    pdf_render_version = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["-signed_at"]
@@ -277,7 +281,7 @@ class CredentialDecision(models.Model):
 
     class Action(models.TextChoices):
         APPROVED = "approved", "Approved"
-        APPROVED_AFTER_DECLINE = "approved_after_decline", "Approved after a decline"
+        APPROVED_AFTER_DECLINE = "approved_after_decline", "Approved on reversal"
         DECLINED = "declined", "Declined"
         REVOKED = "revoked", "Revoked"
         EXPIRED = "expired", "Expired"
