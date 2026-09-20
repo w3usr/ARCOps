@@ -2649,4 +2649,4 @@ carries the actual running model ID.
   report of what he saw.
 - **Human Review Status**: Reviewed here; awaiting the reporter's re-test. Lint, the four
   guards, 376 tests and the accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: b3969a2
