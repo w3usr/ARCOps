@@ -2852,4 +2852,4 @@ carries the actual running model ID.
   three notes on issue #8.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
   accessibility sweep pass; a document was rendered and its text extracted again.
-- **Git Hash**: [pending]
+- **Git Hash**: ddc3c67
