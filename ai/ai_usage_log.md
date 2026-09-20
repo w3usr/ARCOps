@@ -2593,3 +2593,14 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look; he is the assignee of the scenario.
   371 tests, the accessibility sweep and the four guards pass.
 - **Git Hash**: f7587e9
+
+## [2026-09-20 16:40 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The Name column drops the surname's initial, now that the surname has a
+  column of its own; it holds the name the club calls the person and nothing else.
+- **Sections/Files Affected**: templates/accounts/members.html, docs/REQUIREMENTS.md (FR-13),
+  apps/accounts/tests/{test_directory,test_members}.py.
+- **Nature of Contribution**: Edit by the assistant, from the advisor's observation.
+- **Human Review Status**: Pending the advisor's look. 371 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

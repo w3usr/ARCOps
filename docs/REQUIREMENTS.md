@@ -674,8 +674,10 @@ officer admits or declines them (FR-121). Every account records the link it join
   > Yes, I want this. — NAF, 2026-09-13, Q10
 
   **One table for everyone** (2026-09-19). What a member may see is fewer columns, not a different
-  shape of page, and the redacted **Name** column is the first column at every level, so an officer
-  sees at a glance what the club sees. **The surname has a column of its own at every level**: in
+  shape of page, and the **Name** column is the first column at every level: the name the club
+  calls the person, which is their preferred name where they have set one. It carried the
+  surname's initial as well until 2026-09-20, when the surname gained a column of its own and
+  repeating it read as clutter. **The surname has a column of its own at every level**: in
   full for an officer, as the initial for a member, so that a roster sorts by surname the way a
   roster is read, and so that a member has something to sort by at all (2026-09-20, testing T7:
   *"Last initials are going to need their own column to sort by last name by default."*). The

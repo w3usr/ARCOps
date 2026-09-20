@@ -33,11 +33,13 @@ survive a bookmark.{% endcomment %}
 <tbody>
 {% for m in members %}
 <tr>
-  {% comment %}The same redacted name for everyone, so an officer sees what the club sees. Both
-  halves of the full name open the member's page: whichever one the reader's eye is on is the
-  one they will click, and a name split across two columns should not have one live half and one
-  dead one.{% endcomment %}
-  <th scope="row">{{ m.display_first }}{% if m.last_name %} {{ m.last_name|slice:":1" }}.{% endif %}</th>
+  {% comment %}The name the club calls this person: their preferred name where they have set
+  one. The surname lives in the next column, in full or as an initial depending on who is
+  reading, so it is not repeated here (NAF, 2026-09-20: "now we don't need the last initial in
+  the first column. Its redundant."). Both halves of the full name open the member's page:
+  whichever one the reader's eye is on is the one they will click, and a name split across two
+  columns should not have one live half and one dead one.{% endcomment %}
+  <th scope="row">{{ m.display_first }}</th>
   {% if full %}
   <td data-label="First"><a href="{% url 'member_detail' m.pk %}">{{ m.first_name }}</a></td>
   <td data-label="Last"><a href="{% url 'member_detail' m.pk %}">{{ m.last_name }}</a>{% if m.under_18 %} <span class="tag warn">minor</span>{% endif %}</td>

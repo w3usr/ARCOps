@@ -147,8 +147,11 @@ def test_an_officer_sees_the_redacted_name_beside_the_real_one(directory):
 
     rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
     zoe = [r for r in rows.split("<tr>") if "Adams" in r][0]
-    # Zoe Adams prefers "Zed": the public name is the preferred one and an initial
-    assert "Zed A." in zoe, "the name column is the redacted form, not the full name"
+    # Zoe Adams prefers "Zed": the Name column is what the club calls her, the First column the
+    # name on the record, and the surname is a column of its own (2026-09-20).
+    assert '<th scope="row">Zed</th>' in zoe
+    assert '"First"><a href="/members/' in zoe and ">Zoe</a>" in zoe
+    assert '"Last"><a href="/members/' in zoe and ">Adams</a>" in zoe
 
 
 def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
@@ -165,7 +168,7 @@ def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
     assert 'data-label="Last">A.' in rows, "the initial, with its stop"
     assert "Adams" not in rows, "and never the surname itself"
     # Adams, Officer, Zephyr: by surname, which is what the reader is looking at
-    assert _member_names(body) == ["Zed A.", "Ann O.", "Al Z."]
+    assert _member_names(body) == ["Zed", "Ann", "Al"], "and the surname is the next column"
 
 
 def test_both_halves_of_the_name_open_the_member(directory):
