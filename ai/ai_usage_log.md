@@ -2422,4 +2422,4 @@ carries the actual running model ID.
   the advisor's reports.
 - **Human Review Status**: Pending the advisor's look. 349 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 3e64ff9
