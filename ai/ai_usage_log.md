@@ -2779,4 +2779,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Fix by the assistant, found by reading the live database back after
   the deploy.
 - **Human Review Status**: Reviewed here; the repair is verified on the server after deploying.
-- **Git Hash**: [pending]
+- **Git Hash**: 93fc712
