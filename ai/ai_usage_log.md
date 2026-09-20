@@ -2694,3 +2694,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the testers' re-walk. Lint, the four guards, 383 tests and the
   accessibility sweep pass.
 - **Git Hash**: 1b551a1
+
+## [2026-09-20 19:39 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: One Confirm Access for every guarded act: the authenticator code taken off
+  it, the page laid out like the sign-in screen, the station password moved behind it, and a
+  confirmation spent by the act it was given for so a raise to Sysadmin and a view of the shared
+  password each ask again. Separately, the invitation link copies from a glyph and its page takes
+  the window.
+- **Sections/Files Affected**: apps/accounts/reauth.py (new), apps/accounts/adapter.py,
+  apps/accounts/views_acting.py, apps/credentials/views.py, templates/account/reauthenticate.html,
+  templates/credentials/password.html, templates/accounts/invitations.html, static/css/app.css,
+  static/js/app.js, and tests in apps/accounts/ and apps/credentials/.
+- **Nature of Contribution**: Design against the library's own hooks, code and tests by the
+  assistant, from the advisor's instructions.
+- **Human Review Status**: Pending the advisor's look; the passkey prompt is his to try. Lint,
+  the four guards, 386 tests and the accessibility sweep pass.
+- **Git Hash**: d1e04da, 4273a05
