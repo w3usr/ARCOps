@@ -61,11 +61,19 @@ ROSTER_COLUMNS = [
     {"key": "last", "label": "Last"},
     {"key": "callsign", "label": "Callsign"},
     {"key": "category", "label": "Category"},
+    {"key": "institution_email", "label": "Institution email"},
+    {"key": "personal_email", "label": "Personal email"},
+    {"key": "phone", "label": "Phone"},
     {"key": "approved", "label": "Approved"},
     {"key": "approver", "label": "Approver"},
     {"key": "expires", "label": "Expires"},
-    {"key": "days", "label": "Days"},
+    {"key": "status", "label": "Status"},
 ]
+
+# Whether the credential still holds. The roster opens on **Active**, the way the members list
+# opens on Not archived: a roster nobody has narrowed should answer "who holds access", which is
+# what FR-31 asks of it, so the panel says what it is doing rather than quietly leaving rows out.
+STATUS_CHOICES = [("active", "Active"), ("expired", "Expired")]
 
 # How long until expiry, in the buckets the panel offers. Ticking none is every row.
 EXPIRY_BUCKETS = [
@@ -98,8 +106,13 @@ def access_rosters(request):
     q = request.GET.get("q", "").strip()
     picked = chosen(request, "credential", "category", "approver", "expiring")
 
-    qs = SignedAgreement.objects.filter(state=SignedAgreement.State.APPROVED).select_related(
-        "user", "credential", "approver", "template"
+    picked["status"] = request.GET.getlist("status") or ["active"]
+    qs = (
+        SignedAgreement.objects.filter(
+            state__in=[SignedAgreement.State.APPROVED, SignedAgreement.State.EXPIRED]
+        )
+        .select_related("user", "credential", "approver", "template")
+        .prefetch_related("user__addresses")
     )
     if q:
         qs = qs.filter(
@@ -115,7 +128,22 @@ def access_rosters(request):
     if picked["approver"]:
         qs = qs.filter(approver__public_id__in=picked["approver"])
 
-    rows = [{"a": a, "days": (a.expires_on - today).days if a.expires_on else None} for a in qs]
+    def address(user, kind: str) -> str:
+        # Prefetched, so this walks a list rather than running a query per row.
+        held = [a.address for a in user.addresses.all() if a.kind == kind]
+        return held[0] if held else ""
+
+    rows = [
+        {
+            "a": a,
+            "days": (a.expires_on - today).days if a.expires_on else None,
+            "status": "expired" if a.state == SignedAgreement.State.EXPIRED else "active",
+            "institution_email": address(a.user, "institution"),
+            "personal_email": address(a.user, "personal"),
+        }
+        for a in qs
+    ]
+    rows = [r for r in rows if r["status"] in set(picked["status"])]
     wanted = set(picked["expiring"])
     if wanted:
         rows = [r for r in rows if _bucket(r["days"]) in wanted]
@@ -145,7 +173,12 @@ def access_rosters(request):
             lambda r: (text(r["a"].approver.last_name if r["a"].approver else ""),)
         ),
         "expires": settled(lambda r: (r["a"].expires_on is None, r["a"].expires_on or dt.date.max)),
-        "days": settled(lambda r: (r["days"] is None, r["days"] if r["days"] is not None else 0)),
+        "institution_email": settled(
+            lambda r: (not r["institution_email"], text(r["institution_email"]))
+        ),
+        "personal_email": settled(lambda r: (not r["personal_email"], text(r["personal_email"]))),
+        "phone": settled(lambda r: (not r["a"].user.cell_phone, text(r["a"].user.cell_phone))),
+        "status": settled(lambda r: (r["status"],)),
     }
     sort, descending, columns = sorted_columns(request, ROSTER_COLUMNS, keys, "last")
     rows.sort(key=keys[sort], reverse=descending)
@@ -161,10 +194,13 @@ def access_rosters(request):
                 "first_name",
                 "callsign",
                 "category",
+                "institution_email",
+                "personal_email",
+                "phone",
                 "approved_on",
                 "approver",
                 "expires_on",
-                "days_remaining",
+                "status",
             ]
         )
         for r in rows:
@@ -176,17 +212,25 @@ def access_rosters(request):
                     a.user.first_name,
                     a.user.callsign,
                     a.user.category,
+                    r["institution_email"],
+                    r["personal_email"],
+                    a.user.cell_phone,
                     a.approved_at.date().isoformat() if a.approved_at else "",
                     a.approver.full_name if a.approver else "",
                     a.expires_on.isoformat() if a.expires_on else "",
-                    r["days"],
+                    r["status"],
                 ]
             )
         # The export is what is on the screen: it follows the search, every filter and the sort.
         record(
             request.user,
             "report.access_rosters_exported",
-            after={"rows": len(rows), "narrowed": bool(q or any(picked.values()))},
+            # FR-87's rule: an export that carries contact details says so in the record.
+            after={
+                "rows": len(rows),
+                "narrowed": bool(q or any(picked.values())),
+                "contacts": True,
+            },
         )
         return resp
 
@@ -216,13 +260,22 @@ def access_rosters(request):
             "category_choices": category_choices,
             "approver_choices": approver_choices,
             "expiry_choices": EXPIRY_BUCKETS,
+            "status_choices": STATUS_CHOICES,
             "summaries": {
                 "credential": summary(credential_choices, picked["credential"], "credential"),
                 "category": summary(category_choices, picked["category"], "category"),
                 "approver": summary(approver_choices, picked["approver"], "approver"),
                 "expiring": summary(EXPIRY_BUCKETS, picked["expiring"], "expiry"),
+                "status": summary(STATUS_CHOICES, picked["status"], "status"),
             },
-            "narrowed": bool(q or any(picked.values())),
+            "narrowed": bool(
+                q
+                or picked["credential"]
+                or picked["category"]
+                or picked["approver"]
+                or picked["expiring"]
+                or picked["status"] != ["active"]
+            ),
             "csv_url": export_url(request),
         },
     )

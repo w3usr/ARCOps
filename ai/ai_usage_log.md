@@ -2752,3 +2752,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's re-test; WebAuthn itself cannot be exercised
   from a test. Lint, the four guards, 387 tests and the accessibility sweep pass.
 - **Git Hash**: 6fb9192
+
+## [2026-09-20 20:23 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The record of what has been decided about access (FR-128), on the
+  approvals page: a table of its own that keeps every decision rather than the latest, with
+  search, two filters, sorting, pagination and CSV. Plus three more on the access rosters:
+  contact columns, the Days column removed, and a Status panel that opens on Active.
+- **Sections/Files Affected**: apps/credentials/models.py (`CredentialDecision`), migrations
+  0006 and 0007 (the model and its backfill), apps/credentials/services.py (`log_decision`,
+  approve, revoke, expire_due, the supersede path), apps/credentials/views.py (the log, its
+  CSV), apps/credentials/views_reports.py and templates/credentials/access_rosters.html,
+  templates/credentials/approvals.html, docs/REQUIREMENTS.md (FR-128), tests.
+- **Nature of Contribution**: Code generation, a data migration and tests by the assistant, from
+  the advisor's instructions on issues #92 and the approved plan.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 389 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

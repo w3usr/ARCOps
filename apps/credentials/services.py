@@ -11,7 +11,14 @@ from django.utils import timezone
 from apps.ops.audit import record
 from apps.ops.config import setting
 
-from .models import AgreementTemplate, LicenseRecord, SharedSecret, SignedAgreement, UlsLicense
+from .models import (
+    AgreementTemplate,
+    CredentialDecision,
+    LicenseRecord,
+    SharedSecret,
+    SignedAgreement,
+    UlsLicense,
+)
 
 
 def default_expiry(approved_on: dt.date, rule: str) -> dt.date:
@@ -72,9 +79,32 @@ def holds(user, credential_key: str, on: dt.date, min_class: str | None = None) 
     return holds_agreement(user, credential_key, on)
 
 
+def log_decision(agreement, action: str, actor=None, note: str = "", expires_on=None):
+    """Write one line of the record of what has been decided about somebody's access.
+
+    Called from the five places a decision is made: approving, approving after a decline,
+    declining, revoking, and the two ways an approval ends by itself. The actor is frozen into a
+    label the way the audit log freezes it, so a decision outlives the account that made it and
+    a job reads as "system" (FR-25, 2026-09-20).
+    """
+    from .models import CredentialDecision
+
+    guardian = getattr(actor, "acting_guardian", None)
+    label = f"{guardian} acting for {actor}" if guardian else (str(actor) if actor else "system")
+    return CredentialDecision.objects.create(
+        agreement=agreement,
+        action=action,
+        actor=(guardian or actor) if getattr(guardian or actor, "pk", None) else None,
+        actor_label=label,
+        note=note or "",
+        expires_on=expires_on,
+    )
+
+
 def approve(
     actor, agreement: SignedAgreement, expires_on: dt.date | None = None
 ) -> SignedAgreement:
+    after_decline = agreement.state == SignedAgreement.State.DECLINED
     rule = agreement.credential.default_expiry
     agreement.expires_on = expires_on or default_expiry(timezone.now().date(), rule)
     agreement.state = SignedAgreement.State.APPROVED
@@ -86,6 +116,14 @@ def approve(
         "agreement.approved",
         agreement,
         after={"expires_on": agreement.expires_on.isoformat()},
+    )
+    log_decision(
+        agreement,
+        CredentialDecision.Action.APPROVED_AFTER_DECLINE
+        if after_decline
+        else CredentialDecision.Action.APPROVED,
+        actor,
+        expires_on=agreement.expires_on,
     )
     from apps.comms.services import send
 
@@ -118,10 +156,24 @@ def approvers():
 def expire_due() -> int:
     """`agreements:expiry` (TR-11): move past-due approvals to expired (FR-28)."""
     today = timezone.now().date()
-    due = SignedAgreement.objects.filter(state=SignedAgreement.State.APPROVED, expires_on__lt=today)
-    n = due.update(state=SignedAgreement.State.EXPIRED)
+    due = list(
+        SignedAgreement.objects.filter(
+            state=SignedAgreement.State.APPROVED, expires_on__lt=today
+        ).select_related("credential", "user")
+    )
+    n = SignedAgreement.objects.filter(pk__in=[a.pk for a in due]).update(
+        state=SignedAgreement.State.EXPIRED
+    )
     if n:
         record(None, "agreements.expired", after={"count": n})
+        # The audit log counts them; the approver's own record names each one (FR-25).
+        for agreement in due:
+            log_decision(
+                agreement,
+                CredentialDecision.Action.EXPIRED,
+                None,
+                note=f"reached its expiry date, {agreement.expires_on:%d %B %Y}",
+            )
     return n
 
 
@@ -325,6 +377,9 @@ def agreement_expiry_run(now=None) -> dict:
                 f"superseded by version {newer.version}; re-sign was due {newer.resign_by}"
             )
             a.save(update_fields=["state", "decision_reason"])
+            # This path wrote nothing anywhere until now: not the audit log, not the record the
+            # approver reads. An approval that ended is a decision like any other (2026-09-20).
+            log_decision(a, CredentialDecision.Action.SUPERSEDED, None, note=a.decision_reason)
             superseded += 1
     expired_now = expire_due()
 
@@ -430,6 +485,7 @@ def revoke(actor, agreement: SignedAgreement, reason: str) -> SignedAgreement:
     agreement.revoked_at = timezone.now()
     agreement.save(update_fields=["state", "decision_reason", "revoked_at"])
     record(actor, "agreement.revoked", agreement, after={"reason": reason})
+    log_decision(agreement, CredentialDecision.Action.REVOKED, actor, note=reason)
     send(
         "agreement.revoked",
         agreement.user,

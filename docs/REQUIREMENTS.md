@@ -1455,6 +1455,26 @@ made it likely that reliable delivery would take time to establish:
 
   A client still displays in whatever zone its reader has configured, which is as it should be;
   what changes is that the club now says when it sent, rather than declining to.
+- **FR-128 [Must] The record of what has been decided about access.** Every act that changed
+  whether somebody holds a credential is kept in the order it happened: approved, approved after
+  a decline, declined, revoked, expired, and superseded by a new version. Each carries who did
+  it — frozen as a label, so a decision outlives the account that made it, and a scheduled job
+  reads as *system* — when, the reason given, and the expiry an approval set.
+
+  > I think we need a searchable, filterable, sortable log on this page of what approval actions
+  > have been taken. — NAF, 2026-09-20
+
+  **It is its own record rather than a view of something else.** The signed agreement carries
+  only the latest decision, so approving after a decline overwrites the decline and the pair
+  that matters most reads as one approval. The audit log (FR-92) names its subject by identifier
+  with no key to join on, holds no per-agreement row for an expiry, and is a sysadmin's to read,
+  while the person who works the approvals page is the faculty advisor.
+
+  **It is shown on the approvals page**, to whoever may approve: searchable by member, callsign
+  or agreement, filterable by action and by credential, sortable on every column, paginated, and
+  exportable as CSV that carries the search, the filters and the sort. Rows written before the
+  record existed are seeded from the state each agreement was in, and say so; the steps before
+  that are not recoverable.
 - **FR-105 [Must]** A sysadmin setting, **email delivery: on / off**, audited. When off, the
   application composes and records every message exactly as it otherwise would, marks it
   *not sent (email off)*, and shows it in the recipient's "my messages" and in an officer-visible

@@ -258,6 +258,69 @@ class SignedAgreement(models.Model):
         return f"{self.user} {self.credential.key} {self.state}"
 
 
+class CredentialDecision(models.Model):
+    """Every act that changed whether somebody holds access, kept in the order they happened.
+
+    `SignedAgreement` carries only the latest one: approving after a decline overwrites the
+    decline, so the mistake and its correction leave a single row saying "approved". The audit
+    log (FR-92) is the wrong shape for a page — it names its subject by two strings with no key
+    and no index — and the wrong readership, being a sysadmin's to read, while the person who
+    works the approvals page is the faculty advisor.
+
+    > I think we need a searchable, filterable, sortable log on this page of what approval
+    > actions have been taken. — NAF, 2026-09-20
+
+    Append-only by use rather than by constraint: nothing in the application updates a row, and
+    a decision that was wrong is corrected by making another one.
+    """
+
+    class Action(models.TextChoices):
+        APPROVED = "approved", "Approved"
+        APPROVED_AFTER_DECLINE = "approved_after_decline", "Approved after a decline"
+        DECLINED = "declined", "Declined"
+        REVOKED = "revoked", "Revoked"
+        EXPIRED = "expired", "Expired"
+        SUPERSEDED = "superseded", "Superseded by a new version"
+
+    # The tone each action is drawn in, so the page never prints the stored key (TR-44).
+    TONES = {
+        "approved": "ok",
+        "approved_after_decline": "ok",
+        "declined": "warn",
+        "expired": "warn",
+        "superseded": "warn",
+        "revoked": "bad",
+    }
+
+    agreement = models.ForeignKey(
+        "credentials.SignedAgreement", on_delete=models.CASCADE, related_name="decisions"
+    )
+    action = models.CharField(max_length=24, choices=Action.choices)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    # Frozen, the way the audit log freezes it: a decision outlives the account that made it,
+    # and "system" is the nightly job.
+    actor_label = models.CharField(max_length=200, blank=True)
+    at = models.DateTimeField(auto_now_add=True)
+    note = models.TextField(blank=True)  # the reason given, or what superseded it
+    expires_on = models.DateField(null=True, blank=True)  # the date an approval set
+
+    class Meta:
+        ordering = ["-at"]
+        indexes = [
+            models.Index(fields=["-at"]),
+            models.Index(fields=["agreement", "at"]),
+        ]
+
+    @property
+    def tone(self) -> str:
+        return self.TONES.get(self.action, "note")
+
+    def __str__(self) -> str:
+        return f"{self.agreement_id} {self.action} {self.at:%Y-%m-%d}"
+
+
 class SharedSecret(models.Model):
     """The shared computer account password, Fernet-encrypted (FR-32, TR-20)."""
 

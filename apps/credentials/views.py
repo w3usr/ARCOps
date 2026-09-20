@@ -4,6 +4,8 @@ import datetime as dt
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -14,12 +16,25 @@ from django.views.decorators.http import require_POST
 from apps.accounts.reauth import is_confirmed, spend
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.tables import chosen, export_url, sorted_columns, summary
 
-from .models import AgreementTemplate, SignedAgreement
-from .services import approve, holds, reveal_shared_secret
+from .models import AgreementTemplate, CredentialDecision, CredentialType, SignedAgreement
+from .services import approve, holds, log_decision, reveal_shared_secret
 
 # How long a declined signature stays in reach of the approver who declined it.
 DECLINED_WINDOW_DAYS = 30
+
+# The record of what has been decided, under the queue. Every column sorts and every column
+# narrows, in the words the members directory uses (NAF, 2026-09-20: "I think we need a
+# searchable, filterable, sortable log on this page of what approval actions have been taken").
+DECISION_COLUMNS = [
+    {"key": "at", "label": "When"},
+    {"key": "member", "label": "Member"},
+    {"key": "callsign", "label": "Callsign"},
+    {"key": "agreement", "label": "Agreement"},
+    {"key": "action", "label": "Action"},
+    {"key": "by", "label": "By"},
+]
 
 
 def _is_approver(user) -> bool:
@@ -139,6 +154,8 @@ def approvals(request):
     # A decline is one press away from an approval, so the ones declined lately stay in reach
     # rather than waiting on the member to sign again (NAF, 2026-09-20: "we need some way to
     # approve after an accidental decline").
+    if request.GET.get("format") == "csv" and request.GET.get("report") == "decisions":
+        return _decisions_csv(request)
     since = timezone.now() - dt.timedelta(days=DECLINED_WINDOW_DAYS)
     declined = [
         {"a": a, "institution_address": _institution_address(a.user)}
@@ -149,8 +166,129 @@ def approvals(request):
     return render(
         request,
         "credentials/approvals.html",
-        {"queue": rows, "declined": declined, "declined_days": DECLINED_WINDOW_DAYS},
+        {
+            "queue": rows,
+            "declined": declined,
+            "declined_days": DECLINED_WINDOW_DAYS,
+            **_decision_log(request),
+        },
     )
+
+
+def _decisions_csv(request):
+    """The log as a file: the search, both filters and the sort, the same as the screen."""
+    import csv
+
+    from django.http import HttpResponse
+
+    context = _decision_log(request)
+    rows = context["log"].paginator.object_list
+    resp = HttpResponse(content_type="text/csv")
+    resp["Content-Disposition"] = 'attachment; filename="access-decisions.csv"'
+    w = csv.writer(resp)
+    w.writerow(
+        [
+            "when_utc",
+            "last_name",
+            "first_name",
+            "callsign",
+            "agreement",
+            "action",
+            "by",
+            "expires_on",
+            "note",
+        ]
+    )
+    for d in rows:
+        a = d.agreement
+        w.writerow(
+            [
+                d.at.strftime("%Y-%m-%d %H:%M"),
+                a.user.last_name,
+                a.user.first_name,
+                a.user.callsign,
+                a.template.title if a.template else a.credential.label,
+                d.get_action_display(),
+                d.actor_label,
+                d.expires_on.isoformat() if d.expires_on else "",
+                d.note,
+            ]
+        )
+    record(
+        request.user,
+        "report.decisions_exported",
+        after={"rows": len(rows), "narrowed": context["log_narrowed"]},
+    )
+    return resp
+
+
+def _decision_log(request) -> dict:
+    """The log under the queue: what has been decided, searchable, filterable, sortable.
+
+    It is the approver's own record of their own work, which is why it lives on their page and
+    not in the admin behind `view_audit_log` (§2.1). The rows come from `CredentialDecision`,
+    which keeps every decision rather than only the latest, so a decline and the approval that
+    corrected it are both here, in order.
+    """
+    q = request.GET.get("q", "").strip()
+    picked = chosen(request, "action", "credential")
+
+    qs = CredentialDecision.objects.select_related(
+        "agreement__user", "agreement__credential", "agreement__template", "actor"
+    )
+    if q:
+        qs = qs.filter(
+            Q(agreement__user__first_name__icontains=q)
+            | Q(agreement__user__last_name__icontains=q)
+            | Q(agreement__user__preferred_name__icontains=q)
+            | Q(agreement__user__callsign__icontains=q)
+            | Q(agreement__template__title__icontains=q)
+            | Q(agreement__credential__label__icontains=q)
+        ).distinct()
+    if picked["action"]:
+        qs = qs.filter(action__in=picked["action"])
+    if picked["credential"]:
+        qs = qs.filter(agreement__credential__key__in=picked["credential"])
+
+    order = {
+        "at": "at",
+        "member": "agreement__user__last_name",
+        "callsign": "agreement__user__callsign",
+        "agreement": "agreement__credential__label",
+        "action": "action",
+        "by": "actor_label",
+    }
+    sort, descending, columns = sorted_columns(request, DECISION_COLUMNS, order, "at")
+    field = order[sort]
+    # Every sort ends the same way, so reversing a column truly reverses the page.
+    qs = qs.order_by(f"{'-' if descending else ''}{field}", "-at", "-pk")
+
+    action_choices = list(CredentialDecision.Action.choices)
+    credential_choices = [
+        (c.key, c.label)
+        for c in CredentialType.objects.filter(established_by="agreement").order_by("label")
+    ]
+    narrowed = bool(q or any(picked.values()))
+    page = Paginator(qs, 50).get_page(request.GET.get("page"))
+    pager = request.GET.copy()
+    pager.pop("page", None)
+    return {
+        "log": page,
+        "log_q": q,
+        "log_chosen": picked,
+        "log_columns": columns,
+        "log_sort": sort,
+        "log_dir": "desc" if descending else "asc",
+        "log_narrowed": narrowed,
+        "log_pager": pager.urlencode(),
+        "action_choices": action_choices,
+        "log_credential_choices": credential_choices,
+        "log_summaries": {
+            "action": summary(action_choices, picked["action"], "action"),
+            "credential": summary(credential_choices, picked["credential"], "credential"),
+        },
+        "log_csv_url": export_url(request, report="decisions"),
+    }
 
 
 @login_required
@@ -210,6 +348,7 @@ def decide(request, pk):
         a.approved_at = timezone.now()
         a.save()
         record(request.user, "agreement.declined", a, after={"reason": a.decision_reason})
+        log_decision(a, CredentialDecision.Action.DECLINED, request.user, note=a.decision_reason)
         from django.conf import settings as dj
 
         from apps.comms.services import send

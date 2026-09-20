@@ -173,6 +173,21 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
 
     body = c.get("/credentials/access-rosters/?expiring=30").content.decode()
     assert body.count(">N0MEM<") == 1, "the expiry bucket narrows it"
+
+    # Contact details are on the roster, and the Status panel opens on Active (issue #92).
+    body = c.get("/credentials/access-rosters/").content.decode()
+    assert "Institution email" in body and "Personal email" in body and "Phone" in body
+    assert "Days</a>" not in body, "the Days column is gone"
+    assert "mem@example.org" in body
+    lapsed = _approved(mem, t_st, today - dt.timedelta(days=5))
+    lapsed.state = "expired"
+    lapsed.save(update_fields=["state"])
+    body = c.get("/credentials/access-rosters/").content.decode()
+    assert "Expired" not in body.split("<tbody>")[1], "Active only, until asked otherwise"
+    body = c.get("/credentials/access-rosters/?status=expired").content.decode()
+    assert "Expired" in body.split("<tbody>")[1]
+    body = c.get("/credentials/access-rosters/?status=active&status=expired").content.decode()
+    assert "Expired" in body and body.count(">N0MEM<") == 3
     body = c.get("/credentials/access-rosters/?credential=it_access").content.decode()
     assert body.count(">N0MEM<") == 1 and "Computer access" in body
     body = c.get("/credentials/access-rosters/?q=N0MEM").content.decode()
@@ -490,3 +505,76 @@ def test_a_member_who_holds_computer_access_is_shown_the_way_to_the_password(set
     assert "/credentials/computer-password/" not in home
     assert "See the computer password" not in c.get("/credentials/agreements/").content.decode()
     assert c.get("/credentials/computer-password/").status_code == 403
+
+
+def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
+    """FR-25: what has been decided, on the page of the person who decides it.
+
+    > I think we need a searchable, filterable, sortable log on this page of what approval
+    > actions have been taken. — NAF, 2026-09-20
+
+    The agreement row carries only the latest decision, so the pair that matters most — a
+    decline and the approval that corrected it — would otherwise read as one approval.
+    """
+    from apps.credentials.models import CredentialDecision
+    from apps.credentials.services import agreement_expiry_run, revoke
+
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv4@example.org", "advisor", category="faculty")
+    member = _user("mem5@example.org", first_name="Dee", last_name="Cided", callsign="N0DEC")
+    signed = SignedAgreement.objects.create(
+        user=member, template=t_st, credential=st, signer_name="Dee Cided"
+    )
+    c = Client()
+    c.force_login(advisor)
+
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "decline", "reason": "typo"})
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    actions = list(CredentialDecision.objects.order_by("pk").values_list("action", flat=True))
+    assert actions == ["declined", "approved_after_decline"], "both, in the order they happened"
+
+    body = c.get("/credentials/approvals/").content.decode()
+    assert "Decisions taken" in body
+    assert "Approved after a decline" in body and "Declined" in body and "typo" in body
+    # The stored key never reaches the reader; only the words do (TR-44). It is allowed in a
+    # filter checkbox's value, which is a form value rather than something anybody reads.
+    body_rows = body.split("<tbody>")[-1].split("</tbody>")[0]
+    assert "approved_after_decline" not in body_rows
+
+    # Revoking and expiring are decisions too, and each is named rather than counted.
+    revoke(advisor, signed, "left the club")
+    other = _approved(member, t_it, timezone.now().date() - dt.timedelta(days=1))
+    agreement_expiry_run()
+    assert CredentialDecision.objects.filter(action="revoked").count() == 1
+    assert CredentialDecision.objects.filter(action="expired", agreement=other).count() == 1
+
+    # Narrowing, sorting and the download, on the shared helpers.
+    body = c.get("/credentials/approvals/?action=revoked").content.decode()
+    log = body.split("Decisions taken")[1]
+    assert "left the club" in log and "typo" not in log
+    assert "Show them all" not in log
+
+    body = c.get("/credentials/approvals/?q=N0DEC").content.decode()
+    assert "N0DEC" in body.split("Decisions taken")[1]
+    body = c.get("/credentials/approvals/?q=nobody").content.decode()
+    assert "Show them all" in body.split("Decisions taken")[1]
+
+    body = c.get("/credentials/approvals/?action=revoked&sort=member").content.decode()
+    assert "action=revoked" in body, "a heading keeps the narrowing"
+
+    csv_body = c.get(
+        "/credentials/approvals/?format=csv&report=decisions&action=revoked"
+    ).content.decode()
+    assert "left the club" in csv_body and "typo" not in csv_body
+    assert AuditLog.objects.filter(action="report.decisions_exported").exists()
+
+
+def test_the_decision_log_is_only_for_somebody_who_may_approve():
+    call_command("club_import")
+    _setup()
+    officer = _user("off4@example.org", "officer")
+    c = Client()
+    c.force_login(officer)
+    assert c.get("/credentials/approvals/").status_code == 404
+    assert c.get("/credentials/approvals/?format=csv&report=decisions").status_code == 404
