@@ -47,11 +47,14 @@ def category_label(key) -> str:
 
 
 @register.filter
-def position_labels(keys) -> str:
-    """Every office a member holds, in the club's configured order rather than tick order."""
+def position_labels(keys) -> list[str]:
+    """Every office a member holds, in the club's configured order rather than tick order.
+
+    A list, because a table cell stacks them one per line the way it stacks addresses (the
+    advisor, 2026-09-20), and a cell is the only thing that knows how much room it has.
+    """
     held = set(keys or [])
-    labels = [p["label"] for p in (setting("club_positions", []) or []) if p.get("key") in held]
-    return ", ".join(labels)
+    return [p["label"] for p in (setting("club_positions", []) or []) if p.get("key") in held]
 
 
 @register.filter

@@ -242,10 +242,11 @@ def _groups_line(subject: User) -> str:
 
 
 def _position_line(subject: User) -> str:
-    """The offices the member holds, in the club's own words and the club's own order."""
+    """The offices the member holds, in the club's own words and the club's own order, one per
+    line as the addresses above them are (the advisor, 2026-09-20)."""
     held = set(subject.club_positions or [])
     labels = [p["label"] for p in (setting("club_positions", []) or []) if p.get("key") in held]
-    return ", ".join(labels)
+    return "\n".join(labels)
 
 
 def _label(setting_key: str, key: str) -> str:

@@ -16,7 +16,7 @@
   <td data-label="Class">{{ r.lic.effective_class|default:"" }}</td>
   <td data-label="License expires">{{ r.lic.effective_expiry|date:"Y-m-d"|default:"" }}</td>
   <td data-label="Category">{{ r.u.category|category_label }}</td>
-  <td data-label="Positions">{{ r.u.club_positions|position_labels|default:"—" }}</td>
+  <td data-label="Positions">{% for label in r.u.club_positions|position_labels %}{{ label }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">—</span>{% endfor %}</td>
   <td data-label="Student">{% if r.u.category == 'student' %}{{ r.u.student_level|default:"" }} {{ r.u.graduation_semester|default:"" }} {{ r.u.graduation_year|default:"" }}{% if r.graduated %} <span class="tag warn">past graduation</span>{% endif %}{% endif %}</td>
   <td data-label="Access">{{ r.u.access_label }}</td>
   <td data-label="Credentials">{{ r.credentials|join:"; " }}</td>

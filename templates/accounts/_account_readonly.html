@@ -1,2 +1,2 @@
 {% comment %}The account fields this viewer may not change, which is exactly what the form on the same page does not carry (apps.accounts.account.readonly_rows). Each field is shown once: an input where they may change it, a line of text where they may not.{% endcomment %}
-{% for r in readonly_rows %}<dt>{{ r.label }}</dt><dd>{{ r.value }}</dd>{% endfor %}
+{% for r in readonly_rows %}<dt>{{ r.label }}</dt><dd>{{ r.value|linebreaksbr }}</dd>{% endfor %}

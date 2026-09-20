@@ -437,8 +437,9 @@ def test_a_member_holds_any_number_of_positions_and_a_position_any_number_of_mem
         u.save(update_fields=["club_positions"])
 
     body = _as(directory).get("/members/").content.decode()
-    assert "Faculty Advisor, Club License Trustee" in body, (
-        "both offices, in the order the club lists them rather than the order they were ticked"
+    assert "Faculty Advisor<br>Club License Trustee" in body, (
+        "one per line like the addresses beside them, in the order the club lists them rather "
+        "than the order they were ticked (the advisor, 2026-09-20)"
     )
 
     c = _as(directory)
@@ -469,4 +470,4 @@ def test_the_profile_page_reads_every_office_a_member_holds(directory):
     member.club_positions = ["faculty_advisor", "trustee"]
     member.save(update_fields=["club_positions"])
     body = _as(directory).get(f"/members/{member.pk}/").content.decode()
-    assert "Faculty Advisor, Club License Trustee" in body
+    assert "Faculty Advisor<br>Club License Trustee" in body, "one per line here too"

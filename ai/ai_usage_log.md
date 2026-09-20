@@ -2392,3 +2392,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 347 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: da7e8b9
+
+## [2026-09-20 02:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The offices a member holds are listed one per line, in the table and on
+  the profile page, the way the addresses beside them are. The filter hands the cell a list and
+  the cell decides the layout.
+- **Sections/Files Affected**: apps/ops/templatetags/labels.py, apps/accounts/account.py,
+  templates/accounts/{members,roster,member_detail,_account_readonly}.html,
+  apps/accounts/tests/test_directory.py.
+- **Nature of Contribution**: Interface change by the assistant, from the advisor's request.
+- **Human Review Status**: Pending the advisor's look. 347 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

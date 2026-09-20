@@ -36,7 +36,7 @@ access on the way past. The officer's view and the member's own profile are the 
 <section class="card" aria-labelledby="d">
   <h2 id="d">Details</h2>
   <dl class="dl">
-    {% for r in rows %}<dt>{{ r.label }}</dt><dd>{{ r.value }}</dd>{% endfor %}
+    {% for r in rows %}<dt>{{ r.label }}</dt><dd>{{ r.value|linebreaksbr }}</dd>{% endfor %}
   </dl>
   {% if member.name_from_uls %}<p class="helptext">The name is the FCC's record for <strong>{{ member.callsign }}</strong>, refreshed from the FCC and not edited here. {% if is_self %}To be known by another name in the club, set <strong>Preferred name</strong>; where{% else %}Where{% endif %} the FCC's record is wrong, a sysadmin can override it with a reason.</p>{% endif %}
 </section>

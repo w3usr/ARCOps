@@ -46,7 +46,7 @@ survive a bookmark.{% endcomment %}
   <td data-label="Callsign">{{ m.callsign|default:"—" }}</td>
   <td data-label="Class">{{ m.license_letter }}</td>
   {% if full %}<td data-label="Category">{{ m.category|category_label }}</td>{% endif %}
-  <td data-label="Positions">{{ m.club_positions|position_labels|default:"—" }}</td>
+  <td data-label="Positions">{% for label in m.club_positions|position_labels %}{{ label }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">—</span>{% endfor %}</td>
   {% if full %}
   <td data-label="Status">{{ m.status_label }}</td>
   {% if may_see_archive %}<td data-label="Archived">{% if m.archived_at %}{{ m.archived_at|date:"d M Y" }}{% else %}—{% endif %}</td>{% endif %}
