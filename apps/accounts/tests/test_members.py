@@ -174,8 +174,18 @@ def test_officer_says_who_is_a_member_but_not_who_holds_an_office(people):
     advisor = User.objects.create_user(
         "adv@example.org", "pw-Testing-123", groups=["advisor"], first_name="Ada", last_name="Visor"
     )
+    # An advisor's form now carries the names and the category too (2026-09-20), and a form
+    # posted without them would fail validation rather than save the position.
     _as(advisor).post(
-        f"/members/{mem.pk}/edit/", {"action": "save", "club_positions": ["president"]}
+        f"/members/{mem.pk}/edit/",
+        {
+            "action": "save",
+            "first_name": mem.first_name,
+            "last_name": mem.last_name,
+            "category": mem.category,
+            "club_positions": ["president"],
+            "groups": Group.objects.get(name="member").pk,
+        },
     )
     mem.refresh_from_db()
     assert mem.club_positions == ["president"]

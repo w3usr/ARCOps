@@ -53,8 +53,16 @@ def test_an_officer_says_who_is_a_member_and_nothing_else():
     assert editable_fields(off, m) == ["groups"]
     other = _user("off2@example.org", "officer")
     assert editable_fields(off, other) == [], "a peer is not theirs to change at all"
+    # The advisor holds more since 2026-09-20: "Faculty Advisors need to be able to set
+    # Category, Club Position, and Access." Still not the sysadmin checkbox.
     advisor = _user("adv@example.org", "advisor")
-    assert editable_fields(advisor, m) == ["club_positions", "groups"]
+    theirs = editable_fields(advisor, m)
+    for allowed in ("category", "club_positions", "groups", "first_name", "student_level"):
+        assert allowed in theirs, allowed
+    assert "is_superuser" not in theirs
+    assert editable_fields(advisor, advisor) == editable_fields(advisor, m), (
+        "an advisor's own account is theirs to set, positions and access included"
+    )
 
 
 def test_a_sysadmin_sets_everything_on_any_account_including_their_own():

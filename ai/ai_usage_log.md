@@ -2375,3 +2375,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 345 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 5d5c6ca
+
+## [2026-09-20 02:35 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: What a faculty advisor may set on an account: the category, names and
+  student fields; the club positions, including on their own account; and access up to their own
+  level, which is a new capability ("appoint a peer") rather than a ladder written into the code.
+  Sysadmin stays a sysadmin's to tick. The advisor chose where the ladder stops when asked.
+- **Sections/Files Affected**: apps/ops/capabilities.py, apps/ops/groups.py,
+  apps/accounts/account.py, config/club.example.yaml,
+  apps/accounts/migrations/0022_advisors_set_category_and_appoint_peers.py,
+  apps/ops/migrations/0008_advisors_appoint_peers.py, docs/REQUIREMENTS.md (§2.3, §2.5, FR-91),
+  and the appointment, form and member tests.
+- **Nature of Contribution**: Permission design, code, migration and tests by the assistant, from
+  the advisor's instruction and his answer on where the ladder stops.
+- **Human Review Status**: Pending the advisor's look. 347 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

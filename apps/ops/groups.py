@@ -47,6 +47,12 @@ def assignable_groups(actor, subject=None):
     something you already hold, and it does not hold everything you do.** A proper subset, so
     nobody appoints their own peer, and nobody appoints above themselves.
 
+    **A peer is appointable only by somebody holding `appoint_peers`** (the advisor, 2026-09-20:
+    "Faculty Advisors need to be able to set Category, Club Position, and Access", up to their
+    own level). Without it the subset stays proper, which is what keeps an officer appointing
+    members and below. Nothing here makes a sysadmin: that is a checkbox of its own, and it
+    stays a sysadmin's.
+
     Given an account, the list also **only goes up** for somebody who cannot lift a suspension.
     The advisor, 2026-09-19: "club officers should only be able to promote Provisional to
     Member. They should never have a reason to demote to provisional... If a club officer needs
@@ -57,10 +63,11 @@ def assignable_groups(actor, subject=None):
     mine = capabilities_held(actor)
     theirs = capabilities_held(subject) if subject is not None else set()
     may_lower = subject is None or actor.may("lift_suspension")
+    peers = actor.may("appoint_peers")
     out = []
     for group in Group.objects.order_by("name"):
         granted = {p.codename for p in group.permissions.all()}
-        if not granted < mine:
+        if not (granted <= mine if peers else granted < mine):
             continue
         if not may_lower and not theirs <= granted:
             continue  # promotions only
@@ -71,9 +78,14 @@ def assignable_groups(actor, subject=None):
 def may_set_access(actor, subject) -> bool:
     """Whether this person may decide which groups that account is in.
 
-    Two halves, and the second matters as much as the first: you may only change an account
-    that is **below** you. Without it an officer could edit the advisor's account and drop
+    Two halves, and the second matters as much as the first: you may only change an account at
+    or below your own level. Without it an officer could edit the advisor's account and drop
     them to Member, taking the club over by demotion rather than by promotion.
+
+    **At** your own level, rather than below it, for somebody holding `appoint_peers`: an
+    advisor may hand the club to a second advisor, and may set their own access, because
+    everything they could set is something they already hold. A sysadmin's account stays a
+    sysadmin's, and so does the sysadmin checkbox.
     """
     if not actor.may("assign_groups"):
         return False
@@ -81,10 +93,11 @@ def may_set_access(actor, subject) -> bool:
     if subject.is_superuser:
         return at_the_top  # a sysadmin's account is a sysadmin's to change
     if subject.pk == actor.pk:
-        # Your own access is yours to change only when you hold everything anyway, so there is
-        # nothing to gain by it.
-        return at_the_top
-    return capabilities_held(subject) < capabilities_held(actor)
+        # Your own access is yours to change when nothing you could set is above what you hold:
+        # a sysadmin at the top level, or anyone who may appoint their own peers.
+        return at_the_top or actor.may("appoint_peers")
+    theirs, mine = capabilities_held(subject), capabilities_held(actor)
+    return theirs <= mine if actor.may("appoint_peers") else theirs < mine
 
 
 def permission(codename: str) -> Permission:

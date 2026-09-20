@@ -53,7 +53,9 @@ def editable_fields(actor: User, subject: User) -> list[str]:
             fields += list(NAME_FIELDS)
         if subject.category == "student" or actor.may("edit_member_privileges"):
             fields += list(STUDENT_FIELDS)
-    if actor.may("set_club_position") and not is_self:
+    # Including on your own account: the advisor is both the faculty advisor and the club's
+    # license trustee, and recording offices is the job this capability names (2026-09-20).
+    if actor.may("set_club_position"):
         fields += list(POSITION_FIELDS)
     if actor.may("edit_member_privileges"):
         fields += [f for f in POSITION_FIELDS if f not in fields]

@@ -215,8 +215,9 @@ event generates. An event has one or more captains.
 
 Club position (Faculty Advisor, Associate Faculty Advisor, President, Vice President, Secretary,
 Treasurer, Trustee, and so on) is a profile field set by a **faculty advisor or a sysadmin**,
-from a configurable list **(portability)**. An officer says who is a member (FR-91); who holds
-which office is the advisor's to record.
+from a configurable list **(portability)**, **on any account including their own**: the person
+who records the club's offices holds some of them (2026-09-20). An officer says who is a member
+(FR-91); who holds which office is the advisor's to record.
 
 **An account carries any number of positions, and a position any number of accounts.** Neither
 side is exclusive: one member is both the faculty advisor and the club's license trustee, and a
@@ -289,8 +290,10 @@ The draft models this as follows:
 | Set member category (on the invitation) | ✓ | ✓ | ✓ | · | · | · |
 | Create or edit account manually | ✓ | · | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · | · |
-| Decide which groups an account is in | ✓ | · | · | · | · | · |
-| Set the club positions another member holds | ✓ | ✓ | · | · | · | · |
+| Decide which groups an account is in | ✓ | up to their own level | members and below | · | · | · |
+| Tick **Sysadmin** on an account | ✓ | · | · | · | · | · |
+| Set the club positions another member holds, their own included | ✓ | ✓ | · | · | · | · |
+| Set another member's category, names, and student fields | ✓ | ✓ | · | · | · | · |
 | Delete a user account (FR-118) | ✓ | · | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · | · |
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | ✓ | own | for minor |
@@ -1545,16 +1548,24 @@ made it likely that reliable delivery would take time to establish:
 
   > Access should be a drop-down. You should only be able to pick one. — NAF, 2026-09-19
 
-  **Who may, and over whom** (the advisor's rule, 2026-09-19): a group is yours to grant when
-  everything it grants is something you already hold and it does not hold everything you do, and
-  an account is yours to change when what it holds is a proper subset of what you hold. Against
-  the club's configuration that means a faculty advisor appoints officers, members and
-  provisionals; an officer appoints members and provisionals; neither appoints a peer, nobody
-  appoints above themselves, and only a sysadmin makes a sysadmin. The second half matters as
-  much as the first: without it an officer could edit the advisor's account and drop them to
-  Member, taking the club over by demotion. Restoring puts an account back **as a member**; a
-  level above that is granted deliberately by somebody who holds it. Your own access is yours to
-  change only if you hold everything anyway.
+  **Who may, and over whom** (the advisor's rule, 2026-09-19, amended 2026-09-20): a group is
+  yours to grant when everything it grants is something you already hold, and an account is yours
+  to change when what it holds is no more than what you hold. Whether **your own level** counts
+  is a capability of its own, **appoint a peer**: without it the subset is proper, so an officer
+  appoints members and provisionals and no second officer. Against the club's configuration that
+  means a faculty advisor appoints advisors, officers, members and provisionals, and may set
+  their own access, since nothing they could set is above what they already hold; an officer
+  appoints members and provisionals; nobody appoints above themselves; and **only a sysadmin
+  makes a sysadmin**, because that is a checkbox rather than a group and the form offers it to a
+  sysadmin at the top level alone.
+
+  > Faculty Advisors need to be able to set Category, Club Position, and Access. — NAF,
+  > 2026-09-20, choosing "up to Faculty Advisor" for the top of that ladder when asked where it
+  > should stop
+
+  The second half matters as much as the first: without it an officer could edit the advisor's
+  account and drop them to Member, taking the club over by demotion. Restoring puts an account
+  back **as a member**; a level above that is granted deliberately by somebody who holds it.
 
   > Faculty advisors should be able to appoint officers, members, and below. Officers should be
   > able to appoint members, and below. — NAF, 2026-09-19

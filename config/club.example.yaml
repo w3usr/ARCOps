@@ -83,7 +83,9 @@ access_groups:
       - view_participant_contacts
       - invite_members
       - set_club_position
-      - assign_groups          # bounded: only groups below your own, on accounts below you
+      - edit_member_privileges # category, names, and the student fields
+      - assign_groups          # bounded by the rule above; with appoint_peers, up to their own level
+      - appoint_peers          # an advisor may make another advisor; a sysadmin is still a sysadmin's to make
       - manage_member_addresses
       - create_events
       - manage_events

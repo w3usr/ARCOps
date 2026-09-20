@@ -42,6 +42,7 @@ def club_people():
     return {
         "advisor": _user("adv@example.org", ["advisor"]),
         "officer": _user("off@example.org", ["officer"]),
+        "officer2": _user("off2@example.org", ["officer"]),
         "member": _user("mem@example.org", ["member"]),
         "closed": _user("gone@example.org", []),
     }
@@ -52,19 +53,45 @@ def _names(groups):
 
 
 def test_each_level_appoints_the_levels_below_it(club_people):
-    assert _names(assignable_groups(club_people["advisor"])) == ["member", "officer", "provisional"]
+    # The advisor holds appoint_peers, so their own level is on the list as well (2026-09-20).
+    assert _names(assignable_groups(club_people["advisor"])) == [
+        "advisor",
+        "member",
+        "officer",
+        "provisional",
+    ]
     assert _names(assignable_groups(club_people["officer"])) == ["member", "provisional"]
     # a member holds no say in it at all, whatever the arithmetic of subsets says
     assert not may_set_access(club_people["member"], club_people["closed"])
 
 
-def test_nobody_appoints_a_peer_or_anybody_above_them(club_people):
+def test_a_peer_is_appointed_only_by_somebody_who_holds_that_capability(club_people):
+    """NAF, 2026-09-20: "Faculty Advisors need to be able to set Category, Club Position, and
+    Access", up to their own level. The advisor group holds `appoint_peers`; the officer group
+    does not, so the rule an officer meets is the one he set on 2026-09-19.
+    """
     advisor, officer = club_people["advisor"], club_people["officer"]
     other_advisor = _user("adv2@example.org", ["advisor"])
-    assert "advisor" not in _names(assignable_groups(advisor)), "not even another advisor"
-    assert not may_set_access(advisor, other_advisor), "a peer is not below you"
+    assert "advisor" in _names(assignable_groups(advisor)), "an advisor may make another"
+    assert may_set_access(advisor, other_advisor), "and may change that account"
+    assert may_set_access(advisor, advisor), "and their own, since nothing on it is above them"
+
+    assert "officer" not in _names(assignable_groups(officer)), "an officer appoints members"
+    assert not may_set_access(officer, club_people["officer2"]), "a peer is not an officer's"
     assert not may_set_access(officer, advisor), "and nobody edits the account above them"
     assert may_set_access(advisor, officer) and may_set_access(officer, club_people["member"])
+
+
+def test_nobody_is_made_a_sysadmin_by_an_advisor(club_people):
+    """The one thing the ladder does not reach. Sysadmin is a checkbox, not a group, and the
+    form only offers it to a sysadmin acting at the top level."""
+    from apps.accounts.account import editable_fields
+
+    advisor = club_people["advisor"]
+    assert "is_superuser" not in editable_fields(advisor, club_people["officer"])
+    assert "is_superuser" not in editable_fields(advisor, advisor)
+    sysadmin = _user("sys@example.org", [], is_superuser=True)
+    assert not may_set_access(advisor, sysadmin), "a sysadmin's account is a sysadmin's"
 
 
 def test_an_officer_restores_an_account_that_was_closed(club_people):
