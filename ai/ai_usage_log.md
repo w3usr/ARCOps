@@ -2336,4 +2336,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (§2.3).
 - **Nature of Contribution**: Edit by the assistant, from the advisor's report.
 - **Human Review Status**: Pending the advisor's look; the guards and tests pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 19d284b
