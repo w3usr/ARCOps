@@ -2327,3 +2327,13 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 341 tests, the accessibility sweep and
   the four guards pass.
 - **Git Hash**: 329ed13
+
+## [2026-09-20 01:33 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Say in §2.3 that an account carries one club position, which is the fact
+  behind the advisor holding two offices and the list being able to show only one. The
+  installation's own list is configuration and lives in the private repository.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (§2.3).
+- **Nature of Contribution**: Edit by the assistant, from the advisor's report.
+- **Human Review Status**: Pending the advisor's look; the guards and tests pass.
+- **Git Hash**: {{pending}}

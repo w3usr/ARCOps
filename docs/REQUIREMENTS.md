@@ -218,6 +218,12 @@ Treasurer, Trustee, and so on) is a profile field set by a **faculty advisor or 
 from a configurable list **(portability)**. An officer says who is a member (FR-91); who holds
 which office is the advisor's to record.
 
+**An account carries one position**, so the list a club configures should hold the offices it
+wants to read off a roster, and leave out a hat that is always worn with another one. Where one
+person holds two offices, the club either records the one that matters on the page or, if both
+must show, says so and the field becomes a set; it is one value today because every club asked
+so far elects one person to one office (2026-09-20).
+
 > Only Faculty Advisors and above should be able to set club position. — NAF, 2026-09-19 It is displayed, and one capability derives from it:
 
 - **Default reply-to.** Announcement replies route to the sender, the event's captains, and the
