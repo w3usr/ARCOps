@@ -2876,3 +2876,14 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 132b4fb
+
+## [2026-09-20 22:14 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The signed PDF is named in the advisor's own shape, and the seeded note
+  stops being printed in the decision tables.
+- **Sections/Files Affected**: apps/credentials/services.py (`agreement_pdf_name`),
+  templates/credentials/approvals.html, templates/credentials/agreement_pdf.html, tests.
+- **Nature of Contribution**: Change by the assistant, from the advisor's two notes on issue #8.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

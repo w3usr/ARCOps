@@ -739,24 +739,29 @@ def watermark_background(word: str, color: str) -> str:
 def agreement_pdf_name(agreement: SignedAgreement) -> str:
     """What the file is called when somebody downloads it.
 
-    "agreement-6-v2.pdf" says nothing in a folder of them. The club, the person, the agreement,
-    its version and the date it was signed do (NAF, 2026-09-20), and in that order the folder
-    sorts by club then by surname, which is how a roster is read.
+    The advisor's own shape (2026-09-20): surname, first name, callsign, the expiry it carries,
+    and which agreement it is. "agreement-6-v2.pdf" said none of that in a folder of them.
+
+        Nitkowski_Gregory_N2BSA_exp20270901_station_access.pdf
+
+    A segment with nothing to say is left out rather than written empty: an agreement with no
+    expiry yet has no `exp` part, and a member with no callsign has no callsign part.
     """
-    from django.utils.text import slugify
+    import re
+
+    def clean(value: str) -> str:
+        # Keep the case as it is stored: a name is written the way its owner writes it.
+        return re.sub(r"[^A-Za-z0-9]+", "", value or "")
 
     user = agreement.user
     bits = [
-        slugify(setting("club.short_name", "") or ""),
-        slugify(user.last_name or ""),
-        slugify(user.first_name or ""),
-        slugify(
-            (agreement.template.title if agreement.template else "") or agreement.credential.label
-        ),
-        f"v{agreement.template.version}" if agreement.template else "",
-        agreement.signed_at.strftime("%Y-%m-%d") if agreement.signed_at else "",
+        clean(user.last_name),
+        clean(user.first_name),
+        clean(user.callsign).upper(),
+        f"exp{agreement.expires_on:%Y%m%d}" if agreement.expires_on else "",
+        re.sub(r"[^A-Za-z0-9]+", "_", agreement.credential.key or "agreement").strip("_"),
     ]
-    stem = "-".join(b for b in bits if b) or f"agreement-{agreement.pk}"
+    stem = "_".join(b for b in bits if b) or f"agreement_{agreement.pk}"
     return f"{stem}.pdf"
 
 

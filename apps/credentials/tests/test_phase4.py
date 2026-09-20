@@ -662,7 +662,15 @@ def test_a_downloaded_agreement_is_named_after_who_signed_what_and_when():
     st, _it, t_st, _t_it = _setup()
     member = _user("named@example.org", first_name="Gregory", last_name="Nitkowski")
     a = _approved(member, t_st, timezone.now().date())
-    name = agreement_pdf_name(a)
-    assert name.startswith("test-arc-nitkowski-gregory-")
-    assert "-v1-" in name and name.endswith(".pdf")
-    assert str(a.pk) not in name.replace(".pdf", "").split("-")[-1]
+    member.callsign = "N2BSA"
+    member.save(update_fields=["callsign"])
+    a.expires_on = dt.date(2027, 9, 1)
+    a.save(update_fields=["expires_on"])
+    assert agreement_pdf_name(a) == "Nitkowski_Gregory_N2BSA_exp20270901_station_access.pdf"
+
+    # A segment with nothing to say is left out rather than written empty.
+    a.expires_on = None
+    member.callsign = ""
+    member.save(update_fields=["callsign"])
+    a.save(update_fields=["expires_on"])
+    assert agreement_pdf_name(a) == "Nitkowski_Gregory_station_access.pdf"
