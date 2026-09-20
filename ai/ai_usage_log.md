@@ -2864,3 +2864,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
   accessibility sweep pass.
 - **Git Hash**: dcc9430
+
+## [2026-09-20 22:05 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The callsign question made quiet and short, with the way to a preferred
+  name in it; and an invariant that no password field in the project trims what is typed.
+- **Sections/Files Affected**: templates/base.html, static/css/app.css,
+  apps/accounts/tests/test_flows.py.
+- **Nature of Contribution**: Wording, styling and a test by the assistant, from the advisor's
+  points on issue #93; the test was checked against a deliberately broken form first.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

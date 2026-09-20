@@ -411,3 +411,36 @@ def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
         assert "Is this you?" in c.get(page, follow=True).content.decode(), page
     c.post("/me/uls-name/", {"decision": "yes"})
     assert "Is this you?" not in c.get("/", follow=True).content.decode()
+
+
+def test_no_password_field_anywhere_trims_what_was_typed():
+    """The invariant behind the twelve-character report, held across the whole codebase.
+
+    A plain CharField strips by default, which is right for a name and wrong for a secret: a
+    password typed with a trailing space was shortened before it was validated, refused as too
+    short, and stored as something other than what was typed. Every password field in the
+    project is either built by `password_field` or says `strip=False` itself, so writing one the
+    ordinary way cannot bring it back (2026-09-20).
+
+    Read from the source rather than by importing every module: importing the world to make an
+    assertion leaves the world imported, and other tests have to live in it.
+    """
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3] / "apps"
+    offenders = []
+    for path in sorted(root.rglob("*.py")):
+        if "migrations" in path.parts or "tests" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8")
+        # Each field's source, from "CharField(" to the matching close, near a PasswordInput.
+        for m in re.finditer(r"forms\.CharField\((?:[^()]|\([^()]*\))*\)", text, re.S):
+            body = m.group(0)
+            if "PasswordInput" in body and "strip=False" not in body:
+                line = text[: m.start()].count("\n") + 1
+                offenders.append(f"{path.relative_to(root.parent)}:{line}")
+    assert not offenders, (
+        "these password fields trim what is typed into them; build them with "
+        f"apps.accounts.forms.password_field: {', '.join(offenders)}"
+    )
