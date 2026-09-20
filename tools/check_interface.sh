@@ -40,10 +40,14 @@ for path in sorted(pathlib.Path("templates").rglob("*.html")):
     raw = path.read_text()
     text = COMMENTS.sub("", raw)
 
+    # A page stacks on a phone; a document rendered to paper does not, and a data-label in one
+    # would be noise nobody ever sees (the signed agreement's record of decisions, 2026-09-20).
+    prints_only = path.name.endswith("_pdf.html")
+
     for table in TABLE.finditer(text):
         body = table.group(0)
-        if "<thead" not in body:
-            continue  # no header row for a stacked cell to lose
+        if prints_only or "<thead" not in body:
+            continue  # no header row for a stacked cell to lose, or nothing that stacks
         for row in ROW.finditer(body[body.index("</thead>"):] if "</thead>" in body else ""):
             for cell in CELL.finditer(row.group(0)):
                 attrs = cell.group(1)

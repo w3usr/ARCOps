@@ -529,6 +529,11 @@ def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
     c = Client()
     c.force_login(advisor)
 
+    # The queue is a list rather than a card each, and declining opens its reason in place.
+    waiting = c.get("/credentials/approvals/").content.decode()
+    assert "Decline and tell them" in waiting and "Approve" in waiting
+    assert f"/credentials/agreements/{signed.pk}/pdf/" in waiting, "read what they signed"
+
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "decline", "reason": "typo"})
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     actions = list(CredentialDecision.objects.order_by("pk").values_list("action", flat=True))

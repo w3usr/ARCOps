@@ -2780,3 +2780,19 @@ carries the actual running model ID.
   the deploy.
 - **Human Review Status**: Reviewed here; the repair is verified on the server after deploying.
 - **Git Hash**: 93fc712
+
+## [2026-09-20 20:54 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Four notes from the advisor walking the approvals page: the seeded note
+  out of the By column, the queue as a list rather than a card each, the signed PDF carrying its
+  own standing and the record of decisions on it, and an unread notice offering the page where
+  the work is done.
+- **Sections/Files Affected**: apps/credentials/models.py (`seeded`, `pdf_built_at`), migrations
+  0009 and 0010, apps/credentials/services.py (the PDF context and its build stamp),
+  apps/credentials/views_reports.py (rebuild a stale PDF), apps/ops/views.py and
+  templates/ops/dashboard.html (the banner's action), templates/credentials/agreement_pdf.html,
+  templates/credentials/approvals.html, static/css/app.css, tools/check_interface.sh, tests.
+- **Nature of Contribution**: Design and code by the assistant, from the advisor's four points.
+- **Human Review Status**: Pending the advisor's look; one question is his to answer. Lint, the
+  four guards, 389 tests and the accessibility sweep pass.
+- **Git Hash**: [pending]

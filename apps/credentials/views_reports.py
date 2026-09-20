@@ -287,7 +287,12 @@ def agreement_pdf(request, pk):
     a = get_object_or_404(SignedAgreement, pk=pk)
     if a.user != request.user and not _is_approver(request.user):
         raise Http404
-    if not a.pdf:
+    # The stored file states a standing, so it is rebuilt when a decision is newer than it.
+    # Rebuilding here rather than on every decision keeps the nightly expiry job from rendering
+    # a document per lapsed agreement, and still hands nobody a stale one (2026-09-20).
+    latest = a.decisions.order_by("-at").first()
+    stale = latest and (a.pdf_built_at is None or latest.at > a.pdf_built_at)
+    if not a.pdf or stale:
         store_agreement_pdf(a)
         a.refresh_from_db()
     record(request.user, "agreement.pdf_downloaded", a)

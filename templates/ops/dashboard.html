@@ -13,7 +13,7 @@ on its own: the advisor, 2026-09-19, "It should say Hello, Kay N3KN".{% endcomme
 <div class="banner" role="status">
   <p><strong>{{ banner_messages|length }} unread notice{{ banner_messages|length|pluralize }}:</strong>
   {% for m in banner_messages %}{{ m.subject }}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
-  <p><a href="{% url 'my_messages' %}">Read them</a></p>
+  <p>{% if banner_action %}<a href="{{ banner_action.url }}">{{ banner_action.label }}</a> · {% endif %}<a href="{% url 'my_messages' %}">Read them</a></p>
 </div>
 {% endif %}
 {% if perms.ops.view_member_records %}

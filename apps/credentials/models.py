@@ -250,6 +250,7 @@ class SignedAgreement(models.Model):
     notice_30_sent_on = models.DateField(null=True, blank=True)  # FR-28
     notice_expiry_sent_on = models.DateField(null=True, blank=True)  # FR-28
     revoked_at = models.DateTimeField(null=True, blank=True)  # FR-29
+    pdf_built_at = models.DateTimeField(null=True, blank=True)  # when the stored PDF was rendered
 
     class Meta:
         ordering = ["-signed_at"]
@@ -305,6 +306,9 @@ class CredentialDecision(models.Model):
     at = models.DateTimeField(auto_now_add=True)
     note = models.TextField(blank=True)  # the reason given, or what superseded it
     expires_on = models.DateField(null=True, blank=True)  # the date an approval set
+    # Recovered from the state an agreement was in when this record began, rather than written
+    # as it happened. Said quietly beside the date, not in the middle of somebody's name.
+    seeded = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-at"]

@@ -575,6 +575,10 @@ details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 .decide-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s1) var(--s3); margin-top: var(--s1); }
 .decide-decline { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s1); }
 .decide-decline input { min-width: 14rem; }
+/* Declining opens in place inside the row, so the queue stays a list. */
+.decide-row details.decide-decline { margin: 0; }
+.decide-row details.decide-decline > summary { font-size: inherit; }
+.decide-row details.decide-decline .row-form { margin-top: .4rem; }
 @media (max-width: 560px) { .decide-decline input { min-width: 0; width: 100%; } }
 
 /* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a

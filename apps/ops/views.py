@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.comms.categories import BANNER
@@ -90,6 +91,17 @@ def dashboard(request):
     banner_messages = list(
         Outbox.objects.filter(user=request.user, read_at__isnull=True, category__in=BANNER)[:5]
     )
+    # A notice that something needs doing should offer the page where it is done, rather than
+    # the list of notices (NAF, 2026-09-20: "It would be better to link to me to the Approvals
+    # page than to the Messages page"). Only where every unread notice points the same way; a
+    # mixed handful goes to Messages, which is the one place that holds them all.
+    banner_action = None
+    if request.user.may("approve_agreements") and banner_messages:
+        if all(m.category == "agreement" for m in banner_messages):
+            from apps.credentials.models import SignedAgreement
+
+            if SignedAgreement.objects.filter(state=SignedAgreement.State.SIGNED).exists():
+                banner_action = {"url": reverse("approvals"), "label": "Go to Approvals"}
     return render(
         request,
         "ops/dashboard.html",
@@ -99,6 +111,7 @@ def dashboard(request):
             "upcoming_events": upcoming_events,
             "pending_review": pending,
             "banner_messages": banner_messages,
+            "banner_action": banner_action,
             "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },
     )

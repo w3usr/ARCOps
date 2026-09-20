@@ -559,6 +559,9 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
             "template": agreement.template,
             "club_name": setting("club.name", "the club"),
             "club_short": setting("club.short_name", "the club"),
+            # The document carries its own standing and how it got there (NAF, 2026-09-20).
+            "decisions": list(agreement.decisions.order_by("at", "pk")),
+            "built_at": timezone.now(),
         },
     )
     return weasyprint.HTML(string=html, base_url="/").write_pdf(
@@ -576,4 +579,6 @@ def store_agreement_pdf(agreement: SignedAgreement) -> None:
     )
     if agreement.pdf:
         agreement.pdf.delete(save=False)
-    agreement.pdf.save(name, ContentFile(data), save=True)
+    agreement.pdf.save(name, ContentFile(data), save=False)
+    agreement.pdf_built_at = timezone.now()
+    agreement.save(update_fields=["pdf", "pdf_built_at"])
