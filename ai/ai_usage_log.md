@@ -2886,4 +2886,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Change by the assistant, from the advisor's two notes on issue #8.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: 3046deb
