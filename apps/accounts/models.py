@@ -39,6 +39,7 @@ class UserManager(BaseUserManager):
         """`email` is the first address on the account, if there is one. A member under 18 may
         hold none: their guardians are written to instead (FR-70), and the account is its key."""
         confirmed = extra.pop("confirmed", True)  # the path that made the account vouches for it
+        proof = extra.pop("proof", Address.Proof.VOUCHED)
         groups = extra.pop("groups", None)  # the access groups this account starts in
         # All of it or none of it. Adding the address can be refused (another account has
         # already confirmed it), and without this the account row was already saved by then:
@@ -55,7 +56,12 @@ class UserManager(BaseUserManager):
             if email:
                 from .addresses import add
 
-                add(user, self.normalize_email(email).lower(), confirmed=confirmed)
+                add(
+                    user,
+                    self.normalize_email(email).lower(),
+                    confirmed=confirmed,
+                    proof=proof if confirmed else "",
+                )
         return user
 
     def with_access(self):
@@ -399,10 +405,29 @@ class Address(models.Model):
         INSTITUTION = "institution", "Institution"
         PERSONAL = "personal", "Personal"
 
+    class Proof(models.TextChoices):
+        """How this address came to be confirmed, which is not the same as whether it is.
+
+        `MAILBOX` is the only one that proves the person reads that mailbox: they opened a link
+        that was sent to it and nowhere else. `VOUCHED` is an officer typing an address into an
+        invitation and the person arriving by a link that was copied and passed on by hand,
+        which proves the officer believed it (FR-103: nothing may wait on mail). `OFFICER` is
+        somebody deciding by hand that it is theirs, which is the override (FR-126).
+
+        Access to the station and the computer asks for the first or the last: a credential is
+        evidence that the institution knows this person (FR-27, 2026-09-20).
+        """
+
+        MAILBOX = "mailbox", "Opened a link sent to it"
+        OFFICER = "officer", "Confirmed by an officer"
+        VOUCHED = "vouched", "Vouched for when the account was made"
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
     address = models.EmailField()
     kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.PERSONAL)
     confirmed = models.BooleanField(default=False)
+    # Which of Proof's answers applies. Blank on a row confirmed before this was recorded.
+    proof = models.CharField(max_length=10, choices=Proof.choices, blank=True)
     delivery = models.BooleanField(default=True)  # club mail goes here
     created = models.DateTimeField(auto_now_add=True)
 
@@ -448,6 +473,10 @@ class Invitation(models.Model):
     is_minor = models.BooleanField(default=False)
     guardian_email = models.EmailField(blank=True)
     token = models.CharField(max_length=64, unique=True, default=secrets.token_urlsafe)
+    # A second secret, put only on the link that is **emailed**. The link the issuer copies
+    # off the page carries the token alone, so arriving with this one is proof the person
+    # reads the mailbox it was sent to, and arriving without it is not (NAF, 2026-09-20).
+    mail_token = models.CharField(max_length=64, blank=True, default=secrets.token_urlsafe)
     issued_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="invitations_issued"
     )

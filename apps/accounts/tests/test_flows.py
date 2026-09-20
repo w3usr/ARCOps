@@ -444,3 +444,49 @@ def test_no_password_field_anywhere_trims_what_was_typed():
         "these password fields trim what is typed into them; build them with "
         f"apps.accounts.forms.password_field: {', '.join(offenders)}"
     )
+
+
+def test_the_emailed_invitation_link_proves_the_mailbox_and_the_copied_one_does_not():
+    """The link on the page can be copied and passed on; the one in the mail cannot.
+
+    > Maybe put an extra token on the invitation that actually gets sent, as opposed to the
+    > invitation link that someone can copy and paste. — NAF, 2026-09-20
+    """
+    from apps.accounts import addresses
+
+    off = officer()
+    fields = {
+        "first_name": "Mail",
+        "last_name": "Box",
+        "callsign": "",
+        "password1": "a-long-password-123",
+        "password2": "a-long-password-123",
+        "consent": "on",
+    }
+
+    copied = create_invitation(off, "copied@example.org", "student")
+    Client().post(f"/me/invite/{copied.token}/", fields)
+    u = User.objects.by_address("copied@example.org").get()
+    row = u.addresses.get(address="copied@example.org")
+    assert row.confirmed, "it still signs them in: nothing waits on mail (FR-103)"
+    assert row.proof == "vouched", "but nobody has shown they read that mailbox"
+
+    emailed = create_invitation(off, "emailed@example.org", "student")
+    Client().post(f"/me/invite/{emailed.token}/?m={emailed.mail_token}", fields)
+    row = (
+        User.objects.by_address("emailed@example.org")
+        .get()
+        .addresses.get(address="emailed@example.org")
+    )
+    assert row.confirmed and row.proof == "mailbox"
+
+    # A guessed or stale second token is no proof at all.
+    guessed = create_invitation(off, "guessed@example.org", "student")
+    Client().post(f"/me/invite/{guessed.token}/?m=not-the-token", fields)
+    row = (
+        User.objects.by_address("guessed@example.org")
+        .get()
+        .addresses.get(address="guessed@example.org")
+    )
+    assert row.proof == "vouched"
+    assert addresses.confirmed(User.objects.by_address("guessed@example.org").get())

@@ -628,21 +628,25 @@ def test_station_and_computer_access_need_an_institution_address_from_anyone():
             user=member, template=template, credential=template.credential, signer_name="No Badge"
         )
         body = c.get("/credentials/approvals/").content.decode()
-        assert "no confirmed institution address" in body, template.credential.key
+        assert "no proven institution address" in body, template.credential.key
 
         r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.SIGNED, "refused without one"
-        assert "no confirmed institution address" in c.get(r["Location"]).content.decode()
+        assert "no proven institution address" in c.get(r["Location"]).content.decode()
 
         # A personal address is not one, confirmed or not.
-        addresses.add(member, f"personal{n}@gmail.com", kind="personal", confirmed=True)
+        addresses.add(
+            member, f"personal{n}@gmail.com", kind="personal", confirmed=True, proof="mailbox"
+        )
         c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.SIGNED, "and not any address will do"
 
         # A confirmed address at the institution's own domain grants it.
-        addresses.add(member, f"no.badge{n}@example.edu", kind="institution", confirmed=True)
+        addresses.add(
+            member, f"no.badge{n}@example.edu", kind="institution", confirmed=True, proof="mailbox"
+        )
         c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.APPROVED
@@ -689,7 +693,7 @@ def test_an_address_that_is_somebody_elses_is_not_evidence_about_this_member():
     st, _it, t_st, _t_it = _setup()
     advisor = _user("adv6@example.org", "advisor", category="faculty")
     owner = _user("owner@example.org", first_name="Bob", last_name="Owner")
-    addresses.add(owner, "shared@example.edu", kind="institution", confirmed=True)
+    addresses.add(owner, "shared@example.edu", kind="institution", confirmed=True, proof="officer")
     member = _user("other@example.org", first_name="Some", last_name="Oneelse")
     signed = SignedAgreement.objects.create(
         user=member, template=t_st, credential=st, signer_name="Some Oneelse"
@@ -700,22 +704,28 @@ def test_an_address_that_is_somebody_elses_is_not_evidence_about_this_member():
     # Somebody else's address cannot be confirmed onto this account at all, which is the check
     # that approving used to skip by adding it unconfirmed.
     with pytest.raises(addresses.AddressInUse):
-        addresses.add(member, "shared@example.edu", kind="institution", confirmed=True)
+        addresses.add(
+            member, "shared@example.edu", kind="institution", confirmed=True, proof="officer"
+        )
 
     r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.SIGNED, "no confirmed address of their own"
-    assert "no confirmed" in c.get(r["Location"]).content.decode()
+    assert "no proven" in c.get(r["Location"]).content.decode()
 
     # Their own, confirmed on their page, is what grants it.
-    addresses.add(member, "theirs@example.edu", kind="institution", confirmed=True)
+    addresses.add(member, "theirs@example.edu", kind="institution", confirmed=True, proof="mailbox")
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.APPROVED
 
 
-def test_an_unconfirmed_institution_address_is_not_enough_to_grant_access():
-    """Nobody has stood behind it, so it is not evidence that anybody is in the directory."""
+def test_an_institution_address_nobody_proved_is_not_enough_to_grant_access():
+    """Nobody has stood behind it, so it is not evidence that anybody is in the directory.
+
+    Two ways that happens: an address never confirmed at all, and one confirmed only because
+    whoever made the account typed it in (NAF, 2026-09-20).
+    """
     from apps.accounts import addresses
     from apps.ops.models import ClubSetting
 
@@ -732,7 +742,47 @@ def test_an_unconfirmed_institution_address_is_not_enough_to_grant_access():
     )
     c = Client()
     c.force_login(advisor)
-    assert "no confirmed institution address" in c.get("/credentials/approvals/").content.decode()
+    assert "no proven institution address" in c.get("/credentials/approvals/").content.decode()
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.SIGNED
+
+
+def test_an_address_vouched_for_at_sign_up_does_not_grant_access_until_it_is_proved():
+    """Joining by a link that was copied and passed on proves nothing about the mailbox.
+
+    The advisor, 2026-09-20: joining through an invitation sent to an institution address should
+    count as confirming it, distinguished by a second token carried only on the emailed link
+    rather than on the one anybody can copy and paste.
+    """
+    from apps.accounts import addresses
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    st, _it, t_st, _t_it = _setup()
+    advisor = _user("adv8@example.org", "advisor", category="faculty")
+    member = _user("vouched@example.org", first_name="Vou", last_name="Ched")
+    addresses.add(
+        member, "vouched@example.edu", kind="institution", confirmed=True, proof="vouched"
+    )
+    signed = SignedAgreement.objects.create(
+        user=member, template=t_st, credential=st, signer_name="Vou Ched"
+    )
+    c = Client()
+    c.force_login(advisor)
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED, "vouched for is not proved"
+
+    # It signs them in all the same: nothing waits on mail arriving (FR-103).
+    assert "vouched@example.edu" in addresses.confirmed(member)
+
+    # An officer standing behind it raises the standing without unconfirming it first.
+    addresses.mark_confirmed(member, "vouched@example.edu", advisor)
+    assert member.addresses.get(address="vouched@example.edu").proof == "officer"
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.APPROVED

@@ -18,7 +18,7 @@ from apps.ops.config import setting
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
 from .forms import password_field
-from .models import Invitation, User
+from .models import Address, Invitation, User
 from .services import (
     admit_from_invitation,
     create_invitation,
@@ -416,6 +416,13 @@ def accept_invitation(request, token):
                 user = admit_from_invitation(
                     inv,
                     d["password1"],
+                    # Arriving by the emailed link proves they read that mailbox; arriving by
+                    # the copied one proves the officer believed the address (NAF, 2026-09-20).
+                    proof=(
+                        Address.Proof.MAILBOX
+                        if request.GET.get("m") and request.GET.get("m") == inv.mail_token
+                        else Address.Proof.VOUCHED
+                    ),
                     first_name=d["first_name"],
                     middle_name=d["middle_name"],
                     last_name=d["last_name"],
@@ -542,7 +549,7 @@ def verify_address(request, token):
         return render(request, "accounts/verify_address.html", {"outcome": "invalid"}, status=410)
     user, address = found
     try:
-        addresses.mark_confirmed(user, address)
+        addresses.mark_confirmed(user, address, proof=Address.Proof.MAILBOX)
         outcome = "done"
     except addresses.AddressInUse:
         outcome = "taken"

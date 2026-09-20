@@ -2921,3 +2921,19 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 395 tests and the
   accessibility sweep pass.
 - **Git Hash**: 07e8310
+
+## [2026-09-20 22:58 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: An address now records **how** it came to be trusted. The emailed
+  invitation carries a second token the copied link does not, so arriving by it proves the
+  mailbox; access agreements are approved only against an address proved that way or confirmed
+  by hand.
+- **Sections/Files Affected**: apps/accounts/models.py (`Address.Proof`, `Address.proof`,
+  `Invitation.mail_token`), migrations 0025 and 0026, apps/accounts/addresses.py,
+  apps/accounts/services.py, apps/accounts/views.py, apps/accounts/entry.py,
+  apps/credentials/views.py, templates/accounts/_addresses.html,
+  templates/credentials/approvals.html, tests.
+- **Nature of Contribution**: Design and code by the assistant, from the advisor's instruction.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 397 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

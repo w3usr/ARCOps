@@ -8,11 +8,22 @@ depending on delivery.{% endcomment %}
   <li>
     <p class="address">{{ a.address }}{% if a.kind %} <span class="tag">{{ a.kind }}</span>{% endif %}</p>
     <p class="addr-state">
-      {% if a.confirmed %}Signs {% if address_subject_is_self %}you{% else %}them{% endif %} in{% else %}<span class="needs">Not confirmed, so it cannot sign {% if address_subject_is_self %}you{% else %}them{% endif %} in yet</span>{% endif %}
+      {% if a.confirmed %}Signs {% if address_subject_is_self %}you{% else %}them{% endif %} in{% if a.proof == 'mailbox' %} · proved from the mailbox{% elif a.proof == 'officer' %} · confirmed by an officer{% elif a.proof == 'vouched' or not a.proof %} · <span class="needs">not proved from the mailbox</span>{% endif %}{% else %}<span class="needs">Not confirmed, so it cannot sign {% if address_subject_is_self %}you{% else %}them{% endif %} in yet</span>{% endif %}
       · Club mail {% if a.delivery %}on{% else %}off{% endif %}
     </p>
     <div class="addr-actions">
       {% if a.confirmed %}
+        {% comment %}A confirmed address still says how it came to be trusted. Only a link
+        opened from the mailbox, or somebody confirming it by hand, is evidence the institution
+        knows this person; an address vouched for when the account was made is not, and an
+        officer can supply the missing standing here (FR-27, 2026-09-20).{% endcomment %}
+        {% if a.proof == 'vouched' or not a.proof %}
+          {% if address_subject_is_self %}
+          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Prove it is yours</button></form>
+          {% elif perms.ops.manage_member_addresses %}
+          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Confirm it myself</button></form>
+          {% endif %}
+        {% endif %}
         {% if perms.ops.correct_member_addresses and not address_subject_is_self %}
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">Stop it signing them in</button></form>
         {% endif %}

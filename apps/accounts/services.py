@@ -11,7 +11,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.groups import people_who_may
 
-from .models import CallsignHistory, Invitation, User
+from .models import Address, CallsignHistory, Invitation, User
 
 
 def _supersede_open_invitations(
@@ -73,7 +73,7 @@ def create_invitation(
         None,
         "account",
         {
-            "link": f"{base_url}/me/invite/{inv.token}/",
+            "link": f"{base_url}/me/invite/{inv.token}/?m={inv.mail_token}",
             "expires": inv.expires_at,
             "category": category,
         },
@@ -222,6 +222,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     instead of starting a new one (FR-125, 2026-09-19).
     """
     address = profile.get("email", "") or inv.email
+    proof = profile.pop("proof", "")
     returning, _ = returning_account(address)
     if returning is not None:
         profile.pop("email", None)
@@ -239,6 +240,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
         category=inv.category,
         groups=["member"],
         under_18=inv.is_minor,
+        proof=proof or Address.Proof.VOUCHED,
         **profile,
     )
     inv.state = Invitation.State.COMPLETED

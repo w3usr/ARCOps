@@ -92,6 +92,7 @@ def add(
     confirmed: bool = False,
     delivery: bool = True,
     actor: User | None = None,
+    proof: str = "",
 ) -> Address:
     """Put an address on an account. Confirming it here is for the paths that already prove it:
     an invitation opened from that mailbox, an entry link, an officer who knows."""
@@ -103,14 +104,20 @@ def add(
     row, created = Address.objects.get_or_create(
         user=user,
         address=address,
-        defaults={"kind": kind or kind_for(address), "confirmed": confirmed, "delivery": delivery},
+        defaults={
+            "kind": kind or kind_for(address),
+            "confirmed": confirmed,
+            "delivery": delivery,
+            "proof": proof if confirmed else "",
+        },
     )
     if not created:
         row.kind = kind or row.kind
         row.delivery = delivery
         if confirmed and not row.confirmed:
             row.confirmed = True
-        row.save(update_fields=["kind", "delivery", "confirmed"])
+            row.proof = proof
+        row.save(update_fields=["kind", "delivery", "confirmed", "proof"])
     mirror(user)
     if created and actor:
         record(actor, "address.added", user, after={"address": address})
@@ -129,7 +136,7 @@ def remove(user: User, address: str, actor: User) -> None:
     record(actor, "address.removed", user, after={"address": address})
 
 
-def mark_confirmed(user: User, address: str, actor: User | None = None) -> None:
+def mark_confirmed(user: User, address: str, actor: User | None = None, proof: str = "") -> None:
     """Say the address belongs to this person: from their own link, or from an officer who
     knows it does, which is what keeps signing in from depending on mail arriving."""
     address = (address or "").strip().lower()
@@ -137,9 +144,16 @@ def mark_confirmed(user: User, address: str, actor: User | None = None) -> None:
     if row is None:
         raise ValueError("That address is not on this account.")
     _refuse_if_taken(user, address)
-    if not row.confirmed:
+    # Confirming by hand is somebody deciding it is theirs; following a link from the mailbox is
+    # the mailbox saying so. The callers that know which, say which.
+    given = proof or Address.Proof.OFFICER
+    weak = (Address.Proof.VOUCHED, "")
+    if not row.confirmed or (row.proof in weak and given not in weak):
+        # An address vouched for when the account was made can be raised to a real proof without
+        # being unconfirmed first: the standing is what changes, not whether it signs them in.
         row.confirmed = True
-        row.save(update_fields=["confirmed"])
+        row.proof = given
+        row.save(update_fields=["confirmed", "proof"])
     mirror(user)
     record(actor or user, "address.confirmed", user, after={"address": address})
 

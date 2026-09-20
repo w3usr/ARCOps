@@ -195,7 +195,7 @@ def approvals(request):
             "a": a,
             "institution_address": _institution_address(a.user),
             "needs_institution": needs_institution_email(a)
-            and not institution_address_ok(_institution_address(a.user, confirmed_only=True)),
+            and not institution_address_ok(_institution_address(a.user, proven_only=True)),
         }
         for a in queue
     ]
@@ -362,14 +362,15 @@ def decide(request, pk):
             # an officer's waiver that needs no mail (FR-126). Typing an address here used to
             # stand in for it, which meant one person's address could be evidence about
             # another, and meant nobody had ever stood behind the address at all.
-            held = _institution_address(a.user, confirmed_only=True)
+            held = _institution_address(a.user, proven_only=True)
             if not institution_address_ok(held):
                 domains = ", ".join(institution_domains())
                 messages.error(
                     request,
                     format_html(
-                        "{} has no confirmed {} address, so there is nothing to show they are "
-                        "in the institution's directory. Add and confirm one on "
+                        "{} has no proven {} address, so there is nothing to show they are "
+                        "in the institution's directory. They can confirm one from a link sent "
+                        "to it, or you can confirm it yourself on "
                         '<a href="{}">their page</a>, then approve this.',
                         a.user.display_first,
                         domains,
@@ -451,14 +452,17 @@ def computer_password(request):
     return render(request, "credentials/password.html", {"secret": secret})
 
 
-def _institution_address(user, *, confirmed_only: bool = False) -> str:
-    """The institution address on the account, if there is one (FR-27).
+# What counts as evidence that the institution knows this person: they opened a link sent to
+# that mailbox, or somebody with the standing to say so confirmed it by hand. An address an
+# officer merely typed onto an invitation is not, because the person may have arrived by a link
+# that was copied and passed on (NAF, 2026-09-20).
+PROVEN = ("mailbox", "officer")
 
-    `confirmed_only` is what the credential gate asks for: an address nobody has stood behind
-    is not evidence that anybody is in the institution's directory.
-    """
+
+def _institution_address(user, *, proven_only: bool = False) -> str:
+    """The institution address on the account, if there is one (FR-27)."""
     rows = user.addresses.filter(kind="institution")
-    if confirmed_only:
-        rows = rows.filter(confirmed=True)
+    if proven_only:
+        rows = rows.filter(confirmed=True, proof__in=PROVEN)
     row = rows.first()
     return row.address if row else ""

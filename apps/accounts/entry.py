@@ -25,7 +25,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.groups import people_who_may
 
-from .models import EntryLink, User
+from .models import Address, EntryLink, User
 
 # An identifier rather than the product's name (see apps/accounts/addresses.py): changing it
 # would invalidate every verification link already sent.
@@ -136,7 +136,7 @@ def complete_verification(user: User, base_url: str, address: str = "") -> str:
 
     rows = user.addresses.filter(address__iexact=address) if address else user.addresses.all()
     for row in rows:
-        address_book.mark_confirmed(user, row.address)
+        address_book.mark_confirmed(user, row.address, proof=Address.Proof.MAILBOX)
     fields = []
     became_provisional = False
     if (
