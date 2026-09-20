@@ -179,13 +179,18 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     assert decide_uls_name(User.objects.get(pk=u.pk), accept=True) == "name replaced"
     u.refresh_from_db()
     assert u.last_name == "Other" and u.name_from_uls
-    # unknown callsign: unverified until the import finds it
+    # unknown callsign: unverified until the import finds it. The name on file was the FCC's
+    # record for the callsign just left, so it stops being marked as theirs and the member owns
+    # it again, which is why the form below now carries the name fields.
     r = apply_callsign(u, "N0NEW", previous="N0ZZZ")
     assert r["state"] == "unverified" and LicenseRecord.objects.get(user=u).status == "unverified"
+    assert not User.objects.get(pk=u.pk).name_from_uls
     # the profile form goes through the same path
     r = c.post(
         f"/members/{u.pk}/edit/",
         {
+            "first_name": "Ada",
+            "last_name": "Other",
             "preferred_name": "",
             "callsign": "N0AAA",
             "institution_email": "",
@@ -409,3 +414,42 @@ def test_the_import_writes_while_walking_a_table_larger_than_one_slice():
         "the active record wins wherever the slice boundary happens to fall"
     )
     assert UlsStaging.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_a_callsign_the_fcc_does_not_hold_keeps_nothing_of_the_one_before_it():
+    """T10 step 2: the record describes the callsign on the account, or it describes nothing.
+
+    The collaborator walking T10 on 2026-09-20: "Switching from KC3ABC to WC1XYZ keeps the name
+    and Technician category of KC3ABC." The class, the licensee name and the expiry all stayed,
+    so the directory went on reading **T** for a callsign the FCC has no record of.
+    """
+    UlsLicense.objects.create(
+        callsign="KC3ABC",
+        operator_class="Technician",
+        status="active",
+        licensee_name="Abe Carter",
+        first_name="Abe",
+        last_name="Carter",
+        applicant_type="I",
+        frn="0099",
+        expiry_date=dt.date(2030, 1, 15),
+    )
+    u = User.objects.create_user("t10@example.org", "pw-Testing-123")
+    apply_callsign(u, "KC3ABC")
+    u.refresh_from_db()
+    lic = LicenseRecord.objects.get(user=u)
+    assert lic.operator_class == "Technician" and u.license_letter == "T"
+    assert u.name_from_uls and u.last_name == "Carter"
+
+    state = apply_callsign(u, "WC1XYZ", previous="KC3ABC")
+    u = User.objects.get(pk=u.pk)
+    lic.refresh_from_db()
+    assert state["state"] == "unverified"
+    assert lic.status == "unverified"
+    assert (lic.operator_class, lic.licensee_name, lic.licensee_type, lic.frn) == ("", "", "", "")
+    assert lic.expiry_date is None and lic.grant_date is None
+    assert lic.class_label == "class unknown"
+    assert u.license_letter == "U"  # FR-67: no FCC record is not a station
+    # The name stays; the claim that the FCC wrote it does not, so the member can correct it.
+    assert u.last_name == "Carter" and not u.name_from_uls

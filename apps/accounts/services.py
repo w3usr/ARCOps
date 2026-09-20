@@ -312,7 +312,13 @@ def apply_callsign(user: User, new_callsign: str, previous: str = "") -> dict:
         return {"state": "none"}
     row = UlsLicense.objects.filter(callsign=new_callsign).first()
     if row is None:
-        user.save(update_fields=["callsign", "pending_uls_name"])
+        # The name on file came from the FCC's record for the callsign they just left, so it is
+        # no longer the FCC's record for anything this account holds. The name itself stays,
+        # because wiping somebody's name is not ours to do; what goes is the claim that the FCC
+        # wrote it, which is what makes it read-only and what the page says about it (FR-4,
+        # FR-8).
+        user.name_from_uls = False
+        user.save(update_fields=["callsign", "pending_uls_name", "name_from_uls"])
         refresh_license_from_local_table(user)
         return {"state": "unverified"}
     # FR-16: a differing ULS name is confirmed by the member even when the name on file came

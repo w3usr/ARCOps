@@ -2636,3 +2636,17 @@ carries the actual running model ID.
   since WebAuthn cannot be exercised from a test. 375 tests, the accessibility sweep and the four
   guards pass.
 - **Git Hash**: b201e90
+
+## [2026-09-20 17:47 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A defect found while walking acceptance scenario T10: moving to a callsign
+  the FCC has no record of left the previous callsign's class, licensee name and expiry on the
+  license record, so the directory went on showing the old class letter.
+- **Sections/Files Affected**: apps/credentials/services.py
+  (`refresh_license_from_local_table`), apps/accounts/services.py (`apply_callsign`),
+  apps/credentials/tests/test_uls.py (one new regression test, one existing test updated).
+- **Nature of Contribution**: Diagnosis and fix by the assistant, from a club member's written
+  report of what he saw.
+- **Human Review Status**: Reviewed here; awaiting the reporter's re-test. Lint, the four
+  guards, 376 tests and the accessibility sweep pass.
+- **Git Hash**: [pending]

@@ -158,6 +158,19 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
             if changed:
                 user.save(update_fields=changed)
     else:
+        # Nothing on this record describes the callsign the member now holds, so none of it may
+        # stay: a member who moved from a Technician callsign to one the FCC has no record of
+        # kept the class, the licensee name and the expiry of the callsign they left (the
+        # collaborator on T10, 2026-09-20: "Switching from KC3ABC to WC1XYZ keeps the name and
+        # Technician category of KC3ABC"). An override is a sysadmin's deliberate act and is
+        # left alone (FR-15).
+        lic.licensee_name = ""
+        lic.operator_class = ""
+        lic.licensee_type = ""
+        lic.grant_date = None
+        lic.expiry_date = None
+        lic.frn = ""
+        lic.expiry_notice_stage, lic.expiry_notice_for = 0, None
         lic.status = "unverified"  # until the next import finds it
         lic.source = "fcc_uls_local"
     lic.retrieved_at = timezone.now()
