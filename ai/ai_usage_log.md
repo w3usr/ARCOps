@@ -2887,3 +2887,14 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 3046deb
+
+## [2026-09-20 22:20 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The callsign question goes back to the warning colour and becomes a strip
+  rather than a block: the first attempt fixed the wrong half of the advisor's note.
+- **Sections/Files Affected**: templates/base.html, static/css/app.css.
+- **Nature of Contribution**: Styling and wording by the assistant, from the advisor's note on
+  issue #93.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

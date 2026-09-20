@@ -385,12 +385,10 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
    somebody is a mode you chose; read-only is a fact about the account; viewing as somebody
    else is the one that should keep catching your eye. */
 .banner.acting { background: var(--accent-soft); border-color: var(--accent); }
-/* A standing question rather than something that just happened: quiet, not amber, and
-   sized to its sentence. The helptext takes the whole width under the buttons. */
-.banner.ask { background: var(--card); border-color: var(--line); padding: .5rem .75rem;
-  font-size: var(--t-small); }
-.banner.ask .helptext { flex-basis: 100%; margin: 0; }
-.banner.ask button { padding: .3rem .7rem; font-size: var(--t-small); }
+/* A standing question keeps the warning color, because it is one, and stays a strip: small
+   type, tight padding, and everything on one row where the width allows. */
+.banner.ask { padding: .4rem .75rem; font-size: var(--t-small); margin: .5rem 0; }
+.banner.ask button { padding: .25rem .65rem; font-size: var(--t-small); }
 .banner.readonly { background: var(--card); border-color: var(--line); }
 .banner.impersonating { background: var(--tag-warn); border-color: var(--warn); }
 /* A standing fact, quieter than a banner and never mistaken for something that just happened. */
