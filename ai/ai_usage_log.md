@@ -2663,4 +2663,4 @@ carries the actual running model ID.
   instruction.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 378 tests and the
   accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: f2f48fa
