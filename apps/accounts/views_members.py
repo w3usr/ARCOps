@@ -75,7 +75,7 @@ DIRECTORY_COLUMNS = [
     {"key": "callsign", "label": "Callsign", "show": "all"},
     {"key": "class", "label": "Class", "show": "all"},
     {"key": "category", "label": "Category", "show": "full"},
-    {"key": "position", "label": "Position", "show": "all"},
+    {"key": "position", "label": "Positions", "show": "all"},
     {"key": "status", "label": "Status", "show": "full"},
     # One roster, and an advisor may ask for the archived rows alongside the live ones, so the
     # column is what tells them apart. Only a reader who may see an archived record gets it

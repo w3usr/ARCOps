@@ -33,7 +33,7 @@
 
 {% if is_captain %}
 <section class="card health" aria-labelledby="h">
-  <h2 id="h">Schedule health</h2>
+  <h2 id="h">Coverage</h2>
   <p>{{ roster.counts.total }} slot{{ roster.counts.total|pluralize }}:
     {% if roster.counts.covered %}<span class="tag ok">{{ roster.counts.covered }} covered</span>{% endif %}
     {% if roster.counts.needs %}<span class="tag warn">{{ roster.counts.needs }} need someone</span>{% endif %}

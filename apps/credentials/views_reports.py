@@ -216,7 +216,7 @@ def member_roster(request):
             "class",
             "license_expires",
             "category",
-            "position",
+            "positions",
             "student_level",
             "graduation",
             "access",

@@ -47,11 +47,6 @@ def category_label(key) -> str:
 
 
 @register.filter
-def position_label(key) -> str:
-    return _label("club_positions", key)
-
-
-@register.filter
 def position_labels(keys) -> str:
     """Every office a member holds, in the club's configured order rather than tick order."""
     held = set(keys or [])

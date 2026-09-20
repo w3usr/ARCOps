@@ -1135,7 +1135,7 @@ Verbatim:
   two hours Saturday afternoon"), which captains see as they fill gaps. Deferred unless captains
   ask for it.
 
-### 3.7 Roster and schedule health
+### 3.7 Roster and coverage
 
 Verbatim:
 
@@ -1206,9 +1206,16 @@ Verbatim:
   access, IT access, control operator), the slot's status, and a filter for "problems only".
   Times show in UTC and the event's display zone. The page works at phone width and has a
   print layout.
-- **FR-66 [Must]** An **event health summary** at the top of the roster and on the event list:
+- **FR-66 [Must]** An **event coverage summary** at the top of the roster and on the event list:
   slots total, viable, at risk, not viable, empty; hours scheduled against each FR-39 limit;
-  and the number of unconfirmed sign-ups in the next 48 hours.
+  and the number of unconfirmed sign-ups in the next 48 hours. On the page it is headed
+  **Coverage**, and the cross-event page is **Upcoming coverage**: the word matches **Covered**,
+  which is what a slot with enough people already says on every roster.
+
+  > "Upcoming health" sounds too medical. Is there a better term than "health"? — NAF, 2026-09-20
+
+  The dictation's own phrase was "schedule health", and it is kept as he said it where his words
+  are quoted; the pages use the club's word for the thing they show.
 - **FR-67 [Must]** On rosters, members see each person's **short name**: first name (the
   preferred name where one is set) and callsign, or first name and last initial for a person
   with no callsign; then the **license class in parentheses**: N, T, G, A, E for a person; C, R,

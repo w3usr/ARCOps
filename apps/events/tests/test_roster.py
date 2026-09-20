@@ -92,10 +92,12 @@ def test_status_is_phrased_as_a_need_never_a_verdict(world):
     ev = world["ev"]
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
     assert "Open" in body and "not viable" not in body.lower() and "Not viable" not in body
-    assert "open slot" in body  # the member summary, not the health card
-    assert "Schedule health" not in body
+    assert "open slot" in body  # the member summary, not the captain's card
+    assert ">Coverage<" not in body
     body = _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
-    assert "Schedule health" in body and "open</span>" in body
+    # NAF, 2026-09-20: ""Upcoming health" sounds too medical." The card is headed with the word
+    # the roster already uses for a slot that has enough people: Covered.
+    assert ">Coverage<" in body and "open</span>" in body
 
 
 def test_zone_toggle_is_remembered(world):

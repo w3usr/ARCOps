@@ -2,7 +2,7 @@
 {% load times %}
 {% block title %}Events · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<div class="titlerow"><h1>Events</h1>{% if perms.ops.manage_events %}<span><a class="button secondary" href="{% url 'health_overview' %}">Upcoming health</a> <a class="button" href="{% url 'event_create' %}">New event</a></span>{% endif %}</div>
+<div class="titlerow"><h1>Events</h1>{% if perms.ops.manage_events %}<span><a class="button secondary" href="{% url 'health_overview' %}">Upcoming coverage</a> <a class="button" href="{% url 'event_create' %}">New event</a></span>{% endif %}</div>
 <section aria-labelledby="u"><h2 id="u">Upcoming</h2>
 {% if upcoming %}
 <ul class="eventcards">

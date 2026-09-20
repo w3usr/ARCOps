@@ -189,7 +189,7 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
         "Hours somebody has to take a place offered to them before it passes on.",
     ),
     "defaults.health_overview_weeks": (
-        "Upcoming health looks ahead",
+        "Upcoming coverage looks ahead",
         "Weeks of events on the at-a-glance page.",
     ),
     "defaults.retention_responsible_adult_days": (
@@ -238,7 +238,8 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
     ),
     "club_positions": (
         "Club positions",
-        "Officer posts and other roles, for the directory. Each needs a key and a label.",
+        "Officer posts and other roles, for the directory. A member may hold any number of them, "
+        "and any number of members may hold the same one. Each needs a key and a label.",
     ),
     "license_ladder": (
         "License classes",

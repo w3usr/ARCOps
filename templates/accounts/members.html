@@ -14,7 +14,7 @@ survive a bookmark.{% endcomment %}
   <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}">
   {% if full %}{% include "accounts/_filter.html" with name="category" label="Category" choices=category_choices ticked=chosen.category summary=summaries.category %}{% endif %}
   {% include "accounts/_filter.html" with name="license" label="Class" choices=license_choices ticked=chosen.license summary=summaries.license %}
-  {% include "accounts/_filter.html" with name="position" label="Position" choices=position_choices ticked=chosen.position summary=summaries.position %}
+  {% include "accounts/_filter.html" with name="position" label="Positions" choices=position_choices ticked=chosen.position summary=summaries.position %}
   {% if full %}
   {% include "accounts/_filter.html" with name="status" label="Status" choices=status_choices ticked=status_ticked summary=summaries.status %}
   {% if may_see_archive %}{% include "accounts/_filter.html" with name="archived" label="Archive" choices=archived_choices ticked=archived_ticked summary=summaries.archived %}{% endif %}
@@ -46,7 +46,7 @@ survive a bookmark.{% endcomment %}
   <td data-label="Callsign">{{ m.callsign|default:"—" }}</td>
   <td data-label="Class">{{ m.license_letter }}</td>
   {% if full %}<td data-label="Category">{{ m.category|category_label }}</td>{% endif %}
-  <td data-label="Position">{{ m.club_positions|position_labels|default:"—" }}</td>
+  <td data-label="Positions">{{ m.club_positions|position_labels|default:"—" }}</td>
   {% if full %}
   <td data-label="Status">{{ m.status_label }}</td>
   {% if may_see_archive %}<td data-label="Archived">{% if m.archived_at %}{{ m.archived_at|date:"d M Y" }}{% else %}—{% endif %}</td>{% endif %}

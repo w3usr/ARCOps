@@ -2358,3 +2358,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 345 tests, the accessibility sweep and
   the four guards pass.
 - **Git Hash**: eff7079
+
+## [2026-09-20 02:10 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: `/reconcile`. The pages say Coverage where they said "health", which the
+  advisor found too medical; the word matches Covered, which is what a slot with enough people
+  already reads. The sweep after the positions change also removed the singular position filter
+  that had no callers, renamed the CSV column and the table heading to the plural, and told the
+  Settings help that a member may hold several offices.
+- **Sections/Files Affected**: templates/events/{detail,list,health_overview}.html,
+  apps/ops/views_settings.py, apps/ops/templatetags/labels.py, apps/credentials/views_reports.py,
+  apps/accounts/views_members.py, templates/accounts/{members,roster}.html,
+  docs/REQUIREMENTS.md (FR-66, §3.7), apps/events/tests/test_roster.py.
+- **Nature of Contribution**: Vocabulary change and tidying by the assistant, from the advisor's
+  question.
+- **Human Review Status**: Pending the advisor's look. 345 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

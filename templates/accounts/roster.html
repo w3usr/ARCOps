@@ -7,7 +7,7 @@
 <p class="lede">Every account with access: license, credentials and their expiry, student level and graduation, last sign-in. Contact details are not on this page; they are a separate, audited export.</p>
 <p>{% if graduated %}<a class="button secondary" href="?">All members</a>{% else %}<a class="button secondary" href="?graduated=1">Students past their graduation</a>{% endif %} <a class="button secondary" href="?format=csv{% if graduated %}&graduated=1{% endif %}">Download CSV</a> <a class="button secondary" href="?format=csv&contacts=1{% if graduated %}&graduated=1{% endif %}">Download CSV with contact details</a></p>
 <div class="table-wrap"><table class="table">
-<thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Class</th><th scope="col">License expires</th><th scope="col">Category</th><th scope="col">Position</th><th scope="col">Student</th><th scope="col">Access</th><th scope="col">Credentials</th><th scope="col">Last sign-in</th></tr></thead>
+<thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Class</th><th scope="col">License expires</th><th scope="col">Category</th><th scope="col">Positions</th><th scope="col">Student</th><th scope="col">Access</th><th scope="col">Credentials</th><th scope="col">Last sign-in</th></tr></thead>
 <tbody>
 {% for r in rows %}
 <tr{% if r.graduated %} class="muted"{% endif %}>
@@ -16,7 +16,7 @@
   <td data-label="Class">{{ r.lic.effective_class|default:"" }}</td>
   <td data-label="License expires">{{ r.lic.effective_expiry|date:"Y-m-d"|default:"" }}</td>
   <td data-label="Category">{{ r.u.category|category_label }}</td>
-  <td data-label="Position">{{ r.u.club_positions|position_labels|default:"—" }}</td>
+  <td data-label="Positions">{{ r.u.club_positions|position_labels|default:"—" }}</td>
   <td data-label="Student">{% if r.u.category == 'student' %}{{ r.u.student_level|default:"" }} {{ r.u.graduation_semester|default:"" }} {{ r.u.graduation_year|default:"" }}{% if r.graduated %} <span class="tag warn">past graduation</span>{% endif %}{% endif %}</td>
   <td data-label="Access">{{ r.u.access_label }}</td>
   <td data-label="Credentials">{{ r.credentials|join:"; " }}</td>
