@@ -2751,4 +2751,4 @@ carries the actual running model ID.
   issue #9; the test was checked against the broken version before being kept.
 - **Human Review Status**: Pending the advisor's re-test; WebAuthn itself cannot be exercised
   from a test. Lint, the four guards, 387 tests and the accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: 6fb9192
