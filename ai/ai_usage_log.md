@@ -2805,4 +2805,4 @@ carries the actual running model ID.
   apps/comms/defaults.py (`password.rotated`).
 - **Nature of Contribution**: Wording fix by the assistant, from the advisor's note on issue #76.
 - **Human Review Status**: Pending the advisor's look.
-- **Git Hash**: [pending]
+- **Git Hash**: 9bdff55
