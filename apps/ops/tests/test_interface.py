@@ -255,3 +255,21 @@ def test_a_refused_page_is_the_clubs_own_page_and_says_what_to_do():
     assert "Page not found" in body and "Go to Home" in body
     assert "Change your level" in body and "Faculty advisor" in body
     assert "<html" in body and "sidenav" in body, "the club's own page, not the server's"
+
+
+@pytest.mark.django_db
+def test_the_footer_credits_the_authoring_club_with_a_link():
+    """The advisor, 2026-09-19: the authoring club's name in the credit line should link to its
+    own page.
+
+    It is the software's attribution, so it points at the club that wrote it wherever the
+    software runs, rather than at the club running this copy.
+    """
+    from django.core.management import call_command
+    from django.test import Client
+
+    from apps.ops.branding import PRODUCT_AUTHOR, PRODUCT_AUTHOR_URL
+
+    call_command("club_import")
+    body = Client().get("/accounts/login/").content.decode()
+    assert f'free software from <a href="{PRODUCT_AUTHOR_URL}">{PRODUCT_AUTHOR}</a>' in body

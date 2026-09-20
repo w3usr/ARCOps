@@ -2219,3 +2219,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look on the phone. 332 tests pass, the
   accessibility sweep and the four guards pass.
 - **Git Hash**: 73bba40
+
+## [2026-09-20 00:00 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The authoring club's name in the footer's credit line is a link to its own
+  page. It is the software's attribution rather than the installation's, so the address lives
+  beside the product's other constants and points at the club that wrote the software wherever
+  a copy is run.
+- **Sections/Files Affected**: apps/ops/branding.py, templates/base.html,
+  apps/ops/tests/test_interface.py.
+- **Nature of Contribution**: Code and a test by the assistant, at the advisor's direction.
+- **Human Review Status**: Pending the advisor's look. 333 tests pass, the accessibility sweep
+  and the four guards pass.
+- **Git Hash**: pending

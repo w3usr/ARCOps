@@ -101,7 +101,7 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
 {% if user.is_authenticated %}</div>{% endif %}
 <footer class="site">
   <p class="club">{% if club.public_page %}<a href="{{ club.public_page }}">{% endif %}{% if club.callsign %}{{ club.callsign }} {% endif %}{{ club.name }}{% if club.public_page %}</a>{% endif %}</p>
-  <p class="credit"><a href="{% url 'privacy' %}">Privacy notice</a> · Powered by <a href="{{ product.url }}">{{ product.name }}</a> ({{ product.long_name }}), {{ product.credit }}.</p>
+  <p class="credit"><a href="{% url 'privacy' %}">Privacy notice</a> · Powered by <a href="{{ product.url }}">{{ product.name }}</a> ({{ product.long_name }}), free software from <a href="{{ product.author_url }}">{{ product.author }}</a>.</p>
 </footer>
 <script src="{% static 'js/app.js' %}" defer></script>
 <script src="{% static 'js/richtext-check.js' %}" defer></script>
