@@ -2472,4 +2472,4 @@ carries the actual running model ID.
   advisor's report and his two decisions on where a passkey belongs and who can be required.
 - **Human Review Status**: Pending the advisor's look. 361 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 6adca39
