@@ -2907,4 +2907,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Styling by the assistant, from the advisor's note on issue #93.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: 8d504fc
