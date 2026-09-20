@@ -98,8 +98,13 @@ answer is for a choice that is genuinely one of a kind.
 
 **An empty panel is a filter that is off**, and it starts empty. A panel that opens with its
 boxes already ticked, under a summary reading "Any status", tells the reader two different
-things at once. Where the unnarrowed list leaves something out, the panel still starts empty and
-the thing left out is named in the requirement, not drawn as an absent tick.
+things at once.
+
+The exception is a panel whose *unnarrowed* state is itself a narrowing: the members list leaves
+the archive out until somebody asks for it, so the Archive panel opens with **Not archived**
+ticked and says so in its summary. The tick is honest there, and its absence would not be. The
+test is what the page is showing: a tick that describes the list is right, and a tick that only
+repeats "everything" is noise.
 
 ## Destructive actions
 

@@ -2312,3 +2312,18 @@ carries the actual running model ID.
 - **Human Review Status**: Rendered and checked by eye against the advisor's own screenshots;
   340 tests, the accessibility sweep and the four guards pass.
 - **Git Hash**: 450ae4f
+
+## [2026-09-20 01:25 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: `/reconcile`. Two documents had over-generalised yesterday's filter rule:
+  four of the five panels start empty, but the Archive panel opens with "Not archived" ticked
+  and should, because the unnarrowed roster does leave the archive out. FR-13 and INTERFACE.md
+  now name that exception and give the test behind it. FR-78 gained a line saying the mail's
+  call-to-action block belongs to the mail, with a test that the copy read in the application
+  keeps its link as a link.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-13, FR-78), docs/INTERFACE.md,
+  apps/comms/tests/test_messages.py.
+- **Nature of Contribution**: Reconciliation and writing by the assistant.
+- **Human Review Status**: Pending the advisor's look. 341 tests, the accessibility sweep and
+  the four guards pass.
+- **Git Hash**: {{pending}}

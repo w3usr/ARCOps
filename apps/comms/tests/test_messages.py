@@ -289,3 +289,20 @@ def test_the_invitation_asks_for_its_link_on_a_line_of_its_own():
     assert '<p><a href="{{ link }}">' in DEFAULTS_BY_KEY["invitation"]["body_html"]
     _, body = render_message("invitation", {"link": "https://x.example/i/abc", "expires": None})
     assert "Accept the invitation</span>" in wrap(body)
+
+
+@pytest.mark.django_db
+def test_the_in_application_copy_keeps_its_link_as_a_link():
+    """The filled block belongs to the mail. On the site the message sits on a page that already
+    styles a link, and a mail-shaped table in the middle of it would read as a foreign object."""
+    from apps.accounts.models import User
+    from apps.comms.services import compose
+
+    user = User.objects.create_user(
+        "mem@example.org", "pw-Testing-123", groups=["member"], first_name="M", last_name="Em"
+    )
+    compose(user, "account", "Hello", '<p><a href="https://x.example/c/">Confirm</a></p>')
+    client = Client()
+    client.force_login(user)
+    body = client.get("/me/messages/").content.decode()
+    assert 'href="https://x.example/c/"' in body and "bgcolor" not in body

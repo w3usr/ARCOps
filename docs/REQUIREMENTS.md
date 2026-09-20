@@ -585,11 +585,13 @@ officer admits or declines them (FR-121). Every account records the link it join
 
   **Every filter on that list takes a set**: each is a panel of checkboxes rather than a
   drop-down holding one answer, so "the officers and the advisors" is a question the page can
-  take. Every panel starts empty, because an empty panel is a filter that is off; the status
-  panel is no exception, and the unnarrowed list is every live account with a deleted row left
-  out until Deleted is ticked. (2026-09-20, superseding "the status panel starts with everything
+  take. A panel starts empty, because an empty panel is a filter that is off; the status panel
+  is no exception, and the unnarrowed list is every live account with a deleted row left out
+  until Deleted is ticked. (2026-09-20, superseding "the status panel starts with everything
   ticked but Deleted" of 2026-09-19, which asked for the same list and drew it the other way
-  round.)
+  round.) **The Archive panel is the one that opens with a tick**, on **Not archived**, because
+  leaving the archive out is what the unnarrowed list actually does; the tick describes the page
+  rather than repeating "everything".
 
   > I think the convention we are using is that the filter is turned off if everything is
   > unchecked. The status filter seems to be the opposite right now. Fix it. — NAF, 2026-09-20
@@ -1421,6 +1423,9 @@ made it likely that reliable delivery would take time to establish:
 
   > Can we make the Join and Confirm Email emails a bit more attractive like the Reset my
   > password button/email? — NAF, 2026-09-20
+
+  The block belongs to the mail. The same message read in the application (FR-82) keeps its
+  link as a link, because the page it sits on already styles one.
 - **FR-79 [Should]** A weekly digest to members: upcoming events, slots still needing people,
   and the member's own commitments. Opt-out per FR-71.
 - **FR-80 [Should]** When an opening in a slot's schedule (FR-54) fires, an announcement to
