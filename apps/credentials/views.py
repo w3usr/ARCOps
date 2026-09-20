@@ -10,6 +10,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
@@ -194,7 +195,7 @@ def approvals(request):
             "a": a,
             "institution_address": _institution_address(a.user),
             "needs_institution": needs_institution_email(a)
-            and not institution_address_ok(_institution_address(a.user)),
+            and not institution_address_ok(_institution_address(a.user, confirmed_only=True)),
         }
         for a in queue
     ]
@@ -354,26 +355,28 @@ def decide(request, pk):
         return redirect("approvals")
     if request.POST.get("decision") == "approve":
         if needs_institution_email(a):
-            # FR-27: the institution's address is the evidence its own checks are done.
-            addr = (
-                (request.POST.get("institution_email") or _institution_address(a.user) or "")
-                .strip()
-                .lower()
-            )
-            if not institution_address_ok(addr):
+            # FR-27, tightened 2026-09-20. The evidence is a **confirmed** institution address,
+            # and approving is not where an address gets confirmed: the advisor asked for the
+            # standard to be confirmation, with a manual confirmation as the override. That
+            # override already exists, on the member's own page, where "Confirm it myself" is
+            # an officer's waiver that needs no mail (FR-126). Typing an address here used to
+            # stand in for it, which meant one person's address could be evidence about
+            # another, and meant nobody had ever stood behind the address at all.
+            held = _institution_address(a.user, confirmed_only=True)
+            if not institution_address_ok(held):
                 domains = ", ".join(institution_domains())
                 messages.error(
                     request,
-                    f"{a.user.display_first} needs an institution email address "
-                    f"({domains}) on file before {a.credential.label.lower()} is granted. "
-                    "Add it here, or on their own page.",
+                    format_html(
+                        "{} has no confirmed {} address, so there is nothing to show they are "
+                        "in the institution's directory. Add and confirm one on "
+                        '<a href="{}">their page</a>, then approve this.',
+                        a.user.display_first,
+                        domains,
+                        reverse("member_edit", args=[a.user.pk]),
+                    ),
                 )
                 return redirect("approvals")
-            if addr and addr != _institution_address(a.user):
-                from apps.accounts.addresses import add
-                from apps.accounts.models import Address
-
-                add(a.user, addr, kind=Address.Kind.INSTITUTION, actor=request.user)
         if was_declined:
             # Reversing a decline says why, so the record tells a mis-click from a change of
             # mind. Both are legitimate; only one of them is an error, and a log that cannot
@@ -448,7 +451,14 @@ def computer_password(request):
     return render(request, "credentials/password.html", {"secret": secret})
 
 
-def _institution_address(user) -> str:
-    """The institution address on the account, if there is one (FR-27)."""
-    row = user.addresses.filter(kind="institution").first()
+def _institution_address(user, *, confirmed_only: bool = False) -> str:
+    """The institution address on the account, if there is one (FR-27).
+
+    `confirmed_only` is what the credential gate asks for: an address nobody has stood behind
+    is not evidence that anybody is in the institution's directory.
+    """
+    rows = user.addresses.filter(kind="institution")
+    if confirmed_only:
+        rows = rows.filter(confirmed=True)
+    row = rows.first()
     return row.address if row else ""

@@ -628,26 +628,22 @@ def test_station_and_computer_access_need_an_institution_address_from_anyone():
             user=member, template=template, credential=template.credential, signer_name="No Badge"
         )
         body = c.get("/credentials/approvals/").content.decode()
-        assert "Institution email" in body, template.credential.key
+        assert "no confirmed institution address" in body, template.credential.key
 
         r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.SIGNED, "refused without one"
-        assert "institution email address" in c.get(r["Location"]).content.decode()
+        assert "no confirmed institution address" in c.get(r["Location"]).content.decode()
 
-        # A personal address is not one, however it is typed in.
-        c.post(
-            f"/credentials/approvals/{signed.pk}/decide/",
-            {"decision": "approve", "institution_email": f"no.badge{n}@gmail.com"},
-        )
+        # A personal address is not one, confirmed or not.
+        addresses.add(member, f"personal{n}@gmail.com", kind="personal", confirmed=True)
+        c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.SIGNED, "and not any address will do"
 
-        # The institution's own domain grants it, and is put on the account.
-        c.post(
-            f"/credentials/approvals/{signed.pk}/decide/",
-            {"decision": "approve", "institution_email": f"no.badge{n}@example.edu"},
-        )
+        # A confirmed address at the institution's own domain grants it.
+        addresses.add(member, f"no.badge{n}@example.edu", kind="institution", confirmed=True)
+        c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.APPROVED
 
@@ -674,3 +670,69 @@ def test_a_downloaded_agreement_is_named_after_who_signed_what_and_when():
     member.save(update_fields=["callsign"])
     a.save(update_fields=["expires_on"])
     assert agreement_pdf_name(a) == "Nitkowski_Gregory_station_access.pdf"
+
+
+def test_an_address_that_is_somebody_elses_is_not_evidence_about_this_member():
+    """The advisor, 2026-09-20: approving used an address already confirmed to another member.
+
+    Adding it unconfirmed skipped the check that refuses a duplicate, so one person's address
+    stood as evidence about another. Typing it at approval is the approver standing behind it,
+    which confirms it — and confirming is what refuses an address that is already taken.
+    """
+    from apps.accounts import addresses
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    st, _it, t_st, _t_it = _setup()
+    advisor = _user("adv6@example.org", "advisor", category="faculty")
+    owner = _user("owner@example.org", first_name="Bob", last_name="Owner")
+    addresses.add(owner, "shared@example.edu", kind="institution", confirmed=True)
+    member = _user("other@example.org", first_name="Some", last_name="Oneelse")
+    signed = SignedAgreement.objects.create(
+        user=member, template=t_st, credential=st, signer_name="Some Oneelse"
+    )
+
+    c = Client()
+    c.force_login(advisor)
+    # Somebody else's address cannot be confirmed onto this account at all, which is the check
+    # that approving used to skip by adding it unconfirmed.
+    with pytest.raises(addresses.AddressInUse):
+        addresses.add(member, "shared@example.edu", kind="institution", confirmed=True)
+
+    r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED, "no confirmed address of their own"
+    assert "no confirmed" in c.get(r["Location"]).content.decode()
+
+    # Their own, confirmed on their page, is what grants it.
+    addresses.add(member, "theirs@example.edu", kind="institution", confirmed=True)
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.APPROVED
+
+
+def test_an_unconfirmed_institution_address_is_not_enough_to_grant_access():
+    """Nobody has stood behind it, so it is not evidence that anybody is in the directory."""
+    from apps.accounts import addresses
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    st, _it, t_st, _t_it = _setup()
+    advisor = _user("adv7@example.org", "advisor", category="faculty")
+    member = _user("unconf@example.org", first_name="Un", last_name="Confirmed")
+    addresses.add(member, "unconfirmed@example.edu", kind="institution")  # not confirmed
+    signed = SignedAgreement.objects.create(
+        user=member, template=t_st, credential=st, signer_name="Un Confirmed"
+    )
+    c = Client()
+    c.force_login(advisor)
+    assert "no confirmed institution address" in c.get("/credentials/approvals/").content.decode()
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED

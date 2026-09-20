@@ -2908,3 +2908,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 8d504fc
+
+## [2026-09-20 22:38 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: An access agreement is approved only against a **confirmed** institution
+  address, and approving is no longer a place where an address gets confirmed. Reported by the
+  advisor, who approved an agreement using an address already confirmed to another member.
+- **Sections/Files Affected**: apps/credentials/views.py (`_institution_address`, the gate, the
+  queue and reversal contexts), templates/credentials/approvals.html, tests.
+- **Nature of Contribution**: Diagnosis and fix by the assistant, from the advisor's report and
+  his decision on the rule.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 395 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]
