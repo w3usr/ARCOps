@@ -2268,3 +2268,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 339 tests pass, with the accessibility
   sweep and the four guards.
 - **Git Hash**: de77810
+
+## [2026-09-20 00:41 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Take this installation's server paths out of the public technical
+  requirements, on the advisor's instruction. The environment file, the database directory, the
+  backup directory and the club overlay were each named by their full path on the club's own
+  server; each now describes what it is and leaves its location to whoever runs the
+  installation.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (the deployment diagram, TR-2,
+  TR-19, the backup entry, TR-41).
+- **Nature of Contribution**: Edit by the assistant.
+- **Human Review Status**: Pending the advisor's look; the repository guards and 339 tests pass.
+- **Git Hash**: {{pending}}
