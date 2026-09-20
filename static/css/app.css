@@ -562,6 +562,13 @@ details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 .row-form label { display: block; font-size: .9rem; }
 .row-form input { min-width: 16rem; }
 
+/* Approve and Decline read as one choice, so they sit on one row; the reason travels with the
+   button it belongs to. They stack on a phone, and Approve stays first either way. */
+.decide-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s1) var(--s3); margin-top: var(--s1); }
+.decide-decline { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s1); }
+.decide-decline input { min-width: 14rem; }
+@media (max-width: 560px) { .decide-decline input { min-width: 0; width: 100%; } }
+
 /* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a
    phone inside its own wrapper, so the page itself never does (FR-95). */
 .tablewrap { overflow-x: auto; max-width: 100%; }

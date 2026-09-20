@@ -106,6 +106,7 @@ TEMPLATES = [
                 "apps.ops.context_processors.product",
                 "apps.accounts.acting.context",
                 "apps.comms.context_processors.unread",
+                "apps.credentials.context_processors.approvals_waiting",
                 "apps.accounts.impersonate.context",
                 "apps.accounts.guardian.context",
             ],

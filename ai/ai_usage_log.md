@@ -2664,3 +2664,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 378 tests and the
   accessibility sweep pass.
 - **Git Hash**: f2f48fa
+
+## [2026-09-20 18:52 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The approvals page as the advisor asked for it: a badge on the sidebar
+  entry with the number waiting, Approve and Decline on one row, a link to the signed PDF, and a
+  way back from a decline made by mistake.
+- **Sections/Files Affected**: apps/credentials/context_processors.py (new),
+  config/settings/base.py, templates/base.html, templates/credentials/approvals.html,
+  apps/credentials/views.py, static/css/app.css, apps/credentials/tests/test_phase4.py.
+- **Nature of Contribution**: Code generation and tests by the assistant, from four instructions.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 380 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

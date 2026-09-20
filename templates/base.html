@@ -63,7 +63,7 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
     {% if perms.ops.approve_agreements or perms.ops.view_archive or perms.ops.rotate_shared_secret %}
     <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
     <ul class="navlist" aria-labelledby="nav-advisor">
-      {% if perms.ops.approve_agreements %}<li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>{% endif %}
+      {% if perms.ops.approve_agreements %}<li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals{% if approvals_waiting %} <span class="badge" aria-label="{{ approvals_waiting }} waiting for approval">{{ approvals_waiting }}</span>{% endif %}</span></a></li>{% endif %}
       {% comment %}The page that sets the station computer password had no way in but a typed
       URL, so only somebody who knew the address could rotate it (NAF, 2026-09-20: "There needs
       to be a UI entry point for the faculty advisor and above to rotate this.").{% endcomment %}

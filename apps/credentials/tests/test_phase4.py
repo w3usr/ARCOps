@@ -339,3 +339,79 @@ def test_the_advisor_reaches_the_computer_password_from_the_sidebar(settings):
     assert "Computer password" not in home
     assert "/credentials/computer-password/manage/" not in home
     assert c.get("/credentials/computer-password/manage/").status_code == 404
+
+
+def test_the_approvals_page_carries_the_pdf_the_badge_and_a_way_back_from_a_decline():
+    """Four things the advisor asked for on 2026-09-20, walking the page with one signature on it.
+
+    > Can the Approvals navigation item also get a badge indicating the number of things that
+    > need approval? … I want the Approve and Decline buttons on the same line. There should
+    > also be a link to download the signed PDF. … we need some way to approve after an
+    > accidental decline.
+    """
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv3@example.org", "advisor", category="faculty")
+    member = _user("mem3@example.org")
+    signed = SignedAgreement.objects.create(
+        user=member,
+        template=t_st,
+        credential=st,
+        signer_name="Mem Ber",
+        state=SignedAgreement.State.SIGNED,
+    )
+
+    c = Client()
+    c.force_login(advisor)
+    page = c.get("/credentials/approvals/").content.decode()
+    assert f"/credentials/agreements/{signed.pk}/pdf/" in page  # what they signed, to read
+    assert "decide-row" in page  # Approve and Decline on one row
+    assert "1 waiting for approval" in page  # the sidebar badge, on every page
+
+    # An accidental decline is not the member's to undo by signing again.
+    c.post(
+        f"/credentials/approvals/{signed.pk}/decide/",
+        {"decision": "decline", "reason": "wrong button"},
+    )
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.DECLINED
+    page = c.get("/credentials/approvals/").content.decode()
+    assert "Approve after all" in page and "wrong button" in page
+    assert "1 waiting for approval" not in page  # the badge counts what is waiting, not this
+
+    c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.APPROVED
+    assert signed.decision_reason == ""  # the reason it was declined for no longer describes it
+    assert signed.expires_on and signed.approver == advisor
+
+    # Declining something already declined says so rather than recording it twice.
+    other = SignedAgreement.objects.create(
+        user=member,
+        template=t_it,
+        credential=it,
+        signer_name="Mem Ber",
+        state=SignedAgreement.State.DECLINED,
+    )
+    c.post(f"/credentials/approvals/{other.pk}/decide/", {"decision": "decline", "reason": "no"})
+    other.refresh_from_db()
+    assert other.state == SignedAgreement.State.DECLINED and other.decision_reason == ""
+
+
+def test_the_badge_and_the_declined_list_are_only_for_somebody_who_may_approve():
+    call_command("club_import")
+    st, _it, t_st, _t_it = _setup()
+    officer = _user("off3@example.org", "officer")
+    member = _user("mem4@example.org")
+    SignedAgreement.objects.create(
+        user=member,
+        template=t_st,
+        credential=st,
+        signer_name="Mem Ber",
+        state=SignedAgreement.State.SIGNED,
+    )
+    c = Client()
+    c.force_login(officer)
+    home = c.get("/").content.decode()
+    assert "waiting for approval" not in home
+    assert c.get("/credentials/approvals/").status_code == 404

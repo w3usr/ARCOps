@@ -1,5 +1,7 @@
 """Agreements: sign in one workflow (FR-22), approve (FR-25), view the computer password (FR-33)."""
 
+import datetime as dt
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -13,6 +15,9 @@ from apps.ops.config import setting
 
 from .models import AgreementTemplate, SignedAgreement
 from .services import approve, holds, reveal_shared_secret
+
+# How long a declined signature stays in reach of the approver who declined it.
+DECLINED_WINDOW_DAYS = 30
 
 
 def _is_approver(user) -> bool:
@@ -129,7 +134,21 @@ def approvals(request):
     )
     # the institution address is a row on the account now, so the page is handed it per agreement
     rows = [{"a": a, "institution_address": _institution_address(a.user)} for a in queue]
-    return render(request, "credentials/approvals.html", {"queue": rows})
+    # A decline is one press away from an approval, so the ones declined lately stay in reach
+    # rather than waiting on the member to sign again (NAF, 2026-09-20: "we need some way to
+    # approve after an accidental decline").
+    since = timezone.now() - dt.timedelta(days=DECLINED_WINDOW_DAYS)
+    declined = [
+        {"a": a, "institution_address": _institution_address(a.user)}
+        for a in SignedAgreement.objects.filter(
+            state=SignedAgreement.State.DECLINED, approved_at__gte=since
+        ).select_related("user", "template", "credential", "approver")
+    ]
+    return render(
+        request,
+        "credentials/approvals.html",
+        {"queue": rows, "declined": declined, "declined_days": DECLINED_WINDOW_DAYS},
+    )
 
 
 @login_required
@@ -137,7 +156,17 @@ def approvals(request):
 def decide(request, pk):
     if not _is_approver(request.user):
         raise Http404
-    a = get_object_or_404(SignedAgreement, pk=pk, state=SignedAgreement.State.SIGNED)
+    # A declined signature can still be approved: the decline may have been a slip, and making
+    # the member sign again to undo somebody else's mistake is the wrong way round (FR-22).
+    a = get_object_or_404(
+        SignedAgreement,
+        pk=pk,
+        state__in=[SignedAgreement.State.SIGNED, SignedAgreement.State.DECLINED],
+    )
+    was_declined = a.state == SignedAgreement.State.DECLINED
+    if was_declined and request.POST.get("decision") != "approve":
+        messages.error(request, "That agreement is already declined.")
+        return redirect("approvals")
     if request.POST.get("decision") == "approve":
         if a.user.category == "community" and a.credential.key == "station_access":
             # FR-27: the institution's address is the evidence HR is done
@@ -165,8 +194,13 @@ def decide(request, pk):
                 from apps.accounts.models import Address
 
                 add(a.user, addr, kind=Address.Kind.INSTITUTION, actor=request.user)
+        a.decision_reason = ""  # the reason it was declined for no longer describes it
         approve(request.user, a)
-        messages.success(request, f"Approved; expires {a.expires_on:%d %B %Y}.")
+        messages.success(
+            request,
+            ("Approved after all; expires " if was_declined else "Approved; expires ")
+            + f"{a.expires_on:%d %B %Y}.",
+        )
     else:
         a.state = SignedAgreement.State.DECLINED
         a.decision_reason = request.POST.get("reason", "")
