@@ -2739,3 +2739,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 386 tests and the
   accessibility sweep pass.
 - **Git Hash**: ea138d6
+
+## [2026-09-20 20:12 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A regression from this evening's Confirm Access work: taking the passkey
+  out of the adapter's list of reauthentication methods also took it out of the library's own
+  check, so the credential came back to a view that redirected instead of verifying it.
+- **Sections/Files Affected**: apps/accounts/adapter.py (`get_reauthentication_methods`),
+  apps/accounts/tests/test_reauthenticate.py (one new regression test).
+- **Nature of Contribution**: Diagnosis and fix by the assistant, from the advisor's report on
+  issue #9; the test was checked against the broken version before being kept.
+- **Human Review Status**: Pending the advisor's re-test; WebAuthn itself cannot be exercised
+  from a test. Lint, the four guards, 387 tests and the accessibility sweep pass.
+- **Git Hash**: [pending]

@@ -187,3 +187,34 @@ def test_confirm_access_offers_a_password_and_a_passkey_and_no_authenticator_cod
     assert "Use a passkey" in body
     assert body.index("Confirm") < body.index("Use a passkey"), "password first, as on sign-in"
     assert "authenticator" not in body.lower()
+
+
+def test_the_passkey_endpoint_is_not_bounced_back_to_the_password_page(monkeypatch):
+    """The library refuses any reauthentication path it has not advertised.
+
+    Taking the passkey out of the adapter's list to keep it off the page took it out of that
+    check too, so the browser raised its prompt and the credential came back to a view that
+    redirected instead of verifying: "Passkey authentication is not working here." (2026-09-20).
+    The list says which pages may confirm; what a page draws is the template's business.
+    """
+    from allauth.mfa.models import Authenticator
+
+    user = _member()
+    Authenticator.objects.create(
+        user=user, type=Authenticator.Type.WEBAUTHN, data={"credential": {}}
+    )
+    monkeypatch.setattr(
+        "apps.accounts.views_mfa.webauthn_auth.begin_authentication", lambda user: {"x": 1}
+    )
+    c = Client()
+    c.force_login(user)
+
+    r = c.get("/accounts/2fa/webauthn/reauthenticate/")
+    assert r.status_code == 200, "the passkey page answers rather than redirecting away"
+
+    # And it is still absent from what Confirm Access offers as an alternative link, because the
+    # button is on the page itself.
+    body = c.get("/accounts/reauthenticate/").content.decode()
+    assert "Use a passkey" in body
+    assert "authenticator" not in body.lower()
+    assert body.count("/accounts/2fa/webauthn/reauthenticate/") == 1, "the form's action, no link"

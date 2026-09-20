@@ -54,12 +54,20 @@ class AccountAdapter(DefaultAccountAdapter):
         > TOTP tokens/authenticator app is ONLY used for 2fa. So, it does not show up on any
         > initial screen. Passwords or passkeys are the first line of entry. — NAF, 2026-09-20
 
-        Nobody is shut out by it: every account has a password. The passkey is not listed either,
-        because Confirm Access carries its button rather than a link to a second page
-        (apps.accounts.views_mfa.ConfirmAccessView).
+        Nobody is shut out by it: every account has a password.
+
+        **The passkey stays in this list**, and is taken out of what the page draws instead
+        (`apps.accounts.views_mfa.ConfirmAccessView`). The library's own webauthn view refuses
+        any path that is not an advertised method, so dropping it here let the browser raise its
+        prompt and then bounced the credential back to the password page without checking it,
+        reported as "Passkey authentication is not working here" (2026-09-20). What this list
+        means to the library is *which pages may confirm*; what a page shows is the template's
+        business.
         """
         return [
-            m for m in super().get_reauthentication_methods(user) if m["id"] == "reauthenticate"
+            m
+            for m in super().get_reauthentication_methods(user)
+            if m["id"] != "mfa_reauthenticate"  # the authenticator code, and it alone
         ]
 
     def get_login_stages(self) -> list[str]:
