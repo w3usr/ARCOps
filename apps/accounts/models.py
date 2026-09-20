@@ -134,7 +134,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     deleted_at = models.DateTimeField(null=True, blank=True)
     legal_hold = models.BooleanField(default=False)  # TR-28: retention never touches this account
     category = models.CharField(max_length=30, blank=True)  # key from club config (FR-8)
-    club_position = models.CharField(max_length=40, blank=True)  # key from club config
+    # The offices this member holds, as keys from the club's configured list. A list, because
+    # one person can hold two of them and a club can elect several people to the same one:
+    #
+    # > I am both Faculty Advisor and Club License Trustee. I should be able to be marked and
+    # > listed as both. Some clubs may have a Board of Trustees, where multiple members hold the
+    # > position of Board Member. — NAF, 2026-09-20
+    club_positions = models.JSONField(default=list, blank=True)
     under_18 = models.BooleanField(default=False)  # a flag, never a date (§2.4)
     student_level = models.CharField(
         max_length=14,

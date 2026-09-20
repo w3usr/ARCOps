@@ -218,11 +218,19 @@ Treasurer, Trustee, and so on) is a profile field set by a **faculty advisor or 
 from a configurable list **(portability)**. An officer says who is a member (FR-91); who holds
 which office is the advisor's to record.
 
-**An account carries one position**, so the list a club configures should hold the offices it
-wants to read off a roster, and leave out a hat that is always worn with another one. Where one
-person holds two offices, the club either records the one that matters on the page or, if both
-must show, says so and the field becomes a set; it is one value today because every club asked
-so far elects one person to one office (2026-09-20).
+**An account carries any number of positions, and a position any number of accounts.** Neither
+side is exclusive: one member is both the faculty advisor and the club's license trustee, and a
+club with a board elects several members to the same seat. The field is a set ticked from the
+configured list, the roster names every office a member holds in the order the club lists them,
+and ticking a position in the filter finds everybody who holds it.
+
+> I am both Faculty Advisor and Club License Trustee. I should be able to be marked and listed as
+> both. Some clubs may have a Board of Trustees, where multiple members hold the position of
+> Board Member. We should make sure our design allows for this. — NAF, 2026-09-20
+
+*(This supersedes "an account carries one position", written earlier the same day when the field
+held one value. The advice that came with it, to leave a hat out of the configured list because
+it is always worn with another one, goes with it: the list holds the offices the club elects.)*
 
 > Only Faculty Advisors and above should be able to set club position. — NAF, 2026-09-19 It is displayed, and one capability derives from it:
 
@@ -282,7 +290,7 @@ The draft models this as follows:
 | Create or edit account manually | ✓ | · | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · | · |
 | Decide which groups an account is in | ✓ | · | · | · | · | · |
-| Set another member's club position | ✓ | ✓ | ✓ | · | · | · |
+| Set the club positions another member holds | ✓ | ✓ | · | · | · | · |
 | Delete a user account (FR-118) | ✓ | · | · | · | · | · |
 | Override license class or expiration | ✓ | · | · | · | · | · |
 | Edit own name, callsign, emails, phone, preferences | ✓ | ✓ | ✓ | ✓ | own | for minor |
@@ -545,7 +553,7 @@ officer admits or declines them (FR-121). Every account records the link it join
   | Member category | yes | no | Faculty / Staff / Student / Community Member; set at invitation, changed by officer or sysadmin |
   | Anticipated graduation | for Students | yes | Semester (Spring, Summer, or Fall; Spring is the default) and four-digit year. Students only; blank for other categories. NAF, 2026-09-13 |
   | Student level | for Students | yes | Undergraduate or graduate. Students only. NAF, 2026-09-13 |
-  | Club position | no | no | From the configured list; set by anyone who may set another member's club position, which the Club Officer and Faculty Advisor groups hold |
+  | Club positions | no | no | Any number from the configured list, and any number of members may hold the same one (§2.3); set by anyone who may set another member's club positions, which the Faculty Advisor group holds |
   | Access groups | no | no | Section 2.1; the groups the account is in, set by anyone who may decide which groups an account is in. An account in no group can do nothing |
   | Guardian(s) | required if under 18; more than one allowed | guardian edits own | Section 2.4 |
   | Responsible adults previously named | for minors | guardian | Section 2.4; picked from when signing up for a slot (FR-64) |

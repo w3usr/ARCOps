@@ -235,7 +235,7 @@ def member_roster(request):
                 lic.effective_class if lic else "",
                 lic.effective_expiry.isoformat() if lic and lic.effective_expiry else "",
                 u.category,
-                u.club_position,
+                "; ".join(u.club_positions or []),
                 u.student_level or "",
                 f"{u.graduation_semester or ''} {u.graduation_year or ''}".strip(),
                 ", ".join(g.name for g in u.groups.all()) or "none",

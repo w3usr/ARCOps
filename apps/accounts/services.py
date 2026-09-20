@@ -638,7 +638,7 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
     user.cell_phone = user.callsign = ""
     user.name_from_uls = False
     user.pending_uls_name = {}
-    user.club_position = ""
+    user.club_positions = []
     # The subscriptions are already gone above; the switch that governed them is a preference
     # of the person's, and means nothing on an account that cannot sign in.
     user.push_enabled = False

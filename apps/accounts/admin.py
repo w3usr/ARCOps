@@ -69,7 +69,7 @@ class UserAdmin(DjangoUserAdmin):
             "Contact",
             {"fields": ("cell_phone",)},
         ),
-        ("Club", {"fields": ("callsign", "category", "club_position", "under_18")}),
+        ("Club", {"fields": ("callsign", "category", "club_positions", "under_18")}),
         ("Student", {"fields": ("student_level", "graduation_semester", "graduation_year")}),
         (
             "Leaving",

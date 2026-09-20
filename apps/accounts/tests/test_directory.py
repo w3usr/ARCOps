@@ -32,7 +32,7 @@ def directory():
         first_name="Ann",
         last_name="Officer",
         category="faculty",
-        club_position="president",
+        club_positions=["president"],
         cell_phone="5550001",
     )
     User.objects.create_user(
@@ -408,3 +408,65 @@ def test_the_status_panel_starts_empty_like_every_other_panel(directory):
     # One roster: an advisor may ask for the archived rows beside the live ones, so a column
     # tells them apart (NAF, 2026-09-19). An officer gets neither the column nor the filter.
     assert "sort=archived" in body
+
+
+def test_a_member_holds_any_number_of_positions_and_a_position_any_number_of_members(directory):
+    """NAF, 2026-09-20: "I am both Faculty Advisor and Club License Trustee. I should be able to
+    be marked and listed as both. Some clubs may have a Board of Trustees, where multiple members
+    hold the position of Board Member."
+
+    Both halves: one account carrying two offices, and one office carried by two accounts.
+    """
+    from apps.ops.config import set_setting
+
+    set_setting(
+        None,
+        "club_positions",
+        [
+            {"key": "faculty_advisor", "label": "Faculty Advisor"},
+            {"key": "trustee", "label": "Club License Trustee"},
+            {"key": "board_member", "label": "Board Member"},
+        ],
+    )
+    both = User.objects.get(last_name="Adams")
+    both.club_positions = ["trustee", "faculty_advisor"]
+    both.save(update_fields=["club_positions"])
+    for last in ("Zephyr", "Officer"):
+        u = User.objects.get(last_name=last)
+        u.club_positions = ["board_member"]
+        u.save(update_fields=["club_positions"])
+
+    body = _as(directory).get("/members/").content.decode()
+    assert "Faculty Advisor, Club License Trustee" in body, (
+        "both offices, in the order the club lists them rather than the order they were ticked"
+    )
+
+    c = _as(directory)
+    assert _names(c.get("/members/?position=trustee").content.decode()) == ["Adams"]
+    assert _names(c.get("/members/?position=board_member").content.decode()) == [
+        "Officer",
+        "Zephyr",
+    ], "a position several people hold lists all of them"
+    assert _names(c.get("/members/?position=trustee&position=board_member").content.decode()) == [
+        "Adams",
+        "Officer",
+        "Zephyr",
+    ], "ticking two positions asks for either"
+
+
+def test_the_profile_page_reads_every_office_a_member_holds(directory):
+    from apps.ops.config import set_setting
+
+    set_setting(
+        None,
+        "club_positions",
+        [
+            {"key": "faculty_advisor", "label": "Faculty Advisor"},
+            {"key": "trustee", "label": "Club License Trustee"},
+        ],
+    )
+    member = User.objects.get(last_name="Adams")
+    member.club_positions = ["faculty_advisor", "trustee"]
+    member.save(update_fields=["club_positions"])
+    body = _as(directory).get(f"/members/{member.pk}/").content.decode()
+    assert "Faculty Advisor, Club License Trustee" in body

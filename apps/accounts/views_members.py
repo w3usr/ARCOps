@@ -41,6 +41,12 @@ STATION_CHOICES = (("none", "No license"),)
 STATION_FILTERS = {"club": "C", "races": "R", "military": "M", "none": "U"}
 
 
+def _position_text(user, labels: dict) -> str:
+    """The offices a member holds, in the club's own order, for sorting and for a CSV cell."""
+    held = set(user.club_positions or [])
+    return ", ".join(label for key, label in labels.items() if key in held)
+
+
 def _standing(user) -> dict:
     """What an officer needs at a glance: license and agreements."""
     lic = LicenseRecord.objects.filter(user=user).first()
@@ -147,9 +153,11 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
         # accounts with no license.
         "class": lambda m: (_class_rank(m, ladder, text), text(m.license_class)),
         "category": lambda m: (text(cats.get(m.category, m.category)), text(m.last_name)),
+        # Somebody holding two offices sorts by the first one the club lists, which is the one
+        # the column reads first.
         "position": lambda m: (
-            not m.club_position,
-            text(positions.get(m.club_position, m.club_position)),
+            not m.club_positions,
+            text(_position_text(m, positions)),
             text(m.last_name),
         ),
         # Down the list in the order the club reads it, rather than down the alphabet.
@@ -237,14 +245,16 @@ def members(request):
     }
     if chosen["category"]:
         users = users.filter(category__in=chosen["category"])
-    if chosen["position"]:
-        users = users.filter(club_position__in=chosen["position"])
-
     if "yes" in archived or "deleted" in statuses:
         # Reading an archived or deleted record is recorded, as it was when the archive was a
         # page of its own (FR-125).
         record(request.user, "archive.viewed", None, after={"search": q} if q else None)
     rows = list(users)
+    if chosen["position"]:
+        # Positions are a list on the account, so this narrowing happens here with the other
+        # row-by-row ones: SQLite has no containment test for JSON, and a roster is tens of rows.
+        want = chosen["position"]
+        rows = [m for m in rows if want & set(m.club_positions or [])]
     if statuses:
         rows = [m for m in rows if m.status in statuses]
     if chosen["license"]:

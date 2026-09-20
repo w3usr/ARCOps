@@ -57,7 +57,7 @@ def test_a_sysadmin_holds_every_capability_by_being_a_superuser():
 
 
 def test_a_club_position_carries_no_capability():
-    officer = _user("off@example.org", ["officer"], club_position="faculty_advisor")
+    officer = _user("off@example.org", ["officer"], club_positions=["faculty_advisor"])
     assert officer.may("manage_events") and not officer.may("approve_agreements")
 
 
@@ -69,7 +69,7 @@ def test_only_an_advisor_or_above_approves_an_access_agreement():
 
     sysadmin = _user("sys@example.org", is_superuser=True)
     advisor = _user("adv@example.org", ["advisor"])
-    officer = _user("off@example.org", ["officer"], club_position="faculty_advisor")
+    officer = _user("off@example.org", ["officer"], club_positions=["faculty_advisor"])
     member = _user("mem@example.org", ["member"])
 
     assert _is_approver(sysadmin) and _is_approver(advisor)
@@ -89,8 +89,8 @@ def test_the_advisor_contact_line_on_a_reminder_follows_the_capability():
     from apps.events.services.notify import advisors
 
     advisor = _user("adv@example.org", ["advisor"])
-    _user("pres@example.org", ["officer"], club_position="president")
-    _user("mem@example.org", ["member"], club_position="faculty_advisor")
+    _user("pres@example.org", ["officer"], club_positions=["president"])
+    _user("mem@example.org", ["member"], club_positions=["faculty_advisor"])
     assert [u.pk for u in advisors()] == [advisor.pk]
 
 

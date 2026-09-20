@@ -52,6 +52,14 @@ def position_label(key) -> str:
 
 
 @register.filter
+def position_labels(keys) -> str:
+    """Every office a member holds, in the club's configured order rather than tick order."""
+    held = set(keys or [])
+    labels = [p["label"] for p in (setting("club_positions", []) or []) if p.get("key") in held]
+    return ", ".join(labels)
+
+
+@register.filter
 def credential_label(key) -> str:
     return _label("credential_types", key)
 

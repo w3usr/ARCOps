@@ -32,7 +32,7 @@ CAPABILITIES: list[tuple[str, str]] = [
     ("view_directory", "See the member directory"),
     ("view_member_records", "Open a member's page, with their contact details and standing"),
     ("invite_members", "Send invitations and manage entry links"),
-    ("set_club_position", "Set another member's club position"),
+    ("set_club_position", "Set the club positions another member holds"),
     ("edit_member_privileges", "Edit another member's category, name, and student details"),
     ("assign_groups", "Decide which groups an account is in"),
     ("lift_suspension", "Let a suspended account back in"),

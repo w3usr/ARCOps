@@ -91,15 +91,15 @@ def test_a_sysadmin_sets_what_another_account_may_do(people):
             "last_name": "Member",
             "callsign": "n0mem",
             "category": "student",
-            "club_position": "president",
+            "club_positions": ["president"],
             "groups": [Group.objects.get(name="officer").pk],
             "under_18": "",
         },
     )
     mem.refresh_from_db()
-    assert (mem.in_group("officer"), mem.club_position, mem.callsign) == (
+    assert (mem.in_group("officer"), mem.club_positions, mem.callsign) == (
         True,
-        "president",
+        ["president"],
         "N0MEM",
     )
     assert mem.may("manage_events") and not mem.may("approve_agreements")
@@ -138,7 +138,7 @@ def test_nobody_changes_their_own_access(people):
         "last_name": "Per",
         "callsign": "",
         "category": "",
-        "club_position": "",
+        "club_positions": [],
         "under_18": "",
     }
     c = _as(keeper)
@@ -163,24 +163,26 @@ def test_nobody_changes_their_own_access(people):
 def test_officer_says_who_is_a_member_but_not_who_holds_an_office(people):
     c, mem = _as(people["off"]), people["mem"]
     body = c.get(f"/members/{mem.pk}/edit/").content.decode()
-    assert 'name="club_position"' not in body, "the position is the advisor's (2026-09-19)"
+    assert 'name="club_positions"' not in body, "the position is the advisor's (2026-09-19)"
     assert 'name="groups"' in body and "Club Officer" not in body  # members and below (§2.3)
     assert 'name="is_superuser"' not in body
     assert "temporary password" not in body.lower()
-    c.post(f"/members/{mem.pk}/edit/", {"action": "save", "club_position": "president"})
+    c.post(f"/members/{mem.pk}/edit/", {"action": "save", "club_positions": ["president"]})
     mem.refresh_from_db()
-    assert mem.club_position == "", "a forged position is ignored: the field is not on the form"
+    assert mem.club_positions == [], "a forged position is ignored: the field is not on the form"
 
     advisor = User.objects.create_user(
         "adv@example.org", "pw-Testing-123", groups=["advisor"], first_name="Ada", last_name="Visor"
     )
-    _as(advisor).post(f"/members/{mem.pk}/edit/", {"action": "save", "club_position": "president"})
+    _as(advisor).post(
+        f"/members/{mem.pk}/edit/", {"action": "save", "club_positions": ["president"]}
+    )
     mem.refresh_from_db()
-    assert mem.club_position == "president"
+    assert mem.club_positions == ["president"]
     # A forged privilege change is ignored: the field is not on an officer's form.
     c.post(
         f"/members/{mem.pk}/edit/",
-        {"action": "save", "club_position": "", "groups": [Group.objects.get(name="member").pk]},
+        {"action": "save", "club_positions": [], "groups": [Group.objects.get(name="member").pk]},
     )
     mem.refresh_from_db()
     assert mem.in_group("member")

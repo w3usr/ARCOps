@@ -18,12 +18,12 @@ from apps.ops.config import setting
 
 from .models import User
 
-# What the member keeps for themselves, and what only a sysadmin sets. `club_position` is the
+# What the member keeps for themselves, and what only a sysadmin sets. `club_positions` is the
 # one field an officer sets on another member's account.
 OWN_FIELDS = ("preferred_name", "callsign", "cell_phone")
 STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
-POSITION_FIELDS = ("club_position",)
+POSITION_FIELDS = ("club_positions",)
 PRIVILEGE_FIELDS = ("category", "under_18", "legal_hold")
 GROUP_FIELDS = ("groups", "is_superuser")  # what the account may do
 
@@ -100,12 +100,18 @@ class AccountForm(forms.ModelForm):
             self.fields["category"] = forms.ChoiceField(
                 choices=[(c["key"], c["label"]) for c in cats], required=False, label="Category"
             )
-        if "club_position" in self.fields:
+        if "club_positions" in self.fields:
+            # Any number of them, and each one held by any number of people: one member is both
+            # the faculty advisor and the license trustee, and a board has several members (the
+            # advisor, 2026-09-20). Ticked boxes rather than a list to pick from, so holding two
+            # takes one gesture each.
             positions = setting("club_positions", []) or []
-            self.fields["club_position"] = forms.ChoiceField(
-                choices=[("", "None")] + [(p["key"], p["label"]) for p in positions],
+            self.fields["club_positions"] = forms.MultipleChoiceField(
+                choices=[(p["key"], p["label"]) for p in positions],
                 required=False,
-                label="Club position",
+                label="Club positions",
+                widget=forms.CheckboxSelectMultiple,
+                help_text="Every office this member holds. None is the ordinary case.",
             )
         if "groups" in self.fields:
             from django.contrib.auth.models import Group
@@ -233,6 +239,13 @@ def _groups_line(subject: User) -> str:
     return ", ".join(names) or "No access"
 
 
+def _position_line(subject: User) -> str:
+    """The offices the member holds, in the club's own words and the club's own order."""
+    held = set(subject.club_positions or [])
+    labels = [p["label"] for p in (setting("club_positions", []) or []) if p.get("key") in held]
+    return ", ".join(labels)
+
+
 def _label(setting_key: str, key: str) -> str:
     """The configured label for a category or position, rather than its key."""
     for row in setting(setting_key, []) or []:
@@ -293,7 +306,7 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     add("preferred_name", "Preferred name", subject.preferred_name)
     add("callsign", "Callsign", subject.callsign)
     add("category", "Category", _label("member_categories", subject.category))
-    add("club_position", "Club position", _label("club_positions", subject.club_position))
+    add("club_positions", "Club positions", _position_line(subject))
     add("groups", "Access", _groups_line(subject))
     add("cell_phone", "Mobile number", phone(subject.cell_phone))
     if subject.under_18:

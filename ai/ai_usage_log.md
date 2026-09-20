@@ -2337,3 +2337,24 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit by the assistant, from the advisor's report.
 - **Human Review Status**: Pending the advisor's look; the guards and tests pass.
 - **Git Hash**: 19d284b
+
+## [2026-09-20 01:55 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A member's club position becomes a set of positions. Neither side was
+  meant to be exclusive: one person is both the faculty advisor and the club's license trustee,
+  and a club with a board elects several members to the same seat. The field, the edit form, the
+  directory column, its filter and its sort, the profile page, the roster, the CSV export and the
+  audit of what an officer may set all follow, and the permission matrix in the requirements was
+  corrected where it still showed officers setting a position.
+- **Sections/Files Affected**: apps/accounts/models.py,
+  apps/accounts/migrations/0021_positions_are_a_list.py, apps/ops/migrations/0007_…,
+  apps/accounts/account.py, apps/accounts/views_members.py, apps/accounts/services.py,
+  apps/accounts/admin.py, apps/ops/capabilities.py, apps/ops/templatetags/labels.py,
+  apps/credentials/views_reports.py, templates/accounts/members.html,
+  templates/accounts/roster.html, docs/REQUIREMENTS.md (§2.3, §2.5, the profile-field table),
+  and the tests.
+- **Nature of Contribution**: Design change, code, migration and tests by the assistant, from
+  the advisor's instruction.
+- **Human Review Status**: Pending the advisor's look. 345 tests, the accessibility sweep and
+  the four guards pass.
+- **Git Hash**: {{pending}}
