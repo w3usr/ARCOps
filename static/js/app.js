@@ -8,7 +8,15 @@ document.addEventListener("click", (ev) => {
   const el = document.querySelector(btn.dataset.copy);
   if (!el) return;
   navigator.clipboard.writeText(el.value || el.textContent).then(() => {
-    const old = btn.textContent; btn.textContent = "Copied"; setTimeout(() => (btn.textContent = old), 1500);
+    // A button that is a glyph keeps its glyph: swapping textContent would throw the icon away.
+    if (btn.querySelector("svg")) {
+      const label = btn.getAttribute("aria-label");
+      btn.classList.add("copied");
+      btn.setAttribute("aria-label", "Copied");
+      setTimeout(() => { btn.classList.remove("copied"); btn.setAttribute("aria-label", label); }, 1500);
+    } else {
+      const old = btn.textContent; btn.textContent = "Copied"; setTimeout(() => (btn.textContent = old), 1500);
+    }
   });
 });
 

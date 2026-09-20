@@ -362,7 +362,8 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
     c = Client()
     c.force_login(off)
     body = c.get("/me/invitations/").content.decode()
-    assert f"/me/invite/{inv.token}/" in body and "Copy link" in body
+    # The control is a glyph beside the link, so its name is for a screen reader (2026-09-20).
+    assert f"/me/invite/{inv.token}/" in body and "Copy the link for" in body
 
     # A revoked one has no live link to show.
     c.post(f"/me/invitations/{inv.pk}/", {"action": "revoke"})

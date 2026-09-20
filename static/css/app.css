@@ -320,8 +320,14 @@ fieldset .helptext { margin-top: 0; }
 .addresses .addr .check { padding-bottom: .6rem; }
 @media (max-width: 40rem) { .addresses .addr { grid-template-columns: 1fr; align-items: start; } .addresses .addr .check { padding-bottom: 0; } }
 .copyrow { display: flex; gap: .5rem; flex-wrap: wrap; } .copyrow input { flex: 1 1 16rem; }
-/* The same row inside a table cell, where 16rem would push the other columns off. */
+/* The same row inside a table cell, where 16rem would push the other columns off, and
+   the copy control as a glyph rather than a word: it is beside the thing it copies, so
+   the label is for a screen reader (NAF, 2026-09-20, after GitHub's). */
 .table .copyrow input { flex: 1 1 10rem; min-width: 0; font-size: var(--t-small); }
+.copyrow.tight { flex-wrap: nowrap; gap: .25rem; align-items: center; }
+.copyrow.tight .iconbtn { width: 2rem; height: 2rem; flex: none; color: var(--muted); }
+.copyrow.tight .iconbtn:hover { color: var(--fg); }
+.copyrow.tight .iconbtn.copied { color: var(--ok); }
 form.inline { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 .helptext { display: block; color: var(--muted); font-size: .9rem; margin-top: .25rem; }
 .req { color: var(--bad); font-weight: 700; }

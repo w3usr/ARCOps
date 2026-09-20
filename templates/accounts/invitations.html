@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load labels %}
+{% load nav %}
 {% block title %}Invitations · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block main_class %} wide{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Invite a member</h1><a class="button secondary" href="{% url 'entry_links' %}">Entry links</a></div>
 <p class="lede">One person at a time. For a whole class, or a neighboring club, make an <a href="{% url 'entry_links' %}">entry link</a> instead.</p>
@@ -31,7 +33,7 @@
 another by reissuing, which withdrew the invitation already sent (the advisor accepted the
 proposal on issue #4, 2026-09-20). A row that is no longer open has no live link to show.
 {% endcomment %}
-<td data-label="Link">{% if i.state == 'created' %}<div class="copyrow"><label class="sr-only" for="lnk{{ i.pk }}">Link for {{ i.email|default:"this invitation" }}</label><input id="lnk{{ i.pk }}" readonly value="{{ base }}/me/invite/{{ i.token }}/"> <button type="button" class="secondary" data-copy="#lnk{{ i.pk }}">Copy link</button></div>{% endif %}</td>
+<td data-label="Link">{% if i.state == 'created' %}<div class="copyrow tight"><label class="sr-only" for="lnk{{ i.pk }}">Link for {{ i.email|default:"this invitation" }}</label><input id="lnk{{ i.pk }}" readonly value="{{ base }}/me/invite/{{ i.token }}/"><button type="button" class="iconbtn" data-copy="#lnk{{ i.pk }}" aria-label="Copy the link for {{ i.email|default:"this invitation" }}">{% icon 'copy' %}</button></div>{% endif %}</td>
 <td data-label="Actions">{% if i.state == 'created' %}<form method="post" action="{% url 'invitation_action' i.pk %}" class="inline">{% csrf_token %}<button name="action" value="reissue" class="linklike">Make a new link</button> <button name="action" value="revoke" class="linklike danger">Revoke</button></form>{% elif i.accepted_by %}<a href="{% url 'member_detail' i.accepted_by.pk %}">Member</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="7" class="empty">Nobody has been invited yet. An invitation you send appears here until it is accepted or it expires.</td></tr>{% endfor %}
 </tbody></table>
 {% endblock %}
