@@ -78,6 +78,27 @@ def compose(
     return msg
 
 
+def _date_header() -> str:
+    """The Date: header, in the club's own time zone.
+
+    Django writes `-0000`, which RFC 5322 defines as "the time was generated on a system that
+    may be in a local time zone other than Universal Time and the date-time contains no
+    information about the local time zone". A client is then free to show the time in whatever
+    zone it likes, and some show UTC: the advisor's university mailbox stamped a message four
+    hours later than his Gmail did, for the same message (2026-09-20). A real offset says when
+    the club sent it.
+    """
+    from email.utils import format_datetime
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    name = str(setting("club.timezone", "UTC") or "UTC")
+    try:
+        zone = ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError):
+        zone = ZoneInfo("UTC")
+    return format_datetime(timezone.now().astimezone(zone))
+
+
 def email_enabled() -> bool:
     return str(setting("defaults.email_delivery", "off")).lower() == "on"
 
@@ -100,6 +121,7 @@ def deliver(msg: Outbox) -> Outbox:
         email = EmailMultiAlternatives(
             msg.subject, msg.body_text, from_addr, msg.to_addresses, reply_to=reply_to
         )
+        email.extra_headers["Date"] = _date_header()
         from .layout import wrap
 
         email.attach_alternative(wrap(msg.body_html), "text/html")

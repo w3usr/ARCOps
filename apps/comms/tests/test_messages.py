@@ -306,3 +306,28 @@ def test_the_in_application_copy_keeps_its_link_as_a_link():
     client.force_login(user)
     body = client.get("/me/messages/").content.decode()
     assert 'href="https://x.example/c/"' in body and "bgcolor" not in body
+
+
+@pytest.mark.django_db
+def test_the_date_header_carries_the_clubs_own_zone(settings):
+    """The advisor, 2026-09-20: the same message was stamped four hours apart in two of his
+    mailboxes, one showing UTC and one showing local time.
+
+    Django writes `-0000`, which RFC 5322 reads as "no information about the local time zone",
+    and a client is then free to show what it likes. The club's own offset says when it sent.
+    """
+    from django.core import mail
+
+    from apps.comms.services import compose
+    from apps.ops.config import set_setting
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    set_setting(None, "defaults.email_delivery", "on")
+    set_setting(None, "club.timezone", "America/New_York")
+    compose(None, "account", "When", "<p>now</p>", to=["m@example.org"])
+    date = mail.outbox[-1].message()["Date"]
+    assert date.endswith(("-0400", "-0500")), f"the club's own offset, not -0000: {date}"
+
+    set_setting(None, "club.timezone", "nonsense/Zone")
+    compose(None, "account", "When", "<p>now</p>", to=["m@example.org"])
+    assert mail.outbox[-1].message()["Date"].endswith("+0000"), "a bad zone falls back to UTC"

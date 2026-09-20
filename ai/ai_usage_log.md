@@ -2485,3 +2485,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 362 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: ba8ac19
+
+## [2026-09-20 04:15 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Every message now carries a Date header in the club's own time zone. The
+  library's default writes `-0000`, which RFC 5322 defines as "no information about the local
+  time zone", so a client may show the time in whatever zone it likes; the advisor saw the same
+  message stamped four hours apart in two of his mailboxes.
+- **Sections/Files Affected**: apps/comms/services.py, apps/comms/tests/test_messages.py,
+  docs/REQUIREMENTS.md (FR-127, new).
+- **Nature of Contribution**: Diagnosis against RFC 5322, code and a test by the assistant.
+- **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

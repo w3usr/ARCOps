@@ -1362,6 +1362,16 @@ made it likely that reliable delivery would take time to establish:
   person. The link is the same single-use, expiring token whether the system or the issuer
   delivers it. The invitation record shows whether the system's own email went out, so the
   issuer knows when delivery is theirs to do.
+- **FR-127 [Must]** Every message the site sends carries a **`Date:` header in the club's own
+  time zone**. The library's default writes `-0000`, which RFC 5322 defines as "no information
+  about the local time zone", and a mail client is then free to show the time in whatever zone
+  it chooses: the same message read in two mailboxes was stamped four hours apart.
+
+  > The emails that got sent to my scranton.edu account are showing up timestamped in UTC, while
+  > gmail is in local. — NAF, 2026-09-20
+
+  A client still displays in whatever zone its reader has configured, which is as it should be;
+  what changes is that the club now says when it sent, rather than declining to.
 - **FR-105 [Must]** A sysadmin setting, **email delivery: on / off**, audited. When off, the
   application composes and records every message exactly as it otherwise would, marks it
   *not sent (email off)*, and shows it in the recipient's "my messages" and in an officer-visible
