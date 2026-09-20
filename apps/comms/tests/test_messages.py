@@ -252,3 +252,40 @@ def test_a_join_notice_names_the_person_the_way_the_club_does():
     assert any("Kay Craigie N3KN joined" in s for s in subjects), subjects
     body = Outbox.objects.filter(subject__contains="joined").first().body_html
     assert "Kay Craigie N3KN completed the invitation" in body
+
+
+def test_the_one_thing_a_message_asks_for_is_drawn_as_a_button():
+    """NAF, 2026-09-20: "Can we make the Join and Confirm Email emails a bit more attractive
+    like the Reset my password button/email?"
+
+    The password reset built its button in code; the club's own messages hold their link in an
+    editable template, where the sanitiser keeps only the href, so no marker would survive an
+    edit. The shape of the message carries it instead: a paragraph holding nothing but one link
+    is the call to action and is drawn as the filled block.
+    """
+    from apps.comms.layout import wrap
+    from apps.ops.config import accent_color
+
+    html = wrap('<p><a href="https://x.example/c/">Confirm this address</a></p>')
+    assert f'bgcolor="{accent_color()}"' in html, "a filled block, as the reset mail has"
+    assert ">Confirm this address</span>" in html
+
+    inline = wrap('<p>Open this: <a href="https://x.example/c/">here</a> soon.</p>')
+    assert "bgcolor" not in inline.split("</td></tr>", 1)[1], "a link in a sentence stays a link"
+
+    two = wrap(
+        '<p><a href="https://x.example/y/">Yes</a> · <a href="https://x.example/n/">No</a></p>'
+    )
+    assert "bgcolor" not in two.split("</td></tr>", 1)[1], "two choices stay two links"
+    assert two.count('href="https://x.example/') == 2, "and both of them survive"
+
+
+def test_the_invitation_asks_for_its_link_on_a_line_of_its_own():
+    """So the reader's one action is the button, not a phrase in the middle of a sentence."""
+    from apps.comms.defaults import DEFAULTS_BY_KEY
+    from apps.comms.layout import wrap
+    from apps.comms.services import render_message
+
+    assert '<p><a href="{{ link }}">' in DEFAULTS_BY_KEY["invitation"]["body_html"]
+    _, body = render_message("invitation", {"link": "https://x.example/i/abc", "expires": None})
+    assert "Accept the invitation</span>" in wrap(body)

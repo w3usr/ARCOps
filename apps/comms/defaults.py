@@ -14,7 +14,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "invitation",
         "subject": "You are invited to join {{ club.name }}",
-        "body_html": "<p>You are invited to join {{ club.name }}'s operations site.</p><p>Open this link to create your account: <a href=\"{{ link }}\">Accept the invitation</a></p><p>The link works once and expires on {{ expires|date:'j F Y' }}.</p><p>Questions: {{ club.contact_email }}</p>",
+        "body_html": "<p>You are invited to join {{ club.name }}'s operations site. Open this link to create your account:</p><p><a href=\"{{ link }}\">Accept the invitation</a></p><p>The link works once and expires on {{ expires|date:'j F Y' }}.</p><p>Questions: {{ club.contact_email }}</p>",
         "variables": ["club.name", "club.contact_email", "link", "expires", "category"],
     },
     {
@@ -65,7 +65,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "account.completed",
         "subject": "{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} joined {{ club.short_name }}",
-        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}{% if uls_name %}. The FCC lists that callsign under the name {{ uls_name }}{% endif %}.</p><p>If that is not who you expected, set the account to No access from their page: <a href="{{ link }}">Open their page</a></p>',
+        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}{% if uls_name %}. The FCC lists that callsign under the name {{ uls_name }}{% endif %}.</p><p>If that is not who you expected, set the account to No access from their page.</p><p><a href="{{ link }}">Open their page</a></p>',
         "variables": [
             "person.full_name",
             "person.callsign",
@@ -99,7 +99,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "agreement.declined",
         "subject": "Not approved: {{ title }}",
-        "body_html": '<p>Your <em>{{ title }}</em> was not approved.{% if reason %} Reason: {{ reason }}{% endif %}</p><p>You can sign it again once the reason is addressed: <a href="{{ link }}">Open Agreements</a></p>',
+        "body_html": '<p>Your <em>{{ title }}</em> was not approved.{% if reason %} Reason: {{ reason }}{% endif %}</p><p>You can sign it again once the reason is addressed.</p><p><a href="{{ link }}">Open Agreements</a></p>',
         "variables": ["title", "reason", "link", "user.display_first"],
     },
     {
@@ -186,7 +186,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "warning.person",
         "subject": "Your slot needs help: {{ event.title }}, {{ when }}",
-        "body_html": '<p>The slot you hold in {{ event.title }}, {{ when }}, {{ position }}, reads <strong>{{ status }}</strong>: {{ reasons }}.</p><p>If you know someone who could fill it, ask them to sign up: <a href="{{ link }}">Open the slot</a></p>',
+        "body_html": '<p>The slot you hold in {{ event.title }}, {{ when }}, {{ position }}, reads <strong>{{ status }}</strong>: {{ reasons }}.</p><p>If you know someone who could fill it, ask them to sign up.</p><p><a href="{{ link }}">Open the slot</a></p>',
         "variables": ["event.title", "when", "position", "status", "reasons", "link"],
     },
     {
@@ -252,7 +252,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "body_html": (
             "<p>You were waiting for a {{ role }} place in {{ event.title }}, {{ when }}, "
             "{{ position }}. One has opened and it is yours until {{ expires|date:'j M H:i' }} UTC.</p>"
-            '<p><a href="{{ link }}">Take it</a>; after that it passes to the next person.</p>'
+            '<p><a href="{{ link }}">Take it</a></p><p>After that it passes to the next person.</p>'
         ),
         "variables": ["role", "event.title", "when", "position", "expires", "link"],
     },
@@ -279,13 +279,13 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "agreement.expiring",
         "subject": "Your {{ club.short_name }} access agreements expire {{ expires|date:'j F' }}",
-        "body_html": "<p>{{ user.display_first }}, these agreements of yours expire on {{ expires|date:'j F Y' }}:</p><ul>{% for t in titles %}<li>{{ t }}</li>{% endfor %}</ul><p>Sign in and re-sign all of them in one visit, so your station and computer access carries on without a gap: <a href=\"{{ link }}\">Open Agreements</a></p>",
+        "body_html": "<p>{{ user.display_first }}, these agreements of yours expire on {{ expires|date:'j F Y' }}:</p><ul>{% for t in titles %}<li>{{ t }}</li>{% endfor %}</ul><p>Sign in and re-sign all of them in one visit, so your station and computer access carries on without a gap.</p><p><a href=\"{{ link }}\">Open Agreements</a></p>",
         "variables": ["user.display_first", "expires", "titles", "link"],
     },
     {
         "key": "agreement.expired_notice",
         "subject": "Your {{ club.short_name }} access agreements expired today",
-        "body_html": "<p>{{ user.display_first }}, these agreements expired on {{ expires|date:'j F Y' }} and no longer satisfy a slot's requirements:</p><ul>{% for t in titles %}<li>{{ t }}</li>{% endfor %}</ul><p>Re-sign them here: <a href=\"{{ link }}\">Open Agreements</a></p>",
+        "body_html": "<p>{{ user.display_first }}, these agreements expired on {{ expires|date:'j F Y' }} and no longer satisfy a slot's requirements:</p><ul>{% for t in titles %}<li>{{ t }}</li>{% endfor %}</ul><p>Re-sign them to get that access back.</p><p><a href=\"{{ link }}\">Open Agreements</a></p>",
         "variables": ["user.display_first", "expires", "titles", "link"],
     },
     {
@@ -297,13 +297,13 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "agreement.revoked",
         "subject": "Revoked: {{ title }}",
-        "body_html": '<p>Your approval for <em>{{ title }}</em> was revoked by {{ approver }}.{% if reason %} Reason: {{ reason }}{% endif %} Slots that depended on it are flagged; you can sign again once the reason is addressed: <a href="{{ link }}">Open Agreements</a></p>',
+        "body_html": '<p>Your approval for <em>{{ title }}</em> was revoked by {{ approver }}.{% if reason %} Reason: {{ reason }}{% endif %} Slots that depended on it are flagged; you can sign again once the reason is addressed.</p><p><a href="{{ link }}">Open Agreements</a></p>',
         "variables": ["title", "approver", "reason", "link", "user.display_first"],
     },
     {
         "key": "password.rotated",
         "subject": "The {{ club.short_name }} station computer password has changed",
-        "body_html": "<p>{{ user.display_first }}, a new password for the shared station computer account is in effect from {{ effective|date:'j F Y' }}. View it in the application after re-entering your own password; it is never sent by email: <a href=\"{{ link }}\">View the password</a></p>",
+        "body_html": "<p>{{ user.display_first }}, a new password for the shared station computer account is in effect from {{ effective|date:'j F Y' }}. View it in the application after re-entering your own password; it is never sent by email.</p><p><a href=\"{{ link }}\">View the password</a></p>",
         "variables": ["user.display_first", "effective", "link"],
     },
     {

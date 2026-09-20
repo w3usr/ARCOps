@@ -9,7 +9,7 @@ which every client honours. The club's accent color comes from branding.accent.
 from __future__ import annotations
 
 import re
-from html import escape
+from html import escape, unescape
 
 from apps.ops.config import accent_color, setting
 
@@ -28,7 +28,7 @@ def wrap(body_html: str, *, footer_html: str = "") -> str:
         if contact
         else ""
     )
-    body = _style_links(body_html, accent)
+    body = _style_links(_promote_lone_links(body_html), accent)
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>{short}</title></head>
 <body style="margin:0;padding:0;background:#f4f4f6;{FONT}">
@@ -58,6 +58,31 @@ def button(href: str, label: str) -> str:
         f'<font color="#ffffff"><span style="color:#ffffff;text-decoration:none;">{escape(label)}</span></font></a>'
         "</td></tr></table>"
     )
+
+
+# A paragraph holding nothing but one link is the thing the message asks the reader to do, so
+# it is drawn as a button. A link inside a sentence, and a paragraph offering two of them, stay
+# as links: a message has at most one thing it is asking for, as a page has one solid button
+# per form (docs/INTERFACE.md). The rule reads the shape of the message rather than a marker,
+# so it survives a sysadmin editing the template, where the sanitiser keeps only the href
+# (NAF, 2026-09-20: "Can we make the Join and Confirm Email emails a bit more attractive like
+# the Reset my password button/email?").
+_LONE_LINK = re.compile(
+    r"<p\b[^>]*>\s*<a\b(?![^>]*\bstyle=)([^>]*)>(.*?)</a>\s*</p>", re.IGNORECASE | re.DOTALL
+)
+_HREF = re.compile(r'href\s*=\s*"([^"]*)"', re.IGNORECASE)
+_TAGS = re.compile(r"<[^>]+>")
+
+
+def _promote_lone_links(html: str) -> str:
+    def swap(m: re.Match) -> str:
+        href = _HREF.search(m.group(1))
+        label = unescape(_TAGS.sub("", m.group(2))).strip()
+        if not href or not label or "<a" in m.group(2).lower():
+            return m.group(0)  # two links in the paragraph: two choices, so two links
+        return button(unescape(href.group(1)), label)
+
+    return _LONE_LINK.sub(swap, html)
 
 
 def _style_links(html: str, accent: str) -> str:

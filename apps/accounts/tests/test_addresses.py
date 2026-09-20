@@ -8,6 +8,8 @@ So an account is its `public_id`; every confirmed address signs its owner in; an
 receives club mail and signs nobody in; and the last address stays.
 """
 
+import re
+
 import pytest
 from allauth.account.models import EmailAddress
 from django.core import mail
@@ -75,7 +77,8 @@ def test_a_member_adds_an_address_and_confirms_it_from_the_link_sent_to_it(setti
     assert sent, "a confirmation link goes to the address itself"
     assert "/verify-address/" in sent[-1].body  # the text part carries a link that survives copying
     html = [c for c, t in sent[-1].alternatives if t == "text/html"][0]
-    link = html[html.index("http") : html.index('">Confirm this address')]
+    # The one thing the mail asks for is a button, so read the href rather than the text beside it
+    link = re.search(r'href="(http[^"]*/verify-address/[^"]*)"', html).group(1)
     assert addresses.confirmed(u) == {"mem@example.edu"}
 
     r = Client().get(link)

@@ -2295,3 +2295,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 340 tests, the accessibility sweep and
   the four guards pass.
 - **Git Hash**: ca4420a
+
+## [2026-09-20 01:15 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Give every message the call-to-action button the password reset already
+  had. The mail layout now draws a paragraph holding nothing but one link as a filled block in
+  the club's color, which reads the shape of the message rather than a marker the template
+  editor's sanitiser would strip. The templates whose link sat mid-sentence were rewritten to
+  put it on a line of its own; the two that offer a choice, and the two that list links inside
+  list items, keep theirs as links.
+- **Sections/Files Affected**: apps/comms/layout.py, apps/comms/defaults.py (ten templates),
+  apps/comms/tests/test_messages.py, apps/accounts/tests/test_addresses.py,
+  docs/REQUIREMENTS.md (FR-78).
+- **Nature of Contribution**: Code, template wording and tests by the assistant, from the
+  advisor's request.
+- **Human Review Status**: Rendered and checked by eye against the advisor's own screenshots;
+  340 tests, the accessibility sweep and the four guards pass.
+- **Git Hash**: {{pending}}

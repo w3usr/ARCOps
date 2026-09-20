@@ -1408,6 +1408,19 @@ made it likely that reliable delivery would take time to establish:
   > — NAF, 2026-09-13, on FR-77
 - **FR-78 [Must]** All messages are rendered from templates that a sysadmin can edit in the
   interface, with the variables each template may use documented beside it **(portability)**.
+
+  **Every message goes out in one layout**: a band in the club's color carrying the
+  installation's short name, the body at a readable measure, and the club's name and contact
+  address beneath. It is built from tables with inline styles, because the mail clients members
+  use ignore much of a stylesheet. **The one thing a message asks the reader to do is drawn as a
+  filled block** in the club's color, and the rest of its links stay links. Which one that is
+  comes from the shape of the message, a paragraph holding nothing but a single link, so a
+  sysadmin who rewrites a template keeps the button by writing the link on a line of its own;
+  the editor's sanitiser would strip any marker of ours (2026-09-20). A message with two choices
+  offers two links rather than two blocks, as a page has one solid button per form.
+
+  > Can we make the Join and Confirm Email emails a bit more attractive like the Reset my
+  > password button/email? — NAF, 2026-09-20
 - **FR-79 [Should]** A weekly digest to members: upcoming events, slots still needing people,
   and the member's own commitments. Opt-out per FR-71.
 - **FR-80 [Should]** When an opening in a slot's schedule (FR-54) fires, an announcement to
