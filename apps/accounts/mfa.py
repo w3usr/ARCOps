@@ -53,7 +53,7 @@ def is_required(user) -> bool:
 
 
 def has_factor(user) -> bool:
-    """Whether anything could answer the second step: an authenticator app or a security key.
+    """Whether anything could answer the second step: an authenticator app or a passkey.
     Recovery codes are not one on their own; the library creates them beside a real factor."""
     from allauth.mfa.models import Authenticator
 

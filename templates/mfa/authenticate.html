@@ -17,11 +17,11 @@ scripts snippet.{% endcomment %}
 
     {% if has_key %}
         {% element p %}
-            Your account asks for a second step. Use your security key or passkey:
+            Your account asks for a second step. Use your passkey:
         {% endelement %}
         {% element button_group vertical=True %}
             {% element button form="webauthn_form" id="mfa_webauthn_authenticate" type="button" tags="primary,mfa,login" %}
-                {% trans "Use a security key" %}
+                Use a passkey
             {% endelement %}
         {% endelement %}
     {% endif %}

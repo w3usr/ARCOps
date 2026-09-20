@@ -43,6 +43,18 @@ class AccountAdapter(DefaultAccountAdapter):
         reauth_user = self.authenticate(context.request, **credentials)
         return reauth_user is not None and reauth_user.pk == user.pk
 
+    def get_reauthentication_methods(self, user) -> list[dict]:
+        """The ways this person can confirm it is them, in the club's words.
+
+        The library calls a WebAuthn credential a security key; a member enrolls a **passkey**
+        here and every other page says so (the advisor, 2026-09-20).
+        """
+        methods = super().get_reauthentication_methods(user)
+        for method in methods:
+            if method.get("id", "").endswith("webauthn"):
+                method["description"] = "Use a passkey"
+        return methods
+
     def get_login_stages(self) -> list[str]:
         """The steps between a correct password and a signed-in session.
 

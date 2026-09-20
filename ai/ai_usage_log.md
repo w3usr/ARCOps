@@ -2536,3 +2536,18 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 365 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 1fe70cf
+
+## [2026-09-20 11:40 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The word for a WebAuthn credential is **passkey** on every page the club
+  owns: the Confirm Access alternatives, the page that asks for one, our second-step page, and
+  the profile's own sentences. The library's enrollment pages still say "security key" and are
+  left for the advisor to decide about.
+- **Sections/Files Affected**: apps/accounts/adapter.py (get_reauthentication_methods),
+  templates/mfa/webauthn/reauthenticate.html (new override), templates/mfa/authenticate.html,
+  templates/accounts/{member_detail,member_edit}.html, apps/accounts/{views,middleware,mfa}.py,
+  apps/accounts/tests/test_two_factor.py.
+- **Nature of Contribution**: Wording change by the assistant, from the advisor's request.
+- **Human Review Status**: Pending the advisor's look. 365 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

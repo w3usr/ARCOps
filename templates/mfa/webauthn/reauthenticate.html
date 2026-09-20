@@ -1,0 +1,33 @@
+{% extends "account/base_reauthenticate.html" %}
+{% load i18n %}
+{% load allauth %}
+{% comment %}The library's own page, with one word changed: a member enrolls a **passkey** here
+and the club calls it that everywhere else (NAF, 2026-09-20). The JavaScript contract is the
+library's and is kept exactly: the button id, the js_data script tag, the scripts snippet.
+{% endcomment %}
+{% block reauthenticate_content %}
+    {% url 'mfa_reauthenticate_webauthn' as action_url %}
+    {% element form form=form method="post" action=action_url %}
+        {% slot body %}
+            {% csrf_token %}
+            {% element fields form=form unlabeled=True %}
+            {% endelement %}
+            {{ redirect_field }}
+        {% endslot %}
+        {% slot actions %}
+            {% element button id="mfa_webauthn_reauthenticate" type="submit" tags="primary,mfa,login" %}
+                Use a passkey
+            {% endelement %}
+        {% endslot %}
+    {% endelement %}
+    {{ js_data|json_script:"js_data" }}
+    {% include "mfa/webauthn/snippets/scripts.html" %}
+    <script data-allauth-onload="allauth.webauthn.forms.authenticateForm" type="application/json">{
+    "ids": {
+        "authenticate": "mfa_webauthn_reauthenticate",
+        "credential": "{{ form.credential.auto_id }}",
+        "data": "js_data"
+    }
+}
+    </script>
+{% endblock %}

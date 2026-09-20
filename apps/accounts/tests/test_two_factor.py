@@ -38,7 +38,7 @@ def _member(address="mem@example.org", groups=("member",), **extra):
 
 
 def _key(user):
-    """A security key on the account, as the library records one."""
+    """A passkey on the account, as the library records one."""
     return Authenticator.objects.create(
         user=user, type=Authenticator.Type.WEBAUTHN, data={"name": "Test key", "credential": {}}
     )
@@ -83,7 +83,7 @@ def test_turning_it_on_needs_something_to_answer_with():
     response = client.post("/me/two-step/", {"state": "on"}, follow=True)
     member.refresh_from_db()
     assert not member.two_factor_enabled
-    assert b"Add an authenticator app or a security key first" in response.content
+    assert b"Add an authenticator app or a passkey first" in response.content
     assert response.request["PATH_INFO"] == "/accounts/2fa/", "and it takes you there"
 
 
@@ -173,7 +173,7 @@ def test_the_second_step_asks_for_the_code_when_that_is_what_is_enrolled():
     client, response = _sign_in()
     page = client.get(response["Location"]).content.decode()
     assert "code from your authenticator app" in page
-    assert "Use a security key" not in page, "nothing is offered that this account cannot do"
+    assert "Use a passkey" not in page, "nothing is offered that this account cannot do"
 
 
 def test_the_second_step_leads_with_the_key_when_that_is_what_is_enrolled(monkeypatch):
@@ -193,7 +193,7 @@ def test_the_second_step_leads_with_the_key_when_that_is_what_is_enrolled(monkey
 
     client, response = _sign_in()
     page = client.get(response["Location"]).content.decode()
-    assert page.index("Use a security key") < page.index("recovery code"), "the key comes first"
+    assert page.index("Use a passkey") < page.index("recovery code"), "the passkey comes first"
     assert "code from your authenticator app" not in page
 
 

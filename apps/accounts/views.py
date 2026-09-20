@@ -58,7 +58,7 @@ def two_factor(request):
         if not mfa.has_factor(user):
             messages.error(
                 request,
-                "Add an authenticator app or a security key first; two-step verification turns "
+                "Add an authenticator app or a passkey first; two-step verification turns "
                 "on once there is something to answer with.",
             )
             return redirect("mfa_index")

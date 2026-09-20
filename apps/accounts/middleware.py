@@ -90,6 +90,6 @@ def _two_factor_gate(request, user):
     messages.error(
         request,
         "Your access level requires two-step verification. Add an authenticator app or a "
-        "security key to carry on.",
+        "passkey to carry on.",
     )
     return redirect(reverse("mfa_index"))

@@ -110,9 +110,9 @@ and two-step verification is asked for rather than inferred from one (NAF, 2026-
   <dt>Two-step verification</dt>
   <dd>
     {% if security.on %}<strong>On</strong>{% else %}<strong>Off</strong>{% endif %}{% if security.required %} · required for your access level{% endif %}.
-    {% if security.on %}After your password, sign-in asks for a code or a security key.{% else %}Sign-in asks for your password alone.{% endif %}
+    {% if security.on %}After your password, sign-in asks for a code or your passkey.{% else %}Sign-in asks for your password alone.{% endif %}
     {% if security.on %}{% if not security.required %}<a href="{% url 'member_edit' member.pk %}#security">Turn it off</a>{% endif %}{% else %}<a href="{% url 'member_edit' member.pk %}#security">Turn it on</a>{% endif %}
-    {% if not security.on and not security.factor %}<span class="helptext">You will be asked to add an authenticator app or a security key first.</span>{% endif %}
+    {% if not security.on and not security.factor %}<span class="helptext">You will be asked to add an authenticator app or a passkey first.</span>{% endif %}
     {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> your access level requires this. Set it up before {{ security.deadline|date:"j F Y" }}, after which sign-in will ask you to.</p>{% endif %}
   </dd>
 </dl></section>
