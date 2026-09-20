@@ -216,3 +216,23 @@ def test_converting_a_minor_follows_its_own_capability():
     c.post(f"/members/{minor.pk}/edit/", {"action": "convert_adult"})
     minor.refresh_from_db()
     assert not minor.under_18
+
+
+def test_a_forgotten_request_to_raise_the_level_does_not_fire_later():
+    """Asking for Sysadmin and wandering off leaves nothing armed: confirming access for
+    something else half an hour later, then coming back to this page, raises nothing.
+    """
+    c = _signed_in(_sysadmin())
+    c.get("/")
+    c.post("/me/level/", {"view": "sysadmin"})  # arms the request, then the person leaves
+
+    session = c.session
+    pending = session["acting_view_pending"]
+    pending["at"] = time.time() - 3600
+    session["acting_view_pending"] = pending
+    session[AUTHENTICATION_METHODS_SESSION_KEY] = [{"method": "password", "at": time.time()}]
+    session.save()
+
+    c.get("/me/level/")
+    assert c.session["acting_view"] == "advisor", "the old request went stale"
+    assert "acting_view_pending" not in c.session, "and is gone"

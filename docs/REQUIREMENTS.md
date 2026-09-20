@@ -1212,6 +1212,12 @@ Verbatim:
   history), makes the account self-managed, and issues a one-time temporary password (FR-7) or
   a reset link so the member sets their own credentials. Guardians are notified. Audited.
 
+  **The flag is never typed on a member's page.** It is set on the invitation (§2.4) and cleared
+  here, and the conversion is a one-way door: an adult account is not turned back into a minor's.
+
+  > once an account has been converted to adult, it cannot go back to Under 18. Removing this
+  > will avoid us having to debug a workflow to convert an account backwards. — NAF, 2026-09-20
+
   > We are not storing any DOBs in this system. So, when the minor turns 18, they need to talk
   > to a faculty advisor who can then manually convert the minor account into an adult
   > account. — NAF, 2026-09-13

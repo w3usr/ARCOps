@@ -13,6 +13,7 @@ that guards adding a second factor (TR-17).
 
 from __future__ import annotations
 
+import time
 from urllib.parse import urlencode
 
 # The public module of this name is a deprecation shim around the same function; the
@@ -38,6 +39,9 @@ from .acting import (
 )
 
 PENDING = "acting_view_pending"  # the level asked for, while Confirm Access happens
+# How long that request stands. Confirming access for something else, and then wandering back to
+# this page, should not raise a level nobody asked for a second time.
+PENDING_MAX = 300
 
 
 @login_required
@@ -51,11 +55,12 @@ def acting_view(request):
         raise Http404
 
     now = current_view(request)
-    pending = request.session.get(PENDING)
-    if request.method == "GET" and pending:
+    pending = request.session.pop(PENDING, None)
+    if pending and (request.method != "GET" or time.time() - pending.get("at", 0) > PENDING_MAX):
+        pending = None  # a POST supersedes it, and a forgotten one never fires later
+    if pending:
         # Back from Confirm Access. The library says whether the person proved who they are;
         # how they proved it, by password or by passkey, is its business and not ours.
-        request.session.pop(PENDING, None)
         wanted = pending.get("view", "")
         if wanted not in {v["key"] for v in views}:
             raise Http404
@@ -77,7 +82,7 @@ def acting_view(request):
             nxt = request.POST.get("next") or ""
             if did_recently_authenticate(request):
                 return _raise_to(request, views, now, wanted, nxt)
-            request.session[PENDING] = {"view": wanted, "next": nxt}
+            request.session[PENDING] = {"view": wanted, "next": nxt, "at": time.time()}
             back = reverse("acting_view")
             return redirect(f"{reverse('account_reauthenticate')}?{urlencode({'next': back})}")
         else:

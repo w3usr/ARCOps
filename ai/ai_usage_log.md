@@ -2436,3 +2436,18 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 350 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: dbe3779
+
+## [2026-09-20 03:20 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Three small corrections from the advisor's reading of the member page: the
+  Under 18 box is gone, because the flag is set on the invitation and cleared by the conversion
+  at 18 and that door only opens one way; the retention hold says what it does in fewer words;
+  and a pending request to raise a level now expires, so confirming access for something else
+  cannot raise one later.
+- **Sections/Files Affected**: apps/accounts/account.py, apps/accounts/views_acting.py,
+  docs/REQUIREMENTS.md (FR-109), docs/INTERFACE.md, and the form and acting-view tests.
+- **Nature of Contribution**: Code, wording and tests by the assistant, from the advisor's
+  requests.
+- **Human Review Status**: Pending the advisor's look. 351 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

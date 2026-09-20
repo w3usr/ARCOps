@@ -77,7 +77,6 @@ def test_a_sysadmin_sets_everything_on_any_account_including_their_own():
             "category",
             "club_positions",
             "groups",
-            "under_18",
             "legal_hold",
             "student_level",
         ):

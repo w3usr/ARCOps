@@ -122,6 +122,12 @@ system, both of which say the same thing.)
 
 A destructive control never sits between two reversible ones styled the same way.
 
+**A destructive state is not a value in a menu.** Where taking something away has to carry a
+reason, the menu grants and a named act removes: the Access drop-down offers the levels and not
+"No access", because closing and suspending are what record who decided and why. Once the thing
+is gone the menu goes with it, so that editing something else on the same page cannot quietly
+put it back.
+
 **Everything that takes an account out of service lives in one place**, the bordered **Danger
 zone** at the foot of the page: closing, suspending, archiving, deleting. A member's page had
 closing and archiving in a card of their own, above it, which read as ordinary editing (the

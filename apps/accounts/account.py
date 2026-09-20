@@ -24,7 +24,12 @@ OWN_FIELDS = ("preferred_name", "callsign", "cell_phone")
 STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
 POSITION_FIELDS = ("club_positions",)
-PRIVILEGE_FIELDS = ("category", "under_18", "legal_hold")
+# Under 18 is not among them: it is set on the invitation (§2.4) and cleared by the conversion
+# at 18 (FR-109), which is a one-way door.
+#
+# > once an account has been converted to adult, it cannot go back to Under 18. Removing this
+# > will avoid us having to debug a workflow to convert an account backwards. — NAF, 2026-09-20
+PRIVILEGE_FIELDS = ("category", "legal_hold")
 GROUP_FIELDS = ("groups", "is_superuser")  # what the account may do
 
 LABELS = {
@@ -33,7 +38,7 @@ LABELS = {
     "graduation_semester": "Graduation semester",
     "graduation_year": "Graduation year",
     "under_18": "Under 18",
-    "legal_hold": "Keep everything on this account",
+    "legal_hold": "Retain this account indefinitely",
 }
 
 
@@ -166,14 +171,8 @@ class AccountForm(forms.ModelForm):
         # One line under the switch, rather than an explanation crammed into its label.
         if "legal_hold" in self.fields:
             self.fields["legal_hold"].help_text = (
-                "Nothing on this account is ever removed by the nightly clear-out, whatever the "
-                "club's retention settings say. For an account under a legal or institutional "
-                "hold."
-            )
-        if "under_18" in self.fields:
-            self.fields["under_18"].help_text = (
-                "A guardian acts for them, every message reaches the guardian too, and they sign "
-                "in read-only."
+                "Exempt from the club's retention policy, for an account under a legal or "
+                "institutional hold."
             )
 
     def clean_groups(self):
