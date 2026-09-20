@@ -2875,4 +2875,4 @@ carries the actual running model ID.
   points on issue #93; the test was checked against a deliberately broken form first.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: 132b4fb
