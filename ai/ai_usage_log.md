@@ -2280,4 +2280,4 @@ carries the actual running model ID.
   TR-19, the backup entry, TR-41).
 - **Nature of Contribution**: Edit by the assistant.
 - **Human Review Status**: Pending the advisor's look; the repository guards and 339 tests pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 45763c8
