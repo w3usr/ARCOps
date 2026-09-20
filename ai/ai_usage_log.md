@@ -2592,4 +2592,4 @@ carries the actual running model ID.
   observation while walking T7.
 - **Human Review Status**: Pending the advisor's look; he is the assignee of the scenario.
   371 tests, the accessibility sweep and the four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: f7587e9
