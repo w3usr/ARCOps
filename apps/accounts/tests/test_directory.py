@@ -471,3 +471,14 @@ def test_the_profile_page_reads_every_office_a_member_holds(directory):
     member.save(update_fields=["club_positions"])
     body = _as(directory).get(f"/members/{member.pk}/").content.decode()
     assert "Faculty Advisor<br>Club License Trustee" in body, "one per line here too"
+
+
+def test_a_filter_summary_uses_the_word_on_its_own_label(directory):
+    """NAF, 2026-09-20: "It still says Any Access." The panel's label followed the rename and the
+    summary above it did not, because the word it says when nothing is ticked is passed in
+    separately.
+    """
+    body = _as(directory).get("/members/").content.decode()
+    assert "Any permission level" in body and "Any access" not in body
+    body = _as(directory).get("/members/?access=officer").content.decode()
+    assert "Club officer" in body, "and the summary names what is ticked, in the club's words"

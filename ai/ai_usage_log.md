@@ -2524,3 +2524,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 010b70a
+
+## [2026-09-20 11:30 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The members page's permission-level filter still summarised itself as
+  "Any access": the panel's label and the word its summary uses are two separate strings, and
+  yesterday's rename reached only the first.
+- **Sections/Files Affected**: apps/accounts/views_members.py,
+  apps/accounts/tests/test_directory.py.
+- **Nature of Contribution**: Fix and test by the assistant, from the advisor spotting it.
+- **Human Review Status**: Pending the advisor's look. 365 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

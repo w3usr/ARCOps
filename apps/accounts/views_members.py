@@ -372,7 +372,7 @@ def members(request):
                 ),
                 "status": _summary(status_choices, status_ticked, "status"),
                 "archived": _summary(archived_choices, archived_ticked, "archive"),
-                "access": _summary(access_choices, chosen["access"], "access"),
+                "access": _summary(access_choices, chosen["access"], "permission level"),
             },
             "category_choices": sorted(cats.items(), key=lambda kv: kv[1]),
             "license_choices": license_choices,
