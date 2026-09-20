@@ -2635,4 +2635,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look; the passkey prompt itself is his to try,
   since WebAuthn cannot be exercised from a test. 375 tests, the accessibility sweep and the four
   guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: b201e90
