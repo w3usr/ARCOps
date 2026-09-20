@@ -2497,4 +2497,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis against RFC 5322, code and a test by the assistant.
 - **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 6a2343a
