@@ -2711,3 +2711,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look; the passkey prompt is his to try. Lint,
   the four guards, 386 tests and the accessibility sweep pass.
 - **Git Hash**: d1e04da, 4273a05
+
+## [2026-09-20 19:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Reconciliation: the requirements catch up with the evening's work — the
+  advisor rotating the computer password, the member's route to it, the approvals page and its
+  undo, a password that keeps its spaces, an invitation link that stays reachable, and Confirm
+  Access as one screen asked for every time.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (§2.1 table, §2.6, FR-3, FR-25, FR-32,
+  FR-33), docs/TECHNICAL_REQUIREMENTS.md (TR-17).
+- **Nature of Contribution**: Document edits by the assistant, from the code as built and the
+  advisor's instructions quoted in place.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: [pending]

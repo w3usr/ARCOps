@@ -322,7 +322,7 @@ The draft models this as follows:
 | Convert a minor's account to an adult's (FR-109) | ✓ | ✓ | · | · | · | · |
 | Designate responsible adults for a minor's slot | ✓ | ✓ | ✓ | E | · | for minor |
 | View a minor's responsible adults and guardians, with contact details | ✓ | ✓ | ✓ | E | · | for minor |
-| Set or rotate the computer password | ✓ | · | · | · | · | · |
+| Set or rotate the computer password | ✓ | ✓ | · | · | · | · |
 | View the computer password | with current IT agreement | | | | | · |
 | Create event, import from calendar | ✓ | ✓ | ✓ | · | · | · |
 | Name event captains | ✓ | ✓ | ✓ | · | · | · |
@@ -358,7 +358,11 @@ passwords and sysadmin resets directly. Specifics:
   they should each be given a unique key/id." This supersedes the 2026-09-17 clarification
   earlier the same day, which kept one address as the account's sign-in and let confirmed others
   sign in beside it.)*
-- Password strength enforced; breached-password check **Should**.
+- Password strength enforced (at least twelve characters), and **what was typed is what is
+  stored**: nothing trims a password at either end. A form that strips whitespace, which is the
+  web framework's default and is right for a name, made twelve characters into eleven and
+  refused them as too short, and stored something other than what the member typed (found
+  2026-09-20). Breached-password check **Should**.
 - Self-service reset from a "Forgot username or password?" link on the sign-in page (FR-107),
   which needs working email. The sysadmin temporary-password path (FR-7) is the fallback and
   never depends on email.
@@ -396,6 +400,31 @@ passwords and sysadmin resets directly. Specifics:
   member whose only factor is a key met a box they could not fill. The page leads with the key
   where there is one, and calls the code box what it is for an account with no authenticator
   app: a recovery code.
+- **Confirming it is you is one screen, and it is asked for every time.** Raising a session to
+  Sysadmin (§2.1) and viewing the shared computer password (FR-33) are both guarded by **Confirm
+  Access**, which offers **a password or a passkey** and nothing else:
+
+  > TOTP tokens/authenticator app is ONLY used for 2fa. So, it does not show up on any initial
+  > screen. Passwords or passkeys are the first line of entry. I actually like how it looks on
+  > the login screen. — NAF, 2026-09-20
+
+  An authenticator code proves a second factor at sign-in; it is not a way of saying who you
+  are, and the sign-in library offered it here only because its own list treats every enrolled
+  method as interchangeable. Nobody is shut out by dropping it: every account has a password.
+  The page is laid out like the sign-in page, the one members meet most: the password box with a
+  solid **Confirm**, the passkey as an outlined button under it.
+
+  **A confirmation is spent by the act it was given for.** The library's own test is true for
+  five minutes after *any* authentication, signing in included, and stays true however many
+  guarded things are done in that window. Two conditions are added: the proof must be a
+  reauthentication, so arriving from the sign-in page never counts, and it is consumed, so the
+  next guarded act asks again.
+
+  > Let's also make elevate to sysadmin an every time operation. We don't want people
+  > accidentally logging in as sysadmin. — NAF, 2026-09-20
+
+  This supersedes the five-minute grace those two acts shared until 2026-09-20. Dropping a level
+  still asks for nothing; only a raise does.
 - Sessions expire; "remember this device" is allowed on members' own devices.
 - University SSO as an *additional* sign-in method for `@scranton.edu` accounts: **not pursued
   in this version**, by NAF's decision of 2026-09-13; the option stays open for a future
@@ -478,6 +507,10 @@ officer admits or declines them (FR-121). Every account records the link it join
   a mailbox is a standing door. **(added 2026-09-19)**: one live link per person. Issuing an
   invitation withdraws any earlier one still open to the same address, and the page says how
   many it withdrew; a minor with no address of their own is matched by their guardian's (§2.4).
+  **(added 2026-09-20)**: the link is shown on the card *and* on every row still open, with a
+  copy control, so an officer who closed the card can hand it on again without reissuing — which
+  would withdraw the invitation already sent and leave its email dead in the member's inbox. A
+  revoked, expired or completed row shows no link, because it has none that works.
 
   **(added 2026-09-19) A member who left comes back to their own record.** An address that
   belongs to a **closed or archived** account may be invited, and completing that invitation
@@ -842,6 +875,19 @@ and the next revision of the agreement should say only what HR actually does.)
   agreement type. The shared date means the whole club renews together at the start of each
   academic year. Approval is itself recorded with the approver's identity and timestamp.
 
+  **(added 2026-09-20) The queue is a page an approver can work.** **Approvals** in the sidebar
+  carries a badge with the number waiting, the same badge the unread-message count uses.
+  **Approve** and **Decline** sit on one row, with the reason box beside Decline, and each card
+  links the signed text as a PDF so the approver can read what they are approving without
+  finding the member first.
+
+  **A decline can be undone.** Declining is one press from approving and there was no way back,
+  so a slip meant asking the member to sign again. Signatures declined in the last thirty days
+  stay on the page, naming who declined them, when and why, with **Approve after all**;
+  approving one clears the reason it was declined for, because that reason no longer describes
+  it. Declining an already-declined signature says so rather than recording it twice. (*"we need
+  some way to approve after an accidental decline"* — NAF, 2026-09-20.)
+
   > Let's change it from a default of 1 year to a default of expires Sept 1 of the following
   > year. This will help use to renew everyone at the same time. — NAF, 2026-09-13
 
@@ -894,14 +940,25 @@ and the next revision of the agreement should say only what HR actually does.)
   existing approvals remain valid until their own expiry or all signers must re-sign by a date.
 - **FR-31 [Must]** Reports (section 3.9) list who currently holds station access and IT
   access (approved and unexpired), with expiry dates, and who is approaching expiry.
-- **FR-32 [Must]** A sysadmin can set the shared W3USR computer account password and its
-  effective date. The system stores it encrypted at rest and shows it in the interface only.
+- **FR-32 [Must]** A sysadmin **or a faculty advisor** can set the shared W3USR computer
+  account password and its effective date, from **Advisor tools › Set the computer password**.
+  The advisor answers to the University for station access, which is the same standing that
+  makes them the approver of the agreement the password goes with; before 2026-09-20 it was a
+  sysadmin's alone and the page had no way in but a typed address (*"There needs to be a UI
+  entry point for the faculty advisor and above to rotate this."* — NAF, 2026-09-20). The system stores it encrypted at rest and shows it in the interface only.
   It is **never** included in an email or other message: the agreement the viewer signed says
   "I will not share the password with others or write the password down on paper," and mail is
   both.
-- **FR-33 [Must]** A member whose IT-access agreement is approved and unexpired can view the current
-  password after re-entering their own password. Each view is written to the audit log (FR-92)
-  with the viewer and time.
+- **FR-33 [Must]** A member whose IT-access agreement is approved and unexpired can view the
+  current password after **confirming it is them** (§2.6): a password or a passkey, on the one
+  Confirm Access screen the whole site uses, asked for **every single view**. Each view is
+  written to the audit log (FR-92) with the viewer and time.
+
+  The page carries its own way in, rather than being reachable only from the rotation notice
+  (*"I want that to be straightforward and simple."* — NAF, 2026-09-20): **Computer password**
+  in the sidebar for anybody holding the credential today, and **See the computer password**
+  beside the approved agreement on Agreements. A member without the credential is offered
+  neither, and the page refuses them whatever they type.
 - **FR-34 [Should]** On rotation, the system notifies every member with current IT access that
   a new password is in effect and that they must view it in the application. When the previous
   password's holders include people whose IT access has since expired, the rotation notice to

@@ -232,13 +232,27 @@ has a decade of documentation.
   `py_webauthn` (more code for the club to own). Serves: §2.6, §5.7.
 
 - **TR-17 Sessions and re-authentication**: server-side sessions in the database; 14-day
-  "remember this device" and a 12-hour idle timeout otherwise; viewing the computer password
-  requires the member's password again within the last five minutes (FR-33). Cookies `Secure`,
-  `HttpOnly`, `SameSite=Lax`.
+  "remember this device" and a 12-hour idle timeout otherwise. Cookies `Secure`, `HttpOnly`,
+  `SameSite=Lax`.
 
-  The same re-entry guards enrolling or removing a second factor (TR-16) and **raising the level
-  a session acts at** (§2.1): both go through the library's Confirm Access page, so a passkey
-  serves where a password would, and neither asks again inside the window. That page is the
+  **One screen confirms it is you, and three things ask for it**: enrolling or removing a second
+  factor (TR-16), **raising the level a session acts at** (§2.1), and **viewing the computer
+  password** (FR-33), which until 2026-09-20 checked a password in a box of its own and so knew
+  nothing of passkeys.
+
+  **What it offers is a password or a passkey**, never an authenticator code: the adapter returns
+  the password method alone from the library's list of reauthentication methods, which is what
+  used to advertise "Use authenticator app or code" on a page that has already established who
+  you are (§2.6). It is laid out like the sign-in page: the password box with a solid Confirm,
+  the passkey outlined beneath.
+
+  **A confirmation is spent by the act it was given for** (`apps/accounts/reauth.py`). The
+  library's `did_recently_authenticate` is true for five minutes after any authentication,
+  signing in included, and stays true however many guarded acts happen in that window. Two
+  conditions are added on top of it: the most recent authentication record must carry the
+  library's own `reauthenticated` mark, so a sign-in never counts, and its timestamp is written
+  to the session as spent, so the next act asks again. Enrolling a factor keeps the library's
+  plain window; the level raise and the shared password do not (§2.6). That page is the
   library's view with the passkey form and its challenge added, so the button is on the page that
   asks rather than behind a link to a second page of the same name; the credential still posts to
   the library, which verifies it and resumes whatever was interrupted (2026-09-20). Checking it goes
