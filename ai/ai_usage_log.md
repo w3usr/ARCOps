@@ -2738,4 +2738,4 @@ carries the actual running model ID.
   five points on issue #92.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 386 tests and the
   accessibility sweep pass.
-- **Git Hash**: [pending]
+- **Git Hash**: ea138d6
