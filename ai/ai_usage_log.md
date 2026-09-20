@@ -2357,4 +2357,4 @@ carries the actual running model ID.
   the advisor's instruction.
 - **Human Review Status**: Pending the advisor's look. 345 tests, the accessibility sweep and
   the four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: eff7079
