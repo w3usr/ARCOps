@@ -2391,4 +2391,4 @@ carries the actual running model ID.
   the advisor's instruction and his answer on where the ladder stops.
 - **Human Review Status**: Pending the advisor's look. 347 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: da7e8b9
