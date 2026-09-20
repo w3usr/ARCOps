@@ -562,6 +562,14 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
             # The document carries its own standing and how it got there (NAF, 2026-09-20).
             "decisions": list(agreement.decisions.order_by("at", "pk")),
             "built_at": timezone.now(),
+            # The watermark's colour, as six hex digits: the template writes it into an SVG
+            # background, where a "#" would have to be escaped anyway.
+            "watermark_color": {
+                "approved": "1b6e3a",
+                "revoked": "9b1c1c",
+                "declined": "8a5a00",
+                "expired": "8a5a00",
+            }.get(agreement.state, "555555"),
         },
     )
     return weasyprint.HTML(string=html, base_url="/").write_pdf(

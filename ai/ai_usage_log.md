@@ -2806,3 +2806,15 @@ carries the actual running model ID.
 - **Nature of Contribution**: Wording fix by the assistant, from the advisor's note on issue #76.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 9bdff55
+
+## [2026-09-20 21:10 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The document's status marking became a page-margin band: a rotated
+  watermark, and an SVG background carrying one, both laid the word into the text layer glyph by
+  glyph and threaded it through the record of decisions.
+- **Sections/Files Affected**: templates/credentials/agreement_pdf.html,
+  apps/credentials/services.py (the band's colour).
+- **Nature of Contribution**: Fix by the assistant, found by rendering a real document and
+  reading its text back with pdftotext.
+- **Human Review Status**: Reviewed here; verified by extraction, one page, no scattered glyphs.
+- **Git Hash**: [pending]
