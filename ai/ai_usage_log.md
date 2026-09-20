@@ -2249,4 +2249,4 @@ carries the actual running model ID.
   from the advisor's two reports.
 - **Human Review Status**: Pending the advisor's look on his own phone. 338 tests pass, with
   the accessibility sweep and the four guards.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 3784623
