@@ -2484,4 +2484,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Defect found on the server and fixed by the assistant, with a test.
 - **Human Review Status**: Pending the advisor's look. 362 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: ba8ac19
