@@ -2959,4 +2959,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Document edits by the assistant, from the code as built and the
   advisor's instructions quoted in place.
 - **Human Review Status**: Pending the advisor's look.
-- **Git Hash**: [pending]
+- **Git Hash**: a476878
