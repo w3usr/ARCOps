@@ -37,10 +37,16 @@ def _signed_in(user):
 
 
 def _just_confirmed(client):
-    """Stamp the session the way the sign-in library does, so the level rises without being
-    asked again. force_login leaves no such record, which is why it is written by hand here."""
+    """Stamp the session the way **Confirm Access** does: a record marked `reauthenticated`.
+
+    force_login leaves no record at all, and signing in leaves one without that mark, which is
+    the difference that matters now: a raise wants a confirmation of its own, not merely a
+    recent sign-in (apps.accounts.reauth).
+    """
     session = client.session
-    session[AUTHENTICATION_METHODS_SESSION_KEY] = [{"method": "password", "at": time.time()}]
+    session[AUTHENTICATION_METHODS_SESSION_KEY] = [
+        {"method": "password", "at": time.time(), "reauthenticated": True}
+    ]
     session.save()
     return client
 
@@ -87,17 +93,48 @@ def test_raising_the_level_asks_you_to_confirm_and_is_recorded():
     assert AuditLog.objects.filter(action="view.raised").exists()
 
 
-def test_a_level_raised_a_moment_after_confirming_is_not_asked_twice():
-    """The same window that guards adding a second factor: confirm once, then work."""
+def test_every_raise_is_confirmed_on_its_own():
+    """A confirmation is spent by the raise it was given for.
+
+    > Let's also make elevate to sysadmin an every time operation. We don't want people
+    > accidentally logging in as sysadmin. — NAF, 2026-09-20
+
+    It used to hold for five minutes, so a second raise in that window went through unasked.
+    """
     c = _just_confirmed(_signed_in(_sysadmin()))
     c.get("/")
     r = c.post("/me/level/", {"view": "sysadmin"})
     assert r.status_code == 302 and "/accounts/reauthenticate/" not in r["Location"]
     assert c.session["acting_view"] == "sysadmin"
 
+    # Down, then up again a moment later: the same confirmation does not serve twice.
+    c.post("/me/level/", {"view": "member"})
+    r = c.post("/me/level/", {"view": "sysadmin"})
+    assert "/accounts/reauthenticate/" in r["Location"]
+    assert c.session["acting_view"] == "member"
+
+    # A fresh confirmation raises it again.
+    _just_confirmed(c)
+    r = c.post("/me/level/", {"view": "sysadmin"})
+    assert "/accounts/reauthenticate/" not in r["Location"]
+    assert c.session["acting_view"] == "sysadmin"
+
+
+def test_signing_in_is_not_a_confirmation():
+    """A record left by signing in carries no `reauthenticated` mark, so it does not raise."""
+    c = _signed_in(_sysadmin())
+    session = c.session
+    session[AUTHENTICATION_METHODS_SESSION_KEY] = [{"method": "password", "at": time.time()}]
+    session.save()
+    c.get("/")
+    r = c.post("/me/level/", {"view": "sysadmin"})
+    assert "/accounts/reauthenticate/" in r["Location"]
+    assert c.session["acting_view"] == "advisor"
+
 
 def test_dropping_the_level_is_never_asked_about_and_takes_the_capability_away():
     c = _just_confirmed(_signed_in(_sysadmin()))
+    c.get("/")
     c.post("/me/level/", {"view": "sysadmin"})
     assert c.get("/ops/settings/").status_code == 200
 

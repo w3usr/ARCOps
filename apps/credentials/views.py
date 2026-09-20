@@ -8,8 +8,10 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
+from apps.accounts.reauth import is_confirmed, spend
 from apps.ops.audit import record
 from apps.ops.config import setting
 
@@ -228,17 +230,28 @@ def decide(request, pk):
 
 @login_required
 def computer_password(request):
+    """FR-33: the shared password, behind Confirm Access, asked for every single time.
+
+    This page used to ask for the account's own password in a box of its own, which took a
+    password and nothing else while the rest of the site had moved on to passkeys (NAF,
+    2026-09-20: "the new one for looking up the station password only accepts a password, no
+    passkey"). It is the same Confirm Access the level step-up uses now, so there is one screen
+    and one implementation; `apps.accounts.reauth` is what makes the proof good for this one
+    view and no more, so a reload asks again.
+    """
     today = timezone.now().date()
     if request.user.under_18 or not holds(request.user, "it_access", today):
         return render(request, "credentials/password_denied.html", status=403)
-    secret = None
-    if request.method == "POST" and request.user.check_password(request.POST.get("password", "")):
-        try:
-            secret = reveal_shared_secret(request.user)
-        except RuntimeError:
-            messages.error(request, "The encryption key is not configured on this server.")
-    elif request.method == "POST":
-        messages.error(request, "That password did not match.")
+    if not is_confirmed(request):
+        back = request.get_full_path()
+        return redirect(f"{reverse('account_reauthenticate')}?{urlencode({'next': back})}")
+    try:
+        secret = reveal_shared_secret(request.user)
+    except RuntimeError:
+        messages.error(request, "The encryption key is not configured on this server.")
+        secret = None
+    if secret:
+        spend(request)  # good for this view of it, not for the next
     return render(request, "credentials/password.html", {"secret": secret})
 
 

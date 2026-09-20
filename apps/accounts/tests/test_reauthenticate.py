@@ -150,3 +150,40 @@ def test_the_club_s_own_word_reaches_the_librarys_pages():
     assert gettext("Security Keys") == "Passkeys"
     assert gettext("Use a security key") == "Use a passkey"
     assert gettext("Add Security Key") == "Add a passkey"
+
+
+def test_confirm_access_offers_a_password_and_a_passkey_and_no_authenticator_code(monkeypatch):
+    """One screen for confirming it is you, laid out like the sign-in page.
+
+    > TOTP tokens/authenticator app is ONLY used for 2fa. So, it does not show up on any initial
+    > screen. Passwords or passkeys are the first line of entry. I actually like how it looks on
+    > the login screen. — NAF, 2026-09-20
+
+    An authenticator code proves a second factor at sign-in; it is not a way of saying who you
+    are, and offering it here put "Alternative options" under a page that already knows.
+    """
+    from allauth.mfa.models import Authenticator
+
+    user = _member()
+    c = Client()
+    c.force_login(user)
+
+    body = c.get("/accounts/reauthenticate/").content.decode()
+    assert "Confirm" in body and 'type="password"' in body
+    assert "authenticator" not in body.lower()
+    assert "Use a passkey" not in body  # no passkey on this account, so no button
+
+    Authenticator.objects.create(user=user, type=Authenticator.Type.TOTP, data={"secret": "x" * 32})
+    body = c.get("/accounts/reauthenticate/").content.decode()
+    assert "authenticator" not in body.lower(), "an enrolled app still does not appear here"
+
+    monkeypatch.setattr(
+        "apps.accounts.views_mfa.webauthn_auth.begin_authentication", lambda user: {"x": 1}
+    )
+    Authenticator.objects.create(
+        user=user, type=Authenticator.Type.WEBAUTHN, data={"credential": {}}
+    )
+    body = c.get("/accounts/reauthenticate/").content.decode()
+    assert "Use a passkey" in body
+    assert body.index("Confirm") < body.index("Use a passkey"), "password first, as on sign-in"
+    assert "authenticator" not in body.lower()

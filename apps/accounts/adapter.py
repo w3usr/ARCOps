@@ -43,6 +43,25 @@ class AccountAdapter(DefaultAccountAdapter):
         reauth_user = self.authenticate(context.request, **credentials)
         return reauth_user is not None and reauth_user.pk == user.pk
 
+    def get_reauthentication_methods(self, user) -> list[dict]:
+        """What Confirm Access offers: a password, and the passkey the page itself carries.
+
+        An authenticator code is a **second** factor for signing in, not a way of saying who you
+        are, and the library offers it here only because its list treats every enrolled method
+        as interchangeable. That put "Alternative options: Use authenticator app or code" under
+        a page that has already established who you are.
+
+        > TOTP tokens/authenticator app is ONLY used for 2fa. So, it does not show up on any
+        > initial screen. Passwords or passkeys are the first line of entry. — NAF, 2026-09-20
+
+        Nobody is shut out by it: every account has a password. The passkey is not listed either,
+        because Confirm Access carries its button rather than a link to a second page
+        (apps.accounts.views_mfa.ConfirmAccessView).
+        """
+        return [
+            m for m in super().get_reauthentication_methods(user) if m["id"] == "reauthenticate"
+        ]
+
     def get_login_stages(self) -> list[str]:
         """The steps between a correct password and a signed-in session.
 

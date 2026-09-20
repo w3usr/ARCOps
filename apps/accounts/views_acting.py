@@ -16,9 +16,6 @@ from __future__ import annotations
 import time
 from urllib.parse import urlencode
 
-# The public module of this name is a deprecation shim around the same function; the
-# library's own views import it from here.
-from allauth.account.internal.flows.reauthentication import did_recently_authenticate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -37,6 +34,10 @@ from .acting import (
     raises_privilege,
     set_view,
 )
+
+# The public module of this name is a deprecation shim around the same function; the
+# library's own views import it from here.
+from .reauth import is_confirmed, spend
 
 PENDING = "acting_view_pending"  # the level asked for, while Confirm Access happens
 # How long that request stands. Confirming access for something else, and then wandering back to
@@ -64,10 +65,13 @@ def acting_view(request):
         wanted = pending.get("view", "")
         if wanted not in {v["key"] for v in views}:
             raise Http404
-        if not did_recently_authenticate(request):
+        if not is_confirmed(request):
             record(user, "view.raise_refused", user, after={"to": wanted})
             messages.error(request, "That was not confirmed, so the level is unchanged.")
             return redirect("acting_view")
+        # Spent on this raise, so the next one asks again (NAF, 2026-09-20: "We don't want
+        # people accidentally logging in as sysadmin").
+        spend(request)
         return _raise_to(request, views, now, wanted, pending.get("next") or "")
 
     if request.method == "POST":
@@ -80,7 +84,8 @@ def acting_view(request):
 
         if raises_privilege(user, now, wanted):
             nxt = request.POST.get("next") or ""
-            if did_recently_authenticate(request):
+            if is_confirmed(request):
+                spend(request)
                 return _raise_to(request, views, now, wanted, nxt)
             request.session[PENDING] = {"view": wanted, "next": nxt, "at": time.time()}
             back = reverse("acting_view")

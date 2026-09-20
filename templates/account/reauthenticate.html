@@ -1,17 +1,38 @@
 {% extends "account/base_reauthenticate.html" %}
 {% load allauth %}
 {% load i18n %}
-{% comment %}Confirm Access, with the passkey on the page that asks. The library gives each way
-of confirming its own view and links between them, so a member with a passkey met two Confirm
-Access pages in a row (NAF, 2026-09-20). The passkey form posts to the library's own endpoint,
-which verifies the credential and resumes whatever was interrupted; the challenge is in the
-session, put there by apps.accounts.views_mfa.
+{% comment %}Confirm Access, laid out like the sign-in page: the password box with a solid
+Confirm, the passkey as an outlined button under it. The library's own field carries
+"Forgot your password?" under the box, so nothing here adds a second one.
+
+> Passwords or passkeys are the first line of entry. I actually like how it looks on the login
+> screen. — NAF, 2026-09-20
+
+An authenticator code is not offered at all; the adapter takes it off the list, because a code
+is a second factor for signing in rather than a way of saying who you are.
 
 Three things the library's own pages get right and this has to keep: {{ redirect_field }} inside
 **both** forms, or ?next= is lost and the person lands on the dashboard; the scripts snippet
 included exactly **once**, or the button collects two click handlers and raises two prompts; and
-the onload ids taken from `webauthn_form`, not from `form`.{% endcomment %}
+the onload ids taken from `webauthn_form`, not from `form`. The passkey form posts to the
+library's own endpoint, which verifies the credential and resumes whatever was interrupted; the
+challenge is in the session, put there by apps.accounts.views_mfa.{% endcomment %}
 {% block reauthenticate_content %}
+    {% url 'account_reauthenticate' as action_url %}
+    {% element form form=form method="post" action=action_url %}
+        {% slot body %}
+            {% csrf_token %}
+            {% element fields form=form %}
+            {% endelement %}
+            {{ redirect_field }}
+        {% endslot %}
+        {% slot actions %}
+            {% element button type="submit" tags="primary,reauthenticate" %}
+                {% trans "Confirm" %}
+            {% endelement %}
+        {% endslot %}
+    {% endelement %}
+
     {% if has_key %}
         {% url 'mfa_reauthenticate_webauthn' as webauthn_url %}
         {% element form form=webauthn_form method="post" action=webauthn_url %}
@@ -22,33 +43,12 @@ the onload ids taken from `webauthn_form`, not from `form`.{% endcomment %}
                 {{ redirect_field }}
             {% endslot %}
             {% slot actions %}
-                {% element button id="mfa_webauthn_reauthenticate" type="submit" tags="primary,mfa,login" %}
+                {% element button id="mfa_webauthn_reauthenticate" type="submit" tags="secondary,mfa,login" %}
                     {% trans "Use a security key" %}
                 {% endelement %}
             {% endslot %}
         {% endelement %}
-        {% element hr %}{% endelement %}
-        {% element h2 %}Or use your password{% endelement %}
-    {% else %}
-        {% element p %}
-            {% blocktranslate %}Enter your password:{% endblocktranslate %}
-        {% endelement %}
     {% endif %}
-
-    {% url 'account_reauthenticate' as action_url %}
-    {% element form form=form method="post" action=action_url %}
-        {% slot body %}
-            {% csrf_token %}
-            {% element fields form=form unlabeled=True %}
-            {% endelement %}
-            {{ redirect_field }}
-        {% endslot %}
-        {% slot actions %}
-            {% element button type="submit" tags="primary,reauthenticate" %}
-                {% trans "Confirm" %}
-            {% endelement %}
-        {% endslot %}
-    {% endelement %}
 
     {% if has_key %}
         {{ js_data|json_script:"js_data" }}

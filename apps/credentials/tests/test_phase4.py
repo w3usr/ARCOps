@@ -68,6 +68,13 @@ def _setup():
     return st, it, t_st, t_it
 
 
+def _confirmed(client, password="pw-Testing-123"):
+    """Go through Confirm Access, as a person does: the page that shows the shared password
+    asks for it every time, and is satisfied by a password or a passkey (§2.6)."""
+    client.post("/accounts/reauthenticate/", {"password": password})
+    return client
+
+
 def _approved(user, template, expires):
     return SignedAgreement.objects.create(
         user=user,
@@ -270,8 +277,15 @@ def test_password_manage_rotates_and_notifies_current_holders_and_lists_former_v
         session = c.session  # a sysadmin signs in acting lower
         session["acting_view"] = "sysadmin"
         session.save()
-    r = c.post("/credentials/computer-password/", {"password": "pw-Testing-123"})
+    # Confirm Access guards it, and the proof is spent on one view of it.
+    assert c.get("/credentials/computer-password/")["Location"].startswith(
+        "/accounts/reauthenticate/"
+    )
+    r = _confirmed(c).get("/credentials/computer-password/")
     assert b"c0rrect-horse" in r.content
+    assert c.get("/credentials/computer-password/")["Location"].startswith(
+        "/accounts/reauthenticate/"
+    ), "a reload asks again"
 
 
 def test_member_roster_filters_graduated_and_audits_contact_export():
@@ -442,7 +456,9 @@ def test_a_member_who_holds_computer_access_is_shown_the_way_to_the_password(set
     # and again where the credential was granted
     agreements = c.get("/credentials/agreements/").content.decode()
     assert "See the computer password" in agreements
-    assert c.get("/credentials/computer-password/").status_code == 200
+    assert c.get("/credentials/computer-password/")["Location"].startswith(
+        "/accounts/reauthenticate/"
+    )
 
     # Somebody without the credential is offered neither, and the page still refuses them.
     c.force_login(plain)
