@@ -308,7 +308,7 @@ The draft models this as follows:
 | Set member category (on the invitation) | ✓ | ✓ | ✓ | · | · | · |
 | Create or edit account manually | ✓ | · | · | · | · | · |
 | Reset another user's password | ✓ | · | · | · | · | · |
-| Decide which groups an account is in | ✓ | up to their own level | members and below | · | · | · |
+| Decide an account's permission level | ✓ | up to their own level | members and below | · | · | · |
 | Tick **Sysadmin** on an account | ✓ | · | · | · | · | · |
 | Set the club positions another member holds, their own included | ✓ | ✓ | · | · | · | · |
 | Set another member's category, names, and student fields | ✓ | ✓ | · | · | · | · |
@@ -676,9 +676,11 @@ officer admits or declines them (FR-121). Every account records the link it join
   **One table for everyone** (2026-09-19). What a member may see is fewer columns, not a different
   shape of page, and the redacted **Name** column is the first column at every level, so an officer
   sees at a glance what the club sees. Officers also see first, last, and preferred name in full,
-  category, access, email, and phone; **access** is officers-only. Every column sorts, by last name
+  category, permission level, email, and phone; the **permission level** column is
+  officers-only. Every column sorts, by last name
   unless asked otherwise, with a total order so that reversing a column reverses the page. The
-  directory narrows by category, position, license class, status, the archive, and access, and
+  directory narrows by category, position, license class, status, the archive, and permission
+  level, and
   the class column carries the letter rather than the word (FR-67) because the club reads letters
   on every roster. The class filter offers the operator ladder and **No license**: the three
   station types (FR-67) keep their letters in the column and their keys in the address, and are

@@ -317,8 +317,8 @@ has a decade of documentation.
 - **TR-27 Migrations**: Django migrations, committed, run by `deploy.sh` before the service
   restarts; a migration that drops or rewrites personal data is reviewed by a second person.
 - **TR-42 Permissions**: capabilities are Django permissions on a table-less model in the `ops`
-  app, declared in one list (`apps/ops/capabilities.py`); an access group is a Django group; a
-  sysadmin is a superuser. `club_import` writes any new capability and seeds the configured
+  app, declared in one list (`apps/ops/capabilities.py`); a permission level is a Django group,
+  which is the word the model and the configuration keep (§2.1); a sysadmin is a superuser. `club_import` writes any new capability and seeds the configured
   groups, and the deploy runs it. Nothing in the application tests a rank: every decision asks
   whether an account holds a named capability (§2.1). A permission matrix test
   (`apps/accounts/tests/test_permission_matrix.py`) asserts what every kind of account gets from

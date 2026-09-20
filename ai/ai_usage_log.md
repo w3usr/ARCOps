@@ -2512,3 +2512,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 503aa3e
+
+## [2026-09-20 11:20 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: `/reconcile` after the rename: the requirements say permission level where
+  a page does, the permission matrix row follows the capability's new label, TR-42 records that a
+  level is a Django group, and the groups module says which word belongs where.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-13, §2.5), docs/TECHNICAL_REQUIREMENTS.md
+  (TR-42), apps/ops/groups.py (docstring).
+- **Nature of Contribution**: Reconciliation and writing by the assistant.
+- **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

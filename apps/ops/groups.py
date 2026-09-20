@@ -1,8 +1,10 @@
 """
-Access groups: a named set of capabilities, and who is in one.
+Permission levels: a named set of capabilities, and who holds one.
 
-A group is a Django group, so nothing new had to be built to hold one, and a sysadmin can make
-another. The groups a fresh installation starts with come from the club's configuration
+**A level is a Django group**, which is why the code, the configuration and the audit log all
+say "group" while every page says "permission level" (§2.1, 2026-09-20): the reader is told what
+the club grants, and the model keeps the framework's own word. Nothing new had to be built to
+hold one, and a sysadmin can make another. The groups a fresh installation starts with come from the club's configuration
 (`access_groups` in club.yaml); after that they are the club's to change, and an import leaves an
 edited group alone unless it is asked to reset.
 
