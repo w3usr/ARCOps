@@ -4,30 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('credentials', '0002_uls_names_staging_override_country'),
+        ("credentials", "0002_uls_names_staging_override_country"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='agreementtemplate',
-            name='resign_by',
+            model_name="agreementtemplate",
+            name="resign_by",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='signedagreement',
-            name='notice_30_sent_on',
+            model_name="signedagreement",
+            name="notice_30_sent_on",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='signedagreement',
-            name='notice_expiry_sent_on',
+            model_name="signedagreement",
+            name="notice_expiry_sent_on",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='signedagreement',
-            name='revoked_at',
+            model_name="signedagreement",
+            name="revoked_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

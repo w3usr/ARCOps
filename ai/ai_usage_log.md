@@ -2769,3 +2769,14 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 389 tests and the
   accessibility sweep pass.
 - **Git Hash**: 2f5dff2
+
+## [2026-09-20 20:28 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The seeded decision rows named "User object (1)": a migration's historical
+  model has no custom `__str__`. The seed is corrected and the rows it already wrote repaired.
+- **Sections/Files Affected**: apps/credentials/migrations/0007_seed_the_record_from_what_stands.py,
+  apps/credentials/migrations/0008_the_seeded_rows_name_a_person.py (new).
+- **Nature of Contribution**: Fix by the assistant, found by reading the live database back after
+  the deploy.
+- **Human Review Status**: Reviewed here; the repair is verified on the server after deploying.
+- **Git Hash**: [pending]

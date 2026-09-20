@@ -6,28 +6,64 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('credentials', '0005_uls_middle_initial'),
+        ("credentials", "0005_uls_middle_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CredentialDecision',
+            name="CredentialDecision",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('approved', 'Approved'), ('approved_after_decline', 'Approved after a decline'), ('declined', 'Declined'), ('revoked', 'Revoked'), ('expired', 'Expired'), ('superseded', 'Superseded by a new version')], max_length=24)),
-                ('actor_label', models.CharField(blank=True, max_length=200)),
-                ('at', models.DateTimeField(auto_now_add=True)),
-                ('note', models.TextField(blank=True)),
-                ('expires_on', models.DateField(blank=True, null=True)),
-                ('actor', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('agreement', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='decisions', to='credentials.signedagreement')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("approved", "Approved"),
+                            ("approved_after_decline", "Approved after a decline"),
+                            ("declined", "Declined"),
+                            ("revoked", "Revoked"),
+                            ("expired", "Expired"),
+                            ("superseded", "Superseded by a new version"),
+                        ],
+                        max_length=24,
+                    ),
+                ),
+                ("actor_label", models.CharField(blank=True, max_length=200)),
+                ("at", models.DateTimeField(auto_now_add=True)),
+                ("note", models.TextField(blank=True)),
+                ("expires_on", models.DateField(blank=True, null=True)),
+                (
+                    "actor",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "agreement",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="decisions",
+                        to="credentials.signedagreement",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-at'],
-                'indexes': [models.Index(fields=['-at'], name='credentials_at_cc498b_idx'), models.Index(fields=['agreement', 'at'], name='credentials_agreeme_2af9f4_idx')],
+                "ordering": ["-at"],
+                "indexes": [
+                    models.Index(fields=["-at"], name="credentials_at_cc498b_idx"),
+                    models.Index(fields=["agreement", "at"], name="credentials_agreeme_2af9f4_idx"),
+                ],
             },
         ),
     ]

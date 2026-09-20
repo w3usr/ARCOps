@@ -4,50 +4,49 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('credentials', '0001_initial'),
+        ("credentials", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UlsStaging',
+            name="UlsStaging",
             fields=[
-                ('usi', models.CharField(max_length=12, primary_key=True, serialize=False)),
-                ('callsign', models.CharField(db_index=True, max_length=12)),
-                ('status_code', models.CharField(blank=True, max_length=2)),
-                ('grant_date', models.DateField(blank=True, null=True)),
-                ('expiry_date', models.DateField(blank=True, null=True)),
-                ('class_code', models.CharField(blank=True, max_length=2)),
-                ('entity_name', models.CharField(blank=True, max_length=160)),
-                ('first_name', models.CharField(blank=True, max_length=80)),
-                ('last_name', models.CharField(blank=True, max_length=80)),
-                ('frn', models.CharField(blank=True, max_length=20)),
+                ("usi", models.CharField(max_length=12, primary_key=True, serialize=False)),
+                ("callsign", models.CharField(db_index=True, max_length=12)),
+                ("status_code", models.CharField(blank=True, max_length=2)),
+                ("grant_date", models.DateField(blank=True, null=True)),
+                ("expiry_date", models.DateField(blank=True, null=True)),
+                ("class_code", models.CharField(blank=True, max_length=2)),
+                ("entity_name", models.CharField(blank=True, max_length=160)),
+                ("first_name", models.CharField(blank=True, max_length=80)),
+                ("last_name", models.CharField(blank=True, max_length=80)),
+                ("frn", models.CharField(blank=True, max_length=20)),
             ],
         ),
         migrations.AddField(
-            model_name='licenserecord',
-            name='expiry_notice_for',
+            model_name="licenserecord",
+            name="expiry_notice_for",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='licenserecord',
-            name='expiry_notice_stage',
+            model_name="licenserecord",
+            name="expiry_notice_stage",
             field=models.PositiveSmallIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='licenserecord',
-            name='override_country',
+            model_name="licenserecord",
+            name="override_country",
             field=models.CharField(blank=True, max_length=60),
         ),
         migrations.AddField(
-            model_name='ulslicense',
-            name='first_name',
+            model_name="ulslicense",
+            name="first_name",
             field=models.CharField(blank=True, max_length=80),
         ),
         migrations.AddField(
-            model_name='ulslicense',
-            name='last_name',
+            model_name="ulslicense",
+            name="last_name",
             field=models.CharField(blank=True, max_length=80),
         ),
     ]

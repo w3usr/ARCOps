@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,105 +14,216 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='CredentialType',
+            name="CredentialType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.CharField(max_length=40, unique=True)),
-                ('label', models.CharField(max_length=80)),
-                ('established_by', models.CharField(choices=[('fcc_uls', 'FCC ULS lookup'), ('agreement', 'Signed agreement plus approval'), ('assertion', 'Sysadmin assertion')], max_length=20)),
-                ('graded', models.BooleanField(default=False)),
-                ('default_expiry', models.CharField(default='one_year', max_length=40)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("key", models.CharField(max_length=40, unique=True)),
+                ("label", models.CharField(max_length=80)),
+                (
+                    "established_by",
+                    models.CharField(
+                        choices=[
+                            ("fcc_uls", "FCC ULS lookup"),
+                            ("agreement", "Signed agreement plus approval"),
+                            ("assertion", "Sysadmin assertion"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("graded", models.BooleanField(default=False)),
+                ("default_expiry", models.CharField(default="one_year", max_length=40)),
             ],
         ),
         migrations.CreateModel(
-            name='UlsLicense',
+            name="UlsLicense",
             fields=[
-                ('callsign', models.CharField(max_length=12, primary_key=True, serialize=False)),
-                ('licensee_name', models.CharField(blank=True, max_length=160)),
-                ('operator_class', models.CharField(blank=True, max_length=20)),
-                ('status', models.CharField(blank=True, max_length=20)),
-                ('grant_date', models.DateField(blank=True, null=True)),
-                ('expiry_date', models.DateField(blank=True, null=True)),
-                ('frn', models.CharField(blank=True, max_length=20)),
-                ('updated', models.DateTimeField(auto_now=True)),
+                ("callsign", models.CharField(max_length=12, primary_key=True, serialize=False)),
+                ("licensee_name", models.CharField(blank=True, max_length=160)),
+                ("operator_class", models.CharField(blank=True, max_length=20)),
+                ("status", models.CharField(blank=True, max_length=20)),
+                ("grant_date", models.DateField(blank=True, null=True)),
+                ("expiry_date", models.DateField(blank=True, null=True)),
+                ("frn", models.CharField(blank=True, max_length=20)),
+                ("updated", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'ULS license',
+                "verbose_name": "ULS license",
             },
         ),
         migrations.CreateModel(
-            name='AgreementTemplate',
+            name="AgreementTemplate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.CharField(db_index=True, max_length=60)),
-                ('title', models.CharField(max_length=160)),
-                ('audience', models.JSONField(default=list)),
-                ('version', models.PositiveIntegerField()),
-                ('content_hash', models.CharField(max_length=64)),
-                ('html', models.TextField()),
-                ('effective_date', models.DateField()),
-                ('is_current', models.BooleanField(default=True)),
-                ('credential', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='templates', to='credentials.credentialtype')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("key", models.CharField(db_index=True, max_length=60)),
+                ("title", models.CharField(max_length=160)),
+                ("audience", models.JSONField(default=list)),
+                ("version", models.PositiveIntegerField()),
+                ("content_hash", models.CharField(max_length=64)),
+                ("html", models.TextField()),
+                ("effective_date", models.DateField()),
+                ("is_current", models.BooleanField(default=True)),
+                (
+                    "credential",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="templates",
+                        to="credentials.credentialtype",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['key', '-version'],
-                'unique_together': {('key', 'version')},
+                "ordering": ["key", "-version"],
+                "unique_together": {("key", "version")},
             },
         ),
         migrations.CreateModel(
-            name='LicenseRecord',
+            name="LicenseRecord",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('callsign', models.CharField(max_length=12)),
-                ('licensee_name', models.CharField(blank=True, max_length=120)),
-                ('operator_class', models.CharField(blank=True, max_length=20)),
-                ('status', models.CharField(default='unverified', max_length=20)),
-                ('grant_date', models.DateField(blank=True, null=True)),
-                ('expiry_date', models.DateField(blank=True, null=True)),
-                ('frn', models.CharField(blank=True, max_length=20)),
-                ('source', models.CharField(blank=True, max_length=40)),
-                ('retrieved_at', models.DateTimeField(blank=True, null=True)),
-                ('override_class', models.CharField(blank=True, max_length=20)),
-                ('override_status', models.CharField(blank=True, max_length=20)),
-                ('override_expiry', models.DateField(blank=True, null=True)),
-                ('override_name', models.CharField(blank=True, max_length=120)),
-                ('override_reason', models.TextField(blank=True)),
-                ('override_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='license', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("callsign", models.CharField(max_length=12)),
+                ("licensee_name", models.CharField(blank=True, max_length=120)),
+                ("operator_class", models.CharField(blank=True, max_length=20)),
+                ("status", models.CharField(default="unverified", max_length=20)),
+                ("grant_date", models.DateField(blank=True, null=True)),
+                ("expiry_date", models.DateField(blank=True, null=True)),
+                ("frn", models.CharField(blank=True, max_length=20)),
+                ("source", models.CharField(blank=True, max_length=40)),
+                ("retrieved_at", models.DateTimeField(blank=True, null=True)),
+                ("override_class", models.CharField(blank=True, max_length=20)),
+                ("override_status", models.CharField(blank=True, max_length=20)),
+                ("override_expiry", models.DateField(blank=True, null=True)),
+                ("override_name", models.CharField(blank=True, max_length=120)),
+                ("override_reason", models.TextField(blank=True)),
+                (
+                    "override_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="license",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SharedSecret',
+            name="SharedSecret",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(default='computer_account', max_length=60, unique=True)),
-                ('ciphertext', models.BinaryField()),
-                ('effective_date', models.DateField()),
-                ('set_at', models.DateTimeField(auto_now=True)),
-                ('set_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(default="computer_account", max_length=60, unique=True)),
+                ("ciphertext", models.BinaryField()),
+                ("effective_date", models.DateField()),
+                ("set_at", models.DateTimeField(auto_now=True)),
+                (
+                    "set_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SignedAgreement',
+            name="SignedAgreement",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('signer_name', models.CharField(max_length=160)),
-                ('signed_by_guardian', models.BooleanField(default=False)),
-                ('signed_at', models.DateTimeField(auto_now_add=True)),
-                ('signer_ip', models.GenericIPAddressField(blank=True, null=True)),
-                ('content_hash', models.CharField(blank=True, max_length=64)),
-                ('state', models.CharField(choices=[('signed', 'Signed, awaiting approval'), ('approved', 'Approved'), ('declined', 'Declined'), ('expired', 'Expired'), ('revoked', 'Revoked')], default='signed', max_length=10)),
-                ('expires_on', models.DateField(blank=True, null=True)),
-                ('approved_at', models.DateTimeField(blank=True, null=True)),
-                ('decision_reason', models.TextField(blank=True)),
-                ('pdf', models.FileField(blank=True, upload_to='agreements/%Y/')),
-                ('approver', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='approvals_given', to=settings.AUTH_USER_MODEL)),
-                ('credential', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='signatures', to='credentials.credentialtype')),
-                ('template', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='signatures', to='credentials.agreementtemplate')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='agreements', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("signer_name", models.CharField(max_length=160)),
+                ("signed_by_guardian", models.BooleanField(default=False)),
+                ("signed_at", models.DateTimeField(auto_now_add=True)),
+                ("signer_ip", models.GenericIPAddressField(blank=True, null=True)),
+                ("content_hash", models.CharField(blank=True, max_length=64)),
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("signed", "Signed, awaiting approval"),
+                            ("approved", "Approved"),
+                            ("declined", "Declined"),
+                            ("expired", "Expired"),
+                            ("revoked", "Revoked"),
+                        ],
+                        default="signed",
+                        max_length=10,
+                    ),
+                ),
+                ("expires_on", models.DateField(blank=True, null=True)),
+                ("approved_at", models.DateTimeField(blank=True, null=True)),
+                ("decision_reason", models.TextField(blank=True)),
+                ("pdf", models.FileField(blank=True, upload_to="agreements/%Y/")),
+                (
+                    "approver",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="approvals_given",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "credential",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="signatures",
+                        to="credentials.credentialtype",
+                    ),
+                ),
+                (
+                    "template",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="signatures",
+                        to="credentials.agreementtemplate",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="agreements",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-signed_at'],
+                "ordering": ["-signed_at"],
             },
         ),
     ]

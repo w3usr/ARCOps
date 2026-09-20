@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('credentials', '0004_license_applicant_type'),
+        ("credentials", "0004_license_applicant_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ulslicense',
-            name='middle_initial',
+            model_name="ulslicense",
+            name="middle_initial",
             field=models.CharField(blank=True, max_length=2),
         ),
         migrations.AddField(
-            model_name='ulsstaging',
-            name='middle_initial',
+            model_name="ulsstaging",
+            name="middle_initial",
             field=models.CharField(blank=True, max_length=2),
         ),
     ]

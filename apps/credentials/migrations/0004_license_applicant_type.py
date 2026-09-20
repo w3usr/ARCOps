@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('credentials', '0003_resign_by_notices_revoked'),
+        ("credentials", "0003_resign_by_notices_revoked"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='licenserecord',
-            name='licensee_type',
+            model_name="licenserecord",
+            name="licensee_type",
             field=models.CharField(blank=True, max_length=2),
         ),
         migrations.AddField(
-            model_name='ulslicense',
-            name='applicant_type',
+            model_name="ulslicense",
+            name="applicant_type",
             field=models.CharField(blank=True, max_length=2),
         ),
         migrations.AddField(
-            model_name='ulsstaging',
-            name='applicant_type',
+            model_name="ulsstaging",
+            name="applicant_type",
             field=models.CharField(blank=True, max_length=2),
         ),
     ]

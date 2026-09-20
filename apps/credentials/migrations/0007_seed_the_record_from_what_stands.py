@@ -19,6 +19,20 @@ FROM_STATE = {
 }
 
 
+def label_for(user) -> str:
+    """The way `User.__str__` writes it.
+
+    A migration's historical model carries no custom `__str__`, so `str(user)` here is Django's
+    default and writes "User object (1)" into a column a person reads (found on the server the
+    minute this first ran, 2026-09-20).
+    """
+    if user is None:
+        return "system"
+    name = " ".join(part for part in (user.first_name, user.last_name) if part).strip()
+    name = name or user.preferred_name or f"account {user.pk}"
+    return f"{name} ({user.callsign})" if user.callsign else name
+
+
 def seed(apps, schema_editor):
     SignedAgreement = apps.get_model("credentials", "SignedAgreement")
     CredentialDecision = apps.get_model("credentials", "CredentialDecision")
@@ -30,7 +44,7 @@ def seed(apps, schema_editor):
         action = FROM_STATE.get(a.state)
         if not action:
             continue
-        who = str(a.approver) if a.approver else "system"
+        who = label_for(a.approver)
         rows.append(
             CredentialDecision(
                 agreement=a,
@@ -52,7 +66,9 @@ def seed(apps, schema_editor):
 
 def unseed(apps, schema_editor):
     CredentialDecision = apps.get_model("credentials", "CredentialDecision")
-    CredentialDecision.objects.filter(actor_label__endswith="(from the record as it stood)").delete()
+    CredentialDecision.objects.filter(
+        actor_label__endswith="(from the record as it stood)"
+    ).delete()
 
 
 class Migration(migrations.Migration):
