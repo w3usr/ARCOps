@@ -150,7 +150,14 @@ has a decade of documentation.
 - **TR-10 PDF: WeasyPrint** rendering the signed agreement from an HTML template with
   `pdf_variant='pdf/ua-1'` and `pdf_tags=True`, so the document is tagged (FR-116). WeasyPrint
   states that conformance is the author's to verify, so the template is checked once with a
-  PDF/UA validator by hand and re-checked when it changes. *Why:* the agreement is already HTML
+  PDF/UA validator by hand and re-checked when it changes.
+
+  **Nothing decorative may be drawn as text.** WeasyPrint lays rotated text into the text layer
+  glyph by glyph, so a watermark written as HTML text — or as SVG `<text>` — threads itself
+  through the content a letter at a time for anyone extracting or narrating the document. The
+  standing watermark is therefore glyph **outlines** (fontTools, already a dependency of the
+  renderer) over an image, both of which carry no text at all. Checked by rendering a real
+  agreement and reading it back with `pdftotext` (2026-09-20). *Why:* the agreement is already HTML
   (FR-21), so one template serves the screen and the PDF. *Considered:* ReportLab (a second
   layout language). Serves: FR-23, FR-116.
 - **TR-11 Scheduled jobs: systemd timers running Django management commands**, one per job,
@@ -240,10 +247,17 @@ has a decade of documentation.
   password** (FR-33), which until 2026-09-20 checked a password in a box of its own and so knew
   nothing of passkeys.
 
-  **What it offers is a password or a passkey**, never an authenticator code: the adapter returns
-  the password method alone from the library's list of reauthentication methods, which is what
-  used to advertise "Use authenticator app or code" on a page that has already established who
-  you are (§2.6). It is laid out like the sign-in page: the password box with a solid Confirm,
+  **What it offers is a password or a passkey**, never an authenticator code: the adapter drops
+  the authenticator entry, and it alone, from the library's list of reauthentication methods —
+  that entry is what used to advertise "Use authenticator app or code" on a page that has
+  already established who you are (§2.6).
+
+  **The passkey stays in that list** and is taken out of what the page draws instead. The
+  library's own reauthentication views refuse any path not among the advertised methods, so
+  dropping the passkey from the list to keep a second link off the page also took the webauthn
+  view out of that check: the browser raised its prompt and the credential came back to a view
+  that redirected instead of verifying it (2026-09-20). The list says *which pages may confirm*;
+  what a page shows is the template's business. It is laid out like the sign-in page: the password box with a solid Confirm,
   the passkey outlined beneath.
 
   **A confirmation is spent by the act it was given for** (`apps/accounts/reauth.py`). The

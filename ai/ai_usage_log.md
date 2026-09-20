@@ -2947,3 +2947,16 @@ carries the actual running model ID.
   the code as built.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 8aea8ab
+
+## [2026-09-20 23:55 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Reconciliation: the requirements catch up with an evening of acceptance
+  testing — the rosters' sorting and columns, the document's standing and watermark, the
+  reversal's required reason, the callsign question that follows a member, and why the passkey
+  must stay in the library's own list.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (FR-16, FR-23, FR-25, FR-84),
+  docs/TECHNICAL_REQUIREMENTS.md (TR-10, TR-17).
+- **Nature of Contribution**: Document edits by the assistant, from the code as built and the
+  advisor's instructions quoted in place.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: [pending]

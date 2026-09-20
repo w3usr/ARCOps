@@ -807,6 +807,13 @@ Verbatim:
   else's. No sysadmin is involved; the replacement is written to the audit log (FR-92) like any
   other name change, and that is the whole record.
 
+  **(added 2026-09-20) The question follows the member until it is answered**, on every page,
+  because until then the callsign counts for nothing: it does not appear on a roster and it does
+  not meet a slot's license requirement. It is shaped and placed as a message rather than a
+  banner — a consequence that serious should be noticed, and a question that standing should not
+  take the screen. It says what saying yes does, and points at **Preferred name** for somebody
+  who answers honestly and is called something else.
+
   > FR-16: The user can also approve the ULS name to replace their input name.
   > — NAF, 2026-09-13
 
@@ -887,6 +894,22 @@ and the next revision of the agreement should say only what HR actually does.)
 - **FR-23 [Must]** The system renders each signed agreement to a PDF that reproduces the text as
   signed plus the signature block, stores it immutably, and lets the signer and approvers
   download it.
+
+  **(added 2026-09-20) The document says where it stands and how it got there.** It carries its
+  standing three ways: a band in the page margin, repeated on every page; a line under the
+  heading in words; and **the record of decisions** (FR-128) as a table — when, what, by whom,
+  why. An agreement nobody has decided yet carries no watermark, because there is no standing to
+  mark. The club's own mark sits behind the standing as a watermark, drawn as **outlines and an
+  image**: this renderer lays rotated text into the text layer glyph by glyph, which threaded
+  the word through the signature block for anyone extracting or narrating the file.
+
+  The stored file records **which rendering made it**, not only when: a decision is not the only
+  thing that dates a document, and comparing timestamps alone left agreements decided before a
+  change carrying the old rendering for ever. It is rebuilt on download rather than on every
+  decision, so the nightly expiry job does not render a document per lapsed agreement.
+
+  **It is named for who signed what and when** — surname, first name, callsign, the expiry it
+  carries, the agreement — so a folder of them sorts by surname, which is how a roster reads.
 - **FR-24 [Must] (added; confirmed by NAF 2026-09-13)** The digital agreement does **not**
   collect or store the University R number. The paper forms do, and the swipe-card request to
   University facilities needs it, but this repository's rules forbid storing rosters tied to
@@ -907,12 +930,18 @@ and the next revision of the agreement should say only what HR actually does.)
   links the signed text as a PDF so the approver can read what they are approving without
   finding the member first.
 
-  **A decline can be undone.** Declining is one press from approving and there was no way back,
-  so a slip meant asking the member to sign again. Signatures declined in the last thirty days
-  stay on the page, naming who declined them, when and why, with **Approve after all**;
-  approving one clears the reason it was declined for, because that reason no longer describes
-  it. Declining an already-declined signature says so rather than recording it twice. (*"we need
-  some way to approve after an accidental decline"* — NAF, 2026-09-20.)
+  **A decision can be reversed, and the reversal says why.** Declining is one press from
+  approving and there was no way back, so a slip meant asking the member to sign again.
+  A decline is turned round from **its own row in the record** (FR-128) while it is still what
+  stands and still recent — thirty days, after which a decision nobody corrected was a decision
+  — and **a reason is required**. That is what makes it safe: one control was doing two jobs,
+  "I pressed the wrong button" and "I have considered this and refuse", and a log that cannot
+  tell them apart is what made the reversal feel unsafe. Approving clears the reason it was
+  declined for, because that reason no longer describes it, and declining an already-declined
+  signature says so rather than recording it twice.
+
+  > we need some way to approve after an accidental decline … "What I would do: keep the
+  > reversal, and require a reason for it": Do this, but improve the UI. — NAF, 2026-09-20
 
   > Let's change it from a default of 1 year to a default of expires Sept 1 of the following
   > year. This will help use to renew everyone at the same time. — NAF, 2026-09-13
@@ -1723,9 +1752,19 @@ made it likely that reliable delivery would take time to establish:
 
 ### 3.9 Reports and exports
 
-- **FR-84 [Must]** **Access rosters**: who currently holds station access and IT
-  access, with category, approval date, approver, expiry, and days remaining; sortable and
-  filterable by expiring-within-N-days. Officers and sysadmins; downloadable as CSV.
+- **FR-84 [Must]** **Access rosters**: who holds station access and IT access, with the name in
+  three columns (first, last, callsign), category, the member's institution and personal
+  addresses and phone, approval date, approver, expiry, and whether the credential is active or
+  expired. Officers and sysadmins; downloadable as CSV.
+
+  **(amended 2026-09-20)** Every column sorts and every column narrows, in the words the members
+  directory uses, because a reader who has learned one table has learned the other: filter panels
+  for credential, category, approver, expiry and status, beside a search box. **Status opens with
+  *Active* ticked**, which makes it the second panel in the application to start with a tick,
+  after the members list's Archive and for the same reason: a roster nobody has narrowed should
+  answer "who holds access" rather than quietly leaving the lapsed ones out. The download is what
+  is on the screen — the search, every filter and the sort — and its audit row records that it
+  carried contact details (FR-87).
 - **FR-85 [Must]** **Event roster export**: the FR-65 roster as CSV and as a printable page.
 - **FR-86 [Should]** **Participation report** per event and per period: hours scheduled, hours
   covered, hours viable, people scheduled and people who checked in (FR-113), first-time
