@@ -2551,3 +2551,15 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 365 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 0b41e60
+
+## [2026-09-20 15:25 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The forked library template goes away. The club's word for a WebAuthn
+  credential is passkey and every page written here says so; the sign-in library's own pages keep
+  the library's words, because rewording them means forking markup or carrying a translation
+  catalog, and both are a thing to maintain until the library catches up.
+- **Sections/Files Affected**: templates/mfa/webauthn/reauthenticate.html (removed),
+  apps/accounts/adapter.py, docs/INTERFACE.md.
+- **Nature of Contribution**: Edit by the assistant, from the advisor's decision.
+- **Human Review Status**: The advisor's call, recorded verbatim in INTERFACE.md.
+- **Git Hash**: {{pending}}

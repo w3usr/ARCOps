@@ -46,8 +46,12 @@ class AccountAdapter(DefaultAccountAdapter):
     def get_reauthentication_methods(self, user) -> list[dict]:
         """The ways this person can confirm it is them, in the club's words.
 
-        The library calls a WebAuthn credential a security key; a member enrolls a **passkey**
-        here and every other page says so (the advisor, 2026-09-20).
+        The library calls a WebAuthn credential a security key, which since 2023 has meant the
+        hardware rather than the credential; what a member enrolls here is a **passkey**, and
+        that is the word on every page the club writes (the advisor, 2026-09-20).
+
+        This is a hook the library offers, not a copy of its markup: the library's own pages keep
+        the library's words, and when it catches up there is nothing here to unwind.
         """
         methods = super().get_reauthentication_methods(user)
         for method in methods:

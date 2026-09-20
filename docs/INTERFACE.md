@@ -99,6 +99,18 @@ member page, the directory column, its filter and the sysadmin page all call it.
 its own names (`groups`, `access_groups`), because those are Django's and the reader never sees
 them.
 
+**A library's own pages keep the library's words.** Where the application draws a page, it uses
+the club's vocabulary; where a dependency draws one, rewording it means either forking its
+markup or carrying a translation catalog, and both are a thing to maintain until the dependency
+catches up. So the sign-in library's enrollment pages say "security key" and every page written
+here says **passkey**, which is what the FIDO Alliance has called the credential since 2023.
+Where the library offers a hook for the wording, as it does for the ways to confirm access, the
+hook is used; nothing is copied for the sake of a word.
+
+> Let's make this simpler... how about if we leave the library language alone, and just use the
+> term Passkey on our website. That way when the library catches up with the times, we won't
+> have a useless catalog and it is one less thing to break. — NAF, 2026-09-20
+
 ## Filters
 
 A filter that can sensibly take two answers takes a set: a disclosure holding a checkbox each,
