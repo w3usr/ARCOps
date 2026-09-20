@@ -81,7 +81,9 @@ def announce_published(actor, event: Event) -> int:
     )
     n = 0
     for u in members:
-        send("event.published", u, "announcement", {"event": event, "when": when, "link": link})
+        # Its own category, so that turning off an officer's announcements does not silently
+        # turn off the club's calendar as well (the unsubscribe page promised as much).
+        send("event.published", u, "event_published", {"event": event, "when": when, "link": link})
         n += 1
     record(actor, "event.announced", event, after={"recipients": n})
     return n

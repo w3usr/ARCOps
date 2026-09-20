@@ -70,7 +70,9 @@ def button(href: str, label: str) -> str:
 _LONE_LINK = re.compile(
     r"<p\b[^>]*>\s*<a\b(?![^>]*\bstyle=)([^>]*)>(.*?)</a>\s*</p>", re.IGNORECASE | re.DOTALL
 )
-_HREF = re.compile(r'href\s*=\s*"([^"]*)"', re.IGNORECASE)
+# Either kind of quote: a template edited by hand can carry single ones, and a call to action
+# that is not recognised silently stays a plain link.
+_HREF = re.compile(r"""href\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.IGNORECASE)
 _TAGS = re.compile(r"<[^>]+>")
 
 
@@ -80,7 +82,7 @@ def _promote_lone_links(html: str) -> str:
         label = unescape(_TAGS.sub("", m.group(2))).strip()
         if not href or not label or "<a" in m.group(2).lower():
             return m.group(0)  # two links in the paragraph: two choices, so two links
-        return button(unescape(href.group(1)), label)
+        return button(unescape(href.group(1) or href.group(2)), label)
 
     return _LONE_LINK.sub(swap, html)
 

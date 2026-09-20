@@ -14,10 +14,11 @@ from django.conf import settings as dj
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, Template
 from django.utils import timezone
+from django.utils.html import escape
 
 from apps.ops.config import setting
 
-from .categories import CONTROLLED
+from .categories import BULK, CONTROLLED
 from .defaults import DEFAULTS_BY_KEY
 from .models import MessageTemplate, Outbox
 
@@ -78,6 +79,44 @@ def compose(
     return msg
 
 
+def _small_print(msg: Outbox) -> str:
+    """The lines under every message, and the extra ones bulk mail carries.
+
+    **Two links, and neither can do the other's job.** *Your notification settings* is one URL,
+    the same in every message to every member, behind sign-in: it is where somebody turns a
+    category off and can turn it back on (the advisor, 2026-09-20: "there should be a link to set
+    user email and notification preferences... one link that works for every account"). The
+    **unsubscribe** on bulk mail is a signed link for that one recipient, because a mail client's
+    own Unsubscribe button posts to it with no session, and because an opt-out may not "make the
+    recipient take any step other than... visiting a single page on an Internet website" (FTC,
+    CAN-SPAM compliance guide). A sign-in page is a step beyond that.
+
+    The club's postal address goes on bulk mail for the same guide's "tell recipients where
+    you're located", and is left out entirely when the club has not set one, rather than showing
+    a placeholder to members.
+    """
+    from django.urls import reverse
+
+    from apps.ops.config import accent_color
+
+    site = getattr(dj, "SITE_URL", "") or ""
+    style = f'style="color:{accent_color()};"'
+    prefs = f"{site}{reverse('profile_edit')}#notifications"
+    lines = [f'Change what reaches you: <a href="{prefs}" {style}>your notification settings</a>.']
+    if msg.category in BULK and msg.user is not None:
+        from .announce import unsubscribe_token
+
+        stop = f"{site}{reverse('unsubscribe', args=[unsubscribe_token(msg.user, msg.category)])}"
+        lines.append(
+            f'To stop messages like this one, <a href="{stop}" {style}>unsubscribe</a>; '
+            "notices about your own slots and account are unaffected."
+        )
+        address = str(setting("club.postal_address", "") or "").strip()
+        if address:
+            lines.append(escape(address))
+    return "<br>" + "<br>".join(lines)
+
+
 def _date_header() -> str:
     """The Date: header, in the club's own time zone.
 
@@ -117,21 +156,26 @@ def deliver(msg: Outbox) -> Outbox:
     reply_to = msg.reply_to or (
         [setting("club.contact_email", "")] if setting("club.contact_email", "") else None
     )
+    small_print = _small_print(msg)
     try:
         email = EmailMultiAlternatives(
-            msg.subject, msg.body_text, from_addr, msg.to_addresses, reply_to=reply_to
+            msg.subject,
+            msg.body_text + _plain_text(small_print),
+            from_addr,
+            msg.to_addresses,
+            reply_to=reply_to,
         )
         email.extra_headers["Date"] = _date_header()
         from .layout import wrap
 
-        email.attach_alternative(wrap(msg.body_html), "text/html")
-        if msg.category == "announcement" and msg.user is not None:
+        email.attach_alternative(wrap(msg.body_html, footer_html=small_print), "text/html")
+        if msg.category in BULK and msg.user is not None:
             # FR-81: list mail carries a working unsubscribe, by link and by one-click POST
             from django.urls import reverse
 
             from .announce import unsubscribe_token
 
-            one_click = f"{getattr(dj, 'SITE_URL', '')}{reverse('unsubscribe', args=[unsubscribe_token(msg.user)])}"
+            one_click = f"{getattr(dj, 'SITE_URL', '')}{reverse('unsubscribe', args=[unsubscribe_token(msg.user, msg.category)])}"
             club = setting("club.contact_email", "")
             email.extra_headers["List-Unsubscribe"] = f"<{one_click}>" + (
                 f", <mailto:{club}?subject=unsubscribe>" if club else ""

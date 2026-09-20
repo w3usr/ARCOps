@@ -124,8 +124,10 @@ def test_publish_with_announcement_reaches_members():
     c.force_login(cap)
     c.post(f"/events/{e.pk}/publish/", {"announce": "yes"})
     assert Event.objects.get(pk=e.pk).state == Event.State.PUBLISHED
+    # Its own category since 2026-09-20: turning off an officer's announcements no longer turns
+    # off the club's calendar with them.
     assert Outbox.objects.filter(
-        user=mem, category="announcement", subject__contains="Sprint"
+        user=mem, category="event_published", subject__contains="Sprint"
     ).exists()
 
 

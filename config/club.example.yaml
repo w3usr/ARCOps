@@ -23,6 +23,10 @@ club:
   # own country's shape, with the international prefix.
   phone_region: "US"
   station_location_name: "Club station"
+  # Where the club is, for the foot of bulk mail: the FTC's guide asks a sender to "tell
+  # recipients where you're located", and a street address, a registered PO box or a registered
+  # private mailbox all qualify. Left empty, the line is simply absent.
+  postal_address: null
 
 # Signing in. Two-step verification is each member's own choice (§2.6); a club can require it of
 # the levels it trusts with the most, by naming their access-group keys here. "sysadmin" covers

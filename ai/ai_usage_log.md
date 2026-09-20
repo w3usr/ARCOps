@@ -2563,3 +2563,20 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit by the assistant, from the advisor's decision.
 - **Human Review Status**: The advisor's call, recorded verbatim in INTERFACE.md.
 - **Git Hash**: 8e4e104
+
+## [2026-09-20 15:45 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Two links under every message. One shared address leads any member to
+  their own notification switches; bulk mail additionally carries a signed unsubscribe for that
+  recipient and that category, the RFC 8058 headers, and the club's postal address. The weekly
+  digest and the openings blast had no unsubscribe of any kind, and new-event notices borrowed
+  the announcement switch.
+- **Sections/Files Affected**: apps/comms/{categories,services,layout,announce,views_announce}.py,
+  apps/events/services/lifecycle.py, apps/accounts/views.py, apps/ops/views_settings.py,
+  config/club.example.yaml, templates/comms/unsubscribe.html, docs/REQUIREMENTS.md (FR-71, FR-81,
+  FR-89), apps/comms/tests/{test_announce,test_messages}.py, apps/events/tests/test_phase2.py.
+- **Nature of Contribution**: Design against the FTC's guide and RFC 8058, code and tests by the
+  assistant, from the advisor's instruction and his collaborator's point.
+- **Human Review Status**: Pending the advisor's look; the club's postal address is his to
+  confirm before it goes out. 370 tests, the accessibility sweep and the four guards pass.
+- **Git Hash**: {{pending}}

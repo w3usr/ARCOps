@@ -97,11 +97,14 @@ def test_audience_filters_count_and_send_with_reply_to_and_unsubscribe():
     assert msgs.count() == 2 and all(
         m.reply_to == ["cap@example.org", "club@example.org"] for m in msgs
     )
-    assert (
-        "unsubscribe" in msgs.first().body_html
-        and "<p>Please bring a headset.</p>" in msgs.first().body_html
-    )
+    # The stored copy carries the message and who sent it to whom; the unsubscribe line belongs
+    # to the mail, where it can be acted on without signing in (2026-09-20).
+    assert "Sent by Cap Tain" in msgs.first().body_html
+    assert "<p>Please bring a headset.</p>" in msgs.first().body_html
+    assert "unsubscribe" not in msgs.first().body_html
     sent = mail.outbox[-1]
+    html = [c for c, t in sent.alternatives if t == "text/html"][0]
+    assert "/unsubscribe/" in html and "your notification settings" in html
     assert sent.reply_to == ["cap@example.org", "club@example.org"]
     assert (
         "List-Unsubscribe" in sent.extra_headers
@@ -144,7 +147,9 @@ def test_unsubscribe_link_and_one_click_turn_off_announcements_only():
     token = announce.unsubscribe_token(m)
     cl = Client()
     r = cl.get(f"/unsubscribe/{token}/")
-    assert r.status_code == 200 and b"Stop announcement emails" in r.content
+    assert r.status_code == 200 and b"Stop these emails" in r.content
+    assert b"general announcements from officers" in r.content, "it names what it stops"
+    assert b"Mo" not in r.content, "but not whose account it is: the link travels (2026-09-20)"
     r = cl.post(f"/unsubscribe/{token}/", {"List-Unsubscribe": "One-Click"})
     assert r.status_code == 200 and r.content == b"unsubscribed"
     assert NotificationPreference.objects.get(user=m, category="announcement").email is False
@@ -201,3 +206,102 @@ def test_contest_fields_saved_shown_and_in_the_reminder():
         and "RST and serial" in rem.body_html
         and "TEST-SPRINT" in rem.body_html
     )
+
+
+@pytest.mark.django_db
+def test_every_message_carries_one_shared_link_to_the_member_s_own_settings(settings):
+    """NAF, 2026-09-20: "For all emails, there should be a link to set user email and notification
+    preferences... one link that works for every account, so you don't need to send individual
+    links in the footers of the email."
+    """
+    from django.core import mail
+
+    from apps.comms.services import compose
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
+    one = _user("one@example.org", first_name="One", last_name="Member")
+    two = _user("two@example.org", first_name="Two", last_name="Member")
+
+    compose(one, "reminder", "Your slot", "<p>Tomorrow.</p>")
+    compose(two, "reminder", "Your slot", "<p>Tomorrow.</p>")
+    first, second = (
+        [c for c, t in m.alternatives if t == "text/html"][0] for m in mail.outbox[-2:]
+    )
+    assert "/me/edit/#notifications" in first, "the shared settings link"
+    assert first.count("/me/edit/#notifications") == second.count("/me/edit/#notifications")
+    assert "/unsubscribe/" not in first, "a reminder is not something to unsubscribe from"
+    assert "notification settings" in mail.outbox[-1].body, "and the text part carries it too"
+
+
+@pytest.mark.django_db
+def test_bulk_mail_carries_an_unsubscribe_and_the_club_s_address(settings):
+    """The digest and the openings blast are list mail by any receiver's definition; until
+    2026-09-20 neither carried an unsubscribe of any kind."""
+    from django.core import mail
+
+    from apps.comms.services import compose
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
+    ClubSetting.objects.update_or_create(
+        key="club.postal_address", defaults={"value": "Club Station, 1 Example Way, Town ST 00000"}
+    )
+    m = _user("bulk@example.org", first_name="Bee", last_name="Ulk")
+
+    for category in ("digest", "opening", "event_published", "announcement"):
+        compose(m, category, "Something", "<p>x</p>")
+        sent = mail.outbox[-1]
+        html = [c for c, t in sent.alternatives if t == "text/html"][0]
+        assert "/unsubscribe/" in html, category
+        assert "1 Example Way" in html, f"the club's address on {category}"
+        assert sent.extra_headers["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+        assert "/unsubscribe/" in sent.extra_headers["List-Unsubscribe"]
+
+    compose(m, "cancellation", "Off", "<p>x</p>")
+    sent = mail.outbox[-1]
+    html = [c for c, t in sent.alternatives if t == "text/html"][0]
+    assert "/unsubscribe/" not in html and "List-Unsubscribe" not in sent.extra_headers
+    assert "1 Example Way" not in html, "the address rides with bulk mail, not with every notice"
+
+
+@pytest.mark.django_db
+def test_the_address_line_is_absent_when_the_club_has_not_set_one(settings):
+    from django.core import mail
+
+    from apps.comms.services import compose
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
+    m = _user("noaddr@example.org", first_name="No", last_name="Addr")
+    compose(m, "digest", "Weekly", "<p>x</p>")
+    html = [c for c, t in mail.outbox[-1].alternatives if t == "text/html"][0]
+    assert "/unsubscribe/" in html, "the unsubscribe does not depend on the address"
+    assert "None" not in html.split("</table>")[-2], "and no placeholder stands in for it"
+
+
+@pytest.mark.django_db
+def test_unsubscribing_from_one_kind_of_bulk_mail_leaves_the_others_alone():
+    """The token names the category, so "stop these" means the kind in front of the reader."""
+    from apps.comms.services import compose
+
+    ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
+    m = _user("pick@example.org", first_name="Pick", last_name="Y")
+    token = announce.unsubscribe_token(m, "digest")
+    r = Client().post(f"/unsubscribe/{token}/", {"List-Unsubscribe": "One-Click"})
+    assert r.status_code == 200 and r.content == b"unsubscribed"
+
+    assert compose(m, "digest", "Weekly", "<p>x</p>").state == Outbox.State.SKIPPED
+    assert compose(m, "announcement", "Hello", "<p>x</p>").state == Outbox.State.SENT
+    assert compose(m, "event_published", "New", "<p>x</p>").state == Outbox.State.SENT
+
+
+@pytest.mark.django_db
+def test_a_token_from_before_the_category_was_named_still_means_announcements():
+    """An old link in an old message keeps working, and keeps meaning what it meant."""
+    from django.core import signing
+
+    m = _user("old@example.org", first_name="Old", last_name="Link")
+    token = signing.dumps({"u": m.pk}, salt=announce.UNSUB_SALT)
+    user, category = announce.user_from_unsubscribe_token(token)
+    assert user == m and category == "announcement"

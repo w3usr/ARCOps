@@ -1435,8 +1435,11 @@ made it likely that reliable delivery would take time to establish:
   email and, where enabled (FR-112), browser notifications, are on its edit page with everything
   else that changes something (FR-6). The in-application copy (FR-82) is always kept. Categories a member controls:
   automated slot reminders (FR-72); at-risk warnings for slots they hold (FR-73); role-opening
-  announcements (FR-80); general announcements (FR-75); the weekly digest (FR-79); license
-  expiry notices (FR-17). Categories that **go out no matter what**, because they change
+  announcements (FR-80); general announcements (FR-75); **notices that a new event has been
+  published**, which is its own switch since 2026-09-20 so that turning off an officer's
+  announcements does not silently turn off the club's calendar with them; the weekly digest
+  (FR-79); license expiry notices (FR-17). Every message the site sends carries **one shared link
+  to these switches** (FR-81). Categories that **go out no matter what**, because they change
   something the member is relying on or protect their account: cancellation of a slot, event,
   or sign-up they hold (FR-74); a sign-up moved, removed, or re-timed by someone else (FR-58);
   account security messages (password reset, temporary password, sign-in lockout); and
@@ -1528,9 +1531,34 @@ made it likely that reliable delivery would take time to establish:
   the newly eligible audience, if the captain enabled it.
 - **FR-81 [Must]** Outbound mail carries proper authentication for the sending domain so it is
   delivered to the inbox; the private orchestration repository owns the DNS records this
-  requires. Announcements to a list carry a working unsubscribe link and a `List-Unsubscribe`
-  header, which large receivers expect from any sender of list mail and which FR-71 already
-  provides for. **[Should]** The application records delivery failures (bounces) against the
+  requires.
+
+  **Two links sit under every message, and neither can do the other's job** (2026-09-20).
+
+  *Your notification settings* is **one address, the same in every message to every member**,
+  and it leads behind sign-in to that account's own switches, where a category is turned off and
+  can be turned back on:
+
+  > For all emails, there should be a link to set user email and notification preferences. This
+  > can take them to their user profile settings page. You should have one link that works for
+  > every account, so you don't need to send individual links in the footers of the email. — NAF,
+  > 2026-09-20
+
+  *Unsubscribe* is a **signed link for one recipient and one category**, and it goes on **bulk
+  mail** alone: announcements, new-event notices, the weekly digest, and the openings blast. It
+  answers without a session, because a mail client's own Unsubscribe button posts to it with no
+  cookie, and because the FTC's guide says an opt-out may not "make the recipient take any step
+  other than sending a reply email or visiting a single page on an Internet website". A sign-in
+  page is a step beyond that, so the settings link cannot serve as the opt-out. The same mail
+  carries `List-Unsubscribe` and `List-Unsubscribe-Post` (RFC 8058), which large receivers expect
+  of list mail. Everything else the site sends is transactional: a member cannot opt out of being
+  told their own slot moved, and offering it would be a false promise.
+
+  Bulk mail also carries **the club's postal address** (FR-89), because the same guide asks a
+  sender to say where it is located. The club's mail to its own members is *likely* a
+  "transactional or relationship" message in the FTC's own words, and so largely exempt; likely
+  is not certainly, the test turns on how a subject line reads, and a blast about a hamfest can
+  read as commercial. The club complies anyway, because it costs one setting and one footer. **[Should]** The application records delivery failures (bounces) against the
   address and shows them to officers, since an unread reminder is the same as no reminder; in
   v1 bounces are readable in the club mailbox (section 6).
 - **FR-82 [Must]** Every message the system sends, or would have sent, to a person is visible
@@ -1583,8 +1611,8 @@ made it likely that reliable delivery would take time to establish:
 
 ### 3.10 Administration and audit
 
-- **FR-89 [Must]** Sysadmins edit club configuration in the interface: club identity, sending
-  and reply-to addresses, member categories, club positions, access groups and what each may do, roles,
+- **FR-89 [Must]** Sysadmins edit club configuration in the interface: club identity, **the
+  club's postal address** for the foot of bulk mail (FR-81), sending and reply-to addresses, member categories, club positions, access groups and what each may do, roles,
   credential types, license ladder, default slot length, default cutoffs and horizons, message
   templates **(portability)**. Each value is named in words with one line saying what it does;
   its dotted key is shown quietly beside that, for whoever edits the configuration file. A

@@ -15,7 +15,6 @@ from datetime import timedelta
 
 from django.conf import settings as dj
 from django.core import signing
-from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.models import User
@@ -26,6 +25,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.groups import people_who_may
 
+from .categories import CONTROLLED
 from .models import Announcement
 from .services import compose
 
@@ -37,16 +37,26 @@ def _site() -> str:
     return getattr(dj, "SITE_URL", "") or ""
 
 
-def unsubscribe_token(user) -> str:
-    return signing.dumps({"u": user.pk}, salt=UNSUB_SALT)
+def unsubscribe_token(user, category: str = "announcement") -> str:
+    """The signed link in a bulk message. It names the category as well as the account, because
+    bulk mail is four kinds now and "stop these" has to mean the kind in front of the reader
+    rather than announcements whatever they were reading (2026-09-20)."""
+    return signing.dumps({"u": user.pk, "c": category}, salt=UNSUB_SALT)
 
 
-def user_from_unsubscribe_token(token: str):
+def user_from_unsubscribe_token(token: str) -> tuple:
+    """(account, category), or (None, "") for a link that is expired, forged, or of an account
+    that can no longer be used. A token issued before the category was written into it means
+    what it meant then: announcements."""
     try:
         data = signing.loads(token, salt=UNSUB_SALT, max_age=timedelta(days=365))
     except signing.BadSignature:
-        return None
-    return User.objects.filter(pk=data.get("u"), is_active=True).first()
+        return None, ""
+    category = str(data.get("c") or "announcement")
+    if category not in CONTROLLED:
+        return None, ""
+    user = User.objects.filter(pk=data.get("u"), is_active=True).first()
+    return (user, category) if user else (None, "")
 
 
 def resolve_audience(event: Event | None, filters: dict) -> list[User]:
@@ -156,12 +166,12 @@ def send_announcement(
     if outside:
         return ann
     reply_to = reply_to_for(sender, event)
+    # Who sent this and to whom: provenance about this message, which belongs with it in the
+    # member's own copy too. The unsubscribe line and the club's address are the small print
+    # under every bulk message and are added at delivery (apps.comms.services._small_print).
+    audience = "the people signed up for " + event.title if event else "every member"
     for u in recipients:
-        link = _site() + reverse("unsubscribe", args=[unsubscribe_token(u)])
-        footer = (
-            f'<p class="muted"><small>Sent by {sender.full_name} to {"the people signed up for " + event.title if event else "every member"}. '
-            f'To stop receiving announcements by email, <a href="{link}">unsubscribe</a>; notices about your own slots and account are unaffected.</small></p>'
-        )
+        footer = f'<p class="muted"><small>Sent by {sender.full_name} to {audience}.</small></p>'
         msg = compose(u, "announcement", subject, body_html + footer, deliver_now=False)
         msg.reply_to = reply_to
         msg.announcement = ann
@@ -185,10 +195,11 @@ def outside_copy(sender: User, event: Event | None, filters: dict) -> tuple[list
     return addrs, users
 
 
-def set_announcement_email(user, on: bool) -> None:
+def set_email_preference(user, category: str, on: bool) -> None:
+    """Turn one category's email on or off for this account, from wherever the member asked."""
     from apps.accounts.models import NotificationPreference
 
     NotificationPreference.objects.update_or_create(
-        user=user, category="announcement", defaults={"email": on}
+        user=user, category=category, defaults={"email": on}
     )
-    record(user, "preference.announcement_email", user, after={"email": on})
+    record(user, "preference.email", user, after={"category": category, "email": on})

@@ -273,6 +273,9 @@ def test_the_one_thing_a_message_asks_for_is_drawn_as_a_button():
     inline = wrap('<p>Open this: <a href="https://x.example/c/">here</a> soon.</p>')
     assert "bgcolor" not in inline.split("</td></tr>", 1)[1], "a link in a sentence stays a link"
 
+    single = wrap("<p><a href='https://x.example/c/'>Confirm</a></p>")
+    assert ">Confirm</span>" in single, "a hand-typed single quote is still a call to action"
+
     two = wrap(
         '<p><a href="https://x.example/y/">Yes</a> · <a href="https://x.example/n/">No</a></p>'
     )

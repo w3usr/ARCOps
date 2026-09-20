@@ -100,6 +100,9 @@ def notifications(request):
             category=key,
             defaults={"email": key in wanted, "push": key in pushed},
         )
+    # Audited like the same change made from a message's unsubscribe link, so the record does
+    # not depend on which door the member came through.
+    record(request.user, "preferences.changed", request.user, after={"email": sorted(wanted)})
     messages.success(request, "Notification settings saved.")
     return redirect(reverse("profile_edit") + "#notifications")
 

@@ -179,17 +179,21 @@ def announcements(request):
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def unsubscribe(request, token):
-    """FR-81: the link in every announcement, and the one-click POST that mail clients send.
-    Only the announcement category is affected; notices about the member's own slots and
-    account keep coming (FR-71)."""
-    user = announce.user_from_unsubscribe_token(token)
+    """FR-81: the link at the foot of every bulk message, and the one-click POST that a mail
+    client sends when the reader presses its own Unsubscribe button. It turns off the one
+    category the message belongs to; notices about the member's own slots and account keep
+    coming, and so do the other kinds of bulk mail (FR-71)."""
+    from .categories import CONTROLLED
+
+    user, category = announce.user_from_unsubscribe_token(token)
     if user is None:
         return render(request, "comms/unsubscribe.html", {"state": "invalid"}, status=410)
+    what = CONTROLLED.get(category, "these messages").lower()
     if request.method == "POST":
-        announce.set_announcement_email(user, on=False)
+        announce.set_email_preference(user, category, on=False)
         if request.POST.get("List-Unsubscribe") == "One-Click":
             return HttpResponse("unsubscribed", content_type="text/plain")
-        return render(request, "comms/unsubscribe.html", {"state": "done", "person": user})
+        return render(request, "comms/unsubscribe.html", {"state": "done", "what": what})
     return render(
-        request, "comms/unsubscribe.html", {"state": "confirm", "person": user, "token": token}
+        request, "comms/unsubscribe.html", {"state": "confirm", "what": what, "token": token}
     )

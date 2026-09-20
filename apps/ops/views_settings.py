@@ -31,6 +31,7 @@ GROUPS = [
             "club.timezone",
             "club.phone_region",
             "club.station_location_name",
+            "club.postal_address",
         ],
     ),
     (
@@ -130,6 +131,12 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
         "Where phone numbers are",
         "How a number typed without a country code is read and written back: US turns "
         "9735551234 into (973) 555-1234. A number from elsewhere keeps its own country's shape.",
+    ),
+    "club.postal_address": (
+        "The club's postal address",
+        "Printed at the foot of announcements, the digest and other mail sent to everyone. One "
+        "line; a street address, a registered PO box, or a registered private mailbox. Left "
+        "empty, no address is printed.",
     ),
     "club.timezone": (
         "The club's time zone",
