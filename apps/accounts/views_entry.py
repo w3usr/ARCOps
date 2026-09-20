@@ -22,6 +22,7 @@ from apps.ops.config import setting
 
 from . import entry
 from .consent import PrivacyConsentMixin, consent_field
+from .forms import password_field
 from .models import EntryLink, User
 
 
@@ -154,8 +155,8 @@ class JoinForm(PrivacyConsentMixin, forms.Form):
     cell_phone = forms.CharField(max_length=30, required=False)
     category = forms.ChoiceField(required=False)
     under_18 = forms.BooleanField(required=False, label="I am under 18")
-    password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
-    password2 = forms.CharField(widget=forms.PasswordInput, label="Password, again")
+    password1 = password_field("Password", first=True)
+    password2 = password_field("Password, again")
     consent = consent_field()
 
     def __init__(self, *args, link: EntryLink, **kwargs):

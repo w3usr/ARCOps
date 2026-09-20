@@ -5,6 +5,8 @@ from __future__ import annotations
 from allauth.account import forms as allauth_forms
 from allauth.account.forms import default_token_generator  # the library's email-aware one
 from allauth.account.internal import flows
+from django import forms
+from django.contrib.auth.password_validation import password_validators_help_text_html
 
 from .addresses import sign_in_addresses
 from .models import User
@@ -36,3 +38,20 @@ class ResetPasswordForm(allauth_forms.ResetPasswordForm):
             token_generator = kwargs.get("token_generator", default_token_generator)
             flows.password_reset.request_password_reset(request, email, self.users, token_generator)
         return email
+
+
+def password_field(label: str, *, first: bool = False) -> forms.CharField:
+    """A password box that keeps what was typed and says the rules before refusing anything.
+
+    `strip=False` is the point. Django's CharField strips by default, which is right for a name
+    and wrong for a secret: a password typed with a trailing space was silently shortened before
+    it was validated, so twelve characters were refused as eleven with Django's own "must contain
+    at least 12 characters", and the value that reached set_password was not the one typed
+    (reported 2026-09-20). Django's own SetPasswordForm and allauth's PasswordField both set it.
+    """
+    return forms.CharField(
+        widget=forms.PasswordInput,
+        label=label,
+        strip=False,
+        help_text=password_validators_help_text_html() if first else "",
+    )

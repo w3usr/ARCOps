@@ -330,13 +330,15 @@ def test_the_advisor_reaches_the_computer_password_from_the_sidebar(settings):
     c = Client()
     c.force_login(advisor)
     home = c.get("/").content.decode()
-    assert "Computer password" in home
+    # "Set the computer password" is the advisor's entry; a member's own entry, for reading it,
+    # says "Computer password" and is a different page (2026-09-20).
+    assert "Set the computer password" in home
     assert "/credentials/computer-password/manage/" in home
     assert c.get("/credentials/computer-password/manage/").status_code == 200
 
     c.force_login(officer)
     home = c.get("/").content.decode()
-    assert "Computer password" not in home
+    assert "Set the computer password" not in home
     assert "/credentials/computer-password/manage/" not in home
     assert c.get("/credentials/computer-password/manage/").status_code == 404
 
@@ -415,3 +417,36 @@ def test_the_badge_and_the_declined_list_are_only_for_somebody_who_may_approve()
     home = c.get("/").content.decode()
     assert "waiting for approval" not in home
     assert c.get("/credentials/approvals/").status_code == 404
+
+
+def test_a_member_who_holds_computer_access_is_shown_the_way_to_the_password(settings):
+    """FR-33: the page had no entry of its own and was reached from the rotation notice alone.
+
+    > what is the UI route for a person who has been granted access to view the station password
+    > for viewing the station password? I want that to be straightforward and simple.
+    > — NAF, 2026-09-20
+    """
+    from cryptography.fernet import Fernet
+
+    settings.FIELD_ENCRYPTION_KEY = Fernet.generate_key().decode()
+    call_command("club_import")
+    st, it, _t_st, t_it = _setup()
+    holder = _user("holder@example.org")
+    plain = _user("plain@example.org")
+    _approved(holder, t_it, timezone.now().date() + dt.timedelta(days=200))
+
+    c = Client()
+    c.force_login(holder)
+    home = c.get("/").content.decode()
+    assert "/credentials/computer-password/" in home and "Computer password" in home
+    # and again where the credential was granted
+    agreements = c.get("/credentials/agreements/").content.decode()
+    assert "See the computer password" in agreements
+    assert c.get("/credentials/computer-password/").status_code == 200
+
+    # Somebody without the credential is offered neither, and the page still refuses them.
+    c.force_login(plain)
+    home = c.get("/").content.decode()
+    assert "/credentials/computer-password/" not in home
+    assert "See the computer password" not in c.get("/credentials/agreements/").content.decode()
+    assert c.get("/credentials/computer-password/").status_code == 403

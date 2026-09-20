@@ -45,6 +45,9 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
       {% if perms.ops.view_directory %}
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
+      {% comment %}Only for somebody who holds computer access today. The page used to be
+      reachable from the rotation notice and nowhere else (NAF, 2026-09-20).{% endcomment %}
+      {% if may_see_computer_password %}<li><a href="{% url 'computer_password' %}"{% nav_active 'computer_password' %}>{% icon 'key' %}<span>Computer password</span></a></li>{% endif %}
       <li><a href="{% url 'members' %}"{% if not is_self %}{% nav_active 'members' 'member_detail' 'member_edit' 'hours' %}{% endif %}>{% icon 'users' %}<span>Members</span></a></li>
       {% endif %}
       <li><a href="{% url 'my_messages' %}"{% nav_active 'my_messages' %}>{% icon 'mail' %}<span>Messages{% if unread_count %} <span class="badge" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</span></a></li>
@@ -67,7 +70,7 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
       {% comment %}The page that sets the station computer password had no way in but a typed
       URL, so only somebody who knew the address could rotate it (NAF, 2026-09-20: "There needs
       to be a UI entry point for the faculty advisor and above to rotate this.").{% endcomment %}
-      {% if perms.ops.rotate_shared_secret %}<li><a href="{% url 'password_manage' %}"{% nav_active 'password_manage' %}>{% icon 'key' %}<span>Computer password</span></a></li>{% endif %}
+      {% if perms.ops.rotate_shared_secret %}<li><a href="{% url 'password_manage' %}"{% nav_active 'password_manage' %}>{% icon 'key' %}<span>Set the computer password</span></a></li>{% endif %}
     </ul>
     {% endif %}
     {% if perms.ops.edit_club_settings or perms.ops.view_job_status %}

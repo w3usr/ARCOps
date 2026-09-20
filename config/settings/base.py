@@ -107,6 +107,7 @@ TEMPLATES = [
                 "apps.accounts.acting.context",
                 "apps.comms.context_processors.unread",
                 "apps.credentials.context_processors.approvals_waiting",
+                "apps.credentials.context_processors.computer_password_entry",
                 "apps.accounts.impersonate.context",
                 "apps.accounts.guardian.context",
             ],

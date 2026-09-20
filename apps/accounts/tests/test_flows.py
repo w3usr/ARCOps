@@ -298,3 +298,73 @@ def test_password_reset_follows_the_addresses_that_sign_you_in(settings):
     r = c.post("/accounts/password/reset/", {"email": "nobody@example.org"}, follow=True)
     assert b"Check your email" in r.content
     assert len(mail.outbox) == 1  # nothing sent to a stranger
+
+
+def test_a_password_keeps_the_spaces_it_was_typed_with():
+    """A password is a secret, not a name, so nothing trims it.
+
+    Reported 2026-09-20: "passwords exactly 12 characters long are not working, like
+    'testme123456'. They are being required to be 13 characters or longer, even though it says
+    the minimum is 12." Django's CharField strips by default, so a trailing space made twelve
+    characters into eleven, refused with Django's own "at least 12 characters", and the value
+    that reached set_password was not the one typed.
+    """
+    typed = "testme12345 "  # twelve characters, the last one a space
+    assert len(typed) == 12
+    off = officer()
+    inv = create_invitation(off, "spaces@example.org", "student")
+    c = Client()
+    # The page says the rule before it refuses anything.
+    assert "12 characters" in c.get(f"/me/invite/{inv.token}/").content.decode()
+    r = c.post(
+        f"/me/invite/{inv.token}/",
+        {
+            "first_name": "Spa",
+            "last_name": "Ces",
+            "callsign": "",
+            "password1": typed,
+            "password2": typed,
+            "consent": "on",
+        },
+    )
+    assert r.status_code == 302, "twelve characters refused"
+    u = User.objects.by_address("spaces@example.org").get()
+    assert u.check_password(typed)  # stored as typed, spaces and all
+    assert not u.check_password(typed.strip())  # and not as something else
+
+    # Eleven characters is still eleven, and the refusal names the rule.
+    inv2 = create_invitation(off, "short@example.org", "student")
+    c2 = Client()
+    r = c2.post(
+        f"/me/invite/{inv2.token}/",
+        {
+            "first_name": "Sh",
+            "last_name": "Ort",
+            "callsign": "",
+            "password1": "elevenchar ",
+            "password2": "elevenchar ",
+            "consent": "on",
+        },
+    )
+    assert r.status_code == 200 and "at least 12 characters" in r.content.decode()
+    assert not User.objects.by_address("short@example.org").exists()
+
+
+def test_an_open_invitation_keeps_its_link_on_the_list():
+    """The link was shown once, on the card, and nowhere else.
+
+    An officer who closed that card could only get another by pressing **Make a new link**,
+    which withdrew the invitation already sent and emailed a second one. The advisor accepted
+    the proposal to show it on every open row (issue #4, 2026-09-20).
+    """
+    off = officer()
+    inv = create_invitation(off, "keeps@example.org", "student")
+    c = Client()
+    c.force_login(off)
+    body = c.get("/me/invitations/").content.decode()
+    assert f"/me/invite/{inv.token}/" in body and "Copy link" in body
+
+    # A revoked one has no live link to show.
+    c.post(f"/me/invitations/{inv.pk}/", {"action": "revoke"})
+    body = c.get("/me/invitations/").content.decode()
+    assert f"/me/invite/{inv.token}/" not in body

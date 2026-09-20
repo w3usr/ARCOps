@@ -2677,3 +2677,20 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 380 tests and the
   accessibility sweep pass.
 - **Git Hash**: a70b6aa
+
+## [2026-09-20 19:08 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: Three faults found by acceptance testing: a password was silently trimmed
+  before it was validated, so twelve characters were refused as eleven; the page that shows the
+  station computer password had no way in but the rotation notice; and an invitation's link was
+  shown once and nowhere else.
+- **Sections/Files Affected**: apps/accounts/forms.py (`password_field`), apps/accounts/views.py,
+  apps/accounts/views_entry.py, apps/credentials/context_processors.py, config/settings/base.py,
+  templates/base.html, templates/credentials/agreements.html, templates/credentials/password.html,
+  templates/accounts/invitations.html, static/css/app.css, and tests in
+  apps/accounts/tests/test_flows.py and apps/credentials/tests/test_phase4.py.
+- **Nature of Contribution**: Diagnosis, code generation and tests by the assistant, from three
+  club members' written reports and the advisor's instructions.
+- **Human Review Status**: Pending the testers' re-walk. Lint, the four guards, 383 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

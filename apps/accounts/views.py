@@ -16,6 +16,7 @@ from apps.ops.config import setting
 
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
+from .forms import password_field
 from .models import Invitation, User
 from .services import (
     admit_from_invitation,
@@ -211,6 +212,7 @@ def invitations(request):
             "created_text": invitation_text(created, base) if created else "",
             "created_link": f"{base}/me/invite/{created.token}/" if created else "",
             "recent": recent,
+            "base": base,
         },
     )
 
@@ -224,8 +226,8 @@ class AcceptForm(PrivacyConsentMixin, forms.Form):
     last_name = forms.CharField(max_length=80)
     preferred_name = forms.CharField(max_length=80, required=False)
     cell_phone = forms.CharField(max_length=30, required=False)
-    password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
-    password2 = forms.CharField(widget=forms.PasswordInput, label="Password, again")
+    password1 = password_field("Password", first=True)
+    password2 = password_field("Password, again")
     consent = consent_field()
 
     def clean(self):
@@ -247,10 +249,8 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
     relationship = forms.CharField(
         max_length=40, label="Your relationship to the member", help_text="Parent, guardian, …"
     )
-    guardian_password1 = forms.CharField(
-        widget=forms.PasswordInput, label="A password for your own account"
-    )
-    guardian_password2 = forms.CharField(widget=forms.PasswordInput, label="Your password, again")
+    guardian_password1 = password_field("A password for your own account", first=True)
+    guardian_password2 = password_field("Your password, again")
     first_name = forms.CharField(max_length=80, label="Member's first name")
     middle_name = forms.CharField(max_length=80, required=False, label="Member's middle name")
     last_name = forms.CharField(max_length=80, label="Member's last name")
@@ -269,8 +269,8 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
         label="Member's own email (optional)",
         help_text="If they have none, they sign in with an address made from yours and receive nothing directly; every message reaches you.",
     )
-    password1 = forms.CharField(widget=forms.PasswordInput, label="Member's initial password")
-    password2 = forms.CharField(widget=forms.PasswordInput, label="Member's password, again")
+    password1 = password_field("Member's initial password", first=True)
+    password2 = password_field("Member's password, again")
     consent = consent_field()
     consent_after = "and consent on the member's behalf"
 
@@ -478,6 +478,7 @@ def invitation_action(request, pk):
                 "created_text": invitation_text(new, base),
                 "created_link": f"{base}/me/invite/{new.token}/",
                 "recent": recent,
+                "base": base,
             },
         )
     else:
