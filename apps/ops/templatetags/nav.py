@@ -32,6 +32,7 @@ _ICONS = {
     "activity": '<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>',
     "inbox": '<path d="M4 13h4l1.5 2.5h5L16 13h4"/><path d="M5.5 5.5h13l2.5 7.5v6a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19v-6z"/>',
     "file-text": '<path d="M7 3.5h7l5 5V19a1.5 1.5 0 0 1-1.5 1.5h-10.5A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M14 3.5V9h5M8.5 13h7M8.5 16.5h7"/>',
+    "key": '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3.5M15.5 12v2.5"/>',
     "archive": '<rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M5.5 8.5V19a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V8.5"/><path d="M10 12h4"/>',
     "menu": '<path d="M4 7h16M4 12h16M4 17h16"/>',
     "close": '<path d="M6 6l12 12M18 6 6 18"/>',

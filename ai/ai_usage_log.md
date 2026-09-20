@@ -2650,3 +2650,17 @@ carries the actual running model ID.
 - **Human Review Status**: Reviewed here; awaiting the reporter's re-test. Lint, the four
   guards, 376 tests and the accessibility sweep pass.
 - **Git Hash**: b3969a2
+
+## [2026-09-20 18:33 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The station computer password gains a way in. The page that sets it was a
+  sysadmin's alone and reachable only by typing the address; the faculty advisor now holds the
+  capability and Advisor tools carries the link.
+- **Sections/Files Affected**: templates/base.html, apps/ops/templatetags/nav.py (a key icon),
+  config/club.example.yaml, apps/accounts/migrations/0024_advisors_rotate_the_computer_password.py
+  (new), apps/accounts/tests/test_permission_matrix.py, apps/credentials/tests/test_phase4.py.
+- **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
+  instruction.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 378 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]

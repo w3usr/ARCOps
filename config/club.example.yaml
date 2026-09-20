@@ -105,6 +105,7 @@ access_groups:
       - view_outbox
       - view_reports
       - approve_agreements
+      - rotate_shared_secret   # the advisor answers for station access, so the password is theirs
       - lift_suspension        # an officer suspends; only an advisor lets them back in
       - convert_minor_accounts
       - archive_members

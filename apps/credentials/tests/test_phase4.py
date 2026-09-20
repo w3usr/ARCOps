@@ -309,3 +309,33 @@ def test_member_roster_filters_graduated_and_audits_contact_export():
         session["acting_view"] = "sysadmin"
         session.save()
     assert c.get("/members/roster/").status_code == 404
+
+
+def test_the_advisor_reaches_the_computer_password_from_the_sidebar(settings):
+    """FR-32: the page that sets the station password had no way in but a typed address.
+
+    > There needs to be a UI entry point for the faculty advisor and above to rotate this.
+    > — NAF, 2026-09-20
+
+    The advisor answers to the University for station access, so the password is theirs, and
+    Advisor tools is where it belongs: an officer holds neither the link nor the page.
+    """
+    from cryptography.fernet import Fernet
+
+    settings.FIELD_ENCRYPTION_KEY = Fernet.generate_key().decode()
+    call_command("club_import")
+    advisor = _user("adv@example.org", "advisor", category="faculty")
+    officer = _user("off2@example.org", "officer")
+
+    c = Client()
+    c.force_login(advisor)
+    home = c.get("/").content.decode()
+    assert "Computer password" in home
+    assert "/credentials/computer-password/manage/" in home
+    assert c.get("/credentials/computer-password/manage/").status_code == 200
+
+    c.force_login(officer)
+    home = c.get("/").content.decode()
+    assert "Computer password" not in home
+    assert "/credentials/computer-password/manage/" not in home
+    assert c.get("/credentials/computer-password/manage/").status_code == 404

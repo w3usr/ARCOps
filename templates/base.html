@@ -60,10 +60,14 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
       <li><a href="{% url 'outbox' %}"{% nav_active 'outbox' %}>{% icon 'inbox' %}<span>Outbox</span></a></li>
     </ul>
     {% endif %}
-    {% if perms.ops.approve_agreements or perms.ops.view_archive %}
+    {% if perms.ops.approve_agreements or perms.ops.view_archive or perms.ops.rotate_shared_secret %}
     <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
     <ul class="navlist" aria-labelledby="nav-advisor">
-      <li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>
+      {% if perms.ops.approve_agreements %}<li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals</span></a></li>{% endif %}
+      {% comment %}The page that sets the station computer password had no way in but a typed
+      URL, so only somebody who knew the address could rotate it (NAF, 2026-09-20: "There needs
+      to be a UI entry point for the faculty advisor and above to rotate this.").{% endcomment %}
+      {% if perms.ops.rotate_shared_secret %}<li><a href="{% url 'password_manage' %}"{% nav_active 'password_manage' %}>{% icon 'key' %}<span>Computer password</span></a></li>{% endif %}
     </ul>
     {% endif %}
     {% if perms.ops.edit_club_settings or perms.ops.view_job_status %}

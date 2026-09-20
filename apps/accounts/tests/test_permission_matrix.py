@@ -205,15 +205,18 @@ def _pages(world):
                 **{**advisor_up, "advisor": AWAY, "sysadmin": AWAY, "raised": AWAY},
             },
         ),
+        # The advisor answers to the University for station access, so the password is theirs to
+        # rotate and Advisor tools carries the way in (NAF, 2026-09-20). It was a sysadmin's
+        # alone, and reachable only by typing the address.
+        (
+            "rotate the computer password",
+            "/credentials/computer-password/manage/",
+            {"anonymous": AWAY, **advisor_up},
+        ),
         # sysadmin tools
         ("job status", "/ops/status/", {"anonymous": AWAY, **sysadmin_only}),
         ("club settings", "/ops/settings/", {"anonymous": AWAY, **sysadmin_only}),
         ("message templates", "/ops/templates/", {"anonymous": AWAY, **sysadmin_only}),
-        (
-            "rotate the computer password",
-            "/credentials/computer-password/manage/",
-            {"anonymous": AWAY, **sysadmin_only},
-        ),
     ]
 
 
