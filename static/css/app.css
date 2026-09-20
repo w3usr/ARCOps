@@ -385,10 +385,11 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
    somebody is a mode you chose; read-only is a fact about the account; viewing as somebody
    else is the one that should keep catching your eye. */
 .banner.acting { background: var(--accent-soft); border-color: var(--accent); }
-/* A standing question keeps the warning color, because it is one, and stays a strip: small
-   type, tight padding, and everything on one row where the width allows. */
-.banner.ask { padding: .4rem .75rem; font-size: var(--t-small); margin: .5rem 0; }
-.banner.ask button { padding: .25rem .65rem; font-size: var(--t-small); }
+/* A standing question wears the message strip, because that is what it reads as. Its buttons
+   sit on the same line as its sentence rather than beneath them. */
+.messages.ask { margin-bottom: .5rem; }
+.messages.ask .inline { display: inline; }
+.messages.ask button { padding: .2rem .6rem; font-size: var(--t-small); margin-left: .25rem; }
 .banner.readonly { background: var(--card); border-color: var(--line); }
 .banner.impersonating { background: var(--tag-warn); border-color: var(--warn); }
 /* A standing fact, quieter than a banner and never mistaken for something that just happened. */

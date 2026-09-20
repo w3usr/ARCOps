@@ -2898,3 +2898,13 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 25461c9
+
+## [2026-09-20 22:26 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The callsign question moves out of the banner rail and into the content as
+  a message strip, the shape and place the advisor pointed at.
+- **Sections/Files Affected**: templates/base.html, static/css/app.css.
+- **Nature of Contribution**: Styling by the assistant, from the advisor's note on issue #93.
+- **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
+  accessibility sweep pass.
+- **Git Hash**: [pending]
