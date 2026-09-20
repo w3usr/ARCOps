@@ -498,3 +498,31 @@ def test_a_filter_summary_uses_the_word_on_its_own_label(directory):
     assert "Any permission level" in body and "Any access" not in body
     body = _as(directory).get("/members/?access=officer").content.decode()
     assert "Club officer" in body, "and the summary names what is ticked, in the club's words"
+
+
+def test_a_sysadmin_is_on_the_club_s_own_roster(directory):
+    """NAF, 2026-09-20, reading the members page at member level: "why don't I show up on the
+    roster?" Because a sysadmin holds every capability through the account flag rather than
+    through a group, and the member-level list asked the groups alone.
+    """
+    User.objects.create_user(
+        "sys@example.org",
+        PASSWORD,
+        groups=[],
+        is_superuser=True,
+        first_name="Sis",
+        last_name="Admin",
+    )
+    member = User.objects.by_address("zeta@example.org").get()
+    body = _as(member).get("/members/").content.decode()
+    assert "Sis" in _member_names(body), "the club's own sysadmin is one of its members"
+
+    User.objects.create_user(
+        "prov@example.org",
+        PASSWORD,
+        groups=["provisional"],
+        first_name="Pro",
+        last_name="Visional",
+    )
+    after = _member_names(_as(member).get("/members/").content.decode())
+    assert "Pro" not in after, "somebody still waiting for review is not on it yet"

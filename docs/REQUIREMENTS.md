@@ -668,7 +668,11 @@ officer admits or declines them (FR-121). Every account records the link it join
   > Is it possible to have checkboxes in the drop-down so you can select more than one to filter
   > on? — NAF, 2026-09-19
 - **FR-13 [Must]** A member directory, visible to members, showing each member's short name
-  (FR-67), callsign, license class, and club position, searchable by name and callsign. No contact
+  (FR-67), callsign, license class, and club position, searchable by name and callsign. **Who is
+  on it**: everybody the club counts as a member, which is everybody who may read the directory,
+  a sysadmin included — that capability comes to them through the account flag rather than
+  through a group, and asking the groups alone left the club's own sysadmins off its roster
+  (2026-09-20). Somebody still waiting for review (FR-121) is not on it yet. No contact
   details; officers and sysadmins reach those through the member roster (FR-87).
 
   > Yes, I want this. — NAF, 2026-09-13, Q10

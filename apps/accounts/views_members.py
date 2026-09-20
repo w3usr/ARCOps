@@ -234,7 +234,13 @@ def members(request):
         # the directory shows every address an officer may write to, so they come in one query
         current.select_related("license").prefetch_related("addresses", "groups")
         if full
-        else current.filter(groups__permissions__codename="view_directory")
+        # Who a member sees: everybody the club counts as one, which is everybody who may read
+        # the directory. A sysadmin holds every capability through the account flag rather than
+        # through a group, so asking the groups alone left them off the club's own roster (the
+        # advisor, 2026-09-20: "why don't I show up on the roster?").
+        else current.filter(
+            Q(groups__permissions__codename="view_directory") | Q(is_superuser=True)
+        )
         .distinct()
         .select_related("license")
     )

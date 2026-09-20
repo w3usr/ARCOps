@@ -2604,3 +2604,16 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 371 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 72780b1
+
+## [2026-09-20 16:50 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: A sysadmin was missing from the member-level directory. The list asked
+  which accounts hold "see the member directory" through a group, and a sysadmin holds every
+  capability through the account flag instead, so the club's own sysadmins were absent from its
+  roster.
+- **Sections/Files Affected**: apps/accounts/views_members.py, docs/REQUIREMENTS.md (FR-13),
+  apps/accounts/tests/test_directory.py.
+- **Nature of Contribution**: Defect found by the advisor while walking T7, fixed with a test.
+- **Human Review Status**: Pending the advisor's look. 372 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}
