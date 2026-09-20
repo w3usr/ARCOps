@@ -2937,3 +2937,13 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 397 tests and the
   accessibility sweep pass.
 - **Git Hash**: 9ff3d3d
+
+## [2026-09-20 23:25 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: The requirements record how an address is proved, what an access approval
+  now asks for, and the advisor's decision that addresses confirmed before tonight stay unproven.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (§2.6, FR-27).
+- **Nature of Contribution**: Document edits by the assistant, from the advisor's instruction and
+  the code as built.
+- **Human Review Status**: Pending the advisor's look.
+- **Git Hash**: [pending]

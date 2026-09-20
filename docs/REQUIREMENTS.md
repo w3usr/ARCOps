@@ -425,6 +425,32 @@ passwords and sysadmin resets directly. Specifics:
 
   This supersedes the five-minute grace those two acts shared until 2026-09-20. Dropping a level
   still asks for nothing; only a raise does.
+- **An address records how it came to be trusted.** Confirming one answers *whether* it is
+  theirs; three different things can make that true, and only two of them are evidence that the
+  institution knows this person (FR-27):
+
+  | Proof | What happened |
+  |---|---|
+  | **mailbox** | They opened a link sent to that address and nowhere else: an emailed invitation, or a confirmation link they asked for |
+  | **officer** | Somebody with the standing to say so confirmed it by hand (FR-126) |
+  | **vouched** | Whoever made the account typed it in, and the person arrived by a link that could have been passed to them |
+
+  **Signing in treats all three alike**, because nothing may wait on mail arriving (FR-103): a
+  member who joins from a link an officer passed on by hand must still be able to sign in.
+
+  The distinction is possible because **the emailed invitation carries a second token that the
+  link on the invitations page does not**. Possession of a link proves nothing on its own; the
+  copy that went to the mailbox is the one that does.
+
+  > if a member joins through an invitation to their {{institution}} email, that should count as
+  > confirming the email address. Maybe put an extra token on the invitation that actually gets
+  > sent, as opposed to the invitation link that someone can copy and paste. — NAF, 2026-09-20
+
+  An address vouched for can be raised without being unconfirmed first: the member proves it
+  from their own page, or an officer confirms it. **Addresses confirmed before this was recorded
+  carry no proof and count as unproven**, by the advisor's decision on 2026-09-20 ("Keep it this
+  way"): nothing recorded how they were confirmed, and asserting otherwise would defeat the
+  point of asking. Each needs one deliberate confirmation before it grants access again.
 - Sessions expire; "remember this device" is allowed on members' own devices.
 - University SSO as an *additional* sign-in method for `@scranton.edu` accounts: **not pursued
   in this version**, by NAF's decision of 2026-09-13; the option stays open for a future
@@ -914,6 +940,21 @@ and the next revision of the agreement should say only what HR actually does.)
   the approver reaches the agreement, the approval form lets the approver enter one there, and
   it is saved to the member's profile as their Scranton email (FR-8) as part of the approval.
   The address is not verified by sending mail to it; the approver is vouching for it.
+
+  **(superseded 2026-09-20, twice in one evening.)** First, the rule now covers **station and
+  computer access for everybody**, not a community member's station access alone: the advisor
+  approved a member holding no institution address and found that he could. Which credentials
+  ask for one is configuration (`credentials_needing_institution_email`).
+
+  Second, and the reason the first was not enough: the address must be one the member has
+  **proved**, and the approval page is no longer where an address is vouched for. Typing an
+  address at approval added it *unconfirmed*, which walked around the check that refuses an
+  address already confirmed to somebody else — so one member's address became evidence about
+  another. See §2.6 for what counts as proof. The override is unchanged in substance and is now
+  the only door: an officer confirms the address on the member's own page (FR-126).
+
+  > Maybe we should require a *confirmed* scranton.edu address for access agreement approvals.
+  > … sysadmin can manually confirm an email address if needed as an override. — NAF, 2026-09-20
 
   > We will know the HR's confirmation is active once the community member gets a
   > scranton.edu email address. So, require a scranton.edu address for community member
