@@ -18,7 +18,7 @@ survive a bookmark.{% endcomment %}
   {% if full %}
   {% include "accounts/_filter.html" with name="status" label="Status" choices=status_choices ticked=status_ticked summary=summaries.status %}
   {% if may_see_archive %}{% include "accounts/_filter.html" with name="archived" label="Archive" choices=archived_choices ticked=archived_ticked summary=summaries.archived %}{% endif %}
-  {% include "accounts/_filter.html" with name="access" label="Access" choices=access_choices ticked=chosen.access summary=summaries.access %}
+  {% include "accounts/_filter.html" with name="access" label="Permission level" choices=access_choices ticked=chosen.access summary=summaries.access %}
   {% endif %}
   <input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ dir }}">
   <button type="submit">Search</button>
@@ -50,7 +50,7 @@ survive a bookmark.{% endcomment %}
   {% if full %}
   <td data-label="Status">{{ m.status_label }}</td>
   {% if may_see_archive %}<td data-label="Archived">{% if m.archived_at %}{{ m.archived_at|date:"d M Y" }}{% else %}—{% endif %}</td>{% endif %}
-  <td data-label="Access">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
+  <td data-label="Permission level">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
   <td data-label="Email">{% for a in m.addresses.all %}<a href="mailto:{{ a.address }}">{{ a.address }}</a>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">no address</span>{% endfor %}</td>
   <td data-label="Phone">{% if m.cell_phone %}<a href="tel:{{ m.cell_phone }}">{{ m.cell_phone|phone }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
   {% endif %}

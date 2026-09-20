@@ -213,7 +213,7 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
     ),
     "security.two_factor_required_groups": (
         "Two-step verification is required of",
-        "The access groups whose holders must use a second factor to sign in, as a list of their "
+        "The permission levels whose holders must use a second factor to sign in, as a list of their "
         'keys: ["advisor", "sysadmin"]. Empty means nobody has to, and any member may still turn '
         'it on for themselves. "sysadmin" covers the accounts holding that flag.',
     ),

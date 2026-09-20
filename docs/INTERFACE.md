@@ -90,6 +90,15 @@ The home-screen icon is cropped to whatever shape the launcher uses. An icon off
 crop is drawn to the edge of the tile with its mark inside the middle eight tenths; one that is
 not gets shrunk onto a tile the launcher draws, with a margin nobody asked for.
 
+## One word for one thing
+
+A word that already means something in the club does not get a second meaning in the interface.
+**Access** is what a member signs an agreement for and an advisor approves: the station, the
+computer. What the application grants an account is a **permission level**, which is what the
+member page, the directory column, its filter and the sysadmin page all call it. The code keeps
+its own names (`groups`, `access_groups`), because those are Django's and the reader never sees
+them.
+
 ## Filters
 
 A filter that can sensibly take two answers takes a set: a disclosure holding a checkbox each,

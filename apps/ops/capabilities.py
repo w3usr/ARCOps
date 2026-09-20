@@ -34,10 +34,10 @@ CAPABILITIES: list[tuple[str, str]] = [
     ("invite_members", "Send invitations and manage entry links"),
     ("set_club_position", "Set the club positions another member holds"),
     ("edit_member_privileges", "Edit another member's category, names, and student details"),
-    ("assign_groups", "Decide which groups an account is in"),
+    ("assign_groups", "Decide an account's permission level"),
     ("appoint_peers", "Appoint somebody to your own level, not only below it"),
     ("lift_suspension", "Let a suspended account back in"),
-    ("manage_groups", "Create and change the groups themselves"),
+    ("manage_groups", "Create and change the permission levels themselves"),
     ("manage_member_addresses", "Add an address to another account, and confirm one"),
     (
         "correct_member_addresses",

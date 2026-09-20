@@ -139,13 +139,25 @@ below that exist mainly to keep this true are marked **(portability)**.
 
 ## 2. Users, roles, and permissions
 
-### 2.1 Access: capabilities and groups
+### 2.1 Permission levels: capabilities and groups
 
-**Access is item-by-item, and a group is a named set of the items.** The advisor, 2026-09-17:
+**What a person may do is item-by-item, and a group is a named set of the items.** The advisor,
+2026-09-17:
 
 > I am thinking the correct way to do this is actually have access be item-by-item, and then
 > define configurable access groups (member, officer, faculty advisor, etc). Systemic is
 > superuser. I think this is the best forward-thinking access model to use.
+
+**On a page this is called a permission level**, and the page that edits the groups is
+**Permission levels** (2026-09-20). "Access" was the word until then, and it collided with the
+station and computer access a member signs an agreement for and an advisor approves (FR-21, and
+the **Access rosters** page two buttons away on the same screen):
+
+> Should we call this Permission Level instead of Access, to not get confused with Station and
+> building access? — NAF, 2026-09-20
+
+The model keeps its own words: a **group** is still a group in the code, the configuration and
+the audit log, because that is what Django calls the thing and a rename there buys nothing.
 
 So the application declares **capabilities** (one list, in `apps/ops/capabilities.py`), and every
 permission decision asks whether the account holds one. A **group** holds a set of capabilities;

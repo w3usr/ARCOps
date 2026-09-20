@@ -98,7 +98,7 @@ DIRECTORY_COLUMNS = [
     # (the advisor, 2026-09-19: "Faculty advisors and above can see the archived column.
     # Officers cannot.").
     {"key": "archived", "label": "Archived", "show": "archive"},
-    {"key": "access", "label": "Access", "show": "full"},
+    {"key": "access", "label": "Permission level", "show": "full"},
     {"key": "email", "label": "Email", "show": "full"},
     {"key": "phone", "label": "Phone", "show": "full"},
 ]

@@ -67,7 +67,15 @@ def test_members_see_short_names_and_officers_see_everything(people):
     assert "<table" in body, "a member reads the same shape of page as an officer"
     assert "Ann O." in rows and "Officer" not in rows, "a last name is an initial to a member"
     assert "@" not in rows  # no addresses for members (FR-67)
-    for withheld in ("Category", "Access", "Email", "Phone", "First", "Last", "Preferred"):
+    for withheld in (
+        "Category",
+        "Permission level",
+        "Email",
+        "Phone",
+        "First",
+        "Last",
+        "Preferred",
+    ):
         assert f'data-label="{withheld}"' not in rows, f"{withheld} is an officer's column"
 
     from apps.accounts import addresses
@@ -327,7 +335,7 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
     s, m = people["sys"], people["mem"]
     c = _as(s)
     body = c.get(f"/members/{m.pk}/edit/").content.decode()
-    for label in ("Mobile number", "Graduation year", "Category", "Access"):
+    for label in ("Mobile number", "Graduation year", "Category", "Permission level"):
         assert label in body
     assert "Sign-in email" not in body  # every confirmed address signs in; none of them is special
     data = {

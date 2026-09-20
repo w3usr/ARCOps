@@ -111,7 +111,7 @@ class UserAdmin(DjangoUserAdmin):
     readonly_fields = ("date_joined", "public_id")
     inlines = (AddressInline,)
 
-    @admin.display(description="Access")
+    @admin.display(description="Permission level")
     def access_shown(self, obj) -> str:
         if obj.is_superuser:
             return "sysadmin"

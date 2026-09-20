@@ -2498,3 +2498,17 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
   four guards pass.
 - **Git Hash**: 6a2343a
+
+## [2026-09-20 04:45 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5
+- **Session Purpose**: What the application grants an account is a **permission level** on every
+  page that shows it, because "Access" already means the station and computer access a member
+  signs for, and both words were on the members page at once. The code keeps `groups`.
+- **Sections/Files Affected**: templates/accounts/{members,roster}.html, templates/ops/groups.html,
+  templates/base.html, apps/accounts/{account,views_members,admin}.py, apps/ops/capabilities.py,
+  apps/ops/views_settings.py, apps/ops/migrations/0009_permission_levels.py,
+  docs/REQUIREMENTS.md (§2.1), docs/INTERFACE.md, and the member and form tests.
+- **Nature of Contribution**: Vocabulary change by the assistant, from the advisor's question.
+- **Human Review Status**: Pending the advisor's look. 364 tests, the accessibility sweep and the
+  four guards pass.
+- **Git Hash**: {{pending}}

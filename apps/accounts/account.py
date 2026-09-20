@@ -148,7 +148,7 @@ class AccountForm(forms.ModelForm):
                 queryset=Group.objects.filter(pk__in=[g.pk for g in allowed]).order_by("name"),
                 required=True,
                 empty_label=None,
-                label="Access",
+                label="Permission level",
                 help_text="What this account may do. To take access away, close or suspend the "
                 "account: both of those record a reason.",
             )
@@ -319,7 +319,7 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     add("callsign", "Callsign", subject.callsign)
     add("category", "Category", _label("member_categories", subject.category))
     add("club_positions", "Club positions", _position_line(subject))
-    add("groups", "Access", _groups_line(subject))
+    add("groups", "Permission level", _groups_line(subject))
     add("cell_phone", "Mobile number", phone(subject.cell_phone))
     if subject.under_18:
         add("under_18", "Under 18", "yes, a guardian acts for them")
