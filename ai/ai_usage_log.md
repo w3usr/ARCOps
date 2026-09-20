@@ -2836,4 +2836,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 391 tests and the
   accessibility sweep pass; the PDF was rendered and its text extracted to check the watermark
   stays out of the text layer.
-- **Git Hash**: [pending]
+- **Git Hash**: ce3ac29
