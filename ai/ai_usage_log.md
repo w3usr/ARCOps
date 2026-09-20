@@ -2817,4 +2817,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Fix by the assistant, found by rendering a real document and
   reading its text back with pdftotext.
 - **Human Review Status**: Reviewed here; verified by extraction, one page, no scattered glyphs.
-- **Git Hash**: [pending]
+- **Git Hash**: 56c0dc5
