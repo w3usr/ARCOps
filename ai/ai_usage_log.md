@@ -2311,4 +2311,4 @@ carries the actual running model ID.
   advisor's request.
 - **Human Review Status**: Rendered and checked by eye against the advisor's own screenshots;
   340 tests, the accessibility sweep and the four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: 450ae4f
