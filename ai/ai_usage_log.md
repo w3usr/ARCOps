@@ -2616,4 +2616,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Defect found by the advisor while walking T7, fixed with a test.
 - **Human Review Status**: Pending the advisor's look. 372 tests, the accessibility sweep and the
   four guards pass.
-- **Git Hash**: {{pending}}
+- **Git Hash**: f191a89
