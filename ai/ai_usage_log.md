@@ -2976,4 +2976,4 @@ carries the actual running model ID.
   fails on the unfixed code and passes on the fix; the migration was run forward against a
   scratch database seeded with three duplicate pending rows and a decided one, keeping the
   earliest and leaving the decision untouched; `tools/check.sh quick` all clear, 395 tests.
-- **Git Hash**: [pending]
+- **Git Hash**: 8b93d1d
