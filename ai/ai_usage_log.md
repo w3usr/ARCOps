@@ -2960,3 +2960,20 @@ carries the actual running model ID.
   advisor's instructions quoted in place.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: a476878
+
+## [2026-09-22 18:34 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5[1m]
+- **Session Purpose**: Fix the duplicate agreement signature the advisor found walking T8: one
+  click on Sign it could be recorded twice, putting a second card in the approvals queue and
+  sending the approver a second notification for the same agreement.
+- **Sections/Files Affected**: apps/credentials/views.py (`sign`), apps/credentials/models.py
+  (`SignedAgreement.Meta`), apps/credentials/migrations/0013_one_signature_awaiting_approval.py
+  (new; collapses duplicates already stored, then adds the constraint),
+  apps/credentials/tests/test_phase4.py (two tests).
+- **Nature of Contribution**: Diagnosis from the advisor's screenshot and report, then code
+  generation and tests by the assistant.
+- **Human Review Status**: Pending the advisor's look. Verified by the assistant: the new test
+  fails on the unfixed code and passes on the fix; the migration was run forward against a
+  scratch database seeded with three duplicate pending rows and a decided one, keeping the
+  earliest and leaving the decision untouched; `tools/check.sh quick` all clear, 395 tests.
+- **Git Hash**: [pending]

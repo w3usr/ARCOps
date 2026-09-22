@@ -258,6 +258,28 @@ class SignedAgreement(models.Model):
 
     class Meta:
         ordering = ["-signed_at"]
+        constraints = [
+            # One signature awaiting approval per member per agreement version.
+            #
+            # Signing is a single POST, and nothing stopped the browser sending it twice: a
+            # double-click, or a back-and-resubmit, made a second row that was the same act
+            # recorded twice. The member never saw it — their own page keeps the latest
+            # signature per agreement — but the approver got a second card in the queue and a
+            # second message about it (the advisor, 2026-09-21, having added a member and
+            # signed for them: "I also got 2 separate notifications for one agreement").
+            #
+            # The view refuses the second submission with a message. This is what holds when
+            # the two arrive at once, which is exactly what a double-click sends.
+            #
+            # Conditioned on the pending state, so the states that legitimately follow one
+            # another are untouched: a declined signature may be signed again, an expired or
+            # revoked one re-signed, and a new version signed while the old one stands.
+            models.UniqueConstraint(
+                fields=["user", "template"],
+                condition=models.Q(state="signed"),
+                name="one_pending_signature_per_agreement",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.user} {self.credential.key} {self.state}"

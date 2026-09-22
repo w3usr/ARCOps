@@ -786,3 +786,73 @@ def test_an_address_vouched_for_at_sign_up_does_not_grant_access_until_it_is_pro
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.APPROVED
+
+
+def test_signing_twice_makes_one_signature_one_queue_card_and_one_message():
+    """A double-click on Sign it is one act, not two.
+
+    The advisor, 2026-09-21, having added a member and signed the agreements for them: "I also
+    got 2 separate notifications for one agreement." Nothing guarded the POST, so the second
+    submission made a second row awaiting approval, rendered a second PDF, and told every
+    approver again. The member could not see it: their own page keeps the latest signature per
+    agreement, so the duplicate showed only in the approver's queue and in their messages.
+    """
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv-dup@example.org", "advisor", category="faculty")
+    member = _user("mem-dup@example.org", first_name="Mem", last_name="Ber")
+    Outbox.objects.all().delete()
+
+    c = Client()
+    c.force_login(member)
+    form = {"signer_name": member.full_name, "affirm": "on"}
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", form)
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", form)  # the second click
+
+    pending = SignedAgreement.objects.filter(
+        user=member, template=t_st, state=SignedAgreement.State.SIGNED
+    )
+    assert pending.count() == 1
+    assert (
+        Outbox.objects.filter(user=advisor, category="agreement").count() == 1
+    )  # told once, not twice
+
+    # And the approver sees one card, with one Approve on it.
+    a = c.post(f"/credentials/agreements/{t_st.pk}/sign/", form, follow=True).content.decode()
+    assert "already signed" in a  # the member is told where it stands, not that it failed
+    c.force_login(advisor)
+    assert c.get("/credentials/approvals/").content.decode().count("decide-row") == 1
+
+    # The other agreement is its own signature: the guard is per agreement, not per member.
+    c.force_login(member)
+    c.post(f"/credentials/agreements/{t_it.pk}/sign/", form)
+    assert SignedAgreement.objects.filter(user=member, state="signed").count() == 2
+
+
+def test_a_declined_agreement_can_be_signed_again():
+    """The guard holds only what is waiting. A decline sends the member back to the form
+    (T8 step 5), and signing again there must make a new signature."""
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    member = _user("mem-resign@example.org", first_name="Mem", last_name="Ber")
+    SignedAgreement.objects.create(
+        user=member,
+        template=t_st,
+        credential=st,
+        signer_name=member.full_name,
+        state=SignedAgreement.State.DECLINED,
+    )
+
+    c = Client()
+    c.force_login(member)
+    c.post(
+        f"/credentials/agreements/{t_st.pk}/sign/",
+        {"signer_name": member.full_name, "affirm": "on"},
+    )
+    assert SignedAgreement.objects.filter(user=member, template=t_st).count() == 2
+    assert (
+        SignedAgreement.objects.filter(
+            user=member, template=t_st, state=SignedAgreement.State.SIGNED
+        ).count()
+        == 1
+    )

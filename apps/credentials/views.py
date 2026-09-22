@@ -5,6 +5,7 @@ import datetime as dt
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -109,14 +110,31 @@ def sign(request, template_id):
     ):
         messages.error(request, "Type your full name exactly and tick the affirmation to sign.")
         return redirect("agreements")
-    a = SignedAgreement.objects.create(
-        user=request.user,
-        template=t,
-        credential=t.credential,
-        signer_name=request.POST["signer_name"].strip(),
-        signer_ip=request.META.get("REMOTE_ADDR"),
-        content_hash=t.content_hash,
-    )
+    # Signing twice is one act recorded twice, not two signatures. The form is gone from the
+    # page once something is awaiting approval, so a second submission is a double-click or a
+    # resubmitted POST; either way the member has signed, and saying so is the honest answer.
+    # Nothing is created, so no second PDF is rendered and the approvers are not told again.
+    already = SignedAgreement.objects.filter(
+        user=request.user, template=t, state=SignedAgreement.State.SIGNED
+    ).first()
+    if already:
+        messages.info(request, f"You have already signed {t.title}. It is awaiting approval.")
+        return redirect("agreements")
+    try:
+        with transaction.atomic():  # the failed insert rolls back alone
+            a = SignedAgreement.objects.create(
+                user=request.user,
+                template=t,
+                credential=t.credential,
+                signer_name=request.POST["signer_name"].strip(),
+                signer_ip=request.META.get("REMOTE_ADDR"),
+                content_hash=t.content_hash,
+            )
+    except IntegrityError:
+        # The two arrived together and the other one won. The database is what decides this,
+        # because the check above cannot: between reading and writing there is room for both.
+        messages.info(request, f"You have already signed {t.title}. It is awaiting approval.")
+        return redirect("agreements")
     record(request.user, "agreement.signed", a, after={"template": t.key, "version": t.version})
     try:
         from .services import store_agreement_pdf
