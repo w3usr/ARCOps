@@ -904,6 +904,30 @@ and the next revision of the agreement should say only what HR actually does.)
 
   > I also got 2 separate notifications for one agreement. — NAF, 2026-09-21, having signed for
   > a member he had just added and found two cards in the queue and two messages about them
+
+  **The queue holds only signatures somebody could act on** (2026-09-23). An account is ended
+  four ways — **closed**, **suspended**, **archived**, **deleted** — and a signature belonging to
+  an account ended any of them is out of the approvals queue and out of the badge that counts
+  it. Approving one from a held URL is refused. The test is whether the account can be used at
+  all: in an access group, and able to sign in. Granting access to an account that holds none
+  would be granting it to nobody.
+
+  Note that the four do not look alike in the record, which is why the test is the account's
+  access and not one flag: closing and suspending empty the groups and leave the account able to
+  sign in, archiving takes the sign-in away as well, and deletion does both and empties the
+  record besides.
+
+  The signature itself is **kept, not withdrawn**. Three of the four are reversible, so it
+  returns to the queue when the member does — though not on restoring alone, because coming out
+  of the archive leaves the status as it was and access is given back as a separate, deliberate
+  act (FR-125). **Deletion is the one that cannot be undone**, and what the page says of a
+  deleted account promises nothing.
+
+  > Note the different mechanisms for ending accounts: there is closing, suspending, archiving,
+  > and deleting. Of those, deleting is not reversable. — NAF, 2026-09-23
+
+  It was found on the live site: two agreements awaiting approval for an account ended after
+  signing, which the FR-27 check then refused to approve and nothing else would clear.
 - **FR-23 [Must]** The system renders each signed agreement to a PDF that reproduces the text as
   signed plus the signature block, stores it immutably, and lets the signer and approvers
   download it.

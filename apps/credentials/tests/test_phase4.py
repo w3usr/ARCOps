@@ -952,3 +952,109 @@ def test_the_home_banner_counts_the_approvals_and_the_messages_and_lists_neither
     assert "2 agreements waiting for your approval" in banner  # what the queue actually holds
     assert "6 unread messages" in banner  # what the Messages badge says
     assert "number 0" not in banner and "number 5" not in banner  # and not one subject
+
+
+def test_an_archived_members_signatures_leave_the_queue_and_come_back_with_them():
+    """Nobody is left holding a card they can neither approve nor clear.
+
+    Found on the live site, 2026-09-23, after a deploy: two agreements sat awaiting approval for
+    an account that had since been archived. It could not sign in, held no groups and had no
+    address, so the FR-27 check refused approval and nothing else would clear it either.
+
+    The signature is kept rather than withdrawn. Archiving is reversible, and `restore_member`
+    promises that nothing was lost while the record was away, so the queue is filtered and the
+    record is left alone.
+    """
+    from apps.accounts.services import archive_member, restore_member, set_access
+
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv-arch@example.org", "advisor", category="faculty")
+    member = _user("mem-arch@example.org", first_name="Arch", last_name="Ived")
+    signed = SignedAgreement.objects.create(
+        user=member,
+        template=t_st,
+        credential=st,
+        signer_name="Arch Ived",
+        state=SignedAgreement.State.SIGNED,
+    )
+
+    c = Client()
+    c.force_login(advisor)
+    assert "1 waiting for approval" in c.get("/credentials/approvals/").content.decode()
+
+    archive_member(advisor, member, reason="left the club")
+    page = c.get("/credentials/approvals/").content.decode()
+    assert "Arch Ived" not in page
+    assert "1 waiting for approval" not in page  # the badge and the queue agree
+
+    # The record is untouched, and approving it from a held URL is refused rather than granting
+    # access to nobody.
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED
+    r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED
+    assert "account is archived" in c.get(r["Location"]).content.decode()
+
+    # And it comes back with the member -- but only once they have access again, because
+    # `restore_member` deliberately leaves the status alone: "an account comes out of the
+    # archive exactly as it went in, Closed or Suspended, and somebody gives it access back as
+    # a separate, deliberate act."
+    restore_member(advisor, member)
+    assert "Arch Ived" not in c.get("/credentials/approvals/").content.decode()
+    set_access(advisor, member, ["member"], "back from the archive")
+    assert "Arch Ived" in c.get("/credentials/approvals/").content.decode()
+
+
+def test_every_way_of_ending_an_account_takes_its_signatures_out_of_the_queue():
+    """Four mechanisms, not one (NAF, 2026-09-23: "there is closing, suspending, archiving, and
+    deleting. Of those, deleting is not reversable").
+
+    Closing and suspending leave `is_active` alone and empty the groups instead, so a filter on
+    `is_active` catches archiving and deletion and misses half of them. The test is the one the
+    accounts manager documents: an account that can be used is in a group and can sign in.
+    """
+    from apps.accounts.services import archive_member, close_account, delete_account, suspend
+
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv-ends@example.org", "advisor", category="faculty")
+    c = Client()
+    c.force_login(advisor)
+
+    endings = {
+        "closed": lambda actor, u: close_account(actor, u, "left the club"),
+        "suspended": lambda actor, u: suspend(actor, u, "conduct"),
+        "archived": lambda actor, u: archive_member(actor, u, "graduated"),
+        "deleted": lambda actor, u: delete_account(actor, u, "asked to be removed"),
+    }
+    for n, (how, end) in enumerate(endings.items()):
+        member = _user(f"ends{n}@example.org", first_name="Ends", last_name=f"Way{n}")
+        signed = SignedAgreement.objects.create(
+            user=member,
+            template=t_st,
+            credential=st,
+            signer_name=member.full_name,
+            state=SignedAgreement.State.SIGNED,
+        )
+        assert f"Ends Way{n}" in c.get("/credentials/approvals/").content.decode(), how
+
+        end(advisor, member)
+        page = c.get("/credentials/approvals/").content.decode()
+        assert f"Ends Way{n}" not in page, how
+        assert "waiting for approval" not in page, f"{how}: the badge must agree with the queue"
+
+        # The signature stays on the record, and approving it from a held URL is refused.
+        signed.refresh_from_db()
+        assert signed.state == SignedAgreement.State.SIGNED, how
+        r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
+        signed.refresh_from_db()
+        assert signed.state == SignedAgreement.State.SIGNED, how
+        said = c.get(r["Location"]).content.decode()
+        assert "nobody" in said, how
+        # Deletion is the one that cannot be undone, so it is the one that promises nothing.
+        if how == "deleted":
+            assert "comes back with them" not in said
+        else:
+            assert "comes back with them" in said, how

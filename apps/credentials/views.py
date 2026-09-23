@@ -247,9 +247,15 @@ def institution_address_ok(address: str) -> bool:
 def approvals(request):
     if not _is_approver(request.user):
         raise Http404
-    queue = SignedAgreement.objects.filter(state=SignedAgreement.State.SIGNED).select_related(
-        "user", "template", "credential"
-    )
+    # Only signatures somebody could act on. An account is ended four ways -- closed, suspended,
+    # archived, deleted -- and the first two leave `is_active` alone and empty the groups
+    # instead, so the test is the one the accounts manager already documents: in a group, or a
+    # superuser, and able to sign in. Approving any of the four would grant access to nobody.
+    from apps.accounts.models import User
+
+    queue = SignedAgreement.objects.filter(
+        state=SignedAgreement.State.SIGNED, user__in=User.objects.with_access()
+    ).select_related("user", "template", "credential")
     # the institution address is a row on the account now, so the page is handed it per agreement
     rows = [
         {
@@ -414,6 +420,33 @@ def decide(request, pk):
         pk=pk,
         state__in=[SignedAgreement.State.SIGNED, SignedAgreement.State.DECLINED],
     )
+    # The same test the queue applies, for whoever still holds the URL. Closing, suspending,
+    # archiving and deleting all end with an account that cannot hold access, and granting it
+    # would be granting it to nobody.
+    #
+    # The signature is kept rather than withdrawn. Three of the four are reversible, and
+    # `restore_member` promises that nothing was lost while the record was away, so it returns
+    # to the queue with the member. Deletion is the one that is not, and the message does not
+    # promise otherwise.
+    if not (a.user.is_active and a.user.has_access):
+        if a.user.deleted_at:
+            messages.error(
+                request,
+                f"{a.user.display_first}'s account has been deleted. What they signed is kept "
+                "as a record, but there is nobody left to grant access to.",
+            )
+        else:
+            # Archiving closes the account on its way in, so the status alone would say "closed"
+            # of a record that is in the archive. Name the archive: it is where the reader has
+            # to go to bring the account back.
+            where = "archived" if a.user.is_archived else a.user.status_label.lower()
+            messages.error(
+                request,
+                f"{a.user.display_first}'s account is {where}, so there is nobody to grant "
+                "access to. Give the account access again first; what they signed is kept and "
+                "comes back with them.",
+            )
+        return redirect("approvals")
     was_declined = a.state == SignedAgreement.State.DECLINED
     if was_declined and request.POST.get("decision") != "approve":
         messages.error(request, "That agreement is already declined.")

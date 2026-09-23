@@ -15,9 +15,14 @@ def approvals_waiting(request):
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated or not user.may("approve_agreements"):
         return {}
+    # The same filter the page applies, or the badge promises work the queue does not show. An
+    # account ended any of the four ways -- closed, suspended, archived, deleted -- keeps its
+    # signatures on the record, but they are nobody's to approve (2026-09-23).
+    from apps.accounts.models import User
+
     return {
         "approvals_waiting": SignedAgreement.objects.filter(
-            state=SignedAgreement.State.SIGNED
+            state=SignedAgreement.State.SIGNED, user__in=User.objects.with_access()
         ).count()
     }
 

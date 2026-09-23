@@ -2998,3 +2998,23 @@ carries the actual running model ID.
   passes in full — lint, format, the three repository guards, the migration check, 397 tests and
   the accessibility sweep across all eight roles.
 - **Git Hash**: 399d1e4
+
+## [2026-09-23 11:46 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5[1m]
+- **Session Purpose**: Two agreements were found awaiting approval on the live site for an
+  account that had been ended after signing: the approver could neither approve them (the FR-27
+  address check refused) nor clear them. The queue and its badge now hold only signatures
+  somebody could act on, and approving one from a held URL is refused.
+- **Sections/Files Affected**: apps/credentials/views.py (the queue, and the refusal in
+  `decide`), apps/credentials/context_processors.py (the badge, so it agrees with the queue),
+  apps/credentials/tests/test_phase4.py (two tests), docs/REQUIREMENTS.md (FR-22).
+- **Nature of Contribution**: Diagnosis from a live read-only query, then code generation, tests
+  and document edits by the assistant. The advisor corrected the first attempt: it keyed on
+  `is_active`, which catches archiving and deletion but not closing or suspending, and the
+  correction is his ("there is closing, suspending, archiving, and deleting. Of those, deleting
+  is not reversable"), quoted in FR-22.
+- **Human Review Status**: Pending the advisor's look. Verified by the assistant: the first test
+  was confirmed to fail on the unfixed code; the second walks all four endings; `tools/check.sh`
+  passes in full — lint, format, the three guards, the migration check, 399 tests and the
+  accessibility sweep across all eight roles.
+- **Git Hash**: [pending]
