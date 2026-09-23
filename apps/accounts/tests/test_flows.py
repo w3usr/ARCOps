@@ -372,10 +372,12 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
 
 
 def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
-    """A warning that sends somebody somewhere carries the way there.
+    """A warning that sends somebody somewhere carries the way there, and is said once.
 
     The advisor, 2026-09-20: the wording should be better, "and if you are going to tell someone
-    to go somewhere to do something, provide them a link right in the warning."
+    to go somewhere to do something, provide them a link right in the warning." And on
+    2026-09-22, meeting the standing question and a flash message saying the same thing above
+    the same page: "We should only have one warning here, not 2 redundant ones."
     """
     from apps.credentials.models import UlsLicense
 
@@ -402,9 +404,12 @@ def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
         follow=True,
     )
     body = r.content.decode()
-    assert "not the name you gave" in body
-    assert "counts for nothing" in body, "it says what the callsign does until answered"
-    assert 'href="/me/"' in body or "Answer it on your profile" in body
+    # One warning about one fact. The standing question used to be repeated as a flash message
+    # on the way in, so the first page a new member ever saw carried two of them (NAF,
+    # 2026-09-22: "We should only have one warning here, not 2 redundant ones").
+    assert body.count("does not exactly match the name on your account") == 1
+    assert "not counted as your license" in body, "it says what the callsign does until answered"
+    assert 'href="/me/edit/#details"' in body and "your profile" in body
     # The question follows them until it is answered, rather than waiting on the profile page:
     # a callsign that counts for nothing is too consequential to hide there (2026-09-20).
     for page in ("/", "/events/", "/me/"):

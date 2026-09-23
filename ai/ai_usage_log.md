@@ -2977,3 +2977,24 @@ carries the actual running model ID.
   scratch database seeded with three duplicate pending rows and a decided one, keeping the
   earliest and leaving the decision untouched; `tools/check.sh quick` all clear, 395 tests.
 - **Git Hash**: 8b93d1d
+
+## [2026-09-23 02:23 UTC]
+- **Tool**: Claude (Anthropic), claude-opus-5[1m]
+- **Session Purpose**: Four defects the advisor found walking T8, and one terminology decision
+  taken with him: the Home banner counted a truncated slice and recited every subject; the
+  institution address was asked for at approval rather than before signing; the approval
+  refusal was reworded; the standing "Is this you?" question was duplicated by a flash message
+  on the way in; and the account page had five names, now one.
+- **Sections/Files Affected**: apps/ops/views.py and templates/ops/dashboard.html (the banner);
+  apps/credentials/views.py, templates/credentials/agreements.html and approvals.html (the
+  address before signing, and the refusal wording); apps/accounts/views.py and templates/base.html
+  (the question said once, reworded); apps/comms/defaults.py, templates/accounts/member_edit.html
+  (terminology and the addresses anchor); docs/REQUIREMENTS.md (FR-22, FR-27, FR-108);
+  docs/INTERFACE.md (one name for the account page); tests in three apps.
+- **Nature of Contribution**: Diagnosis from the advisor's screenshots, code generation, and
+  document edits by the assistant. The banner wording was settled with him over two drafts and
+  the terminology decision is his, taken against a survey of what the site already said.
+- **Human Review Status**: Pending the advisor's look. Verified by the assistant: `tools/check.sh`
+  passes in full — lint, format, the three repository guards, the migration check, 397 tests and
+  the accessibility sweep across all eight roles.
+- **Git Hash**: [pending]

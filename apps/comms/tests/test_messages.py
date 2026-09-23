@@ -87,16 +87,17 @@ def test_my_messages_lists_marks_read_and_the_badge_and_banner_follow():
         session["acting_view"] = "sysadmin"
         session.save()
     home = c.get("/").content.decode()
-    assert (
-        "2 unread" in home
-        and "Slot at risk" in home
-        and "Your slot" not in home.split("My next slots")[0].split("unread notice")[1]
-    )
+    banner = home.split("My next slots")[0]
+    # The banner counts and names nothing. It used to recite every subject and count only the
+    # five it showed, so eight unread read as "5 unread notices" followed by a paragraph of
+    # them (NAF, 2026-09-22). The number it carries is the one on the Messages badge.
+    assert "2 unread message" in banner
+    assert "Slot at risk" not in banner and "Your slot" not in banner
     body = c.get("/me/messages/").content.decode()
     assert "Slot at risk" in body and "Your slot" in body
     assert Outbox.objects.filter(user=u, read_at__isnull=True).count() == 0
     home = c.get("/").content.decode()
-    assert "unread notice" not in home and 'class="badge"' not in home
+    assert "unread message" not in home and 'class="badge"' not in home
 
 
 def test_notification_form_writes_preferences_and_profile_shows_them():

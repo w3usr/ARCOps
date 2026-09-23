@@ -9,7 +9,6 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods
 
 from apps.ops.audit import record
@@ -445,21 +444,13 @@ def accept_invitation(request, token):
             if d["callsign"].strip():
                 from .services import apply_callsign
 
-                result = apply_callsign(user, d["callsign"])  # FR-4, FR-16
-                if result["state"] == "pending":
-                    messages.warning(
-                        request,
-                        format_html(
-                            "The FCC records {} under the name {}, which is not the name you "
-                            'gave. Your profile asks "Is this you?": answer it and the callsign '
-                            "is kept with the FCC's name, or say it is not yours and the "
-                            "callsign comes off. Until then the callsign counts for nothing. "
-                            '<a href="{}">Answer it on your profile</a>.',
-                            user.callsign,
-                            result["uls_name"],
-                            reverse("profile"),
-                        ),
-                    )
+                apply_callsign(user, d["callsign"])  # FR-4, FR-16
+                # A name the FCC spells differently raises the standing "Is this you?" question,
+                # which carries the two answers and stays until one is given. Saying the same
+                # thing again here as a flash message put two warnings about one fact on the
+                # first page a new member ever sees (NAF, 2026-09-22: "We should only have one
+                # warning here, not 2 redundant ones"), and INTERFACE.md already says a standing
+                # fact is a banner rather than a message, and to say nothing the page says.
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, "Welcome. Your account is ready.")
             return redirect("dashboard")

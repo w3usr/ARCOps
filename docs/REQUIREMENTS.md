@@ -891,6 +891,19 @@ and the next revision of the agreement should say only what HR actually does.)
   > Yes, everyone should sign station access and IT agreements as a single workflow. Minors
   > should not sign these, and their guardians should not sign them for minors. Instead,
   > guardians who have their own accounts may sign them for themselves. — NAF, 2026-09-13
+
+  **One signature awaits approval at a time** (2026-09-22). A member holds at most one signature
+  in the awaiting-approval state per agreement version, enforced by the store and not only by
+  the page: signing is a single request, and a double-click sends two. A second submission
+  changes nothing and says where the first one stands. The states that follow a decision are
+  untouched — a declined signature may be signed again, an expired or revoked one re-signed, and
+  a new version signed while the old approval stands.
+
+  Nothing about the *act* is lost when a duplicate is refused or collapsed: the audit log keeps
+  an `agreement.signed` row per submission, which is the record of what arrived and when.
+
+  > I also got 2 separate notifications for one agreement. — NAF, 2026-09-21, having signed for
+  > a member he had just added and found two cards in the queue and two messages about them
 - **FR-23 [Must]** The system renders each signed agreement to a PDF that reproduces the text as
   signed plus the signature block, stores it immutably, and lets the signer and approvers
   download it.
@@ -993,6 +1006,21 @@ and the next revision of the agreement should say only what HR actually does.)
   > This requires a background check that HR takes care of. I do not know exactly what
   > background check is run, so you do not need to specify PA State Criminal Background Check.
   > — NAF, 2026-09-13
+
+  **(superseded again 2026-09-22.)** The proved address is now required **to sign**, not only
+  to approve. The agreement page offers no sign form to a member without one and says what is
+  missing; the sign POST is refused as well, so the page is a courtesy rather than the control.
+  Approval keeps the same check behind it, for a signature that predates the address being
+  unproved or removed.
+
+  The rule is unchanged in substance — the same credentials, the same proof (§2.6), the same
+  officer override. What changed is when it is asked. Asking at approval let a member sign,
+  wait, and then be told of a thing they could have fixed before starting, and it left the
+  approver holding a queue of signatures none of which could be acted on.
+
+  > We should require the applicant to confirm their [institution] account before they can even
+  > sign any of these agreements. That will make the rest of the process more straightforward.
+  > — NAF, 2026-09-22
 - **FR-28 [Must]** Approvals expire on their date. Thirty days before, the member (and guardian)
   receives one notice covering every agreement of theirs that is about to expire, encouraging
   them to sign in and re-sign all of their agreements in one visit, with a link to the page
@@ -1578,6 +1606,16 @@ made it likely that reliable delivery would take time to establish:
 - **FR-108 [Should]** In-application notifications: an unread-messages indicator and a dashboard
   banner for anything that would otherwise be a warning email (a slot at risk, an agreement
   expiring, a rotated computer password). The in-application half of FR-73 and FR-76.
+
+  The banner **summarizes and does not recite** (2026-09-22). It carries the counts the sidebar
+  badges carry — what is waiting for this reader's approval, and how many messages are unread —
+  and no subject lines. It listed every unread notice in one sentence and counted only the five
+  it had room for, so a reader with eight unread was told there were five, and neither number
+  matched either badge.
+
+  > "5 unread notices" is the wrong number. … The Notices box on the Hello page should just
+  > correctly summarize the number of messages/approvals that need review, and should not list
+  > all of them in a single sentence as it currently does. — NAF, 2026-09-22
 
 #### 3.8.2 Sending
 

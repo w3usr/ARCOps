@@ -81,6 +81,7 @@ def agreements(request):
     ):
         if a.template:
             latest[a.template.key] = a
+    proved = institution_address_proved(request.user)
     rows = []
     for t in templates:
         a = mine.get(t.pk) or latest.get(t.key)
@@ -90,8 +91,18 @@ def agreements(request):
                 and a.expires_on
                 and (a.expires_on - today).days <= notice_days
             )
-        rows.append((t, a))
-    return render(request, "credentials/agreements.html", {"rows": rows})
+        # Signing is refused without a proved institution address (FR-27), so the page says so
+        # in place of the form rather than letting somebody fill it in and be turned away.
+        rows.append((t, a, credential_needs_institution(t.credential) and not proved))
+    return render(
+        request,
+        "credentials/agreements.html",
+        {
+            "rows": rows,
+            "institution_domain": institution_domain_label(),
+            "my_account_url": reverse("member_edit", args=[request.user.pk]) + "#addresses",
+        },
+    )
 
 
 @login_required
@@ -104,6 +115,20 @@ def sign(request, template_id):
     t = get_object_or_404(AgreementTemplate, pk=template_id, is_current=True)
     if request.user.category not in (t.audience or []):
         raise Http404
+    # The address comes first, not last (FR-27, the advisor 2026-09-22: require the applicant
+    # to confirm their institution account "before they can even sign any of these agreements.
+    # That will make the rest of the process more straightforward").
+    #
+    # It used to be asked only at approval, which let somebody sign, wait, and then be told the
+    # thing they could have fixed first. Asking here means a signature in the queue is one an
+    # approver can actually act on.
+    if credential_needs_institution(t.credential) and not institution_address_proved(request.user):
+        messages.error(
+            request,
+            f"Confirm your {institution_domain_label()} address first: this agreement cannot "
+            "be signed until the address on your account has been proved.",
+        )
+        return redirect("agreements")
     if (
         request.POST.get("affirm") != "on"
         or request.POST.get("signer_name", "").strip().lower() != request.user.full_name.lower()
@@ -189,10 +214,28 @@ def institution_domains() -> list[str]:
     return []
 
 
+def credential_needs_institution(credential) -> bool:
+    """Whether this credential may not be granted without a proved institution address."""
+    wanted = setting("credentials_needing_institution_email", ["station_access", "it_access"]) or []
+    return credential.key in set(wanted) and bool(institution_domains())
+
+
 def needs_institution_email(agreement) -> bool:
     """Whether this credential may not be granted without one."""
-    wanted = setting("credentials_needing_institution_email", ["station_access", "it_access"]) or []
-    return agreement.credential.key in set(wanted) and bool(institution_domains())
+    return credential_needs_institution(agreement.credential)
+
+
+def institution_domain_label() -> str:
+    """The institution's domains as a person reads them: one, or several joined by "or"."""
+    domains = institution_domains()
+    if len(domains) <= 1:
+        return domains[0] if domains else ""
+    return " or ".join(domains)
+
+
+def institution_address_proved(user) -> bool:
+    """Whether the member holds an institution address somebody actually proved (§2.6)."""
+    return institution_address_ok(_institution_address(user, proven_only=True))
 
 
 def institution_address_ok(address: str) -> bool:
@@ -222,7 +265,11 @@ def approvals(request):
     return render(
         request,
         "credentials/approvals.html",
-        {"queue": rows, **_decision_log(request)},
+        {
+            "queue": rows,
+            "institution_domain": institution_domain_label(),
+            **_decision_log(request),
+        },
     )
 
 
@@ -386,13 +433,11 @@ def decide(request, pk):
                 messages.error(
                     request,
                     format_html(
-                        "{} has no proven {} address, so there is nothing to show they are "
-                        "in the institution's directory. They can confirm one from a link sent "
-                        "to it, or you can confirm it yourself on "
-                        '<a href="{}">their page</a>, then approve this.',
-                        a.user.display_first,
+                        "This agreement cannot be approved until the applicant has a confirmed "
+                        "{} email address linked to their account. Please have the applicant "
+                        'confirm one on <a href="{}">their profile</a>.',
                         domains,
-                        reverse("member_edit", args=[a.user.pk]),
+                        reverse("member_edit", args=[a.user.pk]) + "#addresses",
                     ),
                 )
                 return redirect("approvals")

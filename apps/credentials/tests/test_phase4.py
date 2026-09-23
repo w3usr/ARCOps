@@ -628,12 +628,17 @@ def test_station_and_computer_access_need_an_institution_address_from_anyone():
             user=member, template=template, credential=template.credential, signer_name="No Badge"
         )
         body = c.get("/credentials/approvals/").content.decode()
-        assert "no proven institution address" in body, template.credential.key
+        assert "cannot be approved until the applicant has a confirmed" in body, (
+            template.credential.key
+        )
 
         r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
         signed.refresh_from_db()
         assert signed.state == SignedAgreement.State.SIGNED, "refused without one"
-        assert "no proven institution address" in c.get(r["Location"]).content.decode()
+        assert (
+            "cannot be approved until the applicant has a confirmed"
+            in c.get(r["Location"]).content.decode()
+        )
 
         # A personal address is not one, confirmed or not.
         addresses.add(
@@ -711,7 +716,10 @@ def test_an_address_that_is_somebody_elses_is_not_evidence_about_this_member():
     r = c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.SIGNED, "no confirmed address of their own"
-    assert "no proven" in c.get(r["Location"]).content.decode()
+    assert (
+        "cannot be approved until the applicant has a confirmed"
+        in c.get(r["Location"]).content.decode()
+    )
 
     # Their own, confirmed on their page, is what grants it.
     addresses.add(member, "theirs@example.edu", kind="institution", confirmed=True, proof="mailbox")
@@ -742,7 +750,10 @@ def test_an_institution_address_nobody_proved_is_not_enough_to_grant_access():
     )
     c = Client()
     c.force_login(advisor)
-    assert "no proven institution address" in c.get("/credentials/approvals/").content.decode()
+    assert (
+        "cannot be approved until the applicant has a confirmed"
+        in c.get("/credentials/approvals/").content.decode()
+    )
     c.post(f"/credentials/approvals/{signed.pk}/decide/", {"decision": "approve"})
     signed.refresh_from_db()
     assert signed.state == SignedAgreement.State.SIGNED
@@ -856,3 +867,88 @@ def test_a_declined_agreement_can_be_signed_again():
         ).count()
         == 1
     )
+
+
+def test_an_agreement_cannot_be_signed_until_the_institution_address_is_proved():
+    """The address is asked for before the signature, not after it (FR-27).
+
+    The advisor, 2026-09-22: require the applicant to confirm their institution account
+    "before they can even sign any of these agreements. That will make the rest of the process
+    more straightforward." Asking only at approval let somebody sign, wait, and then be
+    told of a thing they could have fixed at the start; and it left the approver a queue of
+    signatures none of which could be acted on.
+    """
+    from apps.accounts import addresses
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    st, it, t_st, t_it = _setup()
+    member = _user("unproved@example.org", first_name="Un", last_name="Proved")
+    addresses.add(member, "unproved@example.org", kind="personal", confirmed=True)
+
+    c = Client()
+    c.force_login(member)
+    page = c.get("/credentials/agreements/").content.decode()
+    assert "cannot be signed until your example.edu address is confirmed" in page
+    assert "Sign it" not in page  # the form is not offered at all
+
+    form = {"signer_name": member.full_name, "affirm": "on"}
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", form)
+    assert not SignedAgreement.objects.filter(user=member).exists()
+
+    # An address at the institution's domain that nobody proved is not enough either: it is the
+    # proof that is being asked for, not the spelling (§2.6).
+    addresses.add(
+        member, "un.proved@example.edu", kind="institution", confirmed=True, proof="vouched"
+    )
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", form)
+    assert not SignedAgreement.objects.filter(user=member).exists()
+
+    # Proved, and the form is there and works. A fresh session, so the refusals above are not
+    # still queued as flash messages on the page being read.
+    member.addresses.filter(kind="institution").update(proof="officer")
+    c = Client()
+    c.force_login(member)
+    page = c.get("/credentials/agreements/").content.decode()
+    assert "cannot be signed until" not in page and "Sign it" in page
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", form)
+    assert SignedAgreement.objects.filter(
+        user=member, template=t_st, state=SignedAgreement.State.SIGNED
+    ).exists()
+
+
+def test_the_home_banner_counts_the_approvals_and_the_messages_and_lists_neither():
+    """The banner summarizes; it does not recite.
+
+    The advisor, 2026-09-22, reading "5 unread notices:" followed by every subject in one
+    sentence, with three in the approvals queue and eight unread in Messages: "'5 unread
+    notices' is the wrong number." It counted the five it had room to show. The numbers it
+    carries now are the ones on the two sidebar badges.
+    """
+    from apps.comms.services import compose
+
+    call_command("club_import")
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv-banner@example.org", "advisor", category="faculty")
+    member = _user("mem-banner@example.org", first_name="Mem", last_name="Ber")
+    for template in (t_st, t_it):
+        SignedAgreement.objects.create(
+            user=member,
+            template=template,
+            credential=template.credential,
+            signer_name="Mem Ber",
+            state=SignedAgreement.State.SIGNED,
+        )
+    for n in range(6):
+        compose(advisor, "agreement", f"Agreement to review: number {n}", "<p>x</p>")
+
+    c = Client()
+    c.force_login(advisor)
+    home = c.get("/").content.decode()
+    banner = home.split("My next slots")[0]
+    assert "2 agreements waiting for your approval" in banner  # what the queue actually holds
+    assert "6 unread messages" in banner  # what the Messages badge says
+    assert "number 0" not in banner and "number 5" not in banner  # and not one subject

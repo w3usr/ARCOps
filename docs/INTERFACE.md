@@ -114,6 +114,18 @@ the third option, and it reaches the library's mail as well.)* A library's page 
 **copied** for the sake of a word: copying is for behaviour the library cannot be asked for, such
 as offering the passkey on the page that asks rather than behind a link to a second one.
 
+**The account page is "your profile", and "their profile" when it is somebody else's.** Lower
+case, both words: it is a description, not a brand. The sidebar item is **Profile** and the
+button is **Edit profile**, and prose that names the page some third way sends a reader hunting
+the sidebar for words that are not on it. "Profile Management Page", "your account page" and
+"their page" were each tried and are each gone (2026-09-22).
+
+A link names the destination the way the destination names itself — and where the reader is
+being sent to *do* something, it names the thing to do and carries an anchor, because `/me/` is
+the member page and the controls are on `/me/edit/`. "Confirm it on your profile" pointed at
+`#addresses` lands on the card with the button on it; "visit your Profile Management Page" lands
+them a click short and looking for a heading that does not exist.
+
 ## Filters
 
 A filter that can sensibly take two answers takes a set: a disclosure holding a checkbox each,

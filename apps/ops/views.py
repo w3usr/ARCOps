@@ -87,21 +87,28 @@ def dashboard(request):
         from apps.accounts.entry import pending_review
 
         pending = list(pending_review()[:20])
-    # FR-108: unread messages that would otherwise have been a warning email.
-    banner_messages = list(
-        Outbox.objects.filter(user=request.user, read_at__isnull=True, category__in=BANNER)[:5]
+    # FR-108: unread messages that would otherwise have been a warning email. What the banner
+    # needs from them is whether there are any and what they are about — not the messages
+    # themselves. It used to show the first five and count that slice, so a reader with eight
+    # unread was told there were five, and the sentence then listed every subject in a row
+    # (the advisor, 2026-09-22: "'5 unread notices' is the wrong number … should just correctly
+    # summarize the number of messages/approvals that need review, and should not list all of
+    # them in a single sentence"). It reports the counts the sidebar badges carry instead, so
+    # the reader is never given a third number to reconcile.
+    unread_notices = Outbox.objects.filter(
+        user=request.user, read_at__isnull=True, category__in=BANNER
     )
+    notice_categories = set(unread_notices.values_list("category", flat=True).distinct())
     # A notice that something needs doing should offer the page where it is done, rather than
     # the list of notices (NAF, 2026-09-20: "It would be better to link to me to the Approvals
     # page than to the Messages page"). Only where every unread notice points the same way; a
     # mixed handful goes to Messages, which is the one place that holds them all.
     banner_action = None
-    if request.user.may("approve_agreements") and banner_messages:
-        if all(m.category == "agreement" for m in banner_messages):
-            from apps.credentials.models import SignedAgreement
+    if request.user.may("approve_agreements") and notice_categories == {"agreement"}:
+        from apps.credentials.models import SignedAgreement
 
-            if SignedAgreement.objects.filter(state=SignedAgreement.State.SIGNED).exists():
-                banner_action = {"url": reverse("approvals"), "label": "Go to Approvals"}
+        if SignedAgreement.objects.filter(state=SignedAgreement.State.SIGNED).exists():
+            banner_action = {"url": reverse("approvals"), "label": "Go to Approvals"}
     return render(
         request,
         "ops/dashboard.html",
@@ -110,7 +117,7 @@ def dashboard(request):
             "checkin_ready": checkin_ready,
             "upcoming_events": upcoming_events,
             "pending_review": pending,
-            "banner_messages": banner_messages,
+            "has_notices": bool(notice_categories),
             "banner_action": banner_action,
             "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },

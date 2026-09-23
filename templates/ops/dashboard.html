@@ -9,10 +9,12 @@ on its own: the advisor, 2026-09-19, "It should say Hello, Kay N3KN".{% endcomme
 <section class="card" aria-labelledby="pv"><h2 id="pv">Your account is provisional</h2>
 <p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p></section>
 {% endif %}
-{% if banner_messages %}
+{% if has_notices %}
+{% comment %}The counts the sidebar badges already carry, and no list of subjects: a banner that
+recites every notice is longer than the page it sits on, and the reader still has to go and read
+them (NAF, 2026-09-22).{% endcomment %}
 <div class="banner" role="status">
-  <p><strong>{{ banner_messages|length }} unread notice{{ banner_messages|length|pluralize }}:</strong>
-  {% for m in banner_messages %}{{ m.subject }}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
+  <p><strong>{% if approvals_waiting %}{{ approvals_waiting }} agreement{{ approvals_waiting|pluralize }} waiting for your approval{% if unread_count %}, and {{ unread_count }} unread message{{ unread_count|pluralize }}{% endif %}.{% else %}{{ unread_count }} unread message{{ unread_count|pluralize }}.{% endif %}</strong></p>
   <p>{% if banner_action %}<a href="{{ banner_action.url }}">{{ banner_action.label }}</a> · {% endif %}<a href="{% url 'my_messages' %}">Read them</a></p>
 </div>
 {% endif %}

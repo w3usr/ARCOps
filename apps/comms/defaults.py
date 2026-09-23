@@ -32,7 +32,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "account.provisional_notice",
         "subject": "New provisional member for {{ club.short_name }}: {{ person.short_name }}",
-        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} joined through {{ via }} and is waiting for review. Admit them as a member or decline on their page:</p><p><a href="{{ link }}">Review their request</a></p>',
+        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} joined through {{ via }} and is waiting for review. Admit them as a member or decline on their profile:</p><p><a href="{{ link }}">Review their request</a></p>',
         "variables": ["club.short_name", "person.full_name", "person.callsign", "via", "link"],
     },
     {
@@ -65,7 +65,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "account.completed",
         "subject": "{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} joined {{ club.short_name }}",
-        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}{% if uls_name %}. The FCC lists that callsign under the name {{ uls_name }}{% endif %}.</p><p>If that is not who you expected, set the account to No access from their page.</p><p><a href="{{ link }}">Open their page</a></p>',
+        "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}{% if uls_name %}. The FCC lists that callsign under the name {{ uls_name }}{% endif %}.</p><p>If that is not who you expected, set the account to No access from their profile.</p><p><a href="{{ link }}">Open their profile</a></p>',
         "variables": [
             "person.full_name",
             "person.callsign",
@@ -326,7 +326,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "body_html": (
             "<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} asked to close their "
             "account. It has no access now, and their record is kept as the club's own. Nothing else "
-            "is needed unless you want to archive it, or to delete it outright from their page.</p>"
+            "is needed unless you want to archive it, or to delete it outright from their profile.</p>"
         ),
         "variables": ["person.full_name", "person.callsign"],
     },
