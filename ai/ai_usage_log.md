@@ -2997,4 +2997,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending the advisor's look. Verified by the assistant: `tools/check.sh`
   passes in full — lint, format, the three repository guards, the migration check, 397 tests and
   the accessibility sweep across all eight roles.
-- **Git Hash**: [pending]
+- **Git Hash**: 399d1e4
