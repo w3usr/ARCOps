@@ -3017,4 +3017,4 @@ carries the actual running model ID.
   was confirmed to fail on the unfixed code; the second walks all four endings; `tools/check.sh`
   passes in full — lint, format, the three guards, the migration check, 399 tests and the
   accessibility sweep across all eight roles.
-- **Git Hash**: [pending]
+- **Git Hash**: ebeb5e8
