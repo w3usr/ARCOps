@@ -232,8 +232,15 @@ def test_present_wording():
     assert p.word == "Covered" and "one more person alongside Mo N0MEM" in p.detail
 
 
-def test_events_list_and_home_show_both_zones(world):
+def test_events_list_and_home_show_both_zones(world, monkeypatch):
     """Issue #23 on the private tracker: no bare times anywhere a member reads a schedule."""
+    # Home lists only events that have not ended, so read it from a week before this one.
+    # Temporary fix: the test passes only on the assumption that the day it runs is
+    # 2026-09-19. To be revised if a different approach is requested (for example, event
+    # dates relative to today).
+    monkeypatch.setattr(
+        "django.utils.timezone.now", lambda: datetime(2026, 9, 19, 12, 0, tzinfo=UTC)
+    )
     c = _as(world["mem"])
     body = c.get("/events/").content.decode()
     # The operating period runs 00:00Z to 04:00Z on Saturday 26th: Friday evening locally.

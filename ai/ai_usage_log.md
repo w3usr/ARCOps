@@ -3018,3 +3018,19 @@ carries the actual running model ID.
   passes in full — lint, format, the three guards, the migration check, 399 tests and the
   accessibility sweep across all eight roles.
 - **Git Hash**: ebeb5e8
+
+## [2026-10-09 16:35 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5 (diagnosis and the fix) and claude-sonnet-5-5
+  (the comment and the commit; the model was switched mid-session)
+- **Session Purpose**: Diagnose a test that has failed since 2026-09-26 because its event date
+  is now in the past, and fix it.
+- **Sections/Files Affected**: apps/events/tests/test_roster.py
+  (`test_events_list_and_home_show_both_zones`). Test only; no application code changed.
+- **Nature of Contribution**: Diagnosis and a code edit by the assistant. **A temporary fix:**
+  the test pins the clock to 2026-09-19 and passes only on the assumption that it is run as of
+  that date. It will be revised if a different approach is requested, for example event dates
+  relative to today.
+- **Human Review Status**: Reviewed by the user, who had the change explained line by line and
+  accepted it. Pending review by the advisor and the project lead. The full suite passed (399
+  tests) with the change.
+- **Git Hash**: pending
