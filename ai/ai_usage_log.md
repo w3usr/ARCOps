@@ -3092,4 +3092,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit (CI configuration) after diagnosis: the failures, present since
   2026-10-12, came from the missing build step, not from the code.
 - **Human Review Status**: Pending review; not yet confirmed by a CI run.
-- **Git Hash**: [after commit]
+- **Git Hash**: 8d5cad4
