@@ -3060,4 +3060,4 @@ carries the actual running model ID.
   unchanged code (a missing system library on the developer's machine); lint, guards, and the
   accessibility sweep are clean. Who may cancel an event and whether a control operator must
   be licensed were decided by the user but are not implemented in this change.
-- **Git Hash**: [after commit]
+- **Git Hash**: ca5d197
