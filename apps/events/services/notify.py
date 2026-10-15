@@ -20,6 +20,7 @@ from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.groups import people_who_may
+from apps.ops.templatetags.labels import role_label
 
 from ..models import Event, SignUp, Slot, SlotWarning
 from .roster import UTC, display_zone, zone_label
@@ -513,7 +514,7 @@ def send_digest(now: datetime | None = None) -> dict:
     sent = 0
     for u in members:
         mine = [
-            f"{s.slot.event.title}, {when_text(s.slot)}, {s.slot.position.name} as {s.role}"
+            f"{s.slot.event.title}, {when_text(s.slot)}, {s.slot.position.name} as {role_label(s.role)}"
             for s in SignUp.objects.filter(user=u, slot__start__gte=now, slot__cancelled=False)
             .select_related("slot__position__location__event")
             .order_by("slot__start")[:20]

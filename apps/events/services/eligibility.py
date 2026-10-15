@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from apps.credentials.services import class_rank, holds
 from apps.ops.config import setting
+from apps.ops.templatetags.labels import role_label
 
 from ..models import EligibilityRule, Opening
 
@@ -34,8 +35,11 @@ def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tu
                 key=lambda o: o.opens_at,
             )
             if upcoming:
-                return False, f"{role} opens to you on {upcoming[0].opens_at:%d %b %Y %H:%M}Z"
-            return False, f"{role} is not open to your membership category"
+                return (
+                    False,
+                    f"{role_label(role)} opens to you on {upcoming[0].opens_at:%d %b %Y %H:%M}Z",
+                )
+            return False, f"{role_label(role)} is not open to your membership category"
 
     # Eligibility: the slot's own rule wins over the event's default for the role; with neither,
     # the club's configured default applies (FR-122): a role marked requires_license needs a valid
@@ -51,7 +55,7 @@ def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tu
             and cfg.get("requires_license")
             and not holds(user, "amateur_license", slot.start.date())
         ):
-            return False, f"{role} needs a valid amateur license"
+            return False, f"{role_label(role)} needs a valid amateur license"
     if rule:
         if user.under_18 and not rule.minors_allowed:
             return False, f"{role} in this slot is not open to members under 18"

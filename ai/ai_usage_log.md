@@ -3034,3 +3034,30 @@ carries the actual running model ID.
   accepted it. Pending review by the advisor and the project lead. The full suite passed (399
   tests) with the change.
 - **Git Hash**: c187927
+
+## [2026-10-15 11:04 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the six defects found in acceptance testing of T11 to T15 on
+  2026-10-14 (captain permissions, the server-side removal reason, the roster's zone label, the
+  preferred-class label, bulk cancel naming the slots it keeps, role names in messages), and
+  confirm the fixes by re-running the scenarios.
+- **Sections/Files Affected**: apps/events/views_manage.py (captain_add, captain_remove,
+  EventForm label, slot_toggle and event_cancel reasons, manage context), apps/events/views.py
+  (cancel_signup reason), apps/events/services/roster.py (zone label from the event's start),
+  role_label in apps/events/views_member.py, views_slots.py, views_rules.py,
+  services/notify.py, services/eligibility.py; templates/events/manage.html,
+  confirm_bulk_cancel.html, confirm_remove.html, token_cannot.html, waitlist_accept.html,
+  adults.html, detail.html; tests in apps/events/tests/test_manage.py, test_notify.py,
+  test_roster.py.
+- **Nature of Contribution**: Code generation and edit by the assistant, with tests. Each new
+  test was confirmed to fail on the previous code and pass on the new. Beyond the six listed
+  defects: slot and event cancellation now also refuse an empty reason on the server, and role
+  keys are labeled in about fifteen places rather than the two first noted. The role key in
+  the email templates was found but left for a later change.
+- **Human Review Status**: Partially reviewed. The user directed the work and had the
+  removal-reason check explained; the full diff has not been read line by line. Pending review
+  by the advisor. All application tests pass except one PDF test that also fails on the
+  unchanged code (a missing system library on the developer's machine); lint, guards, and the
+  accessibility sweep are clean. Who may cancel an event and whether a control operator must
+  be licensed were decided by the user but are not implemented in this change.
+- **Git Hash**: [after commit]

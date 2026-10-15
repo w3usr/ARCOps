@@ -135,6 +135,11 @@ def test_member_cancel_outside_cutoff_is_not_late_and_captain_removal_tells_the_
     assert m.subject.startswith("Cancellation:") and "Late" not in m.subject
     su2 = SignUp.objects.create(slot=slots[1], user=mem, role="observer")
     c.force_login(cap)
+    # FR-58: a removal with no reason is refused by the server, not only by the form's
+    # `required` (found in acceptance test T14 on 2026-10-14, with the attribute stripped)
+    r = c.post(f"/events/signup/{su2.pk}/cancel/", {"confirmed": "yes", "reason": "  "})
+    assert r.url == f"/events/signup/{su2.pk}/remove/" and SignUp.objects.filter(pk=su2.pk).exists()
+    assert not _msgs(mem, "moved").exists()
     c.post(f"/events/signup/{su2.pk}/cancel/", {"confirmed": "yes", "reason": "double booked"})
     m = _msgs(mem, "moved").get()
     assert "removed" in m.subject and "double booked" in m.body_html
@@ -152,6 +157,8 @@ def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone
     # slot cancel with a person: refused without confirmation, done with it
     c.post(f"/events/slot/{slots[0].pk}/toggle/", {"what": "cancel"})
     assert Slot.objects.get(pk=slots[0].pk).cancelled is False
+    c.post(f"/events/slot/{slots[0].pk}/toggle/", {"what": "cancel", "confirmed": "yes"})
+    assert Slot.objects.get(pk=slots[0].pk).cancelled is False  # nor without a reason
     c.post(
         f"/events/slot/{slots[0].pk}/toggle/",
         {"what": "cancel", "confirmed": "yes", "reason": "storm"},
@@ -242,6 +249,6 @@ def test_digest_lists_events_open_slots_and_own_commitments():
     r = notify.send_digest(now)
     assert r["members"] == 1 and r["events"] == 1
     m = _msgs(mem, "digest").get()
-    assert "Fall Sprint" in m.body_html and "1 open" in m.body_html and "as observer" in m.body_html
+    assert "Fall Sprint" in m.body_html and "1 open" in m.body_html and "as Observer" in m.body_html
     ClubSetting.objects.update_or_create(key="club.short_name", defaults={"value": "Test ARC"})
     call_command("digest_weekly", "--now", now.isoformat())

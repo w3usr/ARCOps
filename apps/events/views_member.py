@@ -17,6 +17,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import User
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.templatetags.labels import role_label
 
 from .models import Event, RoleCapacity, SignUp, Slot, Waitlist
 from .services import notify, waitlist
@@ -53,7 +54,7 @@ def signup_change_role(request, signup_id):
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     cap = RoleCapacity.objects.filter(slot=slot, role=new_role).first()
     if not cap or slot.signups.filter(role=new_role).count() >= cap.capacity:
-        messages.error(request, f"No {new_role} seat is open in this slot.")
+        messages.error(request, f"No {role_label(new_role)} seat is open in this slot.")
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     ok, reason = can_sign_up(request.user, slot, new_role)
     if not ok:
@@ -96,7 +97,7 @@ def signup_change_role(request, signup_id):
                 },
             )
     waitlist.on_place_opened(slot, old)
-    messages.success(request, f"You are now {new_role} in this slot.")
+    messages.success(request, f"You are now {role_label(new_role)} in this slot.")
     return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
 
 
@@ -119,12 +120,12 @@ def waitlist_join(request, slot_id):
         messages.error(request, f"You cannot wait for that role: {reason}.")
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     if waitlist.seats_open(slot, role):
-        messages.info(request, f"A {role} seat is open; sign up directly.")
+        messages.info(request, f"A place as {role_label(role)} is open; sign up directly.")
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     waitlist.join(request.user, slot, role)
     messages.success(
         request,
-        f"You are on the waitlist for {role}. If a place opens you will be offered it by message.",
+        f"You are on the waitlist for {role_label(role)}. If a place opens you will be offered it by message.",
     )
     return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
 
@@ -145,7 +146,9 @@ def waitlist_accept(request, pk):
     if request.method == "POST":
         su = waitlist.accept(request.user, entry)
         if su:
-            messages.success(request, f"Signed up as {entry.role}. Thank you for waiting.")
+            messages.success(
+                request, f"Signed up as {role_label(entry.role)}. Thank you for waiting."
+            )
         else:
             messages.error(request, "That offer has lapsed or the place is gone.")
         return redirect("slot_detail", pk=slot.event.pk, slot_id=slot.pk)
@@ -245,7 +248,7 @@ def ical_feed(request, token):
             f"DTSTAMP:{_ics_dt(su.created)}",
             f"DTSTART:{_ics_dt(slot.start)}",
             f"DTEND:{_ics_dt(slot.end)}",
-            f"SUMMARY:{_ics_escape(f'{event.title}: {slot.position.name} as {su.role}')}",
+            f"SUMMARY:{_ics_escape(f'{event.title}: {slot.position.name} as {role_label(su.role)}')}",
             f"LOCATION:{_ics_escape(slot.position.location.name)}",
             f"URL:{site}/events/{event.pk}/slot/{slot.pk}/",
             "END:VEVENT",

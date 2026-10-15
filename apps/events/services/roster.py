@@ -304,8 +304,11 @@ def build(
         "days": list(days.values()),
         "counts": counts,
         "lead": "utc" if lead_zone == UTC else "local",
-        "lead_label": zone_label(now, lead_zone),
-        "other_label": zone_label(now, other_zone),
+        # The event's zone at its start, not today's (FR-36): a November event read in October
+        # is EST, as its rows are. ponytail: one label for the event; one that crosses a
+        # change of clocks shows the zone it starts in, and each row still names its own.
+        "lead_label": zone_label(starts or now, lead_zone),
+        "other_label": zone_label(starts or now, other_zone),
         "span": {
             "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
             if starts and ends

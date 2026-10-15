@@ -88,6 +88,17 @@ def test_grid_layout_days_in_local_zone_with_utc_beneath(world):
     assert utc["days"][1].heading == "Saturday 26 September"
 
 
+def test_the_zone_label_follows_the_event_not_today(world):
+    """A 4 November event read on 15 October is headed EST, as its rows are (found in
+    acceptance test T12, 2026-10-14)."""
+    ev = world["ev"]
+    start = datetime(2026, 11, 4, 18, 0, tzinfo=UTC)
+    ev.periods.update(start=start, end=start + timedelta(hours=4))
+    data = build(ev, world["mem"], "local", now=datetime(2026, 10, 15, 12, 0, tzinfo=UTC))
+    assert data["lead_label"] == "EST" and data["other_label"] == "UTC"
+    assert data["span"]["lead"].endswith("EST")
+
+
 def test_status_is_phrased_as_a_need_never_a_verdict(world):
     ev = world["ev"]
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
@@ -160,7 +171,7 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     )
     body = r.content.decode()
     assert SignUp.objects.filter(user=world["mem"], slot__in=run_slots[:3]).count() == 2
-    assert "2 slots" in body and "closed" in body
+    assert "Signed up as Operator for 2 slots." in body and "closed" in body  # role_label
     co = _as(world["off"])
     co.post(f"/events/{ev.pk}/bulk/", {"action": "close", "slots": [s.pk for s in run_slots]})
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], closed=True).count() == len(
@@ -169,6 +180,10 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     # Canceling cannot be undone, so it asks first and says what is about to go.
     r = co.post(f"/events/{ev.pk}/bulk/", {"action": "cancel", "slots": [s.pk for s in run_slots]})
     assert r.status_code == 200 and b"cannot be brought back" in r.content
+    # and names the slots it leaves alone, not only how many (acceptance test T14, 2026-10-14):
+    # 00:00Z and 02:00Z hold sign-ups, and neither is among the slots that go
+    kept = r.content.decode().split("left alone:")[1].split("Remove the people first")[0]
+    assert "Sat 26 Sep 00:00Z" in kept and "Sat 26 Sep 02:00Z" in kept
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], cancelled=False).count() == 4
     co.post(
         f"/events/{ev.pk}/bulk/",

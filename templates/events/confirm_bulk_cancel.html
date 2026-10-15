@@ -8,7 +8,9 @@
 <ul class="list">{% for s in free %}<li>{{ s.position.location.name }} · {{ s.position.name }} · {{ s.start|date:"D j M H:i" }}Z</li>{% endfor %}</ul>
 {% else %}<p>Nothing here can be canceled.</p>{% endif %}
 {% if with_people %}
-<p>{{ with_people|length }} of the slots you picked {{ with_people|length|pluralize:"has,have" }} someone signed up and {{ with_people|length|pluralize:"is,are" }} left alone. Remove the people first if you mean to cancel {{ with_people|length|pluralize:"it,them" }}.</p>
+<p>{{ with_people|length }} of the slots you picked {{ with_people|length|pluralize:"has,have" }} someone signed up and {{ with_people|length|pluralize:"is,are" }} left alone:</p>
+<ul class="list">{% for s in with_people %}<li>{{ s.position.location.name }} · {{ s.position.name }} · {{ s.start|date:"D j M H:i" }}Z</li>{% endfor %}</ul>
+<p>Remove the people first if you mean to cancel {{ with_people|length|pluralize:"it,them" }}.</p>
 {% endif %}
 <form method="post" action="{% url 'event_bulk' event.pk %}">{% csrf_token %}
   <input type="hidden" name="action" value="cancel">

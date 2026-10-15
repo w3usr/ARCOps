@@ -104,6 +104,39 @@ def test_members_are_kept_out_and_captains_let_in(officer):
     assert cm.get(f"/events/{ev.pk}/manage/").status_code == 404
 
 
+def test_only_an_officer_appoints_or_removes_captains(officer):
+    """§2.2: a member made captain runs the event but cannot change who else does
+    (found in acceptance test T11, 2026-10-14)."""
+    c = _as(officer)
+    ev = _build(c)
+    mem, other = (
+        User.objects.create_user(
+            f"{n}@example.org", "pw-Testing-123", groups=["member"], first_name=n, last_name="M"
+        )
+        for n in ("Mo", "Cy")
+    )
+    c.post(f"/events/{ev.pk}/captains/add/", {"user": mem.pk})
+    cm = _as(mem)
+    body = cm.get(f"/events/{ev.pk}/manage/").content.decode()
+    assert "Appoint captain" not in body and "An officer appoints and removes captains." in body
+    assert cm.post(f"/events/{ev.pk}/captains/add/", {"user": other.pk}).status_code == 404
+    assert cm.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/").status_code == 404
+    assert set(ev.captaincies.values_list("user", flat=True)) == {officer.pk, mem.pk}
+
+
+def test_the_last_captain_cannot_be_removed(officer):
+    c = _as(officer)
+    ev = _build(c)
+    c.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/")
+    assert ev.captaincies.filter(user=officer).exists()
+    assert "Appoint captain" in c.get(f"/events/{ev.pk}/manage/").content.decode()
+
+
+def test_the_event_form_says_preferred_license_class(officer):
+    body = _as(officer).get("/events/new/").content.decode()
+    assert "Preferred license class" in body and "Min license class" not in body
+
+
 def test_slot_close_cancel_duplicate_and_cancel_event(officer):
     c = _as(officer)
     ev = _build(c)
@@ -123,7 +156,10 @@ def test_slot_close_cancel_duplicate_and_cancel_event(officer):
     assert c.post(f"/events/{copy.pk}/cancel/", {}).status_code == 302
     copy.refresh_from_db()
     assert copy.state == "draft"  # without the confirmation tick nothing happens
-    c.post(f"/events/{copy.pk}/cancel/", {"confirm": "yes"})
+    c.post(f"/events/{copy.pk}/cancel/", {"confirm": "yes", "reason": " "})
+    copy.refresh_from_db()
+    assert copy.state == "draft"  # nor without a reason (the form's `required` can be stripped)
+    c.post(f"/events/{copy.pk}/cancel/", {"confirm": "yes", "reason": "Rained out"})
     copy.refresh_from_db()
     assert copy.state == "cancelled"
 

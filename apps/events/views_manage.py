@@ -92,8 +92,10 @@ class EventForm(forms.ModelForm):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.fields["type"] = forms.ChoiceField(choices=_types())
-        self.fields["min_license_class"] = forms.ChoiceField(
-            choices=[("", "Any")] + [(c, c) for c in ladder()], required=False
+        self.fields["min_license_class"] = forms.ChoiceField(  # replaced, so Meta.labels is lost
+            label="Preferred license class",
+            choices=[("", "Any")] + [(c, c) for c in ladder()],
+            required=False,
         )
         import zoneinfo
 
@@ -321,6 +323,7 @@ def _manage_page(request, event, form=None, generate_form=None):
             "positions": positions,
             "captains": event.captaincies.select_related("user").order_by("user__last_name"),
             "candidates": candidates,
+            "may_appoint_captains": request.user.may("manage_events"),
             "generate_form": generate_form
             if generate_form is not None
             else GenerateForm(roles=roles),
@@ -417,8 +420,11 @@ def position_delete(request, pk, position_id):
 @login_required
 @require_POST
 def captain_add(request, pk):
+    # §2.2: captains are appointed by an officer or sysadmin, so a member who is captain of
+    # this event runs it but does not choose who else does.
+    if not request.user.may("manage_events"):
+        raise Http404
     event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
     user = get_object_or_404(User, pk=request.POST.get("user"))
     _, created = Captaincy.objects.get_or_create(event=event, user=user)
     if created:
@@ -430,9 +436,16 @@ def captain_add(request, pk):
 @login_required
 @require_POST
 def captain_remove(request, pk, user_id):
+    if not request.user.may("manage_events"):  # §2.2, as in captain_add
+        raise Http404
     event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
-    Captaincy.objects.filter(event=event, user_id=user_id).delete()
+    captaincy = get_object_or_404(Captaincy, event=event, user_id=user_id)
+    # The captains are who the event's notices go to (notify.captains_of); an event left with
+    # none would go quiet without anyone being told.
+    if event.captaincies.count() == 1:
+        messages.error(request, "An event keeps at least one captain; appoint another first.")
+        return redirect("event_manage", pk=pk)
+    captaincy.delete()
     record(request.user, "captain.removed", event, before={"user": user_id})
     messages.success(request, "Captain removed.")
     return redirect("event_manage", pk=pk)
@@ -511,12 +524,13 @@ def slot_toggle(request, slot_id):
         messages.success(request, "Slot closed." if slot.closed else "Slot reopened.")
     elif what == "cancel":
         if slot.signups.exists():
-            if request.POST.get("confirmed") == "yes":
+            reason = request.POST.get("reason", "").strip()[:300]
+            if request.POST.get("confirmed") == "yes" and not reason:
+                messages.error(request, "Give a reason; the people in the slot are told it.")
+            elif request.POST.get("confirmed") == "yes":
                 from .services.notify import cancel_slot_with_people
 
-                n = cancel_slot_with_people(
-                    request.user, slot, request.POST.get("reason", "")[:300]
-                )
+                n = cancel_slot_with_people(request.user, slot, reason)
                 messages.success(request, f"Slot canceled; {n} person(s) told.")
             else:
                 messages.error(
@@ -547,12 +561,12 @@ def event_duplicate(request, pk):
 def event_cancel(request, pk):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    if request.POST.get("confirm") != "yes":
-        messages.error(request, "Tick the confirmation to cancel the event.")
+    reason = request.POST.get("reason", "").strip()[:300]
+    if request.POST.get("confirm") != "yes" or not reason:
+        messages.error(request, "Give a reason and tick the confirmation to cancel the event.")
         return redirect("event_manage", pk=pk)
     from .services.notify import event_cancelled
 
-    reason = request.POST.get("reason", "")[:300]
     event.state = Event.State.CANCELLED
     event.save(update_fields=["state"])
     told = event_cancelled(request.user, event, reason)

@@ -73,14 +73,18 @@
   <h2 id="cap">Captains</h2>
   <ul class="list">
     {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
-      {% if c.user != user %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
+      {% if may_appoint_captains and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
+  {% if may_appoint_captains %}
   <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>
   <form method="post" action="{% url 'captain_add' event.pk %}" class="inline">{% csrf_token %}
     <label class="sr-only" for="cand">Member</label>
     <select id="cand" name="user">{% for u in candidates %}<option value="{{ u.pk }}">{{ u.full_name }}{% if u.callsign %} {{ u.callsign }}{% endif %}</option>{% endfor %}</select>
     <button type="submit" class="secondary">Appoint captain</button>
   </form>
+  {% else %}
+  <p class="helptext">An officer appoints and removes captains.</p>
+  {% endif %}
 </section>
 </div>
 </div>

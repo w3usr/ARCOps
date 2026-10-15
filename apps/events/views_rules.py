@@ -14,6 +14,7 @@ from apps.credentials.models import CredentialType
 from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.templatetags.labels import role_label
 
 from .models import EligibilityRule, Event, Opening, OperatingLimit, Slot
 from .services.lifecycle import set_state
@@ -141,13 +142,15 @@ def slot_eligibility(request, pk, slot_id):
     role = request.POST.get("role", "")
     if request.POST.get("clear"):
         EligibilityRule.objects.filter(slot=slot, role=role).delete()
-        messages.success(request, f"Override for {role} removed; the event's rule applies.")
+        messages.success(
+            request, f"Override for {role_label(role)} removed; the event's rule applies."
+        )
     else:
         d = _rule_from_post(request.POST, role)
         EligibilityRule.objects.update_or_create(
             slot=slot, role=role, defaults={"event": event, **d}
         )
-        messages.success(request, f"Override for {role} saved on this slot.")
+        messages.success(request, f"Override for {role_label(role)} saved on this slot.")
     record(request.user, "slot.eligibility", slot, after={"role": role})
     return redirect("slot_detail", pk=pk, slot_id=slot_id)
 

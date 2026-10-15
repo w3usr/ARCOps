@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import User
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.templatetags.labels import role_label
 
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
@@ -176,7 +177,7 @@ def slot_assign(request, pk, slot_id):
             from .services.notify import assigned_by_captain
 
             assigned_by_captain(request.user, su)  # FR-58
-        messages.success(request, f"{member.short_name} signed up as {role}.")
+        messages.success(request, f"{member.short_name} signed up as {role_label(role)}.")
     else:
         messages.info(request, f"{member.short_name} already holds this slot.")
     return redirect("slot_detail", pk=pk, slot_id=slot_id)
@@ -212,7 +213,7 @@ def event_bulk(request, pk):
                 continue
             cap = RoleCapacity.objects.filter(slot=s, role=role).first()
             if not cap or s.signups.filter(role=role).count() >= cap.capacity:
-                refused.append(f"{s.start:%a %H:%M}Z: no {role} seat open")
+                refused.append(f"{s.start:%a %H:%M}Z: no {role_label(role)} seat open")
                 continue
             if s.signups.filter(user=request.user).exists():
                 refused.append(f"{s.start:%a %H:%M}Z: you already hold it")
@@ -226,7 +227,8 @@ def event_bulk(request, pk):
             done.append(s)
         if done:
             messages.success(
-                request, f"Signed up as {role} for {len(done)} slot{'s' if len(done) != 1 else ''}."
+                request,
+                f"Signed up as {role_label(role)} for {len(done)} slot{'s' if len(done) != 1 else ''}.",
             )
         for r in refused:
             messages.warning(request, "Not taken. " + r)

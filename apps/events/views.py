@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.ops.audit import record
+from apps.ops.templatetags.labels import role_label
 
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
@@ -97,7 +98,9 @@ def sign_up(request, slot_id):
         messages.info(request, "You already hold this slot.")
     else:
         record(request.user, "signup.created", su, after={"role": role})
-        messages.success(request, f"Signed up as {role} for {slot.start:%a %d %b %H:%M}Z.")
+        messages.success(
+            request, f"Signed up as {role_label(role)} for {slot.start:%a %d %b %H:%M}Z."
+        )
         if request.user.under_18:  # FR-64: the guardian names who accompanies the minor
             messages.info(
                 request,
@@ -145,12 +148,15 @@ def cancel_signup(request, signup_id):
             return render(request, "events/confirm_cancel.html", {"signup": su, "broken": broken})
     from .services import notify
 
+    reason = request.POST.get("reason", "").strip()[:300]
+    if su.user != request.user and not reason:  # FR-58; the form's `required` is not enough
+        messages.error(request, "A removal needs a reason; the member is told it.")
+        return redirect("confirm_remove_signup", signup_id=su.pk)
     broken = would_break(slot, su)
     record(request.user, "signup.cancelled", su, before={"role": su.role, "user": su.user_id})
     if su.user == request.user:
         notify.member_cancelled(request.user, su, broken)  # FR-56: the captains always hear
     else:
-        reason = request.POST.get("reason", "").strip()[:300]
         notify.removed_by_captain(request.user, su, reason)  # FR-58
     role = su.role
     su.delete()
