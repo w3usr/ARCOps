@@ -3083,3 +3083,13 @@ carries the actual running model ID.
   application tests pass except the PDF test that also fails on unchanged code on the
   developer's machine.
 - **Git Hash**: 841b10e
+
+## [2026-10-15 13:13 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Stop CI failing the three passkey tests by building the club's own words
+  before the tests, as tools/check.sh and the deploy already do.
+- **Sections/Files Affected**: .github/workflows/ci.yml (one step before Tests).
+- **Nature of Contribution**: Edit (CI configuration) after diagnosis: the failures, present since
+  2026-10-12, came from the missing build step, not from the code.
+- **Human Review Status**: Pending review; not yet confirmed by a CI run.
+- **Git Hash**: [after commit]

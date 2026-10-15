@@ -21,6 +21,8 @@ jobs:
         run: bash tools/check_no_requirement_ids.sh
       - name: Interface house rules (docs/INTERFACE.md)
         run: bash tools/check_interface.sh
+      - name: The club's own words for a dependency's strings (TR-45), as tools/check.sh and the deploy build them
+        run: python manage.py compile_locale --settings=config.settings.test
       - name: Tests
         run: pytest -n auto
       - name: Dependency audit
