@@ -143,19 +143,32 @@ def evaluate(slot, signups=None) -> SlotStatus:
     return status
 
 
+def may_control(slot, signup) -> bool:
+    """FR-63: who can be a slot's control operator: someone signed up in one of the club's
+    on-air roles who holds a valid amateur license on the slot's date. The captain's choice is
+    held to the same test as the default (SK, 2026-10-15)."""
+    return (
+        signup.role in on_air_roles()
+        and getattr(signup.user, "license", None) is not None
+        and holds(signup.user, "amateur_license", slot.start.date())
+    )
+
+
 def control_operator(slot, on_air_signups):
-    """FR-63: the captain's choice, else the highest-class valid licensee in an on-air role."""
+    """FR-63: the captain's choice while it still qualifies, else the highest-class valid
+    licensee in an on-air role. A choice who has left the slot or whose license has lapsed
+    falls back to the rule rather than being named."""
     if slot.kind != "operating":
         return None
     if slot.control_operator_id:
-        return slot.control_operator
-    on = slot.start.date()
+        chosen = next((s for s in on_air_signups if s.user_id == slot.control_operator_id), None)
+        if chosen and may_control(slot, chosen):
+            return chosen.user
     best, best_rank = None, -1
     for s in on_air_signups:
-        lic = getattr(s.user, "license", None)
-        if lic is None or not holds(s.user, "amateur_license", on):
+        if not may_control(slot, s):
             continue
-        rank = class_rank(lic.effective_class)
+        rank = class_rank(s.user.license.effective_class)
         if rank > best_rank:
             best, best_rank = s.user, rank
     return best

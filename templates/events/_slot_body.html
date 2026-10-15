@@ -82,7 +82,7 @@
   {% if cell.signups %}
   <form method="post" action="{% url 'slot_control_operator' event.pk slot.pk %}" class="inline">{% csrf_token %}
     <label for="co-{{ slot.pk }}">Control operator</label>
-    <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.signups %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select>
+    <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.co_choices %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select>
     <button type="submit" class="secondary">Set</button>
   </form>
   {% endif %}

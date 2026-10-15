@@ -26,7 +26,7 @@ from apps.ops.config import setting
 
 from ..models import Event, Position, SignUp, Slot
 from .slots import limit_report
-from .viability import evaluate
+from .viability import evaluate, may_control
 
 GRID_MAX_POSITIONS = 4
 UTC = ZoneInfo("UTC")
@@ -130,6 +130,7 @@ class Cell:
     control_operator: object = None
     over_limit: bool = False  # FR-39, FR-62: pushes a day or the event past an operating limit
     badges: dict = field(default_factory=dict)  # FR-65: signup pk -> compact credential badges
+    co_choices: list = field(default_factory=list)  # FR-63: who a captain may name; captains only
 
     @property
     def class_counts(self) -> str:
@@ -243,6 +244,9 @@ def build(
             getattr(st, "control_operator", None),
             over_limit=s.pk in report["over_slot_ids"],
             badges=badges,
+            co_choices=[su for su in signups if may_control(s, su)]
+            if is_captain and s.kind == "operating"
+            else [],
         )
         counts["total"] += 1
         bucket = {

@@ -3061,3 +3061,25 @@ carries the actual running model ID.
   accessibility sweep are clean. Who may cancel an event and whether a control operator must
   be licensed were decided by the user but are not implemented in this change.
 - **Git Hash**: ca5d197
+
+## [2026-10-15 12:32 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build two decisions the user took on 2026-10-15: only an officer may
+  cancel an event; an unlicensed member cannot be a control operator.
+- **Sections/Files Affected**: apps/events/views_manage.py (event_cancel requires
+  manage_events; the manage context's may_manage_events), templates/events/manage.html (no
+  Danger zone for a member-captain), apps/events/services/viability.py (may_control; the
+  captain's choice is named only while it qualifies, else the default rule),
+  apps/events/views_slots.py (slot_control_operator refuses someone who does not qualify),
+  apps/events/services/roster.py and templates/events/_slot_body.html (the list offers only
+  people who qualify); tests in test_manage.py, test_viability.py, test_roster.py.
+- **Nature of Contribution**: Code generation and edit by the assistant, with tests; each new or
+  changed test was confirmed to fail on the previous code. Which roles count as on the air is the
+  club's existing `slot_roles` setting. A draft amendment to docs/REQUIREMENTS.md was reverted on
+  the user's instruction; the requirements are unchanged.
+- **Human Review Status**: Partially reviewed. The user took both decisions and answered the
+  design questions (on-air roles from the club's rules; fall back to the rule when a choice stops
+  qualifying); the diff has not been read line by line. Pending review by the advisor. All
+  application tests pass except the PDF test that also fails on unchanged code on the
+  developer's machine.
+- **Git Hash**: [after commit]

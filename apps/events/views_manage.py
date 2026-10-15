@@ -323,7 +323,8 @@ def _manage_page(request, event, form=None, generate_form=None):
             "positions": positions,
             "captains": event.captaincies.select_related("user").order_by("user__last_name"),
             "candidates": candidates,
-            "may_appoint_captains": request.user.may("manage_events"),
+            # Appointing captains (§2.2) and cancelling the event (SK, 2026-10-15) are officers'.
+            "may_manage_events": request.user.may("manage_events"),
             "generate_form": generate_form
             if generate_form is not None
             else GenerateForm(roles=roles),
@@ -559,8 +560,11 @@ def event_duplicate(request, pk):
 @login_required
 @require_POST
 def event_cancel(request, pk):
+    # Only an officer cancels an event; a member made captain runs it but cannot call it off
+    # (SK, 2026-10-15).
+    if not request.user.may("manage_events"):
+        raise Http404
     event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
     reason = request.POST.get("reason", "").strip()[:300]
     if request.POST.get("confirm") != "yes" or not reason:
         messages.error(request, "Give a reason and tick the confirmation to cancel the event.")

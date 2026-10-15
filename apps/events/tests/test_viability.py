@@ -111,6 +111,31 @@ def test_two_people_split_credentials_is_viable():
     assert st.control_operator.first_name == "lic"  # FR-63
 
 
+def test_a_captains_choice_of_control_operator_must_still_qualify():
+    """FR-63 (SK, 2026-10-15): the captain's choice is named only while they are in the slot in
+    an on-air role with a valid license; otherwise the default rule's choice stands."""
+    s = slot_for()
+    gen, tech = person("gen", "General", True, True), person("tech", "Technician")
+    new, obs, old = person("new"), person("obs", "Extra"), person("old", "Extra")
+    for u, role in ((gen, "operator"), (tech, "operator"), (new, "operator"), (obs, "observer")):
+        SignUp.objects.create(slot=s, user=u, role=role)
+    SignUp.objects.create(slot=s, user=old, role="mentor")
+    old.license.expiry_date = timezone.now().date() - dt.timedelta(days=1)
+    old.license.save()
+
+    def named(chosen):
+        s.control_operator = chosen
+        s.save()
+        return evaluate(s).control_operator
+
+    assert named(tech) == tech  # a licensed choice below the best class still stands
+    assert named(new) == gen  # no license
+    assert named(obs) == gen  # licensed, but not on the air
+    assert named(old) == gen  # license lapsed since
+    s.signups.filter(user=tech).delete()
+    assert named(tech) == gen  # left the slot
+
+
 def test_technician_below_preferred_is_viable_with_a_warning():
     # FR-61 as amended 2026-09-15: any class makes the slot viable; below the event's preferred
     # class is a warning. One person holding everything is still "at risk".

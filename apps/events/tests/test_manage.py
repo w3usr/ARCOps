@@ -122,6 +122,11 @@ def test_only_an_officer_appoints_or_removes_captains(officer):
     assert cm.post(f"/events/{ev.pk}/captains/add/", {"user": other.pk}).status_code == 404
     assert cm.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/").status_code == 404
     assert set(ev.captaincies.values_list("user", flat=True)) == {officer.pk, mem.pk}
+    # Nor can they cancel the event: only an officer can (SK, 2026-10-15).
+    assert "Cancel this event" not in body and "An officer can cancel this event." in body
+    r = cm.post(f"/events/{ev.pk}/cancel/", {"confirm": "yes", "reason": "Rained out"})
+    ev.refresh_from_db()
+    assert r.status_code == 404 and ev.state == "draft"
 
 
 def test_the_last_captain_cannot_be_removed(officer):

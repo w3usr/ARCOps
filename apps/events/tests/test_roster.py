@@ -7,6 +7,7 @@ import pytest
 from django.test import Client
 
 from apps.accounts.models import User
+from apps.credentials.models import LicenseRecord
 from apps.events.models import (
     Event,
     Location,
@@ -144,6 +145,16 @@ def test_captain_edits_seats_control_operator_and_assigns(world):
     c.post(f"/events/{ev.pk}/slot/{slot.pk}/control-operator/", {"user": world["off"].pk})
     slot.refresh_from_db()
     assert slot.control_operator is None  # the officer is not in the slot
+    c.post(f"/events/{ev.pk}/slot/{slot.pk}/control-operator/", {"user": mem.pk})
+    slot.refresh_from_db()
+    assert slot.control_operator is None  # in the slot, but unlicensed (FR-63; SK, 2026-10-15)
+    LicenseRecord.objects.create(
+        user=mem,
+        callsign="N0MEM",
+        operator_class="General",
+        status="active",
+        expiry_date=datetime(2030, 1, 1).date(),
+    )
     c.post(f"/events/{ev.pk}/slot/{slot.pk}/control-operator/", {"user": mem.pk})
     slot.refresh_from_db()
     assert slot.control_operator == mem

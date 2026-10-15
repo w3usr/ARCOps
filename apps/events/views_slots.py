@@ -25,7 +25,7 @@ from apps.ops.templatetags.labels import role_label
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
 from .services.roster import cell_for
-from .services.viability import checkin_window_open
+from .services.viability import checkin_window_open, may_control
 
 
 def _lead(request) -> str:
@@ -141,8 +141,16 @@ def slot_control_operator(request, pk, slot_id):
     """FR-63: the captain names the control operator from the people in the slot."""
     event, slot = _captain_slot(request, pk, slot_id)
     uid = request.POST.get("user") or None
-    if uid and not slot.signups.filter(user_id=uid).exists():
+    su = slot.signups.select_related("user").filter(user_id=uid).first() if uid else None
+    if uid and su is None:
         messages.error(request, "The control operator must be signed up for the slot.")
+        return redirect("slot_detail", pk=pk, slot_id=slot_id)
+    if su and not may_control(slot, su):  # an unlicensed member cannot be one (SK, 2026-10-15)
+        messages.error(
+            request,
+            "The control operator must hold a valid amateur license and be signed up in an "
+            "on-air role.",
+        )
         return redirect("slot_detail", pk=pk, slot_id=slot_id)
     slot.control_operator_id = uid
     slot.save(update_fields=["control_operator"])
