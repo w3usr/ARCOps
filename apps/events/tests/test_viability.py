@@ -152,6 +152,27 @@ def test_observer_does_not_count_for_operating_slot():
     assert evaluate(s).status == "not_viable"
 
 
+def test_an_observer_carries_station_and_it_access():
+    """FR-122: "Operator, mentor, or observer could carry station and IT access." (NAF,
+    2026-09-15). Found in acceptance test T26 (2026-10-16): an observer holding both still left
+    the slot needing them. The license stays with the people on the air."""
+    s = slot_for()  # preferred class General
+    SignUp.objects.create(slot=s, user=person("tech", "Technician"), role="mentor")
+    SignUp.objects.create(slot=s, user=person("obs", None, True, True), role="observer")
+    st = evaluate(s)
+    assert st.status != "not_viable" and not st.missing
+    assert st.below_preferred == "Technician"
+
+
+def test_an_observer_who_alone_carries_the_access_is_one_the_slot_depends_on():
+    s = slot_for()
+    for name in ("gen1", "gen2"):  # either can go; the observer cannot
+        SignUp.objects.create(slot=s, user=person(name, "General"), role="operator")
+    SignUp.objects.create(slot=s, user=person("obs", None, True, True), role="observer")
+    st = evaluate(s)
+    assert st.status == "at_risk" and st.reasons == ["depends on obs T. alone"]
+
+
 def test_minor_needs_responsible_adult():
     s = slot_for()
     SignUp.objects.create(slot=s, user=person("adult", "Extra", True, True), role="operator")

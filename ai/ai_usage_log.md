@@ -3126,3 +3126,18 @@ carries the actual running model ID.
   read line by line. All 407 application tests, the guards and the accessibility sweep pass,
   the PDF test only with the developer machine's library path set.
 - **Git Hash**: a546e40
+
+## [2026-10-16 12:53 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the defect acceptance test T26 found: an observer's station and IT
+  access did not count toward a slot, against FR-122.
+- **Sections/Files Affected**: apps/events/services/viability.py (_satisfied and evaluate: the
+  license is carried only by someone on the air, station and IT access by anyone in the slot;
+  the one-person check considers everyone in the slot), apps/events/tests/test_viability.py
+  (two tests).
+- **Nature of Contribution**: Code generation and edit by the assistant, with tests; both new
+  tests were confirmed to fail on the previous code.
+- **Human Review Status**: Partially reviewed. The user approved the diagnosis and the plan for
+  the fix; the diff has not been read line by line. All 409 application tests and the
+  accessibility sweep pass, the PDF test only with the developer machine's library path set.
+- **Git Hash**: [filled in after committing]

@@ -74,14 +74,20 @@ def _credential_word(key: str) -> str:
 
 
 def _satisfied(rule: list[dict], people, slot) -> tuple[bool, list[str]]:
-    """Does this set of people satisfy every requirement? Returns (ok, missing labels)."""
+    """Does this set of people satisfy every requirement? Returns (ok, missing labels).
+
+    `people` is (user, on_air) pairs. Only someone on the air carries the license, since an
+    observer's puts nobody on the air; station and IT access, and any credential a club adds,
+    are carried by whoever in the slot holds them (FR-122: "Operator, mentor, or observer could
+    carry station and IT access." NAF, 2026-09-15)."""
     on = slot.start.date()
     missing = []
     for req in rule:
         key = req["credential"]
+        carriers = [u for u, on_air in people if on_air or key != "amateur_license"]
         # The event's class is *preferred* (FR-61, 2026-09-15): any class satisfies the requirement;
         # evaluate() adds a warning when nobody in the slot reaches the preferred class.
-        if not any(holds(p, key, on, None) for p in people):
+        if not any(holds(p, key, on, None) for p in carriers):
             # The reader sees the club's own word for the credential, not its key. This one
             # list reaches the roster, the slot page, and three confirmation pages.
             missing.append(_credential_word(key))
@@ -111,7 +117,9 @@ def evaluate(slot, signups=None) -> SlotStatus:
     if not signups:
         return SlotStatus("empty", ["no one signed up"])
     on_air = [s for s in signups if s.role in on_air_roles()]
-    people = [s.user for s in (on_air if slot.kind == "operating" else signups)]
+    # Everyone in the slot counts, with whether they are on the air; outside an operating slot
+    # nobody is, so everyone's credentials count alike (FR-47).
+    people = [(s.user, slot.kind != "operating" or s in on_air) for s in signups]
     rule = rule_for(slot)
     ok, missing = _satisfied(rule, people, slot)
     reasons: list[str] = []
@@ -128,11 +136,11 @@ def evaluate(slot, signups=None) -> SlotStatus:
         return SlotStatus("not_viable", reasons, missing=missing)
 
     # At risk: removing any one person breaks it (FR-62).
-    low = below_preferred(slot.event, people, slot.start.date())
+    low = below_preferred(slot.event, [u for u, air in people if air], slot.start.date())
     for i in range(len(people)):
         others = people[:i] + people[i + 1 :]
         if not others or not _satisfied(rule, others, slot)[0]:
-            status = SlotStatus("at_risk", [f"depends on {people[i].short_name} alone"])
+            status = SlotStatus("at_risk", [f"depends on {people[i][0].short_name} alone"])
             status.below_preferred = low
             status.control_operator = control_operator(slot, on_air)
             return status
