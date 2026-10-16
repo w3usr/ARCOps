@@ -3093,3 +3093,22 @@ carries the actual running model ID.
   2026-10-12, came from the missing build step, not from the code.
 - **Human Review Status**: Pending review; not yet confirmed by a CI run.
 - **Git Hash**: 8d5cad4
+
+## [2026-10-16 11:12 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the two gaps acceptance test T16 found in a captain's slot controls:
+  Save seats accepted fewer seats than people in the role, and Sign someone up took a request
+  for a canceled slot and never checked the event's state.
+- **Sections/Files Affected**: apps/events/views_slots.py (_captain_slot skips canceled slots;
+  slot_capacities refuses seats below the people holding a role and saves nothing; slot_assign
+  refuses unless the event is published or locked), templates/events/_slot_body.html (Sign
+  someone up shown only on a published or locked event), apps/events/tests/test_roster.py (two
+  tests).
+- **Nature of Contribution**: Code generation and edit by the assistant, with tests; both new
+  tests were confirmed to fail on the previous code. Both behaviors are the user's decisions
+  (SK, 2026-10-16); docs/REQUIREMENTS.md is unchanged.
+- **Human Review Status**: Partially reviewed. The user took both decisions from the findings;
+  the diff has not been read line by line. Pending review by the advisor. All 406 application
+  tests and the accessibility sweep pass, the PDF test only with the developer machine's
+  library path set.
+- **Git Hash**: [filled in after committing]

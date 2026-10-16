@@ -112,7 +112,9 @@ def _captain_slot(request, pk, slot_id):
     event = get_object_or_404(Event, pk=pk)
     if not request.user.can_captain(event):
         raise Http404
-    return event, get_object_or_404(Slot, pk=slot_id, position__location__event=event)
+    return event, get_object_or_404(
+        Slot, pk=slot_id, position__location__event=event, cancelled=False
+    )
 
 
 @login_required
@@ -120,12 +122,24 @@ def _captain_slot(request, pk, slot_id):
 def slot_capacities(request, pk, slot_id):
     """FR-49: seats per role in this slot."""
     event, slot = _captain_slot(request, pk, slot_id)
+    seats = {}
     for r in setting("slot_roles", []) or []:
-        key = r["key"]
         try:
-            n = max(0, min(20, int(request.POST.get(f"cap_{key}", "0") or 0)))
+            seats[r["key"]] = max(0, min(20, int(request.POST.get(f"cap_{r['key']}", "0") or 0)))
         except ValueError:
             continue
+    # Fewer seats than people already in the role is refused, and nothing is saved: the people
+    # would be left holding seats that no longer exist (SK, 2026-10-16).
+    for key, n in seats.items():
+        held = slot.signups.filter(role=key).count()
+        if n < held:
+            messages.error(
+                request,
+                f"{held} {'person holds' if held == 1 else 'people hold'} {role_label(key)} here; "
+                f"remove them first, or keep at least {held} seat{'s' if held != 1 else ''}.",
+            )
+            return redirect("slot_detail", pk=pk, slot_id=slot_id)
+    for key, n in seats.items():
         if n:
             RoleCapacity.objects.update_or_create(slot=slot, role=key, defaults={"capacity": n})
         else:
@@ -166,6 +180,9 @@ def slot_control_operator(request, pk, slot_id):
 def slot_assign(request, pk, slot_id):
     """A captain signs a member up on their behalf; the eligibility rules still apply."""
     event, slot = _captain_slot(request, pk, slot_id)
+    if event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):  # SK, 2026-10-16
+        messages.error(request, "Captains sign people up once the event is published.")
+        return redirect("slot_detail", pk=pk, slot_id=slot_id)
     member = get_object_or_404(User, pk=request.POST.get("user"))
     role = request.POST.get("role", "")
     cap = RoleCapacity.objects.filter(slot=slot, role=role).first()

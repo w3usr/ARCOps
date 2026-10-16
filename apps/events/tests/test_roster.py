@@ -164,6 +164,46 @@ def test_captain_edits_seats_control_operator_and_assigns(world):
     )
 
 
+def test_seats_below_the_people_holding_a_role_are_refused(world):
+    """Found in acceptance test T16 (2026-10-16): Observer 0 with an observer in the slot was
+    saved as "Seats updated." and left them in a role with no seats. SK, 2026-10-16: refuse."""
+    c = _as(world["off"])
+    ev, mem = world["ev"], world["mem"]
+    slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
+    SignUp.objects.create(slot=slot, user=mem, role="observer")
+    r = c.post(
+        f"/events/{ev.pk}/slot/{slot.pk}/seats/",
+        {"cap_operator": "3", "cap_observer": "0"},
+        follow=True,
+    )
+    assert {c_.role: c_.capacity for c_ in slot.capacities.all()} == {"operator": 1, "observer": 2}
+    body = r.content.decode()
+    assert "Seats updated." not in body and "1 person holds Observer" in body
+
+
+def test_sign_someone_up_needs_a_live_slot_and_a_published_or_locked_event(world):
+    """Found in acceptance test T16 (2026-10-16): a crafted request put a member into a canceled
+    slot and mailed them. SK, 2026-10-16: no captain sign-ups while the event is a draft."""
+    c = _as(world["off"])
+    ev, mem = world["ev"], world["mem"]
+    slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
+    page, assign = f"/events/{ev.pk}/slot/{slot.pk}/", f"/events/{ev.pk}/slot/{slot.pk}/assign/"
+    for state in (Event.State.DRAFT, Event.State.CANCELLED, Event.State.COMPLETED):
+        Event.objects.filter(pk=ev.pk).update(state=state)
+        c.post(assign, {"user": mem.pk, "role": "observer"})
+        assert not SignUp.objects.filter(slot=slot).exists(), state
+    Event.objects.filter(pk=ev.pk).update(state=Event.State.DRAFT)
+    assert "Sign someone up" not in c.get(page).content.decode()
+    Event.objects.filter(pk=ev.pk).update(state=Event.State.LOCKED)  # when captains place people
+    assert "Sign someone up" in c.get(page).content.decode()
+    c.post(assign, {"user": mem.pk, "role": "observer"})
+    assert SignUp.objects.filter(slot=slot, user=mem).exists()
+    SignUp.objects.filter(slot=slot).delete()
+    Slot.objects.filter(pk=slot.pk).update(cancelled=True)
+    assert c.post(assign, {"user": mem.pk, "role": "observer"}).status_code == 404
+    assert not SignUp.objects.filter(slot=slot).exists()
+
+
 def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     c = _as(world["mem"])
     ev = world["ev"]
