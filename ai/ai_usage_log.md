@@ -3125,4 +3125,4 @@ carries the actual running model ID.
 - **Human Review Status**: Partially reviewed. The user asked for the fix; the diff has not been
   read line by line. All 407 application tests, the guards and the accessibility sweep pass,
   the PDF test only with the developer machine's library path set.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: a546e40
