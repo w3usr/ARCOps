@@ -78,6 +78,16 @@ for path in sorted(pathlib.Path("static/css").rglob("*.css")) + sorted(
         if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
+# A choice's label reaches the page through get_<field>_display, which no template spells out:
+# "Cancelled" showed as an event's tag that way until acceptance test T18 (2026-10-16).
+LABEL = re.compile(r'^\s*[A-Z_]+\s*=\s*"[^"]*",\s*"([^"]*)"')
+for path in sorted(pathlib.Path("apps").glob("*/models.py")):
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        label = LABEL.match(line)
+        hit = label and BRITISH.search(label.group(1))
+        if hit:
+            fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
+
 for line in dict.fromkeys(fail):
     print(line)
 if fail:

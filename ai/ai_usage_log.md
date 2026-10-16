@@ -3112,3 +3112,17 @@ carries the actual running model ID.
   tests and the accessibility sweep pass, the PDF test only with the developer machine's
   library path set.
 - **Git Hash**: ada2324
+
+## [2026-10-16 11:52 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the wording bug acceptance test T18 found: an upcoming canceled event
+  was tagged "Cancelled" on the Events list, against the house spelling.
+- **Sections/Files Affected**: apps/events/models.py (the state's label), apps/events/migrations/
+  0006_canceled_label.py (choices only), tools/check_interface.sh (the British-spelling guard now
+  reads choice labels in every models.py), apps/events/tests/test_manage.py (one test).
+- **Nature of Contribution**: Code generation and edit by the assistant, with a test confirmed to
+  fail on the previous code; the extended guard was confirmed to fail on the old label.
+- **Human Review Status**: Partially reviewed. The user asked for the fix; the diff has not been
+  read line by line. All 407 application tests, the guards and the accessibility sweep pass,
+  the PDF test only with the developer machine's library path set.
+- **Git Hash**: [filled in after committing]

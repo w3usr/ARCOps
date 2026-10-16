@@ -1,10 +1,13 @@
 """Creating and running an event from the manage page (§2.2, FR-42, FR-46, FR-47, FR-52)."""
 
+from datetime import timedelta
+
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.events.models import Captaincy, Event, Slot
+from apps.events.models import Captaincy, Event, OperatingPeriod, Slot
 from apps.ops.models import ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -188,3 +191,13 @@ def test_grid_is_fixed_once_someone_has_signed_up(officer):
         },
     )
     assert Slot.objects.filter(position__location__event=ev).count() == before
+
+
+def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
+    """Found in acceptance test T18 (2026-10-16): the Events list tagged an upcoming canceled
+    event "Cancelled", from the state's label, beside a "Canceled." banner."""
+    ev = Event.objects.create(title="Sprint", state=Event.State.CANCELLED, created_by=officer)
+    start = timezone.now() + timedelta(days=10)
+    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
+    body = _as(officer).get("/events/").content.decode()
+    assert '<span class="tag">Canceled</span>' in body and "Cancelled" not in body

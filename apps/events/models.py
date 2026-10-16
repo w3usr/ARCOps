@@ -12,7 +12,7 @@ class Event(models.Model):
         PUBLISHED = "published", "Published"
         LOCKED = "locked", "Locked"
         COMPLETED = "completed", "Completed"
-        CANCELLED = "cancelled", "Cancelled"
+        CANCELLED = "cancelled", "Canceled"  # the label is shown; the stored key keeps its spelling
 
     type = models.CharField(max_length=20, default="contest")  # key from config
     title = models.CharField(max_length=200)
