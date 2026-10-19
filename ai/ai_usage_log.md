@@ -3171,4 +3171,4 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review. The user chose the addendum form and the decisions it
   records are the user's (SK, 2026-10-15 and 2026-10-16); the addendum text itself has not yet
   been read by the user or adopted by the advisor.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: c12b621
