@@ -12,11 +12,16 @@
     if (!note) { note = document.createElement("p"); note.className = "helptext heading-note"; el.parentNode.appendChild(note); }
     note.textContent = skipped ? "A heading level is skipped (for example Heading 1 straight to Heading 3). Screen readers follow the levels; keep them in order." : "";
   }
+  function watch(ed) {
+    ed.on("init change keyup SetContent", () => check(ed));
+    if (ed.initialized) check(ed);
+  }
   function arm() {
     if (!window.tinymce) return;
-    window.tinymce.on("AddEditor", (e) => {
-      e.editor.on("init change keyup SetContent", () => check(e.editor));
-    });
+    // django-tinymce starts the editors before this script runs, so the ones already on the page
+    // are taken up here; AddEditor catches any added later (2026-10-19).
+    window.tinymce.get().forEach(watch);
+    window.tinymce.on("AddEditor", (e) => watch(e.editor));
   }
   if (window.tinymce) arm(); else document.addEventListener("DOMContentLoaded", arm);
 })();
