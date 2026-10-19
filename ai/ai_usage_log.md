@@ -3141,3 +3141,18 @@ carries the actual running model ID.
   the fix; the diff has not been read line by line. All 409 application tests and the
   accessibility sweep pass, the PDF test only with the developer machine's library path set.
 - **Git Hash**: 533e6ec
+
+## [2026-10-19 16:30 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the defect acceptance test T45 found: the note beneath the rich-text
+  editor that a heading level is skipped (FR-115) never appeared, on any page.
+- **Sections/Files Affected**: static/js/richtext-check.js (the check now also attaches to the
+  editors already on the page, which django-tinymce starts before this script runs, as well as
+  to any added later), tools/a11y/test_heading_note.py (a browser test: the note appears for
+  Heading 1 straight to Heading 3 and clears when the levels are in order).
+- **Nature of Contribution**: Code generation and edit by the assistant, with a browser test
+  confirmed to fail on the previous code.
+- **Human Review Status**: Partially reviewed. The user approved the diagnosis and the fix; the
+  diff has not been read line by line. All 409 application tests, the guards and the
+  accessibility sweep pass, the PDF test only with the developer machine's library path set.
+- **Git Hash**: [filled in after committing]
