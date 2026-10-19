@@ -610,3 +610,90 @@ Memory figures in TR-30 are estimates.
 functional requirements and the server as found on 2026-09-13. Every decision is a proposal
 until adopted; the decisions are the club's.<br>Co-Authored-By: Claude Fable 5.1
 &lt;noreply@anthropic.com&gt;</sub>
+
+---
+
+## Addendum: decisions since adoption
+
+**Read this first.** Everything above this addendum is the technical requirements text as
+written; none of it is edited after the fact. This addendum is the living history of the
+decisions taken since: where the system moved past what the text says, the decision is recorded
+here, dated, beside the TR it touches. Each entry quotes the original, states the decision, and
+says who took it, when, and why. Where an entry and the text above disagree, the entry is the
+more recent word.
+
+**How it grows.** Entries are appended and never rewritten, deleted, or renumbered. A decision
+that changes an earlier one is a new entry naming the one it supersedes. When the advisor (W2NAF)
+confirms, revises, or rejects an entry, that is a dated line added under it.
+
+Decision records are in the private `w3usr.org-PRIVATE` repository's `notes/`, named under each
+entry. Host names and addresses stay there: this repository is public.
+
+### A1. TR-34 and the one-machine constraint: a development server
+
+**Original (TR-34).** "`prod` on the Nanode and `dev` on a student's laptop, the only difference
+being the env file and the email backend (console in dev). No staging server; the club has one
+box." The constraints table in section 2 reads "one machine".
+
+**Decision.** There are three environments:
+- **Production**, on the Nanode, as before.
+- **A development server**, a second Linode Nanode configured from the private repository by
+  the same scripts as production. Branches and pull requests are tried there before they are
+  merged and published; its database can be reset. It starts empty, holds no member data, and
+  its accounts are test accounts. Its mail is real, under its own mail identity, so what it sends
+  can be told apart from production's.
+- **A developer's laptop**, as TR-34 and section 9 describe: console email, `seed_demo`.
+
+`seed_demo` is not loaded on the development server while that server is open to the public,
+because the demo password is in the public source. Each environment is still one machine, so
+the section 2 constraint holds for each.
+
+**Decided by** the advisor, N. A. Frissell (NAF), 2026-10-16, who provisioned the server and asked
+for a place where all development and testing can happen freely, with merged pull requests then
+deployed to production. From his handoff to SK: "It has a fresh database, no member data, and no
+accounts yet." "Mail is real." "Don't load the demo data (seed_demo) yet. Its password is in the
+public source code, and the dev site is open to the public for now." *Record:*
+`notes/2026-10-16_development-server.md`.
+
+### A2. TR-11 and TR-33: the status command names its server
+
+**Original.** TR-11: "visible in `systemctl list-timers` and in `deploy/run-remote.sh status`".
+TR-33: `/healthz` "is what `deploy/run-remote.sh status` reads".
+
+**Decision.** Every deploy command names its server first: `deploy/run-remote.sh prod status`, or
+`dev status`. There is no default, so a command meant for one server cannot land on the other by
+omission. What TR-11 and TR-33 describe is otherwise unchanged.
+
+**Decided by** NAF, 2026-10-16: "Every command now names the server first (prod or dev); there is
+no default." *Record:* `notes/2026-10-16_development-server.md`.
+
+### A3. TR-31: deployment differs by server
+
+**Original (TR-31).** "the private repository's `deploy.sh` grows five steps after the
+fast-forward".
+
+**Decision.** Production is unchanged: it deploys `main`, by fast-forward only. The development
+server deploys any branch, or a pull request as `pr/N`, checked out as it stands, and refuses if
+its checkout carries hand edits; it alone can reset its database (`resetdb`). On either server,
+a web root that holds a database but no checkout is refused rather than emptied. The order of
+work is: a branch and a pull request, continuous integration on it, a trial on the development
+server, review and merge, a last look at `main` there, then production.
+
+**Decided by** NAF, 2026-10-16, with the development server (A1). The refusal to empty a web root
+came from a fault on the server's first deploy. *Record:* `notes/2026-10-16_development-server.md`.
+
+### A4. Section 9 ("no Docker"): Docker Compose deferred
+
+**Original (section 9).** "Six commands, standard Python, no Node, no Docker."
+
+**Decision.** Unchanged for now. SK proposed Docker Compose, so that the whole setup is captured
+in one place and is easy to stand up again. The development server was built with the existing
+scripts instead, and Compose is to be taken up later as its own piece of work.
+
+**Decided by** NAF, 2026-10-16, on SK's proposal: "Docker Compose: not this round." *Record:*
+`notes/2026-10-16_development-server.md`; the private repository's `deploy/README.md` keeps the
+recommendation for when it comes.
+
+<sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19,
+from the dated decision records named in each entry; the technical requirements above are
+unchanged.<br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
