@@ -3157,7 +3157,7 @@ carries the actual running model ID.
   accessibility sweep pass, the PDF test only with the developer machine's library path set.
 - **Git Hash**: ddb5868
 
-## [2026-10-19 17:05 EDT]
+## [2026-10-19 16:56 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Reconcile the requirements with what acceptance testing decided, without
   editing the requirements text: an addendum at the end of the document records each amendment
