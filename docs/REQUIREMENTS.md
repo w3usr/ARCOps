@@ -2478,3 +2478,84 @@ inviting, section 2.5's officer column changes and nothing else does.
 requirements of 2026-09-12 and the sources named in section 9. Every requirement is a proposal
 until adopted; the decisions are the club's.<br>Co-Authored-By: Claude Fable 5.1
 &lt;noreply@anthropic.com&gt;</sub>
+
+---
+
+## Addendum: amendments pending adoption
+
+**Read this first.** Everything above this addendum is the requirements text as drafted and
+adopted; none of it has been edited. Where acceptance testing found the text silent or ambiguous
+on a point the code had to decide, the decision is recorded here instead, beside the requirement
+it touches. Each entry quotes the original, states the amendment, and says who decided and when.
+
+**Status.** Every entry is *pending adoption* by the advisor (W2NAF). The application follows the
+amendment from the date given. The advisor may adopt an entry (it is then folded into the
+requirement above, and the entry is marked *adopted* with the date), amend it, or reject it (the
+entry is marked *rejected* with the date, and the code is changed back). Entries are never
+deleted or renumbered, as for requirements (section 0).
+
+Decision records, with the reasoning and the files changed, are in the private
+`w3usr.org-PRIVATE` repository's `notes/`, named under each entry.
+
+### A1. §2.2: who may cancel an event *(pending adoption)*
+
+**Original (§2.2).** "Within that event, and only there, a captain has officer-equivalent powers:
+edit the event and its slots, adjust capacities and eligibility, move or remove sign-ups, send
+messages to the event's participants, and see participants' contact details." FR-44 lists
+*canceled* among an event's states and does not say who may cancel.
+
+**Amendment.** Cancelling an event is not among a captain's powers. Only an officer or sysadmin
+(anyone holding the `manage_events` capability) cancels an event; a member who is a captain sees
+"An officer can cancel this event." in its place.
+
+**Decided by** Serhii Kuzmin (SK), 2026-10-15: "We will assume a member captain does not have the
+ability to cancel the event. Only an officer can, since the officer has the privileges." Read as
+consistent with §2.2's list, which does not name cancelling; "officer-equivalent powers" alone
+would include it. Cancelling cannot be undone, and nobody above the captain is told.
+*Record:* `notes/2026-10-15_decision-only-officers-cancel-events.md`, which also lists how to
+reverse it.
+
+### A2. FR-63: whom a captain may name as control operator *(pending adoption)*
+
+**Original (FR-63).** "The default is the highest-class licensee signed up in an on-air role; a
+captain can change it."
+
+**Amendment.** A captain's choice is held to the default's own test: the person named must be
+signed up for the slot, in an on-air role, with a valid amateur license on the slot's date. The
+list offers only such people, and the server refuses anyone else. If the person named stops
+qualifying, the control operator falls back to the default rule.
+
+**Decided by** SK, 2026-10-15, on acceptance test T15: Part 97 requires a licensed control
+operator, and the code had let a captain name an unlicensed member. *Record:*
+`notes/2026-10-15_reconciliation-the-six-fixes.md` and `notes/2026-10-15_draft-message-to-naf.md`.
+
+### A3. FR-49: fewer seats than the people holding a role *(pending adoption)*
+
+**Original (FR-49).** "The roles are *operator*, *mentor*, and *observer*, each with a maximum
+count (0 to disable the role for that slot)." Silent on the people already holding the role.
+
+**Amendment.** A slot's count for a role cannot be set below the number of people holding that
+role there. Such a change is refused and nothing is saved, with a message naming how many hold the
+role ("1 person holds Observer here; remove them first, or keep at least 1 seat."). To shrink a
+role, its people are removed first (FR-58).
+
+**Decided by** SK, 2026-10-16, on acceptance test T16, which found that a lower count was accepted
+and left a member holding a seat that no longer existed. *Record:*
+`notes/2026-10-16_t16-two-gaps-and-two-decisions.md`.
+
+### A4. FR-58: captains sign people up only on a published or locked event *(pending adoption)*
+
+**Original (FR-58).** "Captains, officers, and sysadmins can add, move, or remove any sign-up,
+with a notice to the person affected."
+
+**Amendment.** Adding a sign-up for somebody else (Sign someone up) works only while the event is
+published or locked. On a draft the control is not shown, and a request made anyway is refused.
+Moving and removing are unchanged.
+
+**Decided by** SK, 2026-10-16, on acceptance test T16, which found that a captain could sign a
+member up on a draft (and on a canceled slot), and the member was told of a slot in an event they
+could not yet see. *Record:* `notes/2026-10-16_t16-two-gaps-and-two-decisions.md`.
+
+<sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19,
+from the dated decision records named in each entry; the requirements above are unchanged.
+<br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

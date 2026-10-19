@@ -3156,3 +3156,19 @@ carries the actual running model ID.
   diff has not been read line by line. All 409 application tests, the guards and the
   accessibility sweep pass, the PDF test only with the developer machine's library path set.
 - **Git Hash**: ddb5868
+
+## [2026-10-19 17:05 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile the requirements with what acceptance testing decided, without
+  editing the requirements text: an addendum at the end of the document records each amendment
+  pending the advisor's adoption.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (a new closing section, "Addendum: amendments
+  pending adoption", entries A1 to A4: §2.2 who cancels an event, FR-63 whom a captain may name as
+  control operator, FR-49 seats below the people holding a role, FR-58 captain sign-ups only on a
+  published or locked event). The 2,480 lines above it are byte-identical to before.
+- **Nature of Contribution**: Draft by the assistant from the dated decision records; each
+  statement checked against the code that implements it.
+- **Human Review Status**: Pending review. The user chose the addendum form and the decisions it
+  records are the user's (SK, 2026-10-15 and 2026-10-16); the addendum text itself has not yet
+  been read by the user or adopted by the advisor.
+- **Git Hash**: [filled in after committing]
