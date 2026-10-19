@@ -3172,3 +3172,21 @@ carries the actual running model ID.
   records are the user's (SK, 2026-10-15 and 2026-10-16); the addendum text itself has not yet
   been read by the user or adopted by the advisor.
 - **Git Hash**: c12b621
+
+## [2026-10-19 17:00 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Make both requirement documents' addenda a living history of decisions,
+  as the user framed it, and add one to the technical requirements for the development server.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (the addendum's introduction now says entries
+  are appended, never rewritten, superseded by later entries, with the advisor's word added as a
+  dated line; "Addendum: decisions since adoption"; entries A1 to A4 lose their fixed status and
+  say "Decision"), docs/TECHNICAL_REQUIREMENTS.md (a new closing addendum: A1 TR-34 and the
+  one-machine constraint, the development server; A2 TR-11 and TR-33, the status command names
+  its server; A3 TR-31, deployment by server; A4 section 9, Docker Compose deferred). The text
+  above each addendum is byte-identical to before.
+- **Nature of Contribution**: Draft by the assistant from the advisor's 2026-10-16 decisions and
+  handoff, quoted verbatim, and from the dated decision records.
+- **Human Review Status**: Pending review. The user chose the addendum form and its framing; the
+  text has not yet been read by the user, and the entries record the advisor's own decisions
+  for him to confirm.
+- **Git Hash**: [filled in after committing]
