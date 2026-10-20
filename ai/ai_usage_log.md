@@ -3206,3 +3206,15 @@ carries the actual running model ID.
   327 s, and the resulting license table identical (1,604,966 rows, same digest).
 - **Human Review Status**: Reviewed and verified.
 - **Git Hash**: 0897425
+
+## [2026-10-20 16:58 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Technical addendum A5 (TR-13): the FCC import runs at 15:15 UTC after the
+  FCC builds the day's file, and what a weekly import costs, with the measurements.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A5 appended; the addendum's closing
+  attribution names both dates; the text above the addendum is byte-identical to main).
+- **Nature of Contribution**: Draft, from the day's measurements (the real FCC weekly file
+  imported locally with main and with the fix; the first run on the development server) and SK's
+  decision on the timer.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]

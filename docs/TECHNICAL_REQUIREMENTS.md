@@ -694,6 +694,34 @@ scripts instead, and Compose is to be taken up later as its own piece of work.
 `notes/2026-10-16_development-server.md`; the private repository's `deploy/README.md` keeps the
 recommendation for when it comes.
 
-<sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19,
-from the dated decision records named in each entry; the technical requirements above are
-unchanged.<br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
+### A5. TR-13: when the FCC import runs, and what a weekly import costs
+
+**Original (TR-13).** "`uls:sync` (TR-11) applies the daily file each night and the full file
+each week." and "CPU: a few minutes a week on one core."
+
+**Decision.** The import runs once a day at 15:15 UTC, after the FCC has built the day's file,
+rather than at night. The FCC builds each daily file at 08:00 to 09:00 Eastern, 12:00 to 14:00
+UTC across the seasons; the import ran at 07:15 UTC and so took the week-old file of that name.
+The full file is still applied on Mondays. Sunday's daily file was found empty, and the weekly
+file of 2026-10-18 holds Saturday's records byte for byte, so the Monday run misses nothing.
+
+A weekly import costs far more than a few minutes. On the club's one-core server it ran 25 to 39
+minutes when started by hand in September, and as a scheduled job it was stopped at its
+30-minute limit every Monday from 2026-09-21 to 2026-10-19, so no weekly refresh landed in that
+time. The class and name records are now staged by upsert instead of `bulk_update`, which was
+nine tenths of staging: on the real weekly file of 2026-10-18 staging went from 550 to 127
+seconds and the whole import from 724 to 327 seconds, on a laptop, with an identical license
+table. On the development server, whose table was empty, the first run with the change finished
+in 16 minutes as a scheduled job (14.7 minutes of CPU, 571 MB of memory at its peak on a 1 GB
+machine) and wrote all 1,604,966 licenses. A stopped import was also tried on purpose: the table is written in batches of 2,000, each
+its own transaction, so a stop leaves whole batches written and the rest as they were, never a
+row mixing two files, and the next complete run puts everything right.
+
+**Decided by** SK, 2026-10-20, on the investigation of the failing import (the 15:15 UTC timer
+in the private repository, and pull request #4 here). *Record:*
+`notes/2026-10-20_wednesday-scenarios-reconciliation.md`.
+
+<sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
+(A1 to A4) and 2026-10-20 (A5), from the dated decision records named in each entry; the
+technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
+&lt;noreply@anthropic.com&gt;</sub>
