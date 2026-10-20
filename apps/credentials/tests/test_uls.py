@@ -416,6 +416,31 @@ def test_the_import_writes_while_walking_a_table_larger_than_one_slice():
     assert UlsStaging.objects.count() == 0
 
 
+def test_class_and_name_records_without_a_header_record_are_not_imported(tmp_path):
+    """AM and EN are staged by upsert (2026-10-20), which inserts a record that has no HD row
+    where bulk_update skipped it; those are removed before the winners are chosen."""
+    hd = [("100", "N0AAA", "A", "01/15/2020", "01/15/2030")]
+    am = [("100", "N0AAA", "E"), ("900", "N0ZZZ", "G")]
+    en = [("100", "N0AAA", "Ada", "Lovelace", "0011"), ("901", "N0YYY", "No", "Header", "0099")]
+    result = run(file=str(_zip(tmp_path, hd, am, en)))
+    assert result["written"] == 1 and list(
+        UlsLicense.objects.values_list("callsign", flat=True)
+    ) == ["N0AAA"]
+    a = UlsLicense.objects.get()
+    assert a.operator_class == "Extra" and a.last_name == "Lovelace"
+    assert UlsStaging.objects.count() == 0
+
+
+def test_refreshing_the_members_of_a_full_file_stays_under_the_parameter_limit():
+    """A full file passed with --file touches more callsigns than SQLite's 32,766 parameters;
+    the refresh matched them in one IN (...) and failed at the end of the import (2026-10-20)."""
+    from apps.credentials.uls import refresh_members
+
+    User.objects.create_user("m@example.org", "pw-Testing-123", callsign="N0AAA")
+    touched = {f"W{n:06d}" for n in range(40000)} | {"N0AAA"}
+    assert refresh_members(touched) == 1
+
+
 @pytest.mark.django_db
 def test_a_callsign_the_fcc_does_not_hold_keeps_nothing_of_the_one_before_it():
     """T10 step 2: the record describes the callsign on the account, or it describes nothing.

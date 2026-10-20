@@ -3191,16 +3191,30 @@ carries the actual running model ID.
   for him to confirm.
 - **Git Hash**: 8151b2e
 
-## [2026-10-20 15:23 EDT]
+## [2026-10-20 16:37 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Fix two defects found in acceptance testing on 2026-10-20: a captain's
-  contest details reached reminder mail unescaped (T42), and the reminder's Faculty advisor line
-  named every sysadmin (T31).
-- **Sections/Files Affected**: apps/events/services/notify.py (`_contest_kbyg` builds each line
-  with `format_html`; `advisors()` leaves out those who hold approval only by being a
-  superuser), apps/ops/groups.py (`people_who_may` gains a `superusers` switch, default
-  unchanged), apps/events/tests/test_notify.py (one test covering both; it fails without the
-  fix).
-- **Nature of Contribution**: Code generation, test.
+- **Session Purpose**: Make the FCC ULS weekly import fit its 30-minute job limit: stage the
+  class and name records by upsert instead of bulk_update, and refresh members without one
+  IN (...) per touched callsign.
+- **Sections/Files Affected**: apps/credentials/uls.py (`_flush_update` upserts; `stage`
+  removes AM and EN records with no HD record; `refresh_members` matches the touched callsigns
+  in Python), apps/credentials/tests/test_uls.py (two tests: records without a header record;
+  a full file's worth of touched callsigns, which fails without the fix).
+- **Nature of Contribution**: Code generation, analysis. The phases were timed before the
+  change (bulk_update was nine tenths of staging), and the real FCC weekly file of 2026-10-18
+  was imported with main and with the fix: staging 550 s to 127 s, the whole import 724 s to
+  327 s, and the resulting license table identical (1,604,966 rows, same digest).
+- **Human Review Status**: Reviewed and verified.
+- **Git Hash**: 0897425
+
+## [2026-10-20 16:58 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Technical addendum A5 (TR-13): the FCC import runs at 15:15 UTC after the
+  FCC builds the day's file, and what a weekly import costs, with the measurements.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A5 appended; the addendum's closing
+  attribution names both dates; the text above the addendum is byte-identical to main).
+- **Nature of Contribution**: Draft, from the day's measurements (the real FCC weekly file
+  imported locally with main and with the fix; the first run on the development server) and SK's
+  decision on the timer.
 - **Human Review Status**: Pending review.
-- **Git Hash**: 4a08f99
+- **Git Hash**: a305dd2
