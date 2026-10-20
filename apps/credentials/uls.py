@@ -124,8 +124,14 @@ def _flush_create(rows: list[UlsStaging]) -> None:
 
 
 def _flush_update(rows: list[UlsStaging], fields: list[str]) -> None:
+    """Fill `fields` on the rows staged from HD.dat, by upsert (INSERT ... ON CONFLICT DO
+    UPDATE). bulk_update writes a CASE per row and was nine tenths of a weekly import, which ran
+    past the job's 30 minutes (2026-10-20). A record with no HD row is inserted without a
+    callsign; stage() removes those, as bulk_update would never have written them."""
     if rows:
-        UlsStaging.objects.bulk_update(rows, fields)
+        UlsStaging.objects.bulk_create(
+            rows, update_conflicts=True, update_fields=fields, unique_fields=["usi"]
+        )
         rows.clear()
 
 
@@ -191,6 +197,7 @@ def stage(zip_path: Path) -> dict:
             if len(pending) >= BATCH:
                 _flush_update(pending, en_fields)
         _flush_update(pending, en_fields)
+    UlsStaging.objects.filter(callsign="").delete()  # AM or EN records with no HD record
     return counts
 
 
@@ -346,7 +353,10 @@ def refresh_members(callsigns: set[str] | None = None) -> int:
 
     qs = User.objects.exclude(callsign="")
     if callsigns is not None:
-        qs = qs.filter(callsign__in={c.upper() for c in callsigns})
+        # Matched here rather than as callsign IN (...): a full file touches more callsigns than
+        # SQLite's 32,766 parameters, and members are few (2026-10-20).
+        wanted = {c.upper() for c in callsigns}
+        qs = [user for user in qs if user.callsign in wanted]
     n = 0
     for user in qs:
         refresh_license_from_local_table(user)
