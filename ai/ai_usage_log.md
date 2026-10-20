@@ -3190,3 +3190,17 @@ carries the actual running model ID.
   text has not yet been read by the user, and the entries record the advisor's own decisions
   for him to confirm.
 - **Git Hash**: 8151b2e
+
+## [2026-10-20 15:23 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix two defects found in acceptance testing on 2026-10-20: a captain's
+  contest details reached reminder mail unescaped (T42), and the reminder's Faculty advisor line
+  named every sysadmin (T31).
+- **Sections/Files Affected**: apps/events/services/notify.py (`_contest_kbyg` builds each line
+  with `format_html`; `advisors()` leaves out those who hold approval only by being a
+  superuser), apps/ops/groups.py (`people_who_may` gains a `superusers` switch, default
+  unchanged), apps/events/tests/test_notify.py (one test covering both; it fails without the
+  fix).
+- **Nature of Contribution**: Code generation, test.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 4a08f99
