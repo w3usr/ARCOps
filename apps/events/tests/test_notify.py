@@ -105,6 +105,26 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
     assert r.status_code == 410 and b"no longer valid" in r.content
 
 
+def test_reminder_escapes_contest_fields_and_names_only_advisors():
+    """A captain's contest details reach every participant's mail, so they are escaped; and a
+    sysadmin is not named as a faculty advisor for being a superuser (T31, T42, 2026-10-20)."""
+    now = timezone.now()
+    _user("adv@example.org", "advisor", first_name="Dee", last_name="Visor")
+    User.objects.create_superuser(
+        "root@example.org", "pw-Testing-123", first_name="Ada", last_name="Root"
+    )
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    e, slots = _event(now + timedelta(hours=23))
+    e.contest_fields = {"exchange": '<a href="https://evil.example">RST</a>', "mode": "<b>CW</b>"}
+    e.save()
+    SignUp.objects.create(slot=slots[0], user=mem, role="operator")
+    notify.send_reminders(now)
+    body = _msgs(mem, "reminder").get().body_html
+    assert '<a href="https://evil.example">' not in body and "<b>CW</b>" not in body
+    assert "&lt;b&gt;CW&lt;/b&gt;" in body
+    assert "Dee Visor" in body and "Ada Root" not in body
+
+
 def test_cannot_make_it_token_cancels_and_tells_the_captains_late():
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")

@@ -179,29 +179,26 @@ def set_groups(actor, user, keys: list[str]) -> None:
         record(actor, "groups.changed", user, before={"groups": before}, after={"groups": after})
 
 
-def people_who_may(codename: str):
+def people_who_may(codename: str, *, superusers: bool = True):
     """Everyone who holds this capability: through a group, directly, or by being a superuser.
 
     Used where the application has to write to whoever is responsible for something, which is a
-    question about capability rather than about rank.
+    question about capability rather than about rank. superusers=False leaves out those who hold
+    it only by being a superuser, where the answer names people to members (the reminder's
+    faculty advisors, 2026-10-20).
     """
     from apps.accounts.models import User
 
-    return (
-        User.objects.filter(is_active=True)
-        .filter(
-            Q(is_superuser=True)
-            | Q(
-                groups__permissions__codename=codename,
-                groups__permissions__content_type__app_label=APP_LABEL,
-            )
-            | Q(
-                user_permissions__codename=codename,
-                user_permissions__content_type__app_label=APP_LABEL,
-            )
-        )
-        .distinct()
+    holds = Q(
+        groups__permissions__codename=codename,
+        groups__permissions__content_type__app_label=APP_LABEL,
+    ) | Q(
+        user_permissions__codename=codename,
+        user_permissions__content_type__app_label=APP_LABEL,
     )
+    if superusers:
+        holds |= Q(is_superuser=True)
+    return User.objects.filter(is_active=True).filter(holds).distinct()
 
 
 def refuse_if_last(codename: str, *, leaving) -> None:

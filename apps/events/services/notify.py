@@ -14,6 +14,7 @@ from django.conf import settings as dj
 from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 
 from apps.accounts.models import User
 from apps.comms.services import send
@@ -39,8 +40,10 @@ def captains_of(event: Event) -> list[User]:
 def advisors() -> list[User]:
     """The faculty advisors, for the "who to call" line in a slot reminder. This read the club
     position until 2026-09-17, when approving access became an access level; the position no
-    longer says anything about what a person may do, so it cannot say who is on call either."""
-    return list(people_who_may("approve_agreements"))
+    longer says anything about what a person may do, so it cannot say who is on call either.
+    A sysadmin holds every capability by being a superuser, which does not make them an advisor,
+    so they are named only when an access level gives them approval (2026-10-20)."""
+    return list(people_who_may("approve_agreements", superusers=False))
 
 
 def officers() -> list[User]:
@@ -134,15 +137,25 @@ def _contest_kbyg(event: Event) -> str:
     """FR-37: the exchange and logging lines from the contest fields, for the reminder."""
     f = event.contest_fields or {}
     bits = []
+    # format_html escapes each value: they are typed by a captain and reach every participant's
+    # mail through the template's |safe (2026-10-20).
     if f.get("exchange"):
-        bits.append(f"<p><strong>Exchange:</strong> {f['exchange']}</p>")
+        bits.append(format_html("<p><strong>Exchange:</strong> {}</p>", f["exchange"]))
     if f.get("mode") or f.get("bands"):
         bits.append(
-            f"<p><strong>Mode and bands:</strong> {f.get('mode', '')} {f.get('bands', '')}</p>"
+            format_html(
+                "<p><strong>Mode and bands:</strong> {} {}</p>",
+                f.get("mode", ""),
+                f.get("bands", ""),
+            )
         )
     if f.get("cabrillo_name") or f.get("log_deadline"):
         bits.append(
-            f"<p><strong>Logging:</strong> Cabrillo {f.get('cabrillo_name', '')}; deadline {f.get('log_deadline', '')}</p>"
+            format_html(
+                "<p><strong>Logging:</strong> Cabrillo {}; deadline {}</p>",
+                f.get("cabrillo_name", ""),
+                f.get("log_deadline", ""),
+            )
         )
     return "".join(bits)
 
