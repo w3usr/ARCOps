@@ -3191,7 +3191,7 @@ carries the actual running model ID.
   for him to confirm.
 - **Git Hash**: 8151b2e
 
-## [2026-10-20 16:52 EDT]
+## [2026-10-20 16:37 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Make the FCC ULS weekly import fit its 30-minute job limit: stage the
   class and name records by upsert instead of bulk_update, and refresh members without one
@@ -3205,4 +3205,4 @@ carries the actual running model ID.
   was imported with main and with the fix: staging 550 s to 127 s, the whole import 724 s to
   327 s, and the resulting license table identical (1,604,966 rows, same digest).
 - **Human Review Status**: Reviewed and verified.
-- **Git Hash**: [pending]
+- **Git Hash**: 0897425
