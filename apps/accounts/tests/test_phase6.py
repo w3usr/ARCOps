@@ -88,6 +88,20 @@ def test_sysadmin_views_as_member_read_only_and_audited():
     assert actions == ["impersonation.started", "impersonation.stopped"]
 
 
+def test_viewing_as_a_member_reads_none_of_their_messages():
+    """T43, 2026-10-21: opening Messages while viewing as a member marked theirs read, though
+    the banner says nothing can be changed. Only the member's own visit does."""
+    s = _user("sys@example.org", "sysadmin")
+    m = _user("mem@example.org")
+    msg = Outbox.objects.create(user=m, category="account", subject="Hello", body_html="<p>hi</p>")
+    c = _as(s)
+    c.post(f"/members/{m.pk}/view-as/")
+    assert c.get("/me/messages/").status_code == 200
+    assert Outbox.objects.get(pk=msg.pk).read_at is None
+    _as(m).get("/me/messages/")
+    assert Outbox.objects.get(pk=msg.pk).read_at is not None
+
+
 def test_view_as_refused_for_sysadmins_and_for_members():
     s = _user("sys@example.org", "sysadmin")
     s2 = _user("sys2@example.org", "sysadmin")

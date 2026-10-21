@@ -182,8 +182,13 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
     """FR-4/FR-14/FR-102: look the member's callsign up in the local ULS table (TR-13)."""
     lic, _ = LicenseRecord.objects.get_or_create(user=user, defaults={"callsign": user.callsign})
     lic.callsign = user.callsign
+    # FR-16: while the member has not said whether the FCC's name is theirs, the callsign is not
+    # counted as their license, so nothing of the FCC record is taken: someone who typed another
+    # licensee's callsign held their class until they answered (T38, 2026-10-21).
     row = (
-        UlsLicense.objects.filter(callsign=user.callsign.upper()).first() if user.callsign else None
+        UlsLicense.objects.filter(callsign=user.callsign.upper()).first()
+        if user.callsign and not user.pending_uls_name
+        else None
     )
     if row:
         lic.licensee_name = row.licensee_name

@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
 from apps.ops.audit import record
@@ -43,6 +44,16 @@ PENDING = "acting_view_pending"  # the level asked for, while Confirm Access hap
 # How long that request stands. Confirming access for something else, and then wandering back to
 # this page, should not raise a level nobody asked for a second time.
 PENDING_MAX = 300
+
+
+def _safe_next(request, value: str) -> str:
+    """`next` only ever leads back into this site. It arrives in the page's address, so without
+    this a link could send a sysadmin elsewhere straight after Confirm Access (T51, 2026-10-21)."""
+    if value and url_has_allowed_host_and_scheme(
+        value, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return value
+    return ""
 
 
 @login_required
@@ -76,14 +87,14 @@ def acting_view(request):
 
     if request.method == "POST":
         wanted = request.POST.get("view", "")
+        nxt = _safe_next(request, request.POST.get("next", ""))
         if wanted not in {v["key"] for v in views}:
             messages.error(request, "That is not a level your account can act at.")
             return redirect("acting_view")
         if wanted == now:
-            return redirect(request.POST.get("next") or "dashboard")
+            return redirect(nxt or "dashboard")
 
         if raises_privilege(user, now, wanted):
-            nxt = request.POST.get("next") or ""
             if is_confirmed(request):
                 spend(request)
                 return _raise_to(request, views, now, wanted, nxt)
@@ -98,7 +109,7 @@ def acting_view(request):
                 f"You are acting as {_label(views, wanted)}. What this view cannot do is "
                 "refused, not merely hidden.",
             )
-        return redirect(request.POST.get("next") or "dashboard")
+        return redirect(nxt or "dashboard")
 
     held = full_capabilities(user)
     rows = []
@@ -114,7 +125,7 @@ def acting_view(request):
     return render(
         request,
         "accounts/acting_view.html",
-        {"views": rows, "current": now, "next": request.GET.get("next", "")},
+        {"views": rows, "current": now, "next": _safe_next(request, request.GET.get("next", ""))},
     )
 
 

@@ -223,6 +223,20 @@ def test_roster_shows_adults_to_slot_mates_and_guardians_to_captains():
     assert b"Uncle Ray" in page and b"ray@example.org" in page and b"parent@example.org" in page
 
 
+def test_the_roster_says_with_an_adult_only_once_one_is_named():
+    """T47, 2026-10-21: members outside the slot read "under 18, with an adult" while nobody had
+    been named, beside the slot's own "Needs a responsible adult"."""
+    officer, guardian, minor = _family()
+    other = _user("other@example.org")
+    slot = _slot(officer)
+    su = SignUp.objects.create(slot=slot, user=minor, role="observer")
+    url = f"/events/{slot.event.pk}/slot/{slot.pk}/"
+    page = _as(other).get(url).content
+    assert b"under 18" in page and b"with an adult" not in page
+    ResponsibleAdult.objects.create(signup=su, name="Uncle Ray", phone="555-0199")
+    assert b"under 18, with an adult" in _as(other).get(url).content
+
+
 def test_captain_checks_a_minor_in_recording_the_adult_present():
     officer, guardian, minor = _family()
     slot = _slot(officer, days=0, minutes=120)

@@ -17,6 +17,7 @@ from apps.comms.models import Outbox
 from apps.credentials.models import LicenseRecord, UlsLicense, UlsStaging
 from apps.credentials.services import (
     expiry_notices,
+    has_valid_license,
     names_match,
     refresh_license_from_local_table,
 )
@@ -119,6 +120,32 @@ def test_refresh_updates_members_and_a_uls_name_follows_for_uls_named_members(tm
     )
     u.refresh_from_db()
     assert u.last_name == "King"  # FR-14: the ULS name is refreshed by the sync
+
+
+def test_a_callsign_awaiting_is_this_you_is_not_a_license():
+    """T38, 2026-10-21: FR-16's banner says the callsign is not counted until the member answers,
+    but the FCC record was taken at once: someone who typed another licensee's callsign held
+    their class, and the seats it opens, for as long as they left the question unanswered."""
+    UlsLicense.objects.create(
+        callsign="N0ZZZ",
+        first_name="Zed",
+        last_name="Other",
+        operator_class="Extra",
+        status="active",
+    )
+    u = User.objects.create_user(
+        "h@example.org", "pw-Testing-123", first_name="Hal", last_name="Lee"
+    )
+    today = timezone.localdate()
+    assert apply_callsign(u, "N0ZZZ")["state"] == "pending"
+    u = User.objects.get(pk=u.pk)
+    assert not has_valid_license(u, today) and u.license_letter == "U"
+    assert u.license.licensee_name == "", "nothing of the FCC record is shown as theirs"
+    refresh_license_from_local_table(u)  # the nightly sync changes nothing while it waits
+    assert not has_valid_license(User.objects.get(pk=u.pk), today)
+    decide_uls_name(u, accept=True)
+    u = User.objects.get(pk=u.pk)
+    assert has_valid_license(u, today, "Extra") and u.license_letter == "E"
 
 
 def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
