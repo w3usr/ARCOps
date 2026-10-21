@@ -3218,3 +3218,22 @@ carries the actual running model ID.
   decision on the timer.
 - **Human Review Status**: Pending review.
 - **Git Hash**: a305dd2
+
+## [2026-10-21 13:46 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Make the audit log append-only in the database, as TR-21 and the model's
+  docstring have always said: T22 found that no migration created the triggers, and an UPDATE
+  and a DELETE on an entry both went through.
+- **Sections/Files Affected**: apps/ops/migrations/0010_auditlog_append_only.py (new: three
+  SQLite triggers refuse a DELETE, an UPDATE of any column but actor_id, and setting actor_id to
+  anything but NULL, so deleting an account in the Django admin still clears its actor);
+  apps/ops/tests/test_audit_log.py (new, 7 tests, 6 of which fail without the migration);
+  apps/accounts/tests/test_phase6.py (the retention test writes its 800-day-old entry by moving
+  the clock instead of updating it); tools/a11y/conftest.py (the live server empties every
+  table after each test, so the triggers are dropped from that throwaway database first).
+- **Nature of Contribution**: Analysis (reproduced on a local database: no triggers, update and
+  delete both succeeded), code generation, tests. Application tests 419 passed; accessibility
+  sweep 10 passed, 1 skipped; the migration applied to an existing database with entries, after
+  which an update and a delete were refused and club_import and retention_apply still ran.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [filled in after committing]

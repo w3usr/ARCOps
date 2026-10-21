@@ -1,6 +1,7 @@
 """Phase 6: view-as (FR-94), closure (FR-11), deletion (FR-118), retention (TR-28)."""
 
 import datetime as dt
+from unittest import mock
 
 import pytest
 from django.test import Client
@@ -170,8 +171,11 @@ def test_retention_keeps_member_records_and_agreements_and_sweeps_only_the_rest(
     kept; what still ages out is what is not a member's record."""
     now = timezone.now()
     old = _user("old@example.org", "none", cell_phone="555")
-    AuditLog.objects.create(action="access.changed", subject_type="User", subject_id=str(old.pk))
-    AuditLog.objects.filter(action="access.changed").update(at=now - dt.timedelta(days=800))
+    # written 800 days ago: the log refuses an UPDATE (TR-21), so the clock is moved instead
+    with mock.patch("django.utils.timezone.now", return_value=now - dt.timedelta(days=800)):
+        AuditLog.objects.create(
+            action="access.changed", subject_type="User", subject_id=str(old.pk)
+        )
     Invitation.objects.create(
         email="x@example.org", category="student", expires_at=now - dt.timedelta(days=100)
     )

@@ -43,3 +43,13 @@ def demo(db):
 
     call_command("club_import", verbosity=0)
     call_command("seed_demo", verbosity=0)
+    yield
+    # The live server empties every table after each test, and the audit log refuses a DELETE
+    # (TR-21). Its triggers go from this throwaway database only; nothing here tests the log.
+    import importlib
+
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        for sql in importlib.import_module("apps.ops.migrations.0010_auditlog_append_only").DROP:
+            cursor.execute(sql)
