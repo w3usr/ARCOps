@@ -133,7 +133,9 @@ def test_a_callsign_awaiting_is_this_you_is_not_a_license():
         operator_class="Extra",
         status="active",
     )
-    u = User.objects.create_user("h@example.org", "pw-Testing-123", first_name="Hal", last_name="Lee")
+    u = User.objects.create_user(
+        "h@example.org", "pw-Testing-123", first_name="Hal", last_name="Lee"
+    )
     today = timezone.localdate()
     assert apply_callsign(u, "N0ZZZ")["state"] == "pending"
     u = User.objects.get(pk=u.pk)
