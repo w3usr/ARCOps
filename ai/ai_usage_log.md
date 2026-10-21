@@ -3237,4 +3237,4 @@ carries the actual running model ID.
   code generation, tests. Application tests 416 passed; accessibility sweep 10 passed, 1
   skipped; lint, format, guards and the migration check clean.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 3071fe7
