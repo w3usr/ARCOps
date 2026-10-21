@@ -3218,3 +3218,23 @@ carries the actual running model ID.
   decision on the timer.
 - **Human Review Status**: Pending review.
 - **Git Hash**: a305dd2
+
+## [2026-10-21 13:33 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Four same-day fixes found by Thursday's acceptance scenarios (safety and
+  privacy, under the week's triage rule), each reproduced on a local database first: an open
+  redirect on Your level, viewing as a member marking their messages read, the roster telling
+  other members a minor is with an adult when none is named, and a callsign awaiting "Is this
+  you?" counting as the member's license.
+- **Sections/Files Affected**: apps/accounts/views_acting.py (`_safe_next`: `next` only leads
+  back into the site, on every way out of the page); apps/comms/views.py (`my_messages` marks
+  nothing read while a sysadmin views as the member); templates/events/_slot_body.html ("with an
+  adult" only once one is named); apps/credentials/services.py
+  (`refresh_license_from_local_table` takes nothing from the FCC record while the name question
+  is pending); one test each in apps/accounts/tests/test_acting_view.py, test_phase6.py,
+  test_phase7.py and apps/credentials/tests/test_uls.py, each failing without its fix.
+- **Nature of Contribution**: Analysis (reproduction with Django's test client and shell),
+  code generation, tests. Application tests 416 passed; accessibility sweep 10 passed, 1
+  skipped; lint, format, guards and the migration check clean.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [filled in after committing]

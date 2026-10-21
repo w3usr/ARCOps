@@ -273,3 +273,22 @@ def test_a_forgotten_request_to_raise_the_level_does_not_fire_later():
     c.get("/me/level/")
     assert c.session["acting_view"] == "advisor", "the old request went stale"
     assert "acting_view_pending" not in c.session, "and is gone"
+
+
+def test_next_never_leads_off_the_site():
+    """T51, 2026-10-21: `next` came from the page's address and was followed as given, so a link
+    could send a sysadmin to another site straight after Confirm Access. Every way out of the
+    page now goes back into this site; a path of our own is still followed."""
+    evil = "https://evil.example/login"
+    c = _signed_in(_sysadmin())
+    c.get("/")
+    assert evil not in c.get(f"/me/level/?next={evil}").content.decode(), "not put in the form"
+
+    assert c.post("/me/level/", {"view": "member", "next": evil})["Location"] == "/"  # lower
+    assert c.post("/me/level/", {"view": "member", "next": evil})["Location"] == "/"  # same
+    c.post("/me/level/", {"view": "sysadmin", "next": evil})  # raise, via Confirm Access
+    _just_confirmed(c)
+    assert c.get("/me/level/")["Location"] == "/"
+    assert c.session["acting_view"] == "sysadmin", "the raise itself still happens"
+
+    assert c.post("/me/level/", {"view": "advisor", "next": "/members/"})["Location"] == "/members/"
