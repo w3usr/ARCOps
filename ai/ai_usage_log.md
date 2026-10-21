@@ -3236,4 +3236,4 @@ carries the actual running model ID.
   sweep 10 passed, 1 skipped; the migration applied to an existing database with entries, after
   which an update and a delete were refused and club_import and retention_apply still ran.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: cec7598
