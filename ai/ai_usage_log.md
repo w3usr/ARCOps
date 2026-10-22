@@ -3375,3 +3375,15 @@ carries the actual running model ID.
   fix the PDF T40 builds from the real agreements is PDF/UA-1 compliant; credential tests pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 84b4c00
+
+## [2026-10-22 16:58 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI's club-neutral guard (TR-40) failed on `ba68476`: two comments in the
+  PDF fix named the club.
+- **Sections/Files Affected**: apps/credentials/services.py and
+  apps/credentials/tests/test_phase4.py (comments only, reworded to name no club).
+- **Nature of Contribution**: Edit. All three guards (club-neutral, no requirement identifiers,
+  interface) pass locally; credential tests pass. Lesson: run the guards, not only the tests,
+  before pushing.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]

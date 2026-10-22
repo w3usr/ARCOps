@@ -561,7 +561,7 @@ PDF_RENDER_VERSION = 1
 
 # A list item whose whole content is one paragraph. PDF/UA-1 (7.2-20) lets a list item hold only
 # a label and a body, and WeasyPrint tags the <p> as a third child, so the PDF failed validation
-# wherever the agreement text wraps its items in paragraphs, as W3USR's do (T40, 2026-10-22).
+# wherever the agreement text wraps its items in paragraphs, as a club's own text may (T40, 2026-10-22).
 _LONE_P_ITEM = re.compile(
     r"(<li\b[^>]*>)\s*<p\b[^>]*>((?:(?!</?p\b).)*?)</p>\s*(</li>)", re.IGNORECASE | re.DOTALL
 )
