@@ -114,6 +114,14 @@ def sign_in(page, base, email, raise_level: bool = False):
     page.fill("input[name=login]", email)
     page.fill("input[name=password]", PASSWORD)
     page.click("form button[type=submit], form input[type=submit]")
+    # Wait for the redirect itself: "networkidle" can arrive before it in WebKit, which failed a
+    # sign-in that had worked (CI on 1c9d6ed, 2026-10-22).
+    from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+
+    try:
+        page.wait_for_url(lambda url: "/accounts/login" not in url, timeout=15_000)
+    except PlaywrightTimeoutError:
+        pass
     page.wait_for_load_state("networkidle")
     assert "/accounts/login" not in page.url, f"sign-in failed for {email}"
     if raise_level:

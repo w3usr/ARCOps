@@ -3387,3 +3387,15 @@ carries the actual running model ID.
   before pushing.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 5062e49
+
+## [2026-10-22 17:12 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI's accessibility job failed once on `1c9d6ed` (a comment-only commit):
+  in WebKit the shared test sign-in read the address before the redirect after signing in.
+- **Sections/Files Affected**: tools/a11y/test_axe.py (`sign_in` waits up to 15 s for the address
+  to leave the sign-in page, then for the network to settle, before asserting).
+- **Nature of Contribution**: Analysis (1 of 45 checks, `webkit-officer`, sign-in; the same check
+  passed in the other engines and on `7708563`), code edit. The accessibility suite passes in
+  Chromium and WebKit locally (30); CI runs Firefox.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]
