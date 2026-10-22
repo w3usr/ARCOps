@@ -38,7 +38,7 @@ jobs:
           python-version: "3.13"
           cache: pip
       - run: pip install -r requirements-dev.txt
-      - run: playwright install --with-deps chromium
+      - run: playwright install --with-deps chromium firefox webkit
       - name: Accessibility (axe-core) and phone-width check
         # One worker per role: each is mostly waiting on a browser, not computing.
         run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q -n auto

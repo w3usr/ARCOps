@@ -9,9 +9,9 @@ from playwright.sync_api import sync_playwright
 from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 
 
-def test_the_filter_rows_line_up_on_the_left(live_server):
+def test_the_filter_rows_line_up_on_the_left(live_server, engine):
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = getattr(p, engine).launch()
         page = browser.new_page(viewport={"width": 1280, "height": 900})
         sign_in(page, live_server.url, ACCOUNTS["advisor"])
         page.goto(f"{live_server.url}/members/")

@@ -3303,3 +3303,24 @@ carries the actual running model ID.
   the fix; 431 application tests pass; lint and format clean.
 - **Human Review Status**: Pending review.
 - **Git Hash**: ebf0e9f
+
+## [2026-10-22 13:29 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Skip to content left VoiceOver reading the sidebar again (found by SK
+  with VoiceOver in Firefox), and the accessibility checks to run in Chromium, Firefox and
+  WebKit rather than Chromium alone (SK: "everyone uses different browsers").
+- **Sections/Files Affected**: templates/base.html (`<main>` takes focus from script,
+  tabindex=-1, so following the skip link moves focus, which screen readers follow, and not
+  only the scroll); static/css/app.css (no ring on `<main>`, a container); tools/a11y/
+  conftest.py (an `engine` fixture: every browser check runs once per engine); test_axe.py,
+  test_filter_layout.py, test_heading_note.py (launch the engine given);
+  tools/a11y/test_skip_link.py (new: the skip link is first, puts focus on the content, and
+  the next Tab stays there; Option-Tab in WebKit, as Safari needs);
+  .github/workflows/ci.yml (installs all three engines).
+- **Nature of Contribution**: Analysis, code generation, tests. The new test failed in Chromium
+  and WebKit before the fix and passes after; the whole suite passes in both (22 checks, all
+  seven roles' pages under axe and at phone width, WebKit for the first time); 431 application
+  tests pass. Firefox not run locally: Playwright's Firefox 1543 does not start on macOS 27.0.1
+  ("Could not find profile folder", outside the sandbox too); CI on Ubuntu is its first run.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]

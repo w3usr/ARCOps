@@ -12,9 +12,9 @@ from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 READY = "() => !!window.tinymce && tinymce.get('id_description_html') && tinymce.get('id_description_html').initialized"
 
 
-def test_a_skipped_heading_level_is_noted_beneath_the_editor(live_server):
+def test_a_skipped_heading_level_is_noted_beneath_the_editor(live_server, engine):
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = getattr(p, engine).launch()
         page = browser.new_page(viewport={"width": 1280, "height": 900})
         sign_in(page, live_server.url, ACCOUNTS["officer"])
         page.goto(f"{live_server.url}/events/new/")

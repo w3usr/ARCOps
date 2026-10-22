@@ -37,6 +37,20 @@ def pytest_configure():
     db.setdefault("OPTIONS", {})["timeout"] = 60
 
 
+# Every check runs in the three engines people actually use: Chromium (Chrome, Edge), Firefox,
+# and WebKit (Safari). A page can pass in one and fail in another: Skip to content moved focus
+# in none of them until <main> could take it, and SK found that with VoiceOver in Firefox
+# (2026-10-22: "everyone uses different browsers, and it's important that it works across all
+# of them"). `playwright install chromium firefox webkit` once.
+ENGINES = ("chromium", "firefox", "webkit")
+
+
+@pytest.fixture(params=ENGINES)
+def engine(request):
+    """The name of a Playwright browser type; `getattr(p, engine).launch()` starts it."""
+    return request.param
+
+
 @pytest.fixture(autouse=True)
 def demo(db):
     from django.core.management import call_command

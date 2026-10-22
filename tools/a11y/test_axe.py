@@ -4,7 +4,7 @@ and phone width. A violation at the serious or critical level fails; so does a p
 sideways at phone width (FR-95). The pages come from the demo data, so a new page is covered by
 adding it to PAGES below (or to seed_demo when it needs a record to exist).
 
-Run: `playwright install chromium` once, then `pytest tools/a11y -o addopts=""`.
+Run: `playwright install chromium firefox webkit` once, then `pytest tools/a11y -o addopts=""`.
 """
 
 from __future__ import annotations
@@ -161,7 +161,7 @@ def describe(url: str, width: int, violations: list[dict]) -> str:
 
 
 @pytest.mark.parametrize("role", list(ACCOUNTS))
-def test_every_page_passes_axe_and_fits_a_phone(live_server, role):
+def test_every_page_passes_axe_and_fits_a_phone(live_server, engine, role):
     from playwright.sync_api import sync_playwright
 
     base = live_server.url
@@ -173,7 +173,7 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, role):
     )
     failures: list[str] = []
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = getattr(p, engine).launch()
         for viewport in (DESKTOP, PHONE):
             ctx = browser.new_context(viewport=viewport)
             page = ctx.new_page()
@@ -201,12 +201,12 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, role):
     assert not failures, "\n\n".join(failures)
 
 
-def test_a_deliberate_violation_is_caught(live_server):
+def test_a_deliberate_violation_is_caught(live_server, engine):
     """The check must be able to fail: an unlabelled input on a synthetic page is reported."""
     from playwright.sync_api import sync_playwright
 
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = getattr(p, engine).launch()
         page = browser.new_page()
         page.goto(f"{live_server.url}/privacy/")
         page.evaluate(
