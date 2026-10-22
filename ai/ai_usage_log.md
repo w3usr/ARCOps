@@ -3302,4 +3302,4 @@ carries the actual running model ID.
   institution, confirmed, proof vouched), code generation, tests. The new test fails without
   the fix; 431 application tests pass; lint and format clean.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: ebf0e9f
