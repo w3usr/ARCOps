@@ -3284,4 +3284,4 @@ carries the actual running model ID.
   scripts T20 step 7, T23, T30, T32, T33, T42, T43 and T53 pass, and T31 and T34 fail only on
   defects left for later (role keys, the signed-out "Cannot make it?" page, the device name).
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: c0f1d21
