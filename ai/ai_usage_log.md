@@ -3399,3 +3399,21 @@ carries the actual running model ID.
   Chromium and WebKit locally (30); CI runs Firefox.
 - **Human Review Status**: Pending review.
 - **Git Hash**: d7a6e71
+
+## [2026-10-22 17:24 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconciliation after the 2026-10-22 batch: record the day's decisions in the
+  requirements' addendum, correct the agreement refusal that named one button for three cases, and
+  steady the accessibility suite's step-up in WebKit.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (addendum A5 to A8: guardian links, sign out
+  first, no retention period in the privacy notice, three browser engines; trailer);
+  templates/credentials/agreements.html and apps/credentials/views.py (the refusal tells a member
+  to add the address if it is missing and have a link sent from beside it, since **Prove it is
+  yours** appears only for a vouched address); tools/a11y/test_axe.py (the **Act at this level**
+  and **Confirm** clicks wait for their navigation; CI on `648a200` failed `webkit-sysadmin` with
+  `/ops/status/` answering 404 because the level had not risen yet).
+- **Nature of Contribution**: Drafting (addendum, from the quoted records), code edit, analysis.
+  Quotes checked against their sources. 434 application tests pass; the sysadmin sweep passes in
+  Chromium and WebKit locally; club-neutral, requirement-id and interface guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: (after commit)

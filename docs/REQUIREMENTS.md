@@ -2557,6 +2557,71 @@ Moving and removing are unchanged.
 member up on a draft (and on a canceled slot), and the member was told of a slot in an event they
 could not yet see. *Record:* `notes/2026-10-16_t16-two-gaps-and-two-decisions.md`.
 
-<sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19,
-from the dated decision records named in each entry; the requirements above are unchanged.
+### A5. §2.4 and §2.5: who links and unlinks a minor's guardians
+
+**Original.** §2.4 defines a guardian as "an account that is linked to one or more minor member
+accounts", and the permission matrix of §2.5 has no row for making or ending that link. FR-109
+gives converting a minor's account at 18 to "anyone who may convert a member's account at 18,
+which the Faculty Advisor group holds (§2.1)".
+
+**Decision.** Faculty advisors (and sysadmins) link and unlink a minor's guardians, as well as
+converting the account at 18. A club officer holds none of these controls, though an officer sees
+the minor's Guardians card. Unlinking a minor's last guardian is refused.
+
+**Decided by** SK, 2026-10-21, on acceptance test T48. The controls were sysadmin-only as first
+built (2026-09-15), were put behind the `edit_member_privileges` capability on 2026-09-17, and came
+to the faculty advisor level with the advisor's request of 2026-09-20 ("Faculty Advisors need to
+be able to set Category, Club Position, and Access"), which did not mention guardians; SK kept the
+result. Officers seeing the card follows the advisor's answer to Q17 (2026-09-13: "keeping
+guardian details to captains and officers"). *Record:*
+`notes/2026-10-21_t48-conversion-and-guardian-links.md`.
+
+### A6. FR-5 and FR-120: an invitation or entry link opened while signed in
+
+**Original (FR-5).** "Completing an invitation's application admits the applicant as a Member
+with the category set on the invitation; there is no review queue." FR-120 joins through an
+entry link the same way. Neither says what happens when the browser is already signed in.
+
+**Decision.** An invitation or entry link makes a new account only when nobody is signed in on the
+browser. Opened from somebody's own session, it shows *Sign out first*, naming who is signed in,
+with **Sign out and continue**, which signs out and comes straight back to the same form; nothing
+is created until then. (Completing the form used to sign the browser into the new account and
+replace the session it was opened from.) An existing guardian accepting a minor's invitation while
+signed in as themselves is unchanged.
+
+**Decided by** SK, 2026-10-22, having opened an invitation while signed in as a sysadmin and found
+its form inside that session, and approved the fix the same day ("go ahead and implement fixes 1
+through 5 in one batch"). *Record:* `notes/2026-10-22_end-of-day-start-here-tomorrow.md` and the
+reconciliation note of the same date.
+
+### A7. FR-101: the privacy notice states no retention period
+
+**Original (FR-101).** "A privacy notice, presented at application and reachable from every page,
+states what is collected, who sees it, how long it is kept (section 4.3), and how to ask for
+closure (FR-11)."
+
+**Decision.** The notice names no retention period. It says that a former member's record is
+archived and what deletion leaves behind, and gives no number of days.
+
+**Decided by** the advisor (W2NAF), 2026-09-19, taking the retention paragraph out of the notice:
+"I don't want to put out a retention policy that has not been fully vetted." The test plan has
+followed this since; this entry records it against FR-101. *Record:*
+`notes/2026-09-19_reconciliation-after-the-profile-work.md`.
+
+### A8. FR-117: the automated checks run in three browser engines
+
+**Original (FR-117).** "Accessibility is verified: automated checks (an axe-core class of tool)
+run on every page in the build pipeline and a failure blocks the deploy."
+
+**Decision.** Every automated accessibility and layout check runs in each of the three browser
+engines people use: Chromium (Chrome, Edge), Firefox, and WebKit (Safari). A page can pass in one
+and fail in another; a skip link that left focus behind was found with VoiceOver in Firefox.
+
+**Decided by** SK, 2026-10-22: "Use these two browsers to test against these accessibility
+requirements because everyone uses different browsers, and it's important that it works across
+all of them." *Record:* the reconciliation note of 2026-10-22.
+
+<sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
+(A1 to A4) and 2026-10-22 (A5 to A8), from the dated decision records named in each entry; the
+requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

@@ -125,9 +125,9 @@ def sign(request, template_id):
     if credential_needs_institution(t.credential) and not institution_address_proved(request.user):
         messages.error(
             request,
-            f"Prove your {institution_domain_label()} address first: on your profile, press "
-            "Prove it is yours beside it and open the link we send there, or ask an officer "
-            "to confirm it for you.",
+            f"Prove your {institution_domain_label()} address first: on your profile, add it if "
+            "it is not there, have a link sent to it from beside it, and open that link; or ask "
+            "an officer to confirm it for you.",
         )
         return redirect("agreements")
     if (

@@ -131,15 +131,18 @@ def sign_in(page, base, email, raise_level: bool = False):
         page.goto(f"{base}/me/level/")
         page.check("#v-sysadmin")
         # By name, because "form button[type=submit]" also matches Sign out in the sidebar, and
-        # the first match at phone width is off screen inside the collapsed menu.
-        page.get_by_role("button", name="Act at this level").click()
+        # the first match at phone width is off screen inside the collapsed menu. Each click waits
+        # for its own navigation, for the reason the sign-in does (CI on 648a200, 2026-10-22).
+        with page.expect_navigation():
+            page.get_by_role("button", name="Act at this level").click()
         page.wait_for_load_state("networkidle")
         if "/accounts/reauthenticate" in page.url:
             # The sign-in library asks who this is before the level rises, and takes a passkey
             # as readily as a password (2026-09-20). A browser cannot offer one here, so the
             # password it is; the sign-in a moment ago usually means nothing is asked at all.
             page.fill("input[type=password]", PASSWORD)
-            page.get_by_role("button", name="Confirm").click()
+            with page.expect_navigation():
+                page.get_by_role("button", name="Confirm").click()
             page.wait_for_load_state("networkidle")
             page.goto(f"{base}/me/level/")
             page.wait_for_load_state("networkidle")
