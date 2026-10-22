@@ -3359,4 +3359,4 @@ carries the actual running model ID.
   1280 and 390 px checked by eye. Firefox runs in CI only (Playwright's Firefox does not start
   on macOS 27).
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: e08f708
