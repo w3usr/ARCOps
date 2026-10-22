@@ -3323,4 +3323,4 @@ carries the actual running model ID.
   tests pass. Firefox not run locally: Playwright's Firefox 1543 does not start on macOS 27.0.1
   ("Could not find profile folder", outside the sandbox too); CI on Ubuntu is its first run.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: e4ffccc
