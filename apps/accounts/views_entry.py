@@ -13,6 +13,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.cache import add_never_cache_headers
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.events.models import Event
@@ -196,9 +197,9 @@ def _link_or_page(request, token):
     link = get_object_or_404(EntryLink, token=token)
     why = link.why_closed()
     if why:
-        return link, render(
-            request, "accounts/join_closed.html", {"link": link, "why": why}, status=410
-        )
+        page = render(request, "accounts/join_closed.html", {"link": link, "why": why}, status=410)
+        add_never_cache_headers(page)  # a 410 is cacheable: a resumed link must not stay closed
+        return link, page
     return link, None
 
 
@@ -286,11 +287,15 @@ def join_form(request, token):
                 call = user.callsign
                 user.callsign = ""
                 apply_callsign(user, call)  # FR-4, FR-16: lookup, name, or a pending confirmation
-            if link.kind == EntryLink.Kind.CLASS:
+            # A returner is a member again through any link, with nothing to verify and no email
+            # sent, so they are signed in as through an invitation (T53).
+            if returning is not None or link.kind == EntryLink.Kind.CLASS:
                 login(request, user, backend="django.contrib.auth.backends.ModelBackend")
                 messages.success(
                     request,
-                    f"Welcome. Confirm your address from the email we sent within {entry.verification_days()} days.",
+                    "Welcome back. Your record is as you left it."
+                    if returning is not None
+                    else f"Welcome. Confirm your address from the email we sent within {entry.verification_days()} days.",
                 )
                 if link.landing_event_id:
                     return redirect("event_detail", pk=link.landing_event_id)

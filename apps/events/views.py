@@ -217,9 +217,15 @@ def check_in(request, signup_id):
     now = timezone.now()
     if su.user != request.user and not request.user.can_captain(su.slot.event):
         raise Http404
+    # A captain checking people in goes back to the slot for the next one.
+    back = (
+        redirect("my_schedule")
+        if su.user == request.user
+        else redirect("slot_detail", pk=su.slot.event.pk, slot_id=su.slot.pk)
+    )
     if not checkin_window_open(su.slot, now):
         messages.error(request, "Check-in opens 30 minutes before the slot.")
-        return redirect("my_schedule")
+        return back
     present = []
     if (
         su.user.under_18
@@ -245,8 +251,13 @@ def check_in(request, signup_id):
         su,
         after={"present": [a.name for a in present]} if present else None,
     )
-    messages.success(request, "Checked in. Have a good shift.")
-    return redirect("my_schedule")
+    messages.success(
+        request,
+        "Checked in. Have a good shift."
+        if su.user == request.user
+        else f"Checked in. {su.user.display_first} is here.",
+    )
+    return back
 
 
 @login_required

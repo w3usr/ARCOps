@@ -3257,3 +3257,31 @@ carries the actual running model ID.
   which an update and a delete were refused and club_import and retention_apply still ran.
 - **Human Review Status**: Pending review.
 - **Git Hash**: cec7598
+
+## [2026-10-22 11:57 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the defects from the week's acceptance testing that affect how the
+  application works, before the beta; each reproduced first, with a test that fails without its
+  fix.
+- **Sections/Files Affected**: apps/ops/views_settings.py and templates/ops/settings.html (a
+  Settings save no longer rewrites an imported privacy notice nor stores black for an unset
+  accent; "One field below needs"); static/sw.js (My Sked and Messages are cached for offline
+  reading: the response is cloned before the page reads it; cache ops-shell-v5);
+  apps/accounts/views_entry.py (a paused, withdrawn or full link's page is never cached; a
+  member coming back through any link is signed in and told "Welcome back", not of an email
+  that is never sent); apps/ops/jobs.py (a run that never finished is marked failed by the
+  next and pinged; uls:sync is stale without a weekly import in eight days, FR-93);
+  apps/events/services/notify.py (the reminder leaves out the outline's empty sections; notes
+  count from 48 hours before the slot, FR-110); apps/accounts/services.py and views.py (the
+  callsign is looked up before the "joined" notice, which now names the FCC's name, FR-76);
+  apps/events/views.py (a captain checking someone in stays on the slot);
+  apps/comms/push.py (the notification icon's address is no longer doubled);
+  apps/credentials/services.py (agreements_expiry --now moves expiry too); tests beside each.
+- **Nature of Contribution**: Analysis (each defect reproduced locally: the T43, T20 and T31
+  scenario scripts in the browser, then a unit test failing on main), code generation, tests.
+  Application tests 430 passed (one run of seven had one unidentified failure, not seen in the six after it);
+  lint and format clean; the accessibility sweep passed; on the W3USR overlay the scenario
+  scripts T20 step 7, T23, T30, T32, T33, T42, T43 and T53 pass, and T31 and T34 fail only on
+  defects left for later (role keys, the signed-out "Cannot make it?" page, the device name).
+- **Human Review Status**: Pending review.
+- **Git Hash**: c0f1d21

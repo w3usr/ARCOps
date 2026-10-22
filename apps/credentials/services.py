@@ -154,9 +154,10 @@ def approvers():
     return list(people_who_may("approve_agreements"))
 
 
-def expire_due() -> int:
-    """`agreements:expiry` (TR-11): move past-due approvals to expired (FR-28)."""
-    today = timezone.now().date()
+def expire_due(now=None) -> int:
+    """`agreements:expiry` (TR-11): move past-due approvals to expired (FR-28). `now` is the
+    job's, so a rehearsal with --now moves expiry as well as the notices."""
+    today = (now or timezone.now()).date()
     due = list(
         SignedAgreement.objects.filter(
             state=SignedAgreement.State.APPROVED, expires_on__lt=today
@@ -387,7 +388,7 @@ def agreement_expiry_run(now=None) -> dict:
             # approver reads. An approval that ended is a decision like any other (2026-09-20).
             log_decision(a, CredentialDecision.Action.SUPERSEDED, None, note=a.decision_reason)
             superseded += 1
-    expired_now = expire_due()
+    expired_now = expire_due(now)
 
     def bundle(qs):
         by_user: dict = {}

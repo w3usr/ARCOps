@@ -1,6 +1,6 @@
 // Minimal service worker (FR-96): caches the shell; pages stay network-first so schedules are
 // never stale. Push handling (FR-112) is added when VAPID keys are configured.
-const CACHE = "ops-shell-v4";
+const CACHE = "ops-shell-v5";
 const SHELL = ["/static/css/app.css", "/static/js/app.js"];
 // Pages kept for offline reading (FR-96): the member's own schedule and messages. Network first,
 // so nothing is stale while online; the last good copy is served when the network is gone.
@@ -17,7 +17,8 @@ self.addEventListener("fetch", (e) => {
   if (OFFLINE_PAGES.includes(url.pathname) && e.request.mode === "navigate") {
     e.respondWith(
       fetch(e.request)
-        .then((res) => { if (res.ok) caches.open(CACHE).then((c) => c.put(e.request, res.clone())); return res; })
+        // Clone now: once the page has read the body, a later clone throws and nothing is kept.
+        .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); } return res; })
         .catch(() => caches.match(e.request))
     );
   }

@@ -112,6 +112,10 @@ def test_expiry_notices_bundle_agreements_and_summarise_to_approvers():
     assert r["expired"] == 2 and r["notices_expiry"] == 1
     assert Outbox.objects.filter(user=mem, subject__contains="expired today").exists()
     call_command("agreements_expiry")
+    # A rehearsal with --now moves expiry too, not only the notices
+    other = _user("rehearse@example.org", first_name="Re", last_name="Hearse")
+    _approved(other, t_st, today + dt.timedelta(days=12))
+    assert agreement_expiry_run(timezone.now() + dt.timedelta(days=14))["expired"] == 1
 
 
 def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so():

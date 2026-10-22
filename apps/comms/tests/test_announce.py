@@ -209,6 +209,28 @@ def test_contest_fields_saved_shown_and_in_the_reminder():
 
 
 @pytest.mark.django_db
+def test_the_reminder_leaves_out_the_outline_s_empty_sections():
+    """An officer who fills one section of the know-before-you-go outline does not send
+    the five empty headings, nor a second "Who to contact" above the reminder's own."""
+    from apps.events.services.notify import send_one_reminder
+    from apps.events.views_manage import KBYG_OUTLINE
+
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="T")
+    mem = _user("m@example.org", first_name="Mo", last_name="M")
+    e, slots = _event(timezone.now() + timedelta(hours=20), cap)
+    e.kbyg_html = KBYG_OUTLINE.replace(
+        "<h2>What to bring</h2><p></p>", "<h2>What to bring</h2><p>Headphones.</p>"
+    ).replace(
+        "<h2>Operating and logging</h2><p></p>", "<h2>Operating and logging</h2><p>&nbsp;</p>"
+    )
+    e.save()
+    send_one_reminder(SignUp.objects.create(slot=slots[0], user=mem, role="operator"))
+    body = Outbox.objects.get(user=mem, category="reminder").body_html
+    assert "<h2>What to bring</h2><p>Headphones.</p>" in body
+    assert "Where and when" not in body and "Operating and logging" not in body
+    assert body.count("Who to contact") == 1
+
+
 def test_every_message_carries_one_shared_link_to_the_member_s_own_settings(settings):
     """NAF, 2026-09-20: "For all emails, there should be a link to set user email and notification
     preferences... one link that works for every account, so you don't need to send individual

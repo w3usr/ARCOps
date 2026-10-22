@@ -57,7 +57,7 @@ def send_push(user, title: str, url: str = "/") -> int:
             "title": shown[:120],
             "body": "",
             "url": url,
-            "icon": f"{settings.STATIC_URL}{icon}" if icon else "",
+            "icon": icon or "",  # branding() gives URLs already
             "tag": f"{short}-{abs(hash(title)) % 100000}",
         }
     )

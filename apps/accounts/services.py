@@ -223,6 +223,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     """
     address = profile.get("email", "") or inv.email
     proof = profile.pop("proof", "")
+    callsign = profile.pop("callsign", "")
     returning, _ = returning_account(address)
     if returning is not None:
         profile.pop("email", None)
@@ -232,7 +233,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
         inv.accepted_by = user
         inv.save(update_fields=["state", "completed_at", "accepted_by"])
         record(user, "application.completed", user, after={"invitation": inv.pk, "returned": True})
-        _completion_notices(inv, user)
+        _completion_notices(inv, _with_callsign(user, callsign))
         return user
     user = User.objects.create_user(
         email=profile.pop("email", "") or inv.email,  # a minor's may differ (§2.4)
@@ -250,7 +251,15 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     record(
         user, "application.completed", user, after={"invitation": inv.pk, "category": inv.category}
     )
-    _completion_notices(inv, user)
+    _completion_notices(inv, _with_callsign(user, callsign))
+    return user
+
+
+def _with_callsign(user: User, callsign: str) -> User:
+    """FR-4, FR-16: the callsign is looked up before the notices go out, so they can name it
+    and the FCC's name for it."""
+    if callsign.strip():
+        apply_callsign(user, callsign)
     return user
 
 
@@ -265,7 +274,7 @@ def _completion_notices(inv: Invitation, user: User) -> None:
     site = getattr(dj, "SITE_URL", "") or ""
     link = site + reverse("member_detail", args=[user.pk])
     lic = getattr(user, "license", None)
-    uls_name = getattr(lic, "uls_name", "") if lic else ""
+    uls_name = lic.licensee_name if lic else ""
     recipients = {u.pk: u for u in people_who_may("invite_members")}
     if inv.issued_by and inv.issued_by.is_active:
         recipients[inv.issued_by.pk] = inv.issued_by

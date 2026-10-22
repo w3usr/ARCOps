@@ -117,20 +117,21 @@ def test_accepting_the_invitation_brings_the_record_back(people):
     assert Client().login(email="rae@example.org", password=NEW_PASSWORD), "the new password works"
 
 
-def test_joining_through_a_link_brings_the_record_back(people):
+@pytest.mark.parametrize("kind", [EntryLink.Kind.CLASS, EntryLink.Kind.COMMUNITY])
+def test_joining_through_a_link_brings_the_record_back(people, kind):
     officer, advisor, member = people
     _left(advisor, member)
     from django.utils import timezone
 
     link = EntryLink.objects.create(
         label="PHYS 101",
-        kind=EntryLink.Kind.CLASS,
-        required_domain="example.org",
+        kind=kind,
+        required_domain="example.org" if kind == EntryLink.Kind.CLASS else "",
         created_by=officer,
         expires_at=timezone.now() + timezone.timedelta(days=30),
     )
     c = Client()
-    c.post(
+    r = c.post(
         f"/join/{link.token}/form/",
         {
             "email": "rae@example.org",
@@ -152,3 +153,8 @@ def test_joining_through_a_link_brings_the_record_back(people):
     assert member.status == "active" and not member.is_archived
     assert member.joined_via == link and member.callsign == "N0RAE"
     assert AuditLog.objects.filter(action="account.returned_via_link").exists()
+    # Signed in, as through an invitation (T53), and told of no email, since none is sent
+    body = r.content.decode()
+    assert int(c.session["_auth_user_id"]) == member.pk
+    assert "Welcome back" in body
+    assert "email we sent" not in body and "Check your email" not in body
