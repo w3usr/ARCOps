@@ -312,6 +312,12 @@ def guardian_category() -> str:
     return "community" if "community" in keys else ""
 
 
+def signed_in_elsewhere(request, what: str, address: str = ""):
+    """An invitation or entry link makes a new account and signs the browser into it, so one
+    opened from somebody's own session asks them to sign out first rather than replace it."""
+    return render(request, "accounts/signed_in_elsewhere.html", {"what": what, "address": address})
+
+
 def _accept_as_guardian(request, inv):
     """§2.4, FR-10: the invitation for a minor is completed by the guardian at
     `inv.guardian_email`. An existing account with that address signs in first; a new one is
@@ -327,6 +333,8 @@ def _accept_as_guardian(request, inv):
             "accounts/invitation_guardian_signin.html",
             {"invitation": inv, "guardian": existing},
         )
+    if not existing and request.user.is_authenticated:
+        return signed_in_elsewhere(request, "invitation", inv.guardian_email)
     if not inv.opened_at:
         inv.opened_at = timezone.now()
         inv.save(update_fields=["opened_at"])
@@ -404,6 +412,8 @@ def accept_invitation(request, token):
         return render(request, "accounts/invitation_invalid.html", {"invitation": inv}, status=410)
     if inv.is_minor:
         return _accept_as_guardian(request, inv)  # §2.4
+    if request.user.is_authenticated:
+        return signed_in_elsewhere(request, "invitation", inv.email)
     if not inv.opened_at:
         inv.opened_at = timezone.now()
         inv.save(update_fields=["opened_at"])

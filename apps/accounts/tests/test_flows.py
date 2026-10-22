@@ -123,6 +123,39 @@ def test_the_joined_notice_names_the_callsign_and_the_fcc_s_name_for_it():
     assert "under the name Member, Joined N" in notice.body_html
 
 
+def test_a_signed_in_visitor_is_asked_to_sign_out_before_accepting_an_invitation():
+    """An officer opening an invitation link from their own session saw the form inside it, and
+    submitting it signed the browser into the new account, replacing theirs (SK, 2026-10-22)."""
+    off = officer()
+    adult = create_invitation(off, "new.adult@example.org", "student")
+    minor = create_invitation(
+        off, "kid2@example.org", "student", is_minor=True, guardian_email="new.parent@example.org"
+    )
+    c = Client()
+    c.force_login(off)
+    for inv in (adult, minor):
+        body = c.get(f"/me/invite/{inv.token}/").content.decode()
+        assert "You are signed in as" in body and 'name="password1"' not in body, inv.email
+    c.post(
+        f"/me/invite/{adult.token}/",
+        {
+            "first_name": "New",
+            "last_name": "Adult",
+            "password1": "a-long-password-123",
+            "password2": "a-long-password-123",
+            "consent": "on",
+        },
+    )
+    assert not User.objects.by_address("new.adult@example.org").exists()
+    assert int(c.session["_auth_user_id"]) == off.pk, "the officer is still signed in as themselves"
+    # Sign out and continue comes straight back to the invitation, now with its form
+    from django.urls import reverse
+
+    r = c.post(reverse("account_logout"), {"next": f"/me/invite/{adult.token}/"})
+    assert r["Location"] == f"/me/invite/{adult.token}/"
+    assert 'name="password1"' in c.get(r["Location"]).content.decode()
+
+
 def test_minor_invitation_is_addressed_to_the_guardian():
     inv = create_invitation(
         officer(), "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"

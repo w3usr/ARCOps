@@ -57,12 +57,14 @@
     <a href="{% url 'roster_tz' event.pk %}?tz={% if roster.lead == 'utc' %}local{% else %}utc{% endif %}">Lead with {{ roster.other_label }}</a>
     · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %}</p>
 </div>
-<div class="legend muted" aria-label="Key">
-  <span class="tag open">Open</span> anyone eligible can sign up ·
-  <span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification ·
-  <span class="tag ok">Covered</span> it can run ·
-  <span class="tag bad">over limit</span> pushes a day or the event past its operating limit ·
-  <small>S</small> station access · <small>I</small> computer access · <small>CO</small> control operator
+<div class="legend muted"><span class="legend-label" id="roster-key">Key</span>
+  <ul aria-labelledby="roster-key">
+    <li><span class="tag open">Open</span> anyone eligible can sign up</li>
+    <li><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</li>
+    <li><span class="tag ok">Covered</span> it can run</li>
+    <li><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</li>
+    <li><small>S</small> station access · <small>I</small> computer access · <small>CO</small> control operator</li>
+  </ul>
 </div>
 
 <div class="roster {{ roster.layout }}" role="table" aria-label="Roster">

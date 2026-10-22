@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "allauth/layouts/base.html" %}
 {% load labels %}
 {% block title %}Join · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Join {{ club.name }}</h1>
 <p>This invitation is for <strong>{{ invitation.email }}</strong> as a {{ invitation.category|category_label|lower }}. Start with your callsign if you have one; your name and license details are filled from the FCC record.</p>
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="stack">{% csrf_token %}
 {{ form.non_field_errors }}
 {% for f in form %}
   {% if f.field.widget.input_type == 'checkbox' %}

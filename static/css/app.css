@@ -219,6 +219,8 @@ body.drawer-open { overflow: hidden; }
 .auth-card { display: grid; align-content: center; justify-content: center; grid-template-columns: minmax(0, 22rem); gap: 1rem; padding: 3rem 1.5rem; }
 .auth-card h1 { margin-bottom: .25rem; }
 .auth-card form { display: contents; }
+/* A long form (joining) scrolls past the panel; the panel stays in view, its mark centered. */
+@media (min-width: 48.0625rem) { .auth-hero { position: sticky; top: 0; height: 100vh; align-self: start; } }
 .auth-card .stack { display: flex; flex-direction: column; gap: .9rem; }
 .auth-links { margin: 0; font-size: .95rem; text-align: center; }
 .authed { max-width: 30rem; }
@@ -284,6 +286,9 @@ button, .button {
   padding: .6rem 1.1rem; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;
 }
 button:hover, .button:hover { filter: brightness(1.08); }
+/* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
+   (Members, Member roster; SK, 2026-10-22). */
+a.button { margin-block: .25rem; }
 button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 button.secondary:hover { background: var(--accent-soft); filter: none; }
 button.big { font-size: 1.5rem; padding: 1rem 2rem; width: 100%; }
@@ -401,6 +406,18 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .rosterhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .rosterhead h2, .rosterhead p { margin: 0; }
 .legend { font-size: .85rem; margin: .5rem 0 .75rem; }
+/* The key is a labelled list: one line on a wide screen, one entry a line on a phone, where the
+   run-on line was hard to read (SK, 2026-10-22). */
+.legend-label { font-weight: 600; margin-right: .35rem; }
+.legend ul { display: inline; list-style: none; padding: 0; margin: 0; }
+.legend li { display: inline; }
+.legend li + li::before { content: " · "; }
+@media (max-width: 40rem) {
+  .legend-label { display: block; margin-bottom: .25rem; }
+  .legend li { display: block; margin: .2rem 0; }
+  .legend li + li::before { content: none; }
+}
+.msglist { list-style: none; padding-left: 0; }
 .tag.open { background: var(--accent-soft); color: var(--accent-soft-fg); border-color: transparent; }
 .tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); }
 .health .tag { margin-right: .25rem; }

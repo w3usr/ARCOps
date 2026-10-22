@@ -3337,3 +3337,26 @@ carries the actual running model ID.
   with it and `tools/check_interface.sh` passes.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 903cfa7
+
+## [2026-10-22 16:24 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Five findings from SK's phone and invitation walk before the beta, each
+  reproduced first: an invitation or entry link opened while signed in replaced the session;
+  the join pages laid out unlike sign-in; wrapped link-buttons touching; a bullet beside each
+  message; the roster key run together on a phone.
+- **Sections/Files Affected**: apps/accounts/views.py and views_entry.py, and
+  templates/accounts/signed_in_elsewhere.html (new): a signed-in visitor is asked to sign out
+  first, on the adult and new-guardian invitations and the entry-link form, and comes straight
+  back; templates/accounts/accept_invitation.html, accept_invitation_guardian.html, join.html
+  (the sign-in layout, no grey box); static/css/app.css (link-buttons keep a gap when they wrap;
+  no bullet on Messages; the key's layout; the sign-in panel stays in view beside a long form);
+  templates/events/detail.html (the key is a labelled list, visible "Key", one entry a line on a
+  phone); tests in test_flows.py, test_entry_links.py and tools/a11y/test_phone_layout.py (new).
+- **Nature of Contribution**: Analysis (each reproduced: unit tests for the session, browser
+  tests measuring the gaps, the marker, the key and the layout), code generation, tests. The new
+  tests failed before and pass after in Chromium and WebKit; the whole accessibility suite
+  passes in both (30); 433 application tests; interface check and lint clean; screenshots at
+  1280 and 390 px checked by eye. Firefox runs in CI only (Playwright's Firefox does not start
+  on macOS 27).
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]

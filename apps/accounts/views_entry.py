@@ -234,6 +234,10 @@ def join_form(request, token):
     link, closed = _link_or_page(request, token)
     if closed:
         return closed
+    if request.user.is_authenticated:
+        from .views import signed_in_elsewhere
+
+        return signed_in_elsewhere(request, "link")
     if request.method == "POST":
         form = JoinForm(request.POST, link=link)
         if form.is_valid():

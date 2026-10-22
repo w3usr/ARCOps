@@ -181,6 +181,18 @@ def test_overdue_verification_pauses_sign_in_until_an_officer_waives_it(world):
     assert User.objects.by_address("late2@uni.example").get().has_confirmed_address
 
 
+def test_a_signed_in_visitor_is_asked_to_sign_out_before_joining_through_a_link(world):
+    link = _link(world["off"], "class", required_domain="uni.example")
+    c = _as(world["off"])
+    body = c.get(f"/join/{link.token}/form/").content.decode()
+    assert "You are signed in as" in body and 'name="password1"' not in body
+    c.post(
+        f"/join/{link.token}/form/", {**FORM, "email": "fresh@uni.example", "category": "student"}
+    )
+    assert not User.objects.by_address("fresh@uni.example").exists()
+    assert int(c.session["_auth_user_id"]) == world["off"].pk
+
+
 def test_closed_links_admit_nobody(world):
     link = _link(world["off"], "class", required_domain="uni.example", cap=1)
     c = Client()

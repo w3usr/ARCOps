@@ -1,0 +1,15 @@
+{% extends "allauth/layouts/base.html" %}
+{% comment %}An invitation or an entry link makes a new account and signs the browser into it. Opened
+from somebody's own session, it used to show its form inside that session and, once filled in,
+replace it with the new account (SK, 2026-10-22). So the person signs out first, and comes
+straight back here.{% endcomment %}
+{% block head_title %}Sign out first{% endblock %}
+{% block body %}
+<h1>Sign out first</h1>
+<p>You are signed in as <strong>{{ user.full_name }}</strong>. This {{ what }} makes a new account{% if address %} for <strong>{{ address }}</strong>{% endif %}, so it opens only when nobody is signed in on this browser.</p>
+<form method="post" action="{% url 'account_logout' %}" class="stack">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <div><button type="submit">Sign out and continue</button></div>
+</form>
+<p><a href="{% url 'dashboard' %}">Stay signed in</a></p>
+{% endblock %}
