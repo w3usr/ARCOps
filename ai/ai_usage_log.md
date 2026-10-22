@@ -3324,3 +3324,16 @@ carries the actual running model ID.
   ("Could not find profile folder", outside the sandbox too); CI on Ubuntu is its first run.
 - **Human Review Status**: Pending review.
 - **Git Hash**: e4ffccc
+
+## [2026-10-22 14:54 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The sidebar's Settings icon drawn as a gear (SK: "the settings need a
+  gear icon"); it was a circle with rays, which reads as a sun.
+- **Sections/Files Affected**: apps/ops/templatetags/nav.py (`settings` icon: an eight-tooth
+  outline around the existing hub, generated from geometry in the set's 24x24, 1.75-stroke
+  style; drawn here, not taken from an icon set).
+- **Nature of Contribution**: Code generation. Rendered through the template tag beside its
+  neighbours at 20 px and checked by eye; lint and format clean; the contact sheet rebuilt
+  with it and `tools/check_interface.sh` passes.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]
