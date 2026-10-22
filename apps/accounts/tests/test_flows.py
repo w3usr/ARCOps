@@ -92,6 +92,37 @@ def test_invitation_accept_admits_member_at_once():
     assert c.get(f"/me/invite/{inv.token}/").status_code == 410
 
 
+def test_the_joined_notice_names_the_callsign_and_the_fcc_s_name_for_it():
+    """FR-76: the officers are told the callsign and the FCC's name, to catch a wrong one."""
+    from apps.comms.models import Outbox
+    from apps.credentials.models import UlsLicense
+
+    UlsLicense.objects.create(
+        callsign="N0JND",
+        operator_class="General",
+        status="active",
+        licensee_name="Member, Joined N",
+        first_name="Joined",
+        last_name="Member",
+    )
+    off = officer()
+    inv = create_invitation(off, "joined@example.org", "student")
+    Client().post(
+        f"/me/invite/{inv.token}/",
+        {
+            "callsign": "n0jnd",
+            "first_name": "Joined",
+            "last_name": "Member",
+            "password1": "a-long-password-123",
+            "password2": "a-long-password-123",
+            "consent": "on",
+        },
+    )
+    notice = Outbox.objects.get(user=off, subject__contains="joined")
+    assert "N0JND" in notice.subject
+    assert "under the name Member, Joined N" in notice.body_html
+
+
 def test_minor_invitation_is_addressed_to_the_guardian():
     inv = create_invitation(
         officer(), "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"

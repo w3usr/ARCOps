@@ -1,10 +1,12 @@
 """Phase 6: the settings page (FR-89), the privacy notice (FR-101), the seeded outline (FR-77)."""
 
+import re
+
 import pytest
 from django.test import Client
 
 from apps.accounts.models import User
-from apps.ops.config import set_setting, setting
+from apps.ops.config import DEFAULT_ACCENT, set_setting, setting
 from apps.ops.models import AuditLog, ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -64,6 +66,33 @@ def test_settings_page_edits_are_stored_and_audited():
     assert AuditLog.objects.filter(action="setting.changed").count() >= 2
     c2, _ = _as("officer")
     assert c2.get("/ops/settings/").status_code == 404
+
+
+def test_saving_one_setting_leaves_the_imported_notice_and_unset_accent_alone():
+    """The form posts back every field as the page shows it. An imported notice as
+    the editor returns it (cleaned, trimmed) and an unset accent as the color input shows it
+    are not changes, so one changed value is one setting changed."""
+    from apps.ops.templatetags.richtext import sanitise
+
+    notice = '<h1>Privacy notice</h1>\n<p>Write to <a href="mailto:club@example.org">us</a>.</p>\n'
+    ClubSetting.objects.create(key="privacy_notice_html", value=notice)  # as club_import stores it
+    ClubSetting.objects.create(key="branding.accent", value=None)
+    c, _ = _as("sysadmin")
+    page = c.get("/ops/settings/").content.decode()
+    shown = re.search(r'name="branding\.accent" type="color" value="([^"]*)"', page)[1]
+    assert shown == DEFAULT_ACCENT  # was #000000, which a save then stored
+    r = c.post(
+        "/ops/settings/",
+        {
+            "club.short_name": "Test Club",
+            "branding.accent": shown,  # a color input always posts the color it shows
+            "privacy_notice_html": sanitise(notice).strip(),  # what the editor sends back
+        },
+        follow=True,
+    )
+    assert "1 setting changed." in r.content.decode()
+    assert ClubSetting.objects.get(key="privacy_notice_html").source == "import"
+    assert setting("branding.accent") is None
 
 
 def test_privacy_notice_is_public_and_linked():

@@ -97,3 +97,4 @@ def test_push_title_names_the_club_so_two_installations_are_distinguishable():
             compose(u, "cancellation", "Slot canceled", "<p>x</p>")
     payload = json.loads(wp.call_args.kwargs["data"])
     assert payload["title"] == "Test ARC: Slot canceled"
+    assert "/static//" not in payload["icon"]  # branding() already gives a URL

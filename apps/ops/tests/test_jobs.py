@@ -65,6 +65,38 @@ def test_now_option_is_parsed_and_rejected_when_malformed():
         Probe().handle(now="yesterday")
 
 
+def test_a_run_that_never_finished_is_failed_by_the_next_run_and_pinged():
+    """A run stopped by its time limit or killed never records an outcome."""
+    killed = JobRun.objects.create(name="uls:sync")  # outcome "running", for ever
+    other = JobRun.objects.create(name="selfcheck")  # another job's run is left alone
+
+    class Probe(jobs.ScheduledCommand):
+        job_name = "uls:sync"
+
+        def run_job(self, now, **options):
+            return {}
+
+    with override_settings(HEALTHCHECKS_PING_KEY="k"):
+        with mock.patch("apps.ops.jobs.urllib.request.urlopen") as urlopen:
+            Probe().handle(now=None)
+            urls = [c[0][0] for c in urlopen.call_args_list]
+    killed.refresh_from_db()
+    assert killed.outcome == "failed" and "did not finish" in killed.detail["error"]
+    assert killed.finished is None  # it never finished; the record says so
+    assert urls[0].endswith("/ops-uls-sync/fail?create=1") and urls[-1].endswith("?create=1")
+    assert JobRun.objects.get(pk=other.pk).outcome == "running"
+
+
+def test_uls_sync_is_stale_without_a_weekly_import_in_eight_days():
+    """The daily runs kept uls:sync fresh while every weekly import failed for a month."""
+    now = timezone.now()
+    for source, age in (("weekly", timedelta(days=9)), ("daily:sun", timedelta(hours=2))):
+        run = JobRun.objects.create(name="uls:sync", outcome="ok", detail={"source": source})
+        JobRun.objects.filter(pk=run.pk).update(started=now - age, finished=now - age)
+    assert "uls:sync" in jobs.stale_jobs(now)
+    assert "uls:sync" not in jobs.stale_jobs(now - timedelta(days=2))  # weekly 7 days old then
+
+
 def test_stale_detection_uses_period_plus_grace_and_the_watchdog_reports_it():
     now = timezone.now()
     assert jobs.stale_jobs(now) == []  # nothing has ever run: not stale

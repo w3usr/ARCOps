@@ -188,7 +188,10 @@ def test_closed_links_admit_nobody(world):
     assert Client().get(f"/join/{link.token}/form/").status_code == 410  # cap reached
     link2 = _link(world["off"], "community", label="FRC")
     _as(world["off"]).post(f"/me/entry-links/{link2.pk}/", {"action": "pause"})
-    assert "paused" in Client().get(f"/join/{link2.token}/").content.decode()
+    r = Client().get(f"/join/{link2.token}/")
+    assert "paused" in r.content.decode()
+    # A 410 is cacheable by default, so a browser kept showing it after Resume (FR-119).
+    assert "no-store" in r["Cache-Control"]
     _as(world["off"]).post(f"/me/entry-links/{link2.pk}/", {"action": "revoke"})
     assert Client().get(f"/mentors/{link2.token}/").status_code == 410
 

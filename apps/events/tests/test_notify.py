@@ -230,6 +230,21 @@ def test_warnings_go_to_people_and_captains_once_per_state_and_carry_late_notes(
     call_command("notify_warnings", "--now", now.isoformat())
 
 
+def test_the_captains_get_notes_given_inside_the_48_hours_before_the_slot():
+    """FR-110: the 48 hours count back from the slot's start, not from the job's run."""
+    now = timezone.now()
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
+    early = _user("early@example.org", first_name="Early", last_name="Bird")
+    late = _user("late@example.org", first_name="Late", last_name="Comer")
+    e, slots = _event(now + timedelta(hours=30), captain=cap)
+    for who, note, before in ((early, "an old note", 70), (late, "a fresh note", 40)):
+        su = SignUp.objects.create(slot=slots[0], user=who, role="observer", note=note)
+        SignUp.objects.filter(pk=su.pk).update(created=slots[0].start - timedelta(hours=before))
+    notify.send_warnings(now)
+    body = _msgs(cap, "warning").get().body_html
+    assert "a fresh note" in body and "an old note" not in body
+
+
 def test_no_show_notice_goes_once_to_captains():
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
@@ -256,9 +271,11 @@ def test_captain_can_check_a_member_in_from_the_slot_page():
     c.force_login(cap)
     body = c.get(f"/events/{e.pk}/slot/{slots[0].pk}/").content.decode()
     assert ">Check in<" in body
-    c.post(f"/events/signup/{su.pk}/checkin/")
+    r = c.post(f"/events/signup/{su.pk}/checkin/")
     su.refresh_from_db()
     assert su.checked_in_at is not None and su.checked_in_by == cap
+    # Back to the slot for the next person, not the captain's own My Sked
+    assert r["Location"] == f"/events/{e.pk}/slot/{slots[0].pk}/"
 
 
 def test_digest_lists_events_open_slots_and_own_commitments():

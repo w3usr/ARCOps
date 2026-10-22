@@ -13,7 +13,15 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
-from .config import BRANDING_IMAGES, branding_url, flatten, load_yaml, set_setting, setting
+from .config import (
+    BRANDING_IMAGES,
+    DEFAULT_ACCENT,
+    branding_url,
+    flatten,
+    load_yaml,
+    set_setting,
+    setting,
+)
 from .models import ClubSetting
 from .templatetags.richtext import sanitise
 
@@ -400,6 +408,8 @@ def settings_page(request):
                     if not re.fullmatch(r"#[0-9a-f]{6}", new):
                         errors[key] = "A color like #401068 is needed."
                         continue
+                    if old is None and new == DEFAULT_ACCENT:
+                        continue  # an unset color is shown as the default; posted back, it stays unset
                 elif kind == "json" or group == "The club's own lists":
                     try:
                         new = json.loads(raw) if raw.strip() else []
@@ -422,13 +432,16 @@ def settings_page(request):
             if key in request.POST:
                 new = sanitise(request.POST.get(key, ""))
                 typed[key] = new
-                if new != (current.get(key) or ""):
+                # The stored value may be club_import's raw text: compare it cleaned and trimmed
+                # as the editor returns it, or an untouched notice reads as a change.
+                if new.strip() != sanitise(current.get(key) or "").strip():
                     pending[key] = new
         if errors:
-            what = "One field" if len(errors) == 1 else f"{len(errors)} fields"
+            what = (
+                "One field below needs" if len(errors) == 1 else f"{len(errors)} fields below need"
+            )
             messages.error(
-                request,
-                f"Nothing was saved. {what} below need correcting; what you typed is still here.",
+                request, f"Nothing was saved. {what} correcting; what you typed is still here."
             )
         else:
             for key, value in images.items():
@@ -477,6 +490,7 @@ def settings_page(request):
             or "",
             "mce_conf": mce_conf,
             "zones": zone_names(),
+            "default_accent": DEFAULT_ACCENT,
         },
     )
 

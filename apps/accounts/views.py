@@ -426,7 +426,7 @@ def accept_invitation(request, token):
                     middle_name=d["middle_name"],
                     last_name=d["last_name"],
                     preferred_name=d["preferred_name"],
-                    callsign="",
+                    callsign=d["callsign"],  # looked up before the notices (FR-4, FR-16)
                     cell_phone=d["cell_phone"],
                 )
             except AddressInUse:
@@ -441,16 +441,12 @@ def accept_invitation(request, token):
                 return render(
                     request, "accounts/accept_invitation.html", {"form": form, "invitation": inv}
                 )
-            if d["callsign"].strip():
-                from .services import apply_callsign
-
-                apply_callsign(user, d["callsign"])  # FR-4, FR-16
-                # A name the FCC spells differently raises the standing "Is this you?" question,
-                # which carries the two answers and stays until one is given. Saying the same
-                # thing again here as a flash message put two warnings about one fact on the
-                # first page a new member ever sees (NAF, 2026-09-22: "We should only have one
-                # warning here, not 2 redundant ones"), and INTERFACE.md already says a standing
-                # fact is a banner rather than a message, and to say nothing the page says.
+            # A name the FCC spells differently raises the standing "Is this you?" question,
+            # which carries the two answers and stays until one is given. Saying the same
+            # thing again here as a flash message put two warnings about one fact on the
+            # first page a new member ever sees (NAF, 2026-09-22: "We should only have one
+            # warning here, not 2 redundant ones"), and INTERFACE.md already says a standing
+            # fact is a banner rather than a message, and to say nothing the page says.
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, "Welcome. Your account is ready.")
             return redirect("dashboard")

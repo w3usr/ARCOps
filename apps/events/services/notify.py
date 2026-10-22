@@ -8,6 +8,7 @@ The two periodic entry points, send_reminders and send_warnings, are what the ti
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta
 
 from django.conf import settings as dj
@@ -160,6 +161,22 @@ def _contest_kbyg(event: Event) -> str:
     return "".join(bits)
 
 
+_HEADING = re.compile(r"(<h[1-6][^>]*>.*?</h[1-6]>)", re.I | re.S)
+_BLANK = re.compile(r"^(?:\s|&nbsp;|<br\s*/?>|<p>(?:\s|&nbsp;|<br\s*/?>)*</p>)*$", re.I)
+
+
+def drop_empty_sections(html: str) -> str:
+    """The know-before-you-go outline with its unfilled sections left out: a heading
+    goes when nothing but blank paragraphs follows it before the next heading. ponytail: flat
+    sections only; a heading whose text sits under a deeper subheading is dropped too."""
+    parts = _HEADING.split(html or "")
+    out = [] if _BLANK.match(parts[0]) else [parts[0]]
+    for heading, body in zip(parts[1::2], parts[2::2], strict=True):
+        if not _BLANK.match(body):
+            out += [heading, body]
+    return "".join(out)
+
+
 def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     now = now or timezone.now()
     slot, event, user = su.slot, su.slot.event, su.user
@@ -167,7 +184,9 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     status = evaluate(slot)
     co = status.control_operator
     caps = captains_of(event)
-    kbyg = (slot.position.location.kbyg_html or "") + (event.kbyg_html or "")
+    kbyg = drop_empty_sections(slot.position.location.kbyg_html) + drop_empty_sections(
+        event.kbyg_html
+    )
     local = display_zone(event)
     ctx = {
         "event": event,
@@ -261,7 +280,7 @@ def send_warnings(now: datetime | None = None) -> dict:
         notes = "; ".join(
             f"{s.user.short_name}: {s.note}"
             for s in signups
-            if s.note and s.created >= now - timedelta(hours=48)
+            if s.note and s.created >= slot.start - timedelta(hours=48)
         )
         row = {
             "event": event.title,

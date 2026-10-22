@@ -133,6 +133,8 @@ def is_stale(spec: JobSpec, now: datetime | None = None) -> bool:
     never succeeded and the JobRun table has existed for longer than that (the first run of a
     fresh deployment gets the same grace as every later one)."""
     now = now or timezone.now()
+    if spec.name == "uls:sync" and _weekly_overdue(now):
+        return True
     last = last_ok(spec.name)
     if last and last.finished:
         return now - last.finished > spec.period + spec.grace
@@ -140,6 +142,17 @@ def is_stale(spec: JobSpec, now: datetime | None = None) -> bool:
     if first_any is None:
         return False
     return now - first_any.started > spec.period + spec.grace
+
+
+def _weekly_overdue(now: datetime) -> bool:
+    """The daily runs keep uls:sync fresh, so a weekly import that fails every Monday
+    would never show. Overdue when the last good weekly import is more than eight days old."""
+    weekly = (
+        JobRun.objects.filter(name="uls:sync", outcome="ok", detail__source="weekly")
+        .order_by("-finished")
+        .first()
+    )
+    return bool(weekly and weekly.finished and now - weekly.finished > timedelta(days=8))
 
 
 def stale_jobs(now: datetime | None = None) -> list[str]:
@@ -192,6 +205,14 @@ class ScheduledCommand(BaseCommand):
             if parsed is None:
                 raise CommandError(f"--now {raw_now!r} is not an ISO 8601 instant")
             now = parsed if timezone.is_aware(parsed) else timezone.make_aware(parsed)
+        # A run stopped by its time limit or killed never records an outcome. The timer
+        # never starts a job while it is still running, so an earlier run reading "running"
+        # now is dead. ponytail: a run started by hand beside the timer's would be caught too.
+        dead = JobRun.objects.filter(name=spec.name, outcome="running").update(
+            outcome="failed", detail={"error": "did not finish: stopped or killed"}
+        )
+        if dead:
+            ping(spec.slug, ok=False)
         run = JobRun.objects.create(name=spec.name)
         try:
             detail = self.run_job(now, **options) or {}
