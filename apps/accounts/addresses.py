@@ -230,6 +230,7 @@ def state(user: User) -> list[dict]:
             "address": a.address,
             "kind": a.get_kind_display(),
             "confirmed": a.confirmed,
+            "proof": a.proof,  # the card says how it was trusted, and offers a proof if it was not
             "delivery": a.delivery,
             "can_remove": len(rows) > 1,
         }

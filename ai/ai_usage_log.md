@@ -3285,3 +3285,21 @@ carries the actual running model ID.
   defects left for later (role keys, the signed-out "Cannot make it?" page, the device name).
 - **Human Review Status**: Pending review.
 - **Git Hash**: c0f1d21
+
+## [2026-10-22 13:05 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A member whose institution address was vouched for could not prove it,
+  so could never sign the station or computer agreement (found by SK clicking through
+  Agreements on the development server).
+- **Sections/Files Affected**: apps/accounts/views_addresses.py (Prove it is yours sends the
+  link unless the address is already proved; it answered "already confirmed" for any confirmed
+  address); apps/accounts/addresses.py (`state` passes each address's proof, which the address
+  card reads and never received, so it offered the button beside proved addresses too);
+  templates/credentials/agreements.html and apps/credentials/views.py (the refusal says
+  "proved", which is the rule, and names the button and the link); tests in
+  test_addresses.py (new) and test_phase4.py (the wording).
+- **Nature of Contribution**: Analysis (traced in the code; SK's own dev address read: kind
+  institution, confirmed, proof vouched), code generation, tests. The new test fails without
+  the fix; 431 application tests pass; lint and format clean.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]

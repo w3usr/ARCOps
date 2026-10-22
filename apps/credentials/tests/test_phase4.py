@@ -896,7 +896,7 @@ def test_an_agreement_cannot_be_signed_until_the_institution_address_is_proved()
     c = Client()
     c.force_login(member)
     page = c.get("/credentials/agreements/").content.decode()
-    assert "cannot be signed until your example.edu address is confirmed" in page
+    assert "cannot be signed until your example.edu address is proved" in page
     assert "Sign it" not in page  # the form is not offered at all
 
     form = {"signer_name": member.full_name, "affirm": "on"}

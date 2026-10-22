@@ -12,7 +12,12 @@ from __future__ import annotations
 from django.contrib import messages
 
 from . import addresses
-from .models import User
+from .models import Address, User
+
+# A confirmed address may only have been vouched for when the account was made. Its owner can
+# still prove it from the mailbox, which the station and computer agreements ask for (FR-27);
+# only an address already proved has nothing left to send.
+PROVED = (Address.Proof.MAILBOX, Address.Proof.OFFICER)
 
 ACTIONS = (
     "address_add",
@@ -145,8 +150,10 @@ def handle(request, subject: User) -> bool:
     if action == "address_send_link":
         if address not in {a.address for a in addresses.on_file(subject)}:
             messages.error(request, "That address is not on the account.")
-        elif address in addresses.confirmed(subject):
-            messages.info(request, f"{address} is already confirmed.")
+        elif Address.objects.filter(
+            user=subject, address__iexact=address, confirmed=True, proof__in=PROVED
+        ).exists():
+            messages.info(request, f"{address} is already proved.")
         else:
             addresses.send_confirmation(subject, address, base_url)
             messages.success(request, f"A confirmation link is on its way to {address}.")

@@ -87,6 +87,37 @@ def test_a_member_adds_an_address_and_confirms_it_from_the_link_sent_to_it(setti
     assert AuditLog.objects.filter(action="address.confirmed").exists()
 
 
+def test_a_vouched_address_can_be_proved_from_its_own_mailbox(settings):
+    """An address vouched for when the account was made is confirmed but not proved, so the
+    station and computer agreements refuse it, and the profile offers Prove it is yours. That
+    button used to answer "already confirmed" and send nothing, so it could never be proved."""
+    from apps.accounts.models import Address
+    from apps.ops.config import set_setting
+
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    set_setting(None, "defaults.email_delivery", "on")
+    u = _member()  # vouched, as an account an officer made
+    assert Address.objects.get(user=u).proof == Address.Proof.VOUCHED
+    c = Client()
+    c.force_login(u)
+    assert "Prove it is yours" in c.get(f"/members/{u.pk}/edit/").content.decode()
+    c.post(f"/members/{u.pk}/edit/", {"action": "address_send_link", "address": u.email})
+    sent = [m for m in mail.outbox if m.to == [u.email]]
+    assert sent, "the link goes to the address being proved"
+    html = [c for c, t in sent[-1].alternatives if t == "text/html"][0]
+    Client().get(re.search(r'href="(http[^"]*/verify-address/[^"]*)"', html).group(1))
+    assert Address.objects.get(user=u).proof == Address.Proof.MAILBOX
+    # once proved, the button is gone and asking again sends nothing
+    assert "Prove it is yours" not in c.get(f"/members/{u.pk}/edit/").content.decode()
+    before = len(mail.outbox)
+    r = c.post(
+        f"/members/{u.pk}/edit/",
+        {"action": "address_send_link", "address": u.email},
+        follow=True,
+    )
+    assert len(mail.outbox) == before and "already proved" in r.content.decode()
+
+
 def test_an_officer_can_confirm_an_address_without_any_mail():
     """Nothing here may depend on mail arriving, so the officer's word is enough."""
     off = _member("off@example.edu", groups=["officer"])
