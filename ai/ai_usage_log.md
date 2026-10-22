@@ -3374,4 +3374,4 @@ carries the actual running model ID.
   every item in W3USR's four agreements holds exactly one), code generation, test. After the
   fix the PDF T40 builds from the real agreements is PDF/UA-1 compliant; credential tests pass.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: 84b4c00
