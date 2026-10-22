@@ -3360,3 +3360,18 @@ carries the actual running model ID.
   on macOS 27).
 - **Human Review Status**: Pending review.
 - **Git Hash**: e08f708
+
+## [2026-10-22 16:43 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The signed-agreement PDF failed PDF/UA-1 in veraPDF (T40 step 5): every
+  list item in the agreement text held a paragraph, which the PDF tags as a third child of the
+  item where only a label and a body are allowed (rule 7.2-20).
+- **Sections/Files Affected**: apps/credentials/services.py (`pdf_list_items`: a list item whose
+  whole content is one paragraph is unwrapped in the HTML handed to WeasyPrint; the stored text
+  and its hash are untouched); apps/credentials/tests/test_phase4.py (a test of it).
+- **Nature of Contribution**: Analysis (veraPDF 1.30.3 on the T40 PDF: one rule failed 37 times;
+  a two-line experiment showed a plain list item compliant and one with a paragraph failing;
+  every item in W3USR's four agreements holds exactly one), code generation, test. After the
+  fix the PDF T40 builds from the real agreements is PDF/UA-1 compliant; credential tests pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [pending]

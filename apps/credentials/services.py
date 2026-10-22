@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import re
 
 from cryptography.fernet import Fernet
 from django.conf import settings
@@ -558,6 +559,20 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
 PDF_RENDER_VERSION = 1
 
 
+# A list item whose whole content is one paragraph. PDF/UA-1 (7.2-20) lets a list item hold only
+# a label and a body, and WeasyPrint tags the <p> as a third child, so the PDF failed validation
+# wherever the agreement text wraps its items in paragraphs, as W3USR's do (T40, 2026-10-22).
+_LONE_P_ITEM = re.compile(
+    r"(<li\b[^>]*>)\s*<p\b[^>]*>((?:(?!</?p\b).)*?)</p>\s*(</li>)", re.IGNORECASE | re.DOTALL
+)
+
+
+def pdf_list_items(html: str) -> str:
+    """The HTML for the PDF with a lone paragraph in a list item unwrapped. Presentation only:
+    the stored text, and the hash of it the PDF prints, are untouched."""
+    return _LONE_P_ITEM.sub(r"\1\2\3", html)
+
+
 def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
     """FR-23, TR-10: the text as signed plus the signature block, as a tagged PDF (PDF/UA-1).
     WeasyPrint is imported here so the web worker pays for it only when a PDF is made."""
@@ -595,7 +610,7 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
             }.get(agreement.state, "555555"),
         },
     )
-    return weasyprint.HTML(string=html, base_url="/").write_pdf(
+    return weasyprint.HTML(string=pdf_list_items(html), base_url="/").write_pdf(
         pdf_variant="pdf/ua-1", pdf_tags=True
     )
 

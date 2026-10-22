@@ -1062,3 +1062,17 @@ def test_every_way_of_ending_an_account_takes_its_signatures_out_of_the_queue():
             assert "comes back with them" not in said
         else:
             assert "comes back with them" in said, how
+
+
+def test_a_paragraph_alone_in_a_list_item_is_unwrapped_for_the_pdf():
+    """PDF/UA-1 7.2-20: a list item holds only a label and a body, and WeasyPrint tags a <p>
+    inside an <li> as a third child. W3USR's agreements put one in every item, so veraPDF failed
+    the signed PDF on all of them (T40 step 5, 2026-10-22). Only the PDF's markup changes; the
+    stored text and its hash do not."""
+    from apps.credentials.services import pdf_list_items
+
+    assert pdf_list_items('<ul><li><p class="x">One</p></li>\n<li> <p>Two</p> </li></ul>') == (
+        "<ul><li>One</li>\n<li>Two</li></ul>"
+    )
+    two = "<ul><li><p>a</p><p>b</p></li></ul>"
+    assert pdf_list_items(two) == two, "several paragraphs are left as they are"
