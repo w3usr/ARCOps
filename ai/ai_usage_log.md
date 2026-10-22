@@ -3336,4 +3336,4 @@ carries the actual running model ID.
   neighbours at 20 px and checked by eye; lint and format clean; the contact sheet rebuilt
   with it and `tools/check_interface.sh` passes.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [pending]
+- **Git Hash**: 903cfa7
