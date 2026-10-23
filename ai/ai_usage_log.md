@@ -3434,4 +3434,4 @@ carries the actual running model ID.
   this session (the same on a clean `main`) and the PDF test, which needs Homebrew's libraries on
   the library path and passes with them.
 - **Human Review Status**: Pending review.
-- **Git Hash**: 
+- **Git Hash**: 2108b10
