@@ -41,18 +41,21 @@ def sorted_columns(
     columns: list[dict],
     keys: dict[str, Callable],
     default: str,
+    default_desc: bool = False,
 ) -> tuple[str, bool, list[dict]]:
     """Read `?sort=` and `?dir=`, and build the heading links.
 
     Returns the column key in force, whether it is descending, and the columns with the `url`,
     `here` and `aria` the heading template needs. Each link carries the **whole** query string
     forward, so clicking a heading keeps the search and every filter; `page` is dropped, because
-    a re-sorted table starts again at the top.
+    a re-sorted table starts again at the top. `default_desc` turns the default column round when
+    no `?dir=` is given, for a log that reads newest first.
     """
     sort = request.GET.get("sort", default)
     if sort not in keys or sort not in {c["key"] for c in columns}:
         sort = default
-    descending = request.GET.get("dir") == "desc"
+    given = request.GET.get("dir")
+    descending = given == "desc" if given else (default_desc and sort == default)
 
     built = []
     for column in columns:

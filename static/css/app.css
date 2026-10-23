@@ -604,6 +604,13 @@ details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 .decide-row details.decide-decline { margin: 0; }
 .decide-row details.decide-decline > summary { font-size: inherit; }
 .decide-row details.decide-decline .row-form { margin-top: .4rem; }
+/* Opened, Decline keeps its place beside Approve and only its form drops below, so the toggle
+   does not jump away from the pointer. A phone stacks them anyway. */
+@media (min-width: 561px) {
+  .decide-row details.decide-decline { flex: 1 1 0; min-width: 0; }
+  .decide-row details.decide-decline .row-form { flex-basis: 100%; }
+  .decide-row details.decide-decline input { min-width: min(14rem, 100%); }
+}
 /* Turning a decline round, from its own row in the log: an ordinary action rather than
    a destructive one, so it is not red. */
 details.reverse > summary { color: var(--accent, inherit); text-decoration: none; white-space: nowrap; }

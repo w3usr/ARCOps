@@ -560,6 +560,9 @@ def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
     # filter checkbox's value, which is a form value rather than something anybody reads.
     body_rows = body.split("<tbody>")[-1].split("</tbody>")[0]
     assert "approved_after_decline" not in body_rows
+    # Newest first, as the page says, until somebody sorts it otherwise (T8 step 7).
+    assert body_rows.index("Approved on reversal") < body_rows.index("Declined")
+    assert 'aria-sort="descending"' in body.split("Decisions taken")[1]
 
     # Revoking and expiring are decisions too, and each is named rather than counted.
     revoke(advisor, signed, "left the club")

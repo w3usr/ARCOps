@@ -3417,3 +3417,21 @@ carries the actual running model ID.
   Chromium and WebKit locally; club-neutral, requirement-id and interface guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: e70be77
+
+## [2026-10-23 14:00 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix two defects the T8 script found and reproduced at `f31170a`: the
+  approvers' **Decisions taken** opened oldest first, and opening **Decline** knocked it off
+  Approve's row.
+- **Sections/Files Affected**: apps/ops/tables.py (`sorted_columns` takes `default_desc`, applied
+  to the default column when no `?dir=` is given); apps/credentials/views.py (the decision log
+  defaults to newest first, FR-128); apps/credentials/tests/test_phase4.py (newest first and
+  `aria-sort` descending, failing before the fix); static/css/app.css (above phone width the
+  opened Decline keeps its place beside Approve and only its form drops below).
+- **Nature of Contribution**: Code edit, each defect reproduced first (the unit assertion failed
+  on `main`; the T8 script's geometry check failed on the old CSS). After: credentials tests
+  24/24; T8 locally with no failures; `tools/check.sh` green except Firefox failing to launch in
+  this session (the same on a clean `main`) and the PDF test, which needs Homebrew's libraries on
+  the library path and passes with them.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 

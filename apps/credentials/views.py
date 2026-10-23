@@ -363,7 +363,9 @@ def _decision_log(request) -> dict:
         "action": "action",
         "by": "actor_label",
     }
-    sort, descending, columns = sorted_columns(request, DECISION_COLUMNS, order, "at")
+    sort, descending, columns = sorted_columns(
+        request, DECISION_COLUMNS, order, "at", default_desc=True
+    )
     field = order[sort]
     # Every sort ends the same way, so reversing a column truly reverses the page.
     qs = qs.order_by(f"{'-' if descending else ''}{field}", "-at", "-pk")
