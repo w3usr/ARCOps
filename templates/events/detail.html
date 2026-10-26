@@ -8,7 +8,7 @@
   {% if is_captain %}<a class="button secondary" href="{% url 'event_manage' event.pk %}">Manage</a>{% endif %}
 </div>
 {% if roster.span.lead %}
-<p class="when"><strong>{{ roster.span.lead }}</strong><span class="muted"> · {{ roster.span.other }}</span></p>
+<p class="when"><strong>{{ roster.span.lead }}</strong>{% if roster.span.other %}<span class="muted"> · {{ roster.span.other }}</span>{% endif %}</p>
 {% endif %}
 <p class="muted">{{ event.get_type_display|default:event.type|capfirst }}{% if event.min_license_class %} · preferred class {{ event.min_license_class }}{% endif %}{% if event.rules_url %} · <a href="{{ event.rules_url }}">Rules</a>{% endif %}{% if roster.single_location %} · {{ roster.single_location.name }}{% if roster.single_location.address %}, {{ roster.single_location.address }}{% endif %}{% endif %}</p>
 
@@ -53,8 +53,9 @@
 <form method="post" action="{% url 'event_bulk' event.pk %}" id="roster-form">{% csrf_token %}
 <div class="rosterhead">
   <h2>Roster</h2>
-  <p class="zones muted">Times in <strong>{{ roster.lead_label }}</strong>, then {{ roster.other_label }}.
+  <p class="zones muted">{% if roster.other_label %}Times in <strong>{{ roster.lead_label }}</strong>, then {{ roster.other_label }}.
     <a href="{% url 'roster_tz' event.pk %}?tz={% if roster.lead == 'utc' %}local{% else %}utc{% endif %}">Lead with {{ roster.other_label }}</a>
+    {% else %}Times in <strong>{{ roster.lead_label }}</strong>.{% endif %}
     · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %}</p>
 </div>
 <div class="legend muted"><span class="legend-label" id="roster-key">Key</span>
@@ -81,7 +82,7 @@
     <div class="r-row kind-{{ row.kind }}" role="row">
       <div class="r-time" role="rowheader">
         <span class="lead">{{ row.lead_range }}</span>
-        <span class="other muted">{{ row.other_range }}</span>
+        {% if row.other_range %}<span class="other muted">{{ row.other_range }}</span>{% endif %}
         {% if row.kind != 'operating' %}<span class="tag">{{ row.kind }}</span>{% endif %}
       </div>
       {% for c in row.cells %}

@@ -181,6 +181,11 @@ def build(
     lead_zone, other_zone = (local, UTC) if lead == "local" or local == UTC else (UTC, local)
     if lead == "utc":
         lead_zone, other_zone = UTC, local
+    starts, ends = event.starts_at(), event.ends_at()
+    lead_label = zone_label(starts or now, lead_zone)
+    # One of the two zones is UTC, so equal labels mean every time would print twice: a contest
+    # shown in UTC leaves the second zone's strings empty, and the templates skip them.
+    one_zone = lead_label == zone_label(starts or now, other_zone)
     is_captain = viewer.can_captain(event)
     published = event.state == Event.State.PUBLISHED
     locked = event.state == Event.State.LOCKED
@@ -283,7 +288,7 @@ def build(
                 s.start,
                 s.end,
                 _hours(s.start, s.end, lead_zone, with_day=False),
-                _hours(s.start, s.end, other_zone, with_day=True),
+                "" if one_zone else _hours(s.start, s.end, other_zone, with_day=True),
                 s.kind,
                 cells=[None] * len(positions) if layout == "grid" else [],
             )
@@ -295,7 +300,6 @@ def build(
             row.cells.append(cells[s.pk])
 
     single_location = len({p.location_id for p in positions}) == 1
-    starts, ends = event.starts_at(), event.ends_at()
     return {
         "names_visible": viewer.is_member,  # FR-121: Provisional members see counts, not names
         "locked": locked,
@@ -311,14 +315,14 @@ def build(
         # The event's zone at its start, not today's (FR-36): a November event read in October
         # is EST, as its rows are. ponytail: one label for the event; one that crosses a
         # change of clocks shows the zone it starts in, and each row still names its own.
-        "lead_label": zone_label(starts or now, lead_zone),
-        "other_label": zone_label(starts or now, other_zone),
+        "lead_label": lead_label,
+        "other_label": "" if one_zone else zone_label(starts or now, other_zone),
         "span": {
             "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
             if starts and ends
             else "",
             "other": f"{starts.astimezone(other_zone):%a %-d %b %H:%M} – {ends.astimezone(other_zone):%a %-d %b %H:%M} {zone_label(starts, other_zone)}"
-            if starts and ends
+            if starts and ends and not one_zone
             else "",
         },
         "roles": setting("slot_roles", []) or [],

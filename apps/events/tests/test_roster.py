@@ -100,6 +100,22 @@ def test_the_zone_label_follows_the_event_not_today(world):
     assert data["span"]["lead"].endswith("EST")
 
 
+def test_a_utc_event_shows_each_time_once(world):
+    """A contest shown in UTC repeated every time beneath itself, and offered "Lead with UTC"
+    (found on the contact sheet, 2026-10-23)."""
+    ev = world["ev"]
+    ev.display_timezone = "UTC"
+    ev.save()
+    for lead in ("local", "utc"):
+        data = build(ev, world["mem"], lead)
+        row = data["days"][1].rows[0]  # Friday holds only the 23:00Z setup slot
+        assert row.lead_range == "00:00–01:00 UTC" and row.other_range == ""
+        assert data["span"]["lead"].endswith("UTC") and data["span"]["other"] == ""
+        assert data["lead_label"] == "UTC" and data["other_label"] == ""
+    body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
+    assert "Times in <strong>UTC</strong>." in body and "Lead with" not in body
+
+
 def test_status_is_phrased_as_a_need_never_a_verdict(world):
     ev = world["ev"]
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()

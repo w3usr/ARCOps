@@ -423,9 +423,9 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .health .tag { margin-right: .25rem; }
 
 .roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.roster .r-head, .roster .r-row { display: grid; grid-template-columns: 9.5rem repeat(var(--cols), minmax(0, 1fr)); }
-.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 9.5rem repeat(auto-fit, minmax(0, 1fr)); }
-.roster.list .r-row { grid-template-columns: 9.5rem minmax(0, 1fr); }
+.roster .r-head, .roster .r-row { display: grid; grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr)); }
+.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 11rem repeat(auto-fit, minmax(0, 1fr)); }
+.roster.list .r-row { grid-template-columns: 11rem minmax(0, 1fr); }
 .roster .r-head { position: sticky; top: 0; z-index: 2; background: var(--side); border-bottom: 2px solid var(--line); font-size: .85rem; color: var(--muted); font-weight: 600; }
 .roster .r-head > div { padding: .5rem .75rem; }
 .roster .r-pos { display: flex; flex-direction: column; line-height: 1.2; } .roster .r-pos .loc { font-weight: 400; }
@@ -434,8 +434,8 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .roster .daysel { gap: .6rem; } .roster .daysel span { font-weight: 600; }
 .roster .r-row { border-top: 1px solid var(--line); } .roster .r-day .r-row:first-of-type { border-top: 0; }
 .roster .r-time { padding: .5rem .75rem; display: flex; flex-direction: column; gap: .1rem; line-height: 1.25; }
-.roster .r-time .lead { font-weight: 600; font-variant-numeric: tabular-nums; }
-.roster .r-time .other { font-size: .8rem; }
+.roster .r-time .lead { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.roster .r-time .other { font-size: .8rem; white-space: nowrap; }
 .roster .r-time .tag { align-self: flex-start; margin-top: .2rem; }
 .roster .kind-setup, .roster .kind-breakdown { background: color-mix(in srgb, var(--card) 60%, transparent); }
 .roster .r-cell { position: relative; border-left: 1px solid var(--line); min-height: 3.4rem; }

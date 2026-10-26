@@ -3435,3 +3435,24 @@ carries the actual running model ID.
   the library path and passes with them.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 2108b10
+
+## [2026-10-26 12:57 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found on the 2026-10-23 contact sheet: roster rows were twice
+  as tall as their content because the time wrapped in its column, and an event shown in UTC
+  printed every time twice (each row, the page's span, the slot title) and offered "Lead with
+  UTC" (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/roster.py (`build` leaves the second zone's
+  range, span and label empty when both zones read the same); templates/events/detail.html and
+  _slot_body.html (an empty second time is skipped; one zone reads "Times in UTC." with no
+  toggle); static/css/app.css (time column 9.5rem to 11rem, both time lines kept on one line;
+  the cell's 3.4rem floor kept, SK's decision); apps/events/tests/test_roster.py (a UTC event
+  shows each time once); tools/a11y/test_roster_rows.py (new: the time is one line, measured
+  in a browser, for a UTC and a local-zone event).
+- **Nature of Contribution**: Code edit, each part reproduced first (the browser check failed
+  on `main` in both zones; the unit test failed on the repeated range). After: 435 application
+  tests pass; the new browser check and the phone-layout checks pass in Chromium and WebKit;
+  Firefox does not launch in this shell (its profile folder is not found, the same on a clean
+  `main`), so CI covers it. Lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
