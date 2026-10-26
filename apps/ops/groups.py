@@ -147,9 +147,8 @@ def summary_of(
         return "Nothing beyond signing in and seeing your own account."
     if len(things) > 3:
         things = things[:3] + ["more besides"]
-    if len(things) == 1:
-        return things[0] + "."
-    return ", ".join(things[:-1]) + ", and " + things[-1] + "."
+    sentence = things[0] if len(things) == 1 else ", ".join(things[:-1]) + ", and " + things[-1]
+    return sentence[0].upper() + sentence[1:] + "."
 
 
 def label_of(group: Group, configured: list[dict] | None = None) -> str:

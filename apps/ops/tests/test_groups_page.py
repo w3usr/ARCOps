@@ -111,3 +111,10 @@ def test_nobody_can_save_away_the_last_account_that_decides_who_may_do_what():
     sysadmin = User.objects.get(pk=sysadmin.pk)
     assert sysadmin.may("assign_groups") and sysadmin.may("manage_groups")
     assert not Group.objects.get(name="advisor").permissions.exists()
+
+
+def test_a_level_without_a_configured_sentence_is_described_in_one_that_starts_capitalised():
+    from apps.ops.groups import summary_of
+
+    assert summary_of("treasurer", [], ["view_directory"])[0].isupper()
+    assert summary_of("treasurer", [], ["view_directory", "view_reports"])[0].isupper()

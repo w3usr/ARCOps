@@ -3828,3 +3828,15 @@ carries the actual running model ID.
   452 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: b2122c0
+
+## [2026-10-26 18:11 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A level's description built from its permissions starts with a capital
+  letter; a level the club configured keeps its own sentence.
+- **Sections/Files Affected**: apps/ops/groups.py (summary_of); apps/ops/tests/test_groups_page.py
+  (new test).
+- **Nature of Contribution**: Code generation (fix and test), reproduced first (the test failed on
+  the lowercase sentence). After: 453 application tests pass; lint, format and the club-neutral
+  guard pass.
+- **Human Review Status**: Reviewed and verified
+- **Git Hash**: [after commit]
