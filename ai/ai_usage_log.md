@@ -3814,3 +3814,17 @@ carries the actual running model ID.
   check pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 369e149
+
+## [2026-10-26 18:04 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found fixing the signed-out "Cannot make it?" page on
+  2026-10-26: its Keep it led to My schedule, which asks for a sign-in, so a member who only
+  wanted their slot was never told nothing changed (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/events/token_cannot.html (Keep it to `?kept=1`);
+  apps/events/views.py (`cannot_by_token` shows the reminder link's own confirmation page in a
+  kept state; nothing recorded, attendance not confirmed); templates/events/token_confirmed.html
+  (Nothing changed, "you are still down as"); apps/events/tests/test_notify.py.
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the link). After:
+  452 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

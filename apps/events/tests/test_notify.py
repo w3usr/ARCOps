@@ -306,3 +306,26 @@ def test_digest_lists_events_open_slots_and_own_commitments():
     assert "Fall Sprint" in m.body_html and "1 open" in m.body_html and "as Observer" in m.body_html
     ClubSetting.objects.update_or_create(key="club.short_name", defaults={"value": "Test ARC"})
     call_command("digest_weekly", "--now", now.isoformat())
+
+
+def test_keep_it_from_the_reminder_says_nothing_changed_without_a_sign_in():
+    """Signed out, Keep it on Cannot make it? led to My schedule, which asks for a sign-in, so a
+    member who only wanted their slot was never told that nothing changed."""
+    now = timezone.now()
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    e, slots = _event(now + timedelta(hours=20))
+    su = SignUp.objects.create(slot=slots[0], user=mem, role="operator")
+    token = notify.confirm_token(su)
+    c = Client()
+    page = c.get(f"/events/cannot/{token}/").content.decode()
+    assert 'href="?kept=1">Keep it</a>' in page
+    r = c.get(f"/events/cannot/{token}/?kept=1")
+    body = r.content.decode()
+    assert (
+        r.status_code == 200
+        and "Nothing changed" in body
+        and "Sign in" not in body.split("<main")[1][:600]
+    )
+    assert "you are still down as <strong>Operator</strong>" in body and "Open my schedule" in body
+    su.refresh_from_db()
+    assert su.confirmed_at is None, "keeping a slot is not confirming attendance"

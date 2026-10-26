@@ -188,6 +188,10 @@ def cannot_by_token(request, token):
     su = signup_from_token(token)
     if su is None:
         return render(request, "events/token_invalid.html", status=410)
+    if request.method == "GET" and request.GET.get("kept"):
+        # Keep it: say so here, signed out as well as in; My schedule would ask for a sign-in.
+        # Nothing is recorded, and keeping a slot is not confirming attendance.
+        return render(request, "events/token_confirmed.html", {"signup": su, "kept": True})
     broken = would_break(su.slot, su)
     if request.method == "POST":
         record(
