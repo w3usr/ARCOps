@@ -3743,4 +3743,4 @@ carries the actual running model ID.
   numbers; the files no longer do.
 - **Nature of Contribution**: Edit.
 - **Human Review Status**: Reviewed and verified (SK chose a correcting commit over a rewrite).
-- **Git Hash**: [after commit]
+- **Git Hash**: 7166ab7
