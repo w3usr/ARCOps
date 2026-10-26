@@ -3744,3 +3744,14 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit.
 - **Human Review Status**: Reviewed and verified (SK chose a correcting commit over a rewrite).
 - **Git Hash**: 7166ab7
+
+## [2026-10-26 16:49 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile the requirements with beta batch 2: record SK's decision that a
+  slot's state reaches every reader, captains included, as what it needs (SK, 2026-10-26).
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (addendum A10, FR-73 and FR-62; trailer);
+  the body of the requirements unchanged.
+- **Nature of Contribution**: Drafting, from the decision recorded in the entry; both quotations
+  checked word for word against the requirements. The three guards pass.
+- **Human Review Status**: Reviewed and verified (SK approved A10's wording, 2026-10-26).
+- **Git Hash**: [after commit]

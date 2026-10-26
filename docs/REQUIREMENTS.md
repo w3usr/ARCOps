@@ -2637,7 +2637,26 @@ both, as written.
 go ahead and implement". *Record:* `notes/2026-10-26_bug-batch.md` and the reconciliation note of
 2026-10-26.
 
+### A10. FR-73 and FR-62: a slot's state reaches every reader as what it needs
+
+**Original (FR-73).** "**At-risk warning**: when a slot inside a configurable horizon (default
+72 hours) is *not viable*, *at risk*, or has an unconfirmed sign-up within 24 hours, the captains
+receive a warning, and the people signed up receive a message saying what is missing and asking
+them to help fill it." **(FR-62)** The
+roster's words were changed on 2026-09-13 from *empty / not viable / viable / at risk* "so that a
+newcomer reads an invitation, not a verdict."
+
+**Decision.** *Not viable* and *at risk* name states, in the code and in these requirements. A
+reader never sees them: every page that warns before a change, every message about a slot, the
+captains' at-risk digest, and the roster export say what the slot needs, in the roster's words
+(*needs someone with station access*, *needs one more person alongside …*). Captains read the
+same words as members.
+
+**Decided by** SK, 2026-10-26, choosing, of two options put to him, the roster's words for every
+reader over keeping the state names in what captains read. *Record:*
+`notes/2026-10-26_bug-batch.md` and the reconciliation note of 2026-10-26.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8) and 2026-10-26 (A9), from the dated decision records named in
-each entry; the requirements above are unchanged.
+(A1 to A4), 2026-10-22 (A5 to A8) and 2026-10-26 (A9, A10), from the dated decision records named
+in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
