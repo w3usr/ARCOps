@@ -3602,3 +3602,14 @@ carries the actual running model ID.
   tests; lint, format and the three guards.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 36c08f3
+
+## [2026-10-26 14:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile the requirements with beta batch 1: record SK's decision that an
+  event shown in UTC shows each time once (SK, 2026-10-26).
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (addendum A9, FR-38 and §5.9; trailer);
+  the body of the requirements unchanged.
+- **Nature of Contribution**: Drafting, from the decision quoted in the entry. The three guards
+  pass.
+- **Human Review Status**: Reviewed and verified (SK approved A9's wording, 2026-10-26).
+- **Git Hash**: [after commit]
