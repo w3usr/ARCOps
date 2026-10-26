@@ -3866,3 +3866,14 @@ carries the actual running model ID.
   457 application tests pass; lint and format pass; T38 locally on W3USR 17 pass, 0 fail.
 - **Human Review Status**: Reviewed and verified
 - **Git Hash**: 0ef9290
+
+## [2026-10-26 18:46 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile after Milestone 3: record SK's decision on how the import treats
+  permission levels as technical addendum entry A6 (TR-42), the requirements' bodies unchanged.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A6, and the addendum's
+  attribution line).
+- **Nature of Contribution**: Draft (addendum entry); TR-42 quoted word for word; the club-neutral
+  and requirement-identifier guards pass.
+- **Human Review Status**: Reviewed and verified (SK approved A6's wording, 2026-10-26)
+- **Git Hash**: [after commit]

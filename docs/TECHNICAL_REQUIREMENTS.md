@@ -721,7 +721,31 @@ row mixing two files, and the next complete run puts everything right.
 in the private repository, and pull request #4 here). *Record:*
 `notes/2026-10-20_wednesday-scenarios-reconciliation.md`.
 
+### A6. TR-42: the import keeps the configured permission levels, except where a sysadmin changed one
+
+**Original (TR-42).** "`club_import` writes any new capability and seeds the configured groups,
+and the deploy runs it."
+
+**Decision.** Every import gives each configured level the capabilities the configuration names,
+unless a sysadmin has changed that level on the Permission levels page, which the audit log
+records as `group.capabilities_changed`. Such a level keeps what it has until the import is run
+with `--reset`. The import names each level it changes, with what was added and removed, and
+each level it kept that differs from the configuration.
+
+"Seeds" had meant the configuration never reached the shipped levels: the migrations make them
+before the first import runs, and the import kept every level that already existed. The levels
+were whatever the migrations had added up to, and a club's own `access_groups` were applied
+only by `--reset`, which also overwrites every setting and message template edited in the
+interface. A test now holds the migrations and the shipped example configuration to the same
+levels, so a migration that changes a level changes the example with it.
+
+*Considered:* reporting a difference at import without applying it. Not taken: a level changed
+in the configuration would then reach a server only through the interface or a migration.
+
+**Decided by** SK, 2026-10-26, choosing between those two options. *Record:*
+`notes/2026-10-26_milestone-3-reconciliation.md`.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4) and 2026-10-20 (A5), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5) and 2026-10-26 (A6), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>
