@@ -567,7 +567,9 @@ def member_edit(request, pk):
                 else:
                     result = save_account(form, actor, f"{request.scheme}://{request.get_host()}")
                     call = result["callsign"]
-                    if call and call["state"] == "pending":
+                    # Your own pending callsign is asked about by the standing "Is this you?"
+                    # question; one warning about one fact (NAF, 2026-09-22).
+                    if call and call["state"] == "pending" and member != actor:
                         messages.warning(
                             request,
                             format_html(

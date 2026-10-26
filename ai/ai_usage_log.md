@@ -3522,3 +3522,19 @@ carries the actual running model ID.
   three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 8237132
+
+## [2026-10-26 13:30 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T38 step 3 on 2026-10-21: a member saving their
+  own callsign whose FCC name differs from theirs got the standing "Is this you?" question and
+  also the flash written for whoever sets it for them, about the member in the third person
+  (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/accounts/views_members.py (`member_edit`: the pending
+  callsign's flash only when someone else saved it; one warning about one fact, NAF
+  2026-09-22); apps/credentials/tests/test_uls.py (the member's own save shows the question and
+  not the flash; the advisor saving it for them still gets the flash).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the member's own
+  save without the fix). After: 437 application tests pass; lint, format and the three guards
+  pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
