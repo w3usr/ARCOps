@@ -67,6 +67,8 @@ def _security(user) -> dict:
 def _standing(user) -> dict:
     """What an officer needs at a glance: license and agreements."""
     lic = LicenseRecord.objects.filter(user=user).first()
+    if lic and user.pending_uls_name and not lic.has_override:
+        lic = None  # FR-16: until "Is this you?" is answered the callsign is not their license
     agreements = (
         SignedAgreement.objects.filter(user=user)
         .select_related("template")

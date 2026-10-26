@@ -148,6 +148,35 @@ def test_a_callsign_awaiting_is_this_you_is_not_a_license():
     assert has_valid_license(u, today, "Extra") and u.license_letter == "E"
 
 
+def test_the_license_card_waits_for_the_answer_to_is_this_you():
+    """FR-16: until the member answers, the callsign counts for nothing, so their License card
+    does not show it either (T38, 2026-10-26). A callsign the FCC has no record of yet is a
+    different thing: FR-4 and FR-102 hold it as unverified, and the card says so."""
+    UlsLicense.objects.create(
+        callsign="N0ZZZ",
+        first_name="Zed",
+        last_name="Other",
+        operator_class="Extra",
+        status="active",
+    )
+    u = User.objects.create_user(
+        "h@example.org", "pw-Testing-123", first_name="Hal", last_name="Lee", groups=["member"]
+    )
+    c = Client()
+    c.force_login(u)
+
+    def card():
+        page = c.get(f"/members/{u.pk}/").content.decode()
+        return page.split('id="lic"', 1)[1].split("</section>", 1)[0]
+
+    apply_callsign(u, "N0ZZZ")
+    assert "N0ZZZ" not in card() and "None on file." in card()
+    decide_uls_name(User.objects.get(pk=u.pk), accept=True)
+    assert "N0ZZZ" in card() and "Extra" in card()
+    apply_callsign(User.objects.get(pk=u.pk), "N0NEW", previous="N0ZZZ")  # not in the FCC's file
+    assert "N0NEW" in card() and "not checked against the FCC yet" in card()
+
+
 def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     UlsLicense.objects.create(
         callsign="N0AAA",

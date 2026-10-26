@@ -3854,3 +3854,15 @@ carries the actual running model ID.
   the W3USR overlay on a fresh install changes no level.
 - **Human Review Status**: Reviewed and verified
 - **Git Hash**: 967ae87
+
+## [2026-10-26 18:41 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: While "Is this you?" awaits the member's answer, the License card shows no
+  license, as FR-16 says the callsign counts for nothing until then (SK, 2026-10-26). A callsign
+  the FCC has no record of yet keeps its "not checked against the FCC yet" line (FR-4, FR-102).
+- **Sections/Files Affected**: apps/accounts/views_members.py (_standing); apps/credentials/tests/
+  test_uls.py (new test).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the card). After:
+  457 application tests pass; lint and format pass; T38 locally on W3USR 17 pass, 0 fail.
+- **Human Review Status**: Reviewed and verified
+- **Git Hash**: [after commit]
