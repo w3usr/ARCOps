@@ -237,9 +237,10 @@ def test_eligibility_editor_and_openings_with_announcement():
 
     assert can_sign_up(stu, slots[0], "operator")[0]
     ok, reason = can_sign_up(com, slots[0], "operator")
-    assert not ok and "limited to" in reason
+    # A role and a category reach the reader as their labels (T36 step 1, 2026-10-19)
+    assert not ok and reason == "Operator is limited to: Student"
     ok, reason = can_sign_up(com, slots[0], "mentor")
-    assert not ok and "General" in reason
+    assert not ok and reason == "Mentor needs a General or higher license"
     # slot-level override lets the community member operate this slot only
     c.post(
         f"/events/{e.pk}/slot/{slots[0].pk}/eligibility/",
@@ -262,6 +263,23 @@ def test_eligibility_editor_and_openings_with_announcement():
     o.refresh_from_db()
     assert o.announced_at is not None
     call_command("openings_announce", "--now", now.isoformat())
+
+
+def test_a_slot_rule_names_the_role_and_credential_in_words():
+    now = timezone.now()
+    kid = _user("kid@example.org", under_18=True)
+    e, slots = _event(now + timedelta(days=4))
+    EligibilityRule.objects.create(event=e, slot=slots[0], role="operator", minors_allowed=False)
+    EligibilityRule.objects.create(
+        event=e, slot=slots[0], role="observer", required_credentials=["station_access"]
+    )
+    from apps.events.services.eligibility import can_sign_up
+
+    # a captain signing a minor up is what reaches the slot's own rule
+    ok, reason = can_sign_up(kid, slots[0], "operator", by_captain=True)
+    assert not ok and reason == "Operator in this slot is not open to members under 18"
+    ok, reason = can_sign_up(kid, slots[0], "observer", by_captain=True)
+    assert not ok and reason == "Observer needs station access"
 
 
 def test_waitlist_offer_accept_and_lapse():

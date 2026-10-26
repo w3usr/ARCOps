@@ -3645,3 +3645,18 @@ carries the actual running model ID.
   After: 438 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: f233cf9
+
+## [2026-10-26 15:50 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T36 on 2026-10-19: the roster's eligibility
+  reasons named a role, a member category and a credential by their stored keys ("operator is
+  limited to: student") beside reasons that already used labels (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/eligibility.py (the under-18, category,
+  license-class and credential reasons: the role's label, the categories' labels, and the
+  credential in the roster's own words, `_credential_word`); apps/events/tests/test_phase2.py
+  (the category and license reasons exactly; a new test for a slot rule's under-18 and credential
+  reasons).
+- **Nature of Contribution**: Code edit, reproduced first (both tests failed on the keys). After:
+  439 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
