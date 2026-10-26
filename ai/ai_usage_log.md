@@ -3612,4 +3612,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Drafting, from the decision quoted in the entry. The three guards
   pass.
 - **Human Review Status**: Reviewed and verified (SK approved A9's wording, 2026-10-26).
-- **Git Hash**: [after commit]
+- **Git Hash**: d799ae0
