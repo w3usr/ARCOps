@@ -266,6 +266,26 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     )
 
 
+def test_a_locked_roster_offers_members_nothing_to_tick(world):
+    """A locked roster kept its tick-boxes for members, with nothing behind them, and a forced
+    bulk sign-up there was told it opens when published (T37 step 1, 2026-10-19)."""
+    ev = world["ev"]
+    Event.objects.filter(pk=ev.pk).update(state=Event.State.LOCKED)
+    body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
+    assert 'name="slots"' not in body and "data-select-day" not in body
+    assert 'id="bulk-bar"' not in body
+    body = _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
+    assert 'name="slots"' in body and 'id="bulk-bar"' in body  # Close and Cancel still apply
+    slot = Slot.objects.filter(position=world["run"], kind="operating").first()
+    r = _as(world["mem"]).post(
+        f"/events/{ev.pk}/bulk/",
+        {"action": "signup", "role": "operator", "slots": [slot.pk]},
+        follow=True,
+    )
+    body = r.content.decode()
+    assert "The roster is locked." in body and "when the event is published" not in body
+
+
 def test_present_wording():
     class St:
         def __init__(self, status, reasons):

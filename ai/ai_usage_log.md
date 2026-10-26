@@ -3503,3 +3503,22 @@ carries the actual running model ID.
   template). After: 436 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 25a49b0
+
+## [2026-10-26 13:23 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T37 on 2026-10-19: a locked roster kept its
+  tick-boxes for members, with no action behind them, and a forced bulk sign-up there answered
+  "Sign-ups open when the event is published." (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/roster.py (`selectable`: a captain in any
+  state, or a member while the event is published, the bulk bar's own condition);
+  templates/events/detail.html (slot boxes, the day's select-all and the bulk bar only when
+  selectable; the day heading stays as text); static/css/app.css (`.roster.noselect` drops the
+  indent kept for a tick-box); apps/events/views_slots.py (the bulk refusal says why per state:
+  draft, locked, finished, canceled); apps/events/tests/test_roster.py (a member on a locked
+  roster sees nothing to tick, a captain still does, and the refusal names the lock).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the boxes). After:
+  437 application tests pass; the member's accessibility sweep and the roster's browser checks
+  pass in Chromium and WebKit; a locked roster as a member checked by eye; lint, format and the
+  three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

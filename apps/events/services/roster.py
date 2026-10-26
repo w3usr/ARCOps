@@ -302,6 +302,7 @@ def build(
             row.cells.append(cells[s.pk])
 
     single_location = len({p.location_id for p in positions}) == 1
+    roles = setting("slot_roles", []) or []
     return {
         "names_visible": viewer.is_member,  # FR-121: Provisional members see counts, not names
         "locked": locked,
@@ -327,7 +328,10 @@ def build(
             if starts and ends and not one_zone
             else "",
         },
-        "roles": setting("slot_roles", []) or [],
+        "roles": roles,
+        # Tick-boxes only where the bulk bar offers something: a member's sign-up while the
+        # event is published, a captain's close, reopen and cancel in any state.
+        "selectable": is_captain or (published and bool(roles)),
         "is_captain": is_captain,
         "published": published,
     }

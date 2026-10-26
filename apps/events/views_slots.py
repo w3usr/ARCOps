@@ -229,7 +229,13 @@ def event_bulk(request, pk):
         role = request.POST.get("role", "")
         note = request.POST.get("note", "")[:500]
         if event.state != Event.State.PUBLISHED:
-            messages.error(request, "Sign-ups open when the event is published.")
+            refusal = {
+                Event.State.DRAFT: "Sign-ups open when the event is published.",
+                Event.State.LOCKED: "The roster is locked. To change a sign-up, contact a captain.",
+                Event.State.COMPLETED: "This event has finished.",
+                Event.State.CANCELLED: "This event was canceled.",
+            }[event.state]
+            messages.error(request, refusal)
             return redirect("event_detail", pk=pk)
         done, refused = [], []
         for s in slots:

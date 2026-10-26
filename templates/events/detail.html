@@ -69,7 +69,7 @@
   </ul>
 </div>
 
-<div class="roster {{ roster.layout }}" role="table" aria-label="Roster">
+<div class="roster {{ roster.layout }}{% if not roster.selectable %} noselect{% endif %}" role="table" aria-label="Roster">
   {% if roster.layout == 'grid' %}
   <div class="r-head" role="row">
     <div class="r-time" role="columnheader">Time</div>
@@ -78,7 +78,7 @@
   {% endif %}
   {% for day in roster.days %}
   <div class="r-day" role="rowgroup">
-    <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.positions|length|add:1 }}"><label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label></div></div>
+    <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.positions|length|add:1 }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
     {% for row in day.rows %}
     <div class="r-row kind-{{ row.kind }}" role="row">
       <div class="r-time" role="rowheader">
@@ -89,7 +89,7 @@
       {% for c in row.cells %}
       {% if c %}
       <div class="r-cell tone-{{ c.shown.tone }}{% if c.mine %} mine{% endif %}" role="cell" id="slot-{{ c.slot.pk }}">
-        <input type="checkbox" name="slots" value="{{ c.slot.pk }}" data-day="{{ day.key }}" aria-label="Select {{ row.lead_range }}{% if roster.layout == 'grid' %} {{ c.slot.position.name }}{% endif %}">
+        {% if roster.selectable %}<input type="checkbox" name="slots" value="{{ c.slot.pk }}" data-day="{{ day.key }}" aria-label="Select {{ row.lead_range }}{% if roster.layout == 'grid' %} {{ c.slot.position.name }}{% endif %}">{% endif %}
         <a class="slot-link" href="{% url 'slot_detail' event.pk c.slot.pk %}" data-slot="{{ c.slot.pk }}">
           {% if roster.layout == 'list' %}<span class="r-where">{% if not roster.single_location %}{{ c.slot.position.location.name }} · {% endif %}{{ c.slot.position.name }}</span>{% endif %}
           <span class="people">
@@ -107,7 +107,7 @@
   {% endfor %}
 </div>
 
-<div class="bulkbar" id="bulk-bar" role="region" aria-label="Actions for the selected slots">
+{% if roster.selectable %}<div class="bulkbar" id="bulk-bar" role="region" aria-label="Actions for the selected slots">
   <span class="count"><strong data-count>0</strong> selected</span>
   {% if roster.published and roles %}
   <label class="sr-only" for="bulk-role">Role</label>
@@ -121,7 +121,7 @@
   <button type="submit" name="action" value="reopen" class="secondary">Reopen</button>
   <button type="submit" name="action" value="cancel" class="danger">Cancel slots</button>
   {% endif %}
-</div>
+</div>{% endif %}
 </form>
 {% else %}
 {% if not event.display_only %}<section class="card"><h2>Roster</h2><p>{% if roster.filter == 'problems' %}Nothing needs attention. <a href="?">Show every slot.</a>{% else %}No slots yet.{% if is_captain %} <a href="{% url 'event_manage' event.pk %}">Add the location and generate the grid.</a>{% endif %}{% endif %}</p></section>{% endif %}
