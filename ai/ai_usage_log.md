@@ -3538,3 +3538,17 @@ carries the actual running model ID.
   pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 8eb146a
+
+## [2026-10-26 13:34 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T43 step 1 on 2026-10-21: on Settings, a typed
+  time zone that was refused was also described as "The saved value … is not a known zone",
+  though nothing was saved (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/ops/settings.html (the saved-value warning only on a row
+  with no refusal, so it describes the stored value and not what was just typed);
+  apps/ops/tests/test_settings_and_privacy.py (a refused zone shows the refusal and not the
+  saved-value line, and is not stored).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the old
+  template). After: 438 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
