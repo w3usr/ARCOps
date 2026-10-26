@@ -86,8 +86,8 @@ def signup_change_role(request, signup_id):
                 "moved",
                 {
                     "person": request.user.short_name_lettered,
-                    "old_role": old,
-                    "new_role": new_role,
+                    "old_role": role_label(old),
+                    "new_role": role_label(new_role),
                     "event": event,
                     "when": notify.when_text(slot),
                     "position": slot.position.name,

@@ -82,12 +82,14 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
     m = _msgs(mem, "reminder").get()
     body = m.body_html
     assert (
-        "operator" in body
+        "Operator" in body
         and "Bring a headset" in body
         and "Cap Tain" in body
         and "555-0100" in body
     )
     assert "Ann" in body and "Confirm you will be there" in body and "I cannot make it" in body
+    # A role reaches the reader as the club's label, not its stored key (T31, 2026-10-20)
+    assert "as <strong>Operator</strong>" in body
     su.refresh_from_db()
     assert su.reminder_sent_at is not None and su.confirmed_at is None
     import re
@@ -164,6 +166,7 @@ def test_member_cancel_outside_cutoff_is_not_late_and_captain_removal_tells_the_
     c.post(f"/events/signup/{su.pk}/cancel/", {"confirmed": "yes"})
     m = _msgs(cap, "cancellation").get()
     assert m.subject.startswith("Cancellation:") and "Late" not in m.subject
+    assert "canceled their Observer sign-up" in m.body_html
     su2 = SignUp.objects.create(slot=slots[1], user=mem, role="observer")
     c.force_login(cap)
     # FR-58: a removal with no reason is refused by the server, not only by the form's
@@ -173,7 +176,9 @@ def test_member_cancel_outside_cutoff_is_not_late_and_captain_removal_tells_the_
     assert not _msgs(mem, "moved").exists()
     c.post(f"/events/signup/{su2.pk}/cancel/", {"confirmed": "yes", "reason": "double booked"})
     m = _msgs(mem, "moved").get()
-    assert "removed" in m.subject and "double booked" in m.body_html
+    assert (
+        "removed" in m.subject and "double booked" in m.body_html and "as Observer" in m.body_html
+    )
 
 
 def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone():
@@ -184,7 +189,8 @@ def test_captain_assign_tells_the_member_and_slot_and_event_cancel_tell_everyone
     c = Client()
     c.force_login(cap)
     c.post(f"/events/{e.pk}/slot/{slots[0].pk}/assign/", {"user": mem.pk, "role": "observer"})
-    assert "signed up" in _msgs(mem, "moved").get().subject
+    assigned = _msgs(mem, "moved").get()
+    assert "signed up" in assigned.subject and "as Observer" in assigned.body_html
     # slot cancel with a person: refused without confirmation, done with it
     c.post(f"/events/slot/{slots[0].pk}/toggle/", {"what": "cancel"})
     assert Slot.objects.get(pk=slots[0].pk).cancelled is False

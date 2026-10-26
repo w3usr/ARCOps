@@ -190,7 +190,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     local = display_zone(event)
     ctx = {
         "event": event,
-        "role": su.role,
+        "role": role_label(su.role),
         "when_lead": when_text(slot, local),
         "when_local": when_text(slot, local),
         "when_utc": when_text(slot, UTC),
@@ -363,7 +363,7 @@ def member_cancelled(actor: User, su: SignUp, broken=None) -> None:
             "cancellation",
             {
                 "person": su.user.short_name_lettered,
-                "role": su.role,
+                "role": role_label(su.role),
                 "event": event,
                 "when": when_text(slot),
                 "position": slot.position.name,
@@ -387,7 +387,7 @@ def removed_by_captain(actor: User, su: SignUp, reason: str = "") -> None:
             "event": event,
             "when": when_text(slot),
             "position": slot.position.name,
-            "role": su.role,
+            "role": role_label(su.role),
             "reason": reason,
             "link": site() + reverse("event_detail", args=[event.pk]),
         },
@@ -406,7 +406,7 @@ def assigned_by_captain(actor: User, su: SignUp) -> None:
             "event": event,
             "when": when_text(slot),
             "position": slot.position.name,
-            "role": su.role,
+            "role": role_label(su.role),
             "link": slot_link(slot),
         },
     )

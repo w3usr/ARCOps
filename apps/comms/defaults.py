@@ -248,9 +248,9 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "waitlist.offer",
-        "subject": "A {{ role }} place opened: {{ event.title }}, {{ when }}",
+        "subject": "A place opened as {{ role }}: {{ event.title }}, {{ when }}",
         "body_html": (
-            "<p>You were waiting for a {{ role }} place in {{ event.title }}, {{ when }}, "
+            "<p>You were waiting for a place as {{ role }} in {{ event.title }}, {{ when }}, "
             "{{ position }}. One has opened and it is yours until {{ expires|date:'j M H:i' }} UTC.</p>"
             '<p><a href="{{ link }}">Take it</a></p><p>After that it passes to the next person.</p>'
         ),

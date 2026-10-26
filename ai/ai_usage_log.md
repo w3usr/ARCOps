@@ -3628,3 +3628,20 @@ carries the actual running model ID.
   three guards pass.
 - **Human Review Status**: Reviewed and verified (SK approved the diagnosis and the fix).
 - **Git Hash**: f9728a8
+
+## [2026-10-26 15:37 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found reconciling on 2026-10-15 and again running T31 on
+  2026-10-20: messages named a role by its stored key ("A observer place opened", "signed up as
+  operator"), where the pages use the club's label (SK, 2026-10-26: the label goes in `role`).
+- **Sections/Files Affected**: apps/events/services/notify.py (the reminder, the captains'
+  cancellation notice, the removal and assignment notices); apps/events/services/waitlist.py (the
+  offer); apps/events/services/lifecycle.py (the opening announcement); apps/events/views_member.py
+  (the captains' role-changed notice, `old_role` and `new_role`): each passes `role_label(…)`.
+  apps/comms/defaults.py (the waitlist offer reads "A place opened as {{ role }}", not "A {{ role }}
+  place"); apps/events/tests/test_notify.py and test_phase2.py (the label in each message; one
+  older assertion that checked for the lowercase key corrected).
+- **Nature of Contribution**: Code edit, reproduced first (five assertions failed on the keys).
+  After: 438 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

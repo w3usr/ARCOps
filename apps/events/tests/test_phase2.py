@@ -152,6 +152,7 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     assert su.role == "observer"
     m = Outbox.objects.get(user=cap, category="moved")
     assert "Role change inside the cutoff" in m.subject
+    assert "from Operator to Observer" in m.body_html
 
 
 def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
@@ -287,6 +288,10 @@ def test_waitlist_offer_accept_and_lapse():
         first.state == "offered"
         and Outbox.objects.filter(user=b, subject__contains="place opened").exists()
     )
+    # "A observer place opened" read the stored key, with the wrong article (T36, 2026-10-15)
+    offer = Outbox.objects.get(user=b, subject__contains="place opened")
+    assert offer.subject.startswith("A place opened as Observer:")
+    assert "a place as Observer in" in offer.body_html
     assert waitlist.expire_offers(now + timedelta(hours=1)) == 0
     assert waitlist.expire_offers(now + timedelta(hours=3)) == 1  # b lapsed, d offered
     assert Waitlist.objects.get(user=d).state == "offered"
