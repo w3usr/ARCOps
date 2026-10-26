@@ -3865,4 +3865,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code edit, reproduced first (the test failed on the card). After:
   457 application tests pass; lint and format pass; T38 locally on W3USR 17 pass, 0 fail.
 - **Human Review Status**: Reviewed and verified
-- **Git Hash**: [after commit]
+- **Git Hash**: 0ef9290
