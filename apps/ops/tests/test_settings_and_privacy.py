@@ -184,3 +184,15 @@ def test_event_form_offers_the_display_zone_as_a_drop_down():
     c, _ = _as("officer")
     body = c.get("/events/new/").content.decode()
     assert '<select name="display_timezone"' in body and 'value="America/New_York"' in body
+
+
+def test_the_shipped_privacy_notice_says_where_the_data_is_held(settings):
+    """FR-101 and T44: what is collected, who sees it, where it is held, how to close an account.
+    The example ARCOps ships had no "where" (T44 step 1, generic club, 2026-10-21)."""
+    from apps.ops.config import load_yaml
+
+    settings.CLUB_OVERLAY_DIR = None  # the shipped defaults, not an installation's overlay
+    notice = load_yaml(settings.CLUB_DEFAULTS_DIR)["privacy_notice_html"]
+    heads = [h for h in ("Who sees what", "Where it is", "Closing your account") if h in notice]
+    assert heads == ["Who sees what", "Where it is", "Closing your account"]
+    assert "replaces this" in notice, "worded as a placeholder a club replaces, not a claim"

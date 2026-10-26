@@ -3771,3 +3771,16 @@ carries the actual running model ID.
   After: 448 application tests pass; lint, format, the three guards and the migration check pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: b0f109e
+
+## [2026-10-26 17:38 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T44 step 1 on 2026-10-21 (generic club): the
+  privacy notice ARCOps ships as its example did not say where the data is held (FR-101)
+  (SK, 2026-10-26).
+- **Sections/Files Affected**: config/club.example.yaml (a "Where it is" section, worded as a
+  placeholder a club replaces); apps/ops/tests/test_settings_and_privacy.py (the shipped notice's
+  sections, in order, and the placeholder).
+- **Nature of Contribution**: Drafting and code edit, reproduced first (the test failed on the
+  missing section). After: 449 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
