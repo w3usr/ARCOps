@@ -3613,3 +3613,18 @@ carries the actual running model ID.
   pass.
 - **Human Review Status**: Reviewed and verified (SK approved A9's wording, 2026-10-26).
 - **Git Hash**: d799ae0
+
+## [2026-10-26 14:31 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Find why the accessibility job failed on pull request #8, and fix it (SK,
+  2026-10-26).
+- **Sections/Files Affected**: .github/workflows/ci.yml (the accessibility job compiles the
+  club's message catalogue before the sweep, as the test job, tools/check.sh and the deploy
+  already do).
+- **Nature of Contribution**: Analysis and edit. The new Confirm Access layout check timed out in
+  all three engines waiting for "Use a passkey": the catalogue is gitignored and the job never
+  built it, so the button kept the library's "Use a security key". Reproduced locally by moving
+  the compiled catalogue aside; with it compiled, the check passes in Chromium and WebKit. The
+  three guards pass.
+- **Human Review Status**: Reviewed and verified (SK approved the diagnosis and the fix).
+- **Git Hash**: [after commit]

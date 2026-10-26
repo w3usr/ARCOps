@@ -39,6 +39,8 @@ jobs:
           cache: pip
       - run: pip install -r requirements-dev.txt
       - run: playwright install --with-deps chromium firefox webkit
+      - name: The club's own words for a dependency's strings (TR-45), so the pages read as deployed
+        run: python manage.py compile_locale --settings=config.settings.test
       - name: Accessibility (axe-core) and phone-width check
         # One worker per role: each is mostly waiting on a browser, not computing.
         run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q -n auto
