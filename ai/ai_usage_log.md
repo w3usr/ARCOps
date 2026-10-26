@@ -3583,3 +3583,22 @@ carries the actual running model ID.
   WebKit; the result compared by eye; 438 application tests; lint, format and the three guards.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 2b736d4
+
+## [2026-10-26 13:55 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found on the 2026-10-23 contact sheet: a card's last element
+  added its bottom margin to the card's padding, so cards ended unevenly; on the profile the
+  Email card had visibly more space under its last line than License (SK, 2026-10-26).
+- **Sections/Files Affected**: static/css/app.css (`.card > :last-child` has no bottom margin,
+  beside the existing first-child rule; the address list and the levels list drop the last
+  item's bottom padding, the mirror of their first-item rules); tools/a11y/test_card_spacing.py
+  (new: on the profile and Edit profile no card has more space under its last text or control
+  than its padding, measured in a browser).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on six profile cards
+  and four on Edit profile; then on Email alone with only the card rule). A scan of every page
+  the sweep visits went from 38 uneven cards to 8, all a margin nested inside the card's child
+  (rich text, table wrappers), left for a follow-up. Before and after compared by eye on the
+  profile. After: the accessibility folder (40) passes in Chromium and WebKit; 438 application
+  tests; lint, format and the three guards.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

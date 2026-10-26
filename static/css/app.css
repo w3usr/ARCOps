@@ -256,6 +256,7 @@ footer.site .credit a { color: inherit; }
 .card.highlight { border-color: var(--accent); }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
 .card > h2:first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }  /* the card's padding is the space under it */
 .list { padding-left: 1.25rem; } .list li { margin: .25rem 0; }
 .table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
 .table th, .table td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -520,6 +521,7 @@ pre { overflow-x: auto; max-width: 100%; }
 .levels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
 .levels > li { padding: var(--s2) 0; border-top: 1px solid var(--line); }
 .levels > li:first-child { border-top: 0; padding-top: 0; }
+.levels > li:last-child { padding-bottom: 0; }
 .levels .check { gap: var(--s1) var(--s2); flex-wrap: wrap; }
 .levels label { font-weight: 600; }
 .levels .helptext { margin: var(--s1) 0 0 1.7rem; }
@@ -539,6 +541,7 @@ pre { overflow-x: auto; max-width: 100%; }
 .addresses-list { list-style: none; padding-left: 0; }
 .addresses-list > li { margin: 0; padding: var(--s2) 0; border-top: 1px solid var(--line); }
 .addresses-list > li:first-child { border-top: 0; padding-top: 0; }
+.addresses-list > li:last-child { padding-bottom: 0; }
 .addresses-list .address { font-weight: 600; overflow-wrap: anywhere; margin: 0; }
 .addresses-list .addr-state { margin: var(--s1) 0 0; color: var(--muted); font-size: var(--t-small); }
 .addresses-list .addr-state .needs { color: var(--warn); font-weight: 600; }
