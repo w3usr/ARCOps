@@ -3456,3 +3456,20 @@ carries the actual running model ID.
   `main`), so CI covers it. Lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 1a4eeb1
+
+## [2026-10-26 13:05 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T15 step 4 on 2026-10-19: a captain's red for a
+  slot that still needs someone within 48 hours was not in the roster's key, which explains red
+  only as "over limit", and only its color set it apart from the amber Needs (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/roster.py (`present`: a captain's red cell's
+  detail begins "within 48 hours", so the cell, the slot dialog and the slot page say it in
+  words); templates/events/detail.html (a captain-only key entry for the red Needs);
+  apps/events/tests/test_roster.py (the words for a captain and not for a member, and the key
+  entry on the captain's page only).
+- **Nature of Contribution**: Code edit, reproduced first (the new test failed on the missing
+  words). After: 436 application tests pass; the officer's accessibility sweep and the roster's
+  browser checks pass in Chromium and WebKit (Firefox does not launch in this shell); lint,
+  format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

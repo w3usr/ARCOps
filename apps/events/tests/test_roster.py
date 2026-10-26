@@ -314,6 +314,31 @@ def test_present_wording():
     assert p.word == "Covered" and "one more person alongside Mo N0MEM" in p.detail
 
 
+def test_the_captains_red_within_48_hours_says_so_in_words(world):
+    """A captain's red for a slot that still needs someone within 48 hours read, by the key, as
+    "over limit", and only its color set it apart from the amber Needs (T15, 2026-10-19)."""
+
+    class St:
+        status, reasons = "not_viable", ["nobody with station access", "nobody with a license"]
+
+    class Sl:
+        closed = False
+        start = datetime(2026, 1, 2, tzinfo=UTC)
+
+    now = datetime(2026, 1, 1, tzinfo=UTC)
+    args = (Sl(), St(), [object()], [])
+    p = present(*args, published=True, is_captain=True, now=now)
+    assert p.tone == "bad" and p.word == "Needs someone with station access"
+    assert p.detail == "within 48 hours; someone with a license"
+    p = present(*args, published=True, is_captain=False, now=now)
+    assert p.tone == "warn" and "48 hours" not in p.detail
+
+    ev = world["ev"]
+    entry = "within 48 hours: it starts soon and still needs someone"
+    assert entry in _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
+    assert entry not in _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
+
+
 def test_events_list_and_home_show_both_zones(world, monkeypatch):
     """Issue #23 on the private tracker: no bare times anywhere a member reads a schedule."""
     # Home lists only events that have not ended, so read it from a week before this one.

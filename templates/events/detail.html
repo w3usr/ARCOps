@@ -62,6 +62,7 @@
   <ul aria-labelledby="roster-key">
     <li><span class="tag open">Open</span> anyone eligible can sign up</li>
     <li><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</li>
+    {% if is_captain %}<li><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</li>{% endif %}
     <li><span class="tag ok">Covered</span> it can run</li>
     <li><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</li>
     <li><small>S</small> station access · <small>I</small> computer access · <small>CO</small> control operator</li>

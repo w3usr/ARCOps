@@ -102,8 +102,10 @@ def present(
     needs = _needs_from_reasons(status.reasons)
     if status.status == "not_viable":
         soon = slot.start - now <= timedelta(hours=48)
-        key = "problem" if (is_captain and soon) else "needs"
-        return Presentation(key, "Needs " + (needs[0] if needs else "more"), "; ".join(needs[1:]))
+        word = "Needs " + (needs[0] if needs else "more")
+        if is_captain and soon:  # the captain's red says why in words, not color alone
+            return Presentation("problem", word, "; ".join(["within 48 hours", *needs[1:]]))
+        return Presentation("needs", word, "; ".join(needs[1:]))
     low = getattr(status, "below_preferred", None)
     if low:  # FR-61: viable, with the warning; it may also depend on one person
         detail = f"below preferred class ({low})"
