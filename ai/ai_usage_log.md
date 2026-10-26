@@ -3755,3 +3755,19 @@ carries the actual running model ID.
   checked word for word against the requirements. The three guards pass.
 - **Human Review Status**: Reviewed and verified (SK approved A10's wording, 2026-10-26).
 - **Git Hash**: 8529bd4
+
+## [2026-10-26 17:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T40 step 4 on 2026-10-21: `club_import
+  --resign-by` did nothing once the deploy had imported the new agreement version, so a
+  re-sign date could only be set in the admin (SK, 2026-10-26: the date becomes configuration).
+- **Sections/Files Affected**: apps/ops/management/commands/club_import.py (a re-sign date is
+  applied after the version is settled, from the agreement's own `resign_by` in club.yaml, else
+  --resign-by where a republished version has none; each date set is reported; a version 1 is
+  reported and left alone; docstring); config/club.example.yaml (the key, commented);
+  apps/ops/tests/test_health_and_import.py (the deploy order, the YAML date, the option on an
+  unchanged file, and the configuration's date standing).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed without the fix).
+  After: 448 application tests pass; lint, format, the three guards and the migration check pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

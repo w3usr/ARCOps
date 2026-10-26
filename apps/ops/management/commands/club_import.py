@@ -8,6 +8,10 @@ club_import: load a configuration directory (config/ or an overlay) into the dat
 Idempotent. Settings are written by dotted key (TR-32). Agreement templates are versioned by
 content hash (FR-21, FR-30): an unchanged file is a no-op, a changed file becomes a new
 current version, and signed records keep pointing at the version they signed.
+
+An agreement republished with changed text may carry `resign_by: YYYY-MM-DD` beside it in
+club.yaml: the date by which signers of the earlier version re-sign (FR-30). The import that
+follows the deploy applies it, so nothing is run on the server by hand.
 """
 
 from __future__ import annotations
@@ -55,12 +59,33 @@ def sanitise(html: str) -> str:
 class Command(BaseCommand):
     help = "Load club.yaml and agreement templates from a configuration directory."
 
+    def _resign_by(self, template, configured, fallback) -> None:
+        """Set a republished version's re-sign date: the agreement's own `resign_by` in
+        club.yaml as written, else --resign-by where the version has none yet. Says what it set."""
+        from django.utils.dateparse import parse_date
+
+        wanted = configured or (fallback if template.resign_by is None else None)
+        if not wanted:
+            return
+        date = parse_date(str(wanted))
+        if template.version == 1:
+            self.stdout.write(
+                f"{template.key} version 1 has nothing earlier to re-sign; resign_by ignored"
+            )
+            return
+        if template.resign_by != date:
+            template.resign_by = date
+            template.save(update_fields=["resign_by"])
+            self.stdout.write(f"{template.key} version {template.version}: re-sign by {date}")
+
     def add_arguments(self, parser):
         parser.add_argument("directory", nargs="?", help="configuration directory")
         parser.add_argument("--reset", action="store_true", help="overwrite interface edits")
         parser.add_argument(
             "--resign-by",
-            help="FR-30: signers of the earlier version of any agreement republished in this run must re-sign by this date (YYYY-MM-DD); default: existing approvals stand until their own expiry",
+            help="FR-30: a re-sign date (YYYY-MM-DD) for every republished agreement that has none yet, "
+            "this run's or an earlier one's; an agreement's own resign_by in club.yaml wins. "
+            "Default: existing approvals stand until their own expiry",
         )
 
     def handle(self, *args, **opts):
@@ -129,28 +154,26 @@ class Command(BaseCommand):
                     ag.get("audience", []),
                 )
                 current.save(update_fields=["title", "audience"])
-                continue
-            version = (current.version + 1) if current else 1
-            if current:
-                current.is_current = False
-                current.save(update_fields=["is_current"])
-            from django.utils.dateparse import parse_date
-
-            AgreementTemplate.objects.create(
-                key=ag["key"],
-                credential=credential,
-                title=ag.get("title", ag["key"]),
-                audience=ag.get("audience", []),
-                version=version,
-                content_hash=digest,
-                html=html,
-                effective_date=timezone.now().date(),
-                is_current=True,
-                resign_by=parse_date(opts["resign_by"])
-                if (current and opts.get("resign_by"))
-                else None,
-            )
-            new_versions += 1
+            else:
+                version = (current.version + 1) if current else 1
+                if current:
+                    current.is_current = False
+                    current.save(update_fields=["is_current"])
+                current = AgreementTemplate.objects.create(
+                    key=ag["key"],
+                    credential=credential,
+                    title=ag.get("title", ag["key"]),
+                    audience=ag.get("audience", []),
+                    version=version,
+                    content_hash=digest,
+                    html=html,
+                    effective_date=timezone.now().date(),
+                    is_current=True,
+                )
+                new_versions += 1
+            # Applied after the version is settled, not only while writing one: the deploy imports
+            # first, so a date given in a later run found the file unchanged and was lost (FR-30).
+            self._resign_by(current, ag.get("resign_by"), opts.get("resign_by"))
         self.stdout.write(f"agreements: {new_versions} new version(s) from {directory}")
 
         from apps.comms.services import seed_templates

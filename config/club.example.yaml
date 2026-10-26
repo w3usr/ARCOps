@@ -169,6 +169,8 @@ agreements:                                   # FR-21; example templates, replac
     audience: [student, faculty, staff, community]
     file: "agreements/station-access.example.html"
     title: "Station Access Agreement (example)"
+    # resign_by: 2027-01-31                    # FR-30: after changing the text, the date by which
+                                               # signers of the earlier version re-sign; deploy applies it
   - key: it_access.example
     credential: it_access
     audience: [student, faculty, staff, community]
