@@ -3681,3 +3681,21 @@ carries the actual running model ID.
   three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 8238259
+
+## [2026-10-26 16:07 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix three audit-log defects found running T29, T50 and T51 (2026-10-20/21):
+  an unsubscribe recorded `preference.email` where the settings page records
+  `preferences.changed`; a refused level raise recorded only the level asked for; and a level
+  changed on the member page recorded `member.edited`, not the `groups.changed` the plan and
+  FR-92 expect (SK, 2026-10-26, approving the plan's reading for #116).
+- **Sections/Files Affected**: apps/comms/announce.py (`set_email_preference` records
+  `preferences.changed`); apps/accounts/views_acting.py (`view.raise_refused` records `from`);
+  apps/accounts/account.py (`save_account` sets the level through `set_groups`, which writes
+  `groups.changed` with both sides, and leaves it out of `member.edited`);
+  apps/comms/tests/test_announce.py, apps/accounts/tests/test_acting_view.py and test_members.py
+  (one test each).
+- **Nature of Contribution**: Code edit, each reproduced first (the three tests failed on the
+  old records). After: 446 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

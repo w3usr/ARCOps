@@ -202,4 +202,5 @@ def set_email_preference(user, category: str, on: bool) -> None:
     NotificationPreference.objects.update_or_create(
         user=user, category=category, defaults={"email": on}
     )
-    record(user, "preference.email", user, after={"category": category, "email": on})
+    # The settings page's action name: one fact, whichever door the member came through.
+    record(user, "preferences.changed", user, after={"category": category, "email": on})

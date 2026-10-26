@@ -327,3 +327,15 @@ def test_a_token_from_before_the_category_was_named_still_means_announcements():
     token = signing.dumps({"u": m.pk}, salt=announce.UNSUB_SALT)
     user, category = announce.user_from_unsubscribe_token(token)
     assert user == m and category == "announcement"
+
+
+def test_turning_email_off_from_a_message_is_audited_as_from_the_settings_page():
+    """One fact, one action name, whichever door the member came through (T29 step 2,
+    2026-10-20): the unsubscribe link wrote preference.email."""
+    from apps.ops.models import AuditLog
+
+    u = User.objects.create_user("unsub@example.org", "pw-Testing-123")
+    announce.set_email_preference(u, "announcement", False)
+    row = AuditLog.objects.get(action="preferences.changed", subject_id=str(u.pk))
+    assert row.after == {"category": "announcement", "email": False}
+    assert not AuditLog.objects.filter(action="preference.email").exists()
