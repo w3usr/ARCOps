@@ -3455,4 +3455,4 @@ carries the actual running model ID.
   Firefox does not launch in this shell (its profile folder is not found, the same on a clean
   `main`), so CI covers it. Lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [after commit]
+- **Git Hash**: 1a4eeb1
