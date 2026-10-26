@@ -295,6 +295,7 @@ button.big { font-size: 1.5rem; padding: 1rem 2rem; width: 100%; }
 button.wide, .button.wide { width: 100%; display: block; text-align: center; box-sizing: border-box; }
 /* Controls on the library's own pages sit next to each other with no wrapper of their own. */
 .libctl { margin: .35rem .6rem .35rem 0; }
+.libctl.wide { margin: 1rem 0 0; max-width: 28rem; }  /* stacked under the field, as wide as it */
 .linklike { color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .linklike:hover { text-decoration: underline; }
 button.linklike.danger, .linklike.danger { background: none; color: var(--bad); padding: 0; font-weight: inherit; text-decoration: underline; }

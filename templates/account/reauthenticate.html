@@ -27,7 +27,7 @@ challenge is in the session, put there by apps.accounts.views_mfa.{% endcomment 
             {{ redirect_field }}
         {% endslot %}
         {% slot actions %}
-            {% element button type="submit" tags="primary,reauthenticate" %}
+            {% element button type="submit" tags="primary,reauthenticate,wide" %}
                 {% trans "Confirm" %}
             {% endelement %}
         {% endslot %}
@@ -43,7 +43,7 @@ challenge is in the session, put there by apps.accounts.views_mfa.{% endcomment 
                 {{ redirect_field }}
             {% endslot %}
             {% slot actions %}
-                {% element button id="mfa_webauthn_reauthenticate" type="submit" tags="secondary,mfa,login" %}
+                {% element button id="mfa_webauthn_reauthenticate" type="submit" tags="secondary,mfa,login,wide" %}
                     {% trans "Use a security key" %}
                 {% endelement %}
             {% endslot %}

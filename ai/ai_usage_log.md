@@ -3566,3 +3566,20 @@ carries the actual running model ID.
   wording). After: 438 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 4781d64
+
+## [2026-10-26 13:45 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T51 step 3 on 2026-10-21: with a passkey on the
+  account, Confirm Access put Use a passkey beside Confirm, where the sign-in page stacks it
+  full width beneath (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/allauth/elements/button.html (a `wide` tag gives the
+  library's control the site's `wide` class); templates/account/reauthenticate.html (Confirm and
+  the passkey button take it); static/css/app.css (`.libctl.wide`: a 1rem gap as on sign-in, and
+  no wider than the field above it); tools/a11y/test_confirm_access_layout.py (new: the two
+  buttons share an edge and a width, the passkey is beneath, and both are as wide as the
+  password field; measured in a browser with a passkey on the account).
+- **Nature of Contribution**: Code edit, reproduced first (measured side by side, and the new
+  test failed). After: the new test and the full accessibility sweep pass in Chromium and
+  WebKit; the result compared by eye; 438 application tests; lint, format and the three guards.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
