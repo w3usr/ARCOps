@@ -3688,7 +3688,7 @@ carries the actual running model ID.
   an unsubscribe recorded `preference.email` where the settings page records
   `preferences.changed`; a refused level raise recorded only the level asked for; and a level
   changed on the member page recorded `member.edited`, not the `groups.changed` the plan and
-  FR-92 expect (SK, 2026-10-26, approving the plan's reading for #116).
+  FR-92 expect (SK, 2026-10-26, approving the plan's reading, T50 step 6).
 - **Sections/Files Affected**: apps/comms/announce.py (`set_email_preference` records
   `preferences.changed`); apps/accounts/views_acting.py (`view.raise_refused` records `from`);
   apps/accounts/account.py (`save_account` sets the level through `set_groups`, which writes
@@ -3719,7 +3719,7 @@ carries the actual running model ID.
 - **Session Purpose**: Fix two defects on the guardian's form, found scripting T5 and T46
   (2026-10-19, 2026-10-21): the member's email help text described behaviour removed on
   2026-09-20 and the page told every minor to sign in "with the address above"; and a guardian
-  who cleared that pre-filled field still gave the member the invitation's address (#128,
+  who cleared that pre-filled field still gave the member the invitation's address (T46,
   reproduced 2026-10-26) (SK, 2026-10-26: both together).
 - **Sections/Files Affected**: apps/accounts/views.py (the help text: blank means no sign-in
   until an address is added, and every message reaches the guardian);
@@ -3733,3 +3733,14 @@ carries the actual running model ID.
   the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 9302767
+
+## [2026-10-26 16:20 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Before batch 2 is pushed, cite scenarios rather than the private tracker's
+  issue numbers, as this repository does (SK, 2026-10-26).
+- **Sections/Files Affected**: ai/ai_usage_log.md (two of today's entries); apps/accounts/tests/
+  test_phase7.py (one comment). The earlier commits' diffs on this branch still show the
+  numbers; the files no longer do.
+- **Nature of Contribution**: Edit.
+- **Human Review Status**: Reviewed and verified (SK chose a correcting commit over a rewrite).
+- **Git Hash**: [after commit]

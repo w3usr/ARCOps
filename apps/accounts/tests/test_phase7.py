@@ -122,7 +122,7 @@ def test_a_guardian_who_clears_the_members_email_leaves_them_none():
     c = Client()
     page = c.get(f"/me/invite/{inv.token}/").content.decode()
     assert 'value="kid@example.org"' in page  # filled in from the invitation
-    # what the guardian reads about leaving it blank is what happens (#97's words)
+    # what the guardian reads about leaving it blank is what happens (T5, 2026-10-19)
     assert "they cannot sign in until an address of their own is added" in page
     assert "made from yours" not in page and "with the address above" not in page
     r = c.post(
