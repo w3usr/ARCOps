@@ -145,6 +145,8 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     assert "Change role to" in body
     r = c.post(f"/events/signup/{su.pk}/role/", {"role": "observer"})
     assert r.status_code == 200 and b"Change your role?" in r.content  # the only licensee
+    # what the slot would need, in the roster's words, not its state's name (2026-10-26)
+    assert b"the slot needs someone with" in r.content and b"not viable" not in r.content
     su.refresh_from_db()
     assert su.role == "operator"
     c.post(f"/events/signup/{su.pk}/role/", {"role": "observer", "confirmed": "yes"})
@@ -153,6 +155,7 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     m = Outbox.objects.get(user=cap, category="moved")
     assert "Role change inside the cutoff" in m.subject
     assert "from Operator to Observer" in m.body_html
+    assert "The slot now needs someone with" in m.body_html and "not viable" not in m.body_html
 
 
 def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():

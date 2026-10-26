@@ -3,7 +3,7 @@
 {% block title %}Give up the slot? · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Give up this slot?</h1>
-<p class="msg warning"><span class="lvl">Careful:</span> without you the slot becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>
+<p class="msg warning"><span class="lvl">Careful:</span> without you the slot {{ broken.needs }}.</p>
 <p>The captains are told either way. If you can still make it, staying is the greater help.</p>
 <form method="post" action="{% url 'cancel_signup' signup.pk %}">{% csrf_token %}<input type="hidden" name="confirmed" value="yes">
   <a class="button" href="{% url 'my_schedule' %}">Keep the slot</a>

@@ -26,7 +26,7 @@ from apps.ops.config import setting
 
 from ..models import Event, Position, SignUp, Slot
 from .slots import limit_report
-from .viability import evaluate, may_control
+from .viability import evaluate, may_control, needs_from_reasons
 
 GRID_MAX_POSITIONS = 4
 UTC = ZoneInfo("UTC")
@@ -66,20 +66,6 @@ class Presentation:
         }[self.key]
 
 
-def _needs_from_reasons(reasons: list[str]) -> list[str]:
-    out = []
-    for r in reasons:
-        if r.startswith("nobody with "):
-            out.append("someone with " + r[len("nobody with ") :])
-        elif r.endswith("has no responsible adult designated"):
-            out.append("a responsible adult for " + r.split(" (under 18)")[0])
-        elif r.startswith("depends on ") and r.endswith(" alone"):
-            out.append("one more person alongside " + r[len("depends on ") : -len(" alone")])
-        elif r != "no one signed up":
-            out.append(r)
-    return out
-
-
 def present(
     slot: Slot,
     status,
@@ -99,7 +85,7 @@ def present(
         if not published:
             return Presentation("not_open", "Opens when published")
         return Presentation("open", "Open", "sign up")
-    needs = _needs_from_reasons(status.reasons)
+    needs = needs_from_reasons(status.reasons)
     if status.status == "not_viable":
         soon = slot.start - now <= timedelta(hours=48)
         word = "Needs " + (needs[0] if needs else "more")

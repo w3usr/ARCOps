@@ -132,7 +132,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "captain.member_cancelled",
         "subject": "{% if late %}Late cancellation{% else %}Cancellation{% endif %}: {{ person }} left {{ when }}, {{ event.title }}",
-        "body_html": '<p>{{ person }} canceled their {{ role }} sign-up for {{ event.title }}, {{ when }}, {{ position }}.{% if late %} This is inside the {{ cutoff }}-hour cutoff.{% endif %}</p>{% if broken %}<p>The slot is now <strong>{{ broken }}</strong>.</p>{% endif %}<p><a href="{{ link }}">Open the slot</a></p>',
+        "body_html": '<p>{{ person }} canceled their {{ role }} sign-up for {{ event.title }}, {{ when }}, {{ position }}.{% if late %} This is inside the {{ cutoff }}-hour cutoff.{% endif %}</p>{% if broken %}<p>The slot now {{ broken }}.</p>{% endif %}<p><a href="{{ link }}">Open the slot</a></p>',
         "variables": [
             "person",
             "role",
@@ -186,7 +186,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "warning.person",
         "subject": "Your slot needs help: {{ event.title }}, {{ when }}",
-        "body_html": '<p>The slot you hold in {{ event.title }}, {{ when }}, {{ position }}, reads <strong>{{ status }}</strong>: {{ reasons }}.</p><p>If you know someone who could fill it, ask them to sign up.</p><p><a href="{{ link }}">Open the slot</a></p>',
+        "body_html": '<p>The slot you hold in {{ event.title }}, {{ when }}, {{ position }}, {{ status }}.</p><p>If you know someone who could fill it, ask them to sign up.</p><p><a href="{{ link }}">Open the slot</a></p>',
         "variables": ["event.title", "when", "position", "status", "reasons", "link"],
     },
     {
@@ -195,7 +195,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "body_html": (
             "<p>Slots that cannot run, depend on one person, or have an unconfirmed sign-up within 24 hours:</p>"
             "<ul>{% for s in slots %}<li><strong>{{ s.event }}</strong>, {{ s.when }}, {{ s.position }}: "
-            "{{ s.status }}, {{ s.reasons }}{% if s.notes %}<br><em>Notes:</em> {{ s.notes }}{% endif %} "
+            "{{ s.status }}{% if s.reasons %}, {{ s.reasons }}{% endif %}{% if s.notes %}<br><em>Notes:</em> {{ s.notes }}{% endif %} "
             '<a href="{{ s.link }}">open</a></li>{% endfor %}</ul>'
         ),
         "variables": ["count", "horizon", "slots"],
@@ -227,7 +227,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "captain.role_changed",
         "subject": "Role change inside the cutoff: {{ person }}, {{ when }}, {{ event.title }}",
-        "body_html": '<p>{{ person }} changed from {{ old_role }} to {{ new_role }} in {{ event.title }}, {{ when }}, {{ position }}, inside the {{ cutoff }}-hour cutoff.{% if broken %} The slot now reads <strong>{{ broken }}</strong>.{% endif %}</p><p><a href="{{ link }}">Open the slot</a></p>',
+        "body_html": '<p>{{ person }} changed from {{ old_role }} to {{ new_role }} in {{ event.title }}, {{ when }}, {{ position }}, inside the {{ cutoff }}-hour cutoff.{% if broken %} The slot now {{ broken }}.{% endif %}</p><p><a href="{{ link }}">Open the slot</a></p>',
         "variables": [
             "person",
             "old_role",

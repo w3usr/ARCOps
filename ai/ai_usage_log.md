@@ -3660,3 +3660,24 @@ carries the actual running model ID.
   439 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 51bda08
+
+## [2026-10-26 16:01 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T32 on 2026-10-20: the at-risk message, and
+  nine other places found with it, named a slot's state ("Not viable", "At risk") where the
+  roster says what the slot needs (FR-62); SK, 2026-10-26: the roster's words for every reader,
+  captains included.
+- **Sections/Files Affected**: apps/events/services/viability.py (`SlotStatus.needs`, the phrase
+  finishing "the slot …", and `.word`, the roster cell's word; `needs_from_reasons` moved here
+  from roster.py, which imports it); templates/events/token_cannot.html, confirm_cancel.html,
+  confirm_remove.html, confirm_role.html (the warning says what the slot would need);
+  apps/events/views.py (the cancel flash that repeated the page's own warning removed: it showed
+  twice); apps/events/services/notify.py (the at-risk message and the captains' digest rows; the
+  captains' cancellation notice); apps/events/views_member.py (the role-changed notice; the
+  roster export's status column); apps/comms/defaults.py (the four templates reworded to read
+  the phrase); apps/events/tests/test_status_words.py (new, every surface) and test_phase2.py.
+- **Nature of Contribution**: Code edit, reproduced first (six tests failed on the state names;
+  the cancel page counted two warnings). After: 444 application tests pass; lint, format and the
+  three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
