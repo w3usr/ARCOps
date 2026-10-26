@@ -3473,3 +3473,19 @@ carries the actual running model ID.
   format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 6f49ba4
+
+## [2026-10-26 13:11 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T35 on 2026-10-19: operating hours printed as
+  Python floats ("7.0 h", "14.0") on Manage, the event page's Per day line and the health
+  overview, where Coverage beside them reads whole numbers (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/events/manage.html (Scheduled: each day, the total and
+  the limit); templates/events/detail.html (Per day); templates/events/health_overview.html
+  (Hours); templates/events/participation.html (hours scheduled, covered and viable, per
+  period and in total; found by a grep beyond the report): each takes `floatformat:"-1"`, as
+  Coverage does. The services and the CSV exports keep their numbers.
+  apps/events/tests/test_phase2.py and test_participation.py (no ".0" on the four pages).
+- **Nature of Contribution**: Code edit, reproduced first (both test additions failed on the
+  old templates). After: 436 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

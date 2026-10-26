@@ -124,7 +124,7 @@
     <div class="row">{% for f in limit_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
     <div><button type="submit">Save limits</button></div>
   </form>
-  {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total }} h{% if limits.total_limit %} of {{ limits.total_limit }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}
+  {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total|floatformat:"-1" }} h{% if limits.total_limit %} of {{ limits.total_limit|floatformat:"-1" }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}
 </section>
 
 <section class="card" aria-labelledby="who">

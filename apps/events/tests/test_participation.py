@@ -79,6 +79,7 @@ def test_participation_counts_hours_people_and_first_timers():
     c.force_login(cap)
     body = c.get(f"/events/{e.pk}/participation/").content.decode()
     assert "Who took part: Past Sprint" in body and "first time" in body
+    assert "<strong>3</strong>" in body and ".0<" not in body  # hours as whole numbers
     csv_body = c.get(f"/events/{e.pk}/participation/?format=csv").content.decode()
     assert "first_time_participants,1" in csv_body
     c.force_login(a)

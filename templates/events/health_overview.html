@@ -16,7 +16,7 @@
   <td data-label="Nobody yet">{% if r.health.counts.empty %}<span class="tag open">{{ r.health.counts.empty }}</span>{% else %}0{% endif %}</td>
   <td data-label="Needs someone">{% if r.health.counts.not_viable %}<span class="tag warn">{{ r.health.counts.not_viable }}</span>{% else %}0{% endif %}{% if r.health.counts.at_risk %} <small class="muted">+{{ r.health.counts.at_risk }} thin</small>{% endif %}</td>
   <td data-label="Covered">{{ r.health.counts.viable }}</td>
-  <td data-label="Hours">{{ r.health.scheduled_hours }}{% if r.health.over_total_limit %} <span class="tag bad">over limit</span>{% endif %}</td>
+  <td data-label="Hours">{{ r.health.scheduled_hours|floatformat:"-1" }}{% if r.health.over_total_limit %} <span class="tag bad">over limit</span>{% endif %}</td>
   <td data-label="Unconfirmed, next 48 h">{% if r.unconfirmed_48h %}<span class="tag warn">{{ r.unconfirmed_48h }}</span>{% else %}0{% endif %}</td>
 </tr>
 {% empty %}<tr><td colspan="8" class="empty">No published event falls in that window. Widen it above, or publish an event from its manage page.</td></tr>{% endfor %}
