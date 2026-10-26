@@ -1,3 +1,6 @@
+from io import StringIO
+from pathlib import Path
+
 import pytest
 from django.core.management import call_command
 from django.test import Client
@@ -183,3 +186,59 @@ def test_a_re_sign_date_lives_beside_the_agreement_and_survives_the_deploy_order
     setup("three", resign_by="2032-04-05")
     run("--resign-by", "2031-02-03")
     assert str(current().resign_by) == "2032-04-05", "the configuration's own date stands"
+
+
+def _levels(tmp_path, officer):
+    """A configuration directory whose officer holds `officer`; the rest as shipped."""
+    import yaml
+
+    from apps.ops.config import load_yaml
+
+    shipped = load_yaml(Path(__file__).resolve().parents[3] / "config")["access_groups"]
+    rows = [dict(r, capabilities=officer) if r["key"] == "officer" else r for r in shipped]
+    (tmp_path / "club.yaml").write_text(yaml.safe_dump({"access_groups": rows}))
+    return tmp_path
+
+
+def _held(name):
+    from django.contrib.auth.models import Group
+
+    return {p.codename for p in Group.objects.get(name=name).permissions.all()}
+
+
+def test_the_files_levels_reach_an_install_whose_levels_the_migrations_made(tmp_path):
+    out = StringIO()
+    call_command(
+        "club_import", str(_levels(tmp_path, ["view_directory", "view_reports"])), stdout=out
+    )
+    assert _held("officer") == {"view_directory", "view_reports"}
+    line = next(x for x in out.getvalue().splitlines() if "officer:" in x)
+    assert line.startswith("  officer: now as the file (removed ") and "create_events" in line
+    assert _held("member") == {"view_directory"}  # unchanged, and not named
+    assert "member:" not in out.getvalue()
+
+
+def test_a_level_edited_in_the_interface_is_kept_and_said_to_differ(tmp_path):
+    from apps.ops.audit import record
+
+    record(None, "group.capabilities_changed", None, after={"group": "officer", "capabilities": []})
+    before = _held("officer")
+    out = StringIO()
+    call_command("club_import", str(_levels(tmp_path, ["view_directory"])), stdout=out)
+    assert _held("officer") == before
+    assert "officer: kept, edited in the interface; the file differs" in out.getvalue()
+    call_command("club_import", str(tmp_path), "--reset", stdout=StringIO())
+    assert _held("officer") == {"view_directory"}
+
+
+def test_the_shipped_file_and_the_migrations_make_the_same_levels():
+    """A migration that changes a level must change club.example.yaml with it: the import makes
+    the levels what the file says, so a file left behind would undo the migration at deploy."""
+    from django.contrib.auth.models import Group
+
+    from apps.ops.config import load_yaml
+
+    shipped = load_yaml(Path(__file__).resolve().parents[3] / "config")["access_groups"]
+    assert {r["key"]: set(r["capabilities"]) for r in shipped} == {
+        g.name: _held(g.name) for g in Group.objects.all()
+    }

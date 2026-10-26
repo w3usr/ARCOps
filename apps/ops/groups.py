@@ -107,26 +107,54 @@ def permission(codename: str) -> Permission:
 
 
 def sync(configured: list[dict] | None, *, reset: bool = False) -> dict:
-    """Create the configured groups and give them their capabilities.
+    """Give the configured groups the capabilities the configuration says.
 
-    A group that already exists keeps the capabilities it has, because a sysadmin may have
-    changed them deliberately; `reset` puts the configuration back.
+    The migrations make the shipped groups before any import runs, so "it already exists" says
+    nothing about who chose its capabilities. A group a sysadmin has changed on the Permission
+    levels page (it has a `group.capabilities_changed` audit row) keeps what it has, and is named
+    when the file differs; `reset` puts the configuration back. Every change is named, so the
+    deploy's log says what a level gained or lost. Returns the counts and those lines.
     """
-    counts = {"created": 0, "updated": 0, "kept": 0}
+    from .models import AuditLog
+
+    edited = set(
+        AuditLog.objects.filter(action="group.capabilities_changed").values_list(
+            "after__group", flat=True
+        )
+    )
+    counts = {"created": 0, "updated": 0, "kept": 0, "changes": []}
     for row in configured or []:
         key = str(row.get("key") or "").strip()
         if not key:
             continue
         group, created = Group.objects.get_or_create(name=key)
-        if created or reset:
-            wanted = [c for c in (row.get("capabilities") or []) if c in CODENAMES]
-            group.permissions.set(
-                Permission.objects.filter(content_type__app_label=APP_LABEL, codename__in=wanted)
-            )
-            counts["created" if created else "updated"] += 1
-        else:
+        wanted = {c for c in (row.get("capabilities") or []) if c in CODENAMES}
+        held = {p.codename for p in group.permissions.all()}
+        if not created and held == wanted:
             counts["kept"] += 1
+            continue
+        if not created and key in edited and not reset:
+            counts["kept"] += 1
+            counts["changes"].append(
+                f"{key}: kept, edited in the interface; the file differs ({_diff(held, wanted)})"
+            )
+            continue
+        group.permissions.set(
+            Permission.objects.filter(content_type__app_label=APP_LABEL, codename__in=wanted)
+        )
+        counts["created" if created else "updated"] += 1
+        if not created:
+            counts["changes"].append(f"{key}: now as the file ({_diff(held, wanted)})")
     return counts
+
+
+def _diff(held: set[str], wanted: set[str]) -> str:
+    parts = []
+    if wanted - held:
+        parts.append("added " + ", ".join(sorted(wanted - held)))
+    if held - wanted:
+        parts.append("removed " + ", ".join(sorted(held - wanted)))
+    return "; ".join(parts)
 
 
 def summary_of(

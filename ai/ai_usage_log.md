@@ -3840,3 +3840,17 @@ carries the actual running model ID.
   guard pass.
 - **Human Review Status**: Reviewed and verified
 - **Git Hash**: 0db6aa4
+
+## [2026-10-26 18:34 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: club_import applies the configured permission levels to levels the
+  migrations made: a level takes the file's capabilities unless it was changed on the Permission
+  levels page (its group.capabilities_changed audit row), and every change is named in the
+  import's output (SK chose this over reporting only, 2026-10-26).
+- **Sections/Files Affected**: apps/ops/groups.py (sync, _diff); apps/ops/management/commands/
+  club_import.py (prints each level change); apps/ops/tests/test_health_and_import.py (three tests).
+- **Nature of Contribution**: Code generation, reproduced first (two tests failed on main's
+  behaviour). After: 456 application tests pass; lint, format and the club-neutral guard pass;
+  the W3USR overlay on a fresh install changes no level.
+- **Human Review Status**: Reviewed and verified
+- **Git Hash**: [after commit]
