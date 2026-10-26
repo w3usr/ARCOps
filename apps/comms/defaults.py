@@ -290,9 +290,9 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "agreement.expiry_summary",
-        "subject": "{{ count }} member(s) with agreements {% if expired %}expired today{% else %}expiring {{ expires|date:'j F' }}{% endif %}",
-        "body_html": "<p>{% if expired %}These members' agreements expired today{% else %}These members' agreements expire on {{ expires|date:'j F Y' }}{% endif %}; the re-sign queue on Approvals is built to be worked through in bulk:</p><ul>{% for m in members %}<li>{{ m }}</li>{% endfor %}</ul><p><a href=\"{{ link }}\">Open Access rosters</a></p>",
-        "variables": ["count", "expired", "expires", "members", "link"],
+        "subject": "{{ count }} member(s) with agreements {% if expired %}expired today{% else %}expiring within {{ days }} days{% endif %}",
+        "body_html": "<p>{% if expired %}These members' agreements expired today{% else %}These members' agreements expire within the next {{ days }} days, each on the date beside their name{% endif %}; the re-sign queue on Approvals is built to be worked through in bulk:</p><ul>{% for m in members %}<li>{{ m }}</li>{% endfor %}</ul><p><a href=\"{{ link }}\">Open Approvals</a></p>",
+        "variables": ["count", "expired", "days", "expires", "members", "link"],
     },
     {
         "key": "agreement.revoked",

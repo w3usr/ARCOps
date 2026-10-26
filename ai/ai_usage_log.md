@@ -3699,3 +3699,17 @@ carries the actual running model ID.
   old records). After: 446 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: b12e353
+
+## [2026-10-26 16:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T40 on 2026-10-21: the approvers' 30-day
+  summary gave the notice window's last day as the agreements' expiry, and its link read
+  "Open Access rosters" though it opens Approvals (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/comms/defaults.py (`agreement.expiry_summary`: "expiring
+  within {{ days }} days", each date beside the name, "Open Approvals"); apps/credentials/
+  services.py (`days` passed; `expires` kept for a club's own wording);
+  apps/credentials/tests/test_phase4.py (the subject, the body and the link).
+- **Nature of Contribution**: Code edit, reproduced first (the subject read "expiring 25
+  November"). After: 447 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
