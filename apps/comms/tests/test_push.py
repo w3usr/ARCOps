@@ -98,3 +98,41 @@ def test_push_title_names_the_club_so_two_installations_are_distinguishable():
     payload = json.loads(wp.call_args.kwargs["data"])
     assert payload["title"] == "Test ARC: Slot canceled"
     assert "/static//" not in payload["icon"]  # branding() already gives a URL
+
+
+UA = {
+    "Chrome on macOS": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Safari on macOS": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Firefox on macOS": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:132.0) Gecko/20100101 Firefox/132.0",
+    "Edge on Windows": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+    "Opera on Windows": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/114.0.0.0",
+    "Chrome on Android": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+    "Samsung Internet on Android": "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/26.0 Chrome/122.0.0.0 Mobile Safari/537.36",
+    "Safari on iOS": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+    "Chrome on iOS": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/130.0.6723.90 Mobile/15E148 Safari/604.1",
+    "Firefox on Linux": "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0",
+    "Chrome on ChromeOS": "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+}
+
+
+def test_a_device_is_listed_by_browser_and_system():
+    """T34: each device "by browser and date". The user agent cut to 60 characters stopped
+    before the browser's name on a Mac, so every device read the same (T34 step 1, 2026-10-20)."""
+    for want, ua in UA.items():
+        assert PushSubscription(user_agent=ua).device_label == want, ua
+    assert PushSubscription(user_agent="").device_label == "a browser"
+    assert PushSubscription(user_agent="curl/8.0").device_label == "a browser"
+
+    u = _user()
+    PushSubscription.objects.create(
+        user=u,
+        endpoint="https://push.example/9",
+        p256dh="P",
+        auth="A",
+        user_agent=UA["Chrome on macOS"],
+    )
+    c = Client()
+    c.force_login(u)
+    with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
+        body = c.get("/me/edit/", follow=True).content.decode()
+    assert "Chrome on macOS · since" in body and "Mozilla/5.0" not in body

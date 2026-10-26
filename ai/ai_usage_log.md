@@ -3799,3 +3799,18 @@ carries the actual running model ID.
   kind). After: 450 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 07bb7be
+
+## [2026-10-26 17:58 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T34 step 1 on 2026-10-20: push devices were
+  listed by the user agent cut to 60 characters, which on a Mac stops before the browser's
+  name, so every device read the same (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/accounts/models.py (`PushSubscription.device_label`,
+  "Chrome on macOS", from the stored user agent by ordered checks; no migration, the raw string
+  kept); templates/accounts/member_edit.html (the label); apps/comms/tests/test_push.py (eleven
+  real user agents, an unrecognised one, and the profile listing).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the missing
+  label). After: 451 application tests pass; lint, format, the three guards and the migration
+  check pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

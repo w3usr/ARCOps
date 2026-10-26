@@ -247,7 +247,7 @@ said on the profile beside the passkeys.{% endcomment %}
 <form method="post" action="{% url 'push_test' %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Send a test notification</button></form>
 <p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
 {% if push_subscriptions %}
-<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.user_agent|truncatechars:60|default:"a browser" }} · since {{ sub.created|date:"j M Y" }}{% if sub.failures %} · {{ sub.failures }} failed{% endif %}
+<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }} · since {{ sub.created|date:"j M Y" }}{% if sub.failures %} · {{ sub.failures }} failed{% endif %}
 <form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Forget this device</button></form></li>{% endfor %}</ul>
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>

@@ -534,6 +534,41 @@ class PushSubscription(models.Model):
     last_success = models.DateTimeField(null=True, blank=True)
     failures = models.PositiveSmallIntegerField(default=0)
 
+    # Each browser names itself in its user agent; the order matters, because Edge, Opera and
+    # Samsung Internet also say "Chrome", and Chrome says "Safari". ponytail: a dozen checks
+    # rather than a parser; an unusual browser reads "a browser", and a parsing library is the
+    # upgrade if that ever matters.
+    BROWSERS = (
+        ("Edg/", "Edge"),
+        ("OPR/", "Opera"),
+        ("SamsungBrowser/", "Samsung Internet"),
+        ("FxiOS/", "Firefox"),
+        ("Firefox/", "Firefox"),
+        ("CriOS/", "Chrome"),
+        ("Chrome/", "Chrome"),
+        ("Safari/", "Safari"),
+    )
+    SYSTEMS = (
+        ("iPhone", "iOS"),
+        ("iPad", "iOS"),
+        ("Android", "Android"),
+        ("CrOS", "ChromeOS"),
+        ("Mac OS X", "macOS"),
+        ("Windows", "Windows"),
+        ("Linux", "Linux"),
+    )
+
+    @property
+    def device_label(self) -> str:
+        """What a person recognises their device by: "Chrome on macOS" (T34: by browser and
+        date). The raw user agent stays stored for diagnosis."""
+        ua = self.user_agent or ""
+        browser = next((name for mark, name in self.BROWSERS if mark in ua), "")
+        system = next((name for mark, name in self.SYSTEMS if mark in ua), "")
+        if not browser:
+            return "a browser"
+        return f"{browser} on {system}" if system else browser
+
 
 def settings_user_model():  # convenience for type hints elsewhere
     return settings.AUTH_USER_MODEL
