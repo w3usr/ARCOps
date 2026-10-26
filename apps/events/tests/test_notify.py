@@ -125,7 +125,7 @@ def test_reminder_escapes_contest_fields_and_names_only_advisors():
     assert "Dee Visor" in body and "Ada Root" not in body
 
 
-def test_cannot_make_it_token_cancels_and_tells_the_captains_late():
+def test_cannot_make_it_token_cancels_and_tells_the_captains_late(monkeypatch):
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
@@ -133,6 +133,17 @@ def test_cannot_make_it_token_cancels_and_tells_the_captains_late():
     su = SignUp.objects.create(slot=slots[0], user=mem, role="operator")
     token = notify.confirm_token(su)
     c = Client()
+    # Signed out, the warning and the order are the signed-in page's: Careful, then the safe
+    # option first (T31 step 3, 2026-10-20).
+    from types import SimpleNamespace
+
+    with monkeypatch.context() as m:
+        broken = SimpleNamespace(label="Not viable", reasons=["nobody with station access"])
+        m.setattr("apps.events.views.would_break", lambda slot, su: broken)
+        body = c.get(f"/events/cannot/{token}/").content.decode()
+    assert '<p class="msg warning"><span class="lvl">Careful:</span> without you' in body
+    assert 'class="banner"' not in body and 'class="danger"' in body
+    assert body.index("Keep it") < body.index("Cancel my sign-up")
     r = c.get(f"/events/cannot/{token}/")
     assert r.status_code == 200 and b"Cannot make it" in r.content
     r = c.post(f"/events/cannot/{token}/")

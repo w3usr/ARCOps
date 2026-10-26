@@ -3489,3 +3489,17 @@ carries the actual running model ID.
   old templates). After: 436 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 498b037
+
+## [2026-10-26 13:18 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T31 step 3 on 2026-10-20: the signed-out
+  "Cannot make it?" page split its warning across a banner row, worded it unlike T13's
+  signed-in page, and offered Cancel my sign-up before Keep it (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/events/token_cannot.html (the signed-in page's
+  `msg warning` and "Careful: without you the slot becomes …"; Keep it first, Cancel my sign-up
+  as `.danger`; labels unchanged); apps/events/tests/test_notify.py (the warning's markup and
+  words and the order, with a break stubbed in).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the old
+  template). After: 436 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
