@@ -19,7 +19,7 @@ from django.db import IntegrityError, transaction
 from django.urls import reverse
 
 from apps.ops.audit import record
-from apps.ops.config import institution_email_domain
+from apps.ops.config import institution_domains
 
 from .models import Address, User
 
@@ -40,8 +40,7 @@ class LastAddress(Exception):
 def kind_for(address: str) -> str:
     """An address at the club's institution domain is the institution one; anything else is
     personal. The club's domain is configuration, so another club's rule follows its own."""
-    domain = (institution_email_domain() or "").lower()
-    if domain and address.lower().endswith("@" + domain):
+    if any(address.lower().endswith("@" + d) for d in institution_domains()):
         return Address.Kind.INSTITUTION
     return Address.Kind.PERSONAL
 

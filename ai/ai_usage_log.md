@@ -3784,3 +3784,18 @@ carries the actual running model ID.
   missing section). After: 449 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 4342eca
+
+## [2026-10-26 17:55 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found scripting T22 on 2026-10-21: an address's kind followed
+  the student category's domain while the agreement rule read the trusted domains, so a club
+  whose two settings differed could never prove an institution address (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/ops/config.py (`institution_domains`, moved here from
+  credentials/views.py: the trusted domains, else a category's; `institution_email_domain`, the
+  field's label, is its first); apps/accounts/addresses.py (`kind_for` checks every institution
+  domain); apps/credentials/views.py (imports it); apps/credentials/tests/test_phase4.py (two
+  trusted domains, a category domain that loses to them, and the fallback).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the address's
+  kind). After: 450 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

@@ -1083,3 +1083,31 @@ def test_a_paragraph_alone_in_a_list_item_is_unwrapped_for_the_pdf():
     )
     two = "<ul><li><p>a</p><p>b</p></li></ul>"
     assert pdf_list_items(two) == two, "several paragraphs are left as they are"
+
+
+def test_one_source_says_which_domain_is_the_institutions():
+    """An address's kind followed the student category's domain while the agreement rule read the
+    trusted domains, so a club whose two settings differed could never prove an institution
+    address (T22, 2026-10-21). The trusted domains are the one source, the category the fallback."""
+    from apps.accounts.addresses import kind_for
+    from apps.accounts.models import Address
+    from apps.credentials.views import institution_address_ok
+    from apps.ops.config import institution_email_domain
+    from apps.ops.models import ClubSetting
+
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.org", "staff.example.org"]}
+    )
+    ClubSetting.objects.update_or_create(
+        key="member_categories",
+        defaults={"value": [{"key": "student", "label": "Student", "email_domain": "uni.example"}]},
+    )
+    assert kind_for("ada@example.org") == Address.Kind.INSTITUTION
+    assert kind_for("bo@staff.example.org") == Address.Kind.INSTITUTION
+    assert institution_address_ok("ada@example.org")
+    assert kind_for("cy@uni.example") == Address.Kind.PERSONAL, "the trusted list wins"
+    assert institution_email_domain() == "example.org", "the field's label agrees with the rule"
+    # with no trusted list, the category's domain is the fallback, for both
+    ClubSetting.objects.filter(key="trusted_email_domains").update(value=[])
+    assert kind_for("cy@uni.example") == Address.Kind.INSTITUTION
+    assert institution_address_ok("cy@uni.example") and institution_email_domain() == "uni.example"

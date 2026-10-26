@@ -17,7 +17,7 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts.reauth import is_confirmed, spend
 from apps.ops.audit import record
-from apps.ops.config import setting
+from apps.ops.config import institution_domains, setting
 from apps.ops.tables import chosen, export_url, sorted_columns, summary
 
 from .models import AgreementTemplate, CredentialDecision, CredentialType, SignedAgreement
@@ -199,20 +199,6 @@ def sign(request, template_id):
 #
 # It was asked of a community member's station access alone (FR-27), which let everybody else
 # through: a student or a faculty member with only a personal address was approved without one.
-
-
-def institution_domains() -> list[str]:
-    """The domains that count as the institution's own, from the club's configuration."""
-    domains = [
-        str(d).strip().lower().lstrip("@") for d in (setting("trusted_email_domains", []) or [])
-    ]
-    if domains:
-        return [d for d in domains if d]
-    # Older configurations carried it on the student category instead.
-    for c in setting("member_categories", []) or []:
-        if c.get("key") == "student" and c.get("email_domain"):
-            return [str(c["email_domain"]).strip().lower().lstrip("@")]
-    return []
 
 
 def credential_needs_institution(credential) -> bool:

@@ -191,10 +191,23 @@ def branding() -> dict[str, str | None]:
     return out
 
 
-def institution_email_domain() -> str:
-    """The email domain of the first member category that declares one (the university's, in
-    practice), used to label the institution-address field in the member's own terms."""
+def institution_domains() -> list[str]:
+    """The domains that count as the institution's own: the one source for an address's kind,
+    the agreement rule, and the field's label (T22, 2026-10-21, found them reading different
+    settings). The trusted domains first; older configurations carried it on a member category."""
+    domains = [
+        str(d).strip().lower().lstrip("@") for d in (setting("trusted_email_domains", []) or [])
+    ]
+    if any(domains):
+        return [d for d in domains if d]
     for c in setting("member_categories", []) or []:
         if isinstance(c, dict) and c.get("email_domain"):
-            return str(c["email_domain"])
-    return ""
+            return [str(c["email_domain"]).strip().lower().lstrip("@")]
+    return []
+
+
+def institution_email_domain() -> str:
+    """The institution's domain as the address field names it: the first of
+    `institution_domains`, so the label and the rule never disagree."""
+    domains = institution_domains()
+    return domains[0] if domains else ""
