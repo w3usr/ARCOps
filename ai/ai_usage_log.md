@@ -3627,4 +3627,4 @@ carries the actual running model ID.
   the compiled catalogue aside; with it compiled, the check passes in Chromium and WebKit. The
   three guards pass.
 - **Human Review Status**: Reviewed and verified (SK approved the diagnosis and the fix).
-- **Git Hash**: [after commit]
+- **Git Hash**: f9728a8
