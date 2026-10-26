@@ -3876,4 +3876,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Draft (addendum entry); TR-42 quoted word for word; the club-neutral
   and requirement-identifier guards pass.
 - **Human Review Status**: Reviewed and verified (SK approved A6's wording, 2026-10-26)
-- **Git Hash**: [after commit]
+- **Git Hash**: 7f17a82
