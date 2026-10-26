@@ -3712,4 +3712,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code edit, reproduced first (the subject read "expiring 25
   November"). After: 447 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [after commit]
+- **Git Hash**: dfdf226
