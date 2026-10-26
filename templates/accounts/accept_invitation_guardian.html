@@ -3,7 +3,7 @@
 {% block title %}Join · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>A member under 18 joins {{ club.name }}</h1>
-<p>This invitation is for <strong>{% if invitation.email %}{{ invitation.email }}{% else %}a member under 18 with no address of their own{% endif %}</strong> as a {{ invitation.category|category_label|lower }}. As their guardian at <strong>{{ invitation.guardian_email }}</strong> you complete it: {% if guardian %}your account {{ guardian.display_first }} will be linked to theirs{% else %}your own account is created alongside theirs{% endif %}. You sign them up, edit their profile, and receive every message sent to them; they sign in read-only with the address above and the password you set here.</p>
+<p>This invitation is for <strong>{% if invitation.email %}{{ invitation.email }}{% else %}a member under 18 with no address of their own{% endif %}</strong> as a {{ invitation.category|category_label|lower }}. As their guardian at <strong>{{ invitation.guardian_email }}</strong> you complete it: {% if guardian %}your account {{ guardian.display_first }} will be linked to theirs{% else %}your own account is created alongside theirs{% endif %}. You sign them up, edit their profile, and receive every message sent to them; they sign in read-only with their own address, if they have one, and the password you set here.</p>
 <form method="post" class="stack">{% csrf_token %}
 {{ form.non_field_errors }}
 {% for f in form %}

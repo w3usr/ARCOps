@@ -267,7 +267,7 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
     minor_email = forms.EmailField(
         required=False,
         label="Member's own email (optional)",
-        help_text="If they have none, they sign in with an address made from yours and receive nothing directly; every message reaches you.",
+        help_text="Leave it blank if they have none: they cannot sign in until an address of their own is added, and every message reaches you.",
     )
     password1 = password_field("Member's initial password", first=True)
     password2 = password_field("Member's password, again")

@@ -3713,3 +3713,23 @@ carries the actual running model ID.
   November"). After: 447 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: dfdf226
+
+## [2026-10-26 16:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix two defects on the guardian's form, found scripting T5 and T46
+  (2026-10-19, 2026-10-21): the member's email help text described behaviour removed on
+  2026-09-20 and the page told every minor to sign in "with the address above"; and a guardian
+  who cleared that pre-filled field still gave the member the invitation's address (#128,
+  reproduced 2026-10-26) (SK, 2026-10-26: both together).
+- **Sections/Files Affected**: apps/accounts/views.py (the help text: blank means no sign-in
+  until an address is added, and every message reaches the guardian);
+  templates/accounts/accept_invitation_guardian.html (the intro: "their own address, if they
+  have one"); apps/accounts/services.py (`admit_from_invitation` falls back to the invitation's
+  address only when the form gave none, not when it gave a blank one);
+  apps/accounts/tests/test_phase7.py (the page's words, and a cleared field leaving the member
+  no address).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the words, then
+  on the address the account was given). After: 447 application tests pass; lint, format and
+  the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]

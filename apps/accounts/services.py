@@ -221,7 +221,9 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     An address that already belongs to a closed or archived account brings that account back
     instead of starting a new one (FR-125, 2026-09-19).
     """
-    address = profile.get("email", "") or inv.email
+    # The invitation's address unless the form gave one: a guardian who clears the member's
+    # field means they have none (§2.4), which is not the same as a form that never asked.
+    address = profile["email"] if "email" in profile else inv.email
     proof = profile.pop("proof", "")
     callsign = profile.pop("callsign", "")
     returning, _ = returning_account(address)
@@ -236,7 +238,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
         _completion_notices(inv, _with_callsign(user, callsign))
         return user
     user = User.objects.create_user(
-        email=profile.pop("email", "") or inv.email,  # a minor's may differ (§2.4)
+        email=profile.pop("email", address),  # a minor's may differ, or be none (§2.4)
         password=password,
         category=inv.category,
         groups=["member"],

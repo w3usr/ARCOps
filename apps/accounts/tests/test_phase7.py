@@ -111,6 +111,44 @@ def test_guardian_completes_a_minors_invitation_creating_both_accounts():
     assert m.check_password("pw-Kid-Testing-123!")
 
 
+def test_a_guardian_who_clears_the_members_email_leaves_them_none():
+    """The form fills in the invitation's address; a guardian who clears it means the member has
+    none, as the field's "(optional)" says. The invitation's address was used all the same
+    (found reading the code for T46, 2026-10-21; reproduced 2026-10-26)."""
+    officer = _user("off@example.org", "officer")
+    inv = create_invitation(
+        officer, "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"
+    )
+    c = Client()
+    page = c.get(f"/me/invite/{inv.token}/").content.decode()
+    assert 'value="kid@example.org"' in page  # filled in from the invitation
+    # what the guardian reads about leaving it blank is what happens (#97's words)
+    assert "they cannot sign in until an address of their own is added" in page
+    assert "made from yours" not in page and "with the address above" not in page
+    r = c.post(
+        f"/me/invite/{inv.token}/",
+        {
+            "guardian_first_name": "Pat",
+            "guardian_last_name": "Parent",
+            "guardian_phone": "555-0100",
+            "relationship": "parent",
+            "guardian_password1": "pw-Testing-123!",
+            "guardian_password2": "pw-Testing-123!",
+            "first_name": "Kim",
+            "last_name": "Kid",
+            "minor_email": "",
+            "password1": "pw-Kid-Testing-123!",
+            "password2": "pw-Kid-Testing-123!",
+            "consent": "on",
+        },
+    )
+    assert r.status_code == 302
+    g = User.objects.by_address("parent@example.org").get()
+    m = Guardianship.objects.get(guardian=g).minor
+    assert m.first_name == "Kim" and not m.email and not m.addresses.exists()
+    assert not User.objects.by_address("kid@example.org").exists()
+
+
 def test_existing_member_as_guardian_must_sign_in_first_then_only_the_minor_form():
     officer = _user("off@example.org", "officer")
     parent = _user("parent@example.org")
