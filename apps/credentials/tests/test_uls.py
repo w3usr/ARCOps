@@ -322,7 +322,12 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert lic.effective_source == "sysadmin override, Canada" and lic.override_by == s
     assert AuditLog.objects.filter(action="license.override", subject_id=str(lic.pk)).exists()
     body = c.get(f"/members/{u.pk}/edit/").content.decode()
-    assert "Set by a sysadmin, Canada" in body and "Go back to the FCC value" in body
+    assert "Go back to the FCC value" in body
+    # how it was set, then who and why, saying "Set by" once (T38 step 5, 2026-10-21)
+    profile = c.get(f"/members/{u.pk}/").content.decode()
+    for page in (body, profile):
+        line = f"Set by hand, Canada. By {s.short_name}: Basic with Honours, ISED"
+        assert line in page and page.count("Set by") == 1
     # a refresh from the (still empty) table does not touch the override
     from apps.credentials.services import refresh_license_from_local_table
 

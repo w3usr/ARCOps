@@ -3552,3 +3552,17 @@ carries the actual running model ID.
   template). After: 438 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
 - **Git Hash**: ac7c2a7
+
+## [2026-10-26 13:39 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T38 step 5 on 2026-10-21: a license set by hand
+  read "Set by a sysadmin, Canada. Set by Ada N0CAL: …" on the member's Edit page and profile
+  (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/credentials/models.py (`source_label`: an override reads
+  "set by hand", with the country); templates/accounts/member_edit.html and member_detail.html
+  (the second sentence names who and why: "By <name>: <reason>"); apps/credentials/tests/
+  test_uls.py (both pages read "Set by hand, Canada. By …" and say "Set by" once).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the doubled
+  wording). After: 438 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: [after commit]
