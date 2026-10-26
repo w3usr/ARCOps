@@ -204,6 +204,8 @@ class SignUp(models.Model):
     )
     role = models.CharField(max_length=20)
     note = models.TextField(blank=True)  # to the captains (FR-110)
+    # When the member last changed it; a note given at sign-up dates from `created`.
+    note_at = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)  # FR-72
     checked_in_at = models.DateTimeField(null=True, blank=True)  # FR-113

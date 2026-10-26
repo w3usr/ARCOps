@@ -3877,3 +3877,18 @@ carries the actual running model ID.
   and requirement-identifier guards pass.
 - **Human Review Status**: Reviewed and verified (SK approved A6's wording, 2026-10-26)
 - **Git Hash**: 7f17a82
+
+## [2026-10-26 19:13 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-110: a member edits their note to the captains after signing up, on a
+  published roster only (FR-44; SK, 2026-10-26); the captains' digest dates a note by when it was
+  last changed, so one changed inside the 48 hours before the slot rides along.
+- **Sections/Files Affected**: apps/events/models.py (SignUp.note_at) and migration 0007;
+  apps/events/views_member.py (signup_note); apps/events/urls.py; apps/events/services/notify.py
+  (the 48-hour rule); templates/events/_slot_body.html (the member's note form); static/css/app.css
+  (form.my-note); apps/events/tests/test_notify.py (two tests).
+- **Nature of Contribution**: Code generation, reproduced first (both tests failed). After: 459
+  application tests pass; lint, format, migration check and the three guards pass; accessibility
+  sweep in Chromium and WebKit passes; checked by eye at desk and phone width on demo data.
+- **Human Review Status**: Reviewed and verified
+- **Git Hash**: [after commit]

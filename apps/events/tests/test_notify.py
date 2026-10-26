@@ -262,6 +262,56 @@ def test_the_captains_get_notes_given_inside_the_48_hours_before_the_slot():
     assert "a fresh note" in body and "an old note" not in body
 
 
+def test_a_member_edits_their_note_to_the_captains_after_signing_up():
+    """FR-110: a note is "entered at sign-up and editable by the member afterwards"; saving it
+    keeps when, for the digest, and the audit log keeps what it said before."""
+    from django.urls import reverse
+
+    from apps.ops.models import AuditLog
+
+    now = timezone.now()
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    other = _user("other@example.org", first_name="Ot", last_name="Her")
+    e, slots = _event(now + timedelta(days=5))
+    su = SignUp.objects.create(slot=slots[0], user=mem, role="observer", note="first CW contest")
+    c = Client()
+    c.force_login(mem)
+    page = c.get(f"/events/{e.pk}/slot/{slots[0].pk}/").content.decode()
+    assert 'value="first CW contest"' in page and ">Save note<" in page
+    url = reverse("signup_note", args=[su.pk])
+    r = c.post(url, {"note": "running 10 minutes late"}, follow=True)
+    su.refresh_from_db()
+    assert su.note == "running 10 minutes late" and su.note_at is not None
+    assert "Saved. The captains see your note." in r.content.decode()
+    row = AuditLog.objects.get(action="signup.note_changed")
+    assert row.before == {"note": "first CW contest"} and row.after == {
+        "note": "running 10 minutes late"
+    }
+    other_c = Client()
+    other_c.force_login(other)
+    assert other_c.post(url, {"note": "not mine"}).status_code == 404
+    Event.objects.filter(pk=e.pk).update(state=Event.State.LOCKED)  # FR-44: no member changes
+    c.post(url, {"note": "changed while locked"})
+    su.refresh_from_db()
+    assert su.note == "running 10 minutes late"
+
+
+def test_a_note_changed_inside_the_48_hours_reaches_the_captains():
+    """FR-110: a note added or changed inside the 48 hours before the slot rides along, even on
+    a sign-up made earlier."""
+    now = timezone.now()
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    e, slots = _event(now + timedelta(hours=30), captain=cap)
+    su = SignUp.objects.create(slot=slots[0], user=mem, role="observer", note="an old note")
+    SignUp.objects.filter(pk=su.pk).update(created=slots[0].start - timedelta(hours=70))
+    c = Client()
+    c.force_login(mem)
+    c.post(f"/events/signup/{su.pk}/note/", {"note": "now running late"})
+    notify.send_warnings(now)
+    assert "now running late" in _msgs(cap, "warning").get().body_html
+
+
 def test_no_show_notice_goes_once_to_captains():
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")

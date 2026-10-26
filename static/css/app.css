@@ -339,6 +339,7 @@ fieldset .helptext { margin-top: 0; }
 .copyrow.tight .iconbtn:hover { color: var(--fg); }
 .copyrow.tight .iconbtn.copied { color: var(--ok); }
 form.inline { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+form.my-note { margin-top: 1.25rem; }  /* apart from the slot's other actions above it */
 .helptext { display: block; color: var(--muted); font-size: .9rem; margin-top: .25rem; }
 .req { color: var(--bad); font-weight: 700; }
 /* The settings page names each value in words; the key stays for whoever edits club.yaml. */

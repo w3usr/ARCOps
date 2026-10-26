@@ -32,6 +32,28 @@ FEED_SALT = "ical-feed"
 # --------------------------------------------------------------- role change (FR-111) ---
 
 
+@login_required
+@require_POST
+def signup_note(request, signup_id):
+    """FR-110: the member changes their note to the captains after signing up. Not on a locked
+    roster, which takes no member changes to sign-ups (FR-44). When it changed is kept, so the
+    captains' digest carries a note changed inside the 48 hours before the slot."""
+    su = get_object_or_404(SignUp, pk=signup_id, user=request.user)
+    slot, event = su.slot, su.slot.event
+    if event.state != Event.State.PUBLISHED:
+        messages.error(request, "The roster is locked; ask a captain to pass on your note.")
+        return redirect("event_detail", pk=event.pk)
+    note = request.POST.get("note", "").strip()[:500]
+    if note != su.note:
+        record(
+            request.user, "signup.note_changed", su, before={"note": su.note}, after={"note": note}
+        )
+        su.note, su.note_at = note, timezone.now()
+        su.save(update_fields=["note", "note_at"])
+        messages.success(request, "Saved. The captains see your note." if note else "Note removed.")
+    return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
+
+
 def _status_if_role(slot: Slot, su: SignUp, new_role: str):
     """What the slot would read if `su` held `new_role` instead."""
     signups = list(slot.signups.select_related("user").all())

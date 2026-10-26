@@ -283,7 +283,7 @@ def send_warnings(now: datetime | None = None) -> dict:
         notes = "; ".join(
             f"{s.user.short_name}: {s.note}"
             for s in signups
-            if s.note and s.created >= slot.start - timedelta(hours=48)
+            if s.note and (s.note_at or s.created) >= slot.start - timedelta(hours=48)
         )
         row = {
             "event": event.title,

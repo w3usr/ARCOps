@@ -81,6 +81,7 @@ urlpatterns = [
     path(
         "signup/<int:signup_id>/role/", views_member.signup_change_role, name="signup_change_role"
     ),
+    path("signup/<int:signup_id>/note/", views_member.signup_note, name="signup_note"),
     path("slot/<int:slot_id>/waitlist/", views_member.waitlist_join, name="waitlist_join"),
     path("waitlist/<int:pk>/withdraw/", views_member.waitlist_withdraw, name="waitlist_withdraw"),
     path("waitlist/<int:pk>/accept/", views_member.waitlist_accept, name="waitlist_accept"),

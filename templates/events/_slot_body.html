@@ -47,6 +47,10 @@
   <button type="submit" class="secondary">Change</button>
 </form>
 {% endif %}
+{% if published %}<form method="post" action="{% url 'signup_note' cell.mine.pk %}" class="stack my-note">{% csrf_token %}
+  <div class="field"><label for="mynote-{{ slot.pk }}">Note to the captains (optional)</label><input id="mynote-{{ slot.pk }}" name="note" maxlength="500" value="{{ cell.mine.note }}" placeholder="Running 10 minutes late"></div>
+  <div><button type="submit" class="secondary">Save note</button></div>
+</form>{% endif %}
 {% endif %}
 {% elif published and not slot.closed %}
 <h2>Sign up</h2>
