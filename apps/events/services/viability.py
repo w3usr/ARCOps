@@ -26,12 +26,50 @@ class SlotStatus:
 
     @property
     def label(self) -> str:
+        """The state's name, for the code and the requirements (FR-73); a reader gets `needs`."""
         return {
             "empty": "Empty",
             "not_viable": "Not viable",
             "viable": "Viable",
             "at_risk": "At risk",
         }[self.status]
+
+    @property
+    def needs(self) -> str:
+        """What the slot needs, in the roster's words, finishing "the slot …" (FR-62; SK,
+        2026-10-26: every reader, captains included)."""
+        wanted = needs_from_reasons(self.reasons)
+        if self.status == "empty" or not wanted:
+            return "has nobody in it"
+        if len(wanted) > 2:
+            return "needs " + ", ".join(wanted[:-1]) + ", and " + wanted[-1]
+        return "needs " + " and ".join(wanted)
+
+    @property
+    def word(self) -> str:
+        """The roster cell's word for this state: Open, Needs …, or Covered."""
+        if self.status == "empty":
+            return "Open"
+        if self.status == "not_viable":
+            wanted = needs_from_reasons(self.reasons)
+            return "Needs " + (wanted[0] if wanted else "more")
+        return "Covered"
+
+
+def needs_from_reasons(reasons: list[str]) -> list[str]:
+    """The evaluation's reasons ("nobody with station access") as what the slot needs
+    ("someone with station access"), the way the roster words them."""
+    out = []
+    for r in reasons:
+        if r.startswith("nobody with "):
+            out.append("someone with " + r[len("nobody with ") :])
+        elif r.endswith("has no responsible adult designated"):
+            out.append("a responsible adult for " + r.split(" (under 18)")[0])
+        elif r.startswith("depends on ") and r.endswith(" alone"):
+            out.append("one more person alongside " + r[len("depends on ") : -len(" alone")])
+        elif r != "no one signed up":
+            out.append(r)
+    return out
 
 
 def on_air_roles() -> set[str]:

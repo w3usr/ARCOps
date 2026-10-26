@@ -105,6 +105,10 @@ def test_expiry_notices_bundle_agreements_and_summarise_to_approvers():
     )
     s = Outbox.objects.get(user=adv, category="agreement")
     assert "1 member(s)" in s.subject and "Mo Member N0MEM" in s.body_html
+    # the window, not its last day as if it were everyone's expiry; the link named for where it
+    # goes (T40, 2026-10-21)
+    assert s.subject == "1 member(s) with agreements expiring within 30 days"
+    assert "expire within the next 30 days" in s.body_html and ">Open Approvals<" in s.body_html
     assert agreement_expiry_run()["notices_30"] == 0  # once
     # on the day: expired and told
     SignedAgreement.objects.filter(user=mem).update(expires_on=today - dt.timedelta(days=1))

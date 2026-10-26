@@ -82,7 +82,9 @@ def test_raising_the_level_asks_you_to_confirm_and_is_recorded():
     assert b"not confirmed" in r.content
     assert c.session["acting_view"] == "advisor"
     assert c.get("/ops/settings/").status_code == 404
-    assert AuditLog.objects.filter(action="view.raise_refused").exists()
+    refused = AuditLog.objects.filter(action="view.raise_refused").latest("at")
+    # where the session stayed, as view.raised and view.lowered record it (T51, 2026-10-21)
+    assert refused.before == {"from": "advisor"} and refused.after == {"to": "sysadmin"}
 
     # and with the password accepted on that page, the level rises
     c.post("/me/level/", {"view": "sysadmin"})

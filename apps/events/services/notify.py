@@ -26,7 +26,7 @@ from apps.ops.templatetags.labels import role_label
 
 from ..models import Event, SignUp, Slot, SlotWarning
 from .roster import UTC, display_zone, zone_label
-from .viability import evaluate
+from .viability import evaluate, needs_from_reasons
 
 CONFIRM_SALT = "signup-confirm"
 
@@ -190,7 +190,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     local = display_zone(event)
     ctx = {
         "event": event,
-        "role": su.role,
+        "role": role_label(su.role),
         "when_lead": when_text(slot, local),
         "when_local": when_text(slot, local),
         "when_utc": when_text(slot, UTC),
@@ -252,7 +252,11 @@ def send_warnings(now: datetime | None = None) -> dict:
         ).exists()
         if recent:
             continue
-        reasons = list(status.reasons)
+        short = status.status in ("not_viable", "at_risk")
+        # What the slot needs, in the roster's words, for everyone who reads it (FR-62; SK,
+        # 2026-10-26); the captains' line adds who has not confirmed.
+        needs = status.needs if short else ""
+        reasons = []
         if unconfirmed:
             names = ", ".join(
                 s.user.short_name for s in signups if not s.confirmed_at and not s.checked_in_at
@@ -261,9 +265,8 @@ def send_warnings(now: datetime | None = None) -> dict:
         event = slot.event
         when = when_text(slot)
         link = slot_link(slot)
-        label = status.label if status.status in ("not_viable", "at_risk") else "Unconfirmed"
         for s in signups:
-            if status.status in ("not_viable", "at_risk"):
+            if short:
                 send(
                     "warning.person",
                     s.user,
@@ -272,8 +275,8 @@ def send_warnings(now: datetime | None = None) -> dict:
                         "event": event,
                         "when": when,
                         "position": slot.position.name,
-                        "status": label,
-                        "reasons": "; ".join(reasons),
+                        "status": needs,
+                        "reasons": "; ".join(needs_from_reasons(status.reasons)),
                         "link": link,
                     },
                 )
@@ -286,7 +289,7 @@ def send_warnings(now: datetime | None = None) -> dict:
             "event": event.title,
             "when": when,
             "position": slot.position.name,
-            "status": label,
+            "status": needs[:1].upper() + needs[1:] if short else "Covered",
             "reasons": "; ".join(reasons),
             "notes": notes,
             "link": link,
@@ -363,13 +366,13 @@ def member_cancelled(actor: User, su: SignUp, broken=None) -> None:
             "cancellation",
             {
                 "person": su.user.short_name_lettered,
-                "role": su.role,
+                "role": role_label(su.role),
                 "event": event,
                 "when": when_text(slot),
                 "position": slot.position.name,
                 "late": late,
                 "cutoff": cutoff,
-                "broken": broken.label.lower() if broken else "",
+                "broken": broken.needs if broken else "",
                 "link": slot_link(slot),
             },
         )
@@ -387,7 +390,7 @@ def removed_by_captain(actor: User, su: SignUp, reason: str = "") -> None:
             "event": event,
             "when": when_text(slot),
             "position": slot.position.name,
-            "role": su.role,
+            "role": role_label(su.role),
             "reason": reason,
             "link": site() + reverse("event_detail", args=[event.pk]),
         },
@@ -406,7 +409,7 @@ def assigned_by_captain(actor: User, su: SignUp) -> None:
             "event": event,
             "when": when_text(slot),
             "position": slot.position.name,
-            "role": su.role,
+            "role": role_label(su.role),
             "link": slot_link(slot),
         },
     )

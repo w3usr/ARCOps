@@ -465,6 +465,8 @@ def agreement_expiry_run(now=None) -> dict:
                 {
                     "count": len(rows),
                     "expired": expired,
+                    "days": notice_days,
+                    # the window's last day, not anyone's expiry; kept for a club's own wording
                     "expires": today + dt.timedelta(days=notice_days),
                     "members": rows,
                     "link": approvals_link,

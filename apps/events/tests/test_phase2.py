@@ -145,6 +145,8 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     assert "Change role to" in body
     r = c.post(f"/events/signup/{su.pk}/role/", {"role": "observer"})
     assert r.status_code == 200 and b"Change your role?" in r.content  # the only licensee
+    # what the slot would need, in the roster's words, not its state's name (2026-10-26)
+    assert b"the slot needs someone with" in r.content and b"not viable" not in r.content
     su.refresh_from_db()
     assert su.role == "operator"
     c.post(f"/events/signup/{su.pk}/role/", {"role": "observer", "confirmed": "yes"})
@@ -152,6 +154,8 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     assert su.role == "observer"
     m = Outbox.objects.get(user=cap, category="moved")
     assert "Role change inside the cutoff" in m.subject
+    assert "from Operator to Observer" in m.body_html
+    assert "The slot now needs someone with" in m.body_html and "not viable" not in m.body_html
 
 
 def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
@@ -236,9 +240,10 @@ def test_eligibility_editor_and_openings_with_announcement():
 
     assert can_sign_up(stu, slots[0], "operator")[0]
     ok, reason = can_sign_up(com, slots[0], "operator")
-    assert not ok and "limited to" in reason
+    # A role and a category reach the reader as their labels (T36 step 1, 2026-10-19)
+    assert not ok and reason == "Operator is limited to: Student"
     ok, reason = can_sign_up(com, slots[0], "mentor")
-    assert not ok and "General" in reason
+    assert not ok and reason == "Mentor needs a General or higher license"
     # slot-level override lets the community member operate this slot only
     c.post(
         f"/events/{e.pk}/slot/{slots[0].pk}/eligibility/",
@@ -261,6 +266,23 @@ def test_eligibility_editor_and_openings_with_announcement():
     o.refresh_from_db()
     assert o.announced_at is not None
     call_command("openings_announce", "--now", now.isoformat())
+
+
+def test_a_slot_rule_names_the_role_and_credential_in_words():
+    now = timezone.now()
+    kid = _user("kid@example.org", under_18=True)
+    e, slots = _event(now + timedelta(days=4))
+    EligibilityRule.objects.create(event=e, slot=slots[0], role="operator", minors_allowed=False)
+    EligibilityRule.objects.create(
+        event=e, slot=slots[0], role="observer", required_credentials=["station_access"]
+    )
+    from apps.events.services.eligibility import can_sign_up
+
+    # a captain signing a minor up is what reaches the slot's own rule
+    ok, reason = can_sign_up(kid, slots[0], "operator", by_captain=True)
+    assert not ok and reason == "Operator in this slot is not open to members under 18"
+    ok, reason = can_sign_up(kid, slots[0], "observer", by_captain=True)
+    assert not ok and reason == "Observer needs station access"
 
 
 def test_waitlist_offer_accept_and_lapse():
@@ -287,6 +309,10 @@ def test_waitlist_offer_accept_and_lapse():
         first.state == "offered"
         and Outbox.objects.filter(user=b, subject__contains="place opened").exists()
     )
+    # "A observer place opened" read the stored key, with the wrong article (T36, 2026-10-15)
+    offer = Outbox.objects.get(user=b, subject__contains="place opened")
+    assert offer.subject.startswith("A place opened as Observer:")
+    assert "a place as Observer in" in offer.body_html
     assert waitlist.expire_offers(now + timedelta(hours=1)) == 0
     assert waitlist.expire_offers(now + timedelta(hours=3)) == 1  # b lapsed, d offered
     assert Waitlist.objects.get(user=d).state == "offered"

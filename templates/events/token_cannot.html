@@ -6,7 +6,7 @@
 <p>You hold {{ signup.slot.event.title }}, {{ signup.slot.position }}, as <strong>{{ signup.role|role_label }}</strong>.</p>
 <p class="when">{% when signup.slot.start signup.slot.end signup.slot.event %}</p>
 {# The signed-in Give up this slot? page's warning and order: the safe option first (T13, T31). #}
-{% if broken %}<p class="msg warning"><span class="lvl">Careful:</span> without you the slot becomes <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>{% endif %}
+{% if broken %}<p class="msg warning"><span class="lvl">Careful:</span> without you the slot {{ broken.needs }}.</p>{% endif %}
 <form method="post">{% csrf_token %}
 <a class="button" href="{% url 'my_schedule' %}">Keep it</a> <button type="submit" class="danger">Cancel my sign-up</button></form>
 <p class="muted">The captains are told either way.</p>

@@ -6,9 +6,10 @@ from django.utils import timezone
 
 from apps.credentials.services import class_rank, holds
 from apps.ops.config import setting
-from apps.ops.templatetags.labels import role_label
+from apps.ops.templatetags.labels import category_label, role_label
 
 from ..models import EligibilityRule, Opening
+from .viability import _credential_word
 
 
 def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tuple[bool, str]:
@@ -58,16 +59,17 @@ def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tu
             return False, f"{role_label(role)} needs a valid amateur license"
     if rule:
         if user.under_18 and not rule.minors_allowed:
-            return False, f"{role} in this slot is not open to members under 18"
+            return False, f"{role_label(role)} in this slot is not open to members under 18"
         if rule.categories and user.category not in rule.categories:
-            return False, f"{role} is limited to: {', '.join(rule.categories)}"
+            names = ", ".join(category_label(c) for c in rule.categories)
+            return False, f"{role_label(role)} is limited to: {names}"
         if rule.min_license_class and (
             not holds(user, "amateur_license", slot.start.date())
             or class_rank(getattr(getattr(user, "license", None), "effective_class", None))
             < class_rank(rule.min_license_class)
         ):
-            return False, f"{role} needs a {rule.min_license_class} or higher license"
+            return False, f"{role_label(role)} needs a {rule.min_license_class} or higher license"
         for key in rule.required_credentials or []:
             if not holds(user, key, slot.start.date()):
-                return False, f"{role} needs {key.replace('_', ' ')}"
+                return False, f"{role_label(role)} needs {_credential_word(key)}"
     return True, ""

@@ -445,3 +445,27 @@ def test_only_a_sysadmin_forces_a_callsign_lookup(people):
 
     c = _as(people["sys"])
     assert "license_lookup" in c.get(f"/members/{mem.pk}/edit/").content.decode()
+
+
+def test_a_level_changed_on_the_member_page_is_audited_as_groups_changed(people):
+    """The plan and FR-92 name the record of an account's groups changing: a level chosen on the
+    member's page wrote member.edited instead (T50 step 6, 2026-10-21)."""
+    from django.contrib.auth.models import Group
+
+    from apps.ops.models import AuditLog
+
+    s, m = people["sys"], people["mem"]
+    data = {
+        "action": "save",
+        "first_name": m.first_name,
+        "last_name": m.last_name,
+        "category": m.category,
+        "groups": Group.objects.get(name="officer").pk,
+        "cell_phone": "555-0142",
+    }
+    _as(s).post(f"/members/{m.pk}/edit/", data)
+    assert list(m.groups.values_list("name", flat=True)) == ["officer"]
+    row = AuditLog.objects.get(action="groups.changed", subject_id=str(m.pk))
+    assert row.before == {"groups": ["member"]} and row.after == {"groups": ["officer"]}
+    edited = AuditLog.objects.get(action="member.edited", subject_id=str(m.pk))
+    assert "groups" not in edited.after and "cell_phone" in edited.after

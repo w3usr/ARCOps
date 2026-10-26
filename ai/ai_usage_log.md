@@ -3628,3 +3628,119 @@ carries the actual running model ID.
   three guards pass.
 - **Human Review Status**: Reviewed and verified (SK approved the diagnosis and the fix).
 - **Git Hash**: f9728a8
+
+## [2026-10-26 15:37 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found reconciling on 2026-10-15 and again running T31 on
+  2026-10-20: messages named a role by its stored key ("A observer place opened", "signed up as
+  operator"), where the pages use the club's label (SK, 2026-10-26: the label goes in `role`).
+- **Sections/Files Affected**: apps/events/services/notify.py (the reminder, the captains'
+  cancellation notice, the removal and assignment notices); apps/events/services/waitlist.py (the
+  offer); apps/events/services/lifecycle.py (the opening announcement); apps/events/views_member.py
+  (the captains' role-changed notice, `old_role` and `new_role`): each passes `role_label(…)`.
+  apps/comms/defaults.py (the waitlist offer reads "A place opened as {{ role }}", not "A {{ role }}
+  place"); apps/events/tests/test_notify.py and test_phase2.py (the label in each message; one
+  older assertion that checked for the lowercase key corrected).
+- **Nature of Contribution**: Code edit, reproduced first (five assertions failed on the keys).
+  After: 438 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: f233cf9
+
+## [2026-10-26 15:50 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T36 on 2026-10-19: the roster's eligibility
+  reasons named a role, a member category and a credential by their stored keys ("operator is
+  limited to: student") beside reasons that already used labels (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/eligibility.py (the under-18, category,
+  license-class and credential reasons: the role's label, the categories' labels, and the
+  credential in the roster's own words, `_credential_word`); apps/events/tests/test_phase2.py
+  (the category and license reasons exactly; a new test for a slot rule's under-18 and credential
+  reasons).
+- **Nature of Contribution**: Code edit, reproduced first (both tests failed on the keys). After:
+  439 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 51bda08
+
+## [2026-10-26 16:01 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T32 on 2026-10-20: the at-risk message, and
+  nine other places found with it, named a slot's state ("Not viable", "At risk") where the
+  roster says what the slot needs (FR-62); SK, 2026-10-26: the roster's words for every reader,
+  captains included.
+- **Sections/Files Affected**: apps/events/services/viability.py (`SlotStatus.needs`, the phrase
+  finishing "the slot …", and `.word`, the roster cell's word; `needs_from_reasons` moved here
+  from roster.py, which imports it); templates/events/token_cannot.html, confirm_cancel.html,
+  confirm_remove.html, confirm_role.html (the warning says what the slot would need);
+  apps/events/views.py (the cancel flash that repeated the page's own warning removed: it showed
+  twice); apps/events/services/notify.py (the at-risk message and the captains' digest rows; the
+  captains' cancellation notice); apps/events/views_member.py (the role-changed notice; the
+  roster export's status column); apps/comms/defaults.py (the four templates reworded to read
+  the phrase); apps/events/tests/test_status_words.py (new, every surface) and test_phase2.py.
+- **Nature of Contribution**: Code edit, reproduced first (six tests failed on the state names;
+  the cancel page counted two warnings). After: 444 application tests pass; lint, format and the
+  three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 8238259
+
+## [2026-10-26 16:07 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix three audit-log defects found running T29, T50 and T51 (2026-10-20/21):
+  an unsubscribe recorded `preference.email` where the settings page records
+  `preferences.changed`; a refused level raise recorded only the level asked for; and a level
+  changed on the member page recorded `member.edited`, not the `groups.changed` the plan and
+  FR-92 expect (SK, 2026-10-26, approving the plan's reading, T50 step 6).
+- **Sections/Files Affected**: apps/comms/announce.py (`set_email_preference` records
+  `preferences.changed`); apps/accounts/views_acting.py (`view.raise_refused` records `from`);
+  apps/accounts/account.py (`save_account` sets the level through `set_groups`, which writes
+  `groups.changed` with both sides, and leaves it out of `member.edited`);
+  apps/comms/tests/test_announce.py, apps/accounts/tests/test_acting_view.py and test_members.py
+  (one test each).
+- **Nature of Contribution**: Code edit, each reproduced first (the three tests failed on the
+  old records). After: 446 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: b12e353
+
+## [2026-10-26 16:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T40 on 2026-10-21: the approvers' 30-day
+  summary gave the notice window's last day as the agreements' expiry, and its link read
+  "Open Access rosters" though it opens Approvals (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/comms/defaults.py (`agreement.expiry_summary`: "expiring
+  within {{ days }} days", each date beside the name, "Open Approvals"); apps/credentials/
+  services.py (`days` passed; `expires` kept for a club's own wording);
+  apps/credentials/tests/test_phase4.py (the subject, the body and the link).
+- **Nature of Contribution**: Code edit, reproduced first (the subject read "expiring 25
+  November"). After: 447 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: dfdf226
+
+## [2026-10-26 16:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix two defects on the guardian's form, found scripting T5 and T46
+  (2026-10-19, 2026-10-21): the member's email help text described behaviour removed on
+  2026-09-20 and the page told every minor to sign in "with the address above"; and a guardian
+  who cleared that pre-filled field still gave the member the invitation's address (T46,
+  reproduced 2026-10-26) (SK, 2026-10-26: both together).
+- **Sections/Files Affected**: apps/accounts/views.py (the help text: blank means no sign-in
+  until an address is added, and every message reaches the guardian);
+  templates/accounts/accept_invitation_guardian.html (the intro: "their own address, if they
+  have one"); apps/accounts/services.py (`admit_from_invitation` falls back to the invitation's
+  address only when the form gave none, not when it gave a blank one);
+  apps/accounts/tests/test_phase7.py (the page's words, and a cleared field leaving the member
+  no address).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the words, then
+  on the address the account was given). After: 447 application tests pass; lint, format and
+  the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 9302767
+
+## [2026-10-26 16:20 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Before batch 2 is pushed, cite scenarios rather than the private tracker's
+  issue numbers, as this repository does (SK, 2026-10-26).
+- **Sections/Files Affected**: ai/ai_usage_log.md (two of today's entries); apps/accounts/tests/
+  test_phase7.py (one comment). The earlier commits' diffs on this branch still show the
+  numbers; the files no longer do.
+- **Nature of Contribution**: Edit.
+- **Human Review Status**: Reviewed and verified (SK chose a correcting commit over a rewrite).
+- **Git Hash**: 7166ab7

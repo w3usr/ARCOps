@@ -86,13 +86,13 @@ def signup_change_role(request, signup_id):
                 "moved",
                 {
                     "person": request.user.short_name_lettered,
-                    "old_role": old,
-                    "new_role": new_role,
+                    "old_role": role_label(old),
+                    "new_role": role_label(new_role),
                     "event": event,
                     "when": notify.when_text(slot),
                     "position": slot.position.name,
                     "cutoff": cutoff,
-                    "broken": after.label.lower() if breaks else "",
+                    "broken": after.needs if breaks else "",
                     "link": notify.slot_link(slot),
                 },
             )
@@ -307,7 +307,7 @@ def roster_csv(request, pk):
             s.position.location.name,
             s.position.name,
             s.kind,
-            status.label,
+            status.word,  # the roster cell's word, as the captains read it on the page
         ]
         if not signups:
             w.writerow(base + ["", "", "", "", "", ""])

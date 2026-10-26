@@ -140,11 +140,7 @@ def cancel_signup(request, signup_id):
         return redirect("event_detail", pk=slot.event.pk)  # FR-44
     if request.POST.get("confirmed") != "yes":
         broken = would_break(slot, su)
-        if broken:
-            messages.warning(
-                request,
-                f"If you cancel, this slot becomes {broken.label.lower()}: {'; '.join(broken.reasons)}. Cancel anyway?",
-            )
+        if broken:  # the page says what breaks; a flash repeating it put two warnings on one fact
             return render(request, "events/confirm_cancel.html", {"signup": su, "broken": broken})
     from .services import notify
 

@@ -203,29 +203,34 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
 
     Returns what the page needs to say: the callsign result, if any.
     """
+    from apps.ops.groups import set_groups
+
     from .services import apply_callsign
 
     subject = form.instance
-    before = {f: _auditable(User.objects.get(pk=subject.pk), f) for f in form.changed_data}
+    # The level is recorded by set_groups as groups.changed, with both sides (FR-92); the
+    # member.edited row is for everything else on the page.
+    edited = [f for f in form.changed_data if f != "groups"]
+    before = {f: _auditable(User.objects.get(pk=subject.pk), f) for f in edited}
     old_callsign = User.objects.get(pk=subject.pk).callsign
     user = form.save(commit=False)
     new_callsign = (user.callsign or "").upper().strip()
     user.callsign = old_callsign  # apply_callsign owns the change
     user.save()
     if "groups" in form.fields:
-        form.save_m2m()  # the access groups, which the form holds as a many-to-many
+        set_groups(actor, user, [g.name for g in form.cleaned_data["groups"]])
 
     callsign_result = None
     if "callsign" in form.changed_data and new_callsign != old_callsign:
         callsign_result = apply_callsign(user, new_callsign, previous=old_callsign)
 
-    if form.changed_data:
+    if edited:
         record(
             actor,
             "member.edited",
             user,
             before=before,
-            after={f: _auditable(user, f) for f in form.changed_data},
+            after={f: _auditable(user, f) for f in edited},
         )
     return {"callsign": callsign_result}
 

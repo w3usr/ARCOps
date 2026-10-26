@@ -11,6 +11,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.comms.services import send
 from apps.ops.audit import record
+from apps.ops.templatetags.labels import role_label
 
 from ..models import Event, Opening, Slot
 
@@ -108,7 +109,10 @@ def announce_openings(now: datetime | None = None) -> int:
         link = _site() + reverse("event_detail", args=[o.event.pk])
         for u in audience:
             send(
-                "opening.announced", u, "opening", {"role": o.role, "event": o.event, "link": link}
+                "opening.announced",
+                u,
+                "opening",
+                {"role": role_label(o.role), "event": o.event, "link": link},
             )
         o.announced_at = now
         o.save(update_fields=["announced_at"])

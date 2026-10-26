@@ -3,7 +3,7 @@
 {% block title %}Change your role? · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Change your role?</h1>
-<p class="msg warning"><span class="lvl">Careful:</span> moving from <strong>{{ signup.role|role_label }}</strong> to <strong>{{ new_role|role_label }}</strong> leaves this slot <strong>{{ broken.label|lower }}</strong>: {{ broken.reasons|join:"; " }}.</p>
+<p class="msg warning"><span class="lvl">Careful:</span> if you move from <strong>{{ signup.role|role_label }}</strong> to <strong>{{ new_role|role_label }}</strong>, the slot {{ broken.needs }}.</p>
 <form method="post" action="{% url 'signup_change_role' signup.pk %}">{% csrf_token %}<input type="hidden" name="role" value="{{ new_role }}"><input type="hidden" name="confirmed" value="yes">
   <a class="button" href="{% url 'slot_detail' signup.slot.event.pk signup.slot.pk %}">Stay as {{ signup.role|role_label }}</a>
   <button type="submit" class="secondary">Change to {{ new_role|role_label }}</button>

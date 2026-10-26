@@ -12,6 +12,7 @@ from django.utils import timezone
 from apps.comms.services import send
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.templatetags.labels import role_label
 
 from ..models import RoleCapacity, SignUp, Slot, Waitlist
 
@@ -67,7 +68,7 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
             "event": slot.event,
             "when": when_text(slot),
             "position": slot.position.name,
-            "role": role,
+            "role": role_label(role),
             "expires": entry.offer_expires_at,
             "link": site + reverse("waitlist_accept", args=[entry.pk]),
         },

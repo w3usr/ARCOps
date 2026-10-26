@@ -77,7 +77,7 @@ def acting_view(request):
         if wanted not in {v["key"] for v in views}:
             raise Http404
         if not is_confirmed(request):
-            record(user, "view.raise_refused", user, after={"to": wanted})
+            record(user, "view.raise_refused", user, before={"from": now}, after={"to": wanted})
             messages.error(request, "That was not confirmed, so the level is unchanged.")
             return redirect("acting_view")
         # Spent on this raise, so the next one asks again (NAF, 2026-09-20: "We don't want
