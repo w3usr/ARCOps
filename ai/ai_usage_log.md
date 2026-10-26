@@ -3853,4 +3853,4 @@ carries the actual running model ID.
   behaviour). After: 456 application tests pass; lint, format and the club-neutral guard pass;
   the W3USR overlay on a fresh install changes no level.
 - **Human Review Status**: Reviewed and verified
-- **Git Hash**: [after commit]
+- **Git Hash**: 967ae87
