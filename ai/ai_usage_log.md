@@ -3488,4 +3488,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code edit, reproduced first (both test additions failed on the
   old templates). After: 436 application tests pass; lint, format and the three guards pass.
 - **Human Review Status**: Pending review.
-- **Git Hash**: [after commit]
+- **Git Hash**: 498b037
