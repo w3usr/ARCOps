@@ -256,6 +256,7 @@ footer.site .credit a { color: inherit; }
 .card.highlight { border-color: var(--accent); }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
 .card > h2:first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }  /* the card's padding is the space under it */
 .list { padding-left: 1.25rem; } .list li { margin: .25rem 0; }
 .table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
 .table th, .table td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -295,6 +296,7 @@ button.big { font-size: 1.5rem; padding: 1rem 2rem; width: 100%; }
 button.wide, .button.wide { width: 100%; display: block; text-align: center; box-sizing: border-box; }
 /* Controls on the library's own pages sit next to each other with no wrapper of their own. */
 .libctl { margin: .35rem .6rem .35rem 0; }
+.libctl.wide { margin: 1rem 0 0; max-width: 28rem; }  /* stacked under the field, as wide as it */
 .linklike { color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .linklike:hover { text-decoration: underline; }
 button.linklike.danger, .linklike.danger { background: none; color: var(--bad); padding: 0; font-weight: inherit; text-decoration: underline; }
@@ -423,9 +425,9 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .health .tag { margin-right: .25rem; }
 
 .roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-.roster .r-head, .roster .r-row { display: grid; grid-template-columns: 9.5rem repeat(var(--cols), minmax(0, 1fr)); }
-.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 9.5rem repeat(auto-fit, minmax(0, 1fr)); }
-.roster.list .r-row { grid-template-columns: 9.5rem minmax(0, 1fr); }
+.roster .r-head, .roster .r-row { display: grid; grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr)); }
+.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 11rem repeat(auto-fit, minmax(0, 1fr)); }
+.roster.list .r-row { grid-template-columns: 11rem minmax(0, 1fr); }
 .roster .r-head { position: sticky; top: 0; z-index: 2; background: var(--side); border-bottom: 2px solid var(--line); font-size: .85rem; color: var(--muted); font-weight: 600; }
 .roster .r-head > div { padding: .5rem .75rem; }
 .roster .r-pos { display: flex; flex-direction: column; line-height: 1.2; } .roster .r-pos .loc { font-weight: 400; }
@@ -434,14 +436,15 @@ h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 .roster .daysel { gap: .6rem; } .roster .daysel span { font-weight: 600; }
 .roster .r-row { border-top: 1px solid var(--line); } .roster .r-day .r-row:first-of-type { border-top: 0; }
 .roster .r-time { padding: .5rem .75rem; display: flex; flex-direction: column; gap: .1rem; line-height: 1.25; }
-.roster .r-time .lead { font-weight: 600; font-variant-numeric: tabular-nums; }
-.roster .r-time .other { font-size: .8rem; }
+.roster .r-time .lead { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.roster .r-time .other { font-size: .8rem; white-space: nowrap; }
 .roster .r-time .tag { align-self: flex-start; margin-top: .2rem; }
 .roster .kind-setup, .roster .kind-breakdown { background: color-mix(in srgb, var(--card) 60%, transparent); }
 .roster .r-cell { position: relative; border-left: 1px solid var(--line); min-height: 3.4rem; }
 .roster .r-cell.empty { background: repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--line) 50%, transparent) 6px 7px); }
 .roster .r-cell > input[type="checkbox"] { position: absolute; left: .6rem; top: .7rem; z-index: 1; }
 .roster .slot-link { display: flex; flex-direction: column; gap: .15rem; padding: .5rem .75rem .5rem 2.3rem; min-height: 3.4rem; color: inherit; text-decoration: none; border-left: 4px solid transparent; }
+.roster.noselect .slot-link { padding-left: .75rem; }  /* no tick-box to make room for */
 .roster .slot-link:hover { background: color-mix(in srgb, var(--fg) 4%, transparent); }
 .roster .tone-open .slot-link { border-left-color: var(--accent); }
 .roster .tone-ok .slot-link { border-left-color: var(--ok); }
@@ -518,6 +521,7 @@ pre { overflow-x: auto; max-width: 100%; }
 .levels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
 .levels > li { padding: var(--s2) 0; border-top: 1px solid var(--line); }
 .levels > li:first-child { border-top: 0; padding-top: 0; }
+.levels > li:last-child { padding-bottom: 0; }
 .levels .check { gap: var(--s1) var(--s2); flex-wrap: wrap; }
 .levels label { font-weight: 600; }
 .levels .helptext { margin: var(--s1) 0 0 1.7rem; }
@@ -537,6 +541,7 @@ pre { overflow-x: auto; max-width: 100%; }
 .addresses-list { list-style: none; padding-left: 0; }
 .addresses-list > li { margin: 0; padding: var(--s2) 0; border-top: 1px solid var(--line); }
 .addresses-list > li:first-child { border-top: 0; padding-top: 0; }
+.addresses-list > li:last-child { padding-bottom: 0; }
 .addresses-list .address { font-weight: 600; overflow-wrap: anywhere; margin: 0; }
 .addresses-list .addr-state { margin: var(--s1) 0 0; color: var(--muted); font-size: var(--t-small); }
 .addresses-list .addr-state .needs { color: var(--warn); font-weight: 600; }

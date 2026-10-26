@@ -68,6 +68,16 @@ def test_settings_page_edits_are_stored_and_audited():
     assert c2.get("/ops/settings/").status_code == 404
 
 
+def test_a_refused_time_zone_is_not_called_the_saved_value():
+    """A typed zone that is refused was also described as "the saved value", though nothing was
+    saved (T43 step 1, 2026-10-21)."""
+    c, _ = _as("sysadmin")
+    body = c.post("/ops/settings/", {"club.timezone": "Mars/Olympus_Mons"}).content.decode()
+    assert "Nothing was saved" in body and "is not a known time zone" in body
+    assert "The saved value" not in body
+    assert setting("club.timezone") != "Mars/Olympus_Mons"
+
+
 def test_saving_one_setting_leaves_the_imported_notice_and_unset_accent_alone():
     """The form posts back every field as the page shows it. An imported notice as
     the editor returns it (cleaned, trimmed) and an unset accent as the color input shows it

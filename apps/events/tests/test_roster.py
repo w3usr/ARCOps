@@ -100,6 +100,22 @@ def test_the_zone_label_follows_the_event_not_today(world):
     assert data["span"]["lead"].endswith("EST")
 
 
+def test_a_utc_event_shows_each_time_once(world):
+    """A contest shown in UTC repeated every time beneath itself, and offered "Lead with UTC"
+    (found on the contact sheet, 2026-10-23)."""
+    ev = world["ev"]
+    ev.display_timezone = "UTC"
+    ev.save()
+    for lead in ("local", "utc"):
+        data = build(ev, world["mem"], lead)
+        row = data["days"][1].rows[0]  # Friday holds only the 23:00Z setup slot
+        assert row.lead_range == "00:00–01:00 UTC" and row.other_range == ""
+        assert data["span"]["lead"].endswith("UTC") and data["span"]["other"] == ""
+        assert data["lead_label"] == "UTC" and data["other_label"] == ""
+    body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
+    assert "Times in <strong>UTC</strong>." in body and "Lead with" not in body
+
+
 def test_status_is_phrased_as_a_need_never_a_verdict(world):
     ev = world["ev"]
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
@@ -250,6 +266,26 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     )
 
 
+def test_a_locked_roster_offers_members_nothing_to_tick(world):
+    """A locked roster kept its tick-boxes for members, with nothing behind them, and a forced
+    bulk sign-up there was told it opens when published (T37 step 1, 2026-10-19)."""
+    ev = world["ev"]
+    Event.objects.filter(pk=ev.pk).update(state=Event.State.LOCKED)
+    body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
+    assert 'name="slots"' not in body and "data-select-day" not in body
+    assert 'id="bulk-bar"' not in body
+    body = _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
+    assert 'name="slots"' in body and 'id="bulk-bar"' in body  # Close and Cancel still apply
+    slot = Slot.objects.filter(position=world["run"], kind="operating").first()
+    r = _as(world["mem"]).post(
+        f"/events/{ev.pk}/bulk/",
+        {"action": "signup", "role": "operator", "slots": [slot.pk]},
+        follow=True,
+    )
+    body = r.content.decode()
+    assert "The roster is locked." in body and "when the event is published" not in body
+
+
 def test_present_wording():
     class St:
         def __init__(self, status, reasons):
@@ -296,6 +332,31 @@ def test_present_wording():
         now=now,
     )
     assert p.word == "Covered" and "one more person alongside Mo N0MEM" in p.detail
+
+
+def test_the_captains_red_within_48_hours_says_so_in_words(world):
+    """A captain's red for a slot that still needs someone within 48 hours read, by the key, as
+    "over limit", and only its color set it apart from the amber Needs (T15, 2026-10-19)."""
+
+    class St:
+        status, reasons = "not_viable", ["nobody with station access", "nobody with a license"]
+
+    class Sl:
+        closed = False
+        start = datetime(2026, 1, 2, tzinfo=UTC)
+
+    now = datetime(2026, 1, 1, tzinfo=UTC)
+    args = (Sl(), St(), [object()], [])
+    p = present(*args, published=True, is_captain=True, now=now)
+    assert p.tone == "bad" and p.word == "Needs someone with station access"
+    assert p.detail == "within 48 hours; someone with a license"
+    p = present(*args, published=True, is_captain=False, now=now)
+    assert p.tone == "warn" and "48 hours" not in p.detail
+
+    ev = world["ev"]
+    entry = "within 48 hours: it starts soon and still needs someone"
+    assert entry in _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
+    assert entry not in _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
 
 
 def test_events_list_and_home_show_both_zones(world, monkeypatch):

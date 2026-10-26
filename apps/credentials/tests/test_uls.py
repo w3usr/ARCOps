@@ -228,6 +228,30 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
         },
     )
     assert r.status_code == 302 and User.objects.get(pk=u.pk).callsign == "N0AAA"
+    # Saving your own callsign whose FCC name is not yours asks "Is this you?" once, not again
+    # in the officer's words about you in the third person (T38 step 3, 2026-10-21).
+    fields = {
+        "first_name": "Ada",
+        "last_name": "Other",
+        "preferred_name": "",
+        "callsign": "N0ZZZ",
+        "institution_email": "",
+        "personal_email": "",
+        "cell_phone": "",
+        "institution_email_delivery": "on",
+        "personal_email_delivery": "on",
+    }
+    body = c.post(f"/members/{u.pk}/edit/", fields, follow=True).content.decode()
+    assert "Is this you?" in body and "Open their profile" not in body
+    c.post("/me/uls-name/", {"decision": "no"})
+    assert User.objects.get(pk=u.pk).callsign == "N0AAA"
+    # whoever may set it for them (the advisor) is still told, in the third person
+    adv = User.objects.create_user("adv@example.org", "pw-Testing-123", groups=["advisor"])
+    c.force_login(adv)
+    fields["groups"] = Group.objects.get(name="member").pk  # the advisor's form carries the level
+    fields["category"] = u.category
+    body = c.post(f"/members/{u.pk}/edit/", fields, follow=True).content.decode()
+    assert 'is asked "Is this you?" on their own profile' in body
 
 
 def test_expiry_notices_at_90_30_and_expired_once_each_and_reset_on_renewal():
@@ -298,7 +322,12 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert lic.effective_source == "sysadmin override, Canada" and lic.override_by == s
     assert AuditLog.objects.filter(action="license.override", subject_id=str(lic.pk)).exists()
     body = c.get(f"/members/{u.pk}/edit/").content.decode()
-    assert "Set by a sysadmin, Canada" in body and "Go back to the FCC value" in body
+    assert "Go back to the FCC value" in body
+    # how it was set, then who and why, saying "Set by" once (T38 step 5, 2026-10-21)
+    profile = c.get(f"/members/{u.pk}/").content.decode()
+    for page in (body, profile):
+        line = f"Set by hand, Canada. By {s.short_name}: Basic with Honours, ISED"
+        assert line in page and page.count("Set by") == 1
     # a refresh from the (still empty) table does not touch the override
     from apps.credentials.services import refresh_license_from_local_table
 

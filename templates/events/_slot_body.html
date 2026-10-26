@@ -1,6 +1,6 @@
 {% load dicts labels %}
 {# One slot: the same content on its own page and inside the roster's dialog. #}
-<h1 class="slot-title">{{ row.lead_range }} <small class="muted">{{ row.other_range }}</small></h1>
+<h1 class="slot-title">{{ row.lead_range }}{% if row.other_range %} <small class="muted">{{ row.other_range }}</small>{% endif %}</h1>
 <p class="muted">{{ event.title }} · {{ slot.position.location.name }} · {{ slot.position.name }}{% if slot.kind != 'operating' %} · {{ slot.kind|kind_label }}{% endif %}{% if slot.closed %} · <strong>closed</strong>{% endif %}</p>
 
 <p class="slot-state tone-{{ cell.shown.tone }}"><span class="word">{{ cell.shown.word }}</span>{% if cell.shown.detail %} <span class="muted">{{ cell.shown.detail }}</span>{% endif %}</p>

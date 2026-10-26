@@ -2621,7 +2621,23 @@ and fail in another; a skip link that left focus behind was found with VoiceOver
 requirements because everyone uses different browsers, and it's important that it works across
 all of them." *Record:* the reconciliation note of 2026-10-22.
 
+### A9. FR-38 and §5.9: an event shown in UTC shows each time once
+
+**Original (FR-38).** "All times are stored in UTC and displayed in UTC and in the event's display
+zone side by side." **(§5.9)** "Displays show UTC and the event's zone together wherever a time
+is shown."
+
+**Decision.** Where an event's display zone is UTC, the two zones are one and each time is shown
+once: on every roster row, in the event's span, and in the slot's heading. The roster then offers
+no switch between zones, since there is nothing to switch to. An event in any other zone shows
+both, as written.
+
+**Decided by** SK, 2026-10-26, approving the fix for a contest roster that printed
+"00:00–01:00 UTC" above "Mon 00:00–01:00 UTC" on every row and offered "Lead with UTC": "You can
+go ahead and implement". *Record:* `notes/2026-10-26_bug-batch.md` and the reconciliation note of
+2026-10-26.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4) and 2026-10-22 (A5 to A8), from the dated decision records named in each entry; the
-requirements above are unchanged.
+(A1 to A4), 2026-10-22 (A5 to A8) and 2026-10-26 (A9), from the dated decision records named in
+each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

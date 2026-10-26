@@ -3435,3 +3435,196 @@ carries the actual running model ID.
   the library path and passes with them.
 - **Human Review Status**: Pending review.
 - **Git Hash**: 2108b10
+
+## [2026-10-26 12:57 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found on the 2026-10-23 contact sheet: roster rows were twice
+  as tall as their content because the time wrapped in its column, and an event shown in UTC
+  printed every time twice (each row, the page's span, the slot title) and offered "Lead with
+  UTC" (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/roster.py (`build` leaves the second zone's
+  range, span and label empty when both zones read the same); templates/events/detail.html and
+  _slot_body.html (an empty second time is skipped; one zone reads "Times in UTC." with no
+  toggle); static/css/app.css (time column 9.5rem to 11rem, both time lines kept on one line;
+  the cell's 3.4rem floor kept, SK's decision); apps/events/tests/test_roster.py (a UTC event
+  shows each time once); tools/a11y/test_roster_rows.py (new: the time is one line, measured
+  in a browser, for a UTC and a local-zone event).
+- **Nature of Contribution**: Code edit, each part reproduced first (the browser check failed
+  on `main` in both zones; the unit test failed on the repeated range). After: 435 application
+  tests pass; the new browser check and the phone-layout checks pass in Chromium and WebKit;
+  Firefox does not launch in this shell (its profile folder is not found, the same on a clean
+  `main`), so CI covers it. Lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 1a4eeb1
+
+## [2026-10-26 13:05 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T15 step 4 on 2026-10-19: a captain's red for a
+  slot that still needs someone within 48 hours was not in the roster's key, which explains red
+  only as "over limit", and only its color set it apart from the amber Needs (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/roster.py (`present`: a captain's red cell's
+  detail begins "within 48 hours", so the cell, the slot dialog and the slot page say it in
+  words); templates/events/detail.html (a captain-only key entry for the red Needs);
+  apps/events/tests/test_roster.py (the words for a captain and not for a member, and the key
+  entry on the captain's page only).
+- **Nature of Contribution**: Code edit, reproduced first (the new test failed on the missing
+  words). After: 436 application tests pass; the officer's accessibility sweep and the roster's
+  browser checks pass in Chromium and WebKit (Firefox does not launch in this shell); lint,
+  format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 6f49ba4
+
+## [2026-10-26 13:11 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T35 on 2026-10-19: operating hours printed as
+  Python floats ("7.0 h", "14.0") on Manage, the event page's Per day line and the health
+  overview, where Coverage beside them reads whole numbers (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/events/manage.html (Scheduled: each day, the total and
+  the limit); templates/events/detail.html (Per day); templates/events/health_overview.html
+  (Hours); templates/events/participation.html (hours scheduled, covered and viable, per
+  period and in total; found by a grep beyond the report): each takes `floatformat:"-1"`, as
+  Coverage does. The services and the CSV exports keep their numbers.
+  apps/events/tests/test_phase2.py and test_participation.py (no ".0" on the four pages).
+- **Nature of Contribution**: Code edit, reproduced first (both test additions failed on the
+  old templates). After: 436 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 498b037
+
+## [2026-10-26 13:18 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T31 step 3 on 2026-10-20: the signed-out
+  "Cannot make it?" page split its warning across a banner row, worded it unlike T13's
+  signed-in page, and offered Cancel my sign-up before Keep it (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/events/token_cannot.html (the signed-in page's
+  `msg warning` and "Careful: without you the slot becomes …"; Keep it first, Cancel my sign-up
+  as `.danger`; labels unchanged); apps/events/tests/test_notify.py (the warning's markup and
+  words and the order, with a break stubbed in).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the old
+  template). After: 436 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 25a49b0
+
+## [2026-10-26 13:23 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect seen running T37 on 2026-10-19: a locked roster kept its
+  tick-boxes for members, with no action behind them, and a forced bulk sign-up there answered
+  "Sign-ups open when the event is published." (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/events/services/roster.py (`selectable`: a captain in any
+  state, or a member while the event is published, the bulk bar's own condition);
+  templates/events/detail.html (slot boxes, the day's select-all and the bulk bar only when
+  selectable; the day heading stays as text); static/css/app.css (`.roster.noselect` drops the
+  indent kept for a tick-box); apps/events/views_slots.py (the bulk refusal says why per state:
+  draft, locked, finished, canceled); apps/events/tests/test_roster.py (a member on a locked
+  roster sees nothing to tick, a captain still does, and the refusal names the lock).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the boxes). After:
+  437 application tests pass; the member's accessibility sweep and the roster's browser checks
+  pass in Chromium and WebKit; a locked roster as a member checked by eye; lint, format and the
+  three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 8237132
+
+## [2026-10-26 13:30 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T38 step 3 on 2026-10-21: a member saving their
+  own callsign whose FCC name differs from theirs got the standing "Is this you?" question and
+  also the flash written for whoever sets it for them, about the member in the third person
+  (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/accounts/views_members.py (`member_edit`: the pending
+  callsign's flash only when someone else saved it; one warning about one fact, NAF
+  2026-09-22); apps/credentials/tests/test_uls.py (the member's own save shows the question and
+  not the flash; the advisor saving it for them still gets the flash).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the member's own
+  save without the fix). After: 437 application tests pass; lint, format and the three guards
+  pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 8eb146a
+
+## [2026-10-26 13:34 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T43 step 1 on 2026-10-21: on Settings, a typed
+  time zone that was refused was also described as "The saved value … is not a known zone",
+  though nothing was saved (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/ops/settings.html (the saved-value warning only on a row
+  with no refusal, so it describes the stored value and not what was just typed);
+  apps/ops/tests/test_settings_and_privacy.py (a refused zone shows the refusal and not the
+  saved-value line, and is not stored).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the old
+  template). After: 438 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: ac7c2a7
+
+## [2026-10-26 13:39 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T38 step 5 on 2026-10-21: a license set by hand
+  read "Set by a sysadmin, Canada. Set by Ada N0CAL: …" on the member's Edit page and profile
+  (SK, 2026-10-26).
+- **Sections/Files Affected**: apps/credentials/models.py (`source_label`: an override reads
+  "set by hand", with the country); templates/accounts/member_edit.html and member_detail.html
+  (the second sentence names who and why: "By <name>: <reason>"); apps/credentials/tests/
+  test_uls.py (both pages read "Set by hand, Canada. By …" and say "Set by" once).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the doubled
+  wording). After: 438 application tests pass; lint, format and the three guards pass.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 4781d64
+
+## [2026-10-26 13:45 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found running T51 step 3 on 2026-10-21: with a passkey on the
+  account, Confirm Access put Use a passkey beside Confirm, where the sign-in page stacks it
+  full width beneath (SK, 2026-10-26).
+- **Sections/Files Affected**: templates/allauth/elements/button.html (a `wide` tag gives the
+  library's control the site's `wide` class); templates/account/reauthenticate.html (Confirm and
+  the passkey button take it); static/css/app.css (`.libctl.wide`: a 1rem gap as on sign-in, and
+  no wider than the field above it); tools/a11y/test_confirm_access_layout.py (new: the two
+  buttons share an edge and a width, the passkey is beneath, and both are as wide as the
+  password field; measured in a browser with a passkey on the account).
+- **Nature of Contribution**: Code edit, reproduced first (measured side by side, and the new
+  test failed). After: the new test and the full accessibility sweep pass in Chromium and
+  WebKit; the result compared by eye; 438 application tests; lint, format and the three guards.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 2b736d4
+
+## [2026-10-26 13:55 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect found on the 2026-10-23 contact sheet: a card's last element
+  added its bottom margin to the card's padding, so cards ended unevenly; on the profile the
+  Email card had visibly more space under its last line than License (SK, 2026-10-26).
+- **Sections/Files Affected**: static/css/app.css (`.card > :last-child` has no bottom margin,
+  beside the existing first-child rule; the address list and the levels list drop the last
+  item's bottom padding, the mirror of their first-item rules); tools/a11y/test_card_spacing.py
+  (new: on the profile and Edit profile no card has more space under its last text or control
+  than its padding, measured in a browser).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on six profile cards
+  and four on Edit profile; then on Email alone with only the card rule). A scan of every page
+  the sweep visits went from 38 uneven cards to 8, all a margin nested inside the card's child
+  (rich text, table wrappers), left for a follow-up. Before and after compared by eye on the
+  profile. After: the accessibility folder (40) passes in Chromium and WebKit; 438 application
+  tests; lint, format and the three guards.
+- **Human Review Status**: Pending review.
+- **Git Hash**: 36c08f3
+
+## [2026-10-26 14:16 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile the requirements with beta batch 1: record SK's decision that an
+  event shown in UTC shows each time once (SK, 2026-10-26).
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (addendum A9, FR-38 and §5.9; trailer);
+  the body of the requirements unchanged.
+- **Nature of Contribution**: Drafting, from the decision quoted in the entry. The three guards
+  pass.
+- **Human Review Status**: Reviewed and verified (SK approved A9's wording, 2026-10-26).
+- **Git Hash**: d799ae0
+
+## [2026-10-26 14:31 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Find why the accessibility job failed on pull request #8, and fix it (SK,
+  2026-10-26).
+- **Sections/Files Affected**: .github/workflows/ci.yml (the accessibility job compiles the
+  club's message catalogue before the sweep, as the test job, tools/check.sh and the deploy
+  already do).
+- **Nature of Contribution**: Analysis and edit. The new Confirm Access layout check timed out in
+  all three engines waiting for "Use a passkey": the catalogue is gitignored and the job never
+  built it, so the button kept the library's "Use a security key". Reproduced locally by moving
+  the compiled catalogue aside; with it compiled, the check passes in Chromium and WebKit. The
+  three guards pass.
+- **Human Review Status**: Reviewed and verified (SK approved the diagnosis and the fix).
+- **Git Hash**: f9728a8

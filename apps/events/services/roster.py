@@ -102,8 +102,10 @@ def present(
     needs = _needs_from_reasons(status.reasons)
     if status.status == "not_viable":
         soon = slot.start - now <= timedelta(hours=48)
-        key = "problem" if (is_captain and soon) else "needs"
-        return Presentation(key, "Needs " + (needs[0] if needs else "more"), "; ".join(needs[1:]))
+        word = "Needs " + (needs[0] if needs else "more")
+        if is_captain and soon:  # the captain's red says why in words, not color alone
+            return Presentation("problem", word, "; ".join(["within 48 hours", *needs[1:]]))
+        return Presentation("needs", word, "; ".join(needs[1:]))
     low = getattr(status, "below_preferred", None)
     if low:  # FR-61: viable, with the warning; it may also depend on one person
         detail = f"below preferred class ({low})"
@@ -181,6 +183,11 @@ def build(
     lead_zone, other_zone = (local, UTC) if lead == "local" or local == UTC else (UTC, local)
     if lead == "utc":
         lead_zone, other_zone = UTC, local
+    starts, ends = event.starts_at(), event.ends_at()
+    lead_label = zone_label(starts or now, lead_zone)
+    # One of the two zones is UTC, so equal labels mean every time would print twice: a contest
+    # shown in UTC leaves the second zone's strings empty, and the templates skip them.
+    one_zone = lead_label == zone_label(starts or now, other_zone)
     is_captain = viewer.can_captain(event)
     published = event.state == Event.State.PUBLISHED
     locked = event.state == Event.State.LOCKED
@@ -283,7 +290,7 @@ def build(
                 s.start,
                 s.end,
                 _hours(s.start, s.end, lead_zone, with_day=False),
-                _hours(s.start, s.end, other_zone, with_day=True),
+                "" if one_zone else _hours(s.start, s.end, other_zone, with_day=True),
                 s.kind,
                 cells=[None] * len(positions) if layout == "grid" else [],
             )
@@ -295,7 +302,7 @@ def build(
             row.cells.append(cells[s.pk])
 
     single_location = len({p.location_id for p in positions}) == 1
-    starts, ends = event.starts_at(), event.ends_at()
+    roles = setting("slot_roles", []) or []
     return {
         "names_visible": viewer.is_member,  # FR-121: Provisional members see counts, not names
         "locked": locked,
@@ -311,17 +318,20 @@ def build(
         # The event's zone at its start, not today's (FR-36): a November event read in October
         # is EST, as its rows are. ponytail: one label for the event; one that crosses a
         # change of clocks shows the zone it starts in, and each row still names its own.
-        "lead_label": zone_label(starts or now, lead_zone),
-        "other_label": zone_label(starts or now, other_zone),
+        "lead_label": lead_label,
+        "other_label": "" if one_zone else zone_label(starts or now, other_zone),
         "span": {
             "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
             if starts and ends
             else "",
             "other": f"{starts.astimezone(other_zone):%a %-d %b %H:%M} – {ends.astimezone(other_zone):%a %-d %b %H:%M} {zone_label(starts, other_zone)}"
-            if starts and ends
+            if starts and ends and not one_zone
             else "",
         },
-        "roles": setting("slot_roles", []) or [],
+        "roles": roles,
+        # Tick-boxes only where the bulk bar offers something: a member's sign-up while the
+        # event is published, a captain's close, reopen and cancel in any state.
+        "selectable": is_captain or (published and bool(roles)),
         "is_captain": is_captain,
         "published": published,
     }

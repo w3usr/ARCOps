@@ -141,9 +141,8 @@ class LicenseRecord(models.Model):
     @property
     def source_label(self) -> str:
         if self.has_override:
-            return "set by a sysadmin" + (
-                f", {self.override_country}" if self.override_country else ""
-            )
+            # how it was set; the page names who set it and why
+            return "set by hand" + (f", {self.override_country}" if self.override_country else "")
         return self.SOURCE_WORDS.get(self.source or "unverified", "")
 
     @property
