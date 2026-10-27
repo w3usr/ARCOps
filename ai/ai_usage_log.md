@@ -3942,3 +3942,16 @@ carries the actual running model ID.
   form sharing field ids with the period and generator forms (fixed).
 - **Human Review Status**: Pending review
 - **Git Hash**: 5ee41f7
+
+## [2026-10-27 19:32 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Found while checking the slot form with axe: the flash messages list carried
+  role="status", which replaced its own role and left every message a list item in no list to a
+  screen reader (axe, serious). Keep aria-live, drop the role.
+- **Sections/Files Affected**: templates/base.html (the messages list);
+  apps/ops/tests/test_interface.py (the flash message test reads the list's tag).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed before the change).
+  After: 463 application tests pass; lint and the three guards pass; a page showing a message
+  passes axe in Chromium and WebKit (a throwaway check since deleted; the sweep's pages show none).
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

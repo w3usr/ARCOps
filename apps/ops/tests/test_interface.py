@@ -203,6 +203,11 @@ def test_a_flash_message_can_be_reached_and_carries_its_level_as_a_word(event):
     body = r.content.decode()
     assert 'id="messages"' in body and 'tabindex="-1"' in body
     assert '<span class="lvl">' in body
+    # A role on the list replaces its own, and leaves every message a list item in no list (axe:
+    # listitem). aria-live announces them without one.
+    tag = body.split('id="messages"')[0].rsplit("<ul", 1)[1] + body.split('id="messages"')[1]
+    tag = tag.split(">", 1)[0]
+    assert "role=" not in tag and 'aria-live="polite"' in tag
 
 
 def test_no_page_carries_an_inline_event_handler(event):
