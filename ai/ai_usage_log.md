@@ -3924,3 +3924,21 @@ carries the actual running model ID.
   by eye at desk and phone width in a throwaway check since deleted.
 - **Human Review Status**: Pending review
 - **Git Hash**: b2dd3f9
+
+## [2026-10-27 19:30 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Beta users asked for a way to add slots after generating, and to set the
+  number of operators as they do. Add a slot by hand on Manage › Slots, whether or not anyone has
+  signed up, with its seats per role (FR-46, FR-47, FR-49). SK chose the scope (adding only;
+  re-timing, splitting and merging a slot with people in it filed separately), seats starting
+  from the club's defaults, and staying on Manage after adding.
+- **Sections/Files Affected**: apps/events/views_manage.py (SeatFields shared with the generator;
+  AddSlotForm; slot_add); apps/events/urls.py; templates/events/manage.html (the Slots card);
+  apps/events/tests/test_manage.py (one test).
+- **Nature of Contribution**: Code generation, reproduced first (the test failed on the old code).
+  After: 463 application tests pass; lint, format, the three guards and the migration check pass;
+  accessibility sweep in Chromium and WebKit passes; the form, clean and refused, checked with axe
+  and by eye at desk and phone width in a throwaway check since deleted, which also found the
+  form sharing field ids with the period and generator forms (fixed).
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

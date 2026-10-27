@@ -91,11 +91,22 @@
 
 <section class="card" aria-labelledby="gen">
   <h2 id="gen">Slots</h2>
-  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid is fixed; close or cancel individual slots from the roster instead.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% endif %}</p>
+  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid can no longer be regenerated: add slots one at a time below, and close or cancel individual slots from the roster.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% endif %}</p>
   {% if not signups_exist %}
   <form method="post" action="{% url 'slots_generate' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for f in generate_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
     <div><button type="submit"{% if slot_count %} class="danger"{% endif %}>{% if slot_count %}Regenerate{% else %}Generate{% endif %} slots</button></div>
+  </form>
+  {% endif %}
+  {% comment %}One slot by hand, beside whatever is there, people included (FR-46). Its seats
+  are set as it is made (FR-49); a slot added by mistake is canceled from its own page, which is
+  also how one is re-timed: cancel it and add it again.{% endcomment %}
+  {% if positions %}
+  <h3 id="add-slot">Add a slot</h3>
+  <form method="post" action="{% url 'slot_add' event.pk %}" class="stack" aria-labelledby="add-slot">{% csrf_token %}
+    {{ add_slot_form.non_field_errors }}
+    <div class="row">{% for f in add_slot_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
+    <div><button type="submit">Add the slot</button></div>
   </form>
   {% endif %}
 </section>

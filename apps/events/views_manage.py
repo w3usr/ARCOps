@@ -9,14 +9,16 @@ the periods and can be regenerated freely until someone has signed up.
 
 from __future__ import annotations
 
-from datetime import UTC
+from datetime import UTC, timedelta
 
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods, require_POST
 from tinymce.widgets import TinyMCE
 
@@ -26,7 +28,16 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.richtext import sanitise
 
-from .models import Captaincy, Event, Location, OperatingPeriod, Position, SignUp, Slot
+from .models import (
+    Captaincy,
+    Event,
+    Location,
+    OperatingPeriod,
+    Position,
+    RoleCapacity,
+    SignUp,
+    Slot,
+)
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.slots import limit_report
 from .views_rules import rules_context
@@ -138,7 +149,23 @@ class PeriodForm(forms.Form):
         return d
 
 
-class GenerateForm(forms.Form):
+class SeatFields:
+    """Seats per role (FR-49), starting from each role's configured default."""
+
+    def add_seat_fields(self, roles, label="{} seats per slot"):
+        for r in roles:
+            self.fields[f"cap_{r['key']}"] = forms.IntegerField(
+                label=label.format(r["label"]),
+                min_value=0,
+                max_value=20,
+                initial=int(r.get("default_capacity", 1)),
+            )
+
+    def capacities(self) -> dict[str, int]:
+        return {k[4:]: v for k, v in self.cleaned_data.items() if k.startswith("cap_")}
+
+
+class GenerateForm(SeatFields, forms.Form):
     minutes = forms.IntegerField(
         label="Slot length (minutes)", min_value=15, max_value=720, initial=60
     )
@@ -175,16 +202,65 @@ class GenerateForm(forms.Form):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.fields["minutes"].initial = int(setting("defaults.slot_length_minutes", 60))  # FR-89
-        for r in roles:
-            self.fields[f"cap_{r['key']}"] = forms.IntegerField(
-                label=f"{r['label']} seats per slot",
-                min_value=0,
-                max_value=20,
-                initial=int(r.get("default_capacity", 1)),
-            )
+        self.add_seat_fields(roles)
 
-    def capacities(self) -> dict[str, int]:
-        return {k[4:]: v for k, v in self.cleaned_data.items() if k.startswith("cap_")}
+
+class AddSlotForm(SeatFields, forms.Form):
+    """One slot by hand, beside a grid that may already have people in it (FR-46, FR-47)."""
+
+    position = forms.ModelChoiceField(queryset=Position.objects.none(), empty_label=None)
+    start = forms.DateTimeField(
+        label="Starts (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
+    )
+    minutes = forms.IntegerField(label="Length (minutes)", min_value=15, max_value=720)
+    kind = forms.ChoiceField(label="Kind")
+
+    def __init__(self, *args, event, roles, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        # Its own ids: the period and generator forms on the same page have a start, a length and
+        # seats too, and a label must not point at another form's field.
+        kwargs.setdefault("auto_id", "slot-%s")
+        super().__init__(*args, **kwargs)
+        self.event = event
+        self.fields["position"].queryset = (
+            Position.objects.filter(location__event=event)
+            .select_related("location")
+            .order_by("location__order", "order")
+        )
+        self.fields["minutes"].initial = int(setting("defaults.slot_length_minutes", 60))
+        self.fields["kind"].choices = [("operating", "Operating")] + [
+            (k["key"], k["label"]) for k in setting("non_operating_slot_kinds", []) or []
+        ]
+        self.add_seat_fields(roles, label="{} seats")  # as the slot's own seat form names them
+
+    def clean(self):
+        d = super().clean()
+        start, minutes, position = d.get("start"), d.get("minutes"), d.get("position")
+        if not (start and minutes and position):
+            return d
+        # datetime-local carries no zone; the form says UTC, so that is what it is.
+        start = start.replace(tzinfo=UTC) if timezone.is_naive(start) else start
+        end = start + timedelta(minutes=minutes)
+        d["start"], d["end"] = start, end
+        # An operating slot sits inside an operating period (FR-38); setup, training and the
+        # rest may sit before, after or between them (FR-47).
+        if (
+            d.get("kind") == "operating"
+            and not self.event.periods.filter(start__lte=start, end__gte=end).exists()
+        ):
+            self.add_error("start", "An operating slot has to fit inside an operating period.")
+        # A canceled slot is off the roster, so its time is free again: canceling a mistake and
+        # adding it afresh is how a slot is re-timed.
+        clash = Slot.objects.filter(
+            position=position, cancelled=False, start__lt=end, end__gt=start
+        ).first()
+        if clash:
+            self.add_error(
+                "start",
+                f"{position} already has a slot from {clash.start:%a %d %b %H:%M} to "
+                f"{clash.end:%H:%M} UTC.",
+            )
+        return d
 
 
 KBYG_OUTLINE = (
@@ -296,7 +372,7 @@ def setup_steps(event, positions, slot_count) -> list[dict]:
     return steps
 
 
-def _manage_page(request, event, form=None, generate_form=None):
+def _manage_page(request, event, form=None, generate_form=None, add_slot_form=None):
     """The manage page. A view that refuses a form renders this with the bound form, so the
     captain gets their values back with the reason beside them."""
     roles = setting("slot_roles", []) or []
@@ -328,6 +404,9 @@ def _manage_page(request, event, form=None, generate_form=None):
             "generate_form": generate_form
             if generate_form is not None
             else GenerateForm(roles=roles),
+            "add_slot_form": add_slot_form
+            if add_slot_form is not None
+            else AddSlotForm(event=event, roles=roles),
             "slot_count": slot_count,
             "setup_steps": setup_steps(event, positions, slot_count),
             "signups_exist": has_signups(event),
@@ -509,6 +588,49 @@ def slots_generate(request, pk):
         request, f"{len(created)} slots generated across {len(positions)} position(s)."
     )
     return redirect("event_detail", pk=pk)
+
+
+@login_required
+@require_POST
+def slot_add(request, pk):
+    """One slot by hand, whether or not anyone has signed up: nothing else on the grid changes
+    (FR-46). Its seats are set as it is made, which is when a captain knows them (FR-49)."""
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    form = AddSlotForm(request.POST, event=event, roles=setting("slot_roles", []) or [])
+    if not form.is_valid():
+        messages.error(request, "No slot was added; correct the fields marked below.")
+        return _manage_page(request, event, add_slot_form=form)
+    d = form.cleaned_data
+    slot = Slot.objects.create(
+        position=d["position"], start=d["start"], end=d["end"], kind=d["kind"]
+    )
+    seats = {role: n for role, n in form.capacities().items() if n > 0}
+    RoleCapacity.objects.bulk_create(
+        RoleCapacity(slot=slot, role=role, capacity=n) for role, n in seats.items()
+    )
+    record(
+        request.user,
+        "slot.added",
+        slot,
+        after={
+            "position": str(d["position"]),
+            "start": d["start"].isoformat(),
+            "end": d["end"].isoformat(),
+            "kind": d["kind"],
+            "seats": seats,
+        },
+    )
+    messages.success(
+        request,
+        format_html(
+            'Slot added: <a href="{}">{} {}</a>.',
+            reverse("slot_detail", args=[event.pk, slot.pk]),
+            d["position"],
+            f"{d['start']:%a %d %b %H:%M}–{d['end']:%H:%M} UTC",
+        ),
+    )
+    return redirect("event_manage", pk=pk)
 
 
 @login_required

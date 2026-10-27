@@ -193,6 +193,53 @@ def test_grid_is_fixed_once_someone_has_signed_up(officer):
     assert Slot.objects.filter(position__location__event=ev).count() == before
 
 
+def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
+    """FR-46: slots added by hand afterwards, people or no people; FR-49: their seats set as they
+    are made. Beta users, 2026-10-26: "add a way to add more slots after generating"."""
+    from apps.events.models import SignUp
+    from apps.ops.models import AuditLog
+
+    ClubSetting.objects.update_or_create(
+        key="non_operating_slot_kinds",
+        defaults={"value": [{"key": "training", "label": "Training"}]},
+    )
+    c = _as(officer)
+    ev = _build(c)
+    run = ev.locations.get().positions.get(name="Run")
+    signed = Slot.objects.filter(position=run, kind="operating").first()
+    SignUp.objects.create(slot=signed, user=officer, role="operator")
+    before = Slot.objects.filter(position__location__event=ev).count()
+
+    def add(start, minutes="60", kind="operating", **seats):
+        form = {"position": run.pk, "start": start, "minutes": minutes, "kind": kind}
+        form |= {"cap_operator": "1", "cap_mentor": "0"} | seats
+        return c.post(f"/events/{ev.pk}/slots/add/", form)
+
+    # Refused, and the reason is beside the field: a clash, and an operating slot outside every
+    # operating period.
+    assert "already has a slot from Sat 27 Jun 20:00" in add("2026-06-27T20:30").content.decode()
+    assert "inside an operating period" in add("2026-06-29T10:00").content.decode()
+    assert Slot.objects.filter(position__location__event=ev).count() == before
+
+    # A training slot after the contest, with three operators' seats.
+    r = add("2026-06-29T10:00", minutes="120", kind="training", cap_operator="3")
+    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/"
+    slot = Slot.objects.get(position=run, kind="training")
+    assert (slot.end - slot.start) == timedelta(hours=2)
+    assert {c.role: c.capacity for c in slot.capacities.all()} == {"operator": 3}
+    assert AuditLog.objects.get(action="slot.added").after["seats"] == {"operator": 3}
+    assert Slot.objects.filter(position__location__event=ev).count() == before + 1
+    assert signed.signups.count() == 1, "nothing else on the grid changes"
+
+    # Re-timing an empty slot: cancel it, and its time is free to add again.
+    empty = Slot.objects.get(position=run, start__hour=20, kind="operating")
+    c.post(f"/events/slot/{empty.pk}/toggle/", {"what": "cancel"})
+    assert add("2026-06-27T20:30", minutes="30").status_code == 302
+
+    member = User.objects.create_user("mem@example.org", "pw-Testing-123", groups=["member"])
+    assert _as(member).post(f"/events/{ev.pk}/slots/add/", {}).status_code == 404
+
+
 def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
     """Found in acceptance test T18 (2026-10-16): the Events list tagged an upcoming canceled
     event "Cancelled", from the state's label, beside a "Canceled." banner."""
