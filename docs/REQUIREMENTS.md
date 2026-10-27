@@ -2656,7 +2656,25 @@ same words as members.
 reader over keeping the state names in what captains read. *Record:*
 `notes/2026-10-26_bug-batch.md` and the reconciliation note of 2026-10-26.
 
+### A11. FR-27 and FR-126: the address is confirmed on the row that waits for it
+
+**Original (FR-27, as superseded on 2026-09-20).** "The override is unchanged in substance and is
+now the only door: an officer confirms the address on the member's own page (FR-126)."
+
+**Decision.** The same override is also on the Approvals row that FR-27 holds up. Whoever may
+confirm another member's address (FR-126) sees there each institution address on the account with
+a button to confirm it, or, when there is none, a box to add one. Adding sends the member the
+confirmation link, as adding on the member's own page does, and an address already confirmed to
+another account is refused there as everywhere, so typing an address at approval still vouches
+for nothing. Approving stays a separate act on the same evidence: a proved institution address
+(§2.6). The same people can list the members still without one (Members, *Institution address*,
+*Not proved*), and the audit row for a confirmation records which proof the address now holds.
+
+**Decided by** SK, 2026-10-27, building it from a beta user's report of 2026-10-26: "Sysadmin need
+to be able to manually approve the users email proofs." *Record:* the reconciliation note of
+2026-10-27.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8) and 2026-10-26 (A9, A10), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10) and 2026-10-27 (A11), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

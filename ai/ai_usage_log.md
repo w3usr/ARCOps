@@ -3955,3 +3955,16 @@ carries the actual running model ID.
   passes axe in Chromium and WebKit (a throwaway check since deleted; the sweep's pages show none).
 - **Human Review Status**: Pending review
 - **Git Hash**: ca1e9f1
+
+## [2026-10-27 19:41 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile after the batch (Django's Group admin unregistered, an address
+  confirmed from Approvals, a slot added by hand, the messages list's role): record as functional
+  addendum entry A11 (FR-27, FR-126) that the address is also confirmed on the Approvals row, the
+  requirements' bodies unchanged.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (addendum A11, and the addendum's attribution
+  line).
+- **Nature of Contribution**: Draft (addendum entry); FR-27's superseded text and the beta user's
+  report quoted word for word; the three guards pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
