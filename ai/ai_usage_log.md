@@ -3967,4 +3967,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Draft (addendum entry); FR-27's superseded text and the beta user's
   report quoted word for word; the three guards pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: b6bb5a9
