@@ -113,6 +113,13 @@ def test_nobody_can_save_away_the_last_account_that_decides_who_may_do_what():
     assert not Group.objects.get(name="advisor").permissions.exists()
 
 
+def test_this_page_is_the_only_place_a_level_changes():
+    """Django's Group admin wrote no audit row, so the next import undid its edits (TR-42, A6)."""
+    from django.contrib import admin
+
+    assert not admin.site.is_registered(Group)
+
+
 def test_a_level_without_a_configured_sentence_is_described_in_one_that_starts_capitalised():
     from apps.ops.groups import summary_of
 

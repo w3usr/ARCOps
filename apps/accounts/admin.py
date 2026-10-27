@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.forms import UserChangeForm as DjangoUserChangeForm
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
+from django.contrib.auth.models import Group
 
 from .models import (
     Address,
@@ -121,6 +122,12 @@ class UserAdmin(DjangoUserAdmin):
     def addresses_shown(self, obj) -> str:
         return ", ".join(a.address for a in obj.addresses.all()) or "(none)"
 
+
+# A permission level changes only on the Permission levels page (apps.ops.views_groups), which
+# writes the audit row the import reads to keep a sysadmin's edit (TR-42, addendum A6) and
+# refuses a save that leaves nobody able to decide who may do what. Django's own Group admin
+# did neither, so the next import silently put its edits back.
+admin.site.unregister(Group)
 
 admin.site.register(Guardianship)
 admin.site.register(Invitation)

@@ -3892,3 +3892,17 @@ carries the actual running model ID.
   sweep in Chromium and WebKit passes; checked by eye at desk and phone width on demo data.
 - **Human Review Status**: Reviewed and verified
 - **Git Hash**: be39790
+
+## [2026-10-27 18:50 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Django's Group admin changed a permission level without the audit row the
+  import reads (TR-42, addendum A6), so the next import put the change back. Unregister it, so a
+  level changes only on the Permission levels page.
+- **Sections/Files Affected**: apps/accounts/admin.py (unregister Group);
+  apps/ops/tests/test_groups_page.py (one test).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed without the change).
+  Checked against the Django 5.2 docs (AdminSite.unregister; the custom-user admin example does
+  the same) and against TR-42, A6, FR-92 and REQUIREMENTS §2.1. After: 460 application tests
+  pass; lint and format pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
