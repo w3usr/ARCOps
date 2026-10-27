@@ -3907,7 +3907,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review
 - **Git Hash**: 739c0a6
 
-## [2026-10-27 19:32 EDT]
+## [2026-10-27 19:10 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Beta users could not find how to confirm a member's institution address
   by hand (FR-126), which FR-27 needs before station or computer access is approved. Offer it on
@@ -3923,4 +3923,4 @@ carries the actual running model ID.
   and WebKit passes; the new controls, which the demo data does not reach, checked with axe and
   by eye at desk and phone width in a throwaway check since deleted.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: b2dd3f9
