@@ -21,7 +21,7 @@ from django.views.decorators.http import require_http_methods
 from apps.credentials.models import LicenseRecord, SignedAgreement
 from apps.credentials.views import _is_approver
 from apps.ops.audit import record
-from apps.ops.config import setting
+from apps.ops.config import institution_domains, setting
 from apps.ops.groups import may_set_access
 
 from . import entry, views_addresses
@@ -261,6 +261,12 @@ def members(request):
     positions = {p["key"]: p["label"] for p in (setting("club_positions", []) or [])}
     cats = {c["key"]: c["label"] for c in (setting("member_categories", []) or [])}
 
+    # Who still needs an institution address proved before station or computer access can be
+    # approved (FR-27), for whoever may confirm one (FR-126).
+    may_filter_institution = (
+        full and request.user.may("manage_member_addresses") and bool(institution_domains())
+    )
+
     # Narrowing. Category and access are an officer's to filter by, because they are an
     # officer's to see; position is on the page for everyone.
     chosen = {
@@ -271,6 +277,9 @@ def members(request):
         "access": set(request.GET.getlist("access")) if full else set(),
         "status": statuses,
         "archived": archived,
+        "institution": set(request.GET.getlist("institution")) & {"proved", "unproved"}
+        if may_filter_institution
+        else set(),
     }
     if chosen["category"]:
         users = users.filter(category__in=chosen["category"])
@@ -302,6 +311,13 @@ def members(request):
             if ("sysadmin" in want and m.is_superuser)
             or ("none" in want and not m.is_superuser and not m.groups.all())
             or any(g.name in want for g in m.groups.all())
+        ]
+
+    if chosen["institution"]:
+        rows = [
+            m
+            for m in rows
+            if ("proved" if _institution_proved(m) else "unproved") in chosen["institution"]
         ]
 
     # Last name by default, at every level: the column is there for everyone now, and a club
@@ -362,6 +378,7 @@ def members(request):
     archived_ticked = archived or {"no"}
     access_choices = [(g["key"], g["label"]) for g in (setting("access_groups", []) or [])]
     access_choices += [("sysadmin", "Sysadmin"), ("none", "No access")]
+    institution_choices = [("unproved", "Not proved"), ("proved", "Proved")]
     return render(
         request,
         "accounts/members.html",
@@ -386,6 +403,9 @@ def members(request):
                 "status": _summary(status_choices, status_ticked, "status"),
                 "archived": _summary(archived_choices, archived_ticked, "archive"),
                 "access": _summary(access_choices, chosen["access"], "permission level"),
+                "institution": _summary(
+                    institution_choices, chosen["institution"], "institution address"
+                ),
             },
             "category_choices": sorted(cats.items(), key=lambda kv: kv[1]),
             "license_choices": license_choices,
@@ -398,7 +418,17 @@ def members(request):
             "status_ticked": status_ticked,
             "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
             "access_choices": access_choices,
+            "institution_choices": institution_choices,
+            "may_filter_institution": may_filter_institution,
         },
+    )
+
+
+def _institution_proved(member) -> bool:
+    """The test the Approvals queue applies, read from the addresses already fetched."""
+    return any(
+        a.kind == "institution" and a.confirmed and a.proof in views_addresses.PROVED
+        for a in member.addresses.all()
     )
 
 

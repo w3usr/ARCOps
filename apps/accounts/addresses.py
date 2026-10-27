@@ -154,7 +154,8 @@ def mark_confirmed(user: User, address: str, actor: User | None = None, proof: s
         row.proof = given
         row.save(update_fields=["confirmed", "proof"])
     mirror(user)
-    record(actor or user, "address.confirmed", user, after={"address": address})
+    # The standing it holds now, so the log tells a mailbox from somebody's word for it (§2.6).
+    record(actor or user, "address.confirmed", user, after={"address": address, "proof": row.proof})
 
 
 def unconfirm(user: User, address: str, actor: User) -> None:

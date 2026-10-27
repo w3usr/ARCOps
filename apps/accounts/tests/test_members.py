@@ -469,3 +469,27 @@ def test_a_level_changed_on_the_member_page_is_audited_as_groups_changed(people)
     assert row.before == {"groups": ["member"]} and row.after == {"groups": ["officer"]}
     edited = AuditLog.objects.get(action="member.edited", subject_id=str(m.pk))
     assert "groups" not in edited.after and "cell_phone" in edited.after
+
+
+def test_whoever_may_confirm_an_address_finds_who_still_needs_one_proved(people):
+    """FR-27 holds up station and computer access until an institution address is proved; the
+    people who can prove one by hand (FR-126) can list who is waiting."""
+    from apps.accounts import addresses
+
+    def listed(user, picked):
+        body = _as(user).get(f"/members/?institution={picked}").content.decode()
+        return body.split("<tbody")[1]
+
+    addresses.add(people["off"], "ann@uni.example", confirmed=True, proof="mailbox")
+    addresses.add(people["mem"], "mo@uni.example", confirmed=True, proof="vouched")
+    waiting = listed(people["off"], "unproved")
+    assert "N0MEM" in waiting and "ann@uni.example" not in waiting
+    assert "ann@uni.example" in listed(people["off"], "proved")
+
+    addresses.mark_confirmed(people["mem"], "mo@uni.example", people["off"])
+    assert "N0MEM" not in listed(people["off"], "unproved")
+
+    # A member neither sees the filter nor narrows by it.
+    body = _as(people["mem"]).get("/members/?institution=unproved").content.decode()
+    assert 'name="institution"' not in body and "Not proved" not in body
+    assert 'name="institution"' in _as(people["off"]).get("/members/").content.decode()

@@ -739,6 +739,49 @@ def test_an_address_that_is_somebody_elses_is_not_evidence_about_this_member():
     assert signed.state == SignedAgreement.State.APPROVED
 
 
+def test_an_approver_clears_the_institution_address_from_the_row_it_blocks():
+    """FR-126 on the queue: a member held up by FR-27 is unblocked from the row that says so,
+    without a trip to their Edit page."""
+    from apps.accounts import addresses
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    _, _, t_st, _ = _setup()
+    advisor = _user("adv6@example.org", "advisor", category="faculty")
+    member = _user("nobadge@example.org", first_name="No", last_name="Badge")
+    addresses.add(member, "nobadge@example.org", kind="personal", confirmed=True)
+    signed = SignedAgreement.objects.create(
+        user=member, template=t_st, credential=t_st.credential, signer_name="No Badge"
+    )
+    c = Client()
+    c.force_login(advisor)
+    decide = f"/credentials/approvals/{signed.pk}/decide/"
+
+    # None on the account: the row asks for it, and adding it offers the click.
+    body = c.get("/credentials/approvals/").content.decode()
+    assert "Confirm it yourself if you know it is theirs" in body
+    c.post(decide, {"action": "address_add", "address": "no.badge@example.edu"})
+    assert (
+        "Confirm no.badge@example.edu myself" in c.get("/credentials/approvals/").content.decode()
+    )
+
+    c.post(decide, {"action": "address_confirm", "address": "no.badge@example.edu"})
+    row = member.addresses.get(address="no.badge@example.edu")
+    assert row.confirmed and row.proof == "officer"
+    assert AuditLog.objects.get(action="address.confirmed").after == {
+        "address": "no.badge@example.edu",
+        "proof": "officer",
+    }
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED, "confirming is not approving"
+
+    c.post(decide, {"decision": "approve"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.APPROVED
+
+
 def test_an_institution_address_nobody_proved_is_not_enough_to_grant_access():
     """Nobody has stood behind it, so it is not evidence that anybody is in the directory.
 

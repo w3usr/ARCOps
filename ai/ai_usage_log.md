@@ -3906,3 +3906,21 @@ carries the actual running model ID.
   pass; lint and format pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: 739c0a6
+
+## [2026-10-27 19:32 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Beta users could not find how to confirm a member's institution address
+  by hand (FR-126), which FR-27 needs before station or computer access is approved. Offer it on
+  the Approvals row that FR-27 blocks, let whoever may confirm one list who is still waiting,
+  and have the audit row say which proof the address holds.
+- **Sections/Files Affected**: apps/credentials/views.py (decide takes the two address actions;
+  the FR-27 message names the choice); templates/credentials/approvals.html (confirm or add on
+  the blocked row); apps/accounts/views_members.py and templates/accounts/members.html (the
+  Institution address filter); apps/accounts/addresses.py (address.confirmed records the proof);
+  apps/credentials/tests/test_phase4.py and apps/accounts/tests/test_members.py (one test each).
+- **Nature of Contribution**: Code generation, reproduced first (both tests failed on the old
+  code). After: 462 application tests pass; lint and format pass; accessibility sweep in Chromium
+  and WebKit passes; the new controls, which the demo data does not reach, checked with axe and
+  by eye at desk and phone width in a throwaway check since deleted.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

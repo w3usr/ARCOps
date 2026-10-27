@@ -15,6 +15,7 @@ from django.utils.html import format_html
 from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
+from apps.accounts import views_addresses
 from apps.accounts.reauth import is_confirmed, spend
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
@@ -248,6 +249,7 @@ def approvals(request):
         {
             "a": a,
             "institution_address": _institution_address(a.user),
+            "institution_rows": list(a.user.addresses.filter(kind="institution")),
             "needs_institution": needs_institution_email(a)
             and not institution_address_ok(_institution_address(a.user, proven_only=True)),
         }
@@ -436,6 +438,12 @@ def decide(request, pk):
                 "comes back with them.",
             )
         return redirect("approvals")
+    if request.POST.get("action") in ("address_confirm", "address_add"):
+        # FR-126 from the row FR-27 blocks: an approver who knows the address is theirs confirms
+        # it there, rather than finding the member's Edit page to do it. The same handler as that
+        # page, so who may add or confirm an address stays decided in one place.
+        views_addresses.handle(request, a.user)
+        return redirect("approvals")
     was_declined = a.state == SignedAgreement.State.DECLINED
     if was_declined and request.POST.get("decision") != "approve":
         messages.error(request, "That agreement is already declined.")
@@ -445,21 +453,29 @@ def decide(request, pk):
             # FR-27, tightened 2026-09-20. The evidence is a **confirmed** institution address,
             # and approving is not where an address gets confirmed: the advisor asked for the
             # standard to be confirmation, with a manual confirmation as the override. That
-            # override already exists, on the member's own page, where "Confirm it myself" is
-            # an officer's waiver that needs no mail (FR-126). Typing an address here used to
+            # override is "Confirm it myself", an officer's waiver that needs no mail (FR-126), on
+            # the member's own page and on this row of the queue. Typing an address here used to
             # stand in for it, which meant one person's address could be evidence about
             # another, and meant nobody had ever stood behind the address at all.
             held = _institution_address(a.user, proven_only=True)
             if not institution_address_ok(held):
                 domains = ", ".join(institution_domains())
+                if request.user.may("manage_member_addresses"):
+                    then = (
+                        "Confirm it yourself on its row if you know it is theirs, or ask them to."
+                    )
+                else:
+                    then = format_html(
+                        'Please have the applicant confirm one on <a href="{}">their profile</a>.',
+                        reverse("member_edit", args=[a.user.pk]) + "#addresses",
+                    )
                 messages.error(
                     request,
                     format_html(
                         "This agreement cannot be approved until the applicant has a confirmed "
-                        "{} email address linked to their account. Please have the applicant "
-                        'confirm one on <a href="{}">their profile</a>.',
+                        "{} email address linked to their account. {}",
                         domains,
-                        reverse("member_edit", args=[a.user.pk]) + "#addresses",
+                        then,
                     ),
                 )
                 return redirect("approvals")
