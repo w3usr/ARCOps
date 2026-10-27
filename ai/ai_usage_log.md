@@ -3954,4 +3954,4 @@ carries the actual running model ID.
   After: 463 application tests pass; lint and the three guards pass; a page showing a message
   passes axe in Chromium and WebKit (a throwaway check since deleted; the sweep's pages show none).
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: ca1e9f1
