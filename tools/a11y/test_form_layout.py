@@ -37,6 +37,16 @@ UNEVEN = """() => [...document.querySelectorAll('main .row:not(:has(.helptext, .
 })"""
 
 
+# A select is as tall as a text box. WebKit drew a select at 23px beside a 44px text box until the
+# page drew it instead of the system.
+SHORT = """() => {
+    const box = document.querySelector('main input[type=text]:not([hidden]), main input:not([type])');
+    const h = box && box.getBoundingClientRect().height;
+    return h ? [...document.querySelectorAll('main select:not([multiple])')].filter(s => s.offsetParent)
+        .map(s => [s.id || s.name, Math.round(s.getBoundingClientRect().height)]).filter(s => Math.abs(s[1] - h) > 2) : [];
+}"""
+
+
 def test_labels_above_fields_and_rows_level(live_server, engine):
     from apps.events.models import Event, Slot
 
@@ -52,6 +62,7 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
             page.goto(f"{live_server.url}{url}")
             found += [(url, "beside", t) for t in page.evaluate(BESIDE)]
             found += [(url, "uneven", r) for r in page.evaluate(UNEVEN)]
+            found += [(url, "short select", s) for s in page.evaluate(SHORT)]
         browser.close()
 
-    assert not found, f"labels beside their fields, or a row's inputs not level: {found}"
+    assert not found, f"labels beside their fields, rows not level, or short selects: {found}"

@@ -26,6 +26,7 @@
   --accent-soft: color-mix(in srgb, var(--brand) 9%, #ffffff);
   --accent-soft-fg: var(--brand);
   --bg: #ffffff; --fg: #1b1f24; --muted: #5a6470; --line: #d9dee5; --card: #f6f7f9; --side: #f3f4f7;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235a6470' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");  /* a select's arrow, in --muted */
   --ok: #1b6e3a; --warn: #8a5a00; --bad: #9b1c1c; --bad-fg: #ffffff;
   /* The gold at #e0a100 was 2.3:1 on white, under the 3:1 a focus indicator needs.
      Darkened here, and every ring is drawn over a halo of the page color so it also
@@ -44,6 +45,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #111418; --fg: #e8ecf1; --muted: #9aa5b1; --line: #2a323c; --card: #1a2028; --side: #151a20;
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239aa5b1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     --accent: color-mix(in srgb, var(--brand) 42%, #ffffff);
     --accent-fg: #0c1220;
     --accent-soft: color-mix(in srgb, var(--brand) 45%, #111418);
@@ -310,6 +312,16 @@ input, select, textarea {
   background: var(--bg); color: var(--fg); width: 100%; max-width: 28rem;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); outline-color: var(--focus); }
+/* A select drawn by the page rather than the system. WebKit draws its own 23px button beside a
+   44px text box, whatever height it is given, unless its appearance is none; the arrow is then
+   ours, in the muted color, which holds 3:1 in both themes. In forced colors the image is dropped,
+   so the system draws it again. */
+select:not([multiple]) {
+  appearance: none; padding-right: 2.2rem;
+  background-image: var(--chevron); background-repeat: no-repeat;
+  background-position: right .75rem center; background-size: .75rem;
+}
+@media (forced-colors: active) { select:not([multiple]) { appearance: auto; } }
 input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); margin: 0; }
 form > div { margin: .75rem 0; }
 form label, .field label { display: block; font-weight: 600; margin-bottom: .25rem; }

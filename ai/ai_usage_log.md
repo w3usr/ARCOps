@@ -4079,3 +4079,19 @@ carries the actual running model ID.
   reset mail's text part read and ends with the settings link.
 - **Human Review Status**: Pending review
 - **Git Hash**: 808ebfe
+
+## [2026-10-28 11:35 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: WebKit drew every single-line select as its own 23px button beside a 44px
+  text box, ignoring the page's height, border and background (found 2026-10-28 while fixing
+  #141). Selects are now drawn by the page, with its own arrow.
+- **Sections/Files Affected**: static/css/app.css (select:not([multiple]) with appearance none
+  and a chevron in --muted, as a --chevron token per theme; forced colors give the system's
+  select back); tools/a11y/test_form_layout.py (a select is as tall as a text box).
+- **Nature of Contribution**: Code edit, measured first (WebKit's select stayed 23px under
+  min-height and menulist-button; only appearance none drew it at 44px), test first (the check
+  failed in WebKit on the old CSS). After: the check passes in Chromium and WebKit; screenshots
+  in both engines, light and dark; tools/check.sh passes apart from the same PDF and Firefox
+  tests as before. The CSP already allows data: images.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
