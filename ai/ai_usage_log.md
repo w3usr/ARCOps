@@ -4136,3 +4136,17 @@ carries the actual running model ID.
   with the one date check in T12 failing either way.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8f86ee0
+
+## [2026-10-28 12:49 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI failed on 43b1f91 and 5796eb5: at 1280px, on CI's fonts, Members, the
+  archive and Access rosters scrolled sideways (#157's new desktop check). A sort link's
+  screen-reader words, positioned absolutely, were placed against the page rather than the
+  table's scroll box, and widened the page.
+- **Sections/Files Affected**: static/css/app.css (.table-wrap is the containing block).
+- **Nature of Contribution**: Analysis (CI log, then reproduced locally by forcing wider fonts
+  and listing what passed the window's edge) and a one-line edit. After: six wide-table pages fit
+  at 1280px under Verdana, Courier New and Georgia in Chromium and WebKit; tools/check.sh as
+  before.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
