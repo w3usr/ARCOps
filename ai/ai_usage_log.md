@@ -4005,4 +4005,4 @@ carries the actual running model ID.
   (Firefox does not launch on this Mac; CI covers it). Contact sheets before and after: only
   the intended pages changed (others differ by clock times, port and tokens).
 - **Human Review Status**: Partially reviewed (SK compared the before and after screenshots)
-- **Git Hash**: [after commit]
+- **Git Hash**: 9282b21
