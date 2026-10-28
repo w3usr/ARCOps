@@ -4063,4 +4063,4 @@ carries the actual running model ID.
   holding a capability directly. After: application tests pass apart from the PDF test; lint,
   format and the three guards pass.
 - **Human Review Status**: Reviewed and verified (SK read the admin.py diff)
-- **Git Hash**: [after commit]
+- **Git Hash**: 4f873db
