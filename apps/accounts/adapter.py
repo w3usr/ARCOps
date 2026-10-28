@@ -113,9 +113,10 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def render_mail(self, template_prefix, email, context, headers=None):
         """The club's names for the templates, a table-drawn button for the reset link, and the
-        site's one mail layout around the HTML part (apps.comms.layout), as every other message
-        gets in deliver()."""
+        site's one mail layout around the HTML part (apps.comms.layout), with the Date header and
+        the small print every other message gets in deliver() (#102)."""
         from apps.comms.layout import button, wrap
+        from apps.comms.services import _date_header, _plain_text, _small_print
 
         context = {
             **context,
@@ -126,13 +127,13 @@ class AccountAdapter(DefaultAccountAdapter):
         if context.get("password_reset_url"):
             context["reset_button"] = button(context["password_reset_url"], "Reset my password")
         msg = super().render_mail(template_prefix, email, context, headers)
+        msg.extra_headers["Date"] = _date_header()
+        small_print = _small_print(None)
+        msg.body += _plain_text(small_print)
         alts = getattr(msg, "alternatives", None) or []
         for i, alt in enumerate(alts):
             content, mimetype = (alt.content, alt.mimetype) if hasattr(alt, "content") else alt
             if mimetype == "text/html":
-                alts[i] = (
-                    type(alt)(wrap(content), mimetype)
-                    if hasattr(alt, "content")
-                    else (wrap(content), mimetype)
-                )
+                html = wrap(content, footer_html=small_print)
+                alts[i] = type(alt)(html, mimetype) if hasattr(alt, "content") else (html, mimetype)
         return msg

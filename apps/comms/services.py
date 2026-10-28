@@ -79,8 +79,9 @@ def compose(
     return msg
 
 
-def _small_print(msg: Outbox) -> str:
-    """The lines under every message, and the extra ones bulk mail carries.
+def _small_print(msg: Outbox | None) -> str:
+    """The lines under every message, and the extra ones bulk mail carries. Mail the sign-in
+    library sends has no Outbox row (`None`) and is never bulk.
 
     **Two links, and neither can do the other's job.** *Your notification settings* is one URL,
     the same in every message to every member, behind sign-in: it is where somebody turns a
@@ -103,7 +104,7 @@ def _small_print(msg: Outbox) -> str:
     style = f'style="color:{accent_color()};"'
     prefs = f"{site}{reverse('profile_edit')}#notifications"
     lines = [f'Change what reaches you: <a href="{prefs}" {style}>your notification settings</a>.']
-    if msg.category in BULK and msg.user is not None:
+    if msg is not None and msg.category in BULK and msg.user is not None:
         from .announce import unsubscribe_token
 
         stop = f"{site}{reverse('unsubscribe', args=[unsubscribe_token(msg.user, msg.category)])}"

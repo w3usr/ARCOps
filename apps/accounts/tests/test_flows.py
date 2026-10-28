@@ -323,6 +323,14 @@ def test_password_reset_mail_comes_from_the_club_with_its_own_subject(settings):
     html = [c for c, t in m.alternatives if t == "text/html"][0]
     assert "Reset my password</span></font></a>" in html and "/accounts/password/reset/key/" in html
     assert "EXAMPLE Operations</td>" in html and 'bgcolor="#' in html and "<table" in html
+    # Like every message the club sends (#102): a Date that says the club's offset rather than
+    # Django's -0000, and the link to the notification settings under it (FR-81)
+    set_setting(None, "club.timezone", "America/New_York")
+    Client().post("/accounts/password/reset/", {"email": "who@example.org"})
+    m = mail.outbox[1]
+    assert m.message()["Date"][-5:] in ("-0400", "-0500")
+    assert "/me/edit/#notifications" in m.body
+    assert "your notification settings</a>" in [c for c, t in m.alternatives if t == "text/html"][0]
 
 
 def test_password_changed_page_offers_sign_in(client):

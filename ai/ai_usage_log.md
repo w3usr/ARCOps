@@ -4064,3 +4064,18 @@ carries the actual running model ID.
   format and the three guards pass.
 - **Human Review Status**: Reviewed and verified (SK read the admin.py diff)
 - **Git Hash**: 4f873db
+
+## [2026-10-28 11:21 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #102: mail the sign-in library sends (password reset, address
+  confirmation) had a -0000 Date and no link to the notification settings. It now gets the Date
+  header and the small print every message from deliver() carries.
+- **Sections/Files Affected**: apps/accounts/adapter.py (render_mail sets the Date header from
+  _date_header and adds _small_print to the text and HTML parts); apps/comms/services.py
+  (_small_print accepts no Outbox row, for mail that is never bulk); apps/accounts/tests/
+  test_flows.py (the reset mail's Date offset and the settings link).
+- **Nature of Contribution**: Code edit, test first (the extended test failed on -0000). After:
+  application tests pass apart from the PDF test; lint, format and the three guards pass; the
+  reset mail's text part read and ends with the settings link.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
