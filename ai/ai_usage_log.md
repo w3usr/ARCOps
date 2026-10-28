@@ -4094,4 +4094,4 @@ carries the actual running model ID.
   in both engines, light and dark; tools/check.sh passes apart from the same PDF and Firefox
   tests as before. The CSP already allows data: images.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 5a3c331
