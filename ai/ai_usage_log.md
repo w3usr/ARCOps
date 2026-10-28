@@ -4112,4 +4112,4 @@ carries the actual running model ID.
   apart from the same PDF and Firefox tests as before. No CSP console check yet: the policy is
   set by the server, so that is checked on dev.
 - **Human Review Status**: Reviewed and verified (SK read the addendum entry and the INTERFACE section)
-- **Git Hash**: [after commit]
+- **Git Hash**: fed32ae
