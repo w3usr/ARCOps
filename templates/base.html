@@ -10,6 +10,11 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="{{ club.branding.accent }}">
 <link rel="manifest" href="{% url 'manifest' %}">
+{% comment %}htmx reads its settings here, so no inline script is needed under script-src 'self'.
+No eval (no hx-on, no js: values), no scripts in a swapped response, no <style> of its own (the
+indicator rules are in app.css), requests to this site only, and no copies of pages in
+localStorage, where they would keep member names and rosters (technical addendum A7).{% endcomment %}
+<meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false,"historyCacheSize":0,"selfRequestsOnly":true}'>
 {% if club.branding.favicon %}<link rel="icon" href="{{ club.branding.favicon }}">{% endif %}
 {% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{{ club.branding.apple_touch_icon }}">{% endif %}
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -119,6 +124,7 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
   <p class="club">{% if club.public_page %}<a href="{{ club.public_page }}">{% endif %}{% if club.callsign %}{{ club.callsign }} {% endif %}{{ club.name }}{% if club.public_page %}</a>{% endif %}</p>
   <p class="credit"><a href="{% url 'privacy' %}">Privacy notice</a> · Powered by <a href="{{ product.url }}">{{ product.name }}</a> ({{ product.long_name }}), free software from <a href="{{ product.author_url }}">{{ product.author }}</a>.</p>
 </footer>
+<script src="{% static 'js/vendor/htmx.min.js' %}" defer></script>
 <script src="{% static 'js/app.js' %}" defer></script>
 <script src="{% static 'js/richtext-check.js' %}" defer></script>
 {% if user.is_authenticated and vapid_public_key %}<script src="{% static 'js/push.js' %}" defer data-vapid="{{ vapid_public_key }}" data-subscribe="{% url 'push_subscribe' %}" data-enabled="{{ user.push_enabled|yesno:'1,0' }}" data-csrf="{{ csrf_token }}"></script>{% endif %}

@@ -181,6 +181,22 @@ only once the earlier has happened, rather than sitting there refusing.
 - A form with a text field and two submit buttons submits the **first** one when somebody
   presses Enter. If that button is the dangerous one, split the form in two.
 
+## In place, with htmx
+
+htmx changes part of a page without leaving it, and only ever as a shortcut for something the
+page already does without it.
+
+- **Every element with an `hx-` attribute keeps its `href` or `action`.** With JavaScript off,
+  or before htmx has loaded, the link opens its page and the form posts and redirects as it
+  always did.
+- The server tells the two apart by the `HX-Request` header and answers htmx with the part of
+  the page that changed. A view that does sets `Vary: HX-Request`, so a cache never hands one
+  answer to the other.
+- No `hx-on` and no `js:` values: the security policy blocks them, and htmx is configured not to
+  run them.
+- After a swap, focus goes where the reader's attention should be (usually the heading of what
+  was replaced), and a flash message is still announced.
+
 ## Tables
 
 Every `<td>` carries `data-label` with its column's name, because under 40rem the header row is

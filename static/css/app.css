@@ -322,6 +322,9 @@ select:not([multiple]) {
   background-position: right .75rem center; background-size: .75rem;
 }
 @media (forced-colors: active) { select:not([multiple]) { appearance: auto; } }
+/* htmx's request indicator, here rather than injected by htmx as a <style> (addendum A7). */
+.htmx-indicator { opacity: 0; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; transition: opacity 200ms ease-in; }
 input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); margin: 0; }
 form > div { margin: .75rem 0; }
 form label, .field label { display: block; font-weight: 600; margin-bottom: .25rem; }

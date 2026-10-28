@@ -45,5 +45,8 @@ Third-party components
   check; not served to members.
 - TinyMCE 6, Copyright Ephox Corporation DBA Tiny Technologies, Inc., MIT License,
   bundled by the django-tinymce package and served as the rich-text editor (TR-9).
+- htmx 2.0.11 (static/js/vendor/htmx.min.js), from github.com/bigskysoftware/htmx,
+  Zero-Clause BSD License; served unmodified, from the npm package checked against the
+  registry's integrity hash (TR-4).
 - Python packages named in requirements.txt carry their own licences; none is
   redistributed in this repository.

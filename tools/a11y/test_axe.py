@@ -203,6 +203,8 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, engine, role):
                 wide = page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1")
                 if wide:
                     failures.append(f"{url} at {viewport['width']}px scrolls sideways (FR-95)")
+                if not page.evaluate("typeof htmx === 'object'"):
+                    failures.append(f"{url} at {viewport['width']}px did not load htmx")
                 bad = audit(page)
                 if bad:
                     failures.append(describe(url, viewport["width"], bad))

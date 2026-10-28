@@ -4095,3 +4095,21 @@ carries the actual running model ID.
   tests as before. The CSP already allows data: images.
 - **Human Review Status**: Pending review
 - **Git Hash**: 5a3c331
+
+## [2026-10-28 11:53 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #137: ship htmx 2.0.11 under the existing security policy,
+  configured from a meta tag, ahead of its first use in #139.
+- **Sections/Files Affected**: static/js/vendor/htmx.min.js (new: the npm package's file,
+  integrity hash checked, unmodified); templates/base.html (htmx-config meta, script tag);
+  static/css/app.css (indicator rules); static/sw.js (in the shell, ops-shell-v6); NOTICE (htmx,
+  0BSD); docs/TECHNICAL_REQUIREMENTS.md (addendum A7, TR-4 htmx adopted; body unchanged);
+  docs/INTERFACE.md (In place, with htmx); tools/a11y/test_axe.py (every page loads htmx);
+  tools/a11y/test_htmx.py (new: the five settings, and no injected style).
+- **Nature of Contribution**: Code and documentation; the htmx file is third-party, fetched and
+  verified, not written. After: the sweep and the settings test pass in Chromium and WebKit;
+  contact sheets before and after match apart from run-to-run regions; tools/check.sh passes
+  apart from the same PDF and Firefox tests as before. No CSP console check yet: the policy is
+  set by the server, so that is checked on dev.
+- **Human Review Status**: Reviewed and verified (SK read the addendum entry and the INTERFACE section)
+- **Git Hash**: [after commit]

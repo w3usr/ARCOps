@@ -745,7 +745,32 @@ in the configuration would then reach a server only through the interface or a m
 **Decided by** SK, 2026-10-26, choosing between those two options. *Record:*
 `notes/2026-10-26_milestone-3-reconciliation.md`.
 
+### A7. TR-4: htmx adopted, and how it is configured
+
+**Original (TR-4).** "**Front end: server-rendered Django templates, progressively enhanced with
+htmx** and a small amount of plain JavaScript; **no single-page framework**."
+
+**Decision.** htmx 2.0.11, the latest stable release (0BSD), is served from
+`static/js/vendor/htmx.min.js`, checked against the npm registry's integrity hash and not
+modified. Release 4.0.0 is npm's `next` tag and is not taken. It is configured by a
+`<meta name="htmx-config">` tag in the base template, so `script-src 'self'` holds with no inline
+script:
+
+- `allowEval: false`: no `hx-on` and no `js:` values, which the security policy would block anyway;
+- `allowScriptTags: false`: a swapped-in response runs no script;
+- `includeIndicatorStyles: false`: the indicator rules are in `app.css`, so htmx injects no `<style>`;
+- `historyCacheSize: 0`: otherwise htmx keeps whole pages, member names and rosters among them,
+  in the browser's `localStorage`;
+- `selfRequestsOnly: true`: requests go to this site only.
+
+A view answers an htmx request by reading the `HX-Request` header itself and sets
+`Vary: HX-Request`; there is no `django-htmx` dependency. Every element with an `hx-` attribute
+keeps its `href` or `action`, so the page works with JavaScript off (`docs/INTERFACE.md`). The
+service worker caches htmx with the rest of the shell.
+
+**Decided by** SK, 2026-10-23. *Record:* issue #137 in the private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5) and 2026-10-26 (A6), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6) and 2026-10-28 (A7), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>
