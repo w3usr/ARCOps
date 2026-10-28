@@ -4046,4 +4046,4 @@ carries the actual running model ID.
   for officer, advisor and sysadmin in Chromium and WebKit; with a long address added the page
   is 1280 px wide; tools/check.sh passes apart from the same PDF and Firefox tests as before.
 - **Human Review Status**: Partially reviewed (SK saw the Members screenshot)
-- **Git Hash**: [after commit]
+- **Git Hash**: 6495a27
