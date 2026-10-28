@@ -3982,4 +3982,4 @@ carries the actual running model ID.
   already catch the refusal. After: 464 application tests pass; lint, format and the three guards
   pass; T7 locally 61 pass, 0 fail on W3USR and generic.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 095e378
