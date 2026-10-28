@@ -214,9 +214,16 @@ def test_admin_add_user_page_renders_with_custom_forms():
         session = c.session  # acting at the raised level
         session["acting_view"] = "sysadmin"
         session.save()
-    assert c.get("/admin/accounts/user/add/").status_code == 200
+    add = c.get("/admin/accounts/user/add/")
+    assert add.status_code == 200
     assert c.get("/admin/accounts/user/").status_code == 200
-    assert c.get(f"/admin/accounts/user/{a.pk}/change/").status_code == 200
+    change = c.get(f"/admin/accounts/user/{a.pk}/change/")
+    assert change.status_code == 200
+    # What an account may do changes on Edit profile, which audits it (FR-92), and not here
+    # (#158): no level, no capability given to the account alone, no sysadmin switch.
+    for field in ("groups", "user_permissions", "is_superuser"):
+        assert f'name="{field}"' not in change.content.decode()
+    assert 'name="groups"' not in add.content.decode()
 
 
 def test_every_page_has_one_h1_and_labelled_inputs():

@@ -4047,3 +4047,20 @@ carries the actual running model ID.
   is 1280 px wide; tools/check.sh passes apart from the same PDF and Firefox tests as before.
 - **Human Review Status**: Partially reviewed (SK saw the Members screenshot)
 - **Git Hash**: 6495a27
+
+## [2026-10-28 11:18 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #158: the Django admin's account page changed an account's
+  level, gave it single capabilities, and made it a sysadmin, all without the club's audit row
+  or Edit profile's guard. Those fields are dropped from the admin, so they change only on Edit
+  profile and Permission levels (SK, 2026-10-28).
+- **Sections/Files Affected**: apps/accounts/admin.py (Groups, User permissions and is_superuser
+  off the change page, Groups off the add page, with the reason); apps/accounts/tests/
+  test_flows.py (the admin test asserts none of them is offered).
+- **Nature of Contribution**: Code edit, test first (the extended test failed on the old admin).
+  Edit profile confirmed to keep the level (may_set_access, set_groups writing groups.changed)
+  and the Sysadmin switch (audited in member.edited). A read-only count on dev found no account
+  holding a capability directly. After: application tests pass apart from the PDF test; lint,
+  format and the three guards pass.
+- **Human Review Status**: Reviewed and verified (SK read the admin.py diff)
+- **Git Hash**: [after commit]

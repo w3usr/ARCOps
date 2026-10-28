@@ -80,18 +80,13 @@ class UserAdmin(DjangoUserAdmin):
                 "read by a faculty advisor or a sysadmin at /members/archive/.",
             },
         ),
+        # What an account may do is not here: its level and the sysadmin switch change on
+        # Edit profile, which writes the audit row (FR-92) and refuses a change that leaves
+        # nobody able to decide who may do what, and a capability belongs to a level, not to
+        # one account (§2.1, #158).
         (
             "Account",
-            {
-                "fields": (
-                    "is_active",
-                    "is_superuser",
-                    "password_is_temporary",
-                    "date_joined",
-                    "groups",
-                    "user_permissions",
-                )
-            },
+            {"fields": ("is_active", "password_is_temporary", "date_joined")},
         ),
     )
     add_fieldsets = (
@@ -104,7 +99,6 @@ class UserAdmin(DjangoUserAdmin):
                     "password1",
                     "password2",
                     "category",
-                    "groups",
                 )
             },
         ),
