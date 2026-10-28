@@ -39,21 +39,24 @@
 {% if minor_readonly %}<p class="muted">Your guardian changes or gives up this slot from their account.</p>
 {% elif locked %}<p class="muted">The roster is locked; to change or give up this slot, contact a captain.</p>
 {% else %}
+<div class="stack">
 <form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>
 {% if switch_roles %}
-<form method="post" action="{% url 'signup_change_role' cell.mine.pk %}" class="inline">{% csrf_token %}
-  <label for="switch-{{ slot.pk }}">Change role to</label>
-  <select id="switch-{{ slot.pk }}" name="role">{% for r in switch_roles %}<option value="{{ r }}">{{ r|role_label }}</option>{% endfor %}</select>
-  <button type="submit" class="secondary">Change</button>
+<form method="post" action="{% url 'signup_change_role' cell.mine.pk %}" class="stack">{% csrf_token %}
+  <div class="field"><label for="switch-{{ slot.pk }}">Change role to</label>
+  <select id="switch-{{ slot.pk }}" name="role">{% for r in switch_roles %}<option value="{{ r }}">{{ r|role_label }}</option>{% endfor %}</select></div>
+  <div><button type="submit" class="secondary">Change</button></div>
 </form>
 {% endif %}
-{% if published %}<form method="post" action="{% url 'signup_note' cell.mine.pk %}" class="stack my-note">{% csrf_token %}
+{% if published %}<form method="post" action="{% url 'signup_note' cell.mine.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="mynote-{{ slot.pk }}">Note to the captains (optional)</label><input id="mynote-{{ slot.pk }}" name="note" maxlength="500" value="{{ cell.mine.note }}" placeholder="Running 10 minutes late"></div>
   <div><button type="submit" class="secondary">Save note</button></div>
 </form>{% endif %}
+</div>
 {% endif %}
 {% elif published and not slot.closed %}
 <h2>Sign up</h2>
+<div class="stack">
 {% if minor_readonly %}<p class="muted">Your guardian signs you up from their account.</p>
 {% elif eligible_roles %}
 <form method="post" action="{% url 'sign_up' slot.pk %}" class="stack">{% csrf_token %}
@@ -67,34 +70,36 @@
 <p>You are on the waitlist for <strong>{{ my_wait.role|role_label }}</strong>{% if my_wait.state == 'offered' %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|date:"j M H:i" }} UTC{% endif %}.</p>
 <form method="post" action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button class="linklike">Leave the waitlist</button></form>
 {% elif waitable %}
-<form method="post" action="{% url 'waitlist_join' slot.pk %}" class="inline">{% csrf_token %}
-  <label for="wait-{{ slot.pk }}">Full for now. Join the waitlist as</label>
-  <select id="wait-{{ slot.pk }}" name="role">{% for r in waitable %}<option value="{{ r }}">{{ r|role_label }}</option>{% endfor %}</select>
-  <button type="submit" class="secondary">Join the waitlist</button>
+<form method="post" action="{% url 'waitlist_join' slot.pk %}" class="stack">{% csrf_token %}
+  <div class="field"><label for="wait-{{ slot.pk }}">Full for now. Join the waitlist as</label>
+  <select id="wait-{{ slot.pk }}" name="role">{% for r in waitable %}<option value="{{ r }}">{{ r|role_label }}</option>{% endfor %}</select></div>
+  <div><button type="submit" class="secondary">Join the waitlist</button></div>
 </form>
 {% endif %}
+</div>
 {% elif locked %}<p class="muted">The roster is locked; sign-ups go through a captain.</p>
 {% elif not published %}<p class="muted">Sign-ups open when the event is published.</p>{% endif %}
 
 {% if is_captain %}
-<h2>Captain</h2>
-<div class="stack">
+<section class="card stack" aria-labelledby="captain-{{ slot.pk }}">
+<h2 id="captain-{{ slot.pk }}">Captain</h2>
   <form method="post" action="{% url 'slot_capacities' event.pk slot.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for r in roles %}<div class="field"><label for="cap-{{ slot.pk }}-{{ r.key }}">{{ r.label }} seats</label><input id="cap-{{ slot.pk }}-{{ r.key }}" type="number" min="0" max="20" name="cap_{{ r.key }}" value="{{ capacities|default_if_none:''|dictkey:r.key|default:0 }}"></div>{% endfor %}</div>
     <div><button type="submit">Save seats</button></div>
   </form>
   {% if cell.signups %}
-  <form method="post" action="{% url 'slot_control_operator' event.pk slot.pk %}" class="inline">{% csrf_token %}
-    <label for="co-{{ slot.pk }}">Control operator</label>
-    <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.co_choices %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select>
-    <button type="submit" class="secondary">Set</button>
+  <form method="post" action="{% url 'slot_control_operator' event.pk slot.pk %}" class="stack">{% csrf_token %}
+    <div class="field"><label for="co-{{ slot.pk }}">Control operator</label>
+    <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.co_choices %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select></div>
+    <div><button type="submit" class="secondary">Set</button></div>
   </form>
   {% endif %}
-  {% if published or locked %}<form method="post" action="{% url 'slot_assign' event.pk slot.pk %}" class="inline">{% csrf_token %}
-    <label for="assign-{{ slot.pk }}">Sign someone up</label>
-    <select id="assign-{{ slot.pk }}" name="user">{% for m in members %}<option value="{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</option>{% endfor %}</select>
-    <select name="role" aria-label="Role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select>
-    <button type="submit" class="secondary">Add</button>
+  {% if published or locked %}<form method="post" action="{% url 'slot_assign' event.pk slot.pk %}" class="stack">{% csrf_token %}
+    <div class="field"><label for="assign-{{ slot.pk }}">Sign someone up</label>
+    <select id="assign-{{ slot.pk }}" name="user">{% for m in members %}<option value="{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</option>{% endfor %}</select></div>
+    <div class="field"><label for="assign-role-{{ slot.pk }}">Role</label>
+    <select id="assign-role-{{ slot.pk }}" name="role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
+    <div><button type="submit" class="secondary">Add</button></div>
   </form>{% endif %}
   <form method="post" action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}
     <button name="what" value="close" class="secondary">{% if slot.closed %}Reopen slot{% else %}Close slot{% endif %}</button>
@@ -127,5 +132,5 @@
     </form>
   </details>
   {% endif %}
-</div>
+</section>
 {% endif %}

@@ -322,6 +322,10 @@ form label, .field label { display: block; font-weight: 600; margin-bottom: .25r
 .check { flex-wrap: wrap; }
 .check > .helptext { flex-basis: 100%; margin-left: 1.7rem; margin-top: 0; }
 .row { display: flex; gap: 1rem; flex-wrap: wrap; } .row > * { flex: 1 1 10rem; }
+/* Fields that are only a label and an input keep their inputs level when a label wraps: the text
+   in each input sits on one line, whatever height an engine draws a select or a date. With help
+   or checkboxes under a field, the row stays top-aligned, or the inputs would rise. */
+.row:not(:has(.helptext, .check, .errorlist)) { align-items: last baseline; }
 /* A field whose whole content is one checkbox sits beside fields that have a label above their
    input. Without this it floats level with the labels instead of level with the inputs. */
 .row > .field > .check:only-child { margin-top: 1.7rem; }
@@ -343,7 +347,6 @@ fieldset .helptext { margin-top: 0; }
 .copyrow.tight .iconbtn:hover { color: var(--fg); }
 .copyrow.tight .iconbtn.copied { color: var(--ok); }
 form.inline { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-form.my-note { margin-top: 1.25rem; }  /* apart from the slot's other actions above it */
 .helptext { display: block; color: var(--muted); font-size: .9rem; margin-top: .25rem; }
 .req { color: var(--bad); font-weight: 700; }
 /* The settings page names each value in words; the key stays for whoever edits club.yaml. */
@@ -481,6 +484,9 @@ html.js .bulkbar:not(.active) { display: none; }
 .slot-state.tone-ok { background: var(--tag-ok); } .slot-state.tone-warn { background: var(--tag-warn); } .slot-state.tone-bad { background: var(--tag-bad); }
 .slot-state.tone-muted { background: var(--card); color: var(--muted); }
 .slotpage { max-width: 40rem; }
+/* One field width on a slot: a row of fields is as wide as one field, its fields sharing it. */
+.slot-dialog .row, .slotpage .row { max-width: 28rem; }
+.slot-dialog .row > *, .slotpage .row > * { flex-basis: 8rem; }
 
 @media (max-width: 48rem) {
   .roster.grid .r-head { display: none; }

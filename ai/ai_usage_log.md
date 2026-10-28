@@ -4006,3 +4006,27 @@ carries the actual running model ID.
   the intended pages changed (others differ by clock times, port and tokens).
 - **Human Review Status**: Partially reviewed (SK compared the before and after screenshots)
 - **Git Hash**: 9282b21
+
+## [2026-10-28 10:52 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #140 and #141: on the slot page, labels above their fields, one
+  field width, a gap between forms and the captain controls in one card headed Captain; on
+  Manage event and elsewhere, a row's inputs kept level when a label wraps.
+- **Sections/Files Affected**: static/css/app.css (a row of label-and-input fields aligns on the
+  last baseline, so the text in its inputs is level whatever height an engine draws a select;
+  rows with help, checkboxes or an error stay top-aligned; a row on a slot is one field wide;
+  the my-note margin, a workaround for the missing gap, removed);
+  templates/events/_slot_body.html (Change role to, Join the waitlist as, Control operator and
+  Sign someone up as stacked fields, Sign someone up's role select given a visible label, each
+  section's forms in a stack, the captain controls in a card); tools/a11y/test_form_layout.py
+  (new: labels above their fields, and a row's inputs level, on Manage event and the slot page).
+- **Nature of Contribution**: Code edit, test first (the new check failed on the old code in
+  Chromium). The issue's align-items: end was tried first and dropped: WebKit draws a select
+  shorter than a text box, which left selects 21 to 25 px low. After: the check and the card
+  spacing check pass in Chromium and WebKit; tools/check.sh passes apart from the PDF test
+  (passes with the Homebrew library path on pytest) and three Firefox tests that fail on
+  unchanged main too. The scenario scripts that use these controls find them by unchanged
+  label text; not run. Contact sheets before and after: only Manage event, the slot page and
+  the password form's row changed (others by clock times, ports and tokens).
+- **Human Review Status**: Partially reviewed (SK compared the before and after screenshots)
+- **Git Hash**: [after commit]
