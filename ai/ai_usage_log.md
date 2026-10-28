@@ -4135,4 +4135,4 @@ carries the actual running model ID.
   passes; scenarios T11 to T16, T20, T26 and T36 on the generic club match the code before #139,
   with the one date check in T12 failing either way.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 8f86ee0
