@@ -98,8 +98,10 @@ def add(
     address = (address or "").strip().lower()
     if not address:
         raise ValueError("an address is required")
-    if confirmed:
-        _refuse_if_taken(user, address)
+    # Refused whether or not it is confirmed here: an address another account has confirmed could
+    # never be confirmed on this one, and adding it would mail that person a link meant for
+    # somebody else (T7; SK, 2026-10-27). Two accounts may still both hold one nobody has confirmed.
+    _refuse_if_taken(user, address)
     row, created = Address.objects.get_or_create(
         user=user,
         address=address,

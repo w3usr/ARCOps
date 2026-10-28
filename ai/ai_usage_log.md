@@ -3968,3 +3968,18 @@ carries the actual running model ID.
   report quoted word for word; the three guards pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: b6bb5a9
+
+## [2026-10-27 21:25 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: An address another account had confirmed was accepted, unconfirmed, when
+  added to a second account, and a confirmation link was mailed to it (to the other account's
+  owner); only confirming it was refused. Found by the new T7 scenario script; SK chose to fix the
+  code rather than the plan (2026-10-27). Adding is now refused at once with the same message.
+- **Sections/Files Affected**: apps/accounts/addresses.py (add refuses an address confirmed
+  elsewhere, whether or not it confirms); apps/accounts/tests/test_addresses.py (one test).
+- **Nature of Contribution**: Code edit, reproduced first (the test failed on the old code). Every
+  caller of add checked: the join view finds an existing account first, and both invitation paths
+  already catch the refusal. After: 464 application tests pass; lint, format and the three guards
+  pass; T7 locally 61 pass, 0 fail on W3USR and generic.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

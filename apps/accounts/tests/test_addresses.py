@@ -146,6 +146,23 @@ def test_an_address_confirmed_on_one_account_cannot_be_claimed_by_another():
     assert "shared@example.org" not in addresses.confirmed(b)
 
 
+def test_an_address_another_account_confirmed_is_refused_as_it_is_added():
+    """T7 step 4: refused at once, so no link meant for this account reaches the other's mailbox."""
+    owner = _member("owner@example.edu")
+    addresses.mark_confirmed(owner, "owner@example.edu")
+    other = _member("other@example.edu")
+    c = Client()
+    c.force_login(other)
+    r = c.post(
+        f"/members/{other.pk}/edit/",
+        {"action": "address_add", "address": "owner@example.edu"},
+        follow=True,
+    )
+    assert "Another account has already confirmed that address." in r.content.decode()
+    assert "owner@example.edu" not in {a.address for a in addresses.on_file(other)}
+    assert not [m for m in mail.outbox if m.to == ["owner@example.edu"]]
+
+
 def test_an_account_keeps_its_last_address():
     """An account with no address has nothing to reach its owner by and no way back in but the
     one-time password an officer issues."""
