@@ -67,6 +67,8 @@ TINYMCE_COMPRESSOR = False
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # Outermost of the app's own, so it sees every redirect, the sign-in gate's included (#139).
+    "apps.ops.middleware.HtmxRedirectMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

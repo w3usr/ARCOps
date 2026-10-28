@@ -77,29 +77,40 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});  // served by Django, never cached (FR-96)
 }
 
-// Roster: a slot opens in a dialog (the same page, fetched as a fragment); the checkboxes drive
-// a bulk bar; a day heading's box selects its whole day. Without JavaScript the slot link is a
-// page and the bar is simply always shown.
+// Roster: a slot opens in a dialog; the checkboxes drive a bulk bar; a day heading's box selects
+// its whole day. Without JavaScript the slot link is a page and the bar is simply always shown.
 (() => {
   const dlg = document.getElementById("slot-dialog");
-  if (dlg && typeof dlg.showModal === "function" && window.fetch) {
+  if (dlg && typeof dlg.showModal === "function" && window.htmx) {
+    // htmx fills the dialog, from a slot link and again after each action in it (#139). Focus
+    // goes to what just happened, or else to the slot's heading.
     const body = dlg.querySelector(".dialog-body");
-    let opener = null;
-    document.addEventListener("click", async (ev) => {
-      const a = ev.target.closest("a[data-slot]");
-      if (!a) return;
-      ev.preventDefault();
-      opener = a;
-      try {
-        const res = await fetch(a.href + (a.href.includes("?") ? "&" : "?") + "partial=1", { credentials: "same-origin" });
-        if (!res.ok) { window.location = a.href; return; }
-        body.innerHTML = await res.text();
+    let openerSlot = null;
+    document.addEventListener("htmx:afterSwap", (ev) => {
+      if (ev.detail.target !== body) return;
+      const a = ev.detail.requestConfig.elt.closest("a[data-slot]");  // detail.elt is the target here
+      if (a) openerSlot = a.dataset.slot;
+      // The answer carries the slot's roster cell, so the link just pressed has been replaced. Focus
+      // its replacement before opening: the dialog hands focus back to it when it closes.
+      if (!dlg.open) {
+        const back = openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`);
+        if (back) back.focus();
         dlg.showModal();
-        const h = body.querySelector("h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
-      } catch (e) { window.location = a.href; }
+      }
+      const f = body.querySelector(".messages") || body.querySelector("h1");
+      if (f) { f.setAttribute("tabindex", "-1"); f.focus(); }
     });
+    // A slot htmx could not fetch opens as its own page, as it does without JavaScript.
+    const fallBack = (ev) => { const a = ev.detail.elt.closest("a[data-slot]"); if (a) window.location = a.href; };
+    document.addEventListener("htmx:responseError", fallBack);
+    document.addEventListener("htmx:sendError", fallBack);
     dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
-    dlg.addEventListener("close", () => { body.innerHTML = ""; if (opener) opener.focus(); });
+    // Back to the slot's link, found afresh, when an action in the dialog replaced its cell.
+    dlg.addEventListener("close", () => {
+      body.innerHTML = "";
+      const a = openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`);
+      if (a) a.focus();
+    });
   }
 
   const bar = document.getElementById("bulk-bar");

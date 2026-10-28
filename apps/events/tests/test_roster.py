@@ -142,12 +142,38 @@ def test_slot_page_and_fragment_and_signup_from_it(world):
     slot = Slot.objects.filter(position=world["run"], kind="operating").first()
     page = c.get(f"/events/{ev.pk}/slot/{slot.pk}/").content.decode()
     assert "Who is on it" in page and 'id="sidenav"' in page and "Sign up" in page
-    frag = c.get(f"/events/{ev.pk}/slot/{slot.pk}/?partial=1").content.decode()
+    frag = c.get(f"/events/{ev.pk}/slot/{slot.pk}/", HTTP_HX_REQUEST="true").content.decode()
     assert "Who is on it" in frag and "<html" not in frag
     c.post(f"/events/slot/{slot.pk}/signup/", {"role": "observer", "note": "first time"})
     assert SignUp.objects.filter(slot=slot, user=world["mem"], role="observer").exists()
     body = c.get(f"/events/{ev.pk}/").content.decode()
     assert 'class="you"' in body
+
+
+def test_the_roster_dialog_answers_htmx_with_the_slot_and_its_cell(world):
+    """#139: an action in the roster's dialog comes back to the slot there, with the slot's roster
+    cell out of band, instead of leaving the roster for the slot's own page. One URL answers both
+    ways, so the answer varies on the header."""
+    c = _as(world["mem"])
+    ev = world["ev"]
+    slot = Slot.objects.filter(position=world["run"], kind="operating").first()
+    url = f"/events/{ev.pk}/slot/{slot.pk}/"
+    page = c.get(url)
+    assert "HX-Request" in page["Vary"] and "hx-boost" not in page.content.decode()
+    r = c.get(url, HTTP_HX_REQUEST="true")
+    frag = r.content.decode()
+    assert "HX-Request" in r["Vary"] and "<html" not in frag
+    assert f'id="slot-{slot.pk}" hx-swap-oob="true"' in frag and 'hx-boost="true"' in frag
+
+    r = c.post(f"/events/slot/{slot.pk}/signup/", {"role": "observer"}, HTTP_HX_REQUEST="true")
+    assert r.status_code == 302 and r["Location"] == url  # without htmx, the roster
+    frag = c.get(url, HTTP_HX_REQUEST="true").content.decode()
+    assert "Done:</span> Signed up as Observer" in frag and "You hold this slot" in frag
+    assert 'class="you"' in frag  # the cell sent back for the roster behind the dialog
+
+    # Anywhere else a redirect leads, htmx loads the whole page instead of filling the dialog.
+    r = Client().get(url, HTTP_HX_REQUEST="true")
+    assert r.status_code == 200 and r["HX-Redirect"].startswith("/accounts/login/")
 
 
 def test_captain_edits_seats_control_operator_and_assigns(world):

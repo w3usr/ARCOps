@@ -2,7 +2,8 @@
 One slot at a time, and many at once.
 
 The slot page (`/events/<pk>/slot/<id>/`) is the full record of a slot and every action on it;
-the roster opens the same content in a dialog (`?partial=1`) when JavaScript is present. Bulk
+the roster opens the same content in a dialog through htmx (`HX-Request`), and each action in the
+dialog comes back to it there, with the slot's roster cell for the page behind (#139). Bulk
 actions come from the roster's checkboxes: a member signs up for several slots in one role with
 one note and gets a per-slot answer; a captain closes, reopens, or cancels several at once.
 Nothing here deletes: a slot with history is canceled, never removed (FR-102).
@@ -15,6 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
@@ -34,6 +36,14 @@ def _lead(request) -> str:
 
 def _visible(user, event: Event) -> bool:
     return event.visible_to_members or user.can_captain(event)
+
+
+def roster_or_slot(request, slot: Slot):
+    """Where an action on a slot lands: the roster, or from the roster's dialog (an htmx request)
+    the slot again, so the dialog shows what changed and the roster stays where it was (#139)."""
+    if request.headers.get("HX-Request"):
+        return redirect("slot_detail", pk=slot.event.pk, slot_id=slot.pk)
+    return redirect("event_detail", pk=slot.event.pk)
 
 
 @login_required
@@ -102,10 +112,14 @@ def slot_detail(request, pk, slot_id):
         "members": User.objects.with_access().order_by("last_name", "first_name")
         if is_captain
         else [],
-        "partial": request.GET.get("partial") == "1",
+        "partial": bool(request.headers.get("HX-Request")),
+        "roster": data,  # for the roster cell sent back with the dialog
+        "day": data["day"],
     }
     template = "events/_slot_body.html" if ctx["partial"] else "events/slot.html"
-    return render(request, template, ctx)
+    response = render(request, template, ctx)
+    patch_vary_headers(response, ["HX-Request"])  # one URL, two answers: never cache one for both
+    return response
 
 
 def _captain_slot(request, pk, slot_id):

@@ -115,7 +115,7 @@ localStorage, where they would keep member names and rosters (technical addendum
   </li></ul>{% endif %}
   {% comment %}aria-live and no role: role="status" replaced the list's own role, which left each
   message a list item in no list to a screen reader.{% endcomment %}
-  {% if messages %}<ul class="messages" id="messages" tabindex="-1" aria-live="polite">{% for m in messages %}<li class="msg {{ m.tags }}"><span class="lvl">{% if m.level_tag == 'error' %}Problem{% elif m.level_tag == 'warning' %}Careful{% elif m.level_tag == 'success' %}Done{% else %}Note{% endif %}:</span> {{ m }}</li>{% endfor %}</ul>{% endif %}
+  {% include "_messages.html" %}
   {# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
   {% block main %}{% block content %}{% endblock %}{% endblock %}
 </main>

@@ -1,0 +1,14 @@
+{% load dicts labels %}{% comment %}One slot on the roster. Also sent with the slot's dialog after an action in it, out of band
+(oob), so the roster behind the dialog shows the change (#139). The link opens the slot's page
+without JavaScript and the dialog with it.{% endcomment %}
+<div class="r-cell tone-{{ c.shown.tone }}{% if c.mine %} mine{% endif %}" role="cell" id="slot-{{ c.slot.pk }}"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {% if roster.selectable %}<input type="checkbox" name="slots" value="{{ c.slot.pk }}" data-day="{{ day.key }}" aria-label="Select {{ row.lead_range }}{% if roster.layout == 'grid' %} {{ c.slot.position.name }}{% endif %}">{% endif %}
+  <a class="slot-link" href="{% url 'slot_detail' event.pk c.slot.pk %}" data-slot="{{ c.slot.pk }}" hx-get="{% url 'slot_detail' event.pk c.slot.pk %}" hx-target="#slot-dialog-body">
+    {% if roster.layout == 'list' %}<span class="r-where">{% if not roster.single_location %}{{ c.slot.position.location.name }} · {% endif %}{{ c.slot.position.name }}</span>{% endif %}
+    <span class="people">
+      {% if not roster.names_visible %}{% if c.signups %}<span class="person"><span class="counts">{{ c.class_counts }}</span><small class="role">{{ c.signups|length }} signed up</small></span>{% endif %}{% else %}{% for s in c.signups %}<span class="person">{% if is_captain %}{{ s.user.full_name_lettered }}{% else %}{{ s.user.short_name_lettered }}{% endif %}<small class="role">{{ s.role|role_label }}{% for b in c.badges|dictkey:s.pk %} · {{ b }}{% endfor %}{% if c.control_operator and c.control_operator.pk == s.user.pk %} · CO{% endif %}{% if s.checked_in_at %} · in{% elif s.confirmed_at %} · ✓{% elif is_captain and s.user.reminders_off %} · reminders off{% endif %}</small>{% if is_captain and s.note %}<small class="role notemark">Note: {{ s.note|truncatechars:40 }}</small>{% endif %}</span>{% endfor %}{% endif %}
+      {% if c.mine %}<span class="you">you{% if not roster.names_visible %} ({{ c.mine.role|role_label }}){% endif %}</span>{% endif %}
+    </span>
+    <span class="state"><span class="word">{{ c.shown.word }}</span>{% if c.shown.detail %}<small>{{ c.shown.detail }}</small>{% endif %}{% if c.over_limit %}<small class="tag bad">over limit</small>{% endif %}</span>
+  </a>
+</div>

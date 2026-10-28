@@ -1,5 +1,9 @@
 {% load dicts labels %}
-{# One slot: the same content on its own page and inside the roster's dialog. #}
+{% comment %}One slot: the same content on its own page and inside the roster's dialog. In the dialog
+(partial), its forms go through htmx and come back here, with the flash messages above and the
+slot's roster cell for the page behind (#139). I cannot make it and Change role stay ordinary
+posts: either may answer with a page asking to confirm.{% endcomment %}
+{% if partial %}{% include "_messages.html" with in_dialog=True %}{% endif %}
 <h1 class="slot-title">{{ row.lead_range }}{% if row.other_range %} <small class="muted">{{ row.other_range }}</small>{% endif %}</h1>
 <p class="muted">{{ event.title }} · {{ slot.position.location.name }} · {{ slot.position.name }}{% if slot.kind != 'operating' %} · {{ slot.kind|kind_label }}{% endif %}{% if slot.closed %} · <strong>closed</strong>{% endif %}</p>
 
@@ -24,8 +28,8 @@
         <a href="{% url 'signup_adults' s.pk %}">Edit the designation</a>{% elif s.user == user and not minor_readonly %}<a href="{% url 'signup_adults' s.pk %}">Name or change the adult</a>{% endif %}</details>
       {% elif adults %}<span class="tag">under 18, with an adult</span>{% else %}<span class="tag">under 18</span>{% endif %}
     {% endwith %}{% endif %}
-    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post" action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button class="linklike">Check in</button></form>{% endif %}
-    {% if is_captain and s.checked_in_at %}<form method="post" action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}Undo the no-show{% else %}Mark as a no-show{% endif %}</button></form>{% endif %}
+    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button class="linklike">Check in</button></form>{% endif %}
+    {% if is_captain and s.checked_in_at %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="linklike">{% if s.no_show %}Undo the no-show{% else %}Mark as a no-show{% endif %}</button></form>{% endif %}
     {% if s.no_show %}<span class="tag warn">no-show</span>{% endif %}
   </li>
 {% endfor %}
@@ -48,7 +52,7 @@
   <div><button type="submit" class="secondary">Change</button></div>
 </form>
 {% endif %}
-{% if published %}<form method="post" action="{% url 'signup_note' cell.mine.pk %}" class="stack">{% csrf_token %}
+{% if published %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'signup_note' cell.mine.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="mynote-{{ slot.pk }}">Note to the captains (optional)</label><input id="mynote-{{ slot.pk }}" name="note" maxlength="500" value="{{ cell.mine.note }}" placeholder="Running 10 minutes late"></div>
   <div><button type="submit" class="secondary">Save note</button></div>
 </form>{% endif %}
@@ -59,7 +63,7 @@
 <div class="stack">
 {% if minor_readonly %}<p class="muted">Your guardian signs you up from their account.</p>
 {% elif eligible_roles %}
-<form method="post" action="{% url 'sign_up' slot.pk %}" class="stack">{% csrf_token %}
+<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'sign_up' slot.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="role-{{ slot.pk }}">Role</label><select id="role-{{ slot.pk }}" name="role">{% for r in eligible_roles %}<option value="{{ r }}">{{ r|role_label }}</option>{% endfor %}</select></div>
   <div class="field"><label for="note-{{ slot.pk }}">Note to the captains (optional)</label><input id="note-{{ slot.pk }}" name="note" maxlength="500" placeholder="First contest, happy to be paired with a mentor"></div>
   <div><button type="submit">Sign up</button></div>
@@ -68,9 +72,9 @@
 {% else %}<p class="muted">Full.</p>{% endif %}
 {% if my_wait %}
 <p>You are on the waitlist for <strong>{{ my_wait.role|role_label }}</strong>{% if my_wait.state == 'offered' %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|date:"j M H:i" }} UTC{% endif %}.</p>
-<form method="post" action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button class="linklike">Leave the waitlist</button></form>
+<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button class="linklike">Leave the waitlist</button></form>
 {% elif waitable %}
-<form method="post" action="{% url 'waitlist_join' slot.pk %}" class="stack">{% csrf_token %}
+<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_join' slot.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="wait-{{ slot.pk }}">Full for now. Join the waitlist as</label>
   <select id="wait-{{ slot.pk }}" name="role">{% for r in waitable %}<option value="{{ r }}">{{ r|role_label }}</option>{% endfor %}</select></div>
   <div><button type="submit" class="secondary">Join the waitlist</button></div>
@@ -83,33 +87,33 @@
 {% if is_captain %}
 <section class="card stack" aria-labelledby="captain-{{ slot.pk }}">
 <h2 id="captain-{{ slot.pk }}">Captain</h2>
-  <form method="post" action="{% url 'slot_capacities' event.pk slot.pk %}" class="stack">{% csrf_token %}
+  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_capacities' event.pk slot.pk %}" class="stack">{% csrf_token %}
     <div class="row">{% for r in roles %}<div class="field"><label for="cap-{{ slot.pk }}-{{ r.key }}">{{ r.label }} seats</label><input id="cap-{{ slot.pk }}-{{ r.key }}" type="number" min="0" max="20" name="cap_{{ r.key }}" value="{{ capacities|default_if_none:''|dictkey:r.key|default:0 }}"></div>{% endfor %}</div>
     <div><button type="submit">Save seats</button></div>
   </form>
   {% if cell.signups %}
-  <form method="post" action="{% url 'slot_control_operator' event.pk slot.pk %}" class="stack">{% csrf_token %}
+  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_control_operator' event.pk slot.pk %}" class="stack">{% csrf_token %}
     <div class="field"><label for="co-{{ slot.pk }}">Control operator</label>
     <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.co_choices %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select></div>
     <div><button type="submit" class="secondary">Set</button></div>
   </form>
   {% endif %}
-  {% if published or locked %}<form method="post" action="{% url 'slot_assign' event.pk slot.pk %}" class="stack">{% csrf_token %}
+  {% if published or locked %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_assign' event.pk slot.pk %}" class="stack">{% csrf_token %}
     <div class="field"><label for="assign-{{ slot.pk }}">Sign someone up</label>
     <select id="assign-{{ slot.pk }}" name="user">{% for m in members %}<option value="{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</option>{% endfor %}</select></div>
     <div class="field"><label for="assign-role-{{ slot.pk }}">Role</label>
     <select id="assign-role-{{ slot.pk }}" name="role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
     <div><button type="submit" class="secondary">Add</button></div>
   </form>{% endif %}
-  <form method="post" action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}
+  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}
     <button name="what" value="close" class="secondary">{% if slot.closed %}Reopen slot{% else %}Close slot{% endif %}</button>
     {% if not cell.signups %}<button name="what" value="cancel" class="danger">Cancel slot</button>{% endif %}
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
   <details><summary>Who may sign up for this slot (override)</summary>
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %} · {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %} · needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %} · no minors{% endif %}
-      <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike danger">Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
-    <form method="post" action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
+      <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike danger">Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
       <div class="row">
         <div class="field"><label for="se-role-{{ slot.pk }}">Role</label><select id="se-role-{{ slot.pk }}" name="role" data-role-select>{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
         <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ roles.0.key }}" data-role-field="cat" value="{{ c.key }}" id="se-cat-{{ slot.pk }}-{{ c.key }}"><label for="se-cat-{{ slot.pk }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}</div>
@@ -123,7 +127,7 @@
   <details class="confirm">
     <summary>Cancel this slot</summary>
     <p>The slot goes off the roster and cannot be brought back. {{ cell.signups|length }} {{ cell.signups|length|pluralize:"person is,people are" }} in it, and {{ cell.signups|length|pluralize:"is,are" }} told, with your reason.</p>
-    <form method="post" action="{% url 'slot_toggle' slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
       <div class="field">
         <label for="cancel-reason-{{ slot.pk }}">Reason <span class="req" aria-hidden="true">*</span></label>
         <input id="cancel-reason-{{ slot.pk }}" name="reason" maxlength="300" placeholder="Station closed for the storm" required>
@@ -134,3 +138,4 @@
   {% endif %}
 </section>
 {% endif %}
+{% if partial %}{% include "events/_roster_cell.html" with c=cell oob=True %}{% endif %}

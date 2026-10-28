@@ -1,0 +1,2 @@
+{# The flash messages: on every page, and in the roster's slot dialog after an action there, where the page's own list already holds the id. #}
+{% if messages %}<ul class="messages"{% if not in_dialog %} id="messages"{% endif %} tabindex="-1" aria-live="polite">{% for m in messages %}<li class="msg {{ m.tags }}"><span class="lvl">{% if m.level_tag == 'error' %}Problem{% elif m.level_tag == 'warning' %}Careful{% elif m.level_tag == 'success' %}Done{% else %}Note{% endif %}:</span> {{ m }}</li>{% endfor %}</ul>{% endif %}

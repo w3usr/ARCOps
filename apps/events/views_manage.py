@@ -41,6 +41,7 @@ from .models import (
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.slots import limit_report
 from .views_rules import rules_context
+from .views_slots import roster_or_slot
 
 DEFAULT_EVENT_TYPES = [
     ("contest", "Contest"),
@@ -665,7 +666,9 @@ def slot_toggle(request, slot_id):
             slot.save(update_fields=["cancelled"])
             record(request.user, "slot.cancelled", slot)
             messages.success(request, "Slot canceled.")
-    return redirect("event_detail", pk=event.pk)
+    if slot.cancelled:  # gone from the roster, so there is no slot to come back to
+        return redirect("event_detail", pk=event.pk)
+    return roster_or_slot(request, slot)
 
 
 @login_required

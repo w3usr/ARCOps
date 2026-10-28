@@ -4113,3 +4113,26 @@ carries the actual running model ID.
   set by the server, so that is checked on dev.
 - **Human Review Status**: Reviewed and verified (SK read the addendum entry and the INTERFACE section)
 - **Git Hash**: fed32ae
+
+## [2026-10-28 12:24 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #139: acting in the roster's slot dialog took you to the slot's
+  own page. Now the dialog is filled by htmx, each action comes back into it, and the roster
+  cell behind it updates.
+- **Sections/Files Affected**: apps/events/views_slots.py (slot_detail answers HX-Request with
+  the slot and its roster cell out of band, Vary: HX-Request; roster_or_slot); apps/events/
+  views.py and views_manage.py (sign_up and Close/Reopen slot return to the slot from the
+  dialog); apps/events/services/roster.py (cell_for gives the day); apps/ops/middleware.py (new:
+  an htmx redirect anywhere but a slot becomes a full page load) and config/settings/base.py;
+  templates/_messages.html and events/_roster_cell.html (new, taken out of base.html and
+  detail.html); templates/events/_slot_body.html (forms boosted in the dialog, except I cannot
+  make it and Change role); templates/events/detail.html (slot link hx-get, dialog target);
+  static/js/app.js (the hand-written fetch removed; open, focus, fall back, close);
+  apps/events/tests/test_roster.py and tools/a11y/test_slot_dialog.py (new).
+- **Nature of Contribution**: Code generation and edit, with tests; one fix found by T20 (focus
+  back on the slot's link after Escape, since the answer replaces the cell). After: application
+  tests pass apart from the PDF test; the dialog test passes in Chromium and WebKit; the sweep
+  passes; scenarios T11 to T16, T20, T26 and T36 on the generic club match the code before #139,
+  with the one date check in T12 failing either way.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

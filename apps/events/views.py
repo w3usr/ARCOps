@@ -19,6 +19,7 @@ from .services.eligibility import can_sign_up
 from .services.roster import build as build_roster
 from .services.slots import health
 from .services.viability import checkin_window_open, would_break
+from .views_slots import roster_or_slot
 
 
 def _visible(user, event: Event) -> bool:
@@ -81,14 +82,14 @@ def sign_up(request, slot_id):
     cap = RoleCapacity.objects.filter(slot=slot, role=role).first()
     if not cap:
         messages.error(request, "That role is not open in this slot.")
-        return redirect("event_detail", pk=event.pk)
+        return roster_or_slot(request, slot)
     if slot.signups.filter(role=role).count() >= cap.capacity:
         messages.error(request, "That role is full. You can join the waitlist from the slot.")
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     allowed, reason = can_sign_up(request.user, slot, role)
     if not allowed:
         messages.error(request, f"You cannot take that role: {reason}.")
-        return redirect("event_detail", pk=event.pk)
+        return roster_or_slot(request, slot)
     su, created = SignUp.objects.get_or_create(
         slot=slot,
         user=request.user,
@@ -107,7 +108,7 @@ def sign_up(request, slot_id):
                 f"Now name the responsible adult who will accompany {request.user.display_first}.",
             )
             return redirect("signup_adults", signup_id=su.pk)
-    return redirect("event_detail", pk=event.pk)
+    return roster_or_slot(request, slot)
 
 
 @login_required

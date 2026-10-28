@@ -331,5 +331,5 @@ def cell_for(slot: Slot, viewer, lead: str = "local") -> tuple[Cell, dict]:
         for row in day.rows:
             for c in row.cells:
                 if c and c.slot.pk == slot.pk:
-                    return c, {**data, "row": row}
+                    return c, {**data, "row": row, "day": day}
     raise ValueError("slot is not on the roster")
