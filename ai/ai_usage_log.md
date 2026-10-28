@@ -3983,3 +3983,26 @@ carries the actual running model ID.
   pass; T7 locally 61 pass, 0 fail on W3USR and generic.
 - **Human Review Status**: Pending review
 - **Git Hash**: 095e378
+
+## [2026-10-28 10:29 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #148 and #149: a card's first and last lines sit at its padding,
+  with no margin from a form's hidden fields above the heading, or from a table or paragraph one
+  level down whose margin collapsed through its parent (a message, Decisions taken, Scheduled
+  jobs, the template preview).
+- **Sections/Files Affected**: static/css/app.css (a card's first visible child has no top
+  margin, replacing the h2-only rule; a table in its wrapper, a message's last line and rich
+  text's last paragraph drop their bottom margin as a card's last element);
+  templates/accounts/member_edit.html and _account_form.html (the account form is the card itself
+  rather than a stack inside a section, which kept its heading's margin; the unused form_class
+  option removed); tools/a11y/test_card_spacing.py (extended to the pages both issues name,
+  checks the space above the first line too, and measures text itself so a paragraph's last
+  line is not mistaken for a margin).
+- **Nature of Contribution**: Code edit, test first (the extended check failed on the old CSS in
+  Chromium and WebKit, and found the Details and Notifications cards beyond the issues). After:
+  the check passes in both; tools/check.sh passes apart from the PDF test (passes with the
+  Homebrew library path on pytest) and three Firefox tests that fail on unchanged main too
+  (Firefox does not launch on this Mac; CI covers it). Contact sheets before and after: only
+  the intended pages changed (others differ by clock times, port and tokens).
+- **Human Review Status**: Partially reviewed (SK compared the before and after screenshots)
+- **Git Hash**: [after commit]

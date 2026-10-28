@@ -102,9 +102,7 @@ stored in.{% endcomment %}
 </section>
 {% endif %}
 
-<section class="card">
-  {% include "accounts/_account_form.html" with form_class="stack" form_heading=manage_heading %}
-</section>
+{% include "accounts/_account_form.html" with form_heading=manage_heading %}
 
 {% if perms.ops.issue_temporary_password and not is_self or perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
 <section class="card" aria-labelledby="si">

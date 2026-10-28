@@ -255,8 +255,12 @@ footer.site .credit a { color: inherit; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; margin: 1rem 0; }
 .card.highlight { border-color: var(--accent); }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
-.card > h2:first-child { margin-top: 0; }
+.card > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
 .card > :last-child { margin-bottom: 0; }  /* the card's padding is the space under it */
+/* ...and a margin one level down collapses through its parent into that space: a table in its
+   wrapper, the last line of a message, the last paragraph of rich text. */
+.card > .table-wrap:last-child > .table, .card > details:last-child > :last-child,
+.card .prose:last-child > :last-child { margin-bottom: 0; }
 .list { padding-left: 1.25rem; } .list li { margin: .25rem 0; }
 .table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
 .table th, .table td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
