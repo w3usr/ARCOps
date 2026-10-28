@@ -4030,3 +4030,20 @@ carries the actual running model ID.
   the password form's row changed (others by clock times, ports and tokens).
 - **Human Review Status**: Partially reviewed (SK compared the before and after screenshots)
 - **Git Hash**: 7fcbd75
+
+## [2026-10-28 11:06 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Close out #157: Members scrolled sideways at desktop width. Long
+  addresses wrap in the Email column, and the sweep's sideways check runs at desktop width too
+  (SK, 2026-10-28).
+- **Sections/Files Affected**: apps/ops/templatetags/labels.py (breakable_address: an address
+  may wrap before its @ and dots, escaped first); apps/ops/tests/test_labels.py (its test);
+  templates/accounts/members.html (the Email column uses it); tools/a11y/test_axe.py (a page
+  that scrolls sideways fails at either width).
+- **Nature of Contribution**: Code edit, test first (the widened sweep failed on /members/ for
+  officer and advisor, and on no other page). overflow-wrap: anywhere was tried first and
+  dropped: the table starved the column into "ada@ex / ample.or / g". After: the sweep passes
+  for officer, advisor and sysadmin in Chromium and WebKit; with a long address added the page
+  is 1280 px wide; tools/check.sh passes apart from the same PDF and Firefox tests as before.
+- **Human Review Status**: Partially reviewed (SK saw the Members screenshot)
+- **Git Hash**: [after commit]

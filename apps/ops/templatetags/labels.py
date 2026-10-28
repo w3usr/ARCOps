@@ -115,6 +115,20 @@ def phone(value) -> str:
 
 
 @register.filter
+def breakable_address(value) -> str:
+    """An email address that may wrap before its @ and its dots, and nowhere else.
+
+    The officer's directory is a wide table, and an address has no space to wrap at (#157). Let
+    it break anywhere and the table starves its column into "ada@ex / ample.or / g".
+    """
+    from django.utils.html import escape
+    from django.utils.safestring import mark_safe
+
+    text = escape(value or "")
+    return mark_safe(text.replace("@", "<wbr>@").replace(".", "<wbr>."))  # noqa: S308 - escaped first
+
+
+@register.filter
 def duration(value) -> str:
     """A timedelta in words. The job page showed "0:15:00", which is a Python repr."""
     if not isinstance(value, timedelta):

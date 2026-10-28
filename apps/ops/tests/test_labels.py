@@ -6,6 +6,7 @@ import pytest
 from django.core.management import call_command
 
 from apps.ops.templatetags.labels import (
+    breakable_address,
     category_label,
     duration,
     kind_label,
@@ -46,3 +47,9 @@ def test_a_period_is_words_rather_than_a_python_repr():
     assert duration(timedelta(days=1)) == "1 day"
     assert duration(timedelta(seconds=90)) == "1 minute"
     assert duration(timedelta(0)) == "never"
+
+
+def test_an_address_wraps_only_before_its_at_and_dots_and_stays_escaped():
+    assert breakable_address("ada@example.org") == "ada<wbr>@example<wbr>.org"
+    assert breakable_address("<b>@x.y") == "&lt;b&gt;<wbr>@x<wbr>.y"
+    assert breakable_address(None) == ""

@@ -1,7 +1,7 @@
 """
 FR-117, TR-36: axe-core over every page of the seeded demo, as each kind of account, at desktop
 and phone width. A violation at the serious or critical level fails; so does a page that scrolls
-sideways at phone width (FR-95). The pages come from the demo data, so a new page is covered by
+sideways at either width (FR-95). The pages come from the demo data, so a new page is covered by
 adding it to PAGES below (or to seed_demo when it needs a record to exist).
 
 Run: `playwright install chromium firefox webkit` once, then `pytest tools/a11y -o addopts=""`.
@@ -198,12 +198,11 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, engine, role):
                     f"{url} answered {r.status if r else 'nothing'} for {role}"
                 )
                 page.wait_for_load_state("networkidle")
-                if viewport is PHONE:
-                    wide = page.evaluate(
-                        "document.documentElement.scrollWidth > window.innerWidth + 1"
-                    )
-                    if wide:
-                        failures.append(f"{url} at {viewport['width']}px scrolls sideways (FR-95)")
+                # At either width: the officer's directory fit a phone, where tables stack, and
+                # scrolled sideways at 1280px (#157).
+                wide = page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1")
+                if wide:
+                    failures.append(f"{url} at {viewport['width']}px scrolls sideways (FR-95)")
                 bad = audit(page)
                 if bad:
                     failures.append(describe(url, viewport["width"], bad))
