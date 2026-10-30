@@ -4266,3 +4266,18 @@ carries the actual running model ID.
   tools/check.sh shows only the four known local failures.
 - **Human Review Status**: Pending review
 - **Git Hash**: 92b13d7
+
+## [2026-10-30 15:08 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: What #144 left after #160: labels at the regular weight, and Material 3's
+  state layers in CSS.
+- **Sections/Files Affected**: static/css/app.css (one state-layer rule for buttons, menu entries,
+  icon buttons, the filter toggle, roster slot links and tag-buttons, replacing seven per-control
+  hovers and brightness filters, and adding a pressed state; form labels at 400; the header
+  comment); docs/INTERFACE.md (Color's wording; state layers in the Material 3 table).
+- **Nature of Contribution**: Code and documentation. Verified: in Chromium and WebKit the painted
+  color of a solid button, an outlined button and a menu entry darkens or veils on hover and
+  more on press, a link-like button does not, and labels compute at 400; tools/check.sh shows
+  only the four known local failures.
+- **Human Review Status**: Pending review
+- **Git Hash**:

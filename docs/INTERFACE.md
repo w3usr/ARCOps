@@ -199,8 +199,8 @@ page already does without it.
 
 ## Color
 
-The club's color marks **what can be acted on**: buttons, links, the active menu entry, and a
-button under the pointer. Everything else stands on white paper and one neutral surface
+The club's color marks **what can be acted on**: buttons, links, and the active menu entry; a
+control under the pointer takes a veil of its own color. Everything else stands on white paper and one neutral surface
 (`--surface`, `#f4f4f6`), never tinted from the club's color (SK, 2026-10-30, #160). A club
 whose color happens to be the one a design system ships as its default then still looks like
 itself rather than like the template.
@@ -265,13 +265,14 @@ used (technical addendum A8). Its roles, by our names:
 | Material 3 | Here |
 |---|---|
 | primary, on-primary | `--accent`, `--accent-fg`: buttons, links |
-| primary container, on-primary container | `--accent-soft`, `--accent-soft-fg`: the active menu entry, a button under the pointer |
+| primary container, on-primary container | `--accent-soft`, `--accent-soft-fg`: the active menu entry |
 | surface, surface container | `--bg` (paper), `--surface`: neutral, never mixed with the club's color |
 | outline | `--line` |
 | error | `--bad`; success and warning are ours, `--ok` and `--warn` |
 | headline, title, body large, body, body small and label | `--t-h1`, `--t-h2`, `--t-lede`, `--t-body`, `--t-small` (label and body small share it) |
 | corner small, medium, large | `--r-field`, `--r-button`, `--r-card` |
 | filled, outlined and text buttons | a plain `button`, `button.secondary`, `.linklike`; no tonal or elevated buttons |
+| state layers | a veil of the control's own text color: 8% under the pointer, 10% focused or pressed; CSS only. Focus also keeps its ring and halo; a `.linklike` in a line of text underlines instead |
 
 The primary roles are mixed from the club's color with `color-mix(in oklab, …)`, in light and
 dark. `apps/ops/config.py` makes the same mixes and refuses a club color under which any text

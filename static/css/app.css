@@ -8,7 +8,7 @@
 
   Color: --brand is the club's color, set inline by base.html from club.yaml (TR-40); the
   default below is the application's own. It marks what can be acted on: actions, links, the
-  active menu entry, and a button's hover (--accent-soft). Everything else stands on white
+  active menu entry (--accent-soft). Everything else stands on white
   paper and one neutral --surface, never tinted from the club's color (docs/INTERFACE.md,
   "Color"). The one club-colored panel is the sign-in page's; in dark mode it stays a
   background and a lightened mix of the brand becomes the text and link color, so contrast
@@ -121,7 +121,6 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
   background: none; border: 0; width: 100%; text-align: left; cursor: pointer;
 }
 .navlist a .icon, .navbtn .icon, .whoami .icon { color: var(--muted); }
-.navlist a:hover, .navbtn:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
 .navlist a[aria-current="page"] { background: var(--accent-soft); color: var(--accent-soft-fg); font-weight: 700; }
 .navlist a[aria-current="page"] .icon { color: currentColor; }
 .navsep { height: 1px; background: var(--line); margin: .5rem .75rem; }
@@ -138,7 +137,6 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .whoami span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidenav-foot form { margin: 0; }
 .iconbtn { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--r-button); background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; }
-.iconbtn:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
 .only-drawer { display: none; }
 
 /* Rail: labels stay in the accessibility tree, hidden visually. */
@@ -308,12 +306,19 @@ button, .button {
   background: var(--accent); color: var(--accent-fg); border: 0; border-radius: var(--r-button);
   padding: .6rem 1.1rem; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block;
 }
-button:hover, .button:hover { filter: brightness(1.08); }
+/* State layers (Material 3): a veil of the control's own text color over its fill, 8% under the
+   pointer and 10% focused or pressed, the same on every kind of control and with no JavaScript.
+   A link-like button in a line of text keeps its underline instead. */
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button):hover {
+  background-image: linear-gradient(color-mix(in srgb, currentColor 8%, transparent) 0 0);
+}
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button):is(:focus-visible, :active) {
+  background-image: linear-gradient(color-mix(in srgb, currentColor 10%, transparent) 0 0);
+}
 /* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
    (Members, Member roster; SK, 2026-10-22). */
 a.button { margin-block: .25rem; }
 button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-button.secondary:hover { background: var(--accent-soft); filter: none; }
 button.big { font-size: var(--t-h2); padding: 1rem 2rem; width: 100%; }
 button.wide, .button.wide { width: 100%; display: block; text-align: center; box-sizing: border-box; }
 /* Controls on the library's own pages sit next to each other with no wrapper of their own. */
@@ -343,7 +348,7 @@ select:not([multiple]) {
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; transition: opacity 200ms ease-in; }
 input[type="checkbox"], input[type="radio"] { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); margin: 0; }
 form > div { margin: .75rem 0; }
-form label, .field label { display: block; font-weight: 700; margin-bottom: .25rem; }
+form label, .field label { display: block; font-weight: 400; margin-bottom: .25rem; }  /* a label is read, not shouted (#160) */
 .stack { display: flex; flex-direction: column; gap: .9rem; }
 .stack > div, .stack > fieldset { margin: 0; }
 .field { min-width: 0; }
@@ -419,7 +424,6 @@ label .req { margin-left: .15rem; }
 .searchrow > input[type="search"] { max-width: 24rem; flex: 1 1 14rem; }
 .directory { columns: 14rem; list-style: none; padding: 0; } .directory li { padding: .25rem 0; break-inside: avoid; }
 button.danger { background: var(--bad); color: var(--bad-fg); }
-button.danger:hover { filter: brightness(1.1); }
 a.button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 .captain-actions { display: block; margin-top: .25rem; font-size: var(--t-small); }
 .captain-actions .linklike { margin-right: .5rem; }
@@ -484,7 +488,6 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .r-cell > input[type="checkbox"] { position: absolute; left: .6rem; top: .7rem; z-index: 1; }
 .roster .slot-link { display: flex; flex-direction: column; gap: .15rem; padding: .5rem .75rem .5rem 2.3rem; min-height: 3.4rem; color: inherit; text-decoration: none; border-left: 4px solid transparent; }
 .roster.noselect .slot-link { padding-left: .75rem; }  /* no tick-box to make room for */
-.roster .slot-link:hover { background: color-mix(in srgb, var(--fg) 4%, transparent); }
 .roster .tone-open .slot-link { border-left-color: var(--accent); }
 .roster .tone-ok .slot-link { border-left-color: var(--ok); }
 .roster .tone-warn .slot-link { border-left-color: var(--warn); }
@@ -582,7 +585,6 @@ pre { overflow-x: auto; max-width: 100%; }
   width: auto;
 }
 .tag-button.warn { background: var(--tag-warn); border-color: var(--warn); }
-.tag-button:hover { filter: brightness(.96); }
 /* One address per block: the address, then what it does in words, then the actions. The row
    of badges, buttons, and links that used to follow each address read as noise. */
 .addresses-list { list-style: none; padding-left: 0; }
