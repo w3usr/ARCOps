@@ -4197,4 +4197,4 @@ carries the actual running model ID.
   the files match the upstream repository's blob hashes; tools/check.sh shows only the four
   known local failures; before and after contact sheets of every page compared by eye.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: f85f1d5
