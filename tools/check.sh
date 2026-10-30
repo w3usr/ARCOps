@@ -24,9 +24,6 @@ for g in check_club_neutral check_no_requirement_ids check_interface; do
     bash "tools/$g.sh" || fail=1
 done
 
-step "build.css is what its sources make"
-bash tools/tailwind.sh --check || fail=1
-
 step "The club's own words for a dependency's strings"
 $PY/python manage.py compile_locale --settings=config.settings.test || fail=1
 

@@ -745,7 +745,6 @@ in the configuration would then reach a server only through the interface or a m
 **Decided by** SK, 2026-10-26, choosing between those two options. *Record:*
 `notes/2026-10-26_milestone-3-reconciliation.md`.
 
-
 ### A7. TR-4: htmx adopted, and how it is configured
 
 **Original (TR-4).** "**Front end: server-rendered Django templates, progressively enhanced with
@@ -771,43 +770,7 @@ service worker caches htmx with the rest of the shell.
 
 **Decided by** SK, 2026-10-23. *Record:* issue #137 in the private repository.
 
-### A8. TR-5: Tailwind CSS adopted for utility classes, beside the existing stylesheet
-
-**Original (TR-5).** "**CSS: a small semantic base stylesheet plus project CSS**, with color
-tokens and a dark mode; the base is Pico CSS (MIT) or equivalent classless framework. *Why:*
-accessible defaults for forms and tables out of the box; no utility-class build step."
-
-**Decision.** Tailwind CSS 4.3.3 (MIT) supplies utility classes, built by its standalone
-executable (no Node), which `tools/tailwind.sh` downloads pinned to that release and checks
-against the release's SHA-256 before running. This supersedes TR-5's "no utility-class build
-step", and SK's choice of 2026-10-28 to stay without one. Pico was never adopted; the base is
-still `app.css`. Asked why: "i'd like to have a form of css framework to make it easier build
-and polish the ui easier and more consistently" (SK, 2026-10-30).
-
-- **Incremental** (SK's choice): `app.css` stays, as the `components` cascade layer, and
-  Tailwind's utilities sit in the `utilities` layer above it, so a utility on an element wins.
-  Pages move to utilities as each is polished. Preflight, Tailwind's reset, is not used.
-- **The built file is committed** (SK's choice): `static/css/build.css`, from
-  `static/css/tailwind.css`. The server and the deploy build nothing; CI and `tools/check.sh`
-  rebuild it and fail when the committed file differs.
-- **Every utility carries the `tw:` prefix** (`tw:flex`, `tw:sm:p-s2`): `app.css` already has
-  `.inline`, `.hidden`, `.outline`, `.collapse`, `.table` and others, and an unprefixed utility
-  of the same name would override them.
-- **`app.css` is linked as written, not run through Tailwind**: its optimizer gives each
-  `color-mix()` a fallback of its first color, which in a browser without `color-mix` would
-  paint the sidebar's faint hover in the text color.
-- **The theme is `app.css`'s tokens only.** Tailwind's default colors, type sizes, radii and
-  shadows are cleared; `tw:bg-brand`, `tw:text-h2`, `tw:p-s3` and the breakpoints `sm` (40rem)
-  and `lg` (60rem) resolve to the same variables `app.css` uses, so the club's color from
-  `club.yaml` and dark mode follow without a `dark:` variant.
-
-Checked before adopting: a utility overrides a rule in `app.css` in Chromium and WebKit, the
-theme tokens resolve to the runtime club color, and the accessibility sweep and the application
-tests pass unchanged with `app.css` in its layer.
-
-**Decided by** SK, 2026-10-30. *Record:* the private repository's notes of 2026-10-30.
-
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7) and 2026-10-30 (A8), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6) and 2026-10-28 (A7), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

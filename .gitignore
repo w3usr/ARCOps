@@ -80,6 +80,3 @@ club/
 backup/
 # Compiled message catalogues: built from the .po by manage.py compile_locale
 *.mo
-
-# The pinned Tailwind executable tools/tailwind.sh downloads
-tools/bin/

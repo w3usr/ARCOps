@@ -4170,3 +4170,15 @@ carries the actual running model ID.
   (Firefox does not launch here; the PDF test passes run directly).
 - **Human Review Status**: Pending review
 - **Git Hash**: 2fc63e7
+
+## [2026-10-30 13:35 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Revert the Tailwind adoption (2fc63e7, f4785ec) at SK's direction: the
+  interface stays on its own hand-written stylesheet, with no CSS framework.
+- **Sections/Files Affected**: every file 2fc63e7 touched, back to c7fb55e (technical addendum A8
+  removed before it was ever pushed; app.css out of its layer; build.css, tailwind.css and
+  tools/tailwind.sh deleted). This log keeps the entry recording the adoption.
+- **Nature of Contribution**: Revert (git revert, not a reset); the tree checked identical to
+  c7fb55e apart from this log.
+- **Human Review Status**: Pending review
+- **Git Hash**:

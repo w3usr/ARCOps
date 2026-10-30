@@ -21,8 +21,6 @@ jobs:
         run: bash tools/check_no_requirement_ids.sh
       - name: Interface house rules (docs/INTERFACE.md)
         run: bash tools/check_interface.sh
-      - name: build.css is what its sources make (technical addendum A8)
-        run: bash tools/tailwind.sh --check
       - name: The club's own words for a dependency's strings (TR-45), as tools/check.sh and the deploy build them
         run: python manage.py compile_locale --settings=config.settings.test
       - name: Tests
