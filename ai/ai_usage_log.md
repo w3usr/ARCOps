@@ -4330,4 +4330,4 @@ carries the actual running model ID.
   Verified: tools/check.sh shows only the four known local failures; scenario scripts T06, T08,
   T11 to T13, T34, T38 and T46 pass locally after following the wording; contact sheet compared.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 3c96e30
