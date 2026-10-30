@@ -4169,4 +4169,4 @@ carries the actual running model ID.
   tokens in Chromium and WebKit; tools/check.sh shows only the four known local failures
   (Firefox does not launch here; the PDF test passes run directly).
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 2fc63e7
