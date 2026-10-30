@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import connection
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -10,7 +11,8 @@ from django.utils import timezone
 
 from apps.comms.categories import BANNER
 from apps.comms.models import Outbox
-from apps.events.models import Event, SignUp
+from apps.events.models import Event, SignUp, Slot
+from apps.events.services.roster import coverage
 from apps.events.services.viability import checkin_window_open
 
 from . import jobs
@@ -77,11 +79,45 @@ def dashboard(request):
         )
         .order_by("slot__start")[:10]
     )
+    # Home opens on what you do next (#162): your next slot, with the one thing to do about it
+    # now, and the rest after it.
+    my_signups = list(my_signups)
+    next_signup, other_signups = (my_signups[0], my_signups[1:]) if my_signups else (None, [])
+    next_action = None
+    if next_signup and not next_signup.checked_in_at:
+        if checkin_window_open(next_signup.slot, now):
+            next_action = "check_in"
+        elif not next_signup.confirmed_at:
+            next_action = "confirm"
     checkin_ready = [
-        s for s in my_signups if checkin_window_open(s.slot, now) and not s.checked_in_at
+        s for s in other_signups if checkin_window_open(s.slot, now) and not s.checked_in_at
     ]
-    upcoming_events = Event.objects.filter(state__in=["published", "locked"]).order_by("id")[:10]
-    upcoming_events = [e for e in upcoming_events if e.ends_at() and e.ends_at() >= now]
+    upcoming_events = Event.objects.filter(
+        state__in=["published", "locked"], display_only=False
+    ).order_by("id")[:10]
+    upcoming_events = sorted(
+        (e for e in upcoming_events if e.ends_at() and e.ends_at() >= now),
+        key=lambda e: e.starts_at() or now,
+    )
+    # Open slots, as the roster counts them (setup and teardown too, as on the event's own page):
+    # nobody in them, not closed, in an event still taking sign-ups. One query for every event.
+    open_by_event = dict(
+        Slot.objects.filter(
+            position__location__event__in=[e for e in upcoming_events if e.state == "published"],
+            cancelled=False,
+            closed=False,
+            signups__isnull=True,
+        )
+        .values_list("position__location__event")
+        .annotate(n=Count("id"))
+        .order_by()
+    )
+    upcoming = [(e, open_by_event.get(e.pk, 0)) for e in upcoming_events]
+    # Nobody signed up: the next event with open hours, offered rather than an empty list.
+    invite = next(((e, n) for e, n in upcoming if n), None) if not my_signups else None
+    # A captain or officer also sees the next event they run, and its gaps.
+    runs = next((e for e in upcoming_events if request.user.can_captain(e)), None)
+    gaps = (runs, coverage(runs, now)) if runs else None
     pending = []
     if request.user.may("view_member_records"):
         from apps.accounts.entry import pending_review
@@ -113,9 +149,14 @@ def dashboard(request):
         request,
         "ops/dashboard.html",
         {
-            "my_signups": my_signups,
+            "now": now,
+            "next_signup": next_signup,
+            "next_action": next_action,
+            "other_signups": other_signups,
             "checkin_ready": checkin_ready,
-            "upcoming_events": upcoming_events,
+            "upcoming": upcoming,
+            "invite": invite,
+            "gaps": gaps,
             "pending_review": pending,
             "has_notices": bool(notice_categories),
             "banner_action": banner_action,

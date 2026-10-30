@@ -161,6 +161,52 @@ def _hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -> st
     return f"{text} {zone_label(start, zone)}"
 
 
+# How a cell's state is counted in the event's coverage: the words on the roster, in four piles.
+BUCKET = {
+    "open": "open",
+    "not_open": "open",
+    "covered": "covered",
+    "thin": "covered",
+    "low": "covered",
+    "full": "covered",
+    "needs": "needs",
+    "problem": "needs",
+    "closed": "closed",
+}
+
+
+def coverage(event: Event, now: datetime | None = None) -> dict:
+    """The roster's Coverage counts without the roster: how many slots are open, covered, need
+    someone, or closed, worded as a member reads the roster. Home shows it for the next event a
+    captain runs (#162)."""
+    now = now or timezone.now()
+    published = event.state == Event.State.PUBLISHED
+    locked = event.state == Event.State.LOCKED
+    counts = {"total": 0, "open": 0, "covered": 0, "needs": 0, "closed": 0}
+    slots = Slot.objects.filter(position__location__event=event, cancelled=False).prefetch_related(
+        "signups__user", "capacities"
+    )
+    for s in slots:
+        signups = list(s.signups.all())
+        taken: dict[str, int] = {}
+        for su in signups:
+            taken[su.role] = taken.get(su.role, 0) + 1
+        open_roles = [c.role for c in s.capacities.all() if taken.get(c.role, 0) < c.capacity]
+        shown = present(
+            s,
+            evaluate(s),
+            signups,
+            open_roles,
+            published=published,
+            is_captain=False,
+            now=now,
+            locked=locked,
+        )
+        counts["total"] += 1
+        counts[BUCKET[shown.key]] += 1
+    return counts
+
+
 def build(
     event: Event, viewer, lead: str = "local", now: datetime | None = None, filter: str = ""
 ) -> dict:
@@ -242,18 +288,7 @@ def build(
             else [],
         )
         counts["total"] += 1
-        bucket = {
-            "open": "open",
-            "not_open": "open",
-            "covered": "covered",
-            "thin": "covered",
-            "low": "covered",
-            "full": "covered",
-            "needs": "needs",
-            "problem": "needs",
-            "closed": "closed",
-        }[shown.key]
-        counts[bucket] += 1
+        counts[BUCKET[shown.key]] += 1
 
     layout = "grid" if 1 <= len(positions) <= GRID_MAX_POSITIONS else "list"
     pos_index = {p.pk: i for i, p in enumerate(positions)}

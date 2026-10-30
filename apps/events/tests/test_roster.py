@@ -465,3 +465,45 @@ def test_a_member_can_replace_a_calendar_address_that_has_leaked():
     assert Client().get(f"/events/feed/{old}.ics").status_code == 404, "the old one stops working"
     assert Client().get(f"/events/feed/{new}.ics").status_code == 200
     assert AuditLog.objects.filter(action="calendar.address_replaced").exists()
+
+
+# Home opens on what you do next (#162). The clock is a week before the event, as above.
+def _home(world, monkeypatch, who):
+    monkeypatch.setattr(
+        "django.utils.timezone.now", lambda: datetime(2026, 9, 19, 12, 0, tzinfo=UTC)
+    )
+    return _as(world[who])
+
+
+def test_home_offers_the_next_events_open_hours_to_somebody_signed_up_for_nothing(
+    world, monkeypatch
+):
+    body = _home(world, monkeypatch, "mem").get("/").content.decode()
+    assert "<h1>Pick your hours</h1>" in body
+    open_slots = Slot.objects.filter(position__location__event=world["ev"]).count()
+    assert f"{open_slots} open slots" in body  # every slot, setup too, as the roster counts
+    assert "Hello," not in body
+
+
+def test_home_leads_with_your_next_slot_and_the_one_thing_to_do_about_it(world, monkeypatch):
+    c = _home(world, monkeypatch, "mem")
+    first, later = Slot.objects.filter(position=world["run"], kind="operating").order_by("start")[
+        :2
+    ]
+    mine = SignUp.objects.create(slot=first, user=world["mem"], role="operator")
+    SignUp.objects.create(slot=later, user=world["mem"], role="operator")
+    body = c.get("/").content.decode()
+    assert "<h1>Your next slot</h1>" in body
+    assert "In 6\xa0days" in body and "Club station · Run · as Operator" in body
+    assert "Confirm you will be there" in body and "Your other slots" in body
+    c.post(f"/events/signup/{mine.pk}/confirm/")
+    body = c.get("/").content.decode()
+    assert "Confirm you will be there" not in body and '<span class="tag">confirmed</span>' in body
+
+
+def test_home_shows_a_captain_the_gaps_in_the_next_event_they_run(world, monkeypatch):
+    body = _home(world, monkeypatch, "off").get("/").content.decode()
+    assert "Gaps in RTTY" in body
+    open_slots = Slot.objects.filter(position__location__event=world["ev"]).count()
+    assert f"{open_slots} open slots" in body and f"{open_slots} open</span>" in body  # one count
+    assert "Gaps in" not in _home(world, monkeypatch, "mem").get("/").content.decode()

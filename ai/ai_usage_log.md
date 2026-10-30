@@ -4295,3 +4295,21 @@ carries the actual running model ID.
   profile 3060 to 2821 px); scenario scripts T06 40/0 and T07 61/0 locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: 738535d
+
+## [2026-10-30 15:30 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #162: Home opens on what you do next, for a member, a captain, and
+  somebody signed up for nothing; the greeting goes.
+- **Sections/Files Affected**: apps/ops/views.py (the next slot and its one action, the other
+  slots, open slots per upcoming event in one query, an invitation when you hold none, the next
+  event a captain runs with its coverage); templates/ops/dashboard.html; apps/events/services/
+  roster.py (the cell-to-count mapping at module level, and coverage(), the roster's counts
+  without building the roster); apps/events/tests/test_roster.py (three Home tests);
+  apps/accounts/tests/test_signin_messages.py (the sidebar, not a greeting, names you).
+- **Nature of Contribution**: Code and tests. Found on the contact sheet and fixed: the member's
+  open count left out setup slots, so the officer's Home showed 44 open beside 46; both now
+  count as the roster does, and a test holds them equal. Verified: application tests pass;
+  tools/check.sh shows only the known local Firefox failures; the scenario scripts T06, T11 to
+  T14 and T17 pass locally, T17 with its new step 4.
+- **Human Review Status**: Pending review
+- **Git Hash**:

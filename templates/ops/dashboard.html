@@ -2,9 +2,10 @@
 {% load times labels %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-{% comment %}The name the club knows you by, callsign and all (FR-67), rather than a first name
-on its own: the advisor, 2026-09-19, "It should say Hello, Kay N3KN".{% endcomment %}
-<h1>Hello, {{ user.short_name }}</h1>
+{% comment %}Home opens on what you do next (#162, SK): the heading says what the page shows.
+It replaces "Hello, <name> <callsign>" (the advisor, 2026-09-19, "It should say Hello, Kay
+N3KN"); the name and callsign stay at the foot of the sidebar, on every page.{% endcomment %}
+<h1>{% if next_signup %}Your next slot{% elif invite %}Pick your hours{% else %}Nothing on the schedule yet{% endif %}</h1>
 {% if user.is_provisional %}
 <section class="card" aria-labelledby="pv"><h2 id="pv">Your account is provisional</h2>
 <p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p></section>
@@ -30,6 +31,27 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
 </section>
 {% endif %}
 
+{% if next_signup %}{% with s=next_signup %}
+{% comment %}The page's main block: when, how long until then, where, as what, and the one thing
+to do about it now, the same actions as My Sked (FR-72, FR-113).{% endcomment %}
+<section class="card highlight next-slot" aria-labelledby="next">
+  <h2 id="next"><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a></h2>
+  <p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
+  <p><strong>{% if s.slot.start <= now %}On now{% else %}In {{ s.slot.start|timeuntil:now }}{% endif %}</strong> · {{ s.slot.position.location.name }} · {{ s.slot.position.name }} · as {{ s.role|role_label }}{% if s.checked_in_at %} <span class="tag ok">checked in</span>{% elif s.confirmed_at %} <span class="tag">confirmed</span>{% endif %}</p>
+  {% if minor_readonly %}<p class="muted">Your guardian or a captain confirms and checks you in.</p>
+  {% elif next_action == 'check_in' and s.user.under_18 %}<p><a href="{% url 'my_schedule' %}">Check in on My Sked</a>, naming who is with you.</p>
+  {% elif next_action == 'check_in' %}<form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}<button class="big" type="submit">Check in</button></form>
+  {% elif next_action == 'confirm' %}<form method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm you will be there</button></form>{% endif %}
+</section>
+{% endwith %}{% elif invite %}{% with e=invite.0 n=invite.1 %}
+<section class="card highlight" aria-labelledby="inv">
+  <h2 id="inv"><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></h2>
+  <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
+  <p>{{ n }} open slot{{ n|pluralize }}. Tick the hours you can do on the roster and sign up for them together.</p>
+  <p><a class="button" href="{% url 'event_detail' e.pk %}">Open the roster</a></p>
+</section>
+{% endwith %}{% endif %}
+
 {% if my_wards %}
 <section class="section" aria-labelledby="wd"><h2 id="wd">Members you act for</h2>
 <ul class="list">{% for w in my_wards %}<li>{{ w.full_name }} <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Act for {{ w.display_first }}</button></form></li>{% endfor %}</ul>
@@ -37,7 +59,7 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
 {% endif %}
 {% if checkin_ready %}
 <section class="card highlight" aria-labelledby="ci">
-  <h2 id="ci">You can check in now</h2>
+  <h2 id="ci">You can also check in now</h2>
   {% for s in checkin_ready %}
   <form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}
     <p>{{ s.slot.event.title }} · {{ s.slot.position }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
@@ -47,22 +69,37 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
 </section>
 {% endif %}
 
-<section aria-labelledby="mine">
-  <h2 id="mine">My next slots</h2>
-  {% if my_signups %}
+{% if other_signups %}
+<section class="section" aria-labelledby="mine">
+  <h2 id="mine">Your other slots</h2>
   <ul class="list">
-    {% for s in my_signups %}
+    {% for s in other_signups %}
     <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a> · {{ s.slot.position }} as {{ s.role|role_label }}<br>{% when s.slot.start s.slot.end s.slot.event %}
       {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
     {% endfor %}
   </ul>
-  {% else %}<p>You have no upcoming slots.</p>{% endif %}
+  <p><a href="{% url 'my_schedule' %}">My Sked</a></p>
 </section>
+{% endif %}
 
-<section aria-labelledby="up">
+{% if gaps %}{% with e=gaps.0 c=gaps.1 %}
+{% comment %}A captain or officer: the next event they run, and where it is short.{% endcomment %}
+<section class="section health" aria-labelledby="gp">
+  <h2 id="gp">Gaps in {{ e.title }}</h2>
+  <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
+  <p>{% if c.needs or c.open %}{{ c.total }} slot{{ c.total|pluralize }}:
+    {% if c.needs %}<span class="tag warn">{{ c.needs }} need someone</span>{% endif %}
+    {% if c.open %}<span class="tag open">{{ c.open }} open</span>{% endif %}
+    {% if c.covered %}<span class="tag ok">{{ c.covered }} covered</span>{% endif %}
+  {% else %}Every slot is covered.{% endif %}</p>
+  <p>{% if c.needs %}<a href="{% url 'event_detail' e.pk %}?filter=problems">See the slots that need someone</a> · {% endif %}<a href="{% url 'event_detail' e.pk %}">Open the roster</a></p>
+</section>
+{% endwith %}{% endif %}
+
+<section class="section" aria-labelledby="up">
   <h2 id="up">Upcoming events</h2>
-  {% if upcoming_events %}
-  <ul class="list">{% for e in upcoming_events %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.starts_at %}<br>{% when e.starts_at e.ends_at e year=True %}{% endif %}</li>{% endfor %}</ul>
+  {% if upcoming %}
+  <ul class="list">{% for e, n in upcoming %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if n %} · {{ n }} open slot{{ n|pluralize }}{% endif %}{% if e.starts_at %}<br>{% when e.starts_at e.ends_at e year=True %}{% endif %}</li>{% endfor %}</ul>
   {% else %}<p>Nothing published yet.</p>{% endif %}
   <p><a href="{% url 'event_list' %}">See all events</a></p>
 </section>
