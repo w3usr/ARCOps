@@ -7,7 +7,7 @@
 see the application as a member or an officer sees it. Moving up a level asks you to confirm it
 is you, by password or by passkey, unless you did so a moment ago; moving down never does.</p>
 
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="section stack">{% csrf_token %}
   {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
   <fieldset>
     <legend>Choose a level</legend>

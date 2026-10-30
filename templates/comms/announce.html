@@ -9,7 +9,7 @@
 <p>{% if event %}Everyone signed up for a slot still to come, or a smaller group if you narrow it below.{% else %}Every active member, or a smaller group if you narrow it below. An account that is closed, suspended or archived is not written to.{% endif %} Replies come to you{% if event %}, to the captains,{% endif %} and to the club address.</p>
 
 {% comment %}Recount is deliberately the first submit button in the form, so pressing Enter in the subject field counts again rather than sending to everybody.{% endcomment %}
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="section stack">{% csrf_token %}
   {{ form.non_field_errors }}
   <fieldset><legend>Who gets it</legend>
     <div class="row">

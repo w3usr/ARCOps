@@ -7,7 +7,7 @@
 <p>A value changed here stays changed when the configuration file is imported again, unless that import is told to reset. Every change is recorded with your name against it.</p>
 <form method="post" class="stack" enctype="multipart/form-data">{% csrf_token %}
 {% for label, rows in groups %}
-<section class="card" aria-labelledby="g{{ forloop.counter }}"><h2 id="g{{ forloop.counter }}">{{ label }}</h2>
+<section class="section" aria-labelledby="g{{ forloop.counter }}"><h2 id="g{{ forloop.counter }}">{{ label }}</h2>
   {% for r in rows %}
   <div class="field{% if r.error %} haserror{% endif %}"><label for="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">{{ r.label }}{% if r.interface %} <span class="tag">edited here</span>{% endif %}</label>
     <span class="helptext">{% if r.help %}{{ r.help }} {% endif %}<code class="settingkey">{{ r.key }}</code></span>
@@ -25,7 +25,7 @@
   {% endfor %}
 </section>
 {% endfor %}
-<section class="card" aria-labelledby="pn"><h2 id="pn">Privacy notice</h2>
+<section class="section" aria-labelledby="pn"><h2 id="pn">Privacy notice</h2>
   <p class="helptext">Shown at <a href="{% url 'privacy' %}">/privacy/</a> and linked from every page. The advisor approves the text.</p>
   <textarea id="privacy_notice_html" name="privacy_notice_html" class="tinymce" data-mce-conf="{{ mce_conf }}">{{ privacy_html }}</textarea>
 </section>

@@ -14,7 +14,7 @@
 <div class="field"><label for="txt">Ready-to-send text</label><textarea id="txt" rows="7" readonly>{{ created_text }}</textarea> <button type="button" class="secondary" data-copy="#txt">Copy text</button></div>
 </section>
 {% endif %}
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="section stack">{% csrf_token %}
   {{ form.non_field_errors }}
   <div class="field">{{ form.email.label_tag }}{{ form.email }}<span class="helptext">{{ form.email.help_text }}</span>{{ form.email.errors }}</div>
   <div class="field">{{ form.category.label_tag }}{{ form.category }}{{ form.category.errors }}</div>

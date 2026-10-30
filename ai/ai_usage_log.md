@@ -4229,3 +4229,21 @@ carries the actual running model ID.
   launch on this Mac; CI runs it); contact sheets before and after compared by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8de7dea
+
+## [2026-10-30 14:25 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #160's shape: corners by hierarchy, and a card only for a thing that
+  stands on its own; every other part of a page a section under a rule.
+- **Sections/Files Affected**: static/css/app.css (--radius replaced by --r-field 4px,
+  --r-button 6px, --r-card 8px across 22 rules, the pill tag-button squared; .section, sharing
+  the card's first- and last-line rules); 42 sections in 20 templates moved from .card to
+  .section (Manage, the event page, single-form pages, Settings, Status and others; the
+  profile pages are left for #146); tools/check_interface.sh (refuses any other radius);
+  tools/a11y/test_card_spacing.py (measures sections too); docs/INTERFACE.md ("Shape").
+- **Nature of Contribution**: Code, a classification of the 81 cards by #160's rule (kept:
+  list items, highlighted results and notices, the Captain card, the Danger zone, the message
+  preview), a guard, docs. Verified: the guard fails a 999px radius; application tests pass;
+  the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs
+  it); contact sheets before and after compared by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**:

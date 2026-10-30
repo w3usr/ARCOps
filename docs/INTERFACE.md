@@ -240,6 +240,23 @@ One family, served from this site: **Atkinson Hyperlegible Next**, in two weight
   Nothing is set in capitals to look like a label: a group in the sidebar is named in small
   bold words, as written. `tools/check_interface.sh` refuses any other size or weight.
 
+## Shape
+
+**Corners by hierarchy** (SK, 2026-10-30, #160): the smaller and more numerous a thing, the
+squarer it is. `tools/check_interface.sh` refuses any other radius.
+
+| Token | Radius | For |
+|---|---|---|
+| `--r-field` | 4 px | a field, a select, a tag, a slot's state |
+| `--r-button` | 6 px | a button, a menu entry, a toggle; never a pill |
+| `--r-card` | 8 px | a card, a message, a banner, the roster, a dialog |
+
+**A card is a thing that stands on its own**: a message, an announcement, an agreement, an event
+in a list, a result to copy (a new link, a new invitation), the slot's **Captain** controls, the
+**Danger zone**. Everything else is a **section**: its heading and what is under it on the page
+itself, with a rule above the next one (`class="section"`). A page that is all cards reads as a
+template, and a card around a whole page's form frames nothing.
+
 ## Tables
 
 Every `<td>` carries `data-label` with its column's name, because under 40rem the header row is

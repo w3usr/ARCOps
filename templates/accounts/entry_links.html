@@ -10,7 +10,7 @@
 <p class="helptext">{% if created.kind == 'class' %}Only {{ created.required_domain }} addresses can use it; each person is a member as soon as they finish the form and has {{ verification_days }} days to confirm their address.{% else %}Anyone can use it; each person is provisional until an officer admits them.{% endif %} Expires {{ created.expires_at|date:"d M Y" }}{% if created.cap %}; at most {{ created.cap }} accounts{% endif %}.</p>
 </section>
 {% endif %}
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="section stack">{% csrf_token %}
   {{ form.non_field_errors }}
   {% for f in form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}
   <div><button type="submit">Create link</button></div>

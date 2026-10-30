@@ -1,4 +1,5 @@
-"""A card's first and last lines sit at its padding, with no margin added above or below.
+"""A card's first and last lines sit at its padding, with no margin added above or below; so do
+a section's, which shares the rule (#160).
 
 Found on the contact sheet (2026-10-23): on your profile the Email card had visibly more space
 under its last line than the License card. Measured in a real browser, because the space is a
@@ -15,7 +16,7 @@ from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 # its text and controls, the leaves, so a list item's own padding counts as space too. Text is
 # measured itself, since a paragraph's last line can run on past its last link. What is inside a
 # closed <details> is not drawn, apart from its summary.
-EXTRA = """() => [...document.querySelectorAll('.card')].filter(c => c.offsetParent).map(c => {
+EXTRA = """() => [...document.querySelectorAll('.card, .section')].filter(c => c.offsetParent).map(c => {
     const cs = getComputedStyle(c), box = c.getBoundingClientRect();
     let top = box.bottom, bottom = box.top;
     const reach = r => { if (r.height) { top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom); } };
@@ -58,7 +59,7 @@ def test_a_card_begins_and_ends_with_its_padding(live_server, engine, role):
         for url in PAGES[role]:
             page.goto(f"{live_server.url}{url}")  # /me/ forwards to the member's own page
             cards = page.evaluate(EXTRA)
-            assert cards, f"{url} has cards"
+            assert cards, f"{url} has cards or sections"
             # An inline leaf (a <strong> in a line) sits a few pixels inside its line's height;
             # a margin or a list item's padding is 12 px or more.
             uneven += [(url, c) for c in cards if c["above"] > 4 or c["under"] > 4]

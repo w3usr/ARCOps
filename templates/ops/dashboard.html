@@ -31,7 +31,7 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
 {% endif %}
 
 {% if my_wards %}
-<section class="card" aria-labelledby="wd"><h2 id="wd">Members you act for</h2>
+<section class="section" aria-labelledby="wd"><h2 id="wd">Members you act for</h2>
 <ul class="list">{% for w in my_wards %}<li>{{ w.full_name }} <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Act for {{ w.display_first }}</button></form></li>{% endfor %}</ul>
 </section>
 {% endif %}

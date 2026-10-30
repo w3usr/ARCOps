@@ -5,7 +5,7 @@
 # data-label loses its meaning when the table stacks on a phone; a title attribute is invisible
 # on a phone and to the keyboard, so it is never the only explanation; an inline event handler
 # is dead under the content security policy; and a British spelling is not the house spelling.
-# A fifth keeps type to its five sizes and two weights.
+# A fifth keeps type to its five sizes and two weights, and corners to their three.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 python3 - <<'PY'
@@ -95,6 +95,9 @@ SIZE = re.compile(r"font-size:\s*([^;}]+)")
 WEIGHT = re.compile(r"font-weight:\s*([^;}]+)")
 SIZES = {f"var(--t-{t})" for t in ("small", "body", "lede", "h2", "h1")} | {"inherit"}
 WEIGHTS = {"400", "700", "inherit"}
+# Three corners by hierarchy (docs/INTERFACE.md, "Shape"), and a circle.
+RADIUS = re.compile(r"border-radius:\s*([^;}]+)")
+RADII = {f"var(--r-{t})" for t in ("field", "button", "card")} | {"50%"}
 for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates").rglob("*.html"))]:
     if "email" in path.parts or path.name.endswith("_pdf.html"):
         continue  # mail and PDFs have their own type; neither loads app.css
@@ -105,6 +108,9 @@ for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates
         for m in WEIGHT.finditer(line):
             if m.group(1).strip() not in WEIGHTS:
                 fail.append(f"{path}:{n}: font-weight {m.group(1).strip()}; the face has 400 and 700")
+        for m in RADIUS.finditer(line):
+            if m.group(1).strip() not in RADII:
+                fail.append(f"{path}:{n}: border-radius {m.group(1).strip()}; use var(--r-field|button|card), or 50% for a circle")
 
 for line in dict.fromkeys(fail):
     print(line)

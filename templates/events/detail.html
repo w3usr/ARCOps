@@ -25,14 +25,14 @@
 <div class="banner"><p><strong>Canceled.</strong> Kept for the record.</p></div>
 {% endif %}
 {% if event.display_only %}
-<section class="card"><h2>When</h2><p>{{ event.recurrence_text|default:"See the club's calendar." }}</p><p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
+<section class="section"><h2>When</h2><p>{{ event.recurrence_text|default:"See the club's calendar." }}</p><p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
 {% endif %}
 
 {% if event.description_html %}<div class="prose">{{ event.description_html|richtext }}</div>{% endif %}
-{% if contest %}<details class="card"><summary>Contest details</summary><dl class="dl">{% for label, value, kind in contest %}<dt>{{ label }}</dt><dd>{% if kind == 'url' %}<a href="{{ value }}">{{ value }}</a>{% elif kind == 'email' %}<a href="mailto:{{ value }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</dd>{% endfor %}</dl></details>{% endif %}
+{% if contest %}<details class="section"><summary>Contest details</summary><dl class="dl">{% for label, value, kind in contest %}<dt>{{ label }}</dt><dd>{% if kind == 'url' %}<a href="{{ value }}">{{ value }}</a>{% elif kind == 'email' %}<a href="mailto:{{ value }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</dd>{% endfor %}</dl></details>{% endif %}
 
 {% if is_captain %}
-<section class="card health" aria-labelledby="h">
+<section class="section health" aria-labelledby="h">
   <h2 id="h">Coverage</h2>
   <p>{{ roster.counts.total }} slot{{ roster.counts.total|pluralize }}:
     {% if roster.counts.covered %}<span class="tag ok">{{ roster.counts.covered }} covered</span>{% endif %}
@@ -114,7 +114,7 @@
 </div>{% endif %}
 </form>
 {% else %}
-{% if not event.display_only %}<section class="card"><h2>Roster</h2><p>{% if roster.filter == 'problems' %}Nothing needs attention. <a href="?">Show every slot.</a>{% else %}No slots yet.{% if is_captain %} <a href="{% url 'event_manage' event.pk %}">Add the location and generate the grid.</a>{% endif %}{% endif %}</p></section>{% endif %}
+{% if not event.display_only %}<section class="section"><h2>Roster</h2><p>{% if roster.filter == 'problems' %}Nothing needs attention. <a href="?">Show every slot.</a>{% else %}No slots yet.{% if is_captain %} <a href="{% url 'event_manage' event.pk %}">Add the location and generate the grid.</a>{% endif %}{% endif %}</p></section>{% endif %}
 {% endif %}
 
 {% if event.kbyg_html %}<section class="prose"><h2>Know before you go</h2>{{ event.kbyg_html|richtext }}</section>{% endif %}

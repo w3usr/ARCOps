@@ -36,7 +36,7 @@ level they are at. Changes here take effect at once and are written to the audit
 <div><button type="submit">Save the levels</button></div>
 </form>
 
-<section class="card" aria-labelledby="new"><h2 id="new">Add a level</h2>
+<section class="section" aria-labelledby="new"><h2 id="new">Add a level</h2>
 <p class="helptext">For a role this club has that the application does not know about: a station
 manager, an archivist, a safety officer. Give it a name, then tick what it may do.</p>
 <form method="post" class="row-form">{% csrf_token %}
@@ -47,7 +47,7 @@ manager, an archivist, a safety officer. Give it a name, then tick what it may d
 </form>
 </section>
 
-<section class="card" aria-labelledby="rm"><h2 id="rm">Remove a level</h2>
+<section class="section" aria-labelledby="rm"><h2 id="rm">Remove a level</h2>
 <ul class="list">
 {% for row in rows %}
   <li>{{ row.label }} <span class="muted">({{ row.members }} account{{ row.members|pluralize }})</span>

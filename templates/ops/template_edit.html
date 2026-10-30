@@ -6,7 +6,7 @@
 <p class="crumbs"><a href="{% url 'message_templates' %}">Messages</a> › {{ title }}</p>
 <h1>{{ title }}</h1>
 {% if audience %}<p class="lede">Sent to {{ audience }}.</p>{% endif %}
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="section stack">{% csrf_token %}
   {{ form.non_field_errors }}
   <div class="field">{{ form.subject.label_tag }}{{ form.subject }}{{ form.subject.errors }}</div>
   <div class="field">{{ form.body_html.label_tag }}{{ form.body_html }}{{ form.body_html.errors }}

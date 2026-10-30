@@ -22,7 +22,7 @@
 {% endif %}
 
 <div class="cols">
-<section class="card" aria-labelledby="det">
+<section class="section" aria-labelledby="det">
   <h2 id="det">Details</h2>
   <form method="post" class="stack">{% csrf_token %}
     {{ form.non_field_errors }}
@@ -32,7 +32,7 @@
 </section>
 
 <div class="stack">
-<section class="card" aria-labelledby="per">
+<section class="section" aria-labelledby="per">
   <h2 id="per">Operating periods</h2>
   <ul class="list">
     {% for p in periods %}<li>{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC
@@ -48,7 +48,7 @@
   </form>
 </section>
 
-<section class="card" aria-labelledby="loc">
+<section class="section" aria-labelledby="loc">
   <h2 id="loc">Locations and positions</h2>
   {% for l in locations %}
   <p><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %} · {{ l.address }}{% endif %}</p>
@@ -69,7 +69,7 @@
   </form>
 </section>
 
-<section class="card" aria-labelledby="cap">
+<section class="section" aria-labelledby="cap">
   <h2 id="cap">Captains</h2>
   <ul class="list">
     {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
@@ -89,7 +89,7 @@
 </div>
 </div>
 
-<section class="card" aria-labelledby="gen">
+<section class="section" aria-labelledby="gen">
   <h2 id="gen">Slots</h2>
   <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid can no longer be regenerated: add slots one at a time below, and close or cancel individual slots from the roster.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% endif %}</p>
   {% if not signups_exist %}
@@ -111,7 +111,7 @@
   {% endif %}
 </section>
 
-<section class="card" aria-labelledby="con">
+<section class="section" aria-labelledby="con">
   <h2 id="con">Contest details</h2>
   <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorized. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
   <form method="post" action="{% url 'contest_save' event.pk %}" class="stack">{% csrf_token %}
@@ -123,12 +123,12 @@
   </form>
 </section>
 
-<section class="card" aria-labelledby="ann">
+<section class="section" aria-labelledby="ann">
   <h2 id="ann">Announce</h2>
   <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation.</span></p>
 </section>
 
-<section class="card" aria-labelledby="lim">
+<section class="section" aria-labelledby="lim">
   <h2 id="lim">Operating limits</h2>
   <p class="helptext">Advisory: the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
   <form method="post" action="{% url 'limits_save' event.pk %}" class="stack">{% csrf_token %}
@@ -138,7 +138,7 @@
   {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total|floatformat:"-1" }} h{% if limits.total_limit %} of {{ limits.total_limit|floatformat:"-1" }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}
 </section>
 
-<section class="card" aria-labelledby="who">
+<section class="section" aria-labelledby="who">
   <h2 id="who">Who may sign up</h2>
   <p class="helptext">Per role. Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing. A slot can override this from its own page.</p>
   <form method="post" action="{% url 'eligibility_save' event.pk %}" class="stack">{% csrf_token %}
@@ -157,7 +157,7 @@
   </form>
 </section>
 
-<section class="card" aria-labelledby="opn">
+<section class="section" aria-labelledby="opn">
   <h2 id="opn">Openings</h2>
   <p class="helptext">When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
   {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %} · announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
@@ -173,7 +173,7 @@
   </form>
 </section>
 
-<section class="card" aria-labelledby="st">
+<section class="section" aria-labelledby="st">
   <h2 id="st">Status</h2>
   <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
   <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p>
@@ -184,7 +184,7 @@
   </form>
 </section>
 
-<section class="card" aria-labelledby="more">
+<section class="section" aria-labelledby="more">
   <h2 id="more">Another copy</h2>
   <p class="helptext">A draft copy with the same periods, locations, and slot grid, and nobody signed up. For next year's running, or a similar event.</p>
   <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button></form>

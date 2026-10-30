@@ -5,7 +5,7 @@
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
 <h1>New event</h1>
 <p>It starts as a draft only officers and captains can see. Add the location and generate the slots on the next page, then publish when it is ready.</p>
-<form method="post" class="card stack">{% csrf_token %}
+<form method="post" class="section stack">{% csrf_token %}
   {{ form.non_field_errors }}{{ period.non_field_errors }}
   {% for f in form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}
   <fieldset>

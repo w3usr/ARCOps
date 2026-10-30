@@ -36,7 +36,9 @@
      holds against the brand-colored panels. */
   --focus: #9a6700; --focus-halo: #ffffff;
   --tag-ok: #d8f0e0; --tag-warn: #fff1cc; --tag-bad: #fbdada;
-  --radius: .6rem;
+  /* Shape by hierarchy: the smaller and more numerous a thing, the squarer it is. A field or a
+     tag, a button, and a card or anything else that stands on its own. */
+  --r-field: 4px; --r-button: 6px; --r-card: 8px;
   /* Four steps of space and five of type. Pick from these; a page that needs a sixth size
      usually needs a different structure instead. */
   --s1: .35rem; --s2: .75rem; --s3: 1.25rem; --s4: 2rem;
@@ -114,7 +116,7 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .navlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .125rem; }
 .navlist a, .navbtn {
   display: flex; align-items: center; gap: .75rem;
-  padding: .55rem .75rem; border-radius: var(--radius);
+  padding: .55rem .75rem; border-radius: var(--r-button);
   color: var(--fg); text-decoration: none; font: inherit; font-weight: 400;
   background: none; border: 0; width: 100%; text-align: left; cursor: pointer;
 }
@@ -135,7 +137,7 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .whoami { display: flex; align-items: center; gap: .75rem; margin: 0; padding: .4rem .75rem; color: var(--muted); font-size: var(--t-small); min-width: 0; }
 .whoami span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidenav-foot form { margin: 0; }
-.iconbtn { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--radius); background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; }
+.iconbtn { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--r-button); background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; }
 .iconbtn:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
 .only-drawer { display: none; }
 
@@ -156,7 +158,7 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
 .filter { position: relative; }
 .filter > summary {
   list-style: none; cursor: pointer; white-space: nowrap;
-  border: 1px solid var(--line); border-radius: var(--radius);
+  border: 1px solid var(--line); border-radius: var(--r-button);
   padding: .45rem 2rem .45rem .7rem; background: var(--bg);
 }
 .filter > summary::-webkit-details-marker { display: none; }
@@ -166,7 +168,7 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
 .filter[open] > summary { border-color: var(--accent); }
 .filter > fieldset {
   position: absolute; z-index: 20; top: calc(100% + .25rem); left: 0; min-width: 100%;
-  border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg);
+  border: 1px solid var(--line); border-radius: var(--r-card); background: var(--bg);
   padding: .5rem .7rem; box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .12); margin: 0;
   /* As wide as its longest label, and every row starting at the same edge: the panel sits in a
      flex row, and without saying so its rows were ragged down the right (NAF, 2026-09-19). */
@@ -263,15 +265,20 @@ footer.site .credit { font-size: var(--t-small); color: var(--muted); margin-top
 footer.site .credit a { color: inherit; }
 
 /* --------------------------------------------------------- components */
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; margin: 1rem 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 1.25rem; margin: 1rem 0; }
 .card.highlight { border-color: var(--accent); }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
-.card > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
-.card > :last-child { margin-bottom: 0; }  /* the card's padding is the space under it */
+/* A part of a page: its heading and what is under it, on the page itself, with a rule above
+   the next part. A card is only for a thing that stands on its own, such as a message or an
+   event in a list (docs/INTERFACE.md, "Shape"). */
+.section { margin: 0; padding: var(--s3) 0; }
+.section + .section { border-top: 1px solid var(--line); }
+:is(.card, .section) > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
+:is(.card, .section) > :last-child { margin-bottom: 0; }  /* the padding is the space under it */
 /* ...and a margin one level down collapses through its parent into that space: a table in its
    wrapper, the last line of a message, the last paragraph of rich text. */
-.card > .table-wrap:last-child > .table, .card > details:last-child > :last-child,
-.card .prose:last-child > :last-child { margin-bottom: 0; }
+:is(.card, .section) > .table-wrap:last-child > .table, :is(.card, .section) > details:last-child > :last-child,
+:is(.card, .section) .prose:last-child > :last-child { margin-bottom: 0; }
 .list { padding-left: 1.25rem; } .list li { margin: .25rem 0; }
 .table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
 .table th, .table td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -281,11 +288,11 @@ footer.site .credit a { color: inherit; }
 .roster tr.st-viable th { border-left: 4px solid var(--ok); }
 .roster tr.st-empty th { border-left: 4px solid var(--line); }
 .status { font-weight: 700; } .status.viable { color: var(--ok); } .status.at_risk { color: var(--warn); } .status.not_viable { color: var(--bad); }
-.tag { display: inline-block; font-size: var(--t-small); padding: 0 .45rem; border-radius: .3rem; background: var(--surface); border: 1px solid var(--line); }
+.tag { display: inline-block; font-size: var(--t-small); padding: 0 .45rem; border-radius: var(--r-field); background: var(--surface); border: 1px solid var(--line); }
 .tag.ok { background: var(--tag-ok); } .tag.warn { background: var(--tag-warn); } .tag.bad { background: var(--tag-bad); } .tag.note { background: var(--tag-warn); }
 .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
 .messages:focus { outline: none; }
-.msg { padding: .65rem .9rem; border-radius: var(--radius); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--surface); }
+.msg { padding: .65rem .9rem; border-radius: var(--r-card); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--surface); }
 .msg .lvl { font-weight: 700; }
 /* Four levels, each with a word and a tint. Color never carries the meaning alone (FR-62). */
 .msg.success { border-left-color: var(--ok); background: var(--tag-ok); border-color: var(--ok); }
@@ -298,7 +305,7 @@ footer.site .credit a { color: inherit; }
 
 /* ------------------------------------------------------------- forms */
 button, .button {
-  background: var(--accent); color: var(--accent-fg); border: 0; border-radius: var(--radius);
+  background: var(--accent); color: var(--accent-fg); border: 0; border-radius: var(--r-button);
   padding: .6rem 1.1rem; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block;
 }
 button:hover, .button:hover { filter: brightness(1.08); }
@@ -317,7 +324,7 @@ button.wide, .button.wide { width: 100%; display: block; text-align: center; box
 button.linklike.danger, .linklike.danger { background: none; color: var(--bad); padding: 0; font-weight: inherit; text-decoration: underline; }
 button.linklike.danger:hover, .linklike.danger:hover { background: none; filter: none; text-decoration: underline; }
 input, select, textarea {
-  font: inherit; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: var(--radius);
+  font: inherit; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: var(--r-field);
   background: var(--bg); color: var(--fg); width: 100%; max-width: 28rem;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); outline-color: var(--focus); }
@@ -355,7 +362,7 @@ form label, .field label { display: block; font-weight: 700; margin-bottom: .25r
 .row > .field > .check:only-child { margin-top: 1.7rem; }
 /* A row-level action after an item in a list needs air, or "Run Remove" reads as one phrase. */
 .list > li > form.inline { margin-left: .5rem; }
-fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: .75rem 1rem 1rem; margin: 0; }
+fieldset { border: 1px solid var(--line); border-radius: var(--r-card); padding: .75rem 1rem 1rem; margin: 0; }
 legend { font-weight: 700; padding: 0 .35rem; }
 fieldset .helptext { margin-top: 0; }
 .addresses .addr { display: grid; grid-template-columns: minmax(0, 28rem) auto; gap: .5rem 1rem; align-items: end; margin-top: .75rem; }
@@ -387,7 +394,7 @@ label .req { margin-left: .15rem; }
   .table, .table thead, .table tbody,
   .table tr, .table th, .table td { display: block; }
   .table thead { position: absolute; left: -999px; }
-  .table tr { border: 1px solid var(--line); border-radius: var(--radius); margin: .5rem 0; padding: .25rem; }
+  .table tr { border: 1px solid var(--line); border-radius: var(--r-card); margin: .5rem 0; padding: .25rem; }
   .table td, .table th { border: 0; padding: .25rem .5rem; }
   /* Stacked, a cell has lost its column heading. data-label puts it back; a table with a
      header row and no data-label is unreadable here, which is what tools/check_interface.sh
@@ -421,7 +428,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 /* ------------------------------------------------------------ roster */
 .when { margin: 0 0 .25rem; font-size: var(--t-lede); }
 .lede { font-size: var(--t-lede); }
-.banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .75rem 1rem; border-radius: var(--radius); background: var(--tag-warn); border: 1px solid var(--warn); margin: 1rem 0; }
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .75rem 1rem; border-radius: var(--r-card); background: var(--tag-warn); border: 1px solid var(--warn); margin: 1rem 0; }
 .banner p, .banner form { margin: 0; }
 /* The three banners meant three different things and all looked like a warning. Acting for
    somebody is a mode you chose; read-only is a fact about the account; viewing as somebody
@@ -435,7 +442,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .banner.readonly { background: var(--surface); border-color: var(--line); }
 .banner.impersonating { background: var(--tag-warn); border-color: var(--warn); }
 /* A standing fact, quieter than a banner and never mistaken for something that just happened. */
-.note { padding: .6rem .9rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
+.note { padding: .6rem .9rem; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
 .note p:first-child { margin-top: 0; } .note p:last-child { margin-bottom: 0; }
 .rosterhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .rosterhead h2, .rosterhead p { margin: 0; }
@@ -456,7 +463,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); }
 .health .tag { margin-right: .25rem; }
 
-.roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
 .roster .r-head, .roster .r-row { display: grid; grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr)); }
 .roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 11rem repeat(auto-fit, minmax(0, 1fr)); }
 .roster.list .r-row { grid-template-columns: 11rem minmax(0, 1fr); }
@@ -494,16 +501,16 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .state small { color: var(--muted); }
 .roster .r-where { font-size: var(--t-small); color: var(--muted); }
 
-.bulkbar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 0; padding: .75rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.bulkbar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 0; padding: .75rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow); }
 .bulkbar input, .bulkbar select { width: auto; max-width: 18rem; }
 html.js .bulkbar:not(.active) { display: none; }
 
-.slot-dialog { border: 0; border-radius: var(--radius); padding: 1.25rem 1.5rem 1.5rem; max-width: min(40rem, 94vw); width: 100%; background: var(--bg); color: var(--fg); box-shadow: var(--shadow); }
+.slot-dialog { border: 0; border-radius: var(--r-card); padding: 1.25rem 1.5rem 1.5rem; max-width: min(40rem, 94vw); width: 100%; background: var(--bg); color: var(--fg); box-shadow: var(--shadow); }
 .slot-dialog::backdrop { background: rgb(0 0 0 / .45); }
 .slot-dialog .dialog-close { position: absolute; right: .5rem; top: .5rem; }
 .slot-dialog h1, .slotpage h1 { font-size: var(--t-h2); }
 .slot-dialog h2, .slotpage h2 { font-size: var(--t-lede); margin-top: 1.1rem; }
-.slot-state { font-weight: 700; padding: .4rem .7rem; border-radius: var(--radius); display: inline-block; }
+.slot-state { font-weight: 700; padding: .4rem .7rem; border-radius: var(--r-field); display: inline-block; }
 .slot-state.tone-open { background: var(--surface); color: var(--accent); }
 .slot-state.tone-ok { background: var(--tag-ok); } .slot-state.tone-warn { background: var(--tag-warn); } .slot-state.tone-bad { background: var(--tag-bad); }
 .slot-state.tone-muted { background: var(--surface); color: var(--muted); }
@@ -536,13 +543,13 @@ html.js .bulkbar:not(.active) { display: none; }
 .when2 { font-size: var(--t-small); }
 td .when1, th .when1 { font-weight: 700; }
 .eventcards { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
-.eventcard { border: 1px solid var(--line); border-radius: var(--radius); padding: .85rem 1rem; background: var(--surface); }
+.eventcard { border: 1px solid var(--line); border-radius: var(--r-card); padding: .85rem 1rem; background: var(--surface); }
 .eventcard-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .eventcard-title { font-weight: 700; font-size: var(--t-lede); }
 .eventcard .when { margin: .35rem 0 0; font-size: var(--t-body); }
 
 /* FR-108: unread count in the sidebar; FR-82: unread rows in My messages */
-.badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: 1em; font-size: var(--t-small); font-weight: 700; text-align: center; background: var(--brand); color: #fff; margin-left: .35em; }
+.badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: var(--r-card); font-size: var(--t-small); font-weight: 700; text-align: center; background: var(--brand); color: #fff; margin-left: .35em; }
 .msglist .unread summary strong::before { content: "● "; color: var(--brand); }
 .table-wrap { overflow-x: auto; position: relative; }  /* the containing block for what is
    positioned in a cell (a sort link's screen-reader words), so it scrolls with the table instead
@@ -555,7 +562,7 @@ code, .copyrow code, .kv dd, .helptext { overflow-wrap: anywhere; }
 textarea { max-width: 100%; }
 input:not([type="checkbox"]):not([type="radio"]), select { max-width: min(28rem, 100%); }
 pre { overflow-x: auto; max-width: 100%; }
-.brand-preview { height: 48px; max-width: 12rem; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: .2rem; }
+.brand-preview { height: 48px; max-width: 12rem; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: var(--r-field); padding: .2rem; }
 
 /* The levels ladder: each one named, described in a line, with what it can do underneath. */
 .levels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
@@ -570,7 +577,7 @@ pre { overflow-x: auto; max-width: 100%; }
 
 /* A state and the one action that changes it, in a single control: the badge is the button. */
 .tag-button {
-  font: inherit; font-size: var(--t-small); line-height: 1.2; padding: .2rem .5rem; border-radius: 999px;
+  font: inherit; font-size: var(--t-small); line-height: 1.2; padding: .2rem .5rem; border-radius: var(--r-button);
   border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer;
   width: auto;
 }
@@ -618,7 +625,7 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 /* Setting an event up is four things in order, on a page of a dozen cards. The strip says
    which are done and which one to do next, and each links to the card that does it. */
 .steps { list-style: none; margin: 0 0 var(--s4); padding: 0; display: flex; flex-direction: column; gap: var(--s1); }
-.steps > li { display: flex; align-items: flex-start; gap: var(--s2); padding: var(--s2); border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.steps > li { display: flex; align-items: flex-start; gap: var(--s2); padding: var(--s2); border-radius: var(--r-card); border: 1px solid var(--line); background: var(--surface); }
 .steps > li.now { border-color: var(--accent); }
 .steps .mark { flex: none; display: flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: var(--t-small); font-weight: 700; }
 .steps > li.done .mark { background: var(--tag-ok); border-color: var(--ok); color: var(--ok); }

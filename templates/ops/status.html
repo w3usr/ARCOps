@@ -3,7 +3,7 @@
 {% block title %}Status · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Status</h1>
-<section class="card" aria-labelledby="jobs">
+<section class="section" aria-labelledby="jobs">
 <h2 id="jobs">Scheduled jobs</h2>
 <p class="muted">Each job runs on a systemd timer installed by the deployment and pings its own healthchecks.io check on success. <strong>Late</strong> means the last success is older than the job's period plus its grace; that job's check is overdue, and the watchdog has said so.</p>
 <div class="table-wrap">
@@ -24,7 +24,7 @@
 </table>
 </div>
 </section>
-<section class="card" aria-labelledby="mail">
+<section class="section" aria-labelledby="mail">
 <h2 id="mail">Mail</h2>
 <dl class="dl">
 <dt>Email delivery</dt><dd><strong>{{ mail.mode }}</strong></dd>
