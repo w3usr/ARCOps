@@ -4213,4 +4213,4 @@ carries the actual running model ID.
   passes in Chromium and WebKit (Firefox does not launch on this Mac; CI runs it); contact
   sheets before and after the scale compared by eye.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: f43789b
