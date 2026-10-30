@@ -4228,4 +4228,4 @@ carries the actual running model ID.
   accessibility sweep, contrast included, passes in Chromium and WebKit (Firefox does not
   launch on this Mac; CI runs it); contact sheets before and after compared by eye.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 8de7dea
