@@ -88,6 +88,13 @@ for path in sorted(pathlib.Path("apps").glob("*/models.py")):
         if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
+# app.css ends by closing its layer (technical addendum A8). A rule added after that line is
+# outside every layer, and unlayered CSS beats every tw: utility whatever its specificity.
+css = pathlib.Path("static/css/app.css").read_text()
+close = "}  /* @layer components */"
+if close not in css or css.split(close, 1)[1].strip():
+    fail.append(f"static/css/app.css: rules after '{close}'; put them inside the layer")
+
 for line in dict.fromkeys(fail):
     print(line)
 if fail:

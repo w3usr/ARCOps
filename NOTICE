@@ -48,5 +48,8 @@ Third-party components
 - htmx 2.0.11 (static/js/vendor/htmx.min.js), from github.com/bigskysoftware/htmx,
   Zero-Clause BSD License; served unmodified, from the npm package checked against the
   registry's integrity hash (TR-4).
+- Tailwind CSS 4.3.3, Copyright Tailwind Labs, Inc., MIT License; the utilities it
+  generates are in static/css/build.css, which keeps its licence header. Built by the
+  standalone executable, checked against the release's SHA-256 (technical addendum A8).
 - Python packages named in requirements.txt carry their own licences; none is
   redistributed in this repository.

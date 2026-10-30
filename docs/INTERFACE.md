@@ -197,6 +197,21 @@ page already does without it.
 - After a swap, focus goes where the reader's attention should be (usually the heading of what
   was replaced), and a flash message is still announced.
 
+## Utility classes
+
+Tailwind's utilities are there for layout and polish on one page: `tw:flex`, `tw:gap-s2`,
+`tw:sm:grid-cols-2`. Every one carries the `tw:` prefix, and the scale is the stylesheet's own,
+so `tw:p-s3` is the same space as `var(--s3)` and `tw:text-h2` the same size as an `<h2>`.
+Nothing outside the scale builds: there is no `tw:bg-blue-500` and no `tw:text-3xl`.
+
+- **What a control is stays in `app.css`.** A button, a field, a card, a tag, a message: a
+  class there, so the next page gets the same thing by name. Utilities arrange those things on
+  a page; they do not invent a second kind of button.
+- **Run `tools/tailwind.sh --watch`** while working on a template, and commit `build.css` with
+  it. CI fails a `build.css` that does not match the templates.
+- **A rule in `app.css` goes inside its `@layer components { … }`.** One after the closing
+  brace beats every utility, and `tools/check_interface.sh` refuses it.
+
 ## Tables
 
 Every `<td>` carries `data-label` with its column's name, because under 40rem the header row is

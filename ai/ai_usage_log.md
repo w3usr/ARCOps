@@ -4150,3 +4150,23 @@ carries the actual running model ID.
   before.
 - **Human Review Status**: Pending review
 - **Git Hash**: 09f335c
+
+## [2026-10-30 13:31 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Adopt Tailwind CSS 4.3.3 for utility classes, incrementally beside
+  app.css (technical addendum A8): pinned standalone build, tw: prefix, theme from app.css's
+  tokens, build.css committed and checked in CI.
+- **Sections/Files Affected**: tools/tailwind.sh, static/css/tailwind.css, static/css/build.css
+  (new); static/css/app.css (wrapped in the components layer, header); templates/base.html
+  (links build.css); static/sw.js (caches it, cache v7); tools/check.sh, tools/check_interface.sh
+  (freshness check, nothing after the layer); .github/workflows/ci.yml; .gitignore; NOTICE;
+  docs/INTERFACE.md ("Utility classes"); docs/TECHNICAL_REQUIREMENTS.md (A8).
+- **Nature of Contribution**: Code generation and documentation, from Tailwind's documentation
+  (fetched through Context7) and its v4.3.3 release. Found on the way: unprefixed utilities
+  collide with app.css's .inline, .hidden, .outline and others, hence the prefix; and Tailwind's
+  optimizer gives color-mix() a first-color fallback, hence app.css linked rather than imported.
+  Verified: tw:block, tw:p-s4, tw:bg-brand and tw:text-h1 override app.css and resolve to its
+  tokens in Chromium and WebKit; tools/check.sh shows only the four known local failures
+  (Firefox does not launch here; the PDF test passes run directly).
+- **Human Review Status**: Pending review
+- **Git Hash**:

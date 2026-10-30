@@ -1,5 +1,6 @@
 /*
-  ARCOps stylesheet (TR-5): one file, no framework, semantic class names.
+  ARCOps stylesheet (TR-5): semantic class names, the base every page loads. Tailwind's tw:
+  utilities come after it in build.css, a layer above (technical addendum A8).
 
   How a page should read, and which class does what, is in docs/INTERFACE.md. Read it before
   adding a rule here. In short: one solid button per form, outline for a side action, link for
@@ -17,6 +18,11 @@
   Signed out, a split page: club panel and form. Without JavaScript the sidebar simply
   renders in full and the drawer controls are hidden (TR-4).
 */
+
+/* The components layer, under Tailwind's utilities in build.css (technical addendum A8), so a
+   tw: class on an element wins over a rule here. Everything below is inside it. */
+@layer theme, base, components, utilities;
+@layer components {
 
 :root {
   --brand: #1f3a5f;
@@ -665,3 +671,5 @@ a.whoami { text-decoration: none; color: inherit; display: flex; }
 /* The level under the name: smaller, and no dimmer than the muted color it already uses.
    An opacity on top of that took it below 4.5:1 against the sidebar. */
 .whoami .level { display: block; font-size: .78rem; }
+
+}  /* @layer components */
