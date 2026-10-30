@@ -257,6 +257,34 @@ in a list, a result to copy (a new link, a new invitation), the slot's **Captain
 itself, with a rule above the next one (`class="section"`). A page that is all cards reads as a
 template, and a card around a whole page's form frames nothing.
 
+## Material 3, in our terms
+
+Material 3 is the design approach, written into `app.css` by hand; none of Google's code is
+used (technical addendum A8). Its roles, by our names:
+
+| Material 3 | Here |
+|---|---|
+| primary, on-primary | `--accent`, `--accent-fg`: buttons, links |
+| primary container, on-primary container | `--accent-soft`, `--accent-soft-fg`: the active menu entry, a button under the pointer |
+| surface, surface container | `--bg` (paper), `--surface`: neutral, never mixed with the club's color |
+| outline | `--line` |
+| error | `--bad`; success and warning are ours, `--ok` and `--warn` |
+| headline, title, body large, body, body small and label | `--t-h1`, `--t-h2`, `--t-lede`, `--t-body`, `--t-small` (label and body small share it) |
+| corner small, medium, large | `--r-field`, `--r-button`, `--r-card` |
+| filled, outlined and text buttons | a plain `button`, `button.secondary`, `.linklike`; no tonal or elevated buttons |
+
+The primary roles are mixed from the club's color with `color-mix(in oklab, …)`, in light and
+dark. `apps/ops/config.py` makes the same mixes and refuses a club color under which any text
+they carry would read below 4.5:1, falling back to the application's own.
+
+**Where Material 3 and these rules disagree, these win:**
+- A message stays in the list at the top of the page and takes focus; no snackbar that
+  disappears on a timer (WCAG 2.2.1).
+- A destructive action stays underlined, never told by color alone (FR-62).
+- One solid button per form.
+- No ripple: it needs JavaScript, and every page works without it.
+- No pill buttons, and surfaces are not tinted from the club's color (#160).
+
 ## Tables
 
 Every `<td>` carries `data-label` with its column's name, because under 40rem the header row is

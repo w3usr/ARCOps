@@ -770,7 +770,30 @@ service worker caches htmx with the rest of the shell.
 
 **Decided by** SK, 2026-10-23. *Record:* issue #137 in the private repository.
 
+### A8. TR-5: no base framework; `app.css` is the "equivalent", designed after Material 3
+
+**Original (TR-5).** "**CSS: a small semantic base stylesheet plus project CSS**, with color
+tokens and a dark mode; the base is Pico CSS (MIT) or equivalent classless framework."
+
+**Decision.** Pico CSS is not adopted. Its repository was archived on 2026-10-04, and its README
+says "Pico CSS is no longer maintained" with v2.1.1 as the final release
+(<https://github.com/picocss/pico>). `app.css` is the semantic base TR-5 asks for, with its own
+color tokens and dark mode. Two others were tried on 2026-10-30 and set aside: Tailwind CSS,
+adopted and reverted the same day, and Simple.css, whose own body grid and element styles
+undid `app.css` (the sign-in page lost its layout, checkboxes drew as circles).
+
+Material 3 is the design approach, not a dependency: its color roles, type roles, shape and
+state layers are written into `app.css` by hand (`docs/INTERFACE.md`, "Material 3, in our
+terms"). Google's `@material/web` components are not used: they are in maintenance mode, draw
+nothing without JavaScript (TR-4), and need a bundler. Where Material 3 and this application's
+own rules disagree, the application's win. The club's color generates the primary roles by
+`color-mix(in oklab, …)`, and `apps/ops/config.py` computes the same mixes to refuse a club
+color under which any of them would read below AA.
+
+**Decided by** SK: Material 3 as the approach, 2026-10-23; a hand-written stylesheet with no
+framework, 2026-10-30. *Record:* issues #143 and #160 in the private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6) and 2026-10-28 (A7), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7) and 2026-10-30 (A8), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

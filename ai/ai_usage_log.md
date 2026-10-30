@@ -4247,3 +4247,22 @@ carries the actual running model ID.
   it); contact sheets before and after compared by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: 898518b
+
+## [2026-10-30 15:05 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #143 as amended by #160: the club color's primary roles mixed in oklab,
+  the AA check extended to every pair they make, the TR-5 addendum, and Material 3 mapped onto
+  this stylesheet's terms.
+- **Sections/Files Affected**: static/css/app.css (the three role mixes from srgb to oklab);
+  apps/ops/config.py (contrast(), an oklab mix, ROLE_MIXES and role_contrasts(); accent_color()
+  refuses a color any of whose pairs is under 4.5:1); apps/ops/tests/test_shell.py (a borderline
+  grey refused; the stylesheet's mixes and ROLE_MIXES are one list); docs/TECHNICAL_REQUIREMENTS.md
+  (A8); docs/INTERFACE.md ("Material 3, in our terms").
+- **Nature of Contribution**: Code, tests and documentation. Mixed in oklab rather than the
+  issue's oklch: with a nearly neutral partner oklch would turn the club's hue toward the dark
+  page's blue, and oklab keeps the Python port exact. Pico's end of maintenance read from its
+  repository (archived 2026-10-04, README) before it was written down. Verified: the Python mixes
+  equal the browser's pixels in Chromium and WebKit for three colors (WebKit one unit off once);
+  tools/check.sh shows only the four known local failures.
+- **Human Review Status**: Pending review
+- **Git Hash**:

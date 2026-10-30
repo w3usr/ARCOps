@@ -66,3 +66,28 @@ def test_accent_that_fails_aa_contrast_falls_back_to_the_default():
     _set("branding.accent", "#401068")
     assert config.accent_color() == "#401068"
     assert config.contrast_with_white("#401068") > 4.5
+
+
+def test_an_accent_that_carries_white_but_not_its_own_tint_falls_back(caplog):
+    """#767676 is 4.54:1 under white text, but the active menu entry sets it as text on its
+    own 9% tint, which is lighter than white is dark: about 4.1:1 (#143)."""
+    assert config.contrast_with_white("#767676") > 4.5
+    _set("branding.accent", "#767676")
+    assert config.accent_color() == config.DEFAULT_ACCENT
+    assert "the club color on its container" in caplog.text
+    assert all(r >= 4.5 for r in config.role_contrasts("#401068").values())
+
+
+def test_the_server_measures_the_mixes_the_stylesheet_draws():
+    """app.css's color-mix() roles and ROLE_MIXES are one list, so what is checked is what is drawn."""
+    from pathlib import Path
+
+    css = (Path(config.__file__).resolve().parents[2] / "static" / "css" / "app.css").read_text()
+    drawn = {
+        (int(pct) / 100, other)
+        for pct, other in re.findall(
+            r"color-mix\(in oklab, var\(--brand\) (\d+)%, (#[0-9a-f]{6})\)", css
+        )
+    }
+    assert drawn == set(config.ROLE_MIXES.values())
+    assert f"--bg: {config.DARK_BG}" in css and f"--accent-fg: {config.DARK_ON_ACCENT}" in css
