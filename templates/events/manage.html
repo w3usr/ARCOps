@@ -51,7 +51,7 @@
 <section class="section" aria-labelledby="loc">
   <h2 id="loc">Locations and positions</h2>
   {% for l in locations %}
-  <p><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %} · {{ l.address }}{% endif %}</p>
+  <p><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %}, {{ l.address }}{% endif %}</p>
   <ul class="list">
     {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}
   </ul>
@@ -160,7 +160,7 @@
 <section class="section" aria-labelledby="opn">
   <h2 id="opn">Openings</h2>
   <p class="helptext">When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
-  {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %} · announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
+  {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %}, announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
     <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}</ul>{% endif %}
   <form method="post" action="{% url 'opening_add' event.pk %}" class="stack">{% csrf_token %}
     <div class="row">

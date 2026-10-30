@@ -11,9 +11,9 @@
 {% for m in page.object_list %}
 <li class="card{% if m.was_unread %} unread{% endif %}">
   <details{% if forloop.first %} open{% endif %}>
-    <summary><strong>{{ m.subject }}</strong> <small class="muted">· {{ m.created|date:"j M Y H:i" }} UTC · {{ m.category|message_category }} · <span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% endif %}">{{ m.get_state_display }}</span></small></summary>
+    <summary><strong>{{ m.subject }}</strong> <small class="muted">{{ m.created|date:"j M Y H:i" }} UTC, {{ m.category|message_category }}</small> <span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% endif %}">{{ m.get_state_display }}</span></summary>
     <div class="prose">{{ m.body_html|richtext }}</div>
-    {% if m.to_addresses %}<p class="muted"><small>To: {{ m.to_addresses|join:", " }}{% if m.sent_at %} · sent {{ m.sent_at|date:"j M Y H:i" }} UTC{% endif %}</small></p>{% endif %}
+    {% if m.to_addresses %}<p class="muted"><small>To: {{ m.to_addresses|join:", " }}{% if m.sent_at %}; sent {{ m.sent_at|date:"j M Y H:i" }} UTC{% endif %}</small></p>{% endif %}
   </details>
 </li>
 {% endfor %}

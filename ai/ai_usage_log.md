@@ -4313,3 +4313,21 @@ carries the actual running model ID.
   T14 and T17 pass locally, T17 with its new step 4.
 - **Human Review Status**: Pending review
 - **Git Hash**: f3ff20d
+
+## [2026-10-30 15:43 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #163: middle-dot strings become what they are, and My Sked is one name.
+  (The all-caps menu label went with #160's scale.)
+- **Sections/Files Affected**: 18 templates (accounts: _addresses, invitations, member_detail,
+  member_edit, mentors; comms: announcements, my_messages; credentials: agreements, approvals;
+  events: _slot_body, adults, confirm_bulk_cancel, confirm_remove, detail, manage, my_schedule;
+  ops: dashboard, status); apps/comms/tests/test_push.py and apps/events/tests/test_roster.py
+  (the new wording).
+- **Nature of Contribution**: Editing, by #163's rule: a dot stays only between items of one
+  kind in a short run (links, counts, an event's two zones, the footer, the signed PDF); jammed
+  pairs became sentences, commas or separate lines, and a slot's place reads "Run at Club
+  station". Left for #161: the sidebar's name and callsign, the roster cells and its key.
+  Verified: tools/check.sh shows only the four known local failures; scenario scripts T06, T08,
+  T11 to T13, T34, T38 and T46 pass locally after following the wording; contact sheet compared.
+- **Human Review Status**: Pending review
+- **Git Hash**:

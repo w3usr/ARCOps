@@ -5,7 +5,8 @@ slot's roster cell for the page behind (#139). I cannot make it and Change role 
 posts: either may answer with a page asking to confirm.{% endcomment %}
 {% if partial %}{% include "_messages.html" with in_dialog=True %}{% endif %}
 <h1 class="slot-title">{{ row.lead_range }}{% if row.other_range %} <small class="muted">{{ row.other_range }}</small>{% endif %}</h1>
-<p class="muted">{{ event.title }} · {{ slot.position.location.name }} · {{ slot.position.name }}{% if slot.kind != 'operating' %} · {{ slot.kind|kind_label }}{% endif %}{% if slot.closed %} · <strong>closed</strong>{% endif %}</p>
+<p class="muted">{{ event.title }}</p>
+<p class="muted">{{ slot.position.name }} at {{ slot.position.location.name }}{% if slot.kind != 'operating' %} ({{ slot.kind|kind_label|lower }}){% endif %}{% if slot.closed %}, <strong>closed</strong>{% endif %}</p>
 
 <p class="slot-state tone-{{ cell.shown.tone }}"><span class="word">{{ cell.shown.word }}</span>{% if cell.shown.detail %} <span class="muted">{{ cell.shown.detail }}</span>{% endif %}</p>
 
@@ -23,8 +24,8 @@ posts: either may answer with a page asking to confirm.{% endcomment %}
     {% if is_captain and s.user != user %}<a class="linklike danger" href="{% url 'confirm_remove_signup' s.pk %}">Remove them</a>{% endif %}
     {% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}
       {% if is_captain or cell.mine or s.user == user %}<details class="inline"><summary>under 18: who accompanies</summary>
-        {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %} · {{ a.phone|phone }}{% endif %}{% if is_captain and a.email %} · {{ a.email }}{% endif %}{% if a.present_at %} · <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
-        {% if is_captain %}<p class="muted">Guardians: {% for g in s.user.guardianships.all %}{% if g.active %}{{ g.guardian.full_name }} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not forloop.last %}; {% endif %}{% endif %}{% empty %}none linked{% endfor %}</p>
+        {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %}, {{ a.phone|phone }}{% endif %}{% if is_captain and a.email %}, {{ a.email }}{% endif %}{% if a.present_at %} <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
+        {% if is_captain %}<p class="muted">Guardians: {% for g in s.user.guardianships.all %}{% if g.active %}{{ g.guardian.full_name }}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not forloop.last %}; {% endif %}{% endif %}{% empty %}none linked{% endfor %}</p>
         <a href="{% url 'signup_adults' s.pk %}">Edit the designation</a>{% elif s.user == user and not minor_readonly %}<a href="{% url 'signup_adults' s.pk %}">Name or change the adult</a>{% endif %}</details>
       {% elif adults %}<span class="tag">under 18, with an adult</span>{% else %}<span class="tag">under 18</span>{% endif %}
     {% endwith %}{% endif %}
@@ -111,7 +112,7 @@ posts: either may answer with a page asking to confirm.{% endcomment %}
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
   <details><summary>Who may sign up for this slot (override)</summary>
-    {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %} · {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %} · needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %} · no minors{% endif %}
+    {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %}, {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %}, needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %}, no minors{% endif %}
       <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="linklike danger">Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
       <div class="row">

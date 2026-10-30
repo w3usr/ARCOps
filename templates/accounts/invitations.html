@@ -28,7 +28,7 @@
 </form>
 <h2>Invitations so far</h2>
 <table class="table"><thead><tr><th scope="col">Email</th><th scope="col">Category</th><th scope="col">State</th><th scope="col">Expires</th><th scope="col">Issued by</th><th scope="col">Link</th><th scope="col">Actions</th></tr></thead><tbody>
-{% for i in recent %}<tr><td data-label="Email">{{ i.email|default:"—" }}{% if i.is_minor %} <span class="tag">under 18{% if i.guardian_email %} · via {{ i.guardian_email }}{% endif %}</span>{% endif %}</td><td data-label="Category">{{ i.category|category_label }}</td><td data-label="State">{{ i.get_state_display }}{% if i.opened_at and i.state == 'created' %} (opened){% endif %}</td><td data-label="Expires">{{ i.expires_at|date:"d M Y" }}</td><td data-label="Issued by">{{ i.issued_by.short_name }}</td>
+{% for i in recent %}<tr><td data-label="Email">{{ i.email|default:"—" }}{% if i.is_minor %} <span class="tag">under 18{% if i.guardian_email %}, via {{ i.guardian_email }}{% endif %}</span>{% endif %}</td><td data-label="Category">{{ i.category|category_label }}</td><td data-label="State">{{ i.get_state_display }}{% if i.opened_at and i.state == 'created' %} (opened){% endif %}</td><td data-label="Expires">{{ i.expires_at|date:"d M Y" }}</td><td data-label="Issued by">{{ i.issued_by.short_name }}</td>
 {% comment %}The link was shown once, on the card, and an officer who closed it could only get
 another by reissuing, which withdrew the invitation already sent (the advisor accepted the
 proposal on issue #4, 2026-09-20). A row that is no longer open has no live link to show.

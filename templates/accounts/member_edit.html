@@ -5,7 +5,7 @@
 {% comment %}The heading calls people what they are called: the preferred name where they have
 set one (NAF, 2026-09-19). The name on the record is in Details, in the three fields it is
 stored in.{% endcomment %}
-<p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> · {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
+<p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> › {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
 <div class="titlerow"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div>
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
 {% if member.verification_deadline and not member.has_confirmed_address %}
@@ -39,7 +39,7 @@ stored in.{% endcomment %}
 <section class="section" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
-  <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
+  <p><strong>{{ standing.license.callsign }}</strong>: {{ standing.license.class_label }}, {{ standing.license.status_label }}{% if standing.license.effective_expiry %}, expires {{ standing.license.effective_expiry }}{% endif %}.</p>
   {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
   {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} By {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
   {% else %}<p class="muted">None on file.</p>{% endif %}
@@ -70,7 +70,7 @@ stored in.{% endcomment %}
   {% if standing.agreements %}
   <dl class="dl">
     {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-    <dd>{{ a.get_state_display }}{% if a.expires_on %} · until {{ a.expires_on }}{% endif %} · <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
+    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
       {% if a.state == 'approved' and can_revoke %}
       <details class="confirm"><summary>Revoke this approval</summary>
         <p>They lose the access this agreement grants, and are told why.</p>
@@ -88,7 +88,7 @@ stored in.{% endcomment %}
 <section class="section" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="linklike">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
+  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="linklike">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
   {% if member.under_18 and perms.ops.edit_member_privileges %}<form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="an address on their account" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
   {% if member.under_18 and can_convert %}<details><summary>Convert to an adult account</summary>
     <p>For when the member or a guardian reports that they have turned 18. This clears the under-18 flag, ends the guardian links (they stay in the history), issues a one-time temporary password for the member to set their own, tells the guardians, and writes an audit row. Nothing happens on its own: no date of birth is stored.</p>
@@ -245,7 +245,7 @@ said on the profile beside the passkeys.{% endcomment %}
 <form method="post" action="{% url 'push_test' %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Send a test notification</button></form>
 <p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
 {% if push_subscriptions %}
-<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }} · since {{ sub.created|date:"j M Y" }}{% if sub.failures %} · {{ sub.failures }} failed{% endif %}
+<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }}, since {{ sub.created|date:"j M Y" }}{% if sub.failures %}, {{ sub.failures }} failed{% endif %}
 <form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Forget this device</button></form></li>{% endfor %}</ul>
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>

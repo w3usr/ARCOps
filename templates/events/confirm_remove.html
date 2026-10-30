@@ -4,7 +4,7 @@
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
 <h1>Remove {{ signup.user.full_name }} from this slot?</h1>
-<p>{{ signup.slot.position.location.name }} · {{ signup.slot.position.name }} · {{ signup.slot.start|date:"D j M H:i" }}Z, as <strong>{{ signup.role|role_label }}</strong>.</p>
+<p>{{ signup.slot.position.name }} at {{ signup.slot.position.location.name }}, {{ signup.slot.start|date:"D j M H:i" }}Z, as <strong>{{ signup.role|role_label }}</strong>.</p>
 {% if broken %}<p class="msg warning"><span class="lvl">Careful:</span> without them the slot {{ broken.needs }}.</p>{% endif %}
 <form method="post" action="{% url 'cancel_signup' signup.pk %}" class="stack section">{% csrf_token %}
   <input type="hidden" name="confirmed" value="yes">

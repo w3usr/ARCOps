@@ -494,7 +494,7 @@ def test_home_leads_with_your_next_slot_and_the_one_thing_to_do_about_it(world, 
     SignUp.objects.create(slot=later, user=world["mem"], role="operator")
     body = c.get("/").content.decode()
     assert "<h1>Your next slot</h1>" in body
-    assert "In 6\xa0days" in body and "Club station · Run · as Operator" in body
+    assert "In 6\xa0days" in body and "Run at Club station, as Operator" in body
     assert "Confirm you will be there" in body and "Your other slots" in body
     c.post(f"/events/signup/{mine.pk}/confirm/")
     body = c.get("/").content.decode()

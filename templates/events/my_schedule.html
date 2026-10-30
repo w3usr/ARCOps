@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load times labels %}
-{% block title %}My schedule · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block title %}My {{ product.sked }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>My schedule</h1>
+<h1>My {{ product.sked }}</h1>
 {% for s in ready %}
 <section class="card highlight"><h2>Check in: {{ s.slot.event.title }}</h2>
 <p>{{ s.slot.position }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>

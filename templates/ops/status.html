@@ -12,7 +12,7 @@
 <tbody>
 {% for r in rows %}
 <tr>
-  <td data-label="Job"><strong>{{ r.spec.name }}</strong><br><small class="muted">{{ r.spec.label }} · check <code>{{ r.spec.slug }}</code></small></td>
+  <td data-label="Job"><strong>{{ r.spec.name }}</strong><br><small class="muted">{{ r.spec.label }} (<code>{{ r.spec.slug }}</code>)</small></td>
   <td data-label="Every">Every {{ r.spec.period|duration }}<br><small class="muted">{{ r.spec.grace|duration }} of grace</small></td>
   <td data-label="Last run (UTC)">{% if r.last %}{{ r.last.started|date:"j M H:i:s" }}{% if r.last.finished %} to {{ r.last.finished|date:"H:i:s" }}{% endif %}{% else %}<span class="muted">never</span>{% endif %}</td>
   <td data-label="Outcome">{% if r.stale %}<span class="tag bad">late</span> {% endif %}{% if r.last %}<span class="tag{% if r.last.outcome == 'ok' %} ok{% elif r.last.outcome == 'failed' %} bad{% endif %}">{% if r.last.outcome == 'ok' %}worked{% elif r.last.outcome == 'failed' %}failed{% else %}{{ r.last.outcome }}{% endif %}</span>{% endif %}</td>

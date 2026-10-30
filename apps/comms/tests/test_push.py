@@ -135,4 +135,4 @@ def test_a_device_is_listed_by_browser_and_system():
     c.force_login(u)
     with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
         body = c.get("/me/edit/", follow=True).content.decode()
-    assert "Chrome on macOS · since" in body and "Mozilla/5.0" not in body
+    assert "Chrome on macOS, since" in body and "Mozilla/5.0" not in body
