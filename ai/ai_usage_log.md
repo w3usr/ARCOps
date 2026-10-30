@@ -4312,4 +4312,4 @@ carries the actual running model ID.
   tools/check.sh shows only the known local Firefox failures; the scenario scripts T06, T11 to
   T14 and T17 pass locally, T17 with its new step 4.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: f3ff20d
