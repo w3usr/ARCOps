@@ -4182,3 +4182,19 @@ carries the actual running model ID.
   c7fb55e apart from this log.
 - **Human Review Status**: Pending review
 - **Git Hash**: 61208ff
+
+## [2026-10-30 13:51 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #160's typeface check, then adopting the result at SK's choice: Atkinson
+  Hyperlegible Next, Regular and Bold, self-hosted, with tabular figures on times and tables.
+- **Sections/Files Affected**: static/fonts/ (AtkinsonHyperlegibleNext-Regular.woff2,
+  AtkinsonHyperlegibleNext-Bold.woff2, OFL.txt; new); static/css/app.css (@font-face, the font
+  stack, tabular-nums on .when, .when1, .when2 and td); NOTICE; docs/INTERFACE.md ("Type").
+- **Nature of Contribution**: Analysis (the font's OpenType features and digit advances read
+  with fontTools; a contact sheet against the system face in Chromium and WebKit), then code
+  and documentation. Verified: slashed zero and distinct I, l and 1; under tabular-nums every
+  digit 632 units and every time the same rendered width at 400, 600 and 700 in both browsers;
+  the files match the upstream repository's blob hashes; tools/check.sh shows only the four
+  known local failures; before and after contact sheets of every page compared by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**:

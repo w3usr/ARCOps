@@ -197,6 +197,21 @@ page already does without it.
 - After a swap, focus goes where the reader's attention should be (usually the heading of what
   was replaced), and a flash message is still announced.
 
+## Type
+
+One family, served from this site: **Atkinson Hyperlegible Next**, in two weights, Regular
+(400) and Bold (700). It was chosen for what this application prints most: callsigns and times
+(SK, 2026-10-30, #160).
+
+- **Its zero is slashed.** N0CAN, KD0OOO and WB0LIL read one way only; in the system faces a
+  zero and a capital O are nearly the same shape. Its I, l and 1 also differ, where the system
+  faces draw I and l as the same bar.
+- **Numbers that are compared line up.** The face's own figures are proportional, so times and
+  tables carry `font-variant-numeric: tabular-nums` and every digit is the same width. Running
+  text keeps the proportional figures.
+- **Two weights, no more.** A rule asking for 500 is drawn at 400, and one asking for 600 or
+  800 at 700; the browser invents no weight in between.
+
 ## Tables
 
 Every `<td>` carries `data-label` with its column's name, because under 40rem the header row is
