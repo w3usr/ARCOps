@@ -4181,4 +4181,4 @@ carries the actual running model ID.
 - **Nature of Contribution**: Revert (git revert, not a reset); the tree checked identical to
   c7fb55e apart from this log.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 61208ff
