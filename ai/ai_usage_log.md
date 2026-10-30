@@ -4246,4 +4246,4 @@ carries the actual running model ID.
   the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs
   it); contact sheets before and after compared by eye.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 898518b
