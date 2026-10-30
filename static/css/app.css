@@ -7,13 +7,16 @@
   every cell so a table survives a phone.
 
   Color: --brand is the club's color, set inline by base.html from club.yaml (TR-40); the
-  default below is the application's own. Everything else derives from it. In dark mode the
-  brand stays as a background (footer, sign-in panel) and a lightened mix of it becomes the
-  text and link color, so contrast holds in both schemes. Color never carries meaning on
-  its own (FR-62): every status also has a word.
+  default below is the application's own. It marks what can be acted on: actions, links, the
+  active menu entry, and a button's hover (--accent-soft). Everything else stands on white
+  paper and one neutral --surface, never tinted from the club's color (docs/INTERFACE.md,
+  "Color"). The one club-colored panel is the sign-in page's; in dark mode it stays a
+  background and a lightened mix of the brand becomes the text and link color, so contrast
+  holds in both schemes. Color never carries meaning on its own (FR-62): every status also
+  has a word.
 
   Layout: signed in, a left sidebar (full, or an icon rail when the member collapses it; an
-  off-canvas drawer under 60rem) beside the content, and the club-colored footer under both.
+  off-canvas drawer under 60rem) beside the content, and the footer under both.
   Signed out, a split page: club panel and form. Without JavaScript the sidebar simply
   renders in full and the drawer controls are hidden (TR-4).
 */
@@ -25,7 +28,7 @@
   --accent-fg: var(--brand-fg);
   --accent-soft: color-mix(in srgb, var(--brand) 9%, #ffffff);
   --accent-soft-fg: var(--brand);
-  --bg: #ffffff; --fg: #1b1f24; --muted: #5a6470; --line: #d9dee5; --card: #f6f7f9; --side: #f3f4f7;
+  --bg: #ffffff; --fg: #1b1f24; --muted: #5a6470; --line: #d9dee5; --surface: #f4f4f6;
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235a6470' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");  /* a select's arrow, in --muted */
   --ok: #1b6e3a; --warn: #8a5a00; --bad: #9b1c1c; --bad-fg: #ffffff;
   /* The gold at #e0a100 was 2.3:1 on white, under the 3:1 a focus indicator needs.
@@ -44,7 +47,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #111418; --fg: #e8ecf1; --muted: #9aa5b1; --line: #2a323c; --card: #1a2028; --side: #151a20;
+    --bg: #111418; --fg: #e8ecf1; --muted: #9aa5b1; --line: #2a323c; --surface: #181b20;
     --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239aa5b1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     --accent: color-mix(in srgb, var(--brand) 42%, #ffffff);
     --accent-fg: #0c1220;
@@ -97,7 +100,7 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .sidenav {
   position: sticky; top: 0; align-self: start; height: 100svh;
   display: flex; flex-direction: column; gap: .5rem;
-  background: var(--side); border-right: 1px solid var(--line);
+  background: var(--surface); border-right: 1px solid var(--line);
   padding: 1rem .75rem;
   overflow-y: auto;
 }
@@ -186,7 +189,7 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
 /* Under 60rem: a top bar with the menu button; the sidebar becomes an off-canvas drawer. */
 @media (max-width: 60rem) {
   .shell { display: block; }
-  .topbar { display: flex; align-items: center; gap: .5rem; padding: calc(.5rem + env(safe-area-inset-top, 0px)) .75rem .5rem; border-bottom: 1px solid var(--line); background: var(--side); position: sticky; top: 0; z-index: 20; }
+  .topbar { display: flex; align-items: center; gap: .5rem; padding: calc(.5rem + env(safe-area-inset-top, 0px)) .75rem .5rem; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 20; }
   .topbar .brand img { width: 2.25rem; height: 2.25rem; }
   .only-desktop { display: none; }
   html.js .only-drawer { display: inline-flex; }
@@ -247,7 +250,7 @@ body.drawer-open { overflow: hidden; }
    installed app they keep the footer clear of the navigation bar and the top bar clear of the
    status bar. */
 footer.site {
-  background: var(--brand); color: var(--brand-fg); text-align: center;
+  background: var(--surface); color: var(--fg); border-top: 1px solid var(--line); text-align: center;
   padding: 1.25rem calc(1rem + env(safe-area-inset-right, 0px))
            calc(1.35rem + env(safe-area-inset-bottom, 0px))
            calc(1rem + env(safe-area-inset-left, 0px));
@@ -256,11 +259,11 @@ footer.site p { margin: 0; }
 footer.site .club { font-weight: 700; font-size: var(--t-lede); }
 footer.site .club a { color: inherit; text-decoration: none; }
 footer.site .club a:hover, footer.site .credit a:hover { text-decoration: underline; }
-footer.site .credit { font-size: var(--t-small); opacity: .82; margin-top: .3rem; }
+footer.site .credit { font-size: var(--t-small); color: var(--muted); margin-top: .3rem; }
 footer.site .credit a { color: inherit; }
 
 /* --------------------------------------------------------- components */
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; margin: 1rem 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; margin: 1rem 0; }
 .card.highlight { border-color: var(--accent); }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
 .card > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
@@ -278,17 +281,17 @@ footer.site .credit a { color: inherit; }
 .roster tr.st-viable th { border-left: 4px solid var(--ok); }
 .roster tr.st-empty th { border-left: 4px solid var(--line); }
 .status { font-weight: 700; } .status.viable { color: var(--ok); } .status.at_risk { color: var(--warn); } .status.not_viable { color: var(--bad); }
-.tag { display: inline-block; font-size: var(--t-small); padding: 0 .45rem; border-radius: .3rem; background: var(--card); border: 1px solid var(--line); }
+.tag { display: inline-block; font-size: var(--t-small); padding: 0 .45rem; border-radius: .3rem; background: var(--surface); border: 1px solid var(--line); }
 .tag.ok { background: var(--tag-ok); } .tag.warn { background: var(--tag-warn); } .tag.bad { background: var(--tag-bad); } .tag.note { background: var(--tag-warn); }
 .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
 .messages:focus { outline: none; }
-.msg { padding: .65rem .9rem; border-radius: var(--radius); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--card); }
+.msg { padding: .65rem .9rem; border-radius: var(--radius); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--surface); }
 .msg .lvl { font-weight: 700; }
 /* Four levels, each with a word and a tint. Color never carries the meaning alone (FR-62). */
 .msg.success { border-left-color: var(--ok); background: var(--tag-ok); border-color: var(--ok); }
 .msg.error { border-left-color: var(--bad); background: var(--tag-bad); border-color: var(--bad); }
 .msg.warning { border-left-color: var(--warn); background: var(--tag-warn); border-color: var(--warn); }
-.msg.info { border-left-color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+.msg.info { border-left-color: var(--accent); border-color: var(--accent); }
 .dl dt { font-weight: 700; margin-top: .5rem; } .dl dd { margin: 0; }
 .prose h1, .prose h2, .prose h3 { margin-top: 1rem; }
 .secret code { font-size: var(--t-h2); letter-spacing: .05em; }
@@ -423,16 +426,16 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 /* The three banners meant three different things and all looked like a warning. Acting for
    somebody is a mode you chose; read-only is a fact about the account; viewing as somebody
    else is the one that should keep catching your eye. */
-.banner.acting { background: var(--accent-soft); border-color: var(--accent); }
+.banner.acting { background: var(--surface); border-color: var(--accent); }
 /* A standing question wears the message strip, because that is what it reads as. Its buttons
    sit on the same line as its sentence rather than beneath them. */
 .messages.ask { margin-bottom: .5rem; }
 .messages.ask .inline { display: inline; }
 .messages.ask button { padding: .2rem .6rem; font-size: var(--t-small); margin-left: .25rem; }
-.banner.readonly { background: var(--card); border-color: var(--line); }
+.banner.readonly { background: var(--surface); border-color: var(--line); }
 .banner.impersonating { background: var(--tag-warn); border-color: var(--warn); }
 /* A standing fact, quieter than a banner and never mistaken for something that just happened. */
-.note { padding: .6rem .9rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
+.note { padding: .6rem .9rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
 .note p:first-child { margin-top: 0; } .note p:last-child { margin-bottom: 0; }
 .rosterhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .rosterhead h2, .rosterhead p { margin: 0; }
@@ -449,7 +452,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
   .legend li + li::before { content: none; }
 }
 .msglist { list-style: none; padding-left: 0; }
-.tag.open { background: var(--accent-soft); color: var(--accent-soft-fg); border-color: transparent; }
+.tag.open { color: var(--accent); }
 .tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); }
 .health .tag { margin-right: .25rem; }
 
@@ -457,10 +460,10 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .r-head, .roster .r-row { display: grid; grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr)); }
 .roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 11rem repeat(auto-fit, minmax(0, 1fr)); }
 .roster.list .r-row { grid-template-columns: 11rem minmax(0, 1fr); }
-.roster .r-head { position: sticky; top: 0; z-index: 2; background: var(--side); border-bottom: 2px solid var(--line); font-size: var(--t-small); color: var(--muted); font-weight: 700; }
+.roster .r-head { position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 2px solid var(--line); font-size: var(--t-small); color: var(--muted); font-weight: 700; }
 .roster .r-head > div { padding: .5rem .75rem; }
 .roster .r-pos { display: flex; flex-direction: column; line-height: 1.2; } .roster .r-pos .loc { font-weight: 400; }
-.roster .r-dayhead { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem .75rem; font-weight: 700; position: sticky; top: 2.4rem; z-index: 1; }
+.roster .r-dayhead { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem .75rem; font-weight: 700; position: sticky; top: 2.4rem; z-index: 1; }
 .roster.list .r-dayhead, .roster .r-dayhead { top: 0; }
 .roster .daysel { gap: .6rem; } .roster .daysel span { font-weight: 700; }
 .roster .r-row { border-top: 1px solid var(--line); } .roster .r-day .r-row:first-of-type { border-top: 0; }
@@ -468,7 +471,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .r-time .lead { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .roster .r-time .other { font-size: var(--t-small); white-space: nowrap; }
 .roster .r-time .tag { align-self: flex-start; margin-top: .2rem; }
-.roster .kind-setup, .roster .kind-breakdown { background: color-mix(in srgb, var(--card) 60%, transparent); }
+.roster .kind-setup, .roster .kind-breakdown { background: color-mix(in srgb, var(--surface) 60%, transparent); }
 .roster .r-cell { position: relative; border-left: 1px solid var(--line); min-height: 3.4rem; }
 .roster .r-cell.empty { background: repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--line) 50%, transparent) 6px 7px); }
 .roster .r-cell > input[type="checkbox"] { position: absolute; left: .6rem; top: .7rem; z-index: 1; }
@@ -491,7 +494,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .state small { color: var(--muted); }
 .roster .r-where { font-size: var(--t-small); color: var(--muted); }
 
-.bulkbar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 0; padding: .75rem 1rem; background: var(--side); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.bulkbar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 0; padding: .75rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
 .bulkbar input, .bulkbar select { width: auto; max-width: 18rem; }
 html.js .bulkbar:not(.active) { display: none; }
 
@@ -501,9 +504,9 @@ html.js .bulkbar:not(.active) { display: none; }
 .slot-dialog h1, .slotpage h1 { font-size: var(--t-h2); }
 .slot-dialog h2, .slotpage h2 { font-size: var(--t-lede); margin-top: 1.1rem; }
 .slot-state { font-weight: 700; padding: .4rem .7rem; border-radius: var(--radius); display: inline-block; }
-.slot-state.tone-open { background: var(--accent-soft); color: var(--accent-soft-fg); }
+.slot-state.tone-open { background: var(--surface); color: var(--accent); }
 .slot-state.tone-ok { background: var(--tag-ok); } .slot-state.tone-warn { background: var(--tag-warn); } .slot-state.tone-bad { background: var(--tag-bad); }
-.slot-state.tone-muted { background: var(--card); color: var(--muted); }
+.slot-state.tone-muted { background: var(--surface); color: var(--muted); }
 .slotpage { max-width: 40rem; }
 /* One field width on a slot: a row of fields is as wide as one field, its fields sharing it. */
 .slot-dialog .row, .slotpage .row { max-width: 28rem; }
@@ -533,7 +536,7 @@ html.js .bulkbar:not(.active) { display: none; }
 .when2 { font-size: var(--t-small); }
 td .when1, th .when1 { font-weight: 700; }
 .eventcards { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
-.eventcard { border: 1px solid var(--line); border-radius: var(--radius); padding: .85rem 1rem; background: var(--card); }
+.eventcard { border: 1px solid var(--line); border-radius: var(--radius); padding: .85rem 1rem; background: var(--surface); }
 .eventcard-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .eventcard-title { font-weight: 700; font-size: var(--t-lede); }
 .eventcard .when { margin: .35rem 0 0; font-size: var(--t-body); }
@@ -615,8 +618,8 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 /* Setting an event up is four things in order, on a page of a dozen cards. The strip says
    which are done and which one to do next, and each links to the card that does it. */
 .steps { list-style: none; margin: 0 0 var(--s4); padding: 0; display: flex; flex-direction: column; gap: var(--s1); }
-.steps > li { display: flex; align-items: flex-start; gap: var(--s2); padding: var(--s2); border-radius: var(--radius); border: 1px solid var(--line); background: var(--card); }
-.steps > li.now { border-color: var(--accent); background: var(--accent-soft); }
+.steps > li { display: flex; align-items: flex-start; gap: var(--s2); padding: var(--s2); border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.steps > li.now { border-color: var(--accent); }
 .steps .mark { flex: none; display: flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: var(--t-small); font-weight: 700; }
 .steps > li.done .mark { background: var(--tag-ok); border-color: var(--ok); color: var(--ok); }
 .steps > li.done .what > a { color: var(--muted); }

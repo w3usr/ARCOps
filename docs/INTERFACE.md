@@ -197,6 +197,21 @@ page already does without it.
 - After a swap, focus goes where the reader's attention should be (usually the heading of what
   was replaced), and a flash message is still announced.
 
+## Color
+
+The club's color marks **what can be acted on**: buttons, links, the active menu entry, and a
+button under the pointer. Everything else stands on white paper and one neutral surface
+(`--surface`, `#f4f4f6`), never tinted from the club's color (SK, 2026-10-30, #160). A club
+whose color happens to be the one a design system ships as its default then still looks like
+itself rather than like the template.
+
+- **A state is a word with a colored edge or a colored word**, not a club-tinted fill: an info
+  message, the "acting for" banner and the current step keep the surface and take the club's
+  color on their border; an **Open** tag and an open slot take it on the word.
+- **Status colors** (`--ok`, `--warn`, `--bad`) keep their tints, always beside a word.
+- **One panel is the club's color**: the sign-in page's, the page that introduces the club.
+  The footer is the surface, under a rule.
+
 ## Type
 
 One family, served from this site: **Atkinson Hyperlegible Next**, in two weights, Regular

@@ -4214,3 +4214,18 @@ carries the actual running model ID.
   sheets before and after the scale compared by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: f43789b
+
+## [2026-10-30 14:14 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #160's color at SK's choices: one neutral surface, the club's tint only
+  on what can be acted on, and the club's color as a panel only on the sign-in page.
+- **Sections/Files Affected**: static/css/app.css (--card and --side become one --surface,
+  #f4f4f6 light and #181b20 dark; the info message, acting banner, Open tag, open slot state
+  and current step lose the club-tinted fill and keep a club-colored edge or word; the footer
+  becomes the surface under a rule, its small print in the muted color; the header comment);
+  docs/INTERFACE.md ("Color").
+- **Nature of Contribution**: Code and documentation. Verified: the guards pass; the
+  accessibility sweep, contrast included, passes in Chromium and WebKit (Firefox does not
+  launch on this Mac; CI runs it); contact sheets before and after compared by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**:
