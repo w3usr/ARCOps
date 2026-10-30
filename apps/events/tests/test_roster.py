@@ -1,6 +1,7 @@
 """The rebuilt roster (2026-09-13, second design round): day groups in two zones, grid or list,
 status phrased as a need, the slot page and fragment, captain edits on a slot, bulk actions."""
 
+import re
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -507,3 +508,49 @@ def test_home_shows_a_captain_the_gaps_in_the_next_event_they_run(world, monkeyp
     open_slots = Slot.objects.filter(position__location__event=world["ev"]).count()
     assert f"{open_slots} open slots" in body and f"{open_slots} open</span>" in body  # one count
     assert "Gaps in" not in _home(world, monkeypatch, "mem").get("/").content.decode()
+
+
+# Folded runs of open hours (#161).
+def _rows(data):
+    return [r for d in data["days"] for r in d.rows]
+
+
+def test_a_run_of_open_hours_folds_into_one_line_and_setup_stays_itself(world):
+    rows = _rows(build(world["ev"], world["mem"], "utc"))
+    operating = [r for r in rows if r.kind == "operating"]
+    fold = operating[0].fold
+    assert fold and operating[0].fold_head and all(r.fold is fold for r in operating)
+    assert (fold.hours, fold.slots, fold.open) == (4, 8, False)  # two positions, four hours
+    assert all(r.fold is None for r in rows if r.kind != "operating")  # one setup row stays
+
+
+def test_anybody_in_a_slot_breaks_the_run_and_short_runs_do_not_fold(world):
+    second = Slot.objects.filter(position=world["mult"], kind="operating").order_by("start")[1]
+    SignUp.objects.create(slot=second, user=world["mem"], role="operator")
+    assert all(r.fold is None for r in _rows(build(world["ev"], world["mem"], "utc")))
+
+
+def test_a_fold_opens_by_its_id_or_all_of_them(world):
+    fold = _rows(build(world["ev"], world["mem"], "utc"))[1].fold
+    assert _rows(build(world["ev"], world["mem"], "utc", open_fold=fold.id))[1].fold.open
+    assert _rows(build(world["ev"], world["mem"], "utc", open_fold="all"))[1].fold.open
+
+
+def test_the_roster_page_hides_a_folded_run_and_opens_it_without_javascript(world):
+    c = _as(world["mem"])
+    body = c.get(f"/events/{world['ev'].pk}/").content.decode()
+    fold = re.search(r'id="fold-(\d+)"', body)
+    assert fold and "4 open hours" in body and "8 slots" in body
+    assert body.count(f'data-fold="{fold[1]}" hidden') == 4
+    opened = c.get(f"/events/{world['ev'].pk}/?open={fold[1]}").content.decode()
+    assert (
+        "r-fold" not in opened
+        and " hidden" not in opened.split('class="roster')[1].split("</form>")[0]
+    )
+
+
+def test_a_run_that_ends_at_midnight_ends_at_24_00(world):
+    fold = _rows(build(world["ev"], world["mem"], "utc"))[1].fold
+    assert fold.lead_range == "00:00–04:00 UTC"  # the operating period: 00:00Z to 04:00Z
+    eastern = _rows(build(world["ev"], world["mem"], "local"))[1].fold
+    assert eastern.lead_range == "20:00–24:00 EDT"  # 00:00Z is midnight in New York's EDT

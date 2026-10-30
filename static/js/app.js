@@ -127,11 +127,27 @@ if ("serviceWorker" in navigator) {
       if (t.matches("[data-select-day]")) {
         form.querySelectorAll(`input[name="slots"][data-day="${t.dataset.selectDay}"]`).forEach((b) => { b.checked = t.checked; });
       }
+      if (t.matches("[data-select-fold]")) {  // a folded run's own box: its hours, one tick (FR-55)
+        form.querySelectorAll(`.r-row[data-fold="${t.dataset.selectFold}"] input[name="slots"]`).forEach((b) => { b.checked = t.checked; });
+      }
       update();
     });
     update();
   }
 })();
+
+// A folded run of open hours opens in place (#161): its rows are on the page already, hidden.
+// Without JavaScript the same link reloads the roster with the run open.
+document.addEventListener("click", (ev) => {
+  const link = ev.target.closest("[data-open-fold]");
+  if (!link) return;
+  ev.preventDefault();
+  const id = link.dataset.openFold;
+  const rows = document.querySelectorAll(`.r-row[data-fold="${id}"]`);
+  rows.forEach((r) => { r.hidden = false; });
+  document.getElementById(`fold-${id}`)?.remove();
+  rows[0]?.querySelector(".slot-link")?.focus();
+});
 
 // Flash messages: a live region that is already on the page when it loads announces nothing,
 // so move focus to it once. The list is tabindex="-1", so it never enters the tab order.

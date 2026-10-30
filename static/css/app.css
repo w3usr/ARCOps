@@ -511,6 +511,10 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .tone-open .state .word { color: var(--accent); } .roster .tone-ok .state .word { color: var(--ok); } .roster .tone-warn .state .word { color: var(--warn); } .roster .tone-bad .state .word { color: var(--bad); }
 .roster .state small { color: var(--muted); }
 .roster .r-where { font-size: var(--t-small); color: var(--muted); }
+/* A folded run of open hours (#161): one row across every position, its hours hidden after it
+   (the [hidden] rule above, which is !important, outranks .r-row's display: grid). */
+.roster .r-foldcell { grid-column: 2 / -1; }
+.roster .fold-link { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .2rem .6rem; }
 
 .bulkbar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 0; padding: .75rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow); }
 .bulkbar input, .bulkbar select { width: auto; max-width: 18rem; }
@@ -536,9 +540,11 @@ html.js .bulkbar:not(.active) { display: none; }
   .roster .r-time { flex-direction: row; gap: .6rem; align-items: baseline; padding-bottom: .25rem; }
   .roster .r-cell { border-left: 0; border-top: 1px dashed var(--line); }
   .roster .r-cell.empty { display: none; }
+  .roster .r-foldcell { grid-column: auto; }
   .roster .r-dayhead { top: 0; }
 }
 @media print {
+  .roster .r-row[hidden] { display: grid !important; } .roster .r-fold { display: none; }  /* every slot, on paper (FR-65, FR-85) */
   .sidenav, .topbar, footer.site, .bulkbar, .legend, .zones a, .banner form, .titlerow .button, .crumbs, .roster input[type="checkbox"], .skip { display: none !important; }
   .shell { display: block; } .content { padding: 0; max-width: none; }
   .roster { border-color: #999; } .roster .slot-link { padding-left: .5rem; }

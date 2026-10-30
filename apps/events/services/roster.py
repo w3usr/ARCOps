@@ -137,6 +137,19 @@ class Cell:
 
 
 @dataclass
+class Fold:
+    """A run of rows with every slot in them open, read as one row (#161): "06:00–14:00, 8 open
+    hours", which opens in place to the hours themselves. Its rows stay on the page, hidden."""
+
+    id: str
+    lead_range: str
+    other_range: str
+    hours: float
+    slots: int
+    open: bool = False  # shown expanded: `?open=<id>`, or `?open=all`
+
+
+@dataclass
 class Row:
     start: datetime
     end: datetime
@@ -144,6 +157,8 @@ class Row:
     other_range: str
     kind: str
     cells: list[Cell | None] = field(default_factory=list)  # one per position in grid layout
+    fold: Fold | None = None  # the run this row is folded into, if any
+    fold_head: bool = False  # the run's first row, where its one line is drawn
 
 
 @dataclass
@@ -207,8 +222,66 @@ def coverage(event: Event, now: datetime | None = None) -> dict:
     return counts
 
 
+def _run_hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -> str:
+    """A run's hours, where a run that ends at midnight ends at 24:00: "04:00–00:00" reads as
+    if it went backwards, and a whole free day as "00:00–00:00" reads as no time at all."""
+    text = _hours(start, end, zone, with_day)
+    local = end.astimezone(zone)
+    if (local.hour, local.minute) != (0, 0):
+        return text
+    head, tail = text.rsplit("–", 1)  # tail is "00:00" and the zone's label
+    return f"{head}–24:00{tail[5:]}"
+
+
+# Fewer rows than this read faster as themselves than as "3 open hours".
+FOLD_MIN_ROWS = 3
+
+
+def _fold_runs(day: Day, lead_zone: ZoneInfo, other_zone: ZoneInfo | None, open_fold: str):
+    """Folds every run of at least FOLD_MIN_ROWS rows in which each slot is open (nobody in it,
+    not over a limit). A run breaks at an occupied or closed slot, a change of kind (setup,
+    operating), a gap in time, and the day's end. Whole rows only, so a grid's columns stay
+    aligned (FR-51, FR-65)."""
+    run: list[Row] = []
+
+    def close():
+        if len(run) >= FOLD_MIN_ROWS:
+            first, last = run[0], run[-1]
+            fold = Fold(
+                id=f"{first.start:%Y%m%d%H%M}",
+                lead_range=_run_hours(first.start, last.end, lead_zone, with_day=False),
+                other_range=_run_hours(first.start, last.end, other_zone, with_day=True)
+                if other_zone
+                else "",
+                hours=round((last.end - first.start).total_seconds() / 3600, 2),
+                slots=sum(1 for r in run for c in r.cells if c),
+            )
+            fold.open = open_fold in ("all", fold.id)
+            first.fold_head = True
+            for r in run:
+                r.fold = fold
+        run.clear()
+
+    for row in day.rows:
+        foldable = any(row.cells) and all(
+            c is None or (c.shown.key == "open" and not c.over_limit) for c in row.cells
+        )
+        if not foldable:
+            close()
+            continue
+        if run and (row.kind != run[-1].kind or row.start != run[-1].end):
+            close()
+        run.append(row)
+    close()
+
+
 def build(
-    event: Event, viewer, lead: str = "local", now: datetime | None = None, filter: str = ""
+    event: Event,
+    viewer,
+    lead: str = "local",
+    now: datetime | None = None,
+    filter: str = "",
+    open_fold: str = "",
 ) -> dict:
     now = now or timezone.now()
     local = display_zone(event)
@@ -321,6 +394,9 @@ def build(
             row.cells[pos_index[s.position_id]] = cells[s.pk]
         else:
             row.cells.append(cells[s.pk])
+
+    for day in days.values():
+        _fold_runs(day, lead_zone, None if one_zone else other_zone, open_fold)
 
     single_location = len({p.location_id for p in positions}) == 1
     roles = setting("slot_roles", []) or []

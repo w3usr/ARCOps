@@ -54,7 +54,13 @@ def event_detail(request, pk):
     if not _visible(request.user, event):
         raise Http404
     lead = request.session.get("roster_tz", "local")
-    roster = build_roster(event, request.user, lead, filter=request.GET.get("filter", ""))
+    roster = build_roster(
+        event,
+        request.user,
+        lead,
+        filter=request.GET.get("filter", ""),
+        open_fold=request.GET.get("open", ""),  # a folded run, opened without JavaScript (#161)
+    )
     return render(
         request,
         "events/detail.html",

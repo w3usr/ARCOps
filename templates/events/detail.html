@@ -80,7 +80,22 @@
   <div class="r-day" role="rowgroup">
     <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.positions|length|add:1 }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
     {% for row in day.rows %}
-    <div class="r-row kind-{{ row.kind }}" role="row">
+    {% if row.fold_head and not row.fold.open %}{% with f=row.fold %}
+    {% comment %}A run of open hours, read as one row (#161). Its hours follow, hidden: the link
+    opens them in place, or without JavaScript reloads the roster with the run open; the box
+    selects them all.{% endcomment %}
+    <div class="r-row r-fold kind-{{ row.kind }}" role="row" id="fold-{{ f.id }}">
+      <div class="r-time" role="rowheader"><span class="lead">{{ f.lead_range }}</span>{% if f.other_range %}<span class="other muted">{{ f.other_range }}</span>{% endif %}</div>
+      <div class="r-cell r-foldcell tone-open" role="cell"{% if roster.layout == 'grid' %} aria-colspan="{{ roster.positions|length }}"{% endif %}>
+        {% if roster.selectable %}<input type="checkbox" data-select-fold="{{ f.id }}" aria-label="Select the {{ f.slots }} open slot{{ f.slots|pluralize }} from {{ f.lead_range }}">{% endif %}
+        <a class="slot-link fold-link" href="?open={{ f.id }}#fold-{{ f.id }}" data-open-fold="{{ f.id }}">
+          <span class="state"><span class="word">{{ f.hours|floatformat:"-2" }} open hour{{ f.hours|pluralize }}</span>{% if f.slots != f.hours %}<small>{{ f.slots }} slots</small>{% endif %}</span>
+          <span class="muted">Show them</span>
+        </a>
+      </div>
+    </div>
+    {% endwith %}{% endif %}
+    <div class="r-row kind-{{ row.kind }}" role="row"{% if row.fold and not row.fold.open %} data-fold="{{ row.fold.id }}" hidden{% elif row.fold_head %} id="fold-{{ row.fold.id }}"{% endif %}>
       <div class="r-time" role="rowheader">
         <span class="lead">{{ row.lead_range }}</span>
         {% if row.other_range %}<span class="other muted">{{ row.other_range }}</span>{% endif %}

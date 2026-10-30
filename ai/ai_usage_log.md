@@ -4331,3 +4331,23 @@ carries the actual running model ID.
   T11 to T13, T34, T38 and T46 pass locally after following the wording; contact sheet compared.
 - **Human Review Status**: Pending review
 - **Git Hash**: 3c96e30
+
+## [2026-10-30 16:12 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #161 stages 1 and 2: runs of open hours on the roster fold into one row,
+  after checking the design against FR-51, FR-55, FR-62, FR-65, FR-85, FR-95, FR-116 and TR-4.
+- **Sections/Files Affected**: apps/events/services/roster.py (Fold; _fold_runs: three or more
+  whole rows, every slot open, breaking at an occupied slot, a change of kind, a gap or the
+  day's end; a run ending at midnight ends at 24:00; build(open_fold=...)); apps/events/views.py
+  (?open=); templates/events/detail.html (the fold row, its hours hidden after it);
+  static/js/app.js (Show them opens in place; the run's box selects its slots);
+  static/css/app.css (the fold across every position; print shows every hour);
+  apps/events/tests/test_roster.py (five tests).
+- **Nature of Contribution**: Design and code. Not a <details>, as the issue suggested: FR-116's
+  roster is an ARIA table, and details and summary take no ARIA roles, so rows inside one would
+  leave the table. A fold is a row of its own with a link, which works without JavaScript.
+  Verified: tools/check.sh shows only the four known local failures and one announcement test
+  that fails under parallel load and passes alone (three times); the demo roster is 5,860 px
+  tall on a phone before and 2,147 px after (desktop 3,827 to 1,500).
+- **Human Review Status**: Pending review
+- **Git Hash**:
