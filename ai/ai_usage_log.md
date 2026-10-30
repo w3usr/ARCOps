@@ -4281,3 +4281,17 @@ carries the actual running model ID.
   only the four known local failures.
 - **Human Review Status**: Pending review
 - **Git Hash**: ac8d070
+
+## [2026-10-30 15:17 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #146 without the roster's density (which goes with #161): label/value
+  details, the profile as sections, and desktop density for tables.
+- **Sections/Files Affected**: static/css/app.css (.dl a two-column grid from 40rem with labels at
+  the regular weight in the muted color; .table rows .35rem instead of .55rem);
+  templates/accounts/member_detail.html, member_edit.html and _account_form.html (19 cards
+  become sections; the highlights and both Danger zones stay cards).
+- **Nature of Contribution**: Code. Verified: tools/check.sh shows only the four known local
+  failures; contact sheets compared by eye (a member's own page 1950 to 1547 px tall, Edit
+  profile 3060 to 2821 px); scenario scripts T06 40/0 and T07 61/0 locally.
+- **Human Review Status**: Pending review
+- **Git Hash**:

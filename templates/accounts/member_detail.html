@@ -27,7 +27,7 @@ access on the way past. The officer's view and the member's own profile are the 
 {% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. {% if is_self %}You{% else %}They{% endif %} joined {{ member.date_joined|date:"d M Y" }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
 {% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> {% if is_self %}your{% else %}their{% endif %} address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>{% endif %}
 
-<section class="card" aria-labelledby="d">
+<section class="section" aria-labelledby="d">
   <h2 id="d">Details</h2>
   <dl class="dl">
     {% for r in rows %}<dt>{{ r.label }}</dt><dd>{{ r.value|linebreaksbr }}</dd>{% endfor %}
@@ -35,7 +35,7 @@ access on the way past. The officer's view and the member's own profile are the 
   {% if member.name_from_uls %}<p class="helptext">The name is the FCC's record for <strong>{{ member.callsign }}</strong>, refreshed from the FCC and not edited here. {% if is_self %}To be known by another name in the club, set <strong>Preferred name</strong>; where{% else %}Where{% endif %} the FCC's record is wrong, a sysadmin can override it with a reason.</p>{% endif %}
 </section>
 
-<section class="card" aria-labelledby="em">
+<section class="section" aria-labelledby="em">
   <h2 id="em">Email</h2>
   <ul class="list addresses-list">
   {% for a in addresses %}
@@ -45,7 +45,7 @@ access on the way past. The officer's view and the member's own profile are the 
   </ul>
 </section>
 
-<section class="card" aria-labelledby="lic">
+<section class="section" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
   <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
@@ -54,7 +54,7 @@ access on the way past. The officer's view and the member's own profile are the 
   {% else %}<p class="muted">None on file.</p>{% endif %}
 </section>
 
-<section class="card" aria-labelledby="ag">
+<section class="section" aria-labelledby="ag">
   <h2 id="ag">Agreements</h2>
   {% if standing.agreements %}
   <dl class="dl">
@@ -65,7 +65,7 @@ access on the way past. The officer's view and the member's own profile are the 
 </section>
 
 {% if member.under_18 or guardian_links %}
-<section class="card" aria-labelledby="gd">
+<section class="section" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>{% if is_self %}You are under 18: a guardian acts for you, every message to you goes to every active guardian, and you sign in read-only. A responsible adult named by your guardian accompanies you at every slot.{% else %}This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.{% endif %}</p>{% endif %}
   <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
@@ -73,7 +73,7 @@ access on the way past. The officer's view and the member's own profile are the 
 {% endif %}
 
 {% if wards and not is_self %}
-<section class="card"><h2>Acts for</h2>
+<section class="section"><h2>Acts for</h2>
 <ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
 </section>
 {% endif %}
@@ -81,7 +81,7 @@ access on the way past. The officer's view and the member's own profile are the 
 {% if is_self %}
 {% comment %}Yours alone: what reaches you, and the way to your password. Both read here; the
 switches are on the edit page.{% endcomment %}
-<section class="card" id="notifications"><h2>Notifications</h2>
+<section class="section" id="notifications"><h2>Notifications</h2>
 <p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose.</p>
 <table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
 {% for row in notification_rows %}
@@ -95,7 +95,7 @@ switches are on the edit page.{% endcomment %}
 </section>
 {% comment %}Three separate things, each with its state in words. A passkey is a way to sign in,
 and two-step verification is asked for rather than inferred from one (NAF, 2026-09-20).{% endcomment %}
-<section class="card"><h2>Security</h2>
+<section class="section"><h2>Security</h2>
 <dl class="dl">
   <dt>Password</dt>
   <dd><a href="{% url 'account_change_password' %}">Change password</a></dd>

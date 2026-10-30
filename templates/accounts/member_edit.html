@@ -34,9 +34,9 @@ stored in.{% endcomment %}
 </section>
 {% endif %}
 
-<section class="card" id="addresses">{% include "accounts/_addresses.html" %}</section>
+<section class="section" id="addresses">{% include "accounts/_addresses.html" %}</section>
 
-<section class="card" aria-labelledby="lic">
+<section class="section" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
   <p><strong>{{ standing.license.callsign }}</strong> · {{ standing.license.class_label }} · {{ standing.license.status_label }}{% if standing.license.effective_expiry %} · expires {{ standing.license.effective_expiry }}{% endif %}</p>
@@ -65,7 +65,7 @@ stored in.{% endcomment %}
   {% endif %}
 </section>
 
-<section class="card" aria-labelledby="ag">
+<section class="section" aria-labelledby="ag">
   <h2 id="ag">Agreements</h2>
   {% if standing.agreements %}
   <dl class="dl">
@@ -85,7 +85,7 @@ stored in.{% endcomment %}
 </section>
 
 {% if member.under_18 or guardian_links %}
-<section class="card" aria-labelledby="gd">
+<section class="section" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
   <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %} · {{ g.guardian.email }}{% if g.guardian.cell_phone %} · {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} · <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="linklike">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
@@ -97,7 +97,7 @@ stored in.{% endcomment %}
 {% endif %}
 
 {% if wards %}
-<section class="card"><h2>Acts for</h2>
+<section class="section"><h2>Acts for</h2>
 <ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
 </section>
 {% endif %}
@@ -105,7 +105,7 @@ stored in.{% endcomment %}
 {% include "accounts/_account_form.html" with form_heading=manage_heading %}
 
 {% if perms.ops.issue_temporary_password and not is_self or perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
-<section class="card" aria-labelledby="si">
+<section class="section" aria-labelledby="si">
   <h2 id="si">Signing in</h2>
   {% if perms.ops.issue_temporary_password and not is_self %}
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
@@ -119,7 +119,7 @@ stored in.{% endcomment %}
 {% endif %}
 
 {% if can_restore %}
-<section class="card" aria-labelledby="mb">
+<section class="section" aria-labelledby="mb">
   <h2 id="mb">In the archive</h2>
   <p>In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted, and they are still {{ member.status_label|lower|cut:" · archived" }}.</p>
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Take them out of the archive</button></form>
@@ -204,7 +204,7 @@ account. An officer editing somebody else does not see these; they are not the c
 {% comment %}Two-step verification is turned on and off here, because it is a control and the
 page that reads holds none (NAF, 2026-09-19). What it is, and whether the club requires it, is
 said on the profile beside the passkeys.{% endcomment %}
-<section class="card" aria-labelledby="sec" id="security">
+<section class="section" aria-labelledby="sec" id="security">
   <h2 id="sec">Two-step verification</h2>
   <p>{% if security.on %}<strong>On</strong>: after your password, sign-in asks for a code or your passkey.{% else %}<strong>Off</strong>: sign-in asks for your password alone. A passkey still signs you in without one.{% endif %}{% if security.required %} Your access level requires it, so it cannot be turned off.{% endif %}</p>
   {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> set it up before {{ security.deadline|date:"j F Y" }}, after which sign-in will ask you to.</p>{% endif %}
@@ -218,7 +218,7 @@ said on the profile beside the passkeys.{% endcomment %}
   <p class="helptext">{% if security.on %}Turning it off leaves your passkeys and authenticator alone; they simply stop being asked for.{% else %}You need an authenticator app or a passkey to answer with. <a href="{% url 'mfa_index' %}">Add one</a>.{% endif %}</p>
 </section>
 
-<form method="post" action="{% url 'notifications' %}" class="card stack" id="notifications">{% csrf_token %}
+<form method="post" action="{% url 'notifications' %}" class="section stack" id="notifications">{% csrf_token %}
 <h2>Notifications</h2>
 <p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>
 <table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
@@ -233,7 +233,7 @@ said on the profile beside the passkeys.{% endcomment %}
 </form>
 
 {% if vapid_public_key %}
-<section class="card stack" id="browser-notifications">
+<section class="section stack" id="browser-notifications">
 <h2>Browser notifications</h2>
 <form method="post" action="{% url 'push_toggle' %}" class="inline">{% csrf_token %}
   <div class="check"><input type="checkbox" name="push_enabled" id="push_enabled"{% if user.push_enabled %} checked{% endif %}><label for="push_enabled">Show my messages as browser notifications on devices where I have allowed it</label></div>

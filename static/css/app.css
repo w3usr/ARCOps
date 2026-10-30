@@ -279,7 +279,9 @@ footer.site .credit a { color: inherit; }
 :is(.card, .section) .prose:last-child > :last-child { margin-bottom: 0; }
 .list { padding-left: 1.25rem; } .list li { margin: .25rem 0; }
 .table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
-.table th, .table td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+/* Desktop density (#146): rows a little tighter than a form's, so a list of members or messages
+   shows more of itself. Under 40rem the stacked layout below sets its own padding. */
+.table th, .table td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 .table thead th { border-bottom: 2px solid var(--line); font-size: var(--t-small); color: var(--muted); font-weight: 700; }
 .roster tr.st-not_viable th { border-left: 4px solid var(--bad); }
 .roster tr.st-at_risk th { border-left: 4px solid var(--warn); }
@@ -297,7 +299,13 @@ footer.site .credit a { color: inherit; }
 .msg.error { border-left-color: var(--bad); background: var(--tag-bad); border-color: var(--bad); }
 .msg.warning { border-left-color: var(--warn); background: var(--tag-warn); border-color: var(--warn); }
 .msg.info { border-left-color: var(--accent); border-color: var(--accent); }
-.dl dt { font-weight: 700; margin-top: .5rem; } .dl dd { margin: 0; }
+/* Label and value (#146): two columns at desktop, about half the height of the stack, with the
+   label at the regular weight in the muted color; on a phone, the label above its value. */
+.dl dt { color: var(--muted); margin-top: .5rem; } .dl dd { margin: 0; }
+@media (min-width: 40rem) {
+  .dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--s1) var(--s3); }
+  .dl dt { margin-top: 0; }
+}
 .prose h1, .prose h2, .prose h3 { margin-top: 1rem; }
 .secret code { font-size: var(--t-h2); letter-spacing: .05em; }
 
