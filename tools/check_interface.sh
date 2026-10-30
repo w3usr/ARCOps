@@ -5,6 +5,7 @@
 # data-label loses its meaning when the table stacks on a phone; a title attribute is invisible
 # on a phone and to the keyboard, so it is never the only explanation; an inline event handler
 # is dead under the content security policy; and a British spelling is not the house spelling.
+# A fifth keeps type to its five sizes and two weights.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 python3 - <<'PY'
@@ -87,6 +88,23 @@ for path in sorted(pathlib.Path("apps").glob("*/models.py")):
         hit = label and BRITISH.search(label.group(1))
         if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
+
+# Five sizes of type and two weights (docs/INTERFACE.md, "Type"). A sixth size crept in one
+# rule at a time until the stylesheet had seventeen (#160).
+SIZE = re.compile(r"font-size:\s*([^;}]+)")
+WEIGHT = re.compile(r"font-weight:\s*([^;}]+)")
+SIZES = {f"var(--t-{t})" for t in ("small", "body", "lede", "h2", "h1")} | {"inherit"}
+WEIGHTS = {"400", "700", "inherit"}
+for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates").rglob("*.html"))]:
+    if "email" in path.parts or path.name.endswith("_pdf.html"):
+        continue  # mail and PDFs have their own type; neither loads app.css
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        for m in SIZE.finditer(line):
+            if m.group(1).strip() not in SIZES:
+                fail.append(f"{path}:{n}: font-size {m.group(1).strip()}; use one of var(--t-small|body|lede|h2|h1)")
+        for m in WEIGHT.finditer(line):
+            if m.group(1).strip() not in WEIGHTS:
+                fail.append(f"{path}:{n}: font-weight {m.group(1).strip()}; the face has 400 and 700")
 
 for line in dict.fromkeys(fail):
     print(line)

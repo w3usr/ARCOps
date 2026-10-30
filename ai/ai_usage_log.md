@@ -4198,3 +4198,19 @@ carries the actual running model ID.
   known local failures; before and after contact sheets of every page compared by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: f85f1d5
+
+## [2026-10-30 14:00 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #160's type scale at SK's choice: five sizes (14/16/18/20/30 px) and two
+  weights, every rule mapped onto them, kept by a guard; the smallest text up to small and the
+  sidebar's group labels out of capitals.
+- **Sections/Files Affected**: static/css/app.css (the --t-* values; 41 font-size and 28
+  font-weight declarations mapped onto the tokens and 400/700; .navgroup without uppercase or
+  tracking); tools/check_interface.sh (refuses any other size or weight); docs/INTERFACE.md
+  ("Type": the scale and its uses).
+- **Nature of Contribution**: Code (a mechanical mapping from SK's table), a guard, and docs.
+  Verified: the guard fails a stray .8rem and 600 and passes otherwise; the accessibility sweep
+  passes in Chromium and WebKit (Firefox does not launch on this Mac; CI runs it); contact
+  sheets before and after the scale compared by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**:

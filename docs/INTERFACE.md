@@ -209,8 +209,21 @@ One family, served from this site: **Atkinson Hyperlegible Next**, in two weight
 - **Numbers that are compared line up.** The face's own figures are proportional, so times and
   tables carry `font-variant-numeric: tabular-nums` and every digit is the same width. Running
   text keeps the proportional figures.
-- **Two weights, no more.** A rule asking for 500 is drawn at 400, and one asking for 600 or
-  800 at 700; the browser invents no weight in between.
+- **Two weights, no more:** 400 and 700. Labels are 400; headings, names that lead a row, and a
+  button's words are 700.
+- **Five sizes, no more** (SK, 2026-10-30), each a token in `app.css`:
+
+  | Token | Size | For |
+  |---|---|---|
+  | `--t-small` | 14 px | tags, badges, help, errors, legends, table headers, a roster's second lines |
+  | `--t-body` | 16 px | everything read as text |
+  | `--t-lede` | 18 px | `h3`, a page's opening line, an event's time, a card's title |
+  | `--t-h2` | 20 px | `h2`, the slot dialog's heading, a password shown to be copied |
+  | `--t-h1` | 30 px | `h1`, the sign-in page's callsign |
+
+  Something that seems to need a sixth size usually needs a different structure instead.
+  Nothing is set in capitals to look like a label: a group in the sidebar is named in small
+  bold words, as written. `tools/check_interface.sh` refuses any other size or weight.
 
 ## Tables
 
