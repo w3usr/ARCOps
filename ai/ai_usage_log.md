@@ -4350,4 +4350,4 @@ carries the actual running model ID.
   that fails under parallel load and passes alone (three times); the demo roster is 5,860 px
   tall on a phone before and 2,147 px after (desktop 3,827 to 1,500).
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: c25f3d6
