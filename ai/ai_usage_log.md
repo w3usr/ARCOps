@@ -4390,3 +4390,19 @@ carries the actual running model ID.
   Chromium and WebKit; contact sheets at desktop and phone width looked at.
 - **Human Review Status**: Pending review
 - **Git Hash**: 2b121cd
+
+## [2026-10-31 11:09 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #161 stage 5: a person on the roster reads one way, the role with marks
+  rather than a string of middle dots; the sidebar's name likewise.
+- **Sections/Files Affected**: apps/events/services/roster.py (a badge is a mark and its word);
+  templates/events/_roster_cell.html (the role, then S, I and CO, confirmed or checked in, each a
+  mark with its word for a screen reader; reminders off in words); templates/events/detail.html
+  (the key lists every mark); templates/base.html (the sidebar's "Cy N0CAN"); static/css/app.css
+  (.mk); apps/accounts/tests/test_signin_messages.py.
+- **Nature of Contribution**: Code. FR-65 asks for compact credential badges and FR-116 for a text
+  name read out, so each is a short visible mark with its word, explained in the key. Verified:
+  tools/check.sh shows only the four known local failures; the accessibility sweep passes in
+  Chromium and WebKit; contact sheet looked at.
+- **Human Review Status**: Pending review
+- **Git Hash**:

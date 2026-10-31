@@ -93,7 +93,7 @@ localStorage, where they would keep member names and rosters (technical addendum
       destinations, so two links. They were one link to the level page, which is not where a
       reader who clicks their own name expects to arrive (NAF, 2026-09-19).{% endcomment %}
       <div class="whoami">{% icon 'user' %}<span>
-        <a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} · {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
+        <a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
         {% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% elif acting_label %}<span class="level">{{ acting_label }}</span>{% endif %}
       </span></div>
       <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>

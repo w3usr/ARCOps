@@ -117,7 +117,8 @@ class Cell:
     shown: Presentation
     control_operator: object = None
     over_limit: bool = False  # FR-39, FR-62: pushes a day or the event past an operating limit
-    badges: dict = field(default_factory=dict)  # FR-65: signup pk -> compact credential badges
+    # FR-65: signup pk -> compact credential badges, each a mark and its word: [("S", "station access")]
+    badges: dict = field(default_factory=dict)
     co_choices: list = field(default_factory=list)  # FR-63: who a captain may name; captains only
 
     @property
@@ -247,7 +248,13 @@ def _unlabelled(text: str, label: str) -> str:
 
 # The coverage strip (#161): a mark per time span, its state as a symbol as well as a color (FR-62),
 # most urgent first when positions differ.
-STRIP_MARKS = {"problem": "!", "needs": "!", "open": "", "covered": "✓", "closed": "–"}  # open: an empty box
+STRIP_MARKS = {
+    "problem": "!",
+    "needs": "!",
+    "open": "",
+    "covered": "✓",
+    "closed": "–",
+}  # open: an empty box
 STRIP_ORDER = list(STRIP_MARKS)
 
 
@@ -392,9 +399,9 @@ def build(
         for su in signups:
             b = []
             if holds(su.user, "station_access", on):
-                b.append("S")
+                b.append(("S", "station access"))
             if holds(su.user, "it_access", on):
-                b.append("I")
+                b.append(("I", "computer access"))
             badges[su.pk] = b
         cells[s.pk] = Cell(
             s,

@@ -525,6 +525,10 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .people { display: flex; flex-wrap: wrap; gap: .15rem .6rem; }
 .roster .person { display: inline-flex; flex-direction: column; line-height: 1.15; }
 .roster .person .role { color: var(--muted); font-size: var(--t-small); }
+/* A credential, the control operator, or a sign-up's state, as a mark beside the role (#161,
+   FR-65); its word is there for a screen reader, and the key gives it for everyone else. */
+.mk { display: inline-block; margin-left: .15rem; padding: 0 .2rem; border: 1px solid var(--line); border-radius: var(--r-field); font-size: var(--t-small); font-weight: 700; line-height: 1.2; color: var(--fg); font-variant-numeric: tabular-nums; }
+.mk.ok { border-color: var(--ok); color: var(--ok); }
 .roster .you { font-size: var(--t-small); font-weight: 700; color: var(--accent); align-self: center; }
 .roster .state { font-size: var(--t-small); display: flex; gap: .4rem; align-items: baseline; flex-wrap: wrap; }
 .roster .state .word { font-weight: 700; }
