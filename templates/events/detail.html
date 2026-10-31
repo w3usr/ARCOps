@@ -53,9 +53,7 @@
 <form method="post" action="{% url 'event_bulk' event.pk %}" id="roster-form">{% csrf_token %}
 <div class="rosterhead">
   <h2>Roster</h2>
-  <p class="zones muted">{% if roster.other_label %}Times in <strong>{{ roster.lead_label }}</strong>, then {{ roster.other_label }}.
-    <a href="{% url 'roster_tz' event.pk %}?tz={% if roster.lead == 'utc' %}local{% else %}utc{% endif %}">Lead with {{ roster.other_label }}</a>
-    {% else %}Times in <strong>{{ roster.lead_label }}</strong>.{% endif %}
+  <p class="zones muted">Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.
     · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %}</p>
 </div>
 <div class="legend muted"><span class="legend-label" id="roster-key">Key</span>
@@ -69,23 +67,27 @@
   </ul>
 </div>
 
-<div class="roster {{ roster.layout }}{% if not roster.selectable %} noselect{% endif %}" role="table" aria-label="Roster">
+{% comment %}UTC is the axis (#161, functional addendum A12): the zone is named once, in the time
+column's header, and where the event's zone differs it has a column of its own.{% endcomment %}
+<div class="roster {{ roster.layout }}{% if roster.other_label %} twozones{% endif %}{% if not roster.selectable %} noselect{% endif %}" role="table" aria-label="Roster">
   {% if roster.layout == 'grid' %}
   <div class="r-head" role="row">
-    <div class="r-time" role="columnheader">Time</div>
+    <div class="r-time" role="columnheader">{{ roster.lead_label }}</div>
+    {% if roster.other_label %}<div class="r-zone" role="columnheader">{{ roster.other_label }}</div>{% endif %}
     {% for p in roster.positions %}<div class="r-pos" role="columnheader">{% if not roster.single_location %}<span class="loc">{{ p.location.name }}</span>{% endif %}<span>{{ p.name }}</span></div>{% endfor %}
   </div>
   {% endif %}
   {% for day in roster.days %}
   <div class="r-day" role="rowgroup">
-    <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.positions|length|add:1 }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
+    <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.columns }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
     {% for row in day.rows %}
     {% if row.fold_head and not row.fold.open %}{% with f=row.fold %}
     {% comment %}A run of open hours, read as one row (#161). Its hours follow, hidden: the link
     opens them in place, or without JavaScript reloads the roster with the run open; the box
     selects them all.{% endcomment %}
     <div class="r-row r-fold kind-{{ row.kind }}" role="row" id="fold-{{ f.id }}">
-      <div class="r-time" role="rowheader"><span class="lead">{{ f.lead_range }}</span>{% if f.other_range %}<span class="other muted">{{ f.other_range }}</span>{% endif %}</div>
+      <div class="r-time" role="rowheader"><span class="lead">{% if roster.layout == 'grid' %}{{ f.lead_hours }}{% else %}{{ f.lead_range }}{% endif %}</span></div>
+      {% if roster.other_label %}<div class="r-zone muted" role="cell">{% if roster.layout == 'grid' %}{{ f.other_hours }}{% else %}{{ f.other_range }}{% endif %}</div>{% endif %}
       <div class="r-cell r-foldcell tone-open" role="cell"{% if roster.layout == 'grid' %} aria-colspan="{{ roster.positions|length }}"{% endif %}>
         {% if roster.selectable %}<input type="checkbox" data-select-fold="{{ f.id }}" aria-label="Select the {{ f.slots }} open slot{{ f.slots|pluralize }} from {{ f.lead_range }}">{% endif %}
         <a class="slot-link fold-link" href="?open={{ f.id }}#fold-{{ f.id }}" data-open-fold="{{ f.id }}">
@@ -97,10 +99,10 @@
     {% endwith %}{% endif %}
     <div class="r-row kind-{{ row.kind }}" role="row"{% if row.fold and not row.fold.open %} data-fold="{{ row.fold.id }}" hidden{% elif row.fold_head %} id="fold-{{ row.fold.id }}"{% endif %}>
       <div class="r-time" role="rowheader">
-        <span class="lead">{{ row.lead_range }}</span>
-        {% if row.other_range %}<span class="other muted">{{ row.other_range }}</span>{% endif %}
+        <span class="lead">{% if roster.layout == 'grid' %}{{ row.lead_hours }}{% else %}{{ row.lead_range }}{% endif %}</span>
         {% if row.kind != 'operating' %}<span class="tag">{{ row.kind }}</span>{% endif %}
       </div>
+      {% if roster.other_label %}<div class="r-zone muted" role="cell">{% if roster.layout == 'grid' %}{{ row.other_hours }}{% else %}{{ row.other_range }}{% endif %}</div>{% endif %}
       {% for c in row.cells %}
       {% if c %}
       {% include "events/_roster_cell.html" %}

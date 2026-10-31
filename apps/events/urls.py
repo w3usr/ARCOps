@@ -36,7 +36,6 @@ urlpatterns = [
     path("<int:pk>/duplicate/", views_manage.event_duplicate, name="event_duplicate"),
     path("<int:pk>/cancel/", views_manage.event_cancel, name="event_cancel"),
     path("slot/<int:slot_id>/toggle/", views_manage.slot_toggle, name="slot_toggle"),
-    path("<int:pk>/tz/", views_slots.roster_tz, name="roster_tz"),
     path("<int:pk>/slot/<int:slot_id>/", views_slots.slot_detail, name="slot_detail"),
     path("<int:pk>/slot/<int:slot_id>/seats/", views_slots.slot_capacities, name="slot_capacities"),
     path(

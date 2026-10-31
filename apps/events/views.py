@@ -53,7 +53,7 @@ def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if not _visible(request.user, event):
         raise Http404
-    lead = request.session.get("roster_tz", "local")
+    lead = "utc"  # UTC is the roster's axis (functional addendum A12)
     roster = build_roster(
         event,
         request.user,

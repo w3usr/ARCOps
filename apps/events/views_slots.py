@@ -31,7 +31,7 @@ from .services.viability import checkin_window_open, may_control
 
 
 def _lead(request) -> str:
-    return request.session.get("roster_tz", "local")
+    return "utc"  # UTC is the roster's axis (functional addendum A12)
 
 
 def _visible(user, event: Event) -> bool:
@@ -47,13 +47,6 @@ def roster_or_slot(request, slot: Slot):
 
 
 @login_required
-def roster_tz(request, pk):
-    """Swap which zone leads on the roster; remembered for the session."""
-    choice = request.GET.get("tz", "local")
-    request.session["roster_tz"] = "utc" if choice == "utc" else "local"
-    return redirect("event_detail", pk=pk)
-
-
 @login_required
 def slot_detail(request, pk, slot_id):
     event = get_object_or_404(Event, pk=pk)

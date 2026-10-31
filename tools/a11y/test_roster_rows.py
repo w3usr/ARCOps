@@ -21,16 +21,21 @@ def test_the_time_sits_on_one_line_and_utc_shows_once(live_server, engine, zone)
         page = browser.new_page(viewport={"width": 1280, "height": 900})
         sign_in(page, live_server.url, ACCOUNTS["member"])
         page.goto(f"{live_server.url}/events/{ev.pk}/")
+        # UTC leads, and the event's zone is a column of its own (#161, functional addendum A12).
         rows = page.eval_on_selector_all(
-            ".r-row .r-time",
-            """cells => cells.map(c => {
-                const lead = c.querySelector('.lead');
-                const other = c.querySelector('.other');
+            ".r-row:not([hidden]):not(.r-fold)",
+            """rows => rows.map(r => {
+                const lead = r.querySelector('.r-time .lead');
+                const other = r.querySelector('.r-zone');
                 const line = parseFloat(getComputedStyle(lead).lineHeight);
                 return {lead: lead.getBoundingClientRect().height, line,
                         other: other ? other.textContent.trim() : ''};
             })""",
         )
+        heads = [
+            page.text_content(f".r-head {c}") if page.query_selector(f".r-head {c}") else ""
+            for c in (".r-time", ".r-zone")
+        ]
         when = page.text_content("p.when")
         browser.close()
 
@@ -40,4 +45,7 @@ def test_the_time_sits_on_one_line_and_utc_shows_once(live_server, engine, zone)
         assert all(r["other"] == "" for r in rows), "a UTC event shows each time once"
         assert when.count("UTC") == 1, f"and its span once: {when!r}"
     else:
-        assert all(r["other"].endswith("UTC") for r in rows), "a local event still shows UTC"
+        assert heads[0] == "UTC" and heads[1] in ("EDT", "EST"), (
+            f"UTC leads, the zone beside: {heads}"
+        )
+        assert all(r["other"] for r in rows), "every row also shows the event's zone"

@@ -1,7 +1,7 @@
 """
-`{% when start end event %}`: a time or span in the event's zone with UTC alongside (FR-36),
-the lead zone following the member's roster preference. One tag, so Home, Events, My Sked, and
-the roster agree on how a time looks. NAF, 2026-09-14, on seeing a bare "Sat 26 Sep 2026 00:00":
+`{% when start end event %}`: a time or span in UTC with the event's zone beneath (FR-36,
+FR-38); UTC leads everywhere, as on the roster (functional addendum A12). One tag, so Home,
+Events, My Sked, and the roster agree on how a time looks. NAF, 2026-09-14, on seeing a bare "Sat 26 Sep 2026 00:00":
 "this needs time zone indicated. It should be in both utc and local".
 """
 
@@ -33,18 +33,11 @@ def when(context, start, end=None, event=None, year=False):
     """Two lines: the lead zone in normal weight, the other zone beneath in muted small type."""
     if not start:
         return ""
-    request = context.get("request")
-    lead = (
-        request.session.get("roster_tz", "local")
-        if request and hasattr(request, "session")
-        else "local"
-    )
     local = display_zone(event) if event is not None else UTC
     if local == UTC:
         return format_html('<span class="when1">{}</span>', _one(start, end, UTC, year))
-    lead_zone, other = (UTC, local) if lead == "utc" else (local, UTC)
     return format_html(
         '<span class="when1">{}</span><span class="when2 muted">{}</span>',
-        _one(start, end, lead_zone, year),
-        _one(start, end, other, year),
+        _one(start, end, UTC, year),
+        _one(start, end, local, year),
     )

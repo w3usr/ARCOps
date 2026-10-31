@@ -4351,3 +4351,23 @@ carries the actual running model ID.
   tall on a phone before and 2,147 px after (desktop 3,827 to 1,500).
 - **Human Review Status**: Pending review
 - **Git Hash**: c25f3d6
+
+## [2026-10-31 10:46 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #161 stage 3: UTC as the roster's axis, and UTC first on every page (SK's
+  choice, recorded as functional addendum A12).
+- **Sections/Files Affected**: apps/events/services/roster.py (UTC leads by default; rows and
+  folds carry unlabelled strings for the grid, a row naming its zone only after a change of
+  clocks; a column count); templates/events/detail.html (the time column headed UTC, the
+  event's zone a column of its own, no Lead with link); static/css/app.css (the two-zone
+  columns; narrow screens still stack); apps/events/templatetags/times.py (when: UTC first);
+  apps/events/services/mentors.py and templates/accounts/mentors.html (UTC first);
+  apps/events/views.py, views_slots.py, urls.py (the zone switch removed);
+  apps/events/tests/test_roster.py (the axis, a change of clocks, no switch);
+  tools/a11y/test_roster_rows.py (the zone column); docs/REQUIREMENTS.md (A12).
+- **Nature of Contribution**: Code, tests and the addendum entry. A12 says what is built: every
+  page leads with UTC; mail is not yet changed. Verified: tools/check.sh shows only the four known
+  local failures; every scenario script run locally, the failures left being data one script
+  leaves for another (T31's advisor count, T44's sysadmins, T22's audit rows) rather than code.
+- **Human Review Status**: Pending review
+- **Git Hash**:

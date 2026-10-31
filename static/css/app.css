@@ -477,8 +477,13 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 
 .roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
 .roster .r-head, .roster .r-row { display: grid; grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr)); }
-.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 11rem repeat(auto-fit, minmax(0, 1fr)); }
+.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 8rem repeat(auto-fit, minmax(0, 1fr)); }
 .roster.list .r-row { grid-template-columns: 11rem minmax(0, 1fr); }
+/* UTC is the axis; the event's own zone, where it differs, is a column of its own (#161). */
+.roster.grid.twozones .r-head, .roster.grid.twozones .r-row { grid-template-columns: 8rem 9.5rem repeat(auto-fit, minmax(0, 1fr)); }
+.roster.list.twozones .r-row { grid-template-columns: 11rem 11rem minmax(0, 1fr); }
+.roster .r-zone { padding: .5rem .75rem; font-size: var(--t-small); line-height: 1.25; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.roster .r-head .r-zone { padding: .5rem .75rem; }
 .roster .r-head { position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 2px solid var(--line); font-size: var(--t-small); color: var(--muted); font-weight: 700; }
 .roster .r-head > div { padding: .5rem .75rem; }
 .roster .r-pos { display: flex; flex-direction: column; line-height: 1.2; } .roster .r-pos .loc { font-weight: 400; }
@@ -488,7 +493,6 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .r-row { border-top: 1px solid var(--line); } .roster .r-day .r-row:first-of-type { border-top: 0; }
 .roster .r-time { padding: .5rem .75rem; display: flex; flex-direction: column; gap: .1rem; line-height: 1.25; }
 .roster .r-time .lead { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.roster .r-time .other { font-size: var(--t-small); white-space: nowrap; }
 .roster .r-time .tag { align-self: flex-start; margin-top: .2rem; }
 .roster .kind-setup, .roster .kind-breakdown { background: color-mix(in srgb, var(--surface) 60%, transparent); }
 .roster .r-cell { position: relative; border-left: 1px solid var(--line); min-height: 3.4rem; }
@@ -513,7 +517,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .r-where { font-size: var(--t-small); color: var(--muted); }
 /* A folded run of open hours (#161): one row across every position, its hours hidden after it
    (the [hidden] rule above, which is !important, outranks .r-row's display: grid). */
-.roster .r-foldcell { grid-column: 2 / -1; }
+.roster .r-foldcell { grid-column: 2 / -1; } .roster.twozones .r-foldcell { grid-column: 3 / -1; }
 .roster .fold-link { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .2rem .6rem; }
 
 .bulkbar { position: sticky; bottom: 0; z-index: 5; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 0; padding: .75rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow); }
@@ -536,11 +540,13 @@ html.js .bulkbar:not(.active) { display: none; }
 
 @media (max-width: 48rem) {
   .roster.grid .r-head { display: none; }
-  .roster .r-head, .roster .r-row, .roster.grid .r-row, .roster.list .r-row { grid-template-columns: 1fr; }
+  .roster .r-head, .roster .r-row, .roster.grid .r-row, .roster.list .r-row,
+  .roster.grid.twozones .r-row, .roster.list.twozones .r-row { grid-template-columns: 1fr; }
   .roster .r-time { flex-direction: row; gap: .6rem; align-items: baseline; padding-bottom: .25rem; }
   .roster .r-cell { border-left: 0; border-top: 1px dashed var(--line); }
   .roster .r-cell.empty { display: none; }
-  .roster .r-foldcell { grid-column: auto; }
+  .roster .r-foldcell, .roster.twozones .r-foldcell { grid-column: auto; }
+  .roster .r-zone { padding: 0 .75rem .35rem; }
   .roster .r-dayhead { top: 0; }
 }
 @media print {

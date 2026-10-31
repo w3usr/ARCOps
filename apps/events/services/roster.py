@@ -147,6 +147,8 @@ class Fold:
     hours: float
     slots: int
     open: bool = False  # shown expanded: `?open=<id>`, or `?open=all`
+    lead_hours: str = ""  # as Row's
+    other_hours: str = ""
 
 
 @dataclass
@@ -159,6 +161,10 @@ class Row:
     cells: list[Cell | None] = field(default_factory=list)  # one per position in grid layout
     fold: Fold | None = None  # the run this row is folded into, if any
     fold_head: bool = False  # the run's first row, where its one line is drawn
+    # The grid's own strings: the zone is named once, in the column's header, so a row names it
+    # only where it differs from the header's, after a change of clocks (#161, section 5.9).
+    lead_hours: str = ""
+    other_hours: str = ""
 
 
 @dataclass
@@ -233,6 +239,11 @@ def _run_hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -
     return f"{head}–24:00{tail[5:]}"
 
 
+def _unlabelled(text: str, label: str) -> str:
+    """The range without its zone, where the zone is the one the column's header names."""
+    return text[: -len(label) - 1] if label and text.endswith(f" {label}") else text
+
+
 # Fewer rows than this read faster as themselves than as "3 open hours".
 FOLD_MIN_ROWS = 3
 
@@ -278,7 +289,7 @@ def _fold_runs(day: Day, lead_zone: ZoneInfo, other_zone: ZoneInfo | None, open_
 def build(
     event: Event,
     viewer,
-    lead: str = "local",
+    lead: str = "utc",
     now: datetime | None = None,
     filter: str = "",
     open_fold: str = "",
@@ -395,8 +406,13 @@ def build(
         else:
             row.cells.append(cells[s.pk])
 
+    other_label = "" if one_zone else zone_label(starts or now, other_zone)
     for day in days.values():
         _fold_runs(day, lead_zone, None if one_zone else other_zone, open_fold)
+        for row in day.rows:
+            for item in (row, row.fold) if row.fold_head else (row,):
+                item.lead_hours = _unlabelled(item.lead_range, lead_label)
+                item.other_hours = _unlabelled(item.other_range, other_label)
 
     single_location = len({p.location_id for p in positions}) == 1
     roles = setting("slot_roles", []) or []
@@ -417,6 +433,8 @@ def build(
         # change of clocks shows the zone it starts in, and each row still names its own.
         "lead_label": lead_label,
         "other_label": "" if one_zone else zone_label(starts or now, other_zone),
+        # The time, the second zone where there is one, and a column per position in a grid.
+        "columns": 1 + (0 if one_zone else 1) + (len(positions) if layout == "grid" else 1),
         "span": {
             "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
             if starts and ends

@@ -7,7 +7,7 @@ from django.utils import timezone
 from apps.ops.config import setting
 
 from ..models import Event, Slot
-from .roster import display_zone, zone_label
+from .roster import UTC, display_zone, zone_label
 
 
 def mentor_role_key() -> str:
@@ -48,8 +48,11 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
                     {
                         "slot": s,
                         "open": open_seats,
-                        "lead": f"{s.start.astimezone(zone):%a %-d %b %H:%M}–{s.end.astimezone(zone):%H:%M} {zone_label(s.start, zone)}",
-                        "utc": f"{s.start:%a %H:%M}–{s.end:%H:%M} UTC",
+                        # UTC leads, the event's zone beside it (functional addendum A12)
+                        "lead": f"{s.start:%a %-d %b %H:%M}–{s.end:%H:%M} UTC",
+                        "other": ""
+                        if zone == UTC
+                        else f"{s.start.astimezone(zone):%a %H:%M}–{s.end.astimezone(zone):%H:%M} {zone_label(s.start, zone)}",
                     }
                 )
         if not rows:
@@ -64,8 +67,10 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
                 if viewer_is_member
                 else f"the {setting('club.short_name', 'club')} station",
                 "preferred_class": ev.min_license_class,
-                "span": f"{ev.starts_at().astimezone(zone):%a %-d %b %H:%M} – {ev.ends_at().astimezone(zone):%a %-d %b %H:%M} {zone_label(ev.starts_at(), zone)}",
-                "span_utc": f"{ev.starts_at():%a %-d %b %H:%M} – {ev.ends_at():%a %-d %b %H:%M} UTC",
+                "span": f"{ev.starts_at():%a %-d %b %H:%M} – {ev.ends_at():%a %-d %b %H:%M} UTC",
+                "span_other": ""
+                if zone == UTC
+                else f"{ev.starts_at().astimezone(zone):%a %-d %b %H:%M} – {ev.ends_at().astimezone(zone):%a %-d %b %H:%M} {zone_label(ev.starts_at(), zone)}",
             }
         )
     return out

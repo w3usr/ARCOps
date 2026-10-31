@@ -129,12 +129,31 @@ def test_status_is_phrased_as_a_need_never_a_verdict(world):
     assert ">Coverage<" in body and "open</span>" in body
 
 
-def test_zone_toggle_is_remembered(world):
-    c = _as(world["mem"])
+def test_utc_is_the_axis_and_the_events_zone_a_column_of_its_own(world):
+    """#161 and functional addendum A12: the zone is named once, in the header, and there is no
+    switch to lead with the other one."""
     ev = world["ev"]
-    c.get(f"/events/{ev.pk}/tz/?tz=utc")
-    body = c.get(f"/events/{ev.pk}/").content.decode()
-    assert "Times in <strong>UTC</strong>" in body
+    body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
+    assert "Times in <strong>UTC</strong>, then EDT." in body and "Lead with" not in body
+    assert '<div class="r-time" role="columnheader">UTC</div>' in body
+    assert '<div class="r-zone" role="columnheader">EDT</div>' in body
+    row = build(ev, world["mem"])["days"][1].rows[0]  # 00:00Z Saturday, the first operating hour
+    assert (row.lead_hours, row.other_hours) == ("00:00–01:00", "Fri 20:00–21:00")
+    assert _as(world["mem"]).get(f"/events/{ev.pk}/tz/?tz=local").status_code == 404
+
+
+def test_a_row_names_its_zone_where_the_clocks_have_changed(world):
+    """Section 5.9: an event can straddle the end of daylight saving time. The header names the
+    zone the event starts in, and a row after the change says it is in EST."""
+    ev = world["ev"]
+    start = datetime(2026, 11, 1, 3, 0, tzinfo=UTC)  # 23:00 EDT; clocks go back at 06:00Z
+    ev.periods.update(start=start, end=start + timedelta(hours=6))
+    Slot.objects.filter(position__location__event=ev).delete()
+    generate_slots(ev, [world["run"]], minutes=60)
+    data = build(ev, world["mem"])
+    rows = [r for d in data["days"] for r in d.rows]
+    assert data["other_label"] == "EDT"
+    assert rows[0].other_hours == "Sat 23:00–00:00" and rows[-1].other_hours.endswith(" EST")
 
 
 def test_slot_page_and_fragment_and_signup_from_it(world):
@@ -401,8 +420,7 @@ def test_events_list_and_home_show_both_zones(world, monkeypatch):
     assert "Fri 25 Sep 2026 20:00 – Sat 26 Sep 2026 00:00 EDT" in body
     assert "Sat 26 Sep 2026 00:00–04:00 UTC" in body
     assert "00:00</td>" not in body and "Z<" not in body
-    c.get(f"/events/{world['ev'].pk}/tz/?tz=utc")
-    body = c.get("/").content.decode()
+    body = c.get("/").content.decode()  # UTC leads everywhere (functional addendum A12)
     assert 'class="when1">Sat 26 Sep 2026 00:00–04:00 UTC' in body
 
 

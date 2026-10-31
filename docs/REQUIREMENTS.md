@@ -2674,7 +2674,28 @@ for nothing. Approving stays a separate act on the same evidence: a proved insti
 to be able to manually approve the users email proofs." *Record:* the reconciliation note of
 2026-10-27.
 
+### A12. FR-38, FR-65 and §5.9: UTC leads, and the event's zone is beside it
+
+**Original (FR-38).** "All times are stored in UTC and displayed in UTC and in the event's display
+zone side by side." **(§5.9)** "Displays show UTC and the event's zone together wherever a time
+is shown, because amateur radio runs on UTC and people live in local time."
+
+**Decision.** On every page, UTC leads and the event's zone follows it. On the roster UTC is the
+axis: the time column's header names the zone once, the rows carry no zone of their own, and
+where the event's zone differs from UTC it is a column of its own, headed with its zone. A row
+names its zone only where the clocks have changed during the event and it differs from the
+header's. Elsewhere on a page (Home, Events, My Sked, the slot, the mentors page) a time reads
+UTC first with the event's zone beside or beneath it. The member's switch to lead with the other
+zone is gone. Mail is not yet changed: a reminder or notice still reads in the event's zone
+first, as before. Both zones are still shown together, as the
+original requires; only their order is now fixed. An event shown in UTC still shows each time
+once (A9).
+
+**Decided by** SK, 2026-10-30, asked whether the roster should lead with UTC and drop the switch
+or keep the event's own zone first: "follow thru with your recommendation". *Record:* issue #161
+in the private repository and the private repository's notes of 2026-10-30.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10) and 2026-10-27 (A11), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11) and 2026-10-30 (A12), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
