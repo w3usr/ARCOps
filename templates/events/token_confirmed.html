@@ -6,5 +6,5 @@
 <p>{{ signup.user.display_first }}, you are {% if kept %}still {% endif %}down as <strong>{{ signup.role|role_label }}</strong> for {{ signup.slot.event.title }}, {{ signup.slot.position }}.</p>
 <p class="when">{% when signup.slot.start signup.slot.end signup.slot.event %}</p>
 {% if already %}<p class="muted">This link was already used; nothing changed.</p>{% endif %}
-<p><a class="button" href="{% url 'my_schedule' %}">Open my schedule</a></p>
+<p><a class="button" href="{% url 'my_schedule' %}">Open My {{ product.sked }}</a></p>
 {% endblock %}

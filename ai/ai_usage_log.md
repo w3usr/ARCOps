@@ -4420,3 +4420,18 @@ carries the actual running model ID.
   3,827 to 1,751 px on a desktop.
 - **Human Review Status**: Pending review
 - **Git Hash**: cc6e8d8
+
+## [2026-10-31 11:27 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: /reconcile after the UI polish milestone (ARCOps c7fb55e..515be10):
+  bring the requirements and interface rules into step with #160, #143, #144, #146, #162, #163
+  and #161.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (functional addendum A13: FR-65 and FR-95,
+  folded runs, the coverage strip, the marks); docs/INTERFACE.md (the feedback rule's example no
+  longer names a greeting Home dropped); templates/events/token_confirmed.html and
+  apps/events/tests/test_notify.py (Open My Sked, the page's one name since #163).
+- **Nature of Contribution**: Analysis and edit. A13 quotes only SK's own words; the issue's text,
+  drafted by Claude, is not quoted as his. The link's old name was a defect, fixed rather than
+  written into the plan. Verified: the guards pass; test_notify passes.
+- **Human Review Status**: Pending review
+- **Git Hash**:

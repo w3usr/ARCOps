@@ -2695,7 +2695,30 @@ once (A9).
 or keep the event's own zone first: "follow thru with your recommendation". *Record:* issue #161
 in the private repository and the private repository's notes of 2026-10-30.
 
+### A13. FR-65 and FR-95: a run of open hours is one row, and a strip shows the whole event
+
+**Original (FR-65).** "The **roster page** for an event shows every slot in time order, grouped
+by day […] with position columns (FR-51), each person's name […], role, and compact credential
+badges […], the slot's status, and a filter for "problems only". […] The page works at phone
+width and has a print layout."
+
+**Decision.** Three or more consecutive hours in which every slot is open read as one row, its
+hours and "<n> open hours", which opens in place to the hours themselves, each with its box and
+link; without JavaScript the same link reloads the roster with the run open. A run breaks at a
+slot with someone in it, a change of kind, a gap, and the day's end, and folds whole rows, so
+the position columns stay aligned. Every slot is still on the page in time order, the folded
+ones hidden until opened, and the print layout shows them all. A coverage strip above the roster
+draws the whole event, a line a day and a mark per time span, its state a symbol as well as a
+color (FR-62), each mark leading to its hour; it is hidden from screen readers and takes no tab
+stops, since the roster says every slot's state in words (FR-116). The compact badges are marks
+(S, I, CO, confirmed, checked in), each with its word for a screen reader and in the key.
+
+**Decided by** SK: the roster as a log sheet filed under his direction on 2026-10-27 from a
+design review of the application; the staged design, checked against these requirements,
+approved on 2026-10-30: "follow thru with your recommendation". *Record:* issue #161 in the private repository and the private repository's
+reconciliation note of 2026-10-31.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11) and 2026-10-30 (A12), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12) and 2026-10-31 (A13), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
