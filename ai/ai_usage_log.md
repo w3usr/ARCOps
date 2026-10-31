@@ -4434,4 +4434,4 @@ carries the actual running model ID.
   drafted by Claude, is not quoted as his. The link's old name was a defect, fixed rather than
   written into the plan. Verified: the guards pass; test_notify passes.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 73a92e7
