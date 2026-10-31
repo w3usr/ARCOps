@@ -74,6 +74,8 @@ def dashboard(request):
     now = timezone.now()
     my_signups = (
         SignUp.objects.filter(user=request.user, slot__end__gte=now, slot__cancelled=False)
+        # A canceled event keeps its slots and sign-ups for the record; they are nobody's plans.
+        .exclude(slot__position__location__event__state=Event.State.CANCELLED)
         .select_related(
             "slot", "slot__position", "slot__position__location", "slot__position__location__event"
         )

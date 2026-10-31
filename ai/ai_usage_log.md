@@ -4443,3 +4443,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit. Verified: ruff check and ruff format --check pass; test_notify, 14 passed.
 - **Human Review Status**: Pending review
 - **Git Hash**: (this commit)
+
+## [2026-10-31 11:56 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix a defect T17 found on dev: a canceled event's sign-ups stayed on Home and My Sked (with Check in) and in the weekly digest.
+- **Sections/Files Affected**: apps/ops/views.py (Home), apps/events/views.py (My Sked), apps/events/services/notify.py (the weekly digest), apps/events/tests/test_roster.py (a test).
+- **Nature of Contribution**: Analysis and code. Canceling an event sets its state and leaves its slots, so the three lists, which filtered only canceled slots, still showed them; the iCal feed already skipped them. Present since the first build. Verified: the new test fails without the fix and passes with it; full suite 480 passed; ruff and the guards pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: (this commit)

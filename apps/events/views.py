@@ -272,6 +272,7 @@ def my_schedule(request):
     now = timezone.now()
     signups = (
         SignUp.objects.filter(user=request.user, slot__cancelled=False)
+        .exclude(slot__position__location__event__state=Event.State.CANCELLED)
         .select_related(
             "slot", "slot__position", "slot__position__location", "slot__position__location__event"
         )

@@ -599,3 +599,13 @@ def test_the_strip_is_for_the_eye_and_the_key_reads_its_marks(world):
         '<span class="sm sm-open" aria-hidden="true"></span> <span class="tag open">Open</span>'
         in body
     )
+
+
+def test_a_canceled_events_slots_leave_home_and_my_sked(world, monkeypatch):
+    c = _home(world, monkeypatch, "mem")
+    slot = Slot.objects.filter(position=world["run"], kind="operating").first()
+    SignUp.objects.create(slot=slot, user=world["mem"], role="operator")
+    assert "<h1>Your next slot</h1>" in c.get("/").content.decode()
+    Event.objects.filter(pk=world["ev"].pk).update(state=Event.State.CANCELLED)
+    assert "<h1>Your next slot</h1>" not in c.get("/").content.decode()
+    assert "Run at Club station" not in c.get("/events/mine/").content.decode()
