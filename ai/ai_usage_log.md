@@ -4371,3 +4371,22 @@ carries the actual running model ID.
   leaves for another (T31's advisor count, T44's sysadmins, T22's audit rows) rather than code.
 - **Human Review Status**: Pending review
 - **Git Hash**: 40b50f6
+
+## [2026-10-31 10:59 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #161 stage 4: the coverage strip above the roster, and the key as a list
+  beside it.
+- **Sections/Files Affected**: apps/events/services/roster.py (_strip: a line a day, a mark per
+  time span, the most urgent state across positions, linking to the hour or through its fold, the
+  whole event under Problems only; rows' anchors); templates/events/detail.html (the strip
+  beside the key; the key's marks; anchors on each row's time); static/css/app.css (the strip
+  and the key, stacking on narrow screens); apps/events/tests/test_roster.py (two tests).
+- **Nature of Contribution**: Design and code. Each state is a symbol as well as a color (FR-62):
+  an empty box open, ! needs, ✓ covered, – closed; "○" read as the letter O in the club's
+  typeface, so open is an empty box. The strip is aria-hidden with its links out of the tab order,
+  where #161 had asked for a word per mark for screen readers: the roster below says every slot's
+  state in words (FR-116), and forty-eight links ahead of it would be noise. Verified:
+  tools/check.sh shows only the four known local failures; the accessibility sweep passes in
+  Chromium and WebKit; contact sheets at desktop and phone width looked at.
+- **Human Review Status**: Pending review
+- **Git Hash**:

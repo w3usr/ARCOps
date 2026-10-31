@@ -165,6 +165,7 @@ class Row:
     # only where it differs from the header's, after a change of clocks (#161, section 5.9).
     lead_hours: str = ""
     other_hours: str = ""
+    anchor: str = ""  # the first row at its start: where the coverage strip links to
 
 
 @dataclass
@@ -242,6 +243,44 @@ def _run_hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -
 def _unlabelled(text: str, label: str) -> str:
     """The range without its zone, where the zone is the one the column's header names."""
     return text[: -len(label) - 1] if label and text.endswith(f" {label}") else text
+
+
+# The coverage strip (#161): a mark per time span, its state as a symbol as well as a color (FR-62),
+# most urgent first when positions differ.
+STRIP_MARKS = {"problem": "!", "needs": "!", "open": "", "covered": "✓", "closed": "–"}  # open: an empty box
+STRIP_ORDER = list(STRIP_MARKS)
+
+
+def _strip(slots, cells, by_start, zone, label, filtered: bool) -> list[dict]:
+    """The whole event, a line a day: one mark per time span, linking to its row, or to the row's
+    fold, or past the Problems only filter to the full roster."""
+    spans: dict[tuple, str] = {}
+    for s in slots:
+        key = cells[s.pk].shown.key
+        state = "problem" if key == "problem" else BUCKET[key]
+        span = (s.start, s.end)
+        if span not in spans or STRIP_ORDER.index(state) < STRIP_ORDER.index(spans[span]):
+            spans[span] = state
+    days: dict[str, dict] = {}
+    for (start, end), state in sorted(spans.items()):
+        local = start.astimezone(zone)
+        day = days.setdefault(local.strftime("%Y-%m-%d"), {"label": f"{local:%a %-d}", "marks": []})
+        row, anchor = by_start.get(start), f"r-{start:%Y%m%d%H%M}"
+        if row is None or filtered:
+            href = f"?#{anchor}"
+        elif row.fold and not row.fold.open:
+            href = f"?open={row.fold.id}#{anchor}"
+        else:
+            href = f"#{anchor}"
+        day["marks"].append(
+            {
+                "state": state,
+                "mark": STRIP_MARKS[state],
+                "href": href,
+                "time": _unlabelled(_hours(start, end, zone, with_day=False), label),
+            }
+        )
+    return list(days.values())
 
 
 # Fewer rows than this read faster as themselves than as "3 open hours".
@@ -376,6 +415,7 @@ def build(
 
     layout = "grid" if 1 <= len(positions) <= GRID_MAX_POSITIONS else "list"
     pos_index = {p.pk: i for i, p in enumerate(positions)}
+    every = list(slots)  # the coverage strip shows the whole event, whatever the filter
     if filter == "problems":  # FR-65: only what needs attention
         keep = {
             pk for pk, c in cells.items() if c.shown.key in ("needs", "problem") or c.over_limit
@@ -413,6 +453,13 @@ def build(
             for item in (row, row.fold) if row.fold_head else (row,):
                 item.lead_hours = _unlabelled(item.lead_range, lead_label)
                 item.other_hours = _unlabelled(item.other_range, other_label)
+    by_start: dict[datetime, Row] = {}
+    for day in days.values():
+        for row in day.rows:
+            if row.start not in by_start:
+                by_start[row.start] = row
+                row.anchor = f"r-{row.start:%Y%m%d%H%M}"
+    strip = _strip(every, cells, by_start, lead_zone, lead_label, filtered=filter == "problems")
 
     single_location = len({p.location_id for p in positions}) == 1
     roles = setting("slot_roles", []) or []
@@ -435,6 +482,7 @@ def build(
         "other_label": "" if one_zone else zone_label(starts or now, other_zone),
         # The time, the second zone where there is one, and a column per position in a grid.
         "columns": 1 + (0 if one_zone else 1) + (len(positions) if layout == "grid" else 1),
+        "strip": strip,
         "span": {
             "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
             if starts and ends

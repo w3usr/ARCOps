@@ -459,6 +459,22 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .rosterhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .rosterhead h2, .rosterhead p { margin: 0; }
 .legend { font-size: var(--t-small); margin: .5rem 0 .75rem; }
+/* The coverage strip beside the key (#161): a line a day, a mark per time span with its state as a
+   symbol as well as a color (FR-62). The key then reads one entry a line. */
+.overview { display: grid; grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr); gap: var(--s3); align-items: start; margin: .5rem 0 .75rem; }
+.overview .legend { margin: 0; }
+.overview .legend-label { display: block; margin-bottom: .25rem; }
+.overview .legend li { display: block; margin: .15rem 0; } .overview .legend li + li::before { content: none; }
+.strip { display: flex; flex-direction: column; gap: .3rem; }
+.strip-day { display: flex; gap: .5rem; align-items: center; }
+.strip-label { flex: none; width: 3.5rem; font-size: var(--t-small); color: var(--muted); font-variant-numeric: tabular-nums; }
+.strip-marks { display: flex; flex-wrap: wrap; gap: 2px; }
+.sm { display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1.25rem; font-size: var(--t-small); font-weight: 700; line-height: 1; text-decoration: none; border: 1px solid var(--line); border-radius: var(--r-field); background: var(--surface); color: var(--muted); }
+.sm-open { border-color: var(--accent); color: var(--accent); background: var(--bg); }
+.sm-covered { border-color: var(--ok); color: var(--ok); background: var(--tag-ok); }
+.sm-needs { border-color: var(--warn); color: var(--warn); background: var(--tag-warn); }
+.sm-problem { border-color: var(--bad); color: var(--bad); background: var(--tag-bad); }
+@media (max-width: 48rem) { .overview { grid-template-columns: 1fr; } }
 /* The key is a labelled list: one line on a wide screen, one entry a line on a phone, where the
    run-on line was hard to read (SK, 2026-10-22). */
 .legend-label { font-weight: 700; margin-right: .35rem; }

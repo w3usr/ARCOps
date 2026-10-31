@@ -56,15 +56,25 @@
   <p class="zones muted">Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.
     · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %}</p>
 </div>
+<div class="overview">
+{% comment %}The coverage strip (#161): the whole event, a line a day, a mark per time span with its
+state as a symbol as well as a color (FR-62), each linking to its hour. A shortcut for the eye and
+the pointer, so it is hidden from screen readers and takes no tab stops: the roster below says
+every slot's state in words (FR-116), and a strip of forty-eight links ahead of it would be noise.{% endcomment %}
+<div class="strip" aria-hidden="true">
+  {% for d in roster.strip %}<div class="strip-day"><span class="strip-label">{{ d.label }}</span><span class="strip-marks">{% for m in d.marks %}<a class="sm sm-{{ m.state }}" href="{{ m.href }}" tabindex="-1">{{ m.mark }}</a>{% endfor %}</span></div>{% endfor %}
+</div>
 <div class="legend muted"><span class="legend-label" id="roster-key">Key</span>
   <ul aria-labelledby="roster-key">
-    <li><span class="tag open">Open</span> anyone eligible can sign up</li>
-    <li><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</li>
-    {% if is_captain %}<li><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</li>{% endif %}
-    <li><span class="tag ok">Covered</span> it can run</li>
+    <li><span class="sm sm-open" aria-hidden="true"></span> <span class="tag open">Open</span> anyone eligible can sign up</li>
+    <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</li>
+    {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!</span> <span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</li>{% endif %}
+    <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="tag ok">Covered</span> it can run</li>
+    <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="tag">Closed</span> not taking sign-ups</li>
     <li><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</li>
     <li><small>S</small> station access · <small>I</small> computer access · <small>CO</small> control operator</li>
   </ul>
+</div>
 </div>
 
 {% comment %}UTC is the axis (#161, functional addendum A12): the zone is named once, in the time
@@ -98,7 +108,7 @@ column's header, and where the event's zone differs it has a column of its own.{
     </div>
     {% endwith %}{% endif %}
     <div class="r-row kind-{{ row.kind }}" role="row"{% if row.fold and not row.fold.open %} data-fold="{{ row.fold.id }}" hidden{% elif row.fold_head %} id="fold-{{ row.fold.id }}"{% endif %}>
-      <div class="r-time" role="rowheader">
+      <div class="r-time" role="rowheader"{% if row.anchor %} id="{{ row.anchor }}"{% endif %}>
         <span class="lead">{% if roster.layout == 'grid' %}{{ row.lead_hours }}{% else %}{{ row.lead_range }}{% endif %}</span>
         {% if row.kind != 'operating' %}<span class="tag">{{ row.kind }}</span>{% endif %}
       </div>

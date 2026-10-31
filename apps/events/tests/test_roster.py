@@ -572,3 +572,30 @@ def test_a_run_that_ends_at_midnight_ends_at_24_00(world):
     assert fold.lead_range == "00:00–04:00 UTC"  # the operating period: 00:00Z to 04:00Z
     eastern = _rows(build(world["ev"], world["mem"], "local"))[1].fold
     assert eastern.lead_range == "20:00–24:00 EDT"  # 00:00Z is midnight in New York's EDT
+
+
+# The coverage strip (#161).
+def test_the_strip_marks_every_span_by_its_most_urgent_state_and_links_to_it(world):
+    first = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
+    SignUp.objects.create(slot=first, user=world["mem"], role="observer")  # in it, still needs
+    data = build(world["ev"], world["mem"])
+    marks = [m for d in data["strip"] for m in d["marks"]]
+    assert len(marks) == 5  # the setup hour and four operating hours, across both positions
+    assert [m["mark"] for m in marks[1:3]] == ["!", ""]  # needs outranks Mult's open seat
+    assert marks[1]["href"] == f"#r-{first.start:%Y%m%d%H%M}" and marks[1]["time"] == "00:00–01:00"
+    folded = marks[2]["href"]  # 01:00 onward is a run of three open hours, folded
+    assert folded.startswith("?open=") and folded.endswith(f"#r-{first.end:%Y%m%d%H%M}")
+    filtered = build(world["ev"], world["mem"], filter="problems")
+    assert sum(len(d["marks"]) for d in filtered["strip"]) == 5  # the whole event, still
+
+
+def test_the_strip_is_for_the_eye_and_the_key_reads_its_marks(world):
+    body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
+    strip = body.split('<div class="strip" aria-hidden="true">', 1)[1].split(
+        '</div>\n<div class="legend', 1
+    )[0]
+    assert strip.count('tabindex="-1"') == strip.count("<a ") == 5
+    assert (
+        '<span class="sm sm-open" aria-hidden="true"></span> <span class="tag open">Open</span>'
+        in body
+    )
