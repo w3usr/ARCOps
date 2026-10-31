@@ -4450,4 +4450,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/views.py (Home), apps/events/views.py (My Sked), apps/events/services/notify.py (the weekly digest), apps/events/tests/test_roster.py (a test).
 - **Nature of Contribution**: Analysis and code. Canceling an event sets its state and leaves its slots, so the three lists, which filtered only canceled slots, still showed them; the iCal feed already skipped them. Present since the first build. Verified: the new test fails without the fix and passes with it; full suite 480 passed; ruff and the guards pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: (this commit)
+- **Git Hash**: 915da1d
