@@ -4458,4 +4458,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/ops/dashboard.html (the next slot straight under the heading, its title plain text, Open the roster after the action); apps/events/services/notify.py (mail_when: UTC first, the event's zone beside it; when_text and the digest through it; the reminder's subject in UTC); apps/events/services/lifecycle.py (the published announcement); apps/comms/defaults.py (the reminder's When: UTC line first); docs/REQUIREMENTS.md (A12 amended for mail); apps/events/tests/test_roster.py (two tests).
 - **Nature of Contribution**: Code and edit. Before this, most notices gave a slot in the event's zone alone. Verified: both new tests fail without the change and pass with it; full suite 481 passed; ruff and the guards pass; T11 to T14, T17, T19, T31, T32, T34, T45 pass locally on the W3USR overlay.
 - **Human Review Status**: Pending review
-- **Git Hash**: (this commit)
+- **Git Hash**: ba666a9
