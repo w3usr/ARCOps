@@ -4435,3 +4435,11 @@ carries the actual running model ID.
   written into the plan. Verified: the guards pass; test_notify passes.
 - **Human Review Status**: Pending review
 - **Git Hash**: 73a92e7
+
+## [2026-10-31 11:39 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI's lint step failed on 0895153 (ruff format): fix it before the dev deploy.
+- **Sections/Files Affected**: apps/events/tests/test_notify.py (one assert split in two).
+- **Nature of Contribution**: Edit. Verified: ruff check and ruff format --check pass; test_notify, 14 passed.
+- **Human Review Status**: Pending review
+- **Git Hash**: (this commit)

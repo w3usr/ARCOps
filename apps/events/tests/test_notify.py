@@ -376,6 +376,7 @@ def test_keep_it_from_the_reminder_says_nothing_changed_without_a_sign_in():
         and "Nothing changed" in body
         and "Sign in" not in body.split("<main")[1][:600]
     )
-    assert "you are still down as <strong>Operator</strong>" in body and "Open My Sked" in body  # the page's one name (#163)
+    assert "you are still down as <strong>Operator</strong>" in body
+    assert "Open My Sked" in body  # the page's one name (#163)
     su.refresh_from_db()
     assert su.confirmed_at is None, "keeping a slot is not confirming attendance"
