@@ -475,6 +475,14 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .sm-needs { border-color: var(--warn); color: var(--warn); background: var(--tag-warn); }
 .sm-problem { border-color: var(--bad); color: var(--bad); background: var(--tag-bad); }
 @media (max-width: 48rem) { .overview { grid-template-columns: 1fr; } }
+/* Desktop density (#146, with #161): rows a little tighter where a pointer is the usual way in. A
+   slot keeps 44 px, a comfortable target; under 48rem the touch layout keeps its own height. */
+@media (min-width: 48rem) {
+  .roster .r-time, .roster .r-zone { padding-top: .35rem; padding-bottom: .35rem; }
+  .roster .r-cell, .roster .slot-link { min-height: 2.75rem; }
+  .roster .slot-link { padding-top: .35rem; padding-bottom: .35rem; }
+  .roster .r-cell > input[type="checkbox"] { top: .5rem; }
+}
 /* The key is a labelled list: one line on a wide screen, one entry a line on a phone, where the
    run-on line was hard to read (SK, 2026-10-22). */
 .legend-label { font-weight: 700; margin-right: .35rem; }

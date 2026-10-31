@@ -4406,3 +4406,17 @@ carries the actual running model ID.
   Chromium and WebKit; contact sheet looked at.
 - **Human Review Status**: Pending review
 - **Git Hash**: ef994d4
+
+## [2026-10-31 11:17 EDT]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #161 stage 6: the roster's desktop density, which #146 left to #161, and
+  the done-also-means checks for the whole of #161.
+- **Sections/Files Affected**: static/css/app.css (from 48rem, roster rows a little tighter; a slot
+  keeps 2.75rem).
+- **Nature of Contribution**: Code and verification. The accessibility sweep passes in Chromium
+  and WebKit; a temporary check, not committed, served every page for seven roles under the
+  production security policy (no violation) and without JavaScript (every page answers, and a
+  folded run opens by its link); contact sheets: the demo roster 5,860 to 2,415 px on a phone,
+  3,827 to 1,751 px on a desktop.
+- **Human Review Status**: Pending review
+- **Git Hash**:
