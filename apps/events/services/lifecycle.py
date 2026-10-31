@@ -67,14 +67,10 @@ def complete_ended(now: datetime | None = None) -> int:
 
 def announce_published(actor, event: Event) -> int:
     """FR-44: the optional announcement when an event becomes visible."""
-    from .notify import when_text  # noqa: F401  (kept for parity; span text built below)
-    from .roster import display_zone, zone_label
+    from .notify import mail_when
 
     start, end = event.starts_at(), event.ends_at()
-    when = ""
-    if start and end:
-        z = display_zone(event)
-        when = f"{start.astimezone(z):%a %-d %b %H:%M} to {end.astimezone(z):%a %-d %b %H:%M} {zone_label(start, z)}"
+    when = mail_when(start, end, event, " to ") if start and end else ""
     link = _site() + reverse("event_detail", args=[event.pk])
     members = User.objects.filter(
         is_active=True,

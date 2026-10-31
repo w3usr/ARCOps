@@ -156,7 +156,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "subject": "Tomorrow: {{ event.title }}, {{ when_lead }}",
         "body_html": (
             "<p>You are signed up as <strong>{{ role }}</strong> for {{ event.title }}.</p>"
-            "<p><strong>When:</strong> {{ when_local }}<br>{{ when_utc }}<br>"
+            "<p><strong>When:</strong> {{ when_utc }}<br>{{ when_local }}<br>"
             "<strong>Where:</strong> {{ location }}, {{ position }}"
             "{% if control_operator %}<br><strong>Control operator:</strong> {{ control_operator }}{% endif %}"
             "{% if others %}<br><strong>With you:</strong> {{ others }}{% endif %}</p>"

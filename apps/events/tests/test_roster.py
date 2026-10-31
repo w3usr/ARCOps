@@ -609,3 +609,32 @@ def test_a_canceled_events_slots_leave_home_and_my_sked(world, monkeypatch):
     Event.objects.filter(pk=world["ev"].pk).update(state=Event.State.CANCELLED)
     assert "<h1>Your next slot</h1>" not in c.get("/").content.decode()
     assert "Run at Club station" not in c.get("/events/mine/").content.decode()
+
+
+def test_inside_its_window_check_in_is_the_first_thing_on_home_to_take_the_focus(
+    world, monkeypatch
+):
+    # FR-116: the check-in button, inside its window, is first in the tab order (SK, 2026-10-31).
+    slot = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
+    SignUp.objects.create(slot=slot, user=world["mem"], role="operator")
+    monkeypatch.setattr("django.utils.timezone.now", lambda: slot.start - timedelta(minutes=10))
+    body = _as(world["mem"]).get("/").content.decode()
+    main = body[body.index("<main") :]
+    main = main[main.index("</h1>") :]
+    assert (
+        re.search(r"<(a href|button|input(?! type=\"hidden\")|select|textarea)", main).group(0)
+        == "<button"
+    )
+    assert main.index(">Check in</button>") < main.index(">Open the roster</a>")
+
+
+def test_mail_leads_with_utc_and_gives_the_events_zone_beside_it(world):
+    # A12, extended to mail (SK, 2026-10-31).
+    from apps.events.services.notify import mail_when, when_text
+
+    slot = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
+    text = when_text(slot)
+    assert re.fullmatch(r"\w{3} \d+ \w{3} \d\d:\d\d–\d\d:\d\d UTC \(.+ E[SD]T\)", text), text
+    ev = world["ev"]
+    span = mail_when(ev.starts_at(), ev.ends_at(), ev, " to ")
+    assert span.index("UTC") < span.index("(") and " to " in span

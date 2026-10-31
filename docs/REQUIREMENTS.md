@@ -2695,6 +2695,14 @@ once (A9).
 or keep the event's own zone first: "follow thru with your recommendation". *Record:* issue #161
 in the private repository and the private repository's notes of 2026-10-30.
 
+**Amended 2026-10-31: mail too.** Mail now follows the pages, and the sentence above that kept it
+as before no longer holds. A slot or an event in a notice, the digest or an announcement reads UTC
+first with the event's zone beside it in brackets, where the two differ; the reminder's subject
+gives UTC and its body UTC on the first line, the event's zone on the second. Before this, most
+notices gave a slot in the event's zone alone, short of FR-38's "side by side". **Decided by**
+SK, 2026-10-31, asked whether mail should lead with UTC: "q2 - also yes". *Record:* issue #161 in
+the private repository.
+
 ### A13. FR-65 and FR-95: a run of open hours is one row, and a strip shows the whole event
 
 **Original (FR-65).** "The **roster page** for an event shows every slot in time order, grouped
@@ -2719,6 +2727,6 @@ approved on 2026-10-30: "follow thru with your recommendation". *Record:* issue 
 reconciliation note of 2026-10-31.
 
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12) and 2026-10-31 (A13), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12) and 2026-10-31 (A13, A12's amendment), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

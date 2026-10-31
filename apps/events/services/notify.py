@@ -63,10 +63,25 @@ def contact_line(u: User) -> str:
 # -------------------------------------------------------------------------- times ---
 
 
+def _span(start: datetime, end: datetime, z, sep: str = "–") -> str:
+    s, e = start.astimezone(z), end.astimezone(z)
+    tail = f"{e:%H:%M}" if sep == "–" else f"{e:%a %-d %b %H:%M}"
+    return f"{s:%a %-d %b %H:%M}{sep}{tail} {zone_label(start, z)}"
+
+
+def mail_when(start: datetime, end: datetime, event: Event, sep: str = "–") -> str:
+    """UTC first and the event's zone beside it, as on the pages (functional addendum A12; mail
+    too since SK, 2026-10-31). `sep` " to " is for a span of days."""
+    utc = _span(start, end, UTC, sep)
+    local = display_zone(event)
+    return utc if local == UTC else f"{utc} ({_span(start, end, local, sep)})"
+
+
 def when_text(slot: Slot, zone=None) -> str:
-    z = zone or display_zone(slot.event)
-    s, e = slot.start.astimezone(z), slot.end.astimezone(z)
-    return f"{s:%a %-d %b %H:%M}–{e:%H:%M} {zone_label(slot.start, z)}"
+    """The slot in one zone when given one, else both, UTC first."""
+    if zone is not None:
+        return _span(slot.start, slot.end, zone)
+    return mail_when(slot.start, slot.end, slot.event)
 
 
 def site() -> str:
@@ -191,7 +206,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     ctx = {
         "event": event,
         "role": role_label(su.role),
-        "when_lead": when_text(slot, local),
+        "when_lead": when_text(slot, UTC),
         "when_local": when_text(slot, local),
         "when_utc": when_text(slot, UTC),
         "location": slot.position.location.name,
@@ -535,11 +550,10 @@ def send_digest(now: datetime | None = None) -> dict:
                 needs_n += 1
         total_open += open_n
         start, end = e.starts_at(), e.ends_at()
-        z = display_zone(e)
         rows.append(
             {
                 "title": e.title,
-                "when": f"{start.astimezone(z):%a %-d %b %H:%M} to {end.astimezone(z):%a %-d %b %H:%M} {zone_label(start, z)}",
+                "when": mail_when(start, end, e, " to "),
                 "open": open_n,
                 "needs": needs_n,
                 "link": site() + reverse("event_detail", args=[e.pk]),
