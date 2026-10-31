@@ -4442,7 +4442,7 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/tests/test_notify.py (one assert split in two).
 - **Nature of Contribution**: Edit. Verified: ruff check and ruff format --check pass; test_notify, 14 passed.
 - **Human Review Status**: Pending review
-- **Git Hash**: (this commit)
+- **Git Hash**: c113b68
 
 ## [2026-10-31 11:56 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
