@@ -501,6 +501,7 @@ def test_home_offers_the_next_events_open_hours_to_somebody_signed_up_for_nothin
     assert "<h1>Pick your hours</h1>" in body
     open_slots = Slot.objects.filter(position__location__event=world["ev"]).count()
     assert f"{open_slots} open slots" in body  # every slot, setup too, as the roster counts
+    assert world["ev"].title in body and ">Open the roster</a>" in body  # T17 step 4
     assert "Hello," not in body
 
 

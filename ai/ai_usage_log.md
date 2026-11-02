@@ -4467,3 +4467,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis and code. Verified: the hash pattern matches every static name a server page and its stylesheet ask for (fonts included) and none of the unhashed ones; node --check passes; ruff, the guards and the application tests pass (the PDF test with the Homebrew library path). The offline behavior itself is checked on the development server before this reaches main.
 - **Human Review Status**: Pending review
 - **Git Hash**: b386259
+
+## [2026-11-02 17:40 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Acceptance T17 step 4: Home for a member with no slots, checked by the application test rather than a fresh account on the server.
+- **Sections/Files Affected**: apps/events/tests/test_roster.py (test_home_offers_the_next_events_open_hours_to_somebody_signed_up_for_nothing also requires the next event's title and Open the roster).
+- **Nature of Contribution**: Code (a test assertion). Verified: the test passes against main; no application code changed.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
