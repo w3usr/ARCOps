@@ -14,7 +14,7 @@
   <fieldset><legend>Who gets it</legend>
     <div class="row">
       {% if event %}
-      <div class="field"><label for="f-day">Day</label><select id="f-day" name="day"><option value="">Any day</option>{% for key, label in days %}<option value="{{ key }}"{% if filters.day == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><select id="f-day" name="day"><option value="">Any day</option>{% for key, label in days %}<option value="{{ key }}"{% if filters.day == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
       <div class="field"><label for="f-role">Role</label><select id="f-role" name="role"><option value="">Any role</option>{% for r in roles %}<option value="{{ r.key }}"{% if filters.role == r.key %} selected{% endif %}>{{ r.label }}</option>{% endfor %}</select></div>
       <div class="field"><label for="f-status">How the slot stands</label><select id="f-status" name="status"><option value="">However it stands</option>{% for key, label in statuses %}<option value="{{ key }}"{% if filters.status == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
       <div class="field"><label for="f-conf">Confirmation</label><select id="f-conf" name="confirmation"><option value="">Confirmed or not</option><option value="unconfirmed"{% if filters.confirmation == 'unconfirmed' %} selected{% endif %}>Not yet confirmed</option><option value="confirmed"{% if filters.confirmation == 'confirmed' %} selected{% endif %}>Confirmed or checked in</option></select></div>
