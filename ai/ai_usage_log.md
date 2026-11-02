@@ -4459,3 +4459,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and edit. Before this, most notices gave a slot in the event's zone alone. Verified: both new tests fail without the change and pass with it; full suite 481 passed; ruff and the guards pass; T11 to T14, T17, T19, T31, T32, T34, T45 pass locally on the W3USR overlay.
 - **Human Review Status**: Pending review
 - **Git Hash**: ba666a9
+
+## [2026-11-02 08:54 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #164: pages kept for offline reading (FR-96) loaded without styles, because the service worker pre-cached unhashed static names the servers never serve.
+- **Sections/Files Affected**: static/sw.js (no pre-cached shell; static files with a manifest hash in their name are cached as they are fetched; unhashed names go to the network; cache version v6 to v7).
+- **Nature of Contribution**: Analysis and code. Verified: the hash pattern matches every static name a server page and its stylesheet ask for (fonts included) and none of the unhashed ones; node --check passes; ruff, the guards and the application tests pass (the PDF test with the Homebrew library path). The offline behavior itself is checked on the development server before this reaches main.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
