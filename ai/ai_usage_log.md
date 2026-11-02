@@ -4466,4 +4466,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/sw.js (no pre-cached shell; static files with a manifest hash in their name are cached as they are fetched; unhashed names go to the network; cache version v6 to v7).
 - **Nature of Contribution**: Analysis and code. Verified: the hash pattern matches every static name a server page and its stylesheet ask for (fonts included) and none of the unhashed ones; node --check passes; ruff, the guards and the application tests pass (the PDF test with the Homebrew library path). The offline behavior itself is checked on the development server before this reaches main.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: b386259
