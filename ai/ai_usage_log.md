@@ -4482,4 +4482,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/events/manage.html (the Add position button takes class "secondary", as Appoint captain beside it does).
 - **Nature of Contribution**: Code (one class). Verified: tools/check_interface.sh passes; apps/events tests pass (96); T52 step 3 passes against it locally on the W3USR overlay (private repo, testing/runs/2026-11-02_203905-w3usr).
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: bbcfdf5
