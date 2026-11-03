@@ -4490,4 +4490,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/views_addresses.py (the refusal is messages.warning); apps/accounts/tests/test_addresses.py (the refusal's level is asserted).
 - **Nature of Contribution**: Code. Verified: apps/accounts tests pass (234); tools/check_interface.sh passes; T52 passes in full against it locally on the W3USR overlay, 16 of 16 (private repo, testing/runs/2026-11-02_204248-w3usr).
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: efbfbd3
