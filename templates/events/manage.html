@@ -56,7 +56,7 @@
     {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}
   </ul>
   <form method="post" action="{% url 'position_add' event.pk l.pk %}" class="inline">{% csrf_token %}
-    <label class="sr-only" for="pos-{{ l.pk }}">Position name</label><input id="pos-{{ l.pk }}" name="name" placeholder="Position name (Run, Mult, VHF…)"> <button type="submit">Add position</button>
+    <label class="sr-only" for="pos-{{ l.pk }}">Position name</label><input id="pos-{{ l.pk }}" name="name" placeholder="Position name (Run, Mult, VHF…)"> <button type="submit" class="secondary">Add position</button>
   </form>
   {% empty %}<p class="empty">No location yet. Add one below. A position is one operating seat at a location, and each gets its own column of slots.</p>{% endfor %}
   <h3>Add a location</h3>
