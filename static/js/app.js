@@ -136,6 +136,36 @@ if ("serviceWorker" in navigator) {
   }
 })();
 
+// Manage's forms open in a dialog (#168). Each button is a link to the form's own page; htmx
+// fetches that page into the dialog instead, and the form posts back to it there. A save answers
+// with HX-Redirect, so the tab reloads with its message; a refusal comes back inside the dialog.
+// Focus goes to the problem, or else the first field, and back to the button on closing.
+(() => {
+  const dlg = document.getElementById("manage-dialog");
+  if (!dlg || typeof dlg.showModal !== "function" || !window.htmx) return;
+  const body = dlg.querySelector(".dialog-body");
+  let opener = null;
+  // After the settle, not the swap: htmx wires the new content's own triggers (the generator's
+  // line) as it settles, so focus arrives when typing already does something.
+  document.addEventListener("htmx:afterSettle", (ev) => {
+    if (ev.detail.target !== body) return;
+    const a = ev.detail.requestConfig.elt.closest("a[data-dialog]");
+    if (a) opener = a;
+    if (!dlg.open) dlg.showModal();
+    const f = body.querySelector(".msg.error")
+      || body.querySelector("[aria-invalid=true]")
+      || body.querySelector("input:not([type=hidden]), select, textarea")
+      || body.querySelector("h1");
+    if (f) { if (f.matches(".msg, h1")) f.setAttribute("tabindex", "-1"); f.focus(); }
+  });
+  // A form htmx could not fetch opens as its own page, as it does without JavaScript.
+  const fallBack = (ev) => { const a = ev.detail.elt.closest("a[data-dialog]"); if (a) window.location = a.href; };
+  document.addEventListener("htmx:responseError", fallBack);
+  document.addEventListener("htmx:sendError", fallBack);
+  dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
+  dlg.addEventListener("close", () => { body.innerHTML = ""; if (opener) opener.focus(); });
+})();
+
 // A folded run of open hours opens in place (#161): its rows are on the page already, hidden.
 // Without JavaScript the same link reloads the roster with the run open.
 document.addEventListener("click", (ev) => {

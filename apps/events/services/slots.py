@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from django.template.defaultfilters import pluralize
+
 from ..models import Slot
 from .viability import evaluate
 
@@ -20,30 +22,62 @@ def generate_slots(
     final short slot if the period length is not a multiple. `windows`, when given, is a list of
     (start, end) datetimes to fill instead of the whole periods (FR-48, for hour-limited events).
     Setup slots go before the first period and breakdown slots after the last (FR-47)."""
+    return [
+        Slot.objects.create(position=pos, start=a, end=b, kind=kind)
+        for pos, a, b, kind in plan_slots(
+            event, positions, minutes, setup_slots, breakdown_slots, windows
+        )
+    ]
+
+
+def plan_slots(
+    event, positions, minutes=60, setup_slots=0, breakdown_slots=0, windows=None, fill=False
+):
+    """(position, start, end, kind) for each slot the generator would make, without making any:
+    what generating and filling create, and what the preview counts (#168), from one place.
+    With `fill`, only the hours no slot covers, and no setup or breakdown (#153)."""
     step = timedelta(minutes=minutes)
     spans = windows or [(p.start, p.end) for p in event.periods.all()]
-    created: list[Slot] = []
     for pos in positions:
-        for start, end in spans:
-            for t, nxt in _cut(start, end, step):
-                created.append(
-                    Slot.objects.create(position=pos, start=t, end=nxt, kind="operating")
-                )
-        first = min(s for s, _ in spans) if spans else None
-        last = max(e for _, e in spans) if spans else None
+        for start, end in empty_hours(pos, spans) if fill else spans:
+            for a, b in _cut(start, end, step):
+                yield pos, a, b, "operating"
+        if fill or not spans:
+            continue
+        first, last = min(s for s, _ in spans), max(e for _, e in spans)
         for i in range(setup_slots):
-            created.append(
-                Slot.objects.create(
-                    position=pos, start=first - step * (i + 1), end=first - step * i, kind="setup"
-                )
-            )
+            yield pos, first - step * (i + 1), first - step * i, "setup"
         for i in range(breakdown_slots):
-            created.append(
-                Slot.objects.create(
-                    position=pos, start=last + step * i, end=last + step * (i + 1), kind="breakdown"
-                )
-            )
-    return created
+            yield pos, last + step * i, last + step * (i + 1), "breakdown"
+
+
+def describe(
+    event, positions, minutes=60, setup_slots=0, breakdown_slots=0, windows=None, fill=False
+) -> str:
+    """The line the generator shows before anything is made (#168): how many slots, per position
+    and across positions; or, filling, how many go into the empty hours. ponytail: per position
+    as the first position has it, which is every position's count when generating."""
+    planned = list(
+        plan_slots(event, positions, minutes, setup_slots, breakdown_slots, windows, fill)
+    )
+    n = len(planned)
+    if fill:
+        if not n:
+            return "Every hour already has a slot; nothing would be added."
+        return f"Adds {n} slot{pluralize(n)} to the empty hours."
+    positions = list(positions)
+    each = sum(1 for p, *_ in planned if p == positions[0]) if positions else 0
+    kinds = [
+        f"a {kind}" if count == 1 else f"{count} {kind}"
+        for kind, count in (("setup", setup_slots), ("breakdown", breakdown_slots))
+        if count
+    ]
+    many = pluralize(max(setup_slots, breakdown_slots))
+    tail = f", including {' and '.join(kinds)} slot{many} each" if kinds else ""
+    return (
+        f"{n} slot{pluralize(n)}: {each} per position × {len(positions)} "
+        f"position{pluralize(len(positions))}{tail}."
+    )
 
 
 def _cut(start, end, step):
@@ -81,16 +115,10 @@ def fill_empty_hours(event, positions, minutes: int = 60, windows=None) -> list[
     have no slot yet, position by position. Every existing slot, its seats and its sign-ups stay
     as they are, so this runs after people have signed up: a range or a period added later, or a
     new position, gets its slots. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
-    step = timedelta(minutes=minutes)
-    spans = windows or [(p.start, p.end) for p in event.periods.all()]
-    created: list[Slot] = []
-    for pos in positions:
-        for start, end in empty_hours(pos, spans):
-            for t, nxt in _cut(start, end, step):
-                created.append(
-                    Slot.objects.create(position=pos, start=t, end=nxt, kind="operating")
-                )
-    return created
+    return [
+        Slot.objects.create(position=pos, start=a, end=b, kind=kind)
+        for pos, a, b, kind in plan_slots(event, positions, minutes, windows=windows, fill=True)
+    ]
 
 
 def scheduled_hours(event) -> float:

@@ -111,3 +111,32 @@ def test_gaps_are_cut_from_their_own_start_and_slivers_are_skipped():
     # 15:00-15:10 is under the 15-minute minimum and stays empty; 17:00-18:00 is filled
     assert _hours(added) == [(T0 + 2 * H, T0 + 3 * H)]
     assert all(s.kind == "operating" for s in added)
+
+
+# ------------------------------------------- what the generator will make, said first (#168) ---
+
+
+def test_the_preview_says_what_generating_will_make():
+    from apps.events.services.slots import describe
+
+    ev, pos = make([(T0, T0 + 5 * H)])
+    mult = Position.objects.create(location=pos.location, name="Mult")
+    said = describe(ev, [pos, mult], minutes=60, setup_slots=1, breakdown_slots=1)
+    assert said == (
+        "14 slots: 7 per position × 2 positions, including a setup and a breakdown slot each."
+    )
+    assert describe(ev, [pos], minutes=60) == "5 slots: 5 per position × 1 position."
+    assert Slot.objects.count() == 0  # it only counts
+
+
+def test_the_preview_says_what_filling_will_add_and_matches_the_fill():
+    from apps.events.services.slots import describe
+
+    ev, pos = make([(T0, T0 + 6 * H)])
+    generate_slots(ev, [pos], minutes=60, windows=[(T0 + 2 * H, T0 + 6 * H)])
+    said = describe(ev, [pos], minutes=60, fill=True)
+    assert said == "Adds 2 slots to the empty hours."
+    assert len(fill_empty_hours(ev, [pos], minutes=60)) == 2
+    assert describe(ev, [pos], minutes=60, fill=True) == (
+        "Every hour already has a slot; nothing would be added."
+    )

@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:pk>/publish/", views.publish, name="event_publish"),
     path("new/", views_manage.event_create, name="event_create"),
     path("<int:pk>/manage/", views_manage.event_manage, name="event_manage"),
+    path("<int:pk>/details/", views_manage.event_edit, name="event_edit"),
     path("<int:pk>/manage/<slug:tab>/", views_manage.event_manage, name="event_manage_tab"),
     path("<int:pk>/periods/add/", views_manage.period_add, name="period_add"),
     path(
@@ -33,6 +34,7 @@ urlpatterns = [
         name="captain_remove",
     ),
     path("<int:pk>/slots/generate/", views_manage.slots_generate, name="slots_generate"),
+    path("<int:pk>/slots/preview/", views_manage.slots_preview, name="slots_preview"),
     path("<int:pk>/slots/add/", views_manage.slot_add, name="slot_add"),
     path("<int:pk>/duplicate/", views_manage.event_duplicate, name="event_duplicate"),
     path("<int:pk>/cancel/", views_manage.event_cancel, name="event_cancel"),

@@ -194,6 +194,14 @@ visit; it is now Setup, Slots, Sign-up rules, Contest and Status.
   back on its own tab, with everything typed (Forms, above).
 - Where the page has a guide to what to do next, it stays above the tabs, and each step links to
   its tab; the page's own address opens on the step to do next.
+- **A small form opens in a dialog** (SK, 2026-11-02, #168): a button on the tab, and the form in
+  a dialog over it. Every dialog keeps a page of its own behind it: the button is a link to that
+  page, and htmx opens it in the dialog instead when it can. A refusal comes back inside the
+  dialog with everything typed; a save closes it by loading the tab, with its message. Focus goes
+  into the dialog on opening, to the problem on a refusal, and back to the button on closing.
+- **What is read first is read, then edited**: the event's details show as label and value, and
+  **Edit details** opens the form. A form with a rich text editor is a page, not a dialog: the
+  editor puts its menus on the page body, where a modal dialog would hide them.
 
 ## In place, with htmx
 

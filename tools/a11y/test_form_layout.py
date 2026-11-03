@@ -55,7 +55,19 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
     tabs = [
         f"/events/{ev.pk}/manage/{t}/" for t in ("setup", "slots", "rules", "contest", "status")
     ]  # Manage in tabs (#167)
-    urls = [*tabs, f"/events/{ev.pk}/slot/{slot.first().pk}/"]
+    forms = [  # each form's own page (#168)
+        f"/events/{ev.pk}/{f}/"
+        for f in (
+            "periods/add",
+            "locations/add",
+            "captains/add",
+            "slots/generate",
+            "slots/add",
+            "openings/add",
+            "details",
+        )
+    ]
+    urls = [*tabs, *forms, f"/events/{ev.pk}/slot/{slot.first().pk}/"]
     found = []
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()

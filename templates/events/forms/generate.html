@@ -1,0 +1,4 @@
+{% include "events/forms/_fields.html" %}
+{% comment %}What the fields will make, said before anything is made (#168): written by the server on the
+page, and again by htmx as the fields change, from the same plan the generator follows.{% endcomment %}
+<p class="preview" id="gen-preview" aria-live="polite" hx-post="{% url 'slots_preview' event.pk %}" hx-trigger="input from:closest form delay:400ms" hx-include="closest form" hx-target="this" hx-swap="innerHTML">{{ preview }}</p>

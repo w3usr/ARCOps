@@ -1,0 +1,18 @@
+{% extends base_template %}
+{% block title %}{{ heading }} · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block extra_head %}{% if editor %}{% include "ops/_editor.html" %}{% endif %}{% endblock %}
+{% block content %}
+{% comment %}One of Manage's forms (#168), on its own page or, through htmx, inside Manage's dialog.
+In the dialog the form posts with htmx and a refusal comes back there; on the page it posts and
+redirects, as every form here does without JavaScript (apps/events/form_pages.py).{% endcomment %}
+{% if not partial %}<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{{ back }}">Manage</a></p>{% endif %}
+<h1 id="dialog-title">{{ heading }}</h1>
+{% if form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> {{ refused|default:"Nothing was saved; correct the fields marked below." }}</p>{% endif %}
+{% if intro %}<p>{{ intro }}</p>{% endif %}
+<form method="post" action="{{ request.path }}"{% if partial %} hx-post="{{ request.path }}"{% endif %} class="stack">{% csrf_token %}
+  {% include fields_template %}
+  {% if actions_template %}{% include actions_template %}{% else %}
+  <div><button type="submit">{{ submit }}</button> {% if partial %}<button type="button" class="secondary" data-close>Cancel</button>{% else %}<a class="button secondary" href="{{ back }}">Cancel</a>{% endif %}</div>
+  {% endif %}
+</form>
+{% endblock %}

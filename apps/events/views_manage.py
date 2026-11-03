@@ -9,6 +9,7 @@ the periods and can be regenerated freely until someone has signed up.
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, timedelta
 
 from django import forms
@@ -29,6 +30,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.richtext import sanitise
 
+from .form_pages import done, form_page, tab_url
 from .models import (
     Captaincy,
     Event,
@@ -208,6 +210,47 @@ class GenerateForm(SeatFields, forms.Form):
         self.add_seat_fields(roles)
 
 
+class LocationForm(forms.Form):
+    name = forms.CharField(label="Name", max_length=120)
+    address = forms.CharField(label="Address (optional)", max_length=200, required=False)
+    position = forms.CharField(
+        label="First position", max_length=60, required=False, help_text="Run, Mult, VHF…"
+    )
+    is_club_station = forms.BooleanField(
+        label="This is the club station", required=False, initial=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        super().__init__(*args, **kwargs)
+
+
+class PositionForm(forms.Form):
+    name = forms.CharField(
+        label="Position name", max_length=60, required=False, help_text="Run, Mult, VHF…"
+    )
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        super().__init__(*args, **kwargs)
+
+
+class CaptainForm(forms.Form):
+    user = forms.ModelChoiceField(queryset=User.objects.none(), label="Member", empty_label=None)
+
+    def __init__(self, *args, event, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        super().__init__(*args, **kwargs)
+        self.fields["user"].queryset = (
+            User.objects.with_access()
+            .exclude(captaincies__event=event)
+            .order_by("last_name", "first_name")
+        )
+        self.fields["user"].label_from_instance = lambda u: " ".join(
+            x for x in (u.full_name, u.callsign) if x
+        )
+
+
 class AddSlotForm(SeatFields, forms.Form):
     """One slot by hand, beside a grid that may already have people in it (FR-46, FR-47)."""
 
@@ -311,32 +354,81 @@ def event_create(request):
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
 def event_manage(request, pk, tab=None):
     """Manage, one tab at a time (#167). `/manage/` opens on the tab of the step to do next, or
-    Setup; the Details form posts to Setup."""
+    Setup. Its forms are pages of their own, opened in a dialog (#168)."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     if tab is None:
         return to_tab(pk, _first_tab(event))
     if tab not in dict(TABS):
         raise Http404
-    form = EventForm(instance=event)
-    if request.method == "POST" and tab == "setup":
-        form = EventForm(request.POST, instance=event)
-        if form.is_valid():
-            before = {f: form.initial.get(f) for f in form.changed_data}
-            form.save()
-            record(
-                request.user,
-                "event.edited",
-                event,
-                before=before,
-                after={f: getattr(event, f) for f in form.changed_data},
-            )
-            messages.success(request, "Saved.")
-            return to_tab(pk, "setup")
-    return _manage_page(request, event, tab, form=form)
+    return _manage_page(request, event, tab)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def event_edit(request, pk):
+    """The event's details (#168): read on Setup, edited here. A page, not a dialog: the rich
+    text editor puts its menus on the page body, where a modal dialog would hide them."""
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    form = EventForm(request.POST or None, instance=event)
+    if request.method == "POST" and form.is_valid():
+        before = {f: form.initial.get(f) for f in form.changed_data}
+        form.save()
+        record(
+            request.user,
+            "event.edited",
+            event,
+            before=before,
+            after={f: getattr(event, f) for f in form.changed_data},
+        )
+        messages.success(request, "Saved.")
+        return to_tab(pk, "setup")
+    return form_page(
+        request,
+        event,
+        form,
+        heading="Edit details",
+        submit="Save details",
+        tab="setup",
+        editor=True,
+    )
+
+
+def _details(event) -> list[tuple[str, str]]:
+    """Setup's read of the event's details, label and value, in the form's order (#168)."""
+    from apps.ops.templatetags.richtext import richtext
+
+    from .services.notify import drop_empty_sections
+
+    kbyg = re.findall(r"<h[1-6][^>]*>(.*?)</h[1-6]>", drop_empty_sections(event.kbyg_html))
+    rows = [
+        ("Title", event.title),
+        ("Type", dict(_types()).get(event.type, event.type)),
+        (
+            "Description",
+            richtext(event.description_html) if event.description_html else "None yet",
+        ),
+        ("Rules link", event.rules_url or "None"),
+        ("Preferred license class", event.min_license_class or "Any"),
+        (
+            "Local time zone for the roster",
+            event.display_timezone or f"The club's ({setting('club.timezone', 'UTC')})",
+        ),
+        (
+            "Reminder, hours before each slot",
+            event.reminder_hours_before
+            or f"The club's default ({setting('defaults.reminder_hours_before', 24)})",
+        ),
+        ("Know before you go", ", ".join(kbyg) if kbyg else "Nothing filled in yet"),
+    ]
+    if event.display_only:
+        rows.append(
+            ("Display only", f"Yes: on the calendar, no roster. {event.recurrence_text}".strip())
+        )
+    return rows
 
 
 # Manage in tabs (#167, SK 2026-11-02): each a page of its own, drawn by the server, so it works
@@ -409,21 +501,14 @@ def setup_steps(event, positions, slot_count) -> list[dict]:
     return steps
 
 
-def _manage_page(request, event, tab, form=None, generate_form=None, add_slot_form=None):
-    """The manage page. A view that refuses a form renders this with the bound form, so the
-    captain gets their values back with the reason beside them."""
-    roles = setting("slot_roles", []) or []
+def _manage_page(request, event, tab):
+    """One tab of Manage. Its forms are pages of their own (#168), so it binds none."""
     positions = (
         Position.objects.filter(location__event=event)
         .select_related("location")
         .order_by("location__order", "order")
     )
     slot_count = Slot.objects.filter(position__location__event=event, cancelled=False).count()
-    candidates = (
-        User.objects.with_access()
-        .exclude(captaincies__event=event)
-        .order_by("last_name", "first_name")
-    )
     return render(
         request,
         "events/manage.html",
@@ -432,21 +517,13 @@ def _manage_page(request, event, tab, form=None, generate_form=None, add_slot_fo
             "tab": tab,
             "tabs": TABS,
             "tab_label": dict(TABS)[tab],
-            "form": form if form is not None else EventForm(instance=event),
-            "period_form": PeriodForm(),
+            "details": _details(event),
             "periods": event.periods.order_by("start"),
             "locations": event.locations.prefetch_related("positions").order_by("order"),
             "positions": positions,
             "captains": event.captaincies.select_related("user").order_by("user__last_name"),
-            "candidates": candidates,
             # Appointing captains (§2.2) and cancelling the event (SK, 2026-10-15) are officers'.
             "may_manage_events": request.user.may("manage_events"),
-            "generate_form": generate_form
-            if generate_form is not None
-            else GenerateForm(roles=roles),
-            "add_slot_form": add_slot_form
-            if add_slot_form is not None
-            else AddSlotForm(event=event, roles=roles),
             "slot_count": slot_count,
             "setup_steps": setup_steps(event, positions, slot_count),
             "signups_exist": has_signups(event),
@@ -460,19 +537,20 @@ def _manage_page(request, event, tab, form=None, generate_form=None, add_slot_fo
 
 
 @login_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def period_add(request, pk):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    form = PeriodForm(request.POST)
-    if form.is_valid():
+    form = PeriodForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
         OperatingPeriod.objects.create(
             event=event, start=form.cleaned_data["start"], end=form.cleaned_data["end"]
         )
         messages.success(request, "Operating period added.")
-    else:
-        messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-    return to_tab(pk, "setup")
+        return done(request, tab_url(pk, "setup"))
+    return form_page(
+        request, event, form, heading="Add an operating period", submit="Add period", tab="setup"
+    )
 
 
 @login_required
@@ -488,39 +566,48 @@ def period_delete(request, pk, period_id):
 
 
 @login_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def location_add(request, pk):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    name = request.POST.get("name", "").strip()[:120]
-    if not name:
-        messages.error(request, "A location needs a name.")
-        return to_tab(pk, "setup")
-    order = event.locations.count() + 1
-    loc = Location.objects.create(
-        event=event,
-        name=name,
-        is_club_station=request.POST.get("is_club_station") == "on",
-        address=request.POST.get("address", "").strip()[:200],
-        order=order,
+    form = LocationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        loc = Location.objects.create(
+            event=event,
+            name=d["name"].strip(),
+            is_club_station=d["is_club_station"],
+            address=d["address"].strip(),
+            order=event.locations.count() + 1,
+        )
+        Position.objects.create(location=loc, name=d["position"].strip() or "Station", order=1)
+        messages.success(request, f"Location “{loc.name}” added with its first position.")
+        return done(request, tab_url(pk, "setup"))
+    return form_page(
+        request, event, form, heading="Add a location", submit="Add location", tab="setup"
     )
-    Position.objects.create(
-        location=loc, name=request.POST.get("position", "").strip()[:60] or "Station", order=1
-    )
-    messages.success(request, f"Location “{name}” added with its first position.")
-    return to_tab(pk, "setup")
 
 
 @login_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def position_add(request, pk, location_id):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     loc = get_object_or_404(Location, pk=location_id, event=event)
-    name = request.POST.get("name", "").strip()[:60] or f"Position {loc.positions.count() + 1}"
-    Position.objects.create(location=loc, name=name, order=loc.positions.count() + 1)
-    messages.success(request, f"Position “{name}” added.")
-    return to_tab(pk, "setup")
+    form = PositionForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        name = form.cleaned_data["name"].strip() or f"Position {loc.positions.count() + 1}"
+        Position.objects.create(location=loc, name=name, order=loc.positions.count() + 1)
+        messages.success(request, f"Position “{name}” added.")
+        return done(request, tab_url(pk, "setup"))
+    return form_page(
+        request,
+        event,
+        form,
+        heading=f"Add a position at {loc.name}",
+        submit="Add position",
+        tab="setup",
+    )
 
 
 @login_required
@@ -538,19 +625,30 @@ def position_delete(request, pk, position_id):
 
 
 @login_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def captain_add(request, pk):
     # §2.2: captains are appointed by an officer or sysadmin, so a member who is captain of
     # this event runs it but does not choose who else does.
     if not request.user.may("manage_events"):
         raise Http404
     event = get_object_or_404(Event, pk=pk)
-    user = get_object_or_404(User, pk=request.POST.get("user"))
-    _, created = Captaincy.objects.get_or_create(event=event, user=user)
-    if created:
+    form = CaptainForm(request.POST or None, event=event)
+    if request.method == "POST" and form.is_valid():
+        user = form.cleaned_data["user"]
+        Captaincy.objects.get_or_create(event=event, user=user)
         record(request.user, "captain.added", event, after={"user": user.pk})
         messages.success(request, f"{user.short_name} is now a captain of this event.")
-    return to_tab(pk, "setup")
+        return done(request, tab_url(pk, "setup"))
+    return form_page(
+        request,
+        event,
+        form,
+        heading="Appoint a captain",
+        submit="Appoint captain",
+        tab="setup",
+        intro="Every officer already has a captain's powers on every event; appoint here to "
+        "give them to a member for this event only.",
+    )
 
 
 @login_required
@@ -571,37 +669,109 @@ def captain_remove(request, pk, user_id):
     return to_tab(pk, "setup")
 
 
+def _windows(event, form):
+    """The daily hours as instants, None for the whole periods, or [] when they miss every period."""
+    if not form.cleaned_data.get("windows"):
+        return None
+    from .services.slots import windows_from_daily
+
+    return windows_from_daily(event, form.cleaned_data["windows"])
+
+
+def _preview(event, positions, form, fill) -> str:
+    """The generator's line before anything is made (#168), for the fields as they stand."""
+    from .services.slots import describe
+
+    if form.is_bound and not form.is_valid():
+        return ""
+    if form.is_bound:
+        d, windows = form.cleaned_data, _windows(event, form)
+        if windows == []:
+            return "Those hours fall outside every operating period."
+    else:
+        d, windows = {name: f.initial for name, f in form.fields.items()}, None
+    return describe(
+        event,
+        positions,
+        minutes=int(d.get("minutes") or 60),
+        setup_slots=int(d.get("setup_slots") or 0),
+        breakdown_slots=int(d.get("breakdown_slots") or 0),
+        windows=windows,
+        fill=fill,
+    )
+
+
 @login_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def slots_generate(request, pk):
+    """The generator (FR-46 to FR-48): a page of its own, opened in Manage's dialog (#168). On an
+    empty roster it builds the grid; once slots exist it adds to the empty hours (#153), and,
+    while nobody has signed up, can replace the grid behind its confirmation."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     roles = setting("slot_roles", []) or []
-    form = GenerateForm(request.POST, roles=roles)
     positions = list(Position.objects.filter(location__event=event))
     if not event.periods.exists() or not positions:
         messages.error(request, "Add an operating period and a location first.")
-        return to_tab(pk, "slots")
+        return done(request, tab_url(pk, "slots"))
+    existing = Slot.objects.filter(position__location__event=event)
+    slot_count = existing.filter(cancelled=False).count()
+    signups = has_signups(event)
+    form = GenerateForm(request.POST or None, roles=roles)
+
+    def page():
+        return form_page(
+            request,
+            event,
+            form,
+            heading="Generate slots",
+            submit="Generate slots",
+            tab="slots",
+            fields="events/forms/generate.html",
+            actions="events/forms/generate_actions.html",
+            refused="Nothing was generated; correct the fields marked below.",
+            intro=(
+                "Fills only the time that has no slot yet, in every position, and keeps every "
+                "slot, seat count and sign-up. It makes operating slots only: setup and breakdown "
+                "slots are added one at a time."
+                + ("" if signups else " Regenerate slots replaces the whole grid instead.")
+                if slot_count
+                else "One slot per position per interval across every operating period, plus "
+                "setup and breakdown slots at the ends."
+            ),
+            slot_count=slot_count,
+            signups_exist=signups,
+            preview=_preview(event, positions, form, fill=bool(slot_count)),
+        )
+
+    if request.method != "POST":
+        return page()
     # Adding to the empty hours keeps every slot, seat count and sign-up, so it needs neither a
     # confirmation nor an empty roster (#153, SK 2026-11-03). Replacing needs both.
     fill = request.POST.get("mode") == "fill"
-    if not fill and has_signups(event):
+    if not fill and signups:
         messages.error(request, "Members have signed up; the grid cannot be rebuilt under them.")
-        return to_tab(pk, "slots")
+        return done(request, tab_url(pk, "slots"))
     if not form.is_valid():
-        messages.error(request, "Nothing was generated; correct the fields marked below.")
-        return _manage_page(request, event, "slots", generate_form=form)
-    existing = Slot.objects.filter(position__location__event=event)
-    kept = existing.filter(cancelled=False).count() if fill else 0
+        return page()
+    # Before anything is deleted: replacing the grid with hours outside every period used to
+    # delete the grid and then find nothing to build.
+    windows = _windows(event, form)
+    if windows == []:
+        form.add_error("windows", "Those hours fall outside every operating period.")
+        return page()
     if not fill and existing.exists() and request.POST.get("confirmed") != "yes":
         # Regenerating deletes every seat count, closed flag, and eligibility override on the
         # grid. It used to be the page's primary button, with nothing in between.
+        partial = bool(request.headers.get("HX-Request"))
         return render(
             request,
             "events/confirm_regenerate.html",
             {
                 "event": event,
                 "slot_count": existing.count(),
+                "partial": partial,
+                "base_template": "events/_dialog_base.html" if partial else "base.html",
                 "fields": [
                     (k, v) for k, v in request.POST.items() if k not in ("csrfmiddlewaretoken",)
                 ],
@@ -609,16 +779,6 @@ def slots_generate(request, pk):
         )
     if not fill:
         existing.delete()
-    windows = None
-    if form.cleaned_data.get("windows"):
-        from .services.slots import windows_from_daily
-
-        windows = windows_from_daily(event, form.cleaned_data["windows"])
-        if not windows:
-            messages.error(
-                request, "Those hours fall outside every operating period; nothing generated."
-            )
-            return to_tab(pk, "slots")
     created = generate_with_capacities(
         event,
         positions,
@@ -637,32 +797,56 @@ def slots_generate(request, pk):
     )
     if fill and not created:
         messages.info(request, "Every hour you asked for already has a slot; nothing added.")
-        return to_tab(pk, "slots")
+        return done(request, tab_url(pk, "slots"))
     if fill:
         messages.success(
             request,
             f"Added {len(created)} slot{pluralize(len(created))} to the empty hours across "
-            f"{len(positions)} position{pluralize(len(positions))}. The {kept} already on the "
-            "roster are unchanged.",
+            f"{len(positions)} position{pluralize(len(positions))}. The {slot_count} already on "
+            "the roster are unchanged.",
         )
-        return redirect("event_detail", pk=pk)
-    messages.success(
-        request, f"{len(created)} slots generated across {len(positions)} position(s)."
-    )
-    return redirect("event_detail", pk=pk)
+    else:
+        messages.success(
+            request, f"{len(created)} slots generated across {len(positions)} position(s)."
+        )
+    return done(request, reverse("event_detail", args=[pk]))
 
 
 @login_required
 @require_POST
+def slots_preview(request, pk):
+    """The generator's line, again, as its fields change (htmx, #168)."""
+    from django.http import HttpResponse
+    from django.utils.html import escape
+
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    positions = list(Position.objects.filter(location__event=event))
+    live = Slot.objects.filter(position__location__event=event, cancelled=False).exists()
+    form = GenerateForm(request.POST, roles=setting("slot_roles", []) or [])
+    return HttpResponse(escape(_preview(event, positions, form, fill=live)))
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
 def slot_add(request, pk):
     """One slot by hand, whether or not anyone has signed up: nothing else on the grid changes
     (FR-46). Its seats are set as it is made, which is when a captain knows them (FR-49)."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    form = AddSlotForm(request.POST, event=event, roles=setting("slot_roles", []) or [])
-    if not form.is_valid():
-        messages.error(request, "No slot was added; correct the fields marked below.")
-        return _manage_page(request, event, "slots", add_slot_form=form)
+    form = AddSlotForm(request.POST or None, event=event, roles=setting("slot_roles", []) or [])
+    if request.method != "POST" or not form.is_valid():
+        return form_page(
+            request,
+            event,
+            form,
+            heading="Add a slot",
+            submit="Add the slot",
+            tab="slots",
+            refused="No slot was added; correct the fields marked below.",
+            intro="One slot, beside whatever is on the grid, people included. A slot added by "
+            "mistake is canceled from its own page, which is also how one is re-timed.",
+        )
     d = form.cleaned_data
     slot = Slot.objects.create(
         position=d["position"], start=d["start"], end=d["end"], kind=d["kind"]
@@ -692,7 +876,7 @@ def slot_add(request, pk):
             f"{d['start']:%a %d %b %H:%M}–{d['end']:%H:%M} UTC",
         ),
     )
-    return to_tab(pk, "slots")
+    return done(request, tab_url(pk, "slots"))
 
 
 @login_required

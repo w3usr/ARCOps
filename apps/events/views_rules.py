@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.credentials.models import CredentialType
 from apps.credentials.services import ladder
@@ -16,6 +16,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.labels import role_label
 
+from .form_pages import done, form_page, tab_url
 from .models import EligibilityRule, Event, Opening, OperatingLimit, Slot
 from .services.lifecycle import set_state
 
@@ -156,27 +157,52 @@ def slot_eligibility(request, pk, slot_id):
 
 
 class OpeningForm(forms.Form):
-    role = forms.CharField(max_length=20)
+    role = forms.ChoiceField(label="Role")
     opens_at = forms.DateTimeField(
-        label="Opens at (UTC)", input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"]
+        label="Opens at (UTC)",
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"],
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
     )
-    announce = forms.BooleanField(
-        required=False, label="Announce to the newly eligible when it opens"
+    categories = forms.MultipleChoiceField(
+        label="To",
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="None ticked: everyone.",
     )
+    announce = forms.BooleanField(required=False, label="Announce when it opens")
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        kwargs.setdefault("auto_id", "op-%s")
+        super().__init__(*args, **kwargs)
+        self.fields["role"].choices = [
+            (r["key"], r["label"]) for r in setting("slot_roles", []) or []
+        ]
+        self.fields["categories"].choices = [
+            (c["key"], c["label"]) for c in setting("member_categories", []) or []
+        ]
 
 
 @login_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def opening_add(request, pk):
     """FR-54: a (when, audience) pair for a role. Empty categories means everyone."""
     from django.utils import timezone
 
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    form = OpeningForm(request.POST)
-    if not form.is_valid():
-        messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-        return redirect("event_manage_tab", pk=pk, tab="rules")
+    form = OpeningForm(request.POST or None)
+    if request.method != "POST" or not form.is_valid():
+        return form_page(
+            request,
+            event,
+            form,
+            heading="Add an opening",
+            submit="Add opening",
+            tab="rules",
+            intro="When a role opens, and to whom. List several to open a role to students "
+            "first and everyone later.",
+        )
     opens = form.cleaned_data["opens_at"]
     if timezone.is_naive(opens):
         opens = timezone.make_aware(opens, timezone.utc)
@@ -184,7 +210,7 @@ def opening_add(request, pk):
         event=event,
         role=form.cleaned_data["role"],
         opens_at=opens,
-        categories=[c for c in request.POST.getlist("categories") if c],
+        categories=form.cleaned_data["categories"],
         announce=form.cleaned_data["announce"],
     )
     record(
@@ -197,7 +223,7 @@ def opening_add(request, pk):
         request,
         f"{o.role.capitalize()} opens {opens:%d %b %H:%M}Z to {', '.join(o.categories) or 'everyone'}.",
     )
-    return redirect("event_manage_tab", pk=pk, tab="rules")
+    return done(request, tab_url(pk, "rules"))
 
 
 @login_required

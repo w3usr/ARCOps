@@ -302,6 +302,7 @@ footer.site .credit a { color: inherit; }
 /* Label and value (#146): two columns at desktop, about half the height of the stack, with the
    label at the regular weight in the muted color; on a phone, the label above its value. */
 .dl dt { color: var(--muted); margin-top: .5rem; } .dl dd { margin: 0; }
+.dl dd > :first-child { margin-top: 0; } .dl dd > :last-child { margin-bottom: 0; }  /* rich text beside its label (#168) */
 @media (min-width: 40rem) {
   .dl { display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: var(--s1) var(--s3); }
   .dl dt { margin-top: 0; }

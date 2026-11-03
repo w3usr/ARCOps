@@ -14,7 +14,7 @@ pytestmark = pytest.mark.django_db
 TABS = ["setup", "slots", "rules", "contest", "status"]
 HOLDS = {  # each tab's sections, by the heading ids the page has always had
     "setup": ["det", "per", "loc", "cap"],
-    "slots": ["gen", "add-slot", "lim"],
+    "slots": ["gen", "lim"],
     "rules": ["who", "opn"],
     "contest": ["con"],
     "status": ["st", "ann", "more", "dz"],
@@ -81,17 +81,3 @@ def test_a_save_returns_to_its_tab(officer):
     for tab, (url, data) in saves.items():
         r = c.post(url, data)
         assert r.status_code == 302 and r["Location"] == f"{base}/manage/{tab}/", (tab, url)
-
-
-def test_a_refused_form_comes_back_on_its_own_tab(officer):
-    c = _as(officer)
-    ev = _build(c)
-    r = c.post(f"/events/{ev.pk}/slots/generate/", {"minutes": "0", "mode": "fill"})
-    body = r.content.decode()
-    assert r.status_code == 200 and "Nothing was generated" in body
-    assert f'href="/events/{ev.pk}/manage/slots/" aria-current="page"' in body
-    r = c.post(f"/events/{ev.pk}/manage/setup/", {"title": ""})
-    body = r.content.decode()
-    assert (
-        r.status_code == 200 and f'href="/events/{ev.pk}/manage/setup/" aria-current="page"' in body
-    )

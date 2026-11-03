@@ -66,6 +66,18 @@ def pages_for(role: str) -> list[str]:
         *(
             f"/events/{ev.pk}/manage/{t}/" for t in ("setup", "slots", "rules", "contest", "status")
         ),  # Manage in tabs (#167)
+        *(
+            f"/events/{ev.pk}/{f}/"
+            for f in (
+                "periods/add",
+                "locations/add",
+                "captains/add",
+                "slots/generate",
+                "slots/add",
+                "openings/add",
+                "details",
+            )
+        ),  # forms (#168)
         f"/events/{ev.pk}/announce/",
         "/events/new/",
         "/events/health/",
