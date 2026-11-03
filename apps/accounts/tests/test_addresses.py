@@ -205,6 +205,7 @@ def test_club_mail_follows_the_delivery_switch_and_one_address_always_receives()
         follow=True,
     )
     assert b"at least one address" in r.content
+    assert [m.level_tag for m in r.context["messages"]][-1] == "warning"  # Careful:, not Problem:
     assert recipient_addresses(m) == ["mem.home@example.org"]
 
 

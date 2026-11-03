@@ -4483,3 +4483,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code (one class). Verified: tools/check_interface.sh passes; apps/events tests pass (96); T52 step 3 passes against it locally on the W3USR overlay (private repo, testing/runs/2026-11-02_203905-w3usr).
 - **Human Review Status**: Pending review
 - **Git Hash**: bbcfdf5
+
+## [2026-11-02 20:43 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Acceptance T52 step 6: turning club mail off on the only address answered Problem; SK decided it is a warning, Careful.
+- **Sections/Files Affected**: apps/accounts/views_addresses.py (the refusal is messages.warning); apps/accounts/tests/test_addresses.py (the refusal's level is asserted).
+- **Nature of Contribution**: Code. Verified: apps/accounts tests pass (234); tools/check_interface.sh passes; T52 passes in full against it locally on the W3USR overlay, 16 of 16 (private repo, testing/runs/2026-11-02_204248-w3usr).
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

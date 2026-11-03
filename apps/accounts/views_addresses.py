@@ -104,7 +104,9 @@ def handle(request, subject: User) -> bool:
         if row is None:
             messages.error(request, "That address is not on the account.")
         elif row.delivery and len([a for a in addresses.on_file(subject) if a.delivery]) == 1:
-            messages.error(
+            # A warning, not a problem: nothing went wrong, the switch stays as it is (T52 step 6;
+            # SK, 2026-11-02).
+            messages.warning(
                 request,
                 "Club mail has to reach at least one address. Turn another one on first.",
             )
