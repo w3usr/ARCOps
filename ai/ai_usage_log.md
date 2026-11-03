@@ -4506,4 +4506,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/services/lifecycle.py (announce_openings claims an opening in one conditional update before telling anyone); apps/events/services/waitlist.py (offer_next makes the offer in one conditional update, the entry still pending and no offer already out; expire_offers claims each lapse the same way); apps/events/tests/test_phase2.py (three tests, each running the second caller inside the first between its read and its write).
 - **Nature of Contribution**: Code and tests. Conditional updates rather than select_for_update, which SQLite (the servers' database) ignores. Verified: each new test fails on the old code and passes on the new; application tests 487 passed; lint, format and the guards pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T36 passes locally, 10 of 10 (private repo, testing/runs/2026-11-02_214849-w3usr).
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 7036bde
