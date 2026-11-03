@@ -62,11 +62,16 @@ def test_the_roster_key_is_labelled_and_one_entry_a_line_on_a_phone(live_server,
         page = browser.new_page(viewport=PHONE)
         sign_in(page, live_server.url, ACCOUNTS["member"])
         page.goto(f"{live_server.url}/events/{event.pk}/")
+        closed = page.locator(".legend").is_visible()
+        page.get_by_role("button", name="Key", exact=True).click()  # #169: it opens over the page
         label = page.locator(".legend .legend-label").inner_text().strip()
         tops = page.evaluate(
             "() => [...document.querySelectorAll('.legend li')].map(li => li.getBoundingClientRect().top)"
         )
+        page.keyboard.press("Escape")
+        shut = not page.locator(".legend").is_visible()
         browser.close()
+    assert not closed and shut, "the key starts closed and Escape closes it (#169)"
     assert label == "Key", "the key says what it is, for everyone (#132's finding)"
     assert len(tops) >= 4 and len(set(round(t) for t in tops)) == len(tops), (
         "each entry on its own line"

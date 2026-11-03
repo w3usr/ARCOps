@@ -630,6 +630,20 @@ def test_the_strip_is_for_the_eye_and_the_key_reads_its_marks(world):
     )
 
 
+def test_the_key_opens_from_a_button_beside_problems_only(world):
+    """#169, SK 2026-11-02: the Key is a native popover behind a ? button named Key, beside
+    Problems only; no script of ours. The list inside is still named Key."""
+    body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
+    zones = body.split('<p class="zones muted">', 1)[1].split("</p>", 1)[0]
+    assert "Problems only" in zones
+    assert (
+        '<button type="button" class="keybtn" popovertarget="roster-key-pop" aria-label="Key">?'
+        "</button>" in zones
+    )
+    assert '<div class="legend muted" id="roster-key-pop" popover>' in body
+    assert '<ul aria-labelledby="roster-key">' in body and 'id="roster-key">Key</span>' in body
+
+
 def test_a_canceled_events_slots_leave_home_and_my_sked(world, monkeypatch):
     c = _home(world, monkeypatch, "mem")
     slot = Slot.objects.filter(position=world["run"], kind="operating").first()

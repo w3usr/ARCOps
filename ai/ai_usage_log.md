@@ -4523,3 +4523,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code, tests, and a requirements addendum entry, from SK's decisions (option 2 of the report; a canceled slot's hour is not refilled; operating slots only; no confirmation). Verified: each new test failed before the code existed; application tests 495 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word; it found the windows label wrapping and the row uneven, fixed by the shorter label); acceptance T11, T12, T13, T14, T18, T35 and T52 pass locally (private repo, testing/runs/2026-11-03_112645-w3usr and 113006-w3usr).
 - **Human Review Status**: Pending review
 - **Git Hash**: 731cf6d
+
+## [2026-11-03 12:20 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: w3usr/w3usr.org-PRIVATE#169: the roster's Key moves behind a ? button beside Problems only and opens over the page (SK, 2026-11-02).
+- **Sections/Files Affected**: templates/events/detail.html (a ? button named Key with popovertarget; the Key's div a native popover with a Close button; the list still named Key); static/css/app.css (the button, the open Key as a card over a dimmed page, the strip the full width; without popover support the button and Close are hidden and the Key stays in place; the button hidden in print); apps/events/tests/test_roster.py (a test for the button and the popover); tools/a11y/test_phone_layout.py (the Key opened before its lines are measured; closed at first and by Escape).
+- **Nature of Contribution**: Code and tests. No script: the browser's popover. Verified: the new test failed before the change; application tests 496 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T11 to T15 and T20 pass locally (private repo, testing/runs/2026-11-03_121808-w3usr), the open Key judged by eye from T12's screenshot.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

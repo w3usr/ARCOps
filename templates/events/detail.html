@@ -54,9 +54,13 @@
 <div class="rosterhead">
   <h2>Roster</h2>
   <p class="zones muted">Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.
-    · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %}</p>
+    · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %} <button type="button" class="keybtn" popovertarget="roster-key-pop" aria-label="Key">?</button></p>
 </div>
 <div class="overview">
+{% comment %}The Key opens over the page from the ? beside Problems only (#169, SK 2026-11-02): a
+native popover, so no script of ours, and Escape or a click outside closes it. A browser without
+popover shows it in place, as before, and hides the button (app.css). Every cell says its state in
+words, so nothing is lost while it is closed (FR-62).{% endcomment %}
 {% comment %}The coverage strip (#161): the whole event, a line a day, a mark per time span with its
 state as a symbol as well as a color (FR-62), each linking to its hour. A shortcut for the eye and
 the pointer, so it is hidden from screen readers and takes no tab stops: the roster below says
@@ -64,7 +68,7 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
 <div class="strip" aria-hidden="true">
   {% for d in roster.strip %}<div class="strip-day"><span class="strip-label">{{ d.label }}</span><span class="strip-marks">{% for m in d.marks %}<a class="sm sm-{{ m.state }}" href="{{ m.href }}" tabindex="-1">{{ m.mark }}</a>{% endfor %}</span></div>{% endfor %}
 </div>
-<div class="legend muted"><span class="legend-label" id="roster-key">Key</span>
+<div class="legend muted" id="roster-key-pop" popover><span class="legend-label" id="roster-key">Key</span>
   <ul aria-labelledby="roster-key">
     <li><span class="sm sm-open" aria-hidden="true"></span> <span class="tag open">Open</span> anyone eligible can sign up</li>
     <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</li>
@@ -77,6 +81,7 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
     <li><span class="mk" aria-hidden="true">CO</span> control operator</li>
     <li><span class="mk" aria-hidden="true">✓</span> confirmed, <span class="mk ok" aria-hidden="true">in</span> checked in</li>
   </ul>
+  <button type="button" class="secondary keyclose" popovertarget="roster-key-pop" popovertargetaction="hide">Close</button>
 </div>
 </div>
 

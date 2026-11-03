@@ -494,6 +494,15 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
   .legend li { display: block; margin: .2rem 0; }
   .legend li + li::before { content: none; }
 }
+/* The Key behind a ? beside Problems only, opening over the page (#169, SK 2026-11-02): a native
+   popover. Without popover support the button and Close go, the key stays in place beside the
+   strip as before; with it the strip has the width to itself. */
+.keybtn { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; margin-left: .35rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--fg); font: inherit; font-weight: 700; line-height: 1; vertical-align: middle; cursor: pointer; }
+.legend:popover-open { margin: auto; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r-card); background: var(--bg); color: var(--fg); box-shadow: 0 .5rem 2rem rgb(0 0 0 / .25); }
+.legend:popover-open::backdrop { background: rgb(0 0 0 / .2); }
+.keyclose { display: block; margin-top: .75rem; }
+@supports selector(:popover-open) { .overview { grid-template-columns: 1fr; } }
+@supports not selector(:popover-open) { .keybtn, .keyclose { display: none; } }
 .msglist { list-style: none; padding-left: 0; }
 .tag.open { color: var(--accent); }
 .tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); }
@@ -579,7 +588,7 @@ html.js .bulkbar:not(.active) { display: none; }
 }
 @media print {
   .roster .r-row[hidden] { display: grid !important; } .roster .r-fold { display: none; }  /* every slot, on paper (FR-65, FR-85) */
-  .sidenav, .topbar, footer.site, .bulkbar, .legend, .zones a, .banner form, .titlerow .button, .crumbs, .roster input[type="checkbox"], .skip { display: none !important; }
+  .sidenav, .topbar, footer.site, .bulkbar, .legend, .zones a, .keybtn, .banner form, .titlerow .button, .crumbs, .roster input[type="checkbox"], .skip { display: none !important; }
   .shell { display: block; } .content { padding: 0; max-width: none; }
   .roster { border-color: #999; } .roster .slot-link { padding-left: .5rem; }
   .roster .r-head, .roster .r-dayhead { position: static; }
