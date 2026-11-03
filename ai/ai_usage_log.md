@@ -4499,3 +4499,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests. Verified: lint, format and the guards pass; application tests 484 passed; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word: it would not launch on this Mac, "Could not find profile folder"); acceptance T11 to T14 pass locally against it (private repo, testing/runs/2026-11-02_214145-w3usr).
 - **Human Review Status**: Pending review
 - **Git Hash**: e116910
+
+## [2026-11-02 21:51 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: w3usr/w3usr.org-PRIVATE#165: an opening announced twice when two runs of openings_announce overlapped; the waitlist's offer and expiry share the pattern.
+- **Sections/Files Affected**: apps/events/services/lifecycle.py (announce_openings claims an opening in one conditional update before telling anyone); apps/events/services/waitlist.py (offer_next makes the offer in one conditional update, the entry still pending and no offer already out; expire_offers claims each lapse the same way); apps/events/tests/test_phase2.py (three tests, each running the second caller inside the first between its read and its write).
+- **Nature of Contribution**: Code and tests. Conditional updates rather than select_for_update, which SQLite (the servers' database) ignores. Verified: each new test fails on the old code and passes on the new; application tests 487 passed; lint, format and the guards pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T36 passes locally, 10 of 10 (private repo, testing/runs/2026-11-02_214849-w3usr).
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

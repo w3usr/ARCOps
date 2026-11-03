@@ -96,6 +96,11 @@ def announce_openings(now: datetime | None = None) -> int:
     for o in due:
         if o.event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):
             continue
+        # Claimed before anyone is told, in one conditional update, so a second run at the same
+        # moment (the timer and a manage.py call) finds it taken and sends nothing (#165).
+        # ponytail: at most once; a run that dies mid-send leaves the rest untold, not told twice.
+        if not Opening.objects.filter(pk=o.pk, announced_at__isnull=True).update(announced_at=now):
+            continue
         audience = User.objects.filter(
             is_active=True,
             groups__permissions__codename="view_directory",
@@ -110,7 +115,5 @@ def announce_openings(now: datetime | None = None) -> int:
                 "opening",
                 {"role": role_label(o.role), "event": o.event, "link": link},
             )
-        o.announced_at = now
-        o.save(update_fields=["announced_at"])
         n += 1
     return n

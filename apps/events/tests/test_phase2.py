@@ -324,6 +324,81 @@ def test_waitlist_offer_accept_and_lapse():
     )
 
 
+def test_two_runs_at_once_announce_an_opening_once(monkeypatch):
+    """#165: dev's timer and a manage.py call ran openings_announce in the same second, and each
+    member was told twice. Here the second run starts while the first is still sending."""
+    now = timezone.now()
+    stu = _user("stu@example.org")
+    e, _ = _event(now + timedelta(days=4))
+    Opening.objects.create(
+        event=e, role="observer", opens_at=now - timedelta(minutes=1), announce=True
+    )
+    real, second = lifecycle.send, []
+
+    def send(*args, **kwargs):
+        if not second:
+            second.append(None)
+            second[0] = lifecycle.announce_openings(now)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(lifecycle, "send", send)
+    assert lifecycle.announce_openings(now) == 1 and second == [0]
+    assert Outbox.objects.filter(user=stu, category="opening").count() == 1
+
+
+def _racing(monkeypatch, other):
+    """Run `other` once, inside the first offer_next, after it has read the next entry and
+    before it writes the offer: offer_hours() sits between the two."""
+    real, ran = waitlist.offer_hours, []
+
+    def hours():
+        if not ran:
+            ran.append(None)
+            ran[0] = other()
+        return real()
+
+    monkeypatch.setattr(waitlist, "offer_hours", hours)
+    return ran
+
+
+def test_a_cancellation_and_the_expiry_job_at_once_offer_a_place_once(monkeypatch):
+    """#165: offer_next runs from a request (a cancellation) and from the expiry job; two at the
+    same moment offered the first in line the place twice."""
+    now = timezone.now()
+    b, d = _user("b@example.org"), _user("d@example.org")
+    _, slots = _event(now + timedelta(days=3))
+    for u in (b, d):
+        Waitlist.objects.create(slot=slots[0], user=u, role="observer")
+    ran = _racing(monkeypatch, lambda: waitlist.offer_next(slots[0], "observer", now))
+    assert waitlist.offer_next(slots[0], "observer", now) is None and ran[0].user == b
+    assert list(Waitlist.objects.filter(state="offered").values_list("user", flat=True)) == [b.pk]
+    assert Outbox.objects.filter(subject__contains="place opened").count() == 1
+
+
+def test_two_expiry_runs_at_once_lapse_each_offer_once(monkeypatch):
+    """#165: two runs of the expiry job holding the same list of lapsed offers. The second runs
+    inside the first, after the first has read the list."""
+    now = timezone.now()
+    lapsed, nxt = {}, {}
+    _, slots = _event(now + timedelta(days=3), hours=2)
+    for i, s in enumerate(slots):
+        lapsed[i] = Waitlist.objects.create(
+            slot=s,
+            user=_user(f"x{i}@example.org"),
+            role="observer",
+            state="offered",
+            offered_at=now - timedelta(hours=3),
+            offer_expires_at=now - timedelta(hours=1),
+        )
+        nxt[i] = Waitlist.objects.create(slot=s, user=_user(f"y{i}@example.org"), role="observer")
+    second = _racing(monkeypatch, lambda: waitlist.expire_offers(now))
+    first = waitlist.expire_offers(now)
+    assert first + second[0] == 2  # each lapsed once, between the two runs
+    assert Waitlist.objects.filter(state="expired").count() == 2
+    assert Waitlist.objects.filter(state="offered").count() == 2  # the next in line, once each
+    assert Outbox.objects.filter(subject__contains="place opened").count() == 2
+
+
 def test_csv_filter_badges_feed_and_overview():
     now = timezone.now()
     cap = _user("cap@example.org", "officer")

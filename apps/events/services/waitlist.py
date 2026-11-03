@@ -6,6 +6,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 
 from django.conf import settings as dj
+from django.db.models import Exists
 from django.urls import reverse
 from django.utils import timezone
 
@@ -48,15 +49,22 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
     now = now or timezone.now()
     if not seats_open(slot, role):
         return None
-    if Waitlist.objects.filter(slot=slot, role=role, state=Waitlist.State.OFFERED).exists():
-        return None  # an offer is already out; the expiry pass moves it on
     entry = Waitlist.objects.filter(slot=slot, role=role, state=Waitlist.State.PENDING).first()
     if entry is None:
         return None
-    entry.state = Waitlist.State.OFFERED
-    entry.offered_at = now
-    entry.offer_expires_at = now + timedelta(hours=offer_hours())
-    entry.save(update_fields=["state", "offered_at", "offer_expires_at"])
+    # One conditional update makes the offer: the entry still pending and no offer already out
+    # for this place. A cancellation and the expiry job at the same moment (#165) then cannot
+    # offer one place twice, or to two people: whichever writes second changes nothing.
+    # SQLite runs one statement at a time, which is the lock.
+    out = Waitlist.objects.filter(slot=slot, role=role, state=Waitlist.State.OFFERED)
+    expires = now + timedelta(hours=offer_hours())
+    if not (
+        Waitlist.objects.filter(pk=entry.pk, state=Waitlist.State.PENDING)
+        .filter(~Exists(out))
+        .update(state=Waitlist.State.OFFERED, offered_at=now, offer_expires_at=expires)
+    ):
+        return None  # an offer is already out; the expiry pass moves it on
+    entry.state, entry.offered_at, entry.offer_expires_at = Waitlist.State.OFFERED, now, expires
     from .notify import when_text
 
     site = getattr(dj, "SITE_URL", "") or ""
@@ -100,11 +108,16 @@ def expire_offers(now: datetime | None = None) -> int:
             state=Waitlist.State.OFFERED, offer_expires_at__lt=now
         ).select_related("slot")
     )
+    n = 0
     for e in lapsed:
-        e.state = Waitlist.State.EXPIRED
-        e.save(update_fields=["state"])
+        # Claimed as in offer_next: a second run holding the same list lapses nothing twice.
+        if not Waitlist.objects.filter(pk=e.pk, state=Waitlist.State.OFFERED).update(
+            state=Waitlist.State.EXPIRED
+        ):
+            continue
+        n += 1
         offer_next(e.slot, e.role, now)
-    return len(lapsed)
+    return n
 
 
 def on_place_opened(slot: Slot, role: str) -> None:
