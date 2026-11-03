@@ -4562,4 +4562,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/branding.py (SCHEDULE_FEATURE_NAME "schedule"); templates/ops/dashboard.html and apps/events/templatetags/times.py (the name where it was written out); apps/events/tests/test_notify.py; docs/NAME.md (a dated note below the names table); templates/base.html (a page column beside the sidebar holding banners, main and the footer), templates/_footer.html (new: the footer, unchanged); static/css/app.css (the column; the footer without a background, its rule kept; the layout note).
 - **Nature of Contribution**: Code and docs. Verified: application tests 512 passed; lint passes; the accessibility sweep in Chromium and WebKit 54 passed, 1 skipped; screenshots of My schedule at 1280 and 390 px compared by eye; acceptance T11 to T14, T17, T20, T31, T37, T41, T46 and T47 pass locally (private repo, testing/runs/2026-11-03_153219-w3usr; T20 step 4 now checks the footer's background and that it starts where the sidebar ends).
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: d83a2b6
