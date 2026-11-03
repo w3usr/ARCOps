@@ -575,6 +575,18 @@ html.js .bulkbar:not(.active) { display: none; }
 /* One field width on a slot: a row of fields is as wide as one field, its fields sharing it. */
 .slot-dialog .row, .slotpage .row { max-width: 28rem; }
 .slot-dialog .row > *, .slotpage .row > * { flex-basis: 8rem; }
+/* Manage's forms (#168): related fields in a group under a quiet heading, not a box in a box;
+   whole numbers in boxes sized to what they hold; and what the generator will make, set apart
+   above the buttons. */
+fieldset.group { border: 0; padding: 0; margin: 0; min-width: 0; }
+fieldset.group > legend { padding: 0; margin-bottom: .5rem; font-weight: 700; }
+fieldset.group > .row > * { flex: 0 0 auto; }
+.slot-dialog fieldset.group > .row { max-width: none; }  /* a group's few small boxes share a line */
+input.num { width: calc(var(--num, 5) * 1ch + 1.6rem); }
+input.num[size="1"], input.num[size="2"] { --num: 3; }
+.preview { padding: .75rem 1rem; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-card); background: var(--surface); }
+.preview:empty { display: none; }
+.preview strong { display: block; font-size: var(--t-lede); }
 
 @media (max-width: 48rem) {
   .roster.grid .r-head { display: none; }

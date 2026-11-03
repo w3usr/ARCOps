@@ -153,36 +153,69 @@ class PeriodForm(forms.Form):
         return d
 
 
-class SeatFields:
-    """Seats per role (FR-49), starting from each role's configured default."""
+def _num(size):
+    """A whole number, sized to what it holds and without a spinner: a text box with the numeric
+    keypad (GOV.UK Design System, Text input: not type=number). The form still checks it."""
+    return forms.TextInput(
+        attrs={"inputmode": "numeric", "pattern": "[0-9]*", "class": "num", "size": size}
+    )
 
-    def add_seat_fields(self, roles, label="{} seats per slot"):
+
+class FieldGroups:
+    """Fields drawn in groups, each a fieldset with a legend, or loose where the legend is empty
+    (forms/_fields.html; NN/g: visually group related labels and fields). `GROUPS` names them."""
+
+    GROUPS: list[tuple[str, list[str]]] = []
+
+    @property
+    def field_groups(self):
+        seats = [n for n in self.fields if n.startswith("cap_")]
+        out = []
+        for legend, names in self.GROUPS:
+            names = seats if names == ["cap_*"] else [n for n in names if n in self.fields]
+            if names:
+                out.append((legend, [self[n] for n in names]))
+        return out
+
+
+class SeatFields:
+    """Seats per role (FR-49), starting from each role's configured default. In a group whose
+    legend says what they are, each is named by its role alone (#168)."""
+
+    def add_seat_fields(self, roles, label="{}"):
         for r in roles:
             self.fields[f"cap_{r['key']}"] = forms.IntegerField(
                 label=label.format(r["label"]),
                 min_value=0,
                 max_value=20,
                 initial=int(r.get("default_capacity", 1)),
+                widget=_num(2),
             )
 
     def capacities(self) -> dict[str, int]:
         return {k[4:]: v for k, v in self.cleaned_data.items() if k.startswith("cap_")}
 
 
-class GenerateForm(SeatFields, forms.Form):
+class GenerateForm(FieldGroups, SeatFields, forms.Form):
+    GROUPS = [
+        ("Slots", ["minutes", "setup_slots", "breakdown_slots"]),
+        ("", ["windows"]),
+        ("Seats in each slot", ["cap_*"]),
+    ]
     minutes = forms.IntegerField(
-        label="Slot length (minutes)", min_value=15, max_value=720, initial=60
+        label="Slot length (minutes)", min_value=15, max_value=720, initial=60, widget=_num(3)
     )
     setup_slots = forms.IntegerField(
-        label="Setup slots before", min_value=0, max_value=6, initial=1
+        label="Setup slots before", min_value=0, max_value=6, initial=1, widget=_num(1)
     )
     breakdown_slots = forms.IntegerField(
-        label="Breakdown slots after", min_value=0, max_value=6, initial=1
+        label="Breakdown slots after", min_value=0, max_value=6, initial=1, widget=_num(1)
     )
 
     windows = forms.CharField(
-        label="Hours to operate each day",
-        help_text="One range per line, e.g. 15:00-21:00; blank fills the whole period.",
+        label="Hours to operate each day (optional)",
+        help_text="Leave empty to fill the whole of each period, or give one range a line, "
+        "such as 15:00-21:00",
         required=False,
         widget=forms.Textarea(attrs={"rows": 2}),
     )
@@ -203,11 +236,13 @@ class GenerateForm(SeatFields, forms.Form):
             out.append((a, b))
         return out
 
-    def __init__(self, *args, roles, **kwargs):
+    def __init__(self, *args, roles, fill_only=False, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.fields["minutes"].initial = int(setting("defaults.slot_length_minutes", 60))  # FR-89
         self.add_seat_fields(roles)
+        if fill_only:  # filling makes operating slots only (#153), so these would do nothing
+            del self.fields["setup_slots"], self.fields["breakdown_slots"]
 
 
 class LocationForm(forms.Form):
@@ -251,14 +286,18 @@ class CaptainForm(forms.Form):
         )
 
 
-class AddSlotForm(SeatFields, forms.Form):
+class AddSlotForm(FieldGroups, SeatFields, forms.Form):
     """One slot by hand, beside a grid that may already have people in it (FR-46, FR-47)."""
+
+    GROUPS = [("", ["position", "start", "minutes", "kind"]), ("Seats in this slot", ["cap_*"])]
 
     position = forms.ModelChoiceField(queryset=Position.objects.none(), empty_label=None)
     start = forms.DateTimeField(
         label="Starts (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
     )
-    minutes = forms.IntegerField(label="Length (minutes)", min_value=15, max_value=720)
+    minutes = forms.IntegerField(
+        label="Length (minutes)", min_value=15, max_value=720, widget=_num(3)
+    )
     kind = forms.ChoiceField(label="Kind")
 
     def __init__(self, *args, event, roles, **kwargs):
@@ -277,7 +316,7 @@ class AddSlotForm(SeatFields, forms.Form):
         self.fields["kind"].choices = [("operating", "Operating")] + [
             (k["key"], k["label"]) for k in setting("non_operating_slot_kinds", []) or []
         ]
-        self.add_seat_fields(roles, label="{} seats")  # as the slot's own seat form names them
+        self.add_seat_fields(roles)
 
     def clean(self):
         d = super().clean()
@@ -701,6 +740,12 @@ def _preview(event, positions, form, fill) -> str:
     )
 
 
+def _preview_parts(text: str) -> dict:
+    """The line as a headline and the rest: "51 slots" over "51 per position × 1 position…"."""
+    head, sep, rest = text.partition(": ")
+    return {"preview_head": head, "preview_rest": rest} if sep else {"preview_head": text}
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def slots_generate(request, pk):
@@ -717,7 +762,7 @@ def slots_generate(request, pk):
     existing = Slot.objects.filter(position__location__event=event)
     slot_count = existing.filter(cancelled=False).count()
     signups = has_signups(event)
-    form = GenerateForm(request.POST or None, roles=roles)
+    form = GenerateForm(request.POST or None, roles=roles, fill_only=bool(slot_count and signups))
 
     def page():
         return form_page(
@@ -741,7 +786,7 @@ def slots_generate(request, pk):
             ),
             slot_count=slot_count,
             signups_exist=signups,
-            preview=_preview(event, positions, form, fill=bool(slot_count)),
+            **_preview_parts(_preview(event, positions, form, fill=bool(slot_count))),
         )
 
     if request.method != "POST":
@@ -783,8 +828,8 @@ def slots_generate(request, pk):
         event,
         positions,
         form.cleaned_data["minutes"],
-        form.cleaned_data["setup_slots"],
-        form.cleaned_data["breakdown_slots"],
+        form.cleaned_data.get("setup_slots", 0),
+        form.cleaned_data.get("breakdown_slots", 0),
         form.capacities(),
         windows=windows,
         fill=fill,
@@ -816,15 +861,19 @@ def slots_generate(request, pk):
 @require_POST
 def slots_preview(request, pk):
     """The generator's line, again, as its fields change (htmx, #168)."""
-    from django.http import HttpResponse
-    from django.utils.html import escape
-
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     positions = list(Position.objects.filter(location__event=event))
     live = Slot.objects.filter(position__location__event=event, cancelled=False).exists()
-    form = GenerateForm(request.POST, roles=setting("slot_roles", []) or [])
-    return HttpResponse(escape(_preview(event, positions, form, fill=live)))
+    # The same form the page drew: without setup and breakdown once only filling is possible.
+    form = GenerateForm(
+        request.POST, roles=setting("slot_roles", []) or [], fill_only=live and has_signups(event)
+    )
+    return render(
+        request,
+        "events/forms/_preview.html",
+        _preview_parts(_preview(event, positions, form, fill=live)),
+    )
 
 
 @login_required

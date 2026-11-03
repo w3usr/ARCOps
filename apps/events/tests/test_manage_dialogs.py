@@ -125,10 +125,10 @@ def test_the_generator_says_what_it_will_make_before_making_it(officer):
     ev = _build(c)
     Slot.objects.filter(position__location__event=ev).delete()
     page = c.get(f"/events/{ev.pk}/slots/generate/").content.decode()
-    line = page.split('id="gen-preview"', 1)[1].split("</p>", 1)[0]
+    line = page.split('id="gen-preview"', 1)[1].split("</div>", 1)[0]
     assert (
-        "52 slots: 26 per position × 2 positions, including a setup and a breakdown slot each."
-        in line
+        "<strong>52 slots</strong> <span>26 per position × 2 positions, including a setup and "
+        "a breakdown slot each.</span>" in line
     )
     assert f'hx-post="/events/{ev.pk}/slots/preview/"' in page
     r = c.post(
@@ -142,7 +142,9 @@ def test_the_generator_says_what_it_will_make_before_making_it(officer):
         },
         **HX,
     )
-    assert r.content.decode() == "24 slots: 12 per position × 2 positions."
+    assert r.content.decode().strip() == (
+        "<strong>24 slots</strong> <span>12 per position × 2 positions.</span>"
+    )
     assert not Slot.objects.filter(position__location__event=ev).exists()
 
 
@@ -192,3 +194,43 @@ def test_a_member_captain_cannot_open_the_captain_form(officer):
         Event.objects.filter(pk=ev.pk).exists()
         and OperatingPeriod.objects.filter(event=ev).exists()
     )
+
+
+def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
+    """NN/g and GOV.UK, 2026-11-03 (SK): related fields grouped under a legend, one under another;
+    whole numbers in small boxes with the numeric keypad and no spinner; the hours optional."""
+    from apps.events.models import SignUp
+
+    c = _as(officer)
+    ev = _build(c)
+    page = c.get(f"/events/{ev.pk}/slots/generate/").content.decode()
+    legends = re.findall(r'<fieldset class="group"><legend>([^<]+)</legend>', page)
+    assert legends == ["Slots", "Seats in each slot"]
+    seats = page.split("<legend>Seats in each slot</legend>", 1)[1].split("</fieldset>", 1)[0]
+    assert re.findall(r"<label[^>]*>([^<]+)</label>", seats) == ["Operator", "Mentor"]
+    assert 'type="number"' not in page and page.count('inputmode="numeric"') == 5
+    assert "Hours to operate each day (optional)" in page
+    assert "Setup slots before" in page  # nobody has signed up: Regenerate slots may use it
+    s = Slot.objects.filter(position__location__event=ev, kind="operating").first()
+    SignUp.objects.create(slot=s, user=officer, role="operator")
+    page = c.get(f"/events/{ev.pk}/slots/generate/").content.decode()
+    assert "Setup slots before" not in page and "Breakdown slots after" not in page
+    assert page.count('inputmode="numeric"') == 3
+    r = c.post(  # the line, from the same fields: no setup or breakdown to send
+        f"/events/{ev.pk}/slots/preview/",
+        {"minutes": "60", "cap_operator": "1", "cap_mentor": "0"},
+        HTTP_HX_REQUEST="true",
+    )
+    assert (
+        r.content.decode()
+        == "<strong>Every hour already has a slot; nothing would be added.</strong>"
+    )
+
+
+def test_a_slot_by_hand_groups_its_seats(officer):
+    c = _as(officer)
+    ev = _build(c)
+    page = c.get(f"/events/{ev.pk}/slots/add/").content.decode()
+    seats = page.split("<legend>Seats in this slot</legend>", 1)[1].split("</fieldset>", 1)[0]
+    assert re.findall(r"<label[^>]*>([^<]+)</label>", seats) == ["Operator", "Mentor"]
+    assert 'type="number"' not in page
