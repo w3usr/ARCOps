@@ -4530,4 +4530,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/events/detail.html (a ? button named Key with popovertarget; the Key's div a native popover with a Close button; the list still named Key); static/css/app.css (the button, the open Key as a card over a dimmed page, the strip the full width; without popover support the button and Close are hidden and the Key stays in place; the button hidden in print); apps/events/tests/test_roster.py (a test for the button and the popover); tools/a11y/test_phone_layout.py (the Key opened before its lines are measured; closed at first and by Escape).
 - **Nature of Contribution**: Code and tests. No script: the browser's popover. Verified: the new test failed before the change; application tests 496 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T11 to T15 and T20 pass locally (private repo, testing/runs/2026-11-03_121808-w3usr), the open Key judged by eye from T12's screenshot.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: b38da60
