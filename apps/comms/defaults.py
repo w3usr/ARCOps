@@ -191,7 +191,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "warning.captains",
-        "subject": "{{ count }} slot(s) at risk in the next {{ horizon }} hours",
+        "subject": "{{ count }} slot(s) need attention in the next {{ horizon }} hours",
         "body_html": (
             "<p>Slots that cannot run, depend on one person, or have an unconfirmed sign-up within 24 hours:</p>"
             "<ul>{% for s in slots %}<li><strong>{{ s.event }}</strong>, {{ s.when }}, {{ s.position }}: "
@@ -393,7 +393,7 @@ TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "captain.access_removed": ("Somebody lost access", "the captains of events they were in"),
     "reminder": ("Your slot is tomorrow", "the member holding the slot"),
     "warning.person": ("Your slot is short of people", "the members in the slot"),
-    "warning.captains": ("Slots at risk", "the captains"),
+    "warning.captains": ("Slots that need attention", "the captains"),
     "captain.no_show": ("Somebody did not check in", "the captains"),
     "digest.weekly": ("The fortnightly digest", "every member"),
     "event.published": ("A new event is on the calendar", "every member"),

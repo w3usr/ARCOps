@@ -237,7 +237,10 @@ def test_warnings_go_to_people_and_captains_once_per_state_and_carry_late_notes(
     assert r["slots_warned"] == 1 and r["captains_told"] == 1
     assert "needs help" in _msgs(new, "warning").get().subject
     capmsg = _msgs(cap, "warning").get()
-    assert "1 slot(s) at risk" in capmsg.subject and "running 10 minutes late" in capmsg.body_html
+    assert (
+        "1 slot(s) need attention" in capmsg.subject
+        and "running 10 minutes late" in capmsg.body_html
+    )
     assert notify.send_warnings(now + timedelta(hours=1))["slots_warned"] == 0  # rate limit
     assert (
         notify.send_warnings(now + timedelta(hours=13))["slots_warned"] == 1

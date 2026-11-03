@@ -79,7 +79,9 @@ def test_the_at_risk_message_and_digest_use_the_roster_words():
     SignUp.objects.create(slot=slots[0], user=new, role="observer")
     notify.send_warnings(now)
     person = _msgs(new, "warning").get().body_html
-    digest = _msgs(cap, "warning").get().body_html
+    digest_msg = _msgs(cap, "warning").get()
+    digest = digest_msg.body_html
+    assert "at risk" not in digest_msg.subject.lower()
     for body in (person, digest):
         assert "needs someone with" in body.lower()
         assert "Not viable" not in body and "At risk" not in body and "nobody with" not in body

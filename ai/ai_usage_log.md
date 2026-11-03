@@ -4507,3 +4507,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests. Conditional updates rather than select_for_update, which SQLite (the servers' database) ignores. Verified: each new test fails on the old code and passes on the new; application tests 487 passed; lint, format and the guards pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T36 passes locally, 10 of 10 (private repo, testing/runs/2026-11-02_214849-w3usr).
 - **Human Review Status**: Pending review
 - **Git Hash**: 7036bde
+
+## [2026-11-03 10:07 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: w3usr/w3usr.org-PRIVATE#171: the captains' digest subject still said "at risk", which technical addendum A10 says no reader sees (SK, 2026-11-03).
+- **Sections/Files Affected**: apps/comms/defaults.py (warning.captains subject "N slot(s) need attention in the next N hours"; its Settings label "Slots that need attention"); apps/events/tests/test_status_words.py (the digest's subject is checked as well as its body); apps/events/tests/test_notify.py (the new subject).
+- **Nature of Contribution**: Code and tests. An unedited template is refreshed by the next deploy (seed_templates); an edited one keeps its wording. Verified: the subject check fails on the old default and passes on the new; tools/check.sh quick passes but for the PDF test, which passes run directly with pytest (macOS's /bin/bash drops DYLD_*); lint and format pass; acceptance T32 passes locally, 9 of 9 (private repo, testing/runs/2026-11-03_100541-w3usr).
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
