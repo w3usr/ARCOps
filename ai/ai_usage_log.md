@@ -4532,7 +4532,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review
 - **Git Hash**: b38da60
 
-## [2026-11-03 13:45 EST]
+## [2026-11-03 13:31 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: w3usr/w3usr.org-PRIVATE#167: Manage split into tabs (Setup, Slots, Sign-up rules, Contest, Status), each a page of its own (SK, 2026-11-02).
 - **Sections/Files Affected**: apps/events/urls.py (/events/<n>/manage/<tab>/); apps/events/views_manage.py (TABS, to_tab, the view takes a tab and /manage/ opens on the step to do next or Setup, the steps carry their tab, every save returns to its tab, a refused form renders on its own); apps/events/views_rules.py (its saves return to their tabs); templates/events/manage.html (a tab bar of links with aria-current under the four-step guide, the sections grouped by tab, the steps linking to their tabs, the tab in the page title); static/css/app.css (the tab bar); docs/INTERFACE.md (a page that edits more than a few things is split into tabs that are links); apps/events/tests/test_manage_tabs.py (new: five tests), apps/events/tests/conftest.py (the shared officer fixture, moved from test_manage.py); test_manage.py, test_phase2.py, test_announce.py, test_interface.py, test_permission_matrix.py (open the tab they read); tools/a11y/test_axe.py and test_form_layout.py (every tab).
