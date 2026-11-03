@@ -16,6 +16,7 @@ from apps.ops.templatetags.labels import role_label
 
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
+from .services.notify import drop_empty_sections
 from .services.roster import build as build_roster
 from .services.slots import health
 from .services.viability import checkin_window_open, would_break
@@ -70,6 +71,9 @@ def event_detail(request, pk):
             "health": health(event) if roster["is_captain"] else None,
             "is_captain": roster["is_captain"],
             "roles": roster["roles"],
+            # The outline an untouched event starts with is headings only; the reminder drops the
+            # empty ones, and the page drops the same ones (#166).
+            "kbyg": drop_empty_sections(event.kbyg_html),
             "contest": __import__("apps.events.contest_fields", fromlist=["present"]).present(
                 event.contest_fields or {}
             ),

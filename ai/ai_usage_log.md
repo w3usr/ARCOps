@@ -4491,3 +4491,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code. Verified: apps/accounts tests pass (234); tools/check_interface.sh passes; T52 passes in full against it locally on the W3USR overlay, 16 of 16 (private repo, testing/runs/2026-11-02_204248-w3usr).
 - **Human Review Status**: Pending review
 - **Git Hash**: efbfbd3
+
+## [2026-11-02 21:42 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Two Declutter issues SK picked: Know before you go without the outline's empty headings on the event page (w3usr/w3usr.org-PRIVATE#166), and roster cells reading their state only (#170).
+- **Sections/Files Affected**: apps/events/views.py and templates/events/detail.html (the event page shows notify.drop_empty_sections of the text, the reminder's own function, and the section only when something is left); apps/events/services/roster.py and templates/events/_roster_cell.html (an open cell reads Open; its link is named "Open: sign up for <position>, <Ddd HH:MM> UTC"); apps/events/tests/test_roster.py (a test for each).
+- **Nature of Contribution**: Code and tests. Verified: lint, format and the guards pass; application tests 484 passed; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word: it would not launch on this Mac, "Could not find profile folder"); acceptance T11 to T14 pass locally against it (private repo, testing/runs/2026-11-02_214145-w3usr).
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

@@ -117,6 +117,34 @@ def test_a_utc_event_shows_each_time_once(world):
     assert "Times in <strong>UTC</strong>." in body and "Lead with" not in body
 
 
+def test_an_open_cell_reads_its_state_and_its_link_names_the_action(world):
+    """#170: twenty cells read "Open · sign up" on a small event. The cell says Open; the
+    action and the slot are in the link's accessible name, for a screen reader (FR-62, FR-95)."""
+    body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
+    assert "<small>sign up</small>" not in body
+    assert 'aria-label="Open: sign up for Run, Sat 00:00 UTC"' in body
+    assert 'aria-label="Open: sign up for Mult, Fri 23:00 UTC"' in body  # the setup slot
+
+
+def test_know_before_you_go_shows_only_the_sections_written(world):
+    """#166: an event never edited keeps the outline's six empty headings, which the event page
+    printed under the roster. It drops them as the reminder does."""
+    from apps.events.views_manage import KBYG_OUTLINE
+
+    ev, c = world["ev"], _as(world["mem"])
+    ev.kbyg_html = KBYG_OUTLINE
+    ev.save()
+    body = c.get(f"/events/{ev.pk}/").content.decode()
+    assert "Know before you go" not in body and "Getting into the station" not in body
+    ev.kbyg_html = KBYG_OUTLINE.replace(
+        "<h2>What to bring</h2><p></p>", "<h2>What to bring</h2><p>A headset.</p>"
+    )
+    ev.save()
+    body = c.get(f"/events/{ev.pk}/").content.decode()
+    assert "Know before you go" in body and "What to bring" in body and "A headset." in body
+    assert "Getting into the station" not in body and "Who to contact" not in body
+
+
 def test_status_is_phrased_as_a_need_never_a_verdict(world):
     ev = world["ev"]
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()

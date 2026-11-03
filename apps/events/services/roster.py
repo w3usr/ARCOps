@@ -84,7 +84,7 @@ def present(
             return Presentation("not_open", "Locked", "ask a captain")
         if not published:
             return Presentation("not_open", "Opens when published")
-        return Presentation("open", "Open", "sign up")
+        return Presentation("open", "Open")  # the action is in the link's accessible name (#170)
     needs = needs_from_reasons(status.reasons)
     if status.status == "not_viable":
         soon = slot.start - now <= timedelta(hours=48)
