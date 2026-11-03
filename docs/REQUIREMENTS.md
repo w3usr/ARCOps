@@ -2726,7 +2726,31 @@ design review of the application; the staged design, checked against these requi
 approved on 2026-10-30: "follow thru with your recommendation". *Record:* issue #161 in the private repository and the private repository's
 reconciliation note of 2026-10-31.
 
+### A14. FR-46 and FR-48: the generator adds to the empty hours and keeps the grid
+
+**Original (FR-46).** "On creating an event with operating periods, the system offers to generate
+slots […] filling each period […]. Slots can be added, removed, split, merged, and re-timed by
+hand afterwards." **(FR-48)** "[…] the generator asks the officer which hours on each day the
+club intends to operate […] and generates slots only in those windows."
+
+**Decision.** Once an event has slots, the generator's first action is **Add slots to the empty
+hours**: in every position it fills only the time of the operating periods, or of the hours
+given for each day, that no slot covers, cut from the start of each gap in the chosen length. It
+keeps every existing slot, seat count and sign-up, so it works after members have signed up and
+needs no confirmation. A range or a period added later, or a new position, gets its slots this
+way. It makes operating slots only; setup, breakdown and the other kinds are added one at a time.
+A canceled slot's time stays empty: a cancellation is a decision a bulk fill does not undo (a
+slot added by hand may still use it). Replacing the whole grid stays, as before, only while
+nobody has signed up and through its confirmation page.
+
+**Decided by** SK, 2026-11-03, from beta users' report of 2026-10-26 ("Add a way to have to add
+multiple time ranges for generating slots"): of the two readings put to him, adding to a grid
+without replacing it, not different hours on different days; then, of three points put to him,
+a canceled slot's time is not refilled, the fill makes operating slots only, and it asks for no
+confirmation. *Record:* issue #153 in the private repository and the private repository's
+session note of 2026-11-03.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12) and 2026-10-31 (A13, A12's amendment), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment) and 2026-11-03 (A14), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

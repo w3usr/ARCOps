@@ -91,13 +91,14 @@
 
 <section class="section" aria-labelledby="gen">
   <h2 id="gen">Slots</h2>
-  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if signups_exist %} Members have signed up, so the grid can no longer be regenerated: add slots one at a time below, and close or cancel individual slots from the roster.{% else %} Generating replaces the whole grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% endif %}</p>
-  {% if not signups_exist %}
+  {% comment %}#153 (SK, 2026-11-03): once a grid exists, the generator adds to the hours that have
+  no slot and keeps everything else, people or no people; replacing the grid is the red link,
+  only before anyone signs up, through its confirmation page.{% endcomment %}
+  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if not slot_count %} Generating builds the grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% else %} <strong>Add slots to the empty hours</strong> fills only the time that has no slot yet, in every position, and keeps every slot, seat count and sign-up; it makes operating slots only, and a canceled slot's hour stays empty.{% if signups_exist %} Members have signed up, so the grid can no longer be replaced; add setup, breakdown and other single slots below.{% else %} <strong>Regenerate slots</strong> replaces the whole grid.{% endif %}{% endif %}</p>
   <form method="post" action="{% url 'slots_generate' event.pk %}" class="stack">{% csrf_token %}
-    <div class="row">{% for f in generate_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
-    <div><button type="submit"{% if slot_count %} class="danger"{% endif %}>{% if slot_count %}Regenerate{% else %}Generate{% endif %} slots</button></div>
+    <div class="row">{% for f in generate_form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}</div>
+    <div>{% if not slot_count %}<button type="submit">Generate slots</button>{% else %}<button type="submit" name="mode" value="fill">Add slots to the empty hours</button>{% if not signups_exist %} <button type="submit" name="mode" value="replace" class="linklike danger">Regenerate slots</button>{% endif %}{% endif %}</div>
   </form>
-  {% endif %}
   {% comment %}One slot by hand, beside whatever is there, people included (FR-46). Its seats
   are set as it is made (FR-49); a slot added by mistake is canceled from its own page, which is
   also how one is re-timed: cancel it and add it again.{% endcomment %}

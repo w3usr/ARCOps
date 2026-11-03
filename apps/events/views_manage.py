@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -178,7 +179,8 @@ class GenerateForm(SeatFields, forms.Form):
     )
 
     windows = forms.CharField(
-        label="Hours to operate each day, one range per line, e.g. 15:00-21:00; blank fills the whole period",
+        label="Hours to operate each day",
+        help_text="One range per line, e.g. 15:00-21:00; blank fills the whole period.",
         required=False,
         widget=forms.Textarea(attrs={"rows": 2}),
     )
@@ -543,14 +545,18 @@ def slots_generate(request, pk):
     if not event.periods.exists() or not positions:
         messages.error(request, "Add an operating period and a location first.")
         return redirect("event_manage", pk=pk)
-    if has_signups(event):
+    # Adding to the empty hours keeps every slot, seat count and sign-up, so it needs neither a
+    # confirmation nor an empty roster (#153, SK 2026-11-03). Replacing needs both.
+    fill = request.POST.get("mode") == "fill"
+    if not fill and has_signups(event):
         messages.error(request, "Members have signed up; the grid cannot be rebuilt under them.")
         return redirect("event_manage", pk=pk)
     if not form.is_valid():
         messages.error(request, "Nothing was generated; correct the fields marked below.")
         return _manage_page(request, event, generate_form=form)
     existing = Slot.objects.filter(position__location__event=event)
-    if existing.exists() and request.POST.get("confirmed") != "yes":
+    kept = existing.filter(cancelled=False).count() if fill else 0
+    if not fill and existing.exists() and request.POST.get("confirmed") != "yes":
         # Regenerating deletes every seat count, closed flag, and eligibility override on the
         # grid. It used to be the page's primary button, with nothing in between.
         return render(
@@ -564,7 +570,8 @@ def slots_generate(request, pk):
                 ],
             },
         )
-    existing.delete()
+    if not fill:
+        existing.delete()
     windows = None
     if form.cleaned_data.get("windows"):
         from .services.slots import windows_from_daily
@@ -583,8 +590,25 @@ def slots_generate(request, pk):
         form.cleaned_data["breakdown_slots"],
         form.capacities(),
         windows=windows,
+        fill=fill,
     )
-    record(request.user, "slots.generated", event, after={"count": len(created)})
+    record(
+        request.user,
+        "slots.generated",
+        event,
+        after={"count": len(created), "mode": "fill" if fill else "replace"},
+    )
+    if fill and not created:
+        messages.info(request, "Every hour you asked for already has a slot; nothing added.")
+        return redirect("event_manage", pk=pk)
+    if fill:
+        messages.success(
+            request,
+            f"Added {len(created)} slot{pluralize(len(created))} to the empty hours across "
+            f"{len(positions)} position{pluralize(len(positions))}. The {kept} already on the "
+            "roster are unchanged.",
+        )
+        return redirect("event_detail", pk=pk)
     messages.success(
         request, f"{len(created)} slots generated across {len(positions)} position(s)."
     )

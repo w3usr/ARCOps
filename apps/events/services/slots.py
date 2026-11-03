@@ -25,13 +25,10 @@ def generate_slots(
     created: list[Slot] = []
     for pos in positions:
         for start, end in spans:
-            t = start
-            while t < end:
-                nxt = min(t + step, end)
+            for t, nxt in _cut(start, end, step):
                 created.append(
                     Slot.objects.create(position=pos, start=t, end=nxt, kind="operating")
                 )
-                t = nxt
         first = min(s for s, _ in spans) if spans else None
         last = max(e for _, e in spans) if spans else None
         for i in range(setup_slots):
@@ -46,6 +43,53 @@ def generate_slots(
                     position=pos, start=last + step * i, end=last + step * (i + 1), kind="breakdown"
                 )
             )
+    return created
+
+
+def _cut(start, end, step):
+    """Consecutive (start, end) pieces of `step`, the last one short if it does not divide."""
+    t = start
+    while t < end:
+        yield t, min(t + step, end)
+        t = min(t + step, end)
+
+
+SHORTEST = timedelta(minutes=15)  # the generator form's minimum slot length
+
+
+def empty_hours(position, spans) -> list[tuple]:
+    """The parts of `spans` that no slot of `position` covers. A canceled slot still covers its
+    time: a cancellation is a decision a bulk fill should not undo (SK, 2026-11-03). Pieces
+    shorter than SHORTEST are left out, so a grid of other lengths does not leave slivers."""
+    taken = sorted(position.slots.values_list("start", "end"))
+    out = []
+    for start, end in spans:
+        t = start
+        for a, b in taken:
+            if b <= t or a >= end:
+                continue
+            if a - t >= SHORTEST:
+                out.append((t, a))
+            t = max(t, b)
+        if end - t >= SHORTEST:
+            out.append((t, end))
+    return out
+
+
+def fill_empty_hours(event, positions, minutes: int = 60, windows=None) -> list[Slot]:
+    """#153 (FR-46, FR-48): operating slots for the hours of the periods (or of `windows`) that
+    have no slot yet, position by position. Every existing slot, its seats and its sign-ups stay
+    as they are, so this runs after people have signed up: a range or a period added later, or a
+    new position, gets its slots. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
+    step = timedelta(minutes=minutes)
+    spans = windows or [(p.start, p.end) for p in event.periods.all()]
+    created: list[Slot] = []
+    for pos in positions:
+        for start, end in empty_hours(pos, spans):
+            for t, nxt in _cut(start, end, step):
+                created.append(
+                    Slot.objects.create(position=pos, start=t, end=nxt, kind="operating")
+                )
     return created
 
 

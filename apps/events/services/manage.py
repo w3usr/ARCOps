@@ -4,7 +4,7 @@ with role capacities (FR-46, FR-49)."""
 from __future__ import annotations
 
 from ..models import Captaincy, Event, Location, OperatingPeriod, Position, RoleCapacity, Slot
-from .slots import generate_slots
+from .slots import fill_empty_hours, generate_slots
 
 
 def duplicate_event(source: Event, actor) -> Event:
@@ -62,16 +62,21 @@ def generate_with_capacities(
     breakdown_slots: int,
     capacities: dict[str, int],
     windows=None,
+    fill: bool = False,
 ) -> list[Slot]:
-    """Slots for the positions given, then a capacity row per role with a non-zero count."""
-    created = generate_slots(
-        event,
-        positions,
-        minutes=minutes,
-        setup_slots=setup_slots,
-        breakdown_slots=breakdown_slots,
-        windows=windows,
-    )
+    """Slots for the positions given, then a capacity row per role with a non-zero count. With
+    `fill`, only the empty hours get slots and setup and breakdown are not made (#153)."""
+    if fill:
+        created = fill_empty_hours(event, positions, minutes=minutes, windows=windows)
+    else:
+        created = generate_slots(
+            event,
+            positions,
+            minutes=minutes,
+            setup_slots=setup_slots,
+            breakdown_slots=breakdown_slots,
+            windows=windows,
+        )
     rows = [
         RoleCapacity(slot=s, role=role, capacity=n)
         for s in created

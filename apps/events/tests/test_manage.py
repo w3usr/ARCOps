@@ -248,3 +248,57 @@ def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
     OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
     body = _as(officer).get("/events/").content.decode()
     assert '<span class="tag">Canceled</span>' in body and "Cancelled" not in body
+
+
+def _fill(c, ev, **extra):
+    return c.post(
+        f"/events/{ev.pk}/slots/generate/",
+        {
+            "minutes": "60",
+            "setup_slots": "1",
+            "breakdown_slots": "1",
+            "cap_operator": "2",
+            "cap_mentor": "0",
+            "mode": "fill",
+            **extra,
+        },
+        follow=True,
+    )
+
+
+def test_after_sign_ups_a_new_period_gets_slots_and_nothing_else_moves(officer):
+    """#153, SK 2026-11-03: the generator adds to the empty hours without replacing the grid."""
+    from apps.events.models import SignUp
+    from apps.ops.models import AuditLog
+
+    c = _as(officer)
+    ev = _build(c)
+    s = Slot.objects.filter(position__location__event=ev, kind="operating").first()
+    su = SignUp.objects.create(slot=s, user=officer, role="operator")
+    before = set(Slot.objects.filter(position__location__event=ev).values_list("pk", "start"))
+    page = c.get(f"/events/{ev.pk}/manage/").content.decode()
+    assert "Add slots to the empty hours" in page and "Regenerate slots" not in page
+
+    start = ev.periods.get().end + timedelta(days=1)
+    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=3))
+    body = " ".join(_fill(c, ev).content.decode().split())
+    after = Slot.objects.filter(position__location__event=ev)
+    assert set(after.values_list("pk", "start")) >= before and after.count() == len(before) + 6
+    new = after.filter(start__gte=start)
+    assert {x.kind for x in new} == {"operating"} and all(
+        x.capacities.get().capacity == 2 for x in new
+    )
+    assert SignUp.objects.filter(pk=su.pk).exists()
+    assert "Added 6 slots to the empty hours across 2 positions." in body
+    assert AuditLog.objects.filter(action="slots.generated", after__mode="fill").exists()
+
+    body = " ".join(_fill(c, ev).content.decode().split())
+    assert "Every hour you asked for already has a slot; nothing added." in body
+    assert after.count() == len(before) + 6
+
+
+def test_before_sign_ups_both_fill_and_regenerate_are_offered(officer):
+    c = _as(officer)
+    ev = _build(c)
+    page = c.get(f"/events/{ev.pk}/manage/").content.decode()
+    assert "Add slots to the empty hours" in page and "Regenerate slots" in page
