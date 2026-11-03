@@ -34,7 +34,7 @@ def event_state(request, pk):
         messages.success(request, set_state(request.user, event, request.POST.get("what", "")))
     except ValueError as exc:
         messages.error(request, str(exc).capitalize() + ".")
-    return redirect("event_manage", pk=pk)
+    return redirect("event_manage_tab", pk=pk, tab="status")
 
 
 class LimitForm(forms.ModelForm):
@@ -82,7 +82,7 @@ def limits_save(request, pk):
         )
     else:
         messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-    return redirect("event_manage", pk=pk)
+    return redirect("event_manage_tab", pk=pk, tab="slots")
 
 
 def _rule_from_post(post, role: str) -> dict:
@@ -129,7 +129,7 @@ def eligibility_save(request, pk):
         changed[role] = d
     record(request.user, "event.eligibility", event, after=changed)
     messages.success(request, "Who may sign up: saved.")
-    return redirect("event_manage", pk=pk)
+    return redirect("event_manage_tab", pk=pk, tab="rules")
 
 
 @login_required
@@ -176,7 +176,7 @@ def opening_add(request, pk):
     form = OpeningForm(request.POST)
     if not form.is_valid():
         messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-        return redirect("event_manage", pk=pk)
+        return redirect("event_manage_tab", pk=pk, tab="rules")
     opens = form.cleaned_data["opens_at"]
     if timezone.is_naive(opens):
         opens = timezone.make_aware(opens, timezone.utc)
@@ -197,7 +197,7 @@ def opening_add(request, pk):
         request,
         f"{o.role.capitalize()} opens {opens:%d %b %H:%M}Z to {', '.join(o.categories) or 'everyone'}.",
     )
-    return redirect("event_manage", pk=pk)
+    return redirect("event_manage_tab", pk=pk, tab="rules")
 
 
 @login_required
@@ -207,7 +207,7 @@ def opening_delete(request, pk, opening_id):
     _captain_or_404(request.user, event)
     Opening.objects.filter(pk=opening_id, event=event).delete()
     messages.success(request, "Opening removed.")
-    return redirect("event_manage", pk=pk)
+    return redirect("event_manage_tab", pk=pk, tab="rules")
 
 
 def rules_context(event) -> dict:
@@ -245,4 +245,4 @@ def contest_save(request, pk):
         request.user, "event.contest_fields", event, after={"fields": sorted(event.contest_fields)}
     )
     messages.success(request, "Contest details saved.")
-    return redirect("event_manage", pk=pk)
+    return redirect("event_manage_tab", pk=pk, tab="contest")

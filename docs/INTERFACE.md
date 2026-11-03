@@ -181,6 +181,20 @@ only once the earlier has happened, rather than sitting there refusing.
 - A form with a text field and two submit buttons submits the **first** one when somebody
   presses Enter. If that button is the dangerous one, split the form in two.
 
+## A page that edits many things
+
+**A page that edits more than a few things is split into tabs that are links** (SK, 2026-11-02,
+#167). Manage was one page of fourteen sections and about fifteen forms, every one open on every
+visit; it is now Setup, Slots, Sign-up rules, Contest and Status.
+
+- Each tab is a page of its own, at its own address, drawn by the server: a list of links with
+  `aria-current="page"` on the one you are on, not a script-driven tablist. It works with
+  JavaScript off, and a tab can be linked to.
+- Saving a form returns to the tab it was on, and a form that comes back with an error comes
+  back on its own tab, with everything typed (Forms, above).
+- Where the page has a guide to what to do next, it stays above the tabs, and each step links to
+  its tab; the page's own address opens on the step to do next.
+
 ## In place, with htmx
 
 htmx changes part of a page without leaving it, and only ever as a shortcut for something the

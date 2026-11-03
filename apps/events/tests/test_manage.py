@@ -13,26 +13,6 @@ from apps.ops.models import ClubSetting
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def officer():
-    ClubSetting.objects.update_or_create(
-        key="slot_roles",
-        defaults={
-            "value": [
-                {"key": "operator", "label": "Operator", "on_air": True},
-                {"key": "mentor", "label": "Mentor", "on_air": True},
-            ]
-        },
-    )
-    return User.objects.create_user(
-        "off@example.org",
-        "pw-Testing-123",
-        groups=["officer"],
-        first_name="Ann",
-        last_name="O",
-    )
-
-
 def _as(user, view="sysadmin"):
     c = Client()
     c.force_login(user)
@@ -99,12 +79,12 @@ def test_members_are_kept_out_and_captains_let_in(officer):
         last_name="M",
     )
     cm = _as(mem)
-    assert cm.get(f"/events/{ev.pk}/manage/").status_code == 404
+    assert cm.get(f"/events/{ev.pk}/manage/setup/").status_code == 404
     assert cm.get("/events/new/").status_code == 404
     c.post(f"/events/{ev.pk}/captains/add/", {"user": mem.pk})
-    assert cm.get(f"/events/{ev.pk}/manage/").status_code == 200
+    assert cm.get(f"/events/{ev.pk}/manage/setup/").status_code == 200
     c.post(f"/events/{ev.pk}/captains/{mem.pk}/remove/")
-    assert cm.get(f"/events/{ev.pk}/manage/").status_code == 404
+    assert cm.get(f"/events/{ev.pk}/manage/setup/").status_code == 404
 
 
 def test_only_an_officer_appoints_or_removes_captains(officer):
@@ -120,7 +100,8 @@ def test_only_an_officer_appoints_or_removes_captains(officer):
     )
     c.post(f"/events/{ev.pk}/captains/add/", {"user": mem.pk})
     cm = _as(mem)
-    body = cm.get(f"/events/{ev.pk}/manage/").content.decode()
+    body = cm.get(f"/events/{ev.pk}/manage/setup/").content.decode()
+    body += cm.get(f"/events/{ev.pk}/manage/status/").content.decode()
     assert "Appoint captain" not in body and "An officer appoints and removes captains." in body
     assert cm.post(f"/events/{ev.pk}/captains/add/", {"user": other.pk}).status_code == 404
     assert cm.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/").status_code == 404
@@ -137,7 +118,7 @@ def test_the_last_captain_cannot_be_removed(officer):
     ev = _build(c)
     c.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/")
     assert ev.captaincies.filter(user=officer).exists()
-    assert "Appoint captain" in c.get(f"/events/{ev.pk}/manage/").content.decode()
+    assert "Appoint captain" in c.get(f"/events/{ev.pk}/manage/setup/").content.decode()
 
 
 def test_the_event_form_says_preferred_license_class(officer):
@@ -223,7 +204,7 @@ def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
 
     # A training slot after the contest, with three operators' seats.
     r = add("2026-06-29T10:00", minutes="120", kind="training", cap_operator="3")
-    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/"
+    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/slots/"
     slot = Slot.objects.get(position=run, kind="training")
     assert (slot.end - slot.start) == timedelta(hours=2)
     assert {c.role: c.capacity for c in slot.capacities.all()} == {"operator": 3}
@@ -276,7 +257,7 @@ def test_after_sign_ups_a_new_period_gets_slots_and_nothing_else_moves(officer):
     s = Slot.objects.filter(position__location__event=ev, kind="operating").first()
     su = SignUp.objects.create(slot=s, user=officer, role="operator")
     before = set(Slot.objects.filter(position__location__event=ev).values_list("pk", "start"))
-    page = c.get(f"/events/{ev.pk}/manage/").content.decode()
+    page = c.get(f"/events/{ev.pk}/manage/slots/").content.decode()
     assert "Add slots to the empty hours" in page and "Regenerate slots" not in page
 
     start = ev.periods.get().end + timedelta(days=1)
@@ -300,5 +281,5 @@ def test_after_sign_ups_a_new_period_gets_slots_and_nothing_else_moves(officer):
 def test_before_sign_ups_both_fill_and_regenerate_are_offered(officer):
     c = _as(officer)
     ev = _build(c)
-    page = c.get(f"/events/{ev.pk}/manage/").content.decode()
+    page = c.get(f"/events/{ev.pk}/manage/slots/").content.decode()
     assert "Add slots to the empty hours" in page and "Regenerate slots" in page

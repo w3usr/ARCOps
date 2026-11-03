@@ -52,7 +52,10 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
 
     ev = Event.objects.order_by("pk").first()
     slot = Slot.objects.filter(position__location__event=ev, kind="operating").order_by("start")
-    urls = [f"/events/{ev.pk}/manage/", f"/events/{ev.pk}/slot/{slot.first().pk}/"]
+    tabs = [
+        f"/events/{ev.pk}/manage/{t}/" for t in ("setup", "slots", "rules", "contest", "status")
+    ]  # Manage in tabs (#167)
+    urls = [*tabs, f"/events/{ev.pk}/slot/{slot.first().pk}/"]
     found = []
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()

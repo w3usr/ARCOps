@@ -691,6 +691,13 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 .steps > li.done .what > a { color: var(--muted); }
 .steps .what { min-width: 0; }
 .steps .helptext { margin-top: .1rem; }
+/* Manage in tabs (#167): links along a rule, the current one underlined in the club color as
+   well as bold, so color is not the only sign (FR-62). On a phone they wrap rather than scroll. */
+.tabs { margin: 0 0 var(--s3); border-bottom: 1px solid var(--line); }
+.tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 var(--s1); }
+.tabs a { display: block; padding: .6rem .75rem; margin-bottom: -1px; border-bottom: 3px solid transparent; color: var(--fg); text-decoration: none; }
+.tabs a:hover { border-bottom-color: var(--line); }
+.tabs a[aria-current="page"] { border-bottom-color: var(--accent); color: var(--accent); font-weight: 700; }
 @media (min-width: 60rem) { .steps { flex-direction: row; } .steps > li { flex: 1 1 0; } }
 
 /* Everything that cannot be undone, in one place at the foot of the page, marked as such. */

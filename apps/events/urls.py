@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:pk>/publish/", views.publish, name="event_publish"),
     path("new/", views_manage.event_create, name="event_create"),
     path("<int:pk>/manage/", views_manage.event_manage, name="event_manage"),
+    path("<int:pk>/manage/<slug:tab>/", views_manage.event_manage, name="event_manage_tab"),
     path("<int:pk>/periods/add/", views_manage.period_add, name="period_add"),
     path(
         "<int:pk>/periods/<int:period_id>/delete/", views_manage.period_delete, name="period_delete"

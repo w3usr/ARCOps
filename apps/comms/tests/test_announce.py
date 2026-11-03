@@ -194,7 +194,7 @@ def test_contest_fields_saved_shown_and_in_the_reminder():
         and "RST and serial" in body
         and 'href="https://example.org/upload"' in body
     )
-    body = cl.get(f"/events/{e.pk}/manage/").content.decode()
+    body = cl.get(f"/events/{e.pk}/manage/contest/").content.decode()
     assert 'value="RST and serial"' in body
     from apps.events.services.notify import send_one_reminder
 

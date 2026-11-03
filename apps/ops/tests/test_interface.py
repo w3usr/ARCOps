@@ -223,7 +223,7 @@ def test_no_page_carries_an_inline_event_handler(event):
         "/",
         f"/events/{ev.pk}/",
         f"/events/{ev.pk}/slot/{slot.pk}/",
-        f"/events/{ev.pk}/manage/",
+        *(f"/events/{ev.pk}/manage/{t}/" for t in ("setup", "slots", "rules", "contest", "status")),
         "/ops/settings/",
         f"/members/{sysadmin.pk}/",  # your own profile, which /me/ forwards to
     ):

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load dicts labels %}
-{% block title %}Manage · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block title %}{{ tab_label }} · Manage · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
@@ -12,7 +12,7 @@
   <li class="{% if step.done %}done{% elif step.next %}now{% endif %}">
     <span class="mark" aria-hidden="true">{% if step.done %}&check;{% else %}{{ forloop.counter }}{% endif %}</span>
     <span class="what">
-      <a href="#{{ step.anchor }}">{{ step.title }}</a>
+      <a href="{% url 'event_manage_tab' event.pk step.tab %}#{{ step.anchor }}">{{ step.title }}</a>
       {% if step.done %}<span class="sr-only">: done</span>{% elif step.next %}<span class="tag">do this next</span>{% endif %}
       <span class="helptext">{{ step.detail }}</span>
     </span>
@@ -21,6 +21,13 @@
 </ol>
 {% endif %}
 
+{% comment %}Manage in tabs (#167, SK 2026-11-02): links, not a script-driven tablist, so each tab is
+a page of its own that works with JavaScript off and can be linked to.{% endcomment %}
+<nav class="tabs" aria-label="Manage">
+  <ul>{% for key, label in tabs %}<li><a href="{% url 'event_manage_tab' event.pk key %}"{% if key == tab %} aria-current="page"{% endif %}>{{ label }}</a></li>{% endfor %}</ul>
+</nav>
+
+{% if tab == 'setup' %}
 <div class="cols">
 <section class="section" aria-labelledby="det">
   <h2 id="det">Details</h2>
@@ -88,7 +95,7 @@
 </section>
 </div>
 </div>
-
+{% elif tab == 'slots' %}
 <section class="section" aria-labelledby="gen">
   <h2 id="gen">Slots</h2>
   {% comment %}#153 (SK, 2026-11-03): once a grid exists, the generator adds to the hours that have
@@ -112,23 +119,6 @@
   {% endif %}
 </section>
 
-<section class="section" aria-labelledby="con">
-  <h2 id="con">Contest details</h2>
-  <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorized. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
-  <form method="post" action="{% url 'contest_save' event.pk %}" class="stack">{% csrf_token %}
-    <div class="row">
-      <div class="field"><label for="cf-ref">Calendar reference number</label><input id="cf-ref" name="calendar_ref" inputmode="numeric" value="{{ event.calendar_ref|default_if_none:'' }}"></div>
-      {% for key, label, kind in contest_fields %}<div class="field"><label for="cf-{{ key }}">{{ label }}</label><input id="cf-{{ key }}" name="{{ key }}" type="{% if kind == 'url' %}url{% elif kind == 'email' %}email{% else %}text{% endif %}" maxlength="500" value="{{ event.contest_fields|dictkey:key|default:'' }}"></div>{% endfor %}
-    </div>
-    <div><button type="submit">Save contest details</button></div>
-  </form>
-</section>
-
-<section class="section" aria-labelledby="ann">
-  <h2 id="ann">Announce</h2>
-  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation.</span></p>
-</section>
-
 <section class="section" aria-labelledby="lim">
   <h2 id="lim">Operating limits</h2>
   <p class="helptext">Advisory: the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
@@ -138,7 +128,7 @@
   </form>
   {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total|floatformat:"-1" }} h{% if limits.total_limit %} of {{ limits.total_limit|floatformat:"-1" }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}
 </section>
-
+{% elif tab == 'rules' %}
 <section class="section" aria-labelledby="who">
   <h2 id="who">Who may sign up</h2>
   <p class="helptext">Per role. Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing. A slot can override this from its own page.</p>
@@ -173,7 +163,19 @@
     <div><button type="submit">Add opening</button></div>
   </form>
 </section>
-
+{% elif tab == 'contest' %}
+<section class="section" aria-labelledby="con">
+  <h2 id="con">Contest details</h2>
+  <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorized. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
+  <form method="post" action="{% url 'contest_save' event.pk %}" class="stack">{% csrf_token %}
+    <div class="row">
+      <div class="field"><label for="cf-ref">Calendar reference number</label><input id="cf-ref" name="calendar_ref" inputmode="numeric" value="{{ event.calendar_ref|default_if_none:'' }}"></div>
+      {% for key, label, kind in contest_fields %}<div class="field"><label for="cf-{{ key }}">{{ label }}</label><input id="cf-{{ key }}" name="{{ key }}" type="{% if kind == 'url' %}url{% elif kind == 'email' %}email{% else %}text{% endif %}" maxlength="500" value="{{ event.contest_fields|dictkey:key|default:'' }}"></div>{% endfor %}
+    </div>
+    <div><button type="submit">Save contest details</button></div>
+  </form>
+</section>
+{% elif tab == 'status' %}
 <section class="section" aria-labelledby="st">
   <h2 id="st">Status</h2>
   <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
@@ -183,6 +185,11 @@
     {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
     {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">Mark completed</button>{% endif %}
   </form>
+</section>
+
+<section class="section" aria-labelledby="ann">
+  <h2 id="ann">Announce</h2>
+  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation.</span></p>
 </section>
 
 <section class="section" aria-labelledby="more">
@@ -206,5 +213,6 @@
     </form>
   </details>
 </section>
+{% endif %}
 {% endif %}
 {% endblock %}

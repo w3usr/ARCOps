@@ -182,7 +182,7 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     body = c.get(f"/events/{e.pk}/").content.decode()
     assert "over limit" in body and "Per day:" in body and "Export the roster" in body
     # Hours read as whole numbers wherever they are shown, as Coverage does (T35, 2026-10-19)
-    manage = c.get(f"/events/{e.pk}/manage/").content.decode()
+    manage = c.get(f"/events/{e.pk}/manage/slots/").content.decode()
     health = c.get("/events/health/").content.decode()
     for page in (body, manage, health):
         assert ".0 h" not in page and ".0<" not in page and " of 10.0" not in page
@@ -223,7 +223,9 @@ def test_eligibility_editor_and_openings_with_announcement():
     e, slots = _event(now + timedelta(days=4), captain=cap)
     c = Client()
     c.force_login(cap)
-    body = c.get(f"/events/{e.pk}/manage/").content.decode()
+    body = "".join(
+        c.get(f"/events/{e.pk}/manage/{t}/").content.decode() for t in ("rules", "slots")
+    )
     assert "Who may sign up" in body and "Openings" in body and "Operating limits" in body
     c.post(
         f"/events/{e.pk}/eligibility/",

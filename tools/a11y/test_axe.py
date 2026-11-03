@@ -63,7 +63,9 @@ def pages_for(role: str) -> list[str]:
     if role == "guardian":
         return common + ([f"/events/signup/{minor_su.pk}/adults/"] if minor_su else [])
     officer = [
-        f"/events/{ev.pk}/manage/",
+        *(
+            f"/events/{ev.pk}/manage/{t}/" for t in ("setup", "slots", "rules", "contest", "status")
+        ),  # Manage in tabs (#167)
         f"/events/{ev.pk}/announce/",
         "/events/new/",
         "/events/health/",

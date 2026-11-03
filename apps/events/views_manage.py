@@ -306,17 +306,23 @@ def event_create(request):
         messages.success(
             request, "Event created as a draft. Add its location and generate the slots."
         )
-        return redirect("event_manage", pk=event.pk)
+        return to_tab(event.pk, "setup")
     return render(request, "events/form.html", {"form": form, "period": period})
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def event_manage(request, pk):
+def event_manage(request, pk, tab=None):
+    """Manage, one tab at a time (#167). `/manage/` opens on the tab of the step to do next, or
+    Setup; the Details form posts to Setup."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
+    if tab is None:
+        return to_tab(pk, _first_tab(event))
+    if tab not in dict(TABS):
+        raise Http404
     form = EventForm(instance=event)
-    if request.method == "POST":
+    if request.method == "POST" and tab == "setup":
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             before = {f: form.initial.get(f) for f in form.changed_data}
@@ -329,8 +335,32 @@ def event_manage(request, pk):
                 after={f: getattr(event, f) for f in form.changed_data},
             )
             messages.success(request, "Saved.")
-            return redirect("event_manage", pk=pk)
-    return _manage_page(request, event, form)
+            return to_tab(pk, "setup")
+    return _manage_page(request, event, tab, form=form)
+
+
+# Manage in tabs (#167, SK 2026-11-02): each a page of its own, drawn by the server, so it works
+# with JavaScript off and a tab can be linked to. docs/INTERFACE.md, "A page that edits more than
+# a few things".
+TABS = [
+    ("setup", "Setup"),
+    ("slots", "Slots"),
+    ("rules", "Sign-up rules"),
+    ("contest", "Contest"),
+    ("status", "Status"),
+]
+
+
+def to_tab(pk, tab):
+    """Back to the tab a form was on."""
+    return redirect("event_manage_tab", pk=pk, tab=tab)
+
+
+def _first_tab(event) -> str:
+    positions = Position.objects.filter(location__event=event).exists()
+    slots = Slot.objects.filter(position__location__event=event, cancelled=False).count()
+    nxt = next((s for s in setup_steps(event, positions, slots) if s["next"]), None)
+    return nxt["tab"] if nxt else "setup"
 
 
 def setup_steps(event, positions, slot_count) -> list[dict]:
@@ -345,18 +375,21 @@ def setup_steps(event, positions, slot_count) -> list[dict]:
             "title": "Say when the club will be on the air",
             "done": periods,
             "anchor": "per",
+            "tab": "setup",
             "detail": "One operating period, or several. The slots are generated inside them.",
         },
         {
             "title": "Say where, and how many seats",
             "done": bool(positions),
             "anchor": "loc",
+            "tab": "setup",
             "detail": "A location, and a position for each operating seat at it.",
         },
         {
             "title": "Generate the slots",
             "done": bool(slot_count),
             "anchor": "gen",
+            "tab": "slots",
             "detail": "One slot per position per interval, across every period.",
         },
         {
@@ -364,6 +397,7 @@ def setup_steps(event, positions, slot_count) -> list[dict]:
             "done": event.state
             in (Event.State.PUBLISHED, Event.State.LOCKED, Event.State.COMPLETED),
             "anchor": "st",
+            "tab": "status",
             "detail": "Members see it and can sign up.",
         },
     ]
@@ -375,7 +409,7 @@ def setup_steps(event, positions, slot_count) -> list[dict]:
     return steps
 
 
-def _manage_page(request, event, form=None, generate_form=None, add_slot_form=None):
+def _manage_page(request, event, tab, form=None, generate_form=None, add_slot_form=None):
     """The manage page. A view that refuses a form renders this with the bound form, so the
     captain gets their values back with the reason beside them."""
     roles = setting("slot_roles", []) or []
@@ -395,6 +429,9 @@ def _manage_page(request, event, form=None, generate_form=None, add_slot_form=No
         "events/manage.html",
         {
             "event": event,
+            "tab": tab,
+            "tabs": TABS,
+            "tab_label": dict(TABS)[tab],
             "form": form if form is not None else EventForm(instance=event),
             "period_form": PeriodForm(),
             "periods": event.periods.order_by("start"),
@@ -435,7 +472,7 @@ def period_add(request, pk):
         messages.success(request, "Operating period added.")
     else:
         messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -447,7 +484,7 @@ def period_delete(request, pk, period_id):
     messages.success(
         request, "Operating period removed. Regenerate the slots if they were built from it."
     )
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -458,7 +495,7 @@ def location_add(request, pk):
     name = request.POST.get("name", "").strip()[:120]
     if not name:
         messages.error(request, "A location needs a name.")
-        return redirect("event_manage", pk=pk)
+        return to_tab(pk, "setup")
     order = event.locations.count() + 1
     loc = Location.objects.create(
         event=event,
@@ -471,7 +508,7 @@ def location_add(request, pk):
         location=loc, name=request.POST.get("position", "").strip()[:60] or "Station", order=1
     )
     messages.success(request, f"Location “{name}” added with its first position.")
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -483,7 +520,7 @@ def position_add(request, pk, location_id):
     name = request.POST.get("name", "").strip()[:60] or f"Position {loc.positions.count() + 1}"
     Position.objects.create(location=loc, name=name, order=loc.positions.count() + 1)
     messages.success(request, f"Position “{name}” added.")
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -497,7 +534,7 @@ def position_delete(request, pk, position_id):
     else:
         pos.delete()
         messages.success(request, "Position removed with its slots.")
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -513,7 +550,7 @@ def captain_add(request, pk):
     if created:
         record(request.user, "captain.added", event, after={"user": user.pk})
         messages.success(request, f"{user.short_name} is now a captain of this event.")
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -527,11 +564,11 @@ def captain_remove(request, pk, user_id):
     # none would go quiet without anyone being told.
     if event.captaincies.count() == 1:
         messages.error(request, "An event keeps at least one captain; appoint another first.")
-        return redirect("event_manage", pk=pk)
+        return to_tab(pk, "setup")
     captaincy.delete()
     record(request.user, "captain.removed", event, before={"user": user_id})
     messages.success(request, "Captain removed.")
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "setup")
 
 
 @login_required
@@ -544,16 +581,16 @@ def slots_generate(request, pk):
     positions = list(Position.objects.filter(location__event=event))
     if not event.periods.exists() or not positions:
         messages.error(request, "Add an operating period and a location first.")
-        return redirect("event_manage", pk=pk)
+        return to_tab(pk, "slots")
     # Adding to the empty hours keeps every slot, seat count and sign-up, so it needs neither a
     # confirmation nor an empty roster (#153, SK 2026-11-03). Replacing needs both.
     fill = request.POST.get("mode") == "fill"
     if not fill and has_signups(event):
         messages.error(request, "Members have signed up; the grid cannot be rebuilt under them.")
-        return redirect("event_manage", pk=pk)
+        return to_tab(pk, "slots")
     if not form.is_valid():
         messages.error(request, "Nothing was generated; correct the fields marked below.")
-        return _manage_page(request, event, generate_form=form)
+        return _manage_page(request, event, "slots", generate_form=form)
     existing = Slot.objects.filter(position__location__event=event)
     kept = existing.filter(cancelled=False).count() if fill else 0
     if not fill and existing.exists() and request.POST.get("confirmed") != "yes":
@@ -581,7 +618,7 @@ def slots_generate(request, pk):
             messages.error(
                 request, "Those hours fall outside every operating period; nothing generated."
             )
-            return redirect("event_manage", pk=pk)
+            return to_tab(pk, "slots")
     created = generate_with_capacities(
         event,
         positions,
@@ -600,7 +637,7 @@ def slots_generate(request, pk):
     )
     if fill and not created:
         messages.info(request, "Every hour you asked for already has a slot; nothing added.")
-        return redirect("event_manage", pk=pk)
+        return to_tab(pk, "slots")
     if fill:
         messages.success(
             request,
@@ -625,7 +662,7 @@ def slot_add(request, pk):
     form = AddSlotForm(request.POST, event=event, roles=setting("slot_roles", []) or [])
     if not form.is_valid():
         messages.error(request, "No slot was added; correct the fields marked below.")
-        return _manage_page(request, event, add_slot_form=form)
+        return _manage_page(request, event, "slots", add_slot_form=form)
     d = form.cleaned_data
     slot = Slot.objects.create(
         position=d["position"], start=d["start"], end=d["end"], kind=d["kind"]
@@ -655,7 +692,7 @@ def slot_add(request, pk):
             f"{d['start']:%a %d %b %H:%M}–{d['end']:%H:%M} UTC",
         ),
     )
-    return redirect("event_manage", pk=pk)
+    return to_tab(pk, "slots")
 
 
 @login_required
@@ -703,7 +740,7 @@ def event_duplicate(request, pk):
     copy = duplicate_event(event, request.user)
     record(request.user, "event.duplicated", copy, before={"from": event.pk})
     messages.success(request, "Copied as a draft. Fix the dates, then generate or keep the slots.")
-    return redirect("event_manage", pk=copy.pk)
+    return to_tab(copy.pk, "setup")
 
 
 @login_required
@@ -717,7 +754,7 @@ def event_cancel(request, pk):
     reason = request.POST.get("reason", "").strip()[:300]
     if request.POST.get("confirm") != "yes" or not reason:
         messages.error(request, "Give a reason and tick the confirmation to cancel the event.")
-        return redirect("event_manage", pk=pk)
+        return to_tab(pk, "status")
     from .services.notify import event_cancelled
 
     event.state = Event.State.CANCELLED
