@@ -4514,4 +4514,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/comms/defaults.py (warning.captains subject "N slot(s) need attention in the next N hours"; its Settings label "Slots that need attention"); apps/events/tests/test_status_words.py (the digest's subject is checked as well as its body); apps/events/tests/test_notify.py (the new subject).
 - **Nature of Contribution**: Code and tests. An unedited template is refreshed by the next deploy (seed_templates); an edited one keeps its wording. Verified: the subject check fails on the old default and passes on the new; tools/check.sh quick passes but for the PDF test, which passes run directly with pytest (macOS's /bin/bash drops DYLD_*); lint and format pass; acceptance T32 passes locally, 9 of 9 (private repo, testing/runs/2026-11-03_100541-w3usr).
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: dc1cbea
