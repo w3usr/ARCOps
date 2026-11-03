@@ -4555,3 +4555,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Research summary, design and code. Verified: application tests 512 passed; lint and format pass; the accessibility sweep in Chromium and WebKit (52 passed with the two failures it found, a template's trailing newline and the preview's form, then fixed and rerun: the dialog checks 6 passed); screenshots of the generator (empty, fill-only) and Add a slot at 1280 and 390 px compared by eye; acceptance T11, T12, T13, T35, T43 and T52 pass locally (private repo, testing/runs/2026-11-03_150611-w3usr).
 - **Human Review Status**: Pending review
 - **Git Hash**: 16c8fd8
+
+## [2026-11-03 15:36 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Two changes SK asked for: My Sked is now My schedule; the footer has no background of its own and sits in the page's column, not under the sidebar (SK, 2026-11-03).
+- **Sections/Files Affected**: apps/ops/branding.py (SCHEDULE_FEATURE_NAME "schedule"); templates/ops/dashboard.html and apps/events/templatetags/times.py (the name where it was written out); apps/events/tests/test_notify.py; docs/NAME.md (a dated note below the names table); templates/base.html (a page column beside the sidebar holding banners, main and the footer), templates/_footer.html (new: the footer, unchanged); static/css/app.css (the column; the footer without a background, its rule kept; the layout note).
+- **Nature of Contribution**: Code and docs. Verified: application tests 512 passed; lint passes; the accessibility sweep in Chromium and WebKit 54 passed, 1 skipped; screenshots of My schedule at 1280 and 390 px compared by eye; acceptance T11 to T14, T17, T20, T31, T37, T41, T46 and T47 pass locally (private repo, testing/runs/2026-11-03_153219-w3usr; T20 step 4 now checks the footer's background and that it starts where the sidebar ends).
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

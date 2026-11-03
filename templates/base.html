@@ -100,6 +100,9 @@ localStorage, where they would keep member names and rosters (technical addendum
       <button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>
     </div>
   </nav>
+  {% comment %}Everything beside the sidebar, footer included, is one column: the footer stays under
+  the page, not under the sidebar (SK, 2026-11-03).{% endcomment %}
+  <div class="page">
 {% endif %}
 {% if acting_guardian %}<div class="banner acting" role="status"><p><strong>Acting for {{ user.display_first }}</strong> (under 18). Sign-ups, cancellations, check-ins, and profile changes you make now are on their behalf and recorded in your name. You are {{ acting_guardian.display_first }}.</p><form method="post" action="{% url 'act_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop acting for them</button></form></div>{% endif %}
 {% if minor_readonly %}<div class="banner readonly" role="status"><p><strong>Read-only.</strong> A member under 18 sees their schedule, rosters, and messages here; sign-ups, changes, and profile edits are made by a guardian from their own account. You can change your own password.</p></div>{% endif %}
@@ -119,11 +122,8 @@ localStorage, where they would keep member names and rosters (technical addendum
   {# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
   {% block main %}{% block content %}{% endblock %}{% endblock %}
 </main>
-{% if user.is_authenticated %}</div>{% endif %}
-<footer class="site">
-  <p class="club">{% if club.public_page %}<a href="{{ club.public_page }}">{% endif %}{% if club.callsign %}{{ club.callsign }} {% endif %}{{ club.name }}{% if club.public_page %}</a>{% endif %}</p>
-  <p class="credit"><a href="{% url 'privacy' %}">Privacy notice</a> · Powered by <a href="{{ product.url }}">{{ product.name }}</a> ({{ product.long_name }}), free software from <a href="{{ product.author_url }}">{{ product.author }}</a>.</p>
-</footer>
+{% include "_footer.html" %}
+{% if user.is_authenticated %}</div></div>{% endif %}
 <script src="{% static 'js/vendor/htmx.min.js' %}" defer></script>
 <script src="{% static 'js/app.js' %}" defer></script>
 <script src="{% static 'js/richtext-check.js' %}" defer></script>

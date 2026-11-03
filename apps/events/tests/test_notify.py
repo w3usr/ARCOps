@@ -344,7 +344,7 @@ def test_captain_can_check_a_member_in_from_the_slot_page():
     r = c.post(f"/events/signup/{su.pk}/checkin/")
     su.refresh_from_db()
     assert su.checked_in_at is not None and su.checked_in_by == cap
-    # Back to the slot for the next person, not the captain's own My Sked
+    # Back to the slot for the next person, not the captain's own My schedule
     assert r["Location"] == f"/events/{e.pk}/slot/{slots[0].pk}/"
 
 
@@ -380,6 +380,6 @@ def test_keep_it_from_the_reminder_says_nothing_changed_without_a_sign_in():
         and "Sign in" not in body.split("<main")[1][:600]
     )
     assert "you are still down as <strong>Operator</strong>" in body
-    assert "Open My Sked" in body  # the page's one name (#163)
+    assert "Open My schedule" in body  # the page's one name (#163; SK, 2026-11-03)
     su.refresh_from_db()
     assert su.confirmed_at is None, "keeping a slot is not confirming attendance"

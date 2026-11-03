@@ -1,7 +1,7 @@
 """
 `{% when start end event %}`: a time or span in UTC with the event's zone beneath (FR-36,
 FR-38); UTC leads everywhere, as on the roster (functional addendum A12). One tag, so Home,
-Events, My Sked, and the roster agree on how a time looks. NAF, 2026-09-14, on seeing a bare "Sat 26 Sep 2026 00:00":
+Events, My schedule, and the roster agree on how a time looks. NAF, 2026-09-14, on seeing a bare "Sat 26 Sep 2026 00:00":
 "this needs time zone indicated. It should be in both utc and local".
 """
 

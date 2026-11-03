@@ -16,7 +16,7 @@
   has a word.
 
   Layout: signed in, a left sidebar (full, or an icon rail when the member collapses it; an
-  off-canvas drawer under 60rem) beside the content, and the footer under both.
+  off-canvas drawer under 60rem) beside a column holding the content and, under it, the footer.
   Signed out, a split page: club panel and form. Without JavaScript the sidebar simply
   renders in full and the drawer controls are hidden (TR-4).
 */
@@ -94,8 +94,9 @@ h1 + p, h2 + p { margin-top: 0; }
 /* --------------------------------------------------------- app shell */
 .shell { flex: 1; display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
 html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
-.shell > .banner, .shell > main { grid-column: 2; }
-.shell > .banner { margin: 1rem clamp(1rem, 4vw, 3rem) 0; }
+.shell > .page { grid-column: 2; min-width: 0; display: flex; flex-direction: column; }
+.page > main { flex: 1; }
+.page > .banner { margin: 1rem clamp(1rem, 4vw, 3rem) 0; }
 
 .topbar { display: none; }
 
@@ -249,8 +250,10 @@ body.drawer-open { overflow: hidden; }
    a system bar pays for it here. In a browser the insets are zero and nothing moves; in an
    installed app they keep the footer clear of the navigation bar and the top bar clear of the
    status bar. */
+/* No background of its own, and in the page's column, not under the sidebar (SK, 2026-11-03):
+   it closes the page rather than framing the window. */
 footer.site {
-  background: var(--surface); color: var(--fg); border-top: 1px solid var(--line); text-align: center;
+  color: var(--fg); border-top: 1px solid var(--line); text-align: center;
   padding: 1.25rem calc(1rem + env(safe-area-inset-right, 0px))
            calc(1.35rem + env(safe-area-inset-bottom, 0px))
            calc(1rem + env(safe-area-inset-left, 0px));

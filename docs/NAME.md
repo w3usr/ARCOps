@@ -10,6 +10,9 @@
 | **Feature name** | **Sked**: the schedule and roster inside the application. "Sked" is amateur-radio slang for a scheduled contact, so members read it at once. It is a feature name only, never a hostname. |
 | **Hostname** | The W3USR installation stays at `ops.w3usr.org`. Another club chooses its own. |
 
+*2026-11-03, SK:* the member's page of their own slots is **My schedule**, in plain words, in the
+sidebar, its heading and every link to it. "Sked" is no longer used in the interface.
+
 ## How it was chosen
 
 The advisor's first proposal, verbatim:

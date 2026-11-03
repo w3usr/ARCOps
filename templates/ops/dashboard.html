@@ -8,7 +8,7 @@ N3KN"); the name and callsign stay at the foot of the sidebar, on every page.{% 
 <h1>{% if next_signup %}Your next slot{% elif invite %}Pick your hours{% else %}Nothing on the schedule yet{% endif %}</h1>
 {% if next_signup %}{% with s=next_signup %}
 {% comment %}The page's main block: when, how long until then, where, as what, and the one thing
-to do about it now, the same actions as My Sked (FR-72, FR-113). It comes straight after the
+to do about it now, the same actions as My schedule (FR-72, FR-113). It comes straight after the
 heading, and the event's link after the action, so that inside its window Check in is the first
 thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
 <section class="card highlight next-slot" aria-labelledby="next">
@@ -16,7 +16,7 @@ thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
   <p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
   <p><strong>{% if s.slot.start <= now %}On now{% else %}In {{ s.slot.start|timeuntil:now }}{% endif %}</strong>: {{ s.slot.position.name }} at {{ s.slot.position.location.name }}, as {{ s.role|role_label }}{% if s.checked_in_at %} <span class="tag ok">checked in</span>{% elif s.confirmed_at %} <span class="tag">confirmed</span>{% endif %}</p>
   {% if minor_readonly %}<p class="muted">Your guardian or a captain confirms and checks you in.</p>
-  {% elif next_action == 'check_in' and s.user.under_18 %}<p><a href="{% url 'my_schedule' %}">Check in on My Sked</a>, naming who is with you.</p>
+  {% elif next_action == 'check_in' and s.user.under_18 %}<p><a href="{% url 'my_schedule' %}">Check in on My schedule</a>, naming who is with you.</p>
   {% elif next_action == 'check_in' %}<form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}<button class="big" type="submit">Check in</button></form>
   {% elif next_action == 'confirm' %}<form method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm you will be there</button></form>{% endif %}
   <p><a href="{% url 'event_detail' s.slot.event.pk %}">Open the roster</a></p>
@@ -80,7 +80,7 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
       {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
     {% endfor %}
   </ul>
-  <p><a href="{% url 'my_schedule' %}">My Sked</a></p>
+  <p><a href="{% url 'my_schedule' %}">My schedule</a></p>
 </section>
 {% endif %}
 
