@@ -793,7 +793,28 @@ color under which any of them would read below AA.
 **Decided by** SK: Material 3 as the approach, 2026-10-23; a hand-written stylesheet with no
 framework, 2026-10-30. *Record:* issues #143 and #160 in the private repository.
 
+### A9. TR-4: a confirmation opens in a dialog by invoker commands
+
+**Original (TR-4).** "**Front end: server-rendered Django templates, progressively enhanced with
+htmx** and a small amount of plain JavaScript; **no single-page framework**."
+
+**Decision.** The confirmation of a destructive act (closing, suspending, archiving or deleting an
+account, canceling an event or a slot, revoking, declining, removing an address, replacing the
+calendar address) is written into the page inside a `<dialog>`, and its button opens it with the
+HTML invoker commands, `commandfor` and `command="show-modal"`. They need no script and are in
+every current engine: Chrome and Edge 135, Firefox 144 and Safari 26.2, Baseline since December
+2025 (<https://developer.mozilla.org/docs/Web/API/Invoker_Commands_API>). These replace the
+click-to-expand `<details>` that held the same forms in place.
+
+`static/js/app.js` opens the dialog itself in a browser older than that, and returns focus to the
+button on closing, which Safari otherwise loses because it does not focus a button it clicks. The
+known gap: a browser older than late 2025 with JavaScript off shows the button and opens nothing.
+SK accepted it ("if we need to add js it's fine"). Every form inside a dialog posts as it did
+before, so the server side is unchanged.
+
+**Decided by** SK, 2026-11-03. *Record:* the session notes of 2026-11-03 in the private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7) and 2026-10-30 (A8), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8) and 2026-11-03 (A9), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

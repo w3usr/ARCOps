@@ -125,17 +125,18 @@ posts: either may answer with a page asking to confirm.{% endcomment %}
     </form>
   </details>
   {% if cell.signups %}
-  <details class="confirm">
-    <summary>Cancel this slot</summary>
+  <p><button type="button" class="danger-outline" commandfor="slot-cancel-{{ slot.pk }}" command="show-modal">Cancel this slot</button></p>
+  <dialog id="slot-cancel-{{ slot.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="slot-cancel-h-{{ slot.pk }}">
+    <h2 id="slot-cancel-h-{{ slot.pk }}">Cancel this slot?</h2>
     <p>The slot goes off the roster and cannot be brought back. {{ cell.signups|length }} {{ cell.signups|length|pluralize:"person is,people are" }} in it, and {{ cell.signups|length|pluralize:"is,are" }} told, with your reason.</p>
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
       <div class="field">
         <label for="cancel-reason-{{ slot.pk }}">Reason <span class="req" aria-hidden="true">*</span></label>
         <input id="cancel-reason-{{ slot.pk }}" name="reason" maxlength="300" placeholder="Station closed for the storm" required>
       </div>
-      <div><button class="danger">Cancel the slot and tell {{ cell.signups|length }}</button></div>
+      <div class="confirm-actions"><button type="button" class="secondary" commandfor="slot-cancel-{{ slot.pk }}" command="close">Keep the slot</button> <button class="danger">Cancel the slot and tell {{ cell.signups|length }}</button></div>
     </form>
-  </details>
+  </dialog>
   {% endif %}
 </section>
 {% endif %}

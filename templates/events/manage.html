@@ -163,15 +163,17 @@ a button that opens its page in Manage's dialog, or the page itself without Java
 {% elif event.state != 'cancelled' %}
 <section class="card dangerzone" aria-labelledby="dz">
   <h2 id="dz">Danger zone</h2>
-  <details class="confirm">
-    <summary>Cancel this event</summary>
+  <div class="dz-row"><div><h3>Cancel this event</h3><p class="helptext">Off the calendar, every sign-up withdrawn and everyone told. Cannot be undone.</p></div>
+    <button type="button" class="danger-outline" commandfor="dz-cancel" command="show-modal">Cancel event</button></div>
+  <dialog id="dz-cancel" class="slot-dialog confirm-dialog" aria-labelledby="dz-cancel-h">
+    <h2 id="dz-cancel-h">Cancel this event?</h2>
     <p>The event comes off the calendar and every sign-up for it is withdrawn. Everyone signed up is told, with your reason. It cannot be undone; the event stays in the record.</p>
     <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
       <div class="field"><label for="cancel-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="cancel-reason" name="reason" maxlength="300" required><span class="helptext">Sent to everyone signed up.</span></div>
       <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I understand this cannot be undone</label></div>
-      <div><button type="submit" class="danger">Cancel the event</button></div>
+      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-cancel" command="close">Keep the event</button> <button type="submit" class="danger">Cancel the event</button></div>
     </form>
-  </details>
+  </dialog>
 </section>
 {% endif %}
 {% endif %}

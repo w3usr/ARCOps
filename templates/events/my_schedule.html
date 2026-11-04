@@ -27,10 +27,11 @@
 <p class="copyrow"><code id="feed-url">{{ feed_url }}</code> <button type="button" class="secondary" data-copy="#feed-url">Copy</button></p>
 {% comment %}The address is a key, so it can be replaced: the other half of not being a signed
 string that changed on every page load (NAF, 2026-09-19).{% endcomment %}
-<details class="confirm">
-  <summary>Replace this address</summary>
+<p><button type="button" class="linklike danger" commandfor="feed-new" command="show-modal">Replace this address</button></p>
+<dialog id="feed-new" class="slot-dialog confirm-dialog" aria-labelledby="feed-new-h">
+  <h2 id="feed-new-h">Replace your calendar address?</h2>
   <p>Use this if the address has been shared by accident. You get a new one, and any calendar subscribed to the old address stops receiving your slots until you subscribe it again.</p>
-  <form method="post" action="{% url 'replace_feed' %}">{% csrf_token %}<button type="submit" class="danger">Replace my calendar address</button></form>
-</details>
+  <form method="post" action="{% url 'replace_feed' %}" class="confirm-actions">{% csrf_token %}<button type="button" class="secondary" commandfor="feed-new" command="close">Keep this address</button> <button type="submit" class="danger">Replace my calendar address</button></form>
+</dialog>
 </section>
 {% endblock %}

@@ -659,7 +659,7 @@ pre { overflow-x: auto; max-width: 100%; }
 .levels label { font-weight: 700; }
 .levels .helptext { margin: var(--s1) 0 0 1.7rem; }
 .levels details { margin-left: 1.7rem; }
-.levels summary { font-size: var(--t-small); color: var(--muted); cursor: pointer; }
+.levels summary { font-size: var(--t-small); }
 
 /* A state and the one action that changes it, in a single control: the badge is the button. */
 .tag-button {
@@ -729,11 +729,40 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 /* Everything that cannot be undone, in one place at the foot of the page, marked as such. */
 .card.dangerzone { border-color: var(--bad); }
 .card.dangerzone > h2 { color: var(--bad); margin-top: 0; }
-.card.dangerzone > details + details { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
+/* Each act a row: its name and a line on what it does, and on the right the button that opens
+   its confirmation. A phone puts the button under the words. */
+.dz-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s1) var(--s3); }
+.dz-row > div { flex: 1 1 18rem; }
+.dz-row h3 { margin: 0; font-size: var(--t-body); }
+.dz-row p { margin: .2rem 0 0; }
+.card.dangerzone > :is(.dz-row, dialog) + .dz-row { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
+button.danger-outline { background: transparent; color: var(--bad); border: 1px solid var(--bad); }
 
-details.confirm { margin-top: var(--s1); }
-details.confirm > summary { color: var(--bad); text-decoration: underline; cursor: pointer; font-size: var(--t-small); width: fit-content; }
-details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
+/* A destructive act's confirmation, in a dialog over the page (docs/INTERFACE.md): what is lost,
+   the reason, and the safe choice before the red one. The button opens it with invoker commands
+   (commandfor), so it needs no script; app.js does the same for a browser older than late 2025. */
+.confirm-dialog { max-width: min(32rem, 94vw); }
+dialog.slot-dialog:modal { margin: auto; }  /* centered, even as a card's last child, whose margin a card zeroes */
+.slot-dialog > h2:first-child { margin-top: 0; padding-right: 2rem; }
+.confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s1); margin-top: var(--s2); }
+
+/* Something more to read, folded: one look everywhere. A chevron in the action color that turns
+   as it opens, and what opens set in under a thin rule, so it reads as belonging to its line. */
+details:not(.filter) > summary { list-style: none; cursor: pointer; width: fit-content; font-weight: 700; border-radius: var(--r-field); }
+details:not(.filter) > summary::-webkit-details-marker { display: none; }
+details:not(.filter) > summary::before {
+  content: ""; display: inline-block; width: .45em; height: .45em; margin: 0 .6em .15em .15em;
+  border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg);
+}
+details[open]:not(.filter) > summary::before { transform: rotate(45deg); margin-bottom: .3em; }
+details:not(.filter) > summary:hover { color: var(--accent); }
+details:not(.filter) > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details:not(.filter, .inline) { margin-block: var(--s2); }
+details[open]:not(.filter, .card, .msglist details) > :not(summary) { margin-left: .35rem; padding-left: .9rem; border-left: 2px solid var(--line); }
+/* A whole message or announcement folded into its card: the summary is its heading line. */
+details[open]:is(.card, .msglist details) > :not(summary) { margin-left: 1.25rem; }
+details:is(.card, .msglist details) > summary { width: auto; }
+.msglist details { margin: 0; }
 /* Adding an address: the field and its button sit on one line, and stack on a phone. */
 .row-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem; margin-top: .6rem; }
 .row-form label { display: block; font-size: var(--t-small); }
@@ -741,25 +770,7 @@ details.confirm > p { margin: var(--s1) 0; font-size: var(--t-small); }
 
 /* Approve and Decline read as one choice, so they sit on one row; the reason travels with the
    button it belongs to. They stack on a phone, and Approve stays first either way. */
-.decide-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s1) var(--s3); margin-top: var(--s1); }
-.decide-decline { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s1); }
-.decide-decline input { min-width: 14rem; }
-/* Declining opens in place inside the row, so the queue stays a list. */
-.decide-row details.decide-decline { margin: 0; }
-.decide-row details.decide-decline > summary { font-size: inherit; }
-.decide-row details.decide-decline .row-form { margin-top: .4rem; }
-/* Opened, Decline keeps its place beside Approve and only its form drops below, so the toggle
-   does not jump away from the pointer. A phone stacks them anyway. */
-@media (min-width: 561px) {
-  .decide-row details.decide-decline { flex: 1 1 0; min-width: 0; }
-  .decide-row details.decide-decline .row-form { flex-basis: 100%; }
-  .decide-row details.decide-decline input { min-width: min(14rem, 100%); }
-}
-/* Turning a decline round, from its own row in the log: an ordinary action rather than
-   a destructive one, so it is not red. */
-details.reverse > summary { color: var(--accent, inherit); text-decoration: none; white-space: nowrap; }
-details.reverse .field { margin-top: .4rem; } details.reverse input { min-width: 12rem; }
-@media (max-width: 560px) { .decide-decline input { min-width: 0; width: 100%; } }
+.decide-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s3); margin-top: var(--s1); }
 
 /* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a
    phone inside its own wrapper, so the page itself never does (FR-95). */

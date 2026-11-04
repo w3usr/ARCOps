@@ -166,6 +166,30 @@ if ("serviceWorker" in navigator) {
   dlg.addEventListener("close", () => { body.innerHTML = ""; if (opener) opener.focus(); });
 })();
 
+// A confirmation's button opens its dialog by itself (commandfor and command, in every browser
+// since late 2025). This does the same for an older one; a current browser never runs it.
+// Safari does not focus a button it clicks, so the browser has nothing to give focus back to
+// when the dialog closes: remember the button, and return to it.
+(() => {
+  let opener = null;
+  document.addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[commandfor][command=show-modal]");
+    if (b) opener = b;
+  });
+  document.addEventListener("close", (ev) => {
+    if (opener && ev.target.id === opener.getAttribute("commandfor") && opener.isConnected) opener.focus();
+  }, true);  // a dialog's close event does not bubble; catch it on the way down
+})();
+if (!("command" in HTMLButtonElement.prototype)) {
+  document.addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[commandfor]");
+    const d = b && document.getElementById(b.getAttribute("commandfor"));
+    if (!d || typeof d.showModal !== "function") return;
+    if (b.getAttribute("command") === "show-modal" && !d.open) d.showModal();
+    else if (b.getAttribute("command") === "close") d.close();
+  });
+}
+
 // A folded run of open hours opens in place (#161): its rows are on the page already, hidden.
 // Without JavaScript the same link reloads the roster with the run open.
 document.addEventListener("click", (ev) => {

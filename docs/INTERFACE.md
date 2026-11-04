@@ -149,11 +149,11 @@ system, both of which say the same thing.)
 
 1. **Reversible** (close a slot, archive a member): an ordinary control. No confirmation.
 2. **Irreversible, but an officer can put it back** (remove somebody's sign-up, decline an
-   agreement): a red link, and a confirmation page that names who is affected and what they
+   agreement): a red link, and a confirmation that names who is affected and what they
    are told. Destructive controls carry `.danger` and are underlined, because color alone
    never carries meaning (FR-62).
 3. **Irreversible and unrecoverable** (cancel slots, replace the slot grid, delete an account):
-   a solid red button, and a confirmation page that names what is lost, how many people hear
+   a solid red button, and a confirmation that names what is lost, how many people hear
    about it, and offers the safe option first.
 
 A destructive control never sits between two reversible ones styled the same way.
@@ -169,6 +169,27 @@ zone** at the foot of the page: closing, suspending, archiving, deleting. A memb
 closing and archiving in a card of their own, above it, which read as ordinary editing (the
 advisor, 2026-09-20). Where one of those acts is the step after another, the later one appears
 only once the earlier has happened, rather than sitting there refusing.
+
+**Each act in a Danger zone is a row**: its name, one line on what it does, and on the right a
+button outlined in red that opens its confirmation. A phone puts the button under the words.
+
+**A confirmation opens in a dialog over the page** (SK, 2026-11-03): its question as the heading
+("Delete this account?"), what is lost and who is told, the reason, then the safe choice before
+the solid red one, named for what it keeps ("Keep the account", not "Cancel"). The dialog is
+written into the page and its button opens it with `commandfor` (TECHNICAL_REQUIREMENTS A9); a
+form inside posts as any form does. A confirmation that is a step of a larger form (replacing
+the slot grid) stays a page of its own, because it carries what was typed there. A confirmation
+is never a click-to-expand in place: it read as a link and opened into the page around it.
+
+## Something more to read
+
+A disclosure (`<details>`) folds away what is read on demand: the agreement's text, what a level
+can do, a contest's details, a message in a list. They all look the same: a chevron in the action
+color that turns as it opens, and what opens set in under a thin rule. A whole message or
+announcement folded into its card keeps the card instead of the rule. A disclosure never holds a
+form somebody fills in to change something: that is a button and a dialog. The one exception is
+inside a dialog already (the slot's override): a short confirmation may open over a dialog
+(canceling a slot from it), but a form to fill in does not open a second one.
 
 ## Forms
 

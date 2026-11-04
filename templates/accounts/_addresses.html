@@ -39,13 +39,14 @@ depending on delivery.{% endcomment %}
       officer who needs to shut an account out suspends it, where the act is named and reasoned
       (NAF, 2026-09-19).{% endcomment %}
       {% if address_subject_is_self or perms.ops.correct_member_addresses %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>{% endif %}
+      {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}<button type="button" class="linklike danger" commandfor="addr-rm-{{ forloop.counter }}" command="show-modal">Remove this address</button>{% endif %}
     </div>
     {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}
-    <details class="confirm">
-      <summary>Remove this address</summary>
+    <dialog id="addr-rm-{{ forloop.counter }}" class="slot-dialog confirm-dialog" aria-labelledby="addr-rm-h-{{ forloop.counter }}">
+      <h2 id="addr-rm-h-{{ forloop.counter }}">Remove {{ a.address }}?</h2>
       <p>Club mail stops going to {{ a.address }}{% if a.confirmed %}, and it stops signing {% if address_subject_is_self %}you{% else %}them{% endif %} in{% endif %}. It can be added again afterwards, and confirmed again.</p>
-      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_remove"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="danger">Remove {{ a.address }}</button></form>
-    </details>
+      <form method="post" class="confirm-actions">{% csrf_token %}<input type="hidden" name="action" value="address_remove"><input type="hidden" name="address" value="{{ a.address }}"><button type="button" class="secondary" commandfor="addr-rm-{{ forloop.counter }}" command="close">Keep the address</button> <button type="submit" class="danger">Remove {{ a.address }}</button></form>
+    </dialog>
     {% endif %}
   </li>
 {% endfor %}
