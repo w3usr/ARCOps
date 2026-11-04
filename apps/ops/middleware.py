@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from django.http import HttpResponse
 from django.urls import Resolver404, resolve
 
-STAYS_IN_PLACE = {"slot_detail"}
+STAYS_IN_PLACE = {"slot_detail", "event_step"}  # event_step: a step's own forms (#177)
 
 
 class HtmxRedirectMiddleware:

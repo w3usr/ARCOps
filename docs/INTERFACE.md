@@ -245,6 +245,15 @@ page already does without it.
   run them.
 - After a swap, focus goes where the reader's attention should be (usually the heading of what
   was replaced), and a flash message is still announced.
+- **A step's own forms save in place** (SK, 2026-11-03, #177): on Manage, the forms that change
+  the step you are on (Save limits, Save who may sign up, Save contest details, Lock, Unlock,
+  Mark completed, and **Remove** on a period, a position, a captain or an opening) carry one set
+  of attributes (`templates/events/stages/_in_place.html`). The view still redirects to its
+  step; htmx follows it and swaps the step and the bar out of that page, so there is no partial
+  template, no `HX-Request` branch, and no history entry (`hx-push-url="false"`). The step's
+  message, or its refusal, comes inside the swap, and focus goes to it. Moving between steps,
+  Publish, Duplicate, the pages with an editor, and the dialogs are not boosted. The attributes
+  go on each form, never on a wrapper, where the dialog links would inherit `hx-select`.
 
 ## Color
 

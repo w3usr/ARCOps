@@ -147,3 +147,123 @@ def test_a_save_returns_to_its_step(officer):
     # From the event page's banner, Publish still goes back to the event.
     Event.objects.filter(pk=ev.pk).update(state=Event.State.DRAFT)
     assert c.post(f"{base}/publish/")["Location"] == f"{base}/"
+
+
+def test_a_new_event_is_the_details_step_and_goes_on_to_periods(officer):
+    """#173: no first period on the create form; creating lands on Operating periods."""
+    c = _as(officer)
+    body = c.get("/events/new/").content.decode()
+    bar = _bar(body)
+    assert "href=" not in bar  # nothing to open before the event exists
+    assert '<span class="cell" aria-current="step">' in bar and bar.count("After Details") == 4
+    assert "Create draft and continue" in body and "Starts (UTC)" not in body
+    r = c.post("/events/new/", {"title": "Net night", "type": "net"}, follow=True)
+    ev = Event.objects.get(title="Net night")
+    assert r.redirect_chain[-1][0] == f"/events/{ev.pk}/manage/periods/"
+    assert "Draft created." in r.content.decode() and not ev.periods.exists()
+
+
+def test_duplicating_lands_on_operating_periods(officer):
+    c = _as(officer)
+    ev = _build(c)
+    r = c.post(f"/events/{ev.pk}/duplicate/")
+    copy = Event.objects.exclude(pk=ev.pk).get()
+    assert r["Location"] == f"/events/{copy.pk}/manage/periods/"
+
+
+def test_know_before_you_go_is_its_own_step(officer):
+    """#174: the outline from the start, saved sanitized, outline only until a section is written;
+    not on Details, and not for a display-only event."""
+    c = _as(officer)
+    ev = _build(c)
+    url = f"/events/{ev.pk}/manage/kbyg/"
+    body = c.get(url).content.decode()
+    assert "Where and when" in body and "tinymce" in body
+    assert "Know before you go</a>: outline only" in _bar(body)
+    assert (
+        "Know before you go"
+        not in c.get(f"/events/{ev.pk}/manage/details/")
+        .content.decode()
+        .split('<h2 id="det">', 1)[1]
+        .split("</section>", 1)[0]
+    )
+    html = "<h2>Where and when</h2><p>Room 101<script>alert(1)</script></p>"
+    r = c.post(url, {"kbyg_html": html})
+    assert r.status_code == 302 and r["Location"] == url
+    ev.refresh_from_db()
+    assert "Room 101" in ev.kbyg_html and "<script" not in ev.kbyg_html
+    assert "Know before you go</a>: written" in _bar(c.get(url).content.decode())
+    Event.objects.filter(pk=ev.pk).update(display_only=True)
+    assert "/manage/kbyg/" not in _bar(c.get(f"/events/{ev.pk}/manage/details/").content.decode())
+
+
+def test_a_drafts_publish_step_checks_every_step_first(officer):
+    """#175: a row per step, each linking to its step; a required step not done says so, and
+    publishing stays allowed. Once published, no check."""
+    c = _as(officer)
+    ev = _build(c)
+    url = f"/events/{ev.pk}/manage/publish/"
+    body = c.get(url).content.decode()
+    dl = body.split('<dl class="dl summary">', 1)[1].split("</dl>", 1)[0]
+    names = re.findall(r"<dt>([^<]+)</dt>", dl)
+    assert names == [
+        "Details",
+        "Operating periods",
+        "Locations",
+        "Slots",
+        "Sign-up rules",
+        "Contest details",
+        "Know before you go",
+        "Captains",
+    ]
+    links = re.findall(r'href="/events/\d+/manage/([a-z]+)/(?:#cap)?">Change', dl)
+    assert links == [
+        "details",
+        "periods",
+        "locations",
+        "slots",
+        "rules",
+        "contest",
+        "kbyg",
+        "publish",
+    ]
+    assert "Field Day, Contest" in dl and "1 period, " in dl and "Club station: Run, Mult" in dl
+    assert "Not done yet" not in dl
+    Slot.objects.filter(position__location__event=ev).delete()
+    dl = c.get(url).content.decode().split('<dl class="dl summary">', 1)[1]
+    assert '<dt>Slots</dt><dd class="missing"><span>Not done yet</span>' in dl
+    assert ">Publish</button>" in c.get(url).content.decode()
+    Event.objects.filter(pk=ev.pk).update(state=Event.State.PUBLISHED)
+    assert 'class="dl summary"' not in c.get(url).content.decode()
+
+
+def test_a_steps_own_forms_save_in_place(officer):
+    """#177: the listed forms carry the in-place attributes; an htmx save is a redirect htmx
+    follows to the step (not an HX-Redirect), and the step's messages come inside the swap."""
+    c = _as(officer)
+    ev = _build(c)
+    base = f"/events/{ev.pk}"
+    marked = {
+        "periods": 1,  # Remove on the period
+        "locations": 2,  # Remove on each position
+        "slots": 1,  # Save limits
+        "rules": 1,  # Save who may sign up (no opening yet)
+        "contest": 1,
+        "publish": 0,  # a draft: Publish is a page change; Remove on a lone captain is not offered
+    }
+    for step, n in marked.items():
+        body = c.get(f"{base}/manage/{step}/").content.decode()
+        assert body.count("data-in-place") == n, step
+    r = c.post(
+        f"{base}/limits/", {"max_hours_per_day": "6", "day_basis": "utc"}, HTTP_HX_REQUEST="true"
+    )
+    assert (
+        r.status_code == 302 and r["Location"] == f"{base}/manage/slots/" and "HX-Redirect" not in r
+    )
+    body = c.get(r["Location"]).content.decode()
+    stage = body.split('id="stage-body">', 1)[1]
+    assert 'id="messages"' in stage and 'id="stages"' in body
+    Event.objects.filter(pk=ev.pk).update(state=Event.State.PUBLISHED)
+    assert (
+        c.get(f"{base}/manage/publish/").content.decode().count("data-in-place") == 1
+    )  # Lock, Complete

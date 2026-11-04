@@ -119,9 +119,13 @@ def test_privacy_notice_is_public_and_linked():
     assert b'href="/privacy/"' in c.get("/").content
 
 
-def test_new_event_form_starts_with_kbyg_outline():
+def test_a_new_event_starts_with_the_kbyg_outline():
+    """FR-77: the outline is there from the start, on the event's own Know before you go step
+    (#174), where the editor is."""
     c, _ = _as("officer")
-    r = c.get("/events/new/")
+    r = c.post("/events/new/", {"title": "Outline", "type": "contest"})
+    pk = int(r["Location"].split("/")[2])
+    r = c.get(f"/events/{pk}/manage/kbyg/")
     assert r.status_code == 200
     assert b"Where and when" in r.content and b"Who to contact" in r.content
     assert b"tinymce.min.js" in r.content

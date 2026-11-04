@@ -1,0 +1,14 @@
+{% extends "events/stages/_layout.html" %}
+{% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
+{% block stage %}
+{% comment %}Know before you go, a step of its own (#174): a page with the editor, as Edit details
+is, because the editor's menus need the page (docs/INTERFACE.md).{% endcomment %}
+<section class="section" aria-labelledby="kbyg">
+  <h2 id="kbyg">Know before you go</h2>
+  {% if form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> Nothing was saved; correct the fields marked below.</p>{% endif %}
+  <form method="post" class="stack">{% csrf_token %}
+    {% include "events/forms/_field.html" with f=form.kbyg_html %}
+    <div><button type="submit">Save Know before you go</button></div>
+  </form>
+</section>
+{% endblock %}

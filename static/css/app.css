@@ -734,8 +734,14 @@ li.empty { list-style: none; margin-left: -1.25rem; }
   .stages li:not(:has([aria-current])) .cell { padding: var(--s1); }
   .stages li:not(:has([aria-current])) .txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
+/* The Publish step's check (#175): what each step holds, its Change link at the end of the row;
+   a required step not done in the warning color and bold, so not by color alone. */
+.dl.summary dd { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 var(--s3); }
+.dl.summary dd.missing > span { color: var(--warn); font-weight: 700; }
 /* One step, one column: sections one under another, prose at a readable measure. */
 .stage p, .stage .helptext { max-width: 34rem; }  /* about 80 characters of this face */
+/* Limits and the like: short numbers under long labels read better one a line (#176). */
+.stage .stack select { width: auto; min-width: 10rem; }
 .stage-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--line); }
 
 /* Everything that cannot be undone, in one place at the foot of the page, marked as such. */

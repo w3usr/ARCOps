@@ -5,7 +5,7 @@
   {% for l in locations %}
   <p><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %}, {{ l.address }}{% endif %}</p>
   <ul class="list">
-    {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}
+    {% for pos in l.positions.all %}<li>{{ pos.name }} <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}
   </ul>
   {% url 'position_add' event.pk l.pk as u %}<p>{% include "events/_dialog_link.html" with url=u label="Add position" %}</p>
   {% empty %}<p class="empty">No location yet. Add one. A position is one operating seat at a location, and each gets its own column of slots.</p>{% endfor %}

@@ -166,6 +166,25 @@ if ("serviceWorker" in navigator) {
   dlg.addEventListener("close", () => { body.innerHTML = ""; if (opener) opener.focus(); });
 })();
 
+// A step's own form saved in place (#177): htmx swaps the step and the bar, and focus would be
+// left on a button that no longer exists. Note which section the form was in before the request;
+// after the swap, focus the message if there is one, or else that section's heading.
+(() => {
+  let section = null;
+  document.addEventListener("htmx:beforeRequest", (ev) => {
+    const form = ev.detail.elt.closest && ev.detail.elt.closest("form[data-in-place]");
+    if (form) section = form.closest("section")?.getAttribute("aria-labelledby") || "";
+  });
+  document.addEventListener("htmx:afterSettle", () => {
+    if (section === null) return;
+    const stage = document.getElementById("stage-body");
+    const f = (stage && stage.querySelector(".messages")) || (section && document.getElementById(section))
+      || (stage && stage.querySelector("h2"));
+    section = null;
+    if (f) { f.setAttribute("tabindex", "-1"); f.focus(); }
+  });
+})();
+
 // A confirmation's button opens its dialog by itself (commandfor and command, in every browser
 // since late 2025). This does the same for an older one; a current browser never runs it.
 // Safari does not focus a button it clicks, so the browser has nothing to give focus back to

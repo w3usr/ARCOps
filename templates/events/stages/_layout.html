@@ -1,30 +1,34 @@
 {% extends "base.html" %}
-{% block title %}{{ step.name }} · Manage · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block title %}{% if event %}{{ step.name }} · Manage · {{ event.title }}{% else %}New event{% endif %} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block messages %}{% endblock %}
 {% block content %}
-<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
-<h1>Manage: {{ event.title }}</h1>
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a>{% if event %} › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a>{% endif %}</p>
+<h1>{% if event %}Manage: {{ event.title }}{% else %}New event{% endif %}</h1>
 
 {% comment %}Manage as steps under one progress bar (#172, SK 2026-11-03): each step a page of its own,
 drawn by the server, so it works with JavaScript off and can be linked to. The required steps are
 numbered because they are a sequence; the optional ones are not. Each step's state is a word as
 well as a mark, never color alone.{% endcomment %}
-<nav class="stages" aria-label="Setting up this event">
+<nav class="stages" id="stages" aria-label="Setting up this event">
   <ol>{% for s in steps %}
-    <li class="{% if s.done %}done{% elif s.next %}next{% elif not s.open %}later{% endif %}">{% if s.open %}<a class="cell" href="{% url 'event_step' event.pk s.key %}"{% if s.key == step.key %} aria-current="step"{% endif %}>{% else %}<span class="cell">{% endif %}<span class="mk" aria-hidden="true">{% if s.done %}&check;{% else %}{{ s.number }}{% endif %}</span><span class="txt"><span class="nm">{{ s.name }}</span><span class="st">{{ s.word }}</span></span>{% if s.open %}</a>{% else %}</span>{% endif %}</li>{% endfor %}
+    <li class="{% if s.done %}done{% elif s.next %}next{% elif not s.open %}later{% endif %}">{% if s.open and event %}<a class="cell" href="{% url 'event_step' event.pk s.key %}"{% if s.key == step.key %} aria-current="step"{% endif %}>{% else %}<span class="cell"{% if s.key == step.key %} aria-current="step"{% endif %}>{% endif %}<span class="mk" aria-hidden="true">{% if s.done %}&check;{% else %}{{ s.number }}{% endif %}</span><span class="txt"><span class="nm">{{ s.name }}</span><span class="st">{{ s.word }}</span></span>{% if s.open and event %}</a>{% else %}</span>{% endif %}</li>{% endfor %}
   </ol>
   {% if extras %}<ul class="opt" aria-label="Optional">{% for s in extras %}<li><a href="{% url 'event_step' event.pk s.key %}"{% if s.key == step.key %} aria-current="step"{% endif %}>{{ s.name }}</a>: {{ s.word|lower }}</li>{% endfor %}</ul>{% endif %}
 </nav>
 
+{% comment %}The messages go inside the step, so a form saved in place (#177) brings its message, or
+its refusal, with the swap.{% endcomment %}
 <div class="stage" id="stage-body">
+{% include "_messages.html" %}
 {% block stage %}{% endblock %}
 </div>
 {% if back or onward %}<p class="stage-foot">{% if back %}<a href="{% url 'event_step' event.pk back.key %}">Back to {{ back.name }}</a>{% endif %}{% if onward %}<a class="button secondary" href="{% url 'event_step' event.pk onward.key %}">Continue to {{ onward.name }}</a>{% endif %}</p>{% endif %}
 
-{% comment %}The dialog the buttons above open their forms in (#168): htmx fills it from the form's own
+{% if event %}{% comment %}The dialog the buttons above open their forms in (#168): htmx fills it from the form's own
 page, and each form posts back to it there. Escape or the close button closes it, and focus goes
 back to the button that opened it (app.js).{% endcomment %}
 <dialog id="manage-dialog" class="slot-dialog form-dialog" aria-labelledby="dialog-title">
   <button type="button" class="iconbtn dialog-close" data-close aria-label="Close">✕</button>
   <div class="dialog-body" id="manage-dialog-body" hx-target="this" hx-swap="innerHTML" hx-push-url="false"></div>
-</dialog>
+</dialog>{% endif %}
 {% endblock %}

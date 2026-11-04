@@ -65,8 +65,17 @@ def pages_for(role: str) -> list[str]:
     officer = [
         *(
             f"/events/{ev.pk}/manage/{t}/"
-            for t in ("details", "periods", "locations", "slots", "publish", "rules", "contest")
-        ),  # Manage in tabs (#167)
+            for t in (
+                "details",
+                "periods",
+                "locations",
+                "slots",
+                "publish",
+                "rules",
+                "contest",
+                "kbyg",
+            )
+        ),  # Manage as steps (#172, #174)
         *(
             f"/events/{ev.pk}/{f}/"
             for f in (

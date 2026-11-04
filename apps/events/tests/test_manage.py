@@ -32,12 +32,13 @@ def _build(c):
             "description_html": "",
             "rules_url": "",
             "min_license_class": "",
-            "kbyg_html": "",
-            "start": "2026-06-27T18:00",
-            "end": "2026-06-28T18:00",
         },
     )
     ev = Event.objects.get(title="Field Day")
+    # The first period is added on Operating periods like any other (#173).
+    c.post(
+        f"/events/{ev.pk}/periods/add/", {"start": "2026-06-27T18:00", "end": "2026-06-28T18:00"}
+    )
     c.post(
         f"/events/{ev.pk}/locations/add/",
         {"name": "Club station", "position": "Run", "is_club_station": "on"},

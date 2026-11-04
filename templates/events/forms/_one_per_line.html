@@ -1,0 +1,4 @@
+{% comment %}A form one field a line (#176): for a form of unrelated fields, such as Edit details,
+where fields side by side would read as a zig-zag. The dialogs keep _fields.html.{% endcomment %}
+{{ form.non_field_errors }}
+{% for f in form %}{% include "events/forms/_field.html" %}{% endfor %}

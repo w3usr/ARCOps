@@ -1,6 +1,13 @@
 {% extends "events/stages/_layout.html" %}
 {% block stage %}
 {% if event.state == 'draft' %}
+{% comment %}#175: before publishing, every step in one place, each with a link to change it
+(GOV.UK's Check answers). A required step not done says so; publishing stays allowed.{% endcomment %}
+<section class="section" aria-labelledby="sum">
+  <h2 id="sum">Summary</h2>
+  <dl class="dl summary">{% for r in summary %}<dt>{{ r.name }}</dt><dd{% if r.missing %} class="missing"{% endif %}><span>{{ r.value }}</span> <a href="{% url 'event_step' event.pk r.key %}{% if r.anchor %}#{{ r.anchor }}{% endif %}">Change<span class="sr-only"> {{ r.name|lower }}</span></a></dd>{% endfor %}</dl>
+</section>
+
 <section class="section" aria-labelledby="pub">
   <h2 id="pub">Publish</h2>
   <p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p>
@@ -14,7 +21,7 @@
   <h2 id="st">Status</h2>
   <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
   <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p>
-  <form method="post" action="{% url 'event_state' event.pk %}" class="inline">{% csrf_token %}
+  <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}
     {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">Lock the roster</button>{% endif %}
     {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
     {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">Mark completed</button>{% endif %}
@@ -32,7 +39,7 @@
   <h2 id="cap">Captains</h2>
   <ul class="list">
     {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
-      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
+      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
   {% if may_manage_events %}
   <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>

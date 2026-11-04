@@ -72,9 +72,6 @@ class EventForm(forms.ModelForm):
     def clean_description_html(self):
         return sanitise(self.cleaned_data.get("description_html") or "")
 
-    def clean_kbyg_html(self):
-        return sanitise(self.cleaned_data.get("kbyg_html") or "")
-
     class Meta:
         model = Event
         fields = [
@@ -83,7 +80,6 @@ class EventForm(forms.ModelForm):
             "description_html",
             "rules_url",
             "min_license_class",
-            "kbyg_html",
             "display_timezone",
             "reminder_hours_before",
             "display_only",
@@ -96,12 +92,8 @@ class EventForm(forms.ModelForm):
             "reminder_hours_before": "Reminder, hours before each slot",
             "display_only": "Display only: on the calendar, no roster (a net, a meeting)",
             "recurrence_text": "When it recurs, in words",
-            "kbyg_html": "Know before you go",
         }
-        widgets = {
-            "description_html": TinyMCE(attrs={"rows": 8}),  # FR-115
-            "kbyg_html": TinyMCE(attrs={"rows": 12}),
-        }
+        widgets = {"description_html": TinyMCE(attrs={"rows": 8})}  # FR-115
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("label_suffix", "")
@@ -124,9 +116,28 @@ class EventForm(forms.ModelForm):
         self.fields[
             "description_html"
         ].help_text = "Plain text or simple HTML; shown at the top of the event."
-        self.fields[
-            "kbyg_html"
-        ].help_text = "Shown under the roster: where to go, what to bring, who to call."
+
+
+class KbygForm(forms.ModelForm):
+    """Know before you go, a step of its own (#174): written last, once the location's
+    arrangements are known, and what participants read before they come."""
+
+    def clean_kbyg_html(self):
+        return sanitise(self.cleaned_data.get("kbyg_html") or "")
+
+    class Meta:
+        model = Event
+        fields = ["kbyg_html"]
+        labels = {"kbyg_html": "Know before you go"}
+        help_texts = {
+            "kbyg_html": "Shown under the roster and in each reminder: where to go, what to bring, "
+            "who to call. A heading with nothing under it is left out."
+        }
+        widgets = {"kbyg_html": TinyMCE(attrs={"rows": 16})}
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        super().__init__(*args, **kwargs)
 
 
 class PeriodForm(forms.Form):
@@ -367,29 +378,25 @@ def kbyg_outline() -> str:
 @login_required
 @require_http_methods(["GET", "POST"])
 def event_create(request):
+    """New event (#173): the Details step of an event not made yet. Saving makes the draft and
+    goes on to Operating periods; the first period is added there like any other."""
     if not request.user.may("manage_events"):
         raise Http404
-    form = EventForm(request.POST or None, initial={"kbyg_html": kbyg_outline()})
-    period = PeriodForm(request.POST or None)
-    if (
-        request.method == "POST"
-        and form.is_valid()
-        and (form.cleaned_data.get("display_only") or period.is_valid())
-    ):
+    form = EventForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
         event = form.save(commit=False)
         event.created_by = request.user
+        event.kbyg_html = kbyg_outline()  # FR-77: it starts with the outline (#174)
         event.save()
-        if period.is_valid():
-            OperatingPeriod.objects.create(
-                event=event, start=period.cleaned_data["start"], end=period.cleaned_data["end"]
-            )
         Captaincy.objects.get_or_create(event=event, user=request.user)
         record(request.user, "event.created", event, after={"title": event.title})
-        messages.success(
-            request, "Event created as a draft. Add its location and generate the slots."
-        )
-        return to_step(event.pk, "details")
-    return render(request, "events/form.html", {"form": form, "period": period})
+        messages.success(request, "Draft created.")
+        return to_step(event.pk, "periods")
+    return render(
+        request,
+        "events/stages/new.html",
+        {"event": None, "form": form, "steps": stages(None), "step": stages(None)[0]},
+    )
 
 
 @login_required
@@ -403,7 +410,21 @@ def event_manage(request, pk, step=None):
         return redirect("event_step", pk=pk, step=OLD_TABS[step], permanent=True)
     if step not in STEP_NAMES:
         raise Http404
+    if step == "kbyg":
+        return _kbyg(request, event)
     return _step_page(request, event, step)
+
+
+def _kbyg(request, event):
+    """The Know before you go step: a page with the editor, as Edit details is (its menus need
+    the page, docs/INTERFACE.md), saved here and back to the step."""
+    form = KbygForm(request.POST or None, instance=event)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        record(request.user, "event.edited", event, after={"kbyg_html": "changed"})
+        messages.success(request, "Saved.")
+        return to_step(event.pk, "kbyg")
+    return _step_page(request, event, "kbyg", form=form)
 
 
 @login_required
@@ -433,6 +454,7 @@ def event_edit(request, pk):
         heading="Edit details",
         submit="Save details",
         step="details",
+        fields="events/forms/_one_per_line.html",  # unrelated fields: one a line (#176)
         editor=True,
     )
 
@@ -441,9 +463,6 @@ def _details(event) -> list[tuple[str, str]]:
     """Setup's read of the event's details, label and value, in the form's order (#168)."""
     from apps.ops.templatetags.richtext import richtext
 
-    from .services.notify import drop_empty_sections
-
-    kbyg = re.findall(r"<h[1-6][^>]*>(.*?)</h[1-6]>", drop_empty_sections(event.kbyg_html))
     rows = [
         ("Title", event.title),
         ("Type", dict(_types()).get(event.type, event.type)),
@@ -462,12 +481,74 @@ def _details(event) -> list[tuple[str, str]]:
             event.reminder_hours_before
             or f"The club's default ({setting('defaults.reminder_hours_before', 24)})",
         ),
-        ("Know before you go", ", ".join(kbyg) if kbyg else "Nothing filled in yet"),
     ]
     if event.display_only:
         rows.append(
             ("Display only", f"Yes: on the calendar, no roster. {event.recurrence_text}".strip())
         )
+    return rows
+
+
+def _summary(event, steps, captains) -> list[dict]:
+    """The Publish step's check of every step while the event is a draft (#175; GOV.UK's Check
+    answers): one row per step, what it holds, and a link to change it. A required step not done
+    reads "Not done yet"; publishing stays allowed, as it was."""
+    from apps.ops.templatetags.labels import role_label
+
+    def fmt(t):
+        return f"{t:%a %d %b %H:%M}"
+
+    periods = list(event.periods.order_by("start"))
+    span = (
+        f"{len(periods)} period{pluralize(len(periods))}, {fmt(periods[0].start)} to "
+        f"{fmt(max(p.end for p in periods))} UTC"
+        if periods
+        else ""
+    )
+    places = "; ".join(
+        f"{loc.name}: {', '.join(p.name for p in loc.positions.all())}"
+        for loc in event.locations.prefetch_related("positions").order_by("order")
+    )
+    slots = Slot.objects.filter(position__location__event=event, cancelled=False).count()
+    held = f"{slots} slot{pluralize(slots)}" if slots else ""
+    lim = getattr(event, "limit", None)
+    limits = [
+        f"{lim.max_hours_per_day:g} h a day" if lim and lim.max_hours_per_day else "",
+        f"{lim.max_total_hours:g} h in all" if lim and lim.max_total_hours else "",
+        f"breaks of {lim.min_break_minutes} min" if lim and lim.min_break_minutes else "",
+    ]
+    if held and any(limits):
+        held += "; limits: " + ", ".join(x for x in limits if x)
+    rules = event.eligibility_rules.filter(slot__isnull=True)
+    openings = event.openings.count()
+    said = (
+        [f"who may sign up set for {', '.join(role_label(r.role) for r in rules)}"] if rules else []
+    )
+    said += [f"{openings} opening{pluralize(openings)}"] if openings else []
+    holds = {
+        "details": f"{event.title}, {dict(_types()).get(event.type, event.type)}",
+        "periods": span,
+        "locations": places,
+        "slots": held,
+        "rules": "; ".join(said).capitalize() if said else "Club defaults",
+    }
+    rows = []
+    for st in steps:
+        if st["key"] == "publish":
+            continue
+        value = holds.get(st["key"]) or st["word"]
+        if st["key"] in ("details", "periods", "locations", "slots") and not holds[st["key"]]:
+            value = "None" if st.get("optional") else "Not done yet"
+        rows.append(
+            {
+                "key": st["key"],
+                "name": st["name"],
+                "value": value,
+                "missing": value == "Not done yet",
+            }
+        )
+    names = ", ".join(c.user.full_name for c in captains) or "None"
+    rows.append({"key": "publish", "name": "Captains", "value": names, "anchor": "cap"})
     return rows
 
 
@@ -483,18 +564,30 @@ STEP_NAMES = {
     "publish": "Publish",
     "rules": "Sign-up rules",
     "contest": "Contest details",
+    "kbyg": "Know before you go",
 }
 # The tabs' addresses before #172: bookmarks and pages left open still land.
 OLD_TABS = {"setup": "details", "status": "publish"}
 LIVE = (Event.State.PUBLISHED, Event.State.LOCKED, Event.State.COMPLETED)
 
 
-def stages(event, positions: bool, slot_count: int) -> list[dict]:
+def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
     """Every step of setting `event` up, in order: the required ones numbered, then the optional.
 
     Each says whether it is done, whether it can be opened yet, and one word of state. A
     display-only event (a net, a meeting) has no roster, so no locations, slots or sign-up rules,
-    and an operating period is optional for it."""
+    and an operating period is optional for it. With no event, it is one being created (#173):
+    Details is the step you are on, and nothing else can be opened until it is saved."""
+    if event is None:
+        new = [
+            {"key": k, "done": False, "open": k == "details", "after": "Details"}
+            for k in STEP_NAMES
+        ]
+        new = [s for s in new if s["key"] not in ("rules", "contest", "kbyg")]
+        for n, s in enumerate(new, 1):
+            s.update(name=STEP_NAMES[s["key"]], number=n, next=s["key"] == "details")
+            s["word"] = "Next" if s["open"] else "After Details"
+        return new
     periods = event.periods.exists()
     shown_only = event.display_only
     steps = [
@@ -537,6 +630,10 @@ def stages(event, positions: bool, slot_count: int) -> list[dict]:
         filled = bool(event.contest_fields or event.calendar_ref)
         if event.type == "contest" or filled:
             extras.append({"key": "contest", "word": "Filled in" if filled else "Not filled in"})
+        from .services.notify import drop_empty_sections
+
+        written = bool(re.sub(r"<[^>]+>|&nbsp;|\s", "", drop_empty_sections(event.kbyg_html or "")))
+        extras.append({"key": "kbyg", "word": "Written" if written else "Outline only"})
     for s in extras:
         s.update(name=STEP_NAMES[s["key"]], optional=True, extra=True, open=True)
     return steps + extras
@@ -555,7 +652,7 @@ def _landing(event) -> str:
     return nxt["key"] if nxt else "publish"
 
 
-def _step_page(request, event, step):
+def _step_page(request, event, step, **extra):
     """One step of Manage. Its forms are pages of their own (#168), so it binds none."""
     positions = (
         Position.objects.filter(location__event=event)
@@ -564,6 +661,7 @@ def _step_page(request, event, step):
     )
     slot_count = Slot.objects.filter(position__location__event=event, cancelled=False).count()
     all_steps = stages(event, positions.exists(), slot_count)
+    captains = event.captaincies.select_related("user").order_by("user__last_name")
     here = next((s for s in all_steps if s["key"] == step), None)
     if here is None or not here["open"]:
         raise Http404
@@ -586,7 +684,7 @@ def _step_page(request, event, step):
             "periods": event.periods.order_by("start"),
             "locations": event.locations.prefetch_related("positions").order_by("order"),
             "positions": positions,
-            "captains": event.captaincies.select_related("user").order_by("user__last_name"),
+            "captains": captains,
             # Appointing captains (§2.2) and cancelling the event (SK, 2026-10-15) are officers'.
             "may_manage_events": request.user.may("manage_events"),
             "slot_count": slot_count,
@@ -596,6 +694,10 @@ def _step_page(request, event, step):
                 "apps.events.contest_fields", fromlist=["CONTEST_FIELDS"]
             ).CONTEST_FIELDS,
             **rules_context(event),
+            "summary": _summary(event, all_steps, captains)
+            if step == "publish" and event.state == Event.State.DRAFT
+            else None,
+            **extra,
         },
     )
 
@@ -998,7 +1100,7 @@ def event_duplicate(request, pk):
     copy = duplicate_event(event, request.user)
     record(request.user, "event.duplicated", copy, before={"from": event.pk})
     messages.success(request, "Copied as a draft. Fix the dates, then generate or keep the slots.")
-    return to_step(copy.pk, "details")
+    return to_step(copy.pk, "periods")
 
 
 @login_required

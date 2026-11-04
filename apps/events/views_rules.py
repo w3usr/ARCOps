@@ -48,6 +48,18 @@ class LimitForm(forms.ModelForm):
             "max_total_hours": "Maximum on-air hours for the event",
             "min_break_minutes": "Shortest break that counts as off time (minutes)",
         }
+        # Sized to what they hold, one a line (#176); a decimal keypad for the hours.
+        widgets = {
+            "max_hours_per_day": forms.TextInput(
+                attrs={"inputmode": "decimal", "class": "num", "size": 4}
+            ),
+            "max_total_hours": forms.TextInput(
+                attrs={"inputmode": "decimal", "class": "num", "size": 5}
+            ),
+            "min_break_minutes": forms.TextInput(
+                attrs={"inputmode": "numeric", "class": "num", "size": 3}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("label_suffix", "")

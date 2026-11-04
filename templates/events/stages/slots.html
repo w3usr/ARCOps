@@ -14,8 +14,8 @@
 <section class="section" aria-labelledby="lim">
   <h2 id="lim">Operating limits</h2>
   <p class="helptext">Advisory: the roster marks slots that push a day or the event past a limit and never refuses. School Club Roundup: 6 hours of 24, 24 of the event, breaks of 10 minutes.</p>
-  <form method="post" action="{% url 'limits_save' event.pk %}" class="stack">{% csrf_token %}
-    <div class="row">{% for f in limit_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}</div>
+  <form method="post" action="{% url 'limits_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">{% csrf_token %}
+    {% for f in limit_form %}<div class="field">{{ f.label_tag }}{{ f }}{{ f.errors }}</div>{% endfor %}
     <div><button type="submit">Save limits</button></div>
   </form>
   {% if limits.days %}<p class="muted">Scheduled: {% for d in limits.days %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over)</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}; total {{ limits.total|floatformat:"-1" }} h{% if limits.total_limit %} of {{ limits.total_limit|floatformat:"-1" }}{% endif %}{% if limits.over_total %} <strong>(over)</strong>{% endif %}.</p>{% endif %}

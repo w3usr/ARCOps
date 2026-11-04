@@ -462,9 +462,6 @@ def test_display_only_event_has_no_roster_and_lists_as_regular():
             "description_html": "",
             "rules_url": "",
             "min_license_class": "",
-            "kbyg_html": "",
-            "start": "",
-            "end": "",
         },
     )
     assert (
