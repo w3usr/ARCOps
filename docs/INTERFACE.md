@@ -204,21 +204,27 @@ inside a dialog already (the slot's override): a short confirmation may open ove
 
 ## A page that edits many things
 
-**A page that edits more than a few things is split into tabs that are links** (SK, 2026-11-02,
-#167). Manage was one page of fourteen sections and about fifteen forms, every one open on every
-visit; it is now Setup, Slots, Sign-up rules, Contest and Status.
+**A page that edits more than a few things is split into steps under one progress bar** (SK,
+2026-11-03, #172; it replaced #167's tabs of 2026-11-02). Manage was one page of fourteen sections
+and about fifteen forms; it is now Details, Operating periods, Locations, Slots and Publish, with
+Sign-up rules and Contest details as optional steps beside them. Tabs and a guide to what to do
+next had been two lists of one page, and they drifted apart; one list cannot.
 
-- Each tab is a page of its own, at its own address, drawn by the server: a list of links with
-  `aria-current="page"` on the one you are on, not a script-driven tablist. It works with
-  JavaScript off, and a tab can be linked to.
-- Saving a form returns to the tab it was on, and a form that comes back with an error comes
-  back on its own tab, with everything typed (Forms, above).
-- Where the page has a guide to what to do next, it stays above the tabs, and each step links to
-  its tab; the page's own address opens on the step to do next.
-- **A small form opens in a dialog** (SK, 2026-11-02, #168): a button on the tab, and the form in
+- Each step is a page of its own, at its own address, drawn by the server: a list of links with
+  `aria-current="step"` on the one you are on. It works with JavaScript off, and a step can be
+  linked to. The page's own address opens on the first required step not done, else the last.
+- The bar is one strip of square marks: a check when a step is done, the next step outlined in the
+  club's color, a dashed mark for a step that cannot be opened yet (not a link). Under each name
+  is one word of state (*Done*, *Next*, *To do*, *After Locations*), so color is never the only
+  sign. Required steps are numbered; optional ones are not, because they are not a sequence.
+- Each step ends with **Back to** the step before (a link) and **Continue to** the next (an
+  outlined button), left out when the next cannot be opened yet.
+- Saving a form returns to the step it was on, and a form that comes back with an error comes
+  back on its own step, with everything typed (Forms, above).
+- **A small form opens in a dialog** (SK, 2026-11-02, #168): a button on the step, and the form in
   a dialog over it. Every dialog keeps a page of its own behind it: the button is a link to that
   page, and htmx opens it in the dialog instead when it can. A refusal comes back inside the
-  dialog with everything typed; a save closes it by loading the tab, with its message. Focus goes
+  dialog with everything typed; a save closes it by loading the step, with its message. Focus goes
   into the dialog on opening, to the problem on a refusal, and back to the button on closing.
 - **What is read first is read, then edited**: the event's details show as label and value, and
   **Edit details** opens the form. A form with a rich text editor is a page, not a dialog: the

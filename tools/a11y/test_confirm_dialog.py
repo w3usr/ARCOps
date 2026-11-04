@@ -16,7 +16,7 @@ def test_the_danger_zone_confirms_in_a_dialog(live_server, engine):
     from apps.events.models import Event
 
     ev = Event.objects.order_by("pk").first()
-    status = f"{live_server.url}/events/{ev.pk}/manage/status/"
+    status = f"{live_server.url}/events/{ev.pk}/manage/publish/"
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
         page = browser.new_page(viewport={"width": 1280, "height": 900})

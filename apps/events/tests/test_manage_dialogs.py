@@ -1,6 +1,6 @@
 """Manage's small forms open in a dialog (#168, SK 2026-11-02): each a page of its own, which htmx
 fetches into the dialog; a refusal comes back there with what was typed, a save sends the page
-behind to its tab. The event's details are read on Setup and edited on a page."""
+behind to its step (#172). The event's details are read on Details and edited on a page."""
 
 import re
 
@@ -19,10 +19,10 @@ HX = {"HTTP_HX_REQUEST": "true"}
 def _forms(ev, loc_pk):
     base = f"/events/{ev.pk}"
     return {
-        "periods/add": ("setup", "Add an operating period"),
-        "locations/add": ("setup", "Add a location"),
-        f"locations/{loc_pk}/positions/add": ("setup", "Add a position at Club station"),
-        "captains/add": ("setup", "Appoint a captain"),
+        "periods/add": ("periods", "Add an operating period"),
+        "locations/add": ("locations", "Add a location"),
+        f"locations/{loc_pk}/positions/add": ("locations", "Add a position at Club station"),
+        "captains/add": ("publish", "Appoint a captain"),
         "slots/generate": ("slots", "Generate slots"),
         "slots/add": ("slots", "Add a slot"),
         "openings/add": ("rules", "Add an opening"),
@@ -48,12 +48,12 @@ def test_each_form_is_a_page_and_a_dialog(officer):
         assert "HX-Request" in part["Vary"]
 
 
-def test_each_tab_opens_its_forms_from_buttons_in_one_dialog(officer):
+def test_each_step_opens_its_forms_from_buttons_in_one_dialog(officer):
     c = _as(officer)
     ev = _build(c)
     forms, base = _forms(ev, ev.locations.get().pk)
     seen = set()
-    for tab in ("setup", "slots", "rules"):
+    for tab in ("periods", "locations", "slots", "rules", "publish"):
         body = c.get(f"{base}/manage/{tab}/").content.decode()
         assert body.count('<dialog id="manage-dialog"') == 1
         for href, target in re.findall(
@@ -65,7 +65,7 @@ def test_each_tab_opens_its_forms_from_buttons_in_one_dialog(officer):
     assert seen == set(forms)
     assert (
         "<form"
-        not in c.get(f"{base}/manage/setup/")
+        not in c.get(f"{base}/manage/periods/")
         .content.decode()
         .split('aria-labelledby="per"', 1)[1]
         .split("</ul>", 1)[1]
@@ -73,16 +73,16 @@ def test_each_tab_opens_its_forms_from_buttons_in_one_dialog(officer):
     )
 
 
-def test_a_save_from_the_dialog_sends_the_page_to_its_tab(officer):
+def test_a_save_from_the_dialog_sends_the_page_to_its_step(officer):
     c = _as(officer)
     ev = _build(c)
     url = f"/events/{ev.pk}/periods/add/"
     data = {"start": "2026-07-01T18:00", "end": "2026-07-01T20:00"}
     r = c.post(url, data, **HX)
-    assert r.status_code == 200 and r["HX-Redirect"] == f"/events/{ev.pk}/manage/setup/"
+    assert r.status_code == 200 and r["HX-Redirect"] == f"/events/{ev.pk}/manage/periods/"
     assert ev.periods.count() == 2
     r = c.post(url, {"start": "2026-07-02T18:00", "end": "2026-07-02T20:00"})
-    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/setup/"
+    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/periods/"
 
 
 def test_a_refusal_comes_back_in_the_dialog_with_what_was_typed(officer):
@@ -106,7 +106,7 @@ def test_a_refusal_comes_back_in_the_dialog_with_what_was_typed(officer):
 def test_the_details_are_read_on_setup_and_edited_on_their_page(officer):
     c = _as(officer)
     ev = _build(c)
-    setup = c.get(f"/events/{ev.pk}/manage/setup/").content.decode()
+    setup = c.get(f"/events/{ev.pk}/manage/details/").content.decode()
     det = setup.split('<h2 id="det">Details</h2>', 1)[1].split("</section>", 1)[0]
     assert "<dt>Title</dt><dd>Field Day</dd>" in det and "<form" not in det
     assert f'href="/events/{ev.pk}/details/">Edit details</a>' in det
@@ -115,7 +115,7 @@ def test_the_details_are_read_on_setup_and_edited_on_their_page(officer):
     form = {"title": "Field Day 2026", "type": "contest", "reminder_hours_before": "24"}
     r = c.post(f"/events/{ev.pk}/details/", form)
     ev.refresh_from_db()
-    assert r["Location"] == f"/events/{ev.pk}/manage/setup/" and ev.title == "Field Day 2026"
+    assert r["Location"] == f"/events/{ev.pk}/manage/details/" and ev.title == "Field Day 2026"
     r = c.post(f"/events/{ev.pk}/details/", form | {"title": ""})
     assert r.status_code == 200 and "Problem:" in r.content.decode()
 
@@ -189,7 +189,9 @@ def test_a_member_captain_cannot_open_the_captain_form(officer):
     )
     c.post(f"/events/{ev.pk}/captains/add/", {"user": mem.pk})
     assert _as(mem).get(f"/events/{ev.pk}/captains/add/").status_code == 404
-    assert "Appoint captain" not in _as(mem).get(f"/events/{ev.pk}/manage/setup/").content.decode()
+    assert (
+        "Appoint captain" not in _as(mem).get(f"/events/{ev.pk}/manage/publish/").content.decode()
+    )
     assert (
         Event.objects.filter(pk=ev.pk).exists()
         and OperatingPeriod.objects.filter(event=ev).exists()

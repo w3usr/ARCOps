@@ -1,8 +1,8 @@
 """Manage's forms open in a dialog (#168), and work as pages without JavaScript.
 
 Focus goes into the dialog on opening, to the problem when a form is refused, and back to the
-button on closing; a save lands on the tab with its message. With JavaScript off the button is a
-link to the form's page, which posts and comes back to the tab.
+button on closing; a save lands on the step with its message. With JavaScript off the button is a
+link to the form's page, which posts and comes back to the step.
 """
 
 import pytest
@@ -20,7 +20,7 @@ def _event():
 
 def test_a_form_opens_in_the_dialog_keeps_focus_and_comes_back(live_server, engine):
     ev = _event()
-    setup = f"{live_server.url}/events/{ev.pk}/manage/setup/"
+    setup = f"{live_server.url}/events/{ev.pk}/manage/periods/"
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
         page = browser.new_page(viewport={"width": 1280, "height": 900})
@@ -78,7 +78,7 @@ def test_the_generator_says_what_it_will_make_as_the_fields_change(live_server, 
 
 def test_without_javascript_the_button_is_the_forms_page(live_server, engine):
     ev = _event()
-    setup = f"{live_server.url}/events/{ev.pk}/manage/setup/"
+    setup = f"{live_server.url}/events/{ev.pk}/manage/periods/"
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
         ctx = browser.new_context(

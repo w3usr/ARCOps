@@ -1,0 +1,8 @@
+{% extends "events/stages/_layout.html" %}
+{% block stage %}
+<section class="section" aria-labelledby="det">
+  <h2 id="det">Details</h2>
+  <dl class="dl">{% for label, value in details %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>
+  <p><a class="button secondary" href="{% url 'event_edit' event.pk %}">Edit details</a></p>
+</section>
+{% endblock %}

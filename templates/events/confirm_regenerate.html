@@ -7,7 +7,7 @@
 <form method="post" action="{% url 'slots_generate' event.pk %}"{% if partial %} hx-post="{% url 'slots_generate' event.pk %}"{% endif %}>{% csrf_token %}
   {% for name, value in fields %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
   <input type="hidden" name="confirmed" value="yes">
-  {% if partial %}<button type="button" class="secondary" data-close>Keep the grid</button>{% else %}<a class="button" href="{% url 'event_manage_tab' event.pk 'slots' %}">Keep the grid</a>{% endif %}
+  {% if partial %}<button type="button" class="secondary" data-close>Keep the grid</button>{% else %}<a class="button" href="{% url 'event_step' event.pk 'slots' %}">Keep the grid</a>{% endif %}
   <button type="submit" class="danger">Replace the grid</button>
 </form>
 {% endblock %}

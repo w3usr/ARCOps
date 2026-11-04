@@ -1,0 +1,12 @@
+{% extends "events/stages/_layout.html" %}
+{% block stage %}
+<section class="section" aria-labelledby="per">
+  <h2 id="per">Operating periods</h2>
+  <ul class="list">
+    {% for p in periods %}<li>{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC
+      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>
+    {% empty %}<li class="empty">No operating period yet. Add one; the slots are generated inside it.</li>{% endfor %}
+  </ul>
+  {% url 'period_add' event.pk as u %}<p>{% include "events/_dialog_link.html" with url=u label="Add period" %}</p>
+</section>
+{% endblock %}

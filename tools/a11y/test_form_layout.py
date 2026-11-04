@@ -53,7 +53,8 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
     ev = Event.objects.order_by("pk").first()
     slot = Slot.objects.filter(position__location__event=ev, kind="operating").order_by("start")
     tabs = [
-        f"/events/{ev.pk}/manage/{t}/" for t in ("setup", "slots", "rules", "contest", "status")
+        f"/events/{ev.pk}/manage/{t}/"
+        for t in ("details", "periods", "locations", "slots", "publish", "rules", "contest")
     ]  # Manage in tabs (#167)
     forms = [  # each form's own page (#168)
         f"/events/{ev.pk}/{f}/"

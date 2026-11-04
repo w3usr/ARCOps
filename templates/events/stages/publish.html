@@ -1,0 +1,69 @@
+{% extends "events/stages/_layout.html" %}
+{% block stage %}
+{% if event.state == 'draft' %}
+<section class="section" aria-labelledby="pub">
+  <h2 id="pub">Publish</h2>
+  <p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p>
+  <form method="post" action="{% url 'event_publish' event.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="from" value="manage">
+    <div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div>
+    <div><button type="submit">Publish</button></div>
+  </form>
+</section>
+{% else %}
+<section class="section" aria-labelledby="st">
+  <h2 id="st">Status</h2>
+  <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
+  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p>
+  <form method="post" action="{% url 'event_state' event.pk %}" class="inline">{% csrf_token %}
+    {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">Lock the roster</button>{% endif %}
+    {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
+    {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">Mark completed</button>{% endif %}
+  </form>
+  {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="linklike">Take it back to draft</button></form>{% endif %}
+</section>
+
+<section class="section" aria-labelledby="ann">
+  <h2 id="ann">Announce</h2>
+  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation.</span></p>
+</section>
+{% endif %}
+
+<section class="section" aria-labelledby="cap">
+  <h2 id="cap">Captains</h2>
+  <ul class="list">
+    {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
+      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
+  </ul>
+  {% if may_manage_events %}
+  <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>
+  {% url 'captain_add' event.pk as u %}<p>{% include "events/_dialog_link.html" with url=u label="Appoint captain" %}</p>
+  {% else %}
+  <p class="helptext">An officer appoints and removes captains.</p>
+  {% endif %}
+</section>
+
+<section class="section" aria-labelledby="more">
+  <h2 id="more">Another copy</h2>
+  <p class="helptext">A draft copy with the same periods, locations, and slot grid, and nobody signed up. For next year's running, or a similar event.</p>
+  <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button></form>
+</section>
+
+{% if event.state != 'cancelled' and not may_manage_events %}
+<p class="helptext">An officer can cancel this event.</p>
+{% elif event.state != 'cancelled' %}
+<section class="card dangerzone" aria-labelledby="dz">
+  <h2 id="dz">Danger zone</h2>
+  <div class="dz-row"><div><h3>Cancel this event</h3><p class="helptext">Off the calendar, every sign-up withdrawn and everyone told. Cannot be undone.</p></div>
+    <button type="button" class="danger-outline" commandfor="dz-cancel" command="show-modal">Cancel event</button></div>
+  <dialog id="dz-cancel" class="slot-dialog confirm-dialog" aria-labelledby="dz-cancel-h">
+    <h2 id="dz-cancel-h">Cancel this event?</h2>
+    <p>The event comes off the calendar and every sign-up for it is withdrawn. Everyone signed up is told, with your reason. It cannot be undone; the event stays in the record.</p>
+    <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
+      <div class="field"><label for="cancel-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="cancel-reason" name="reason" maxlength="300" required><span class="helptext">Sent to everyone signed up.</span></div>
+      <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I understand this cannot be undone</label></div>
+      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-cancel" command="close">Keep the event</button> <button type="submit" class="danger">Cancel the event</button></div>
+    </form>
+  </dialog>
+</section>
+{% endif %}
+{% endblock %}

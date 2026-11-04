@@ -16,7 +16,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.labels import role_label
 
-from .form_pages import done, form_page, tab_url
+from .form_pages import done, form_page, step_url
 from .models import EligibilityRule, Event, Opening, OperatingLimit, Slot
 from .services.lifecycle import set_state
 
@@ -35,7 +35,7 @@ def event_state(request, pk):
         messages.success(request, set_state(request.user, event, request.POST.get("what", "")))
     except ValueError as exc:
         messages.error(request, str(exc).capitalize() + ".")
-    return redirect("event_manage_tab", pk=pk, tab="status")
+    return redirect("event_step", pk=pk, step="publish")
 
 
 class LimitForm(forms.ModelForm):
@@ -83,7 +83,7 @@ def limits_save(request, pk):
         )
     else:
         messages.error(request, "; ".join(e for errs in form.errors.values() for e in errs))
-    return redirect("event_manage_tab", pk=pk, tab="slots")
+    return redirect("event_step", pk=pk, step="slots")
 
 
 def _rule_from_post(post, role: str) -> dict:
@@ -130,7 +130,7 @@ def eligibility_save(request, pk):
         changed[role] = d
     record(request.user, "event.eligibility", event, after=changed)
     messages.success(request, "Who may sign up: saved.")
-    return redirect("event_manage_tab", pk=pk, tab="rules")
+    return redirect("event_step", pk=pk, step="rules")
 
 
 @login_required
@@ -199,7 +199,7 @@ def opening_add(request, pk):
             form,
             heading="Add an opening",
             submit="Add opening",
-            tab="rules",
+            step="rules",
             intro="When a role opens, and to whom. List several to open a role to students "
             "first and everyone later.",
         )
@@ -223,7 +223,7 @@ def opening_add(request, pk):
         request,
         f"{o.role.capitalize()} opens {opens:%d %b %H:%M}Z to {', '.join(o.categories) or 'everyone'}.",
     )
-    return done(request, tab_url(pk, "rules"))
+    return done(request, step_url(pk, "rules"))
 
 
 @login_required
@@ -233,7 +233,7 @@ def opening_delete(request, pk, opening_id):
     _captain_or_404(request.user, event)
     Opening.objects.filter(pk=opening_id, event=event).delete()
     messages.success(request, "Opening removed.")
-    return redirect("event_manage_tab", pk=pk, tab="rules")
+    return redirect("event_step", pk=pk, step="rules")
 
 
 def rules_context(event) -> dict:
@@ -271,4 +271,4 @@ def contest_save(request, pk):
         request.user, "event.contest_fields", event, after={"fields": sorted(event.contest_fields)}
     )
     messages.success(request, "Contest details saved.")
-    return redirect("event_manage_tab", pk=pk, tab="contest")
+    return redirect("event_step", pk=pk, step="contest")

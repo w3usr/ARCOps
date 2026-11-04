@@ -79,12 +79,12 @@ def test_members_are_kept_out_and_captains_let_in(officer):
         last_name="M",
     )
     cm = _as(mem)
-    assert cm.get(f"/events/{ev.pk}/manage/setup/").status_code == 404
+    assert cm.get(f"/events/{ev.pk}/manage/details/").status_code == 404
     assert cm.get("/events/new/").status_code == 404
     c.post(f"/events/{ev.pk}/captains/add/", {"user": mem.pk})
-    assert cm.get(f"/events/{ev.pk}/manage/setup/").status_code == 200
+    assert cm.get(f"/events/{ev.pk}/manage/details/").status_code == 200
     c.post(f"/events/{ev.pk}/captains/{mem.pk}/remove/")
-    assert cm.get(f"/events/{ev.pk}/manage/setup/").status_code == 404
+    assert cm.get(f"/events/{ev.pk}/manage/details/").status_code == 404
 
 
 def test_only_an_officer_appoints_or_removes_captains(officer):
@@ -100,8 +100,8 @@ def test_only_an_officer_appoints_or_removes_captains(officer):
     )
     c.post(f"/events/{ev.pk}/captains/add/", {"user": mem.pk})
     cm = _as(mem)
-    body = cm.get(f"/events/{ev.pk}/manage/setup/").content.decode()
-    body += cm.get(f"/events/{ev.pk}/manage/status/").content.decode()
+    body = cm.get(f"/events/{ev.pk}/manage/details/").content.decode()
+    body += cm.get(f"/events/{ev.pk}/manage/publish/").content.decode()
     assert "Appoint captain" not in body and "An officer appoints and removes captains." in body
     assert cm.post(f"/events/{ev.pk}/captains/add/", {"user": other.pk}).status_code == 404
     assert cm.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/").status_code == 404
@@ -118,7 +118,7 @@ def test_the_last_captain_cannot_be_removed(officer):
     ev = _build(c)
     c.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/")
     assert ev.captaincies.filter(user=officer).exists()
-    assert "Appoint captain" in c.get(f"/events/{ev.pk}/manage/setup/").content.decode()
+    assert "Appoint captain" in c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
 
 
 def test_the_event_form_says_preferred_license_class(officer):

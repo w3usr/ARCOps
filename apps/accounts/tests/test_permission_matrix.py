@@ -187,7 +187,7 @@ def _pages(world):
         ("announce to all", "/announce/", {"anonymous": AWAY, **officer_up}),
         ("outbox", "/ops/outbox/", {"anonymous": AWAY, **officer_up}),
         ("new event", "/events/new/", {"anonymous": AWAY, **officer_up}),
-        ("manage event", f"/events/{ev}/manage/setup/", {"anonymous": AWAY, **officer_up}),
+        ("manage event", f"/events/{ev}/manage/details/", {"anonymous": AWAY, **officer_up}),
         ("event health", "/events/health/", {"anonymous": AWAY, **officer_up}),
         ("participation", f"/events/{ev}/participation/", {"anonymous": AWAY, **officer_up}),
         ("member roster", "/members/roster/", {"anonymous": AWAY, **officer_up}),

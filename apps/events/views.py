@@ -342,6 +342,9 @@ def publish(request, pk):
         messages.error(
             request, "A published event with sign-ups can only be canceled, not unpublished."
         )
+    # The Publish step of Manage posts here too (#172), and goes back to it.
+    if request.POST.get("from") == "manage":
+        return redirect("event_step", pk=pk, step="publish")
     return redirect("event_detail", pk=pk)
 
 
