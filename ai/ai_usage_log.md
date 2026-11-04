@@ -4563,3 +4563,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and docs. Verified: application tests 512 passed; lint passes; the accessibility sweep in Chromium and WebKit 54 passed, 1 skipped; screenshots of My schedule at 1280 and 390 px compared by eye; acceptance T11 to T14, T17, T20, T31, T37, T41, T46 and T47 pass locally (private repo, testing/runs/2026-11-03_153219-w3usr; T20 step 4 now checks the footer's background and that it starts where the sidebar ends).
 - **Human Review Status**: Pending review
 - **Git Hash**: d83a2b6
+
+## [2026-11-03 20:12 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: On a phone, New event's first operating period ran off the screen (SK, 2026-11-03).
+- **Sections/Files Affected**: static/css/app.css (fieldset min-width 0; date and time inputs may shrink; on iOS only, through @supports (-webkit-touch-callout: none), their native look off so the width holds, with a minimum height).
+- **Nature of Contribution**: Code (CSS). Not reproduced here: Playwright's WebKit and Chromium at 390 px keep both fields inside the fieldset, so the fix follows iPhone Safari's known behaviour (a date box at a natural width that ignores width: 100%) and is to be checked on SK's phone on dev. Verified: the phone-layout, form-layout and axe checks in Chromium and WebKit, 26 passed.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
