@@ -4570,4 +4570,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (fieldset min-width 0; date and time inputs may shrink; on iOS only, through @supports (-webkit-touch-callout: none), their native look off so the width holds, with a minimum height).
 - **Nature of Contribution**: Code (CSS). Not reproduced here: Playwright's WebKit and Chromium at 390 px keep both fields inside the fieldset, so the fix follows iPhone Safari's known behaviour (a date box at a natural width that ignores width: 100%) and is to be checked on SK's phone on dev. Verified: the phone-layout, form-layout and axe checks in Chromium and WebKit, 26 passed.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 97a23db
