@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% load workspace nav %}
 {% block title %}{% if event %}{{ step.name }} · Manage · {{ event.title }}{% else %}New event{% endif %} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block messages %}{% endblock %}
 {% block content %}
-<p class="crumbs"><a href="{% url 'event_list' %}">Events</a>{% if event %} › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a>{% endif %}</p>
-<h1>{% if event %}Manage: {{ event.title }}{% else %}New event{% endif %}</h1>
+{% if event %}{% event_header event 'manage' 'Manage' %}{% else %}<p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
+<h1>New event</h1>{% endif %}
 
 {% comment %}Manage as steps under one progress bar (#172, SK 2026-11-03): each step a page of its own,
 drawn by the server, so it works with JavaScript off and can be linked to. The required steps are
@@ -22,7 +23,7 @@ its refusal, with the swap.{% endcomment %}
 {% include "_messages.html" %}
 {% block stage %}{% endblock %}
 </div>
-{% if back or onward %}<p class="stage-foot">{% if back %}<a href="{% url 'event_step' event.pk back.key %}">Back to {{ back.name }}</a>{% endif %}{% if onward %}<a class="button secondary" href="{% url 'event_step' event.pk onward.key %}">Continue to {{ onward.name }}</a>{% endif %}</p>{% endif %}
+{% if back or onward %}<p class="stage-foot">{% if back %}<a class="button secondary" href="{% url 'event_step' event.pk back.key %}">{% icon 'chevron-left' %}Back to {{ back.name }}</a>{% endif %}{% if onward %}<a class="button secondary" href="{% url 'event_step' event.pk onward.key %}">Continue to {{ onward.name }}{% icon 'chevron-right' %}</a>{% endif %}</p>{% endif %}
 
 {% if event %}{% comment %}The dialog the buttons above open their forms in (#168): htmx fills it from the form's own
 page, and each form posts back to it there. Escape or the close button closes it, and focus goes

@@ -57,7 +57,7 @@ def test_each_step_opens_its_forms_from_buttons_in_one_dialog(officer):
         body = c.get(f"{base}/manage/{tab}/").content.decode()
         assert body.count('<dialog id="manage-dialog"') == 1
         for href, target in re.findall(
-            r'<a class="button secondary" href="([^"]+)" hx-get="\1" hx-target="([^"]+)" data-dialog>',
+            r'<a class="button secondary(?: small)?" href="([^"]+)" hx-get="\1" hx-target="([^"]+)" data-dialog>',
             body,
         ):
             assert target == "#manage-dialog-body"

@@ -1,1 +1,1 @@
-<a class="button secondary" href="{{ url }}" hx-get="{{ url }}" hx-target="#manage-dialog-body" data-dialog>{{ label }}</a>
+{% load nav %}<a class="button secondary{% if small %} small{% endif %}" href="{{ url }}" hx-get="{{ url }}" hx-target="#manage-dialog-body" data-dialog>{% if icon %}{% if small %}{% icon icon 'small' %}{% else %}{% icon icon %}{% endif %}{% endif %}{{ label }}</a>

@@ -1,12 +1,8 @@
 {% extends "base.html" %}
-{% load richtext dicts labels %}
+{% load richtext dicts labels workspace %}
 {% block title %}{{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
-<div class="titlerow">
-  <h1>{{ event.title }}</h1>
-  {% if is_captain %}<a class="button secondary" href="{% url 'event_manage' event.pk %}">Manage</a>{% endif %}
-</div>
+{% event_header event 'roster' %}
 {% if roster.span.lead %}
 <p class="when"><strong>{{ roster.span.lead }}</strong>{% if roster.span.other %}<span class="muted"> · {{ roster.span.other }}</span>{% endif %}</p>
 {% endif %}
@@ -42,8 +38,6 @@
   <p>{{ health.scheduled_hours|floatformat:"-1" }} operating hours{% if health.limits.total_limit %} of {{ health.limits.total_limit|floatformat:"-1" }}{% endif %}{% if health.over_total_limit %} <strong>(over the event's limit)</strong>{% endif %}
     {% for d in health.limits.days %}{% if d.limit %}{% if forloop.first %}<br><small class="muted">Per day: {% endif %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over {{ d.limit|floatformat:"-1" }})</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% if forloop.last %}</small>{% endif %}{% endif %}{% endfor %}
   </p>
-  <p class="health-actions"><a href="{% url 'roster_csv' event.pk %}">Export the roster</a> · <a href="{% url 'participation' event.pk %}">Who took part</a></p>
-  {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<button type="submit" class="linklike">Take it back to draft</button></form>{% endif %}
 </section>
 {% elif roster.published %}
 <p class="lede">{% if roster.counts.open %}<strong>{{ roster.counts.open }} open slot{{ roster.counts.open|pluralize }}</strong>{% if roster.counts.covered %}, {{ roster.counts.covered }} covered{% endif %}. Pick your hours below: tick several and sign up for them together, or open one for the details.{% else %}Every slot is spoken for. Open one to see who is on it.{% endif %}</p>

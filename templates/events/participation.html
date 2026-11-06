@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-{% load times %}
+{% load times workspace %}
 {% block title %}Participation · {{ event.title }} · {{ club.short_name }}{% endblock %}
 {% block content %}
-<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
-<h1>Who took part: {{ event.title }}</h1>
+{% event_header event 'people' 'Who took part' %}
 <p class="lede">Hours and people, for each operating period and for the event as a whole.</p>
 <p>Operating slots only; setup and breakdown are left out. <a href="?format=csv">Download it as a spreadsheet.</a></p>
 <div class="table-wrap"><table class="table">

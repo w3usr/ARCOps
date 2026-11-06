@@ -15,6 +15,7 @@ from datetime import UTC, timedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import pluralize
@@ -659,7 +660,15 @@ def _step_page(request, event, step, **extra):
             "onward": onward if onward and onward["open"] else None,
             "details": _details(event),
             "periods": event.periods.order_by("start"),
-            "locations": event.locations.prefetch_related("positions").order_by("order"),
+            # each position with its slot count, for the Locations step's rows (#233)
+            "locations": event.locations.prefetch_related(
+                Prefetch(
+                    "positions",
+                    queryset=Position.objects.annotate(
+                        live_slots=Count("slots", filter=Q(slots__cancelled=False))
+                    ),
+                )
+            ).order_by("order"),
             "positions": positions,
             "captains": captains,
             # Appointing captains (§2.2) and cancelling the event (SK, 2026-10-15) are officers'.

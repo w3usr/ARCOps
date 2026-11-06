@@ -1,0 +1,39 @@
+{% load nav badges %}
+{% comment %}One header for the event (#232, D8): the event page, every Manage step and Who took part
+draw it the same. The h1 keeps each page's words for a screen reader and the scripts ("Manage:
+<title>"), with the prefix not shown. It is swapped with a step's in-place saves, so the badge
+follows a Lock (#177).{% endcomment %}
+{% comment %}On the Roster tab the date line under the header (p.when) gives the dates in both zones, so the
+header leaves its own out there.{% endcomment %}
+<header class="event-head" id="event-head">
+  <p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
+  <div class="event-head-row">
+    <div class="event-head-main">
+      <div class="title-line"><h1>{% if prefix %}<span class="sr-only">{{ prefix }}: </span>{% endif %}{{ event.title }}</h1>
+        <span class="tag {{ event.state|tone:'event' }}">{{ event.get_state_display }}</span></div>
+      <p class="facts">
+        {% if start and tab != 'roster' %}<span>{% icon 'calendar' 'small' %}{{ start|date:"D j M H:i" }} – {{ end|date:"D j M H:i" }} UTC</span>{% endif %}
+        {% if place %}<span>{% icon 'map-pin' 'small' %}{{ place }}</span>{% elif places > 1 %}<span>{% icon 'map-pin' 'small' %}{{ places }} locations</span>{% endif %}
+        {% if captain %}<span>{% icon 'grid' 'small' %}{{ slots }} slot{{ slots|pluralize }}</span><span>{% icon 'users' 'small' %}{{ captains }} captain{{ captains|pluralize }}</span>{% endif %}
+        {% if upcoming %}<span>{% icon 'clock' 'small' %}Starts in {{ start|timeuntil }}</span>{% elif running %}<span>{% icon 'clock' 'small' %}Ends in {{ end|timeuntil }}</span>{% endif %}
+      </p>
+    </div>
+    {% if captain %}<div class="actions">
+      {% if event.state != 'draft' and event.state != 'cancelled' %}<a class="button secondary" href="{% url 'event_announce' event.pk %}">{% icon 'megaphone' %}Announce</a>{% endif %}
+      <button type="button" class="secondary icon-only" popovertarget="event-menu" aria-label="More actions for this event">{% icon 'more' %}</button>
+      <div class="menu" id="event-menu" popover>
+        {% if slots %}<a href="{% url 'roster_csv' event.pk %}">{% icon 'download' 'small' %}Export the roster</a>{% endif %}
+        <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit">{% icon 'copy' 'small' %}Duplicate this event</button></form>
+        {% if event.state == 'published' %}
+        <form method="post" action="{% url 'event_state' event.pk %}">{% csrf_token %}<input type="hidden" name="what" value="lock"><button type="submit">{% icon 'lock' 'small' %}Lock the roster</button></form>
+        <form method="post" action="{% url 'event_publish' event.pk %}">{% csrf_token %}<button type="submit">{% icon 'history' 'small' %}Take it back to draft</button></form>
+        {% endif %}
+      </div>
+    </div>{% endif %}
+  </div>
+  {% if captain %}<nav class="tabs" aria-label="This event">
+    <a href="{% url 'event_detail' event.pk %}"{% if tab == 'roster' %} aria-current="page"{% endif %}>{% icon 'table' 'small' %}Roster</a>
+    <a href="{% url 'event_manage' event.pk %}"{% if tab == 'manage' %} aria-current="page"{% endif %}>{% icon 'settings' 'small' %}Manage</a>
+    <a href="{% url 'participation' event.pk %}"{% if tab == 'people' %} aria-current="page"{% endif %}>{% icon 'users' 'small' %}Who took part</a>
+  </nav>{% endif %}
+</header>
