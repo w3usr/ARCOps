@@ -254,13 +254,34 @@ STRIP_MARKS = {
     "open": "",
     "covered": "✓",
     "closed": "–",
+    "none": "",  # on the air, no slot yet: a dashed box (#247)
+    "off": "",  # off the air: a hatched cell with no box
 }  # open: an empty box
 STRIP_ORDER = list(STRIP_MARKS)
 
 
-def _strip(slots, cells, by_start, zone, label, filtered: bool) -> list[dict]:
+def _gaps(event, slots) -> list[tuple]:
+    """(start, end, state) for each hour of the periods that no slot touches: "off" outside the
+    club's on-air hours, "none" on the air with no slot yet (#247). Without them a strip could
+    not tell an hour the club means to skip from one nobody has made a slot for."""
+    from .slots import HOUR, hour_grid
+
+    taken = [(s.start, s.end) for s in slots]
+    out = []
+    for row in hour_grid(event):
+        for box in row["boxes"]:
+            if not box:
+                continue
+            a, b = box["at"], box["at"] + HOUR
+            if not any(s < b and e > a for s, e in taken):
+                out.append((a, b, "none" if box["on"] else "off"))
+    return out
+
+
+def _strip(slots, cells, by_start, zone, label, filtered: bool, event=None) -> list[dict]:
     """The whole event, a line a day: one mark per time span, linking to its row, or to the row's
-    fold, or past the Problems only filter to the full roster."""
+    fold, or past the Problems only filter to the full roster. An hour with no slot is a mark
+    that links nowhere: off the air, or on the air with no slot yet (#247)."""
     spans: dict[tuple, str] = {}
     for s in slots:
         key = cells[s.pk].shown.key
@@ -268,12 +289,15 @@ def _strip(slots, cells, by_start, zone, label, filtered: bool) -> list[dict]:
         span = (s.start, s.end)
         if span not in spans or STRIP_ORDER.index(state) < STRIP_ORDER.index(spans[span]):
             spans[span] = state
+    gaps = {(a, b): state for a, b, state in _gaps(event, slots)} if event is not None else {}
     days: dict[str, dict] = {}
-    for (start, end), state in sorted(spans.items()):
+    for (start, end), state in sorted({**spans, **gaps}.items()):
         local = start.astimezone(zone)
         day = days.setdefault(local.strftime("%Y-%m-%d"), {"label": f"{local:%a %-d}", "marks": []})
         row, anchor = by_start.get(start), f"r-{start:%Y%m%d%H%M}"
-        if row is None or filtered:
+        if (start, end) in gaps:
+            href = ""  # no row to go to
+        elif row is None or filtered:
             href = f"?#{anchor}"
         elif row.fold and not row.fold.open:
             href = f"?open={row.fold.id}#{anchor}"
@@ -466,7 +490,10 @@ def build(
             if row.start not in by_start:
                 by_start[row.start] = row
                 row.anchor = f"r-{row.start:%Y%m%d%H%M}"
-    strip = _strip(every, cells, by_start, lead_zone, lead_label, filtered=filter == "problems")
+    strip = _strip(
+        every, cells, by_start, lead_zone, lead_label, filtered=filter == "problems", event=event
+    )
+    gap_states = {m["state"] for d in strip for m in d["marks"]} & {"none", "off"}
 
     single_location = len({p.location_id for p in positions}) == 1
     roles = setting("slot_roles", []) or []
@@ -490,6 +517,7 @@ def build(
         # The time, the second zone where there is one, and a column per position in a grid.
         "columns": 1 + (0 if one_zone else 1) + (len(positions) if layout == "grid" else 1),
         "strip": strip,
+        "strip_gaps": gap_states,  # which of the two no-slot marks the Key explains
         "span": {
             "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
             if starts and ends

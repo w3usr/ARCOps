@@ -488,6 +488,10 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .sm-covered { border-color: var(--ok); color: var(--ok); background: var(--tag-ok); }
 .sm-needs { border-color: var(--warn); color: var(--warn); background: var(--tag-warn); }
 .sm-problem { border-color: var(--bad); color: var(--bad); background: var(--tag-bad); }
+/* An hour with no slot (#247), told apart by shape as well as tone: on the air with no slot yet is
+   a dashed box; off the air is a hatched cell with no box at all. Neither is a link. */
+.sm-none { border-style: dashed; border-color: var(--muted); background: var(--bg); }
+.sm-off { border-color: transparent; background: repeating-linear-gradient(135deg, var(--line) 0 2px, transparent 2px 5px); }
 @media (max-width: 48rem) { .overview { grid-template-columns: 1fr; } }
 /* Desktop density (#146, with #161): rows a little tighter where a pointer is the usual way in. A
    slot keeps 44 px, a comfortable target; under 48rem the touch layout keeps its own height. */

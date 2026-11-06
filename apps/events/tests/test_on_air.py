@@ -149,3 +149,26 @@ def test_a_member_who_is_not_a_captain_may_not_set_them(officer):
     )
     r = _as(member).post(f"/events/{ev.pk}/on-air/", {"what": "whole"})
     assert r.status_code == 404
+
+
+def test_the_strip_tells_off_the_air_from_no_slot_yet(officer):
+    """#247: an hour of the periods with no slot is marked, off the air or on the air with no
+    slot yet, by shape as well as tone; the Key explains only the marks that are there."""
+    import re
+
+    c = _as(officer)
+    ev, _ = _ev(c)
+    page = c.get(f"/events/{ev.pk}/").content.decode()
+    assert "sm-none" not in page and "sm-off" not in page  # every hour has its slot
+    Slot.objects.filter(
+        position__location__event=ev, start__gte=T + 6 * H, end__lte=T + 9 * H
+    ).delete()
+    set_on_air(ev, [(T, T + 7 * H), (T + 9 * H, T + 24 * H)])  # Sunday 01:00-03:00 off the air
+    page = c.get(f"/events/{ev.pk}/").content.decode()
+    strip = page.split('<div class="strip"', 1)[1].split("</div>\n", 1)[0]
+    marks = re.findall(r'class="sm sm-(\w+)"', strip)
+    assert marks.count("off") == 2 and marks.count("none") == 1  # Sunday 00:00 on the air, no slot
+    assert '<span class="sm sm-off"></span>' in strip  # not a link
+    key = page.split('id="roster-key-pop"', 1)[1].split("</ul>", 1)[0]
+    assert "off the air: outside the club's on-air hours" in key
+    assert "on the air, but no slot has been made for the hour yet" in key

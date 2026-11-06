@@ -66,7 +66,7 @@ state as a symbol as well as a color (FR-62), each linking to its hour. A shortc
 the pointer, so it is hidden from screen readers and takes no tab stops: the roster below says
 every slot's state in words (FR-116), and a strip of forty-eight links ahead of it would be noise.{% endcomment %}
 <div class="strip" aria-hidden="true">
-  {% for d in roster.strip %}<div class="strip-day"><span class="strip-label">{{ d.label }}</span><span class="strip-marks">{% for m in d.marks %}<a class="sm sm-{{ m.state }}" href="{{ m.href }}" tabindex="-1">{{ m.mark }}</a>{% endfor %}</span></div>{% endfor %}
+  {% for d in roster.strip %}<div class="strip-day"><span class="strip-label">{{ d.label }}</span><span class="strip-marks">{% for m in d.marks %}{% if m.href %}<a class="sm sm-{{ m.state }}" href="{{ m.href }}" tabindex="-1">{{ m.mark }}</a>{% else %}<span class="sm sm-{{ m.state }}"></span>{% endif %}{% endfor %}</span></div>{% endfor %}
 </div>
 <div class="legend muted" id="roster-key-pop" popover><span class="legend-label" id="roster-key">Key</span>
   <ul aria-labelledby="roster-key">
@@ -75,6 +75,8 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
     {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!</span> <span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</li>{% endif %}
     <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="tag ok">Covered</span> it can run</li>
     <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="tag">Closed</span> not taking sign-ups</li>
+    {% if "none" in roster.strip_gaps %}<li><span class="sm sm-none" aria-hidden="true"></span> on the air, but no slot has been made for the hour yet</li>{% endif %}
+    {% if "off" in roster.strip_gaps %}<li><span class="sm sm-off" aria-hidden="true"></span> off the air: outside the club's on-air hours</li>{% endif %}
     <li><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</li>
     <li><span class="mk" aria-hidden="true">S</span> station access</li>
     <li><span class="mk" aria-hidden="true">I</span> computer access</li>

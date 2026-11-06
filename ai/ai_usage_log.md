@@ -4603,3 +4603,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code, tests and docs, from the issue as SK decided it in two rounds of questions. Not done as the issue first said: the coverage strip does not mark off-air hours, because it draws marks only for slots, so an hour with no slot already shows nothing whether on the air or not. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep and the grid's browser tests (drag, All and None, saved in place, and without JavaScript) pass in Chromium and WebKit (Firefox does not launch on this machine; CI runs it); the Slots step at 1280 and 390 px looked at in the contact sheet; acceptance T11 (new step 10), T12, T13, T18, T31, T35, T36, T37, T41, T42, T45 and T52 pass locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: 4cc0da9
+
+## [2026-11-05 20:31 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The rest of #247 (SK, 2026-11-05: "do the part you didnt do"): the coverage strip tells an hour off the air from an hour on the air with no slot yet.
+- **Sections/Files Affected**: apps/events/services/roster.py (_gaps; _strip marks every hour of the periods that no slot touches, off or none, as cells that link nowhere; build returns which the Key needs); templates/events/detail.html (the marks as spans; two Key lines, shown only when present); static/css/app.css (.sm-none dashed, .sm-off hatched without a box); apps/events/tests/test_on_air.py (a test).
+- **Nature of Contribution**: Code and a test. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); acceptance T11 (step 10 checks the strip), T12, T13, T15 and T20 pass locally; the strip looked at in T11's screenshot.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
