@@ -204,7 +204,7 @@ def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
     seats = page.split("<legend>Seats in each slot</legend>", 1)[1].split("</fieldset>", 1)[0]
     assert re.findall(r"<label[^>]*>([^<]+)</label>", seats) == ["Operator", "Mentor"]
     assert 'type="number"' not in page and page.count('inputmode="numeric"') == 5
-    assert "Hours to operate each day" not in page  # the on-air hours' shortcut now (#247)
+    assert "Hours to operate each day" not in page  # a range a day in the on-air hours (#248)
     assert "Setup slots before" in page  # nobody has signed up: Regenerate slots may use it
     s = Slot.objects.filter(position__location__event=ev, kind="operating").first()
     SignUp.objects.create(slot=s, user=officer, role="operator")

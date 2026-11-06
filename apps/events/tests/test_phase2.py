@@ -29,7 +29,7 @@ from apps.events.models import (
     Waitlist,
 )
 from apps.events.services import lifecycle, waitlist
-from apps.events.services.slots import generate_slots, limit_report, windows_from_daily
+from apps.events.services.slots import generate_slots, limit_report
 from apps.ops.models import ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -170,8 +170,8 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     pos = Position.objects.create(location=loc, name="Run")
     Captaincy.objects.create(event=e, user=cap)
     OperatingLimit.objects.create(event=e, max_hours_per_day=6, day_basis="utc", max_total_hours=10)
-    windows = windows_from_daily(e, [("15:00", "22:00")])  # 7 h a day
-    assert len(windows) == 3 or len(windows) == 2
+    days = [start.replace(hour=15) + timedelta(days=i) for i in (0, 1)]
+    windows = [(d, d + timedelta(hours=7)) for d in days]  # 15:00-22:00, 7 h a day
     slots = generate_slots(e, [pos], minutes=60, windows=windows)
     assert all(15 <= s.start.hour < 22 for s in slots)
     report = limit_report(e)
@@ -187,7 +187,7 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     for page in (body, manage, health):
         assert ".0 h" not in page and ".0<" not in page and " of 10.0" not in page
     assert " 7 h" in body and " 7 h" in manage and "total 14 h of 10" in manage
-    # the same hours every day are set as on-air hours (#247), the generator fills them, and the
+    # a range a day is set as the on-air hours (#247, #248), the generator fills them, and the
     # limits form saves
     r = c.post(
         f"/events/{e.pk}/limits/",
@@ -200,7 +200,15 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     )
     assert r.status_code == 302 and OperatingLimit.objects.get(event=e).max_total_hours == 24
     Slot.objects.filter(position=pos).delete()
-    c.post(f"/events/{e.pk}/on-air/", {"what": "daily", "daily": "15:00-18:00"})
+    for d in days:
+        c.post(
+            f"/events/{e.pk}/on-air/",
+            {
+                "what": "range",
+                "start": f"{d:%Y-%m-%dT%H:%M}",
+                "end": f"{d + timedelta(hours=3):%Y-%m-%dT%H:%M}",
+            },
+        )
     r = c.post(
         f"/events/{e.pk}/slots/generate/",
         {
@@ -212,7 +220,7 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
             "cap_observer": 1,
         },
     )
-    assert Slot.objects.filter(position=pos, kind="operating").count() in (6, 9)
+    assert Slot.objects.filter(position=pos, kind="operating").count() == 6
 
 
 def test_eligibility_editor_and_openings_with_announcement():

@@ -4611,3 +4611,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and a test. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); acceptance T11 (step 10 checks the strip), T12, T13, T15 and T20 pass locally; the strip looked at in T11's screenshot.
 - **Human Review Status**: Pending review
 - **Git Hash**: fc4122d
+
+## [2026-11-06 14:20 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: On-air hours as typed ranges only (w3usr/w3usr.org-PRIVATE#248; SK, 2026-11-06, at the advisor's request): the hour grid and the same hours every day go; a range typed to the minute is the one way to choose the on-air hours.
+- **Sections/Files Affected**: apps/events/services/slots.py (from_ticks and windows_from_daily deleted; hour_grid kept as the coverage strip's source); apps/events/views_manage.py (_daily, DailyHoursForm and on_air_save's grid and daily branches deleted; the Slots step's context); templates/events/stages/slots.html (the grid and daily forms deleted; the range form under the stretches with a line on how ranges add up); static/js/app.js (the grid's drag and All or None deleted); static/css/app.css (the grid's rules and button.small deleted); tools/check_interface.sh (the data-scrolls exemption, used only by the grid, deleted); docs/REQUIREMENTS.md (functional addendum A16 only; the body and A15 are not edited); apps/events/tests/test_on_air.py, tools/a11y/test_on_air.py, test_phase2.py, test_stages.py, test_manage_dialogs.py.
+- **Nature of Contribution**: Research (what the grid and the shortcut reached: the strip depends on hour_grid, so it stays), code removal, tests and docs. Verified: 529 application tests pass; lint, format and the guards pass; the accessibility sweep (66 passed) and the new range browser tests, by keyboard in place and without JavaScript, pass in Chromium and WebKit (Firefox does not launch on this machine; CI runs it); the Slots step at 1280 and 390 px looked at in the contact sheet; acceptance T11 (step 10 with ranges), T12, T35 and T52 pass locally (private repo, testing/runs of 2026-11-06).
+- **Human Review Status**: Pending review
+- **Git Hash**: (pending)

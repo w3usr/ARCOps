@@ -246,7 +246,7 @@ def test_a_steps_own_forms_save_in_place(officer):
     marked = {
         "periods": 1,  # Remove on the period
         "locations": 2,  # Remove on each position
-        "slots": 4,  # the on-air grid, a range, the daily hours (#247), Save limits
+        "slots": 2,  # Add range (#247, ranges only since #248), Save limits
         "rules": 1,  # Save who may sign up (no opening yet)
         "contest": 1,
         "publish": 0,  # a draft: Publish is a page change; Remove on a lone captain is not offered

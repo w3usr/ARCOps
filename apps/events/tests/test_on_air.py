@@ -1,6 +1,7 @@
 """On-air hours (#247, SK 2026-11-05; functional addendum A15): the operating periods are the
-contest's span, and the club chooses the hours it means to be on the air inside them. The
-generator and the fill use those hours; changing them never touches a slot."""
+contest's span, and the club chooses the hours it means to be on the air inside them, as ranges
+typed to the minute (#248, SK 2026-11-06; A16). The generator and the fill use those hours;
+changing them never touches a slot."""
 
 from datetime import UTC, datetime, timedelta
 
@@ -9,8 +10,6 @@ import pytest
 from apps.events.models import Event, OnAirRange, OperatingPeriod, Slot
 from apps.events.services.slots import (
     clip,
-    from_ticks,
-    hour_grid,
     merge,
     on_air,
     plan_slots,
@@ -47,20 +46,6 @@ def test_the_whole_event_until_the_club_chooses(officer):
     assert not OnAirRange.objects.filter(event=ev).exists()
 
 
-def test_the_grid_ticks_hours_and_keeps_a_part_typed_to_the_minute(officer):
-    ev, _ = _ev(_as(officer))
-    rows = hour_grid(ev)
-    assert [len([b for b in r["boxes"] if b]) for r in rows] == [6, 18]  # Sat 18-24, Sun 00-18
-    assert all(b["on"] == "all" for r in rows for b in r["boxes"] if b)
-    set_on_air(ev, [(T, T + 6 * H), (T + 14 * H + timedelta(minutes=30), T + 20 * H)])
-    boxes = {b["at"]: b["on"] for r in hour_grid(ev) for b in r["boxes"] if b}
-    assert boxes[T] == "all" and boxes[T + 6 * H] == "" and boxes[T + 14 * H] == "part"
-    # saving the grid as it stands keeps the half hour; unticking an hour takes it out
-    ticked = {at for at, on in boxes.items() if on} - {T + 19 * H}
-    spans = from_ticks(ev, ticked)
-    assert spans == [(T, T + 6 * H), (T + 14 * H + timedelta(minutes=30), T + 19 * H)]
-
-
 def test_the_generator_and_the_fill_use_the_on_air_hours(officer):
     c = _as(officer)
     ev, positions = _ev(c)
@@ -95,18 +80,22 @@ def test_saving_the_on_air_hours_from_the_slots_step(officer):
     ev, _ = _ev(c)
     url, step = f"/events/{ev.pk}/on-air/", f"/events/{ev.pk}/manage/slots/"
     body = c.get(step).content.decode()
-    assert "On the air for the whole event: 24 hours." in body and body.count('name="hour"') == 24
-    # the grid
-    hours = [(T + i * H).isoformat() for i in (0, 1, 2, 10, 11)]
-    r = c.post(url, {"what": "hours", "hour": hours})
+    assert "On the air for the whole event: 24 hours." in body
+    assert 'name="hour"' not in body and 'name="daily"' not in body  # no grid, no daily (#248)
+    # the first range replaces the whole event; the next is added to it
+    r = c.post(url, {"what": "range", "start": "2026-06-27T18:00", "end": "2026-06-27T21:00"})
     assert r.status_code == 302 and r["Location"] == step
+    assert on_air(ev) == [(T, T + 3 * H)]
+    c.post(url, {"what": "range", "start": "2026-06-28T04:00", "end": "2026-06-28T06:00"})
     assert on_air(ev) == [(T, T + 3 * H), (T + 10 * H, T + 12 * H)]
     body = c.get(step).content.decode()
     assert (
         "On the air 5 of 24 hours:" in body and "Sat 27 Jun 18:00 to Sat 27 Jun 21:00 UTC" in body
     )
     assert "slots fall outside the on-air hours" in body  # _build generated the whole event
-    # a range to the minute, cut to the periods
+    # one that touches a stretch joins it; one past the periods is cut to them
+    c.post(url, {"what": "range", "start": "2026-06-27T21:00", "end": "2026-06-27T21:30"})
+    assert on_air(ev)[0] == (T, T + 3 * H + timedelta(minutes=30))
     c.post(url, {"what": "range", "start": "2026-06-28T16:30", "end": "2026-06-28T20:00"})
     assert on_air(ev)[-1] == (T + 22 * H + timedelta(minutes=30), T + 24 * H)
     r = c.post(url, {"what": "range", "start": "2026-07-01T10:00", "end": "2026-07-01T12:00"})
@@ -116,18 +105,9 @@ def test_saving_the_on_air_hours_from_the_slots_step(officer):
     assert on_air(ev)[0][0] == T + 10 * H
     c.post(url, {"what": "whole"})
     assert on_air(ev) == [(T, T + 24 * H)]
-    # nothing ticked is refused, not taken as nothing on the air
-    c.post(url, {"what": "hours"})
-    assert on_air(ev) == [(T, T + 24 * H)]
-
-
-def test_the_same_hours_every_day(officer):
-    c = _as(officer)
-    ev, _ = _ev(c)
-    c.post(f"/events/{ev.pk}/on-air/", {"what": "daily", "daily": "20:00-22:00\n06:00-07:00"})
-    assert on_air(ev) == [(T + 2 * H, T + 4 * H), (T + 12 * H, T + 13 * H)]
-    r = c.post(f"/events/{ev.pk}/on-air/", {"what": "daily", "daily": "noon"})
-    assert "is not HH:MM-HH:MM" in r.content.decode()
+    # the grid's ticked hours and the same hours every day are gone (#248)
+    assert c.post(url, {"what": "hours", "hour": [T.isoformat()]}).status_code == 404
+    assert c.post(url, {"what": "daily", "daily": "20:00-22:00"}).status_code == 404
 
 
 def test_duplicate_copies_the_on_air_hours(officer):

@@ -231,46 +231,6 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
             del self.fields["setup_slots"], self.fields["breakdown_slots"]
 
 
-def _daily(text: str) -> list[tuple[str, str]]:
-    """'15:00-21:00' lines as (start, end) strings; ValidationError on anything else."""
-    out = []
-    for line in (text or "").splitlines():
-        line = line.strip().replace(" ", "")
-        if not line:
-            continue
-        try:
-            a, b = line.split("-")
-            for t in (a, b):
-                h, m = t.split(":")
-                assert 0 <= int(h) < 24 and 0 <= int(m) < 60
-        except (ValueError, AssertionError) as exc:
-            raise forms.ValidationError(f"{line!r} is not HH:MM-HH:MM") from exc
-        out.append((a, b))
-    return out
-
-
-class DailyHoursForm(forms.Form):
-    """On-air hours' shortcut (#247): the same hours on every day, as FR-48 asked of the
-    generator. In the operating limit's day basis, as before."""
-
-    daily = forms.CharField(
-        label="Tick these hours on every day",
-        help_text="One range a line, such as 15:00-21:00.",
-        widget=forms.Textarea(attrs={"rows": 2}),
-    )
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        kwargs.setdefault("auto_id", "daily-%s")
-        super().__init__(*args, **kwargs)
-
-    def clean_daily(self):
-        out = _daily(self.cleaned_data.get("daily"))
-        if not out:
-            raise forms.ValidationError("Give at least one range, such as 15:00-21:00.")
-        return out
-
-
 class LocationForm(forms.Form):
     name = forms.CharField(label="Name", max_length=120)
     address = forms.CharField(label="Address (optional)", max_length=200, required=False)
@@ -985,9 +945,9 @@ def slots_generate(request, pk):
 
 
 def _on_air_context(event, **forms_) -> dict:
-    """What the Slots step needs to show the on-air hours (#247): the grid, the stretches in
-    words, the hours against the whole event, and the slots that fall outside them."""
-    from .services.slots import chosen, clip, hour_grid, periods_of
+    """What the Slots step needs to show the on-air hours (#247, ranges only since #248): the
+    stretches in words, the hours against the whole event, and the slots that fall outside them."""
+    from .services.slots import chosen, clip, periods_of
 
     stretches, periods = chosen(event), periods_of(event)
 
@@ -1005,26 +965,21 @@ def _on_air_context(event, **forms_) -> dict:
             if clip([(slot.start, slot.end)], stretches) != [(slot.start, slot.end)]:
                 outside += 1
     return {
-        "on_air_grid": hour_grid(event),
-        "hours24": [f"{h:02d}" for h in range(24)],
         "on_air_stretches": [{"i": i, "label": label(a, b)} for i, (a, b) in enumerate(stretches)],
         "on_air_hours": hours(stretches) if stretches else hours(periods),
         "event_hours": hours(periods),
         "slots_outside": outside,
         "range_form": forms_.get("range_form") or PeriodForm(auto_id="onair-%s"),
-        "daily_form": forms_.get("daily_form") or DailyHoursForm(),
     }
 
 
 @login_required
 @require_POST
 def on_air_save(request, pk):
-    """Save the on-air hours (#247, A15) four ways, each back to the Slots step in place (#177):
-    the grid's ticked hours, a range typed to the minute, the same hours on every day, or one
-    stretch removed; or go back to the whole event. Slots are never touched."""
-    from datetime import datetime
-
-    from .services.slots import chosen, clip, from_ticks, periods_of, set_on_air, windows_from_daily
+    """Save the on-air hours (#247, A15; A16 since #248), each back to the Slots step in place
+    (#177): a range typed to the minute, added to the stretches; one stretch removed; or the
+    whole event again. Slots are never touched."""
+    from .services.slots import chosen, clip, periods_of, set_on_air
 
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
@@ -1055,18 +1010,6 @@ def on_air_save(request, pk):
         if not rest:
             return saved([], " The last stretch is gone, so the whole event is on the air again.")
         return saved(rest)
-    if what == "hours":
-        ticked = set()
-        for v in request.POST.getlist("hour"):
-            try:
-                ticked.add(datetime.fromisoformat(v))
-            except ValueError:
-                continue
-        spans = from_ticks(event, ticked)
-        if not spans:
-            messages.error(request, "Tick at least one hour, or choose Use the whole event.")
-            return to_step(pk, "slots")
-        return saved(spans)
     if what == "range":
         form = PeriodForm(request.POST, auto_id="onair-%s")
         if form.is_valid():
@@ -1078,14 +1021,6 @@ def on_air_save(request, pk):
                 note = "" if inside == [asked] else " The range was cut to the operating periods."
                 return saved(base + inside, note)
         return _step_page(request, event, "slots", **_on_air_context(event, range_form=form))
-    if what == "daily":
-        form = DailyHoursForm(request.POST)
-        if form.is_valid():
-            spans = windows_from_daily(event, form.cleaned_data["daily"])
-            if spans:
-                return saved(base + spans)
-            form.add_error("daily", "Those hours fall outside every operating period.")
-        return _step_page(request, event, "slots", **_on_air_context(event, daily_form=form))
     raise Http404
 
 

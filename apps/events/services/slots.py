@@ -175,9 +175,10 @@ def set_on_air(event, spans) -> list[tuple]:
 
 
 def hour_grid(event) -> list[dict]:
-    """The on-air hours as a grid: a row per UTC day the periods touch, a box per hour of it.
-    A box is None where the hour is outside every period; otherwise its instant and whether it
-    is on the air: "all", "part" (a stretch typed to the minute starts or ends inside it) or ""."""
+    """The periods hour by hour, for the coverage strip (roster._gaps): a row per UTC day the
+    periods touch, a box per hour of it. A box is None where the hour is outside every period;
+    otherwise its instant and whether it is on the air: "all", "part" (a stretch typed to the
+    minute starts or ends inside it) or "". Not shown as a grid since #248."""
     from datetime import UTC, datetime, time
 
     periods, live = periods_of(event), on_air(event)
@@ -200,20 +201,6 @@ def hour_grid(event) -> list[dict]:
             rows.append({"day": day, "boxes": boxes})
         day += timedelta(days=1)
     return rows
-
-
-def from_ticks(event, ticked: set) -> list[tuple]:
-    """The on-air hours the grid was saved with: each ticked hour box, inside the periods. A box
-    that was partly on the air and stays ticked keeps the part it had, so saving the grid never
-    widens a stretch someone typed to the minute."""
-    periods, live, out = periods_of(event), on_air(event), []
-    for row in hour_grid(event):
-        for box in row["boxes"]:
-            if not box or box["at"] not in ticked:
-                continue
-            inside = clip([(box["at"], box["at"] + HOUR)], periods)
-            out += clip(inside, live) if box["on"] == "part" else inside
-    return merge(out)
 
 
 def scheduled_hours(event) -> float:
@@ -243,7 +230,7 @@ def health(event) -> dict:
     }
 
 
-# ------------------------------------------------------ operating limits (FR-39, FR-48) ---
+# ------------------------------------------------------------- operating limits (FR-39) ---
 
 
 def _basis_zone(event):
@@ -251,32 +238,6 @@ def _basis_zone(event):
 
     limit = getattr(event, "limit", None)
     return display_zone(event) if (limit and limit.day_basis == "local") else UTC
-
-
-def windows_from_daily(event, ranges: list[tuple[str, str]]) -> list[tuple]:
-    """FR-48: the officer names the hours to operate on each day ("15:00-21:00", in the limit's
-    day basis); the generator fills only those hours, clipped to the operating periods. Returns
-    (start, end) instants."""
-    from datetime import datetime, time
-
-    zone = _basis_zone(event)
-    out = []
-    for p in event.periods.all():
-        day = p.start.astimezone(zone).date()
-        last = p.end.astimezone(zone).date()
-        while day <= last:
-            for a, b in ranges:
-                ha, ma = (int(x) for x in a.split(":"))
-                hb, mb = (int(x) for x in b.split(":"))
-                ws = datetime.combine(day, time(ha, ma), tzinfo=zone)
-                we = datetime.combine(day, time(hb, mb), tzinfo=zone)
-                if we <= ws:
-                    we += timedelta(days=1)
-                start, end = max(ws, p.start), min(we, p.end)
-                if start < end:
-                    out.append((start, end))
-            day += timedelta(days=1)
-    return sorted(set(out))
 
 
 def limit_report(event) -> dict:

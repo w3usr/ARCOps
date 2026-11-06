@@ -185,35 +185,6 @@ if ("serviceWorker" in navigator) {
   });
 })();
 
-// On-air hours (#247): drag across the hour boxes to tick or untick them all as the first one
-// went, and All or None for a day. Each box is still a checkbox that works alone, by keyboard and
-// without this. Delegated from the document, so it survives the step's in-place swap (#177).
-(() => {
-  let paint = null, start = null;
-  const box = (el) => el && el.closest && el.closest(".onair td") && el.closest(".onair td").querySelector("input[type=checkbox]");
-  document.addEventListener("pointerdown", (ev) => {
-    const b = box(ev.target);
-    if (b && ev.pointerType === "mouse") { paint = !b.checked; start = b; }
-  });
-  // A click on one box toggles it as any checkbox does. Once the pointer reaches another box it is
-  // a drag: the first box takes the new state too, since no click will reach it.
-  document.addEventListener("pointerover", (ev) => {
-    const b = box(ev.target);
-    if (paint === null || !b || b === start) return;
-    if (start) { start.checked = paint; start = null; }
-    b.checked = paint;
-  });
-  document.addEventListener("pointerup", () => { paint = null; start = null; });
-  document.addEventListener("click", (ev) => {
-    const t = ev.target.closest("[data-day]");
-    if (!t) return;
-    t.closest("tr").querySelectorAll("input[name=hour]").forEach((b) => { b.checked = t.dataset.day === "all"; });
-  });
-  const reveal = () => document.querySelectorAll("[data-day-tools][hidden]").forEach((el) => { el.hidden = false; });
-  reveal();
-  document.addEventListener("htmx:afterSettle", reveal);
-})();
-
 // A confirmation's button opens its dialog by itself (commandfor and command, in every browser
 // since late 2025). This does the same for an older one; a current browser never runs it.
 // Safari does not focus a button it clicks, so the browser has nothing to give focus back to

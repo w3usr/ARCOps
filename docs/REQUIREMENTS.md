@@ -2780,7 +2780,27 @@ nothing else varying, boxes of one hour, slots from each stretch's start, setup 
 around the first and last hour, and the daily hours as a shortcut. *Record:* issue #247 in the
 private repository.
 
+### A16. A15 and FR-48: the on-air hours are ranges typed to the minute
+
+**Original (A15).** "They are chosen on the event's Slots step, before the generator, three ways:
+a grid of hour boxes (a row per UTC day, a box per hour inside a period), a range typed to the
+minute, and the same hours on every day (what FR-48 asked of the generator, now a shortcut that
+ticks the grid)."
+
+**Decision.** The on-air hours are chosen one way: a range typed to the minute, a start and an
+end in UTC. The first range replaces the whole event; each one after it is added to the hours
+chosen, joining a stretch it overlaps or touches, and the part of a range outside the operating
+periods is cut off. Each stretch can be removed, and **Use the whole event** goes back to none
+chosen. There is no grid of hour boxes and no shortcut for the same hours on every day. FR-48's
+hours on each day are a range for each day: School Club Roundup's five weekdays are five ranges.
+The rest of A15 stands.
+
+**Decided by** SK, 2026-11-06, at the advisor's request: "the ticks for putting in the ranges is
+not really needed. I think the range to a minute is fine and this is gonna be the default. NAF
+actually requested it to be this. […] Also, same hours every day is not needed". *Record:* issue
+#248 in the private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14) and 2026-11-05 (A15), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15) and 2026-11-06 (A16), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
