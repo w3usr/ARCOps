@@ -187,7 +187,8 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     for page in (body, manage, health):
         assert ".0 h" not in page and ".0<" not in page and " of 10.0" not in page
     assert " 7 h" in body and " 7 h" in manage and "total 14 h of 10" in manage
-    # the manage page's generator accepts the windows text and the limits form saves
+    # the same hours every day are set as on-air hours (#247), the generator fills them, and the
+    # limits form saves
     r = c.post(
         f"/events/{e.pk}/limits/",
         {
@@ -199,13 +200,13 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     )
     assert r.status_code == 302 and OperatingLimit.objects.get(event=e).max_total_hours == 24
     Slot.objects.filter(position=pos).delete()
+    c.post(f"/events/{e.pk}/on-air/", {"what": "daily", "daily": "15:00-18:00"})
     r = c.post(
         f"/events/{e.pk}/slots/generate/",
         {
             "minutes": 60,
             "setup_slots": 0,
             "breakdown_slots": 0,
-            "windows": "15:00-18:00",
             "cap_operator": 1,
             "cap_mentor": 1,
             "cap_observer": 1,

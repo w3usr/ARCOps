@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from django.template.defaultfilters import pluralize
 
-from ..models import Slot
+from ..models import OnAirRange, Slot
 from .viability import evaluate
 
 
@@ -20,7 +20,8 @@ def generate_slots(
 ):
     """Fill each operating period with slots of `minutes`, aligned to the period start, with a
     final short slot if the period length is not a multiple. `windows`, when given, is a list of
-    (start, end) datetimes to fill instead of the whole periods (FR-48, for hour-limited events).
+    (start, end) datetimes to fill; otherwise the event's on-air hours (#247), which are the whole
+    periods unless the club has chosen otherwise.
     Setup slots go before the first period and breakdown slots after the last (FR-47)."""
     return [
         Slot.objects.create(position=pos, start=a, end=b, kind=kind)
@@ -37,7 +38,7 @@ def plan_slots(
     what generating and filling create, and what the preview counts (#168), from one place.
     With `fill`, only the hours no slot covers, and no setup or breakdown (#153)."""
     step = timedelta(minutes=minutes)
-    spans = windows or [(p.start, p.end) for p in event.periods.all()]
+    spans = windows or on_air(event)
     for pos in positions:
         for start, end in empty_hours(pos, spans) if fill else spans:
             for a, b in _cut(start, end, step):
@@ -111,7 +112,7 @@ def empty_hours(position, spans) -> list[tuple]:
 
 
 def fill_empty_hours(event, positions, minutes: int = 60, windows=None) -> list[Slot]:
-    """#153 (FR-46, FR-48): operating slots for the hours of the periods (or of `windows`) that
+    """#153 (FR-46, FR-48): operating slots for the on-air hours (or `windows`) that
     have no slot yet, position by position. Every existing slot, its seats and its sign-ups stay
     as they are, so this runs after people have signed up: a range or a period added later, or a
     new position, gets its slots. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
@@ -119,6 +120,100 @@ def fill_empty_hours(event, positions, minutes: int = 60, windows=None) -> list[
         Slot.objects.create(position=pos, start=a, end=b, kind=kind)
         for pos, a, b, kind in plan_slots(event, positions, minutes, windows=windows, fill=True)
     ]
+
+
+# ------------------------------------------------------------- on-air hours (#247, A15) ---
+
+HOUR = timedelta(hours=1)
+
+
+def merge(spans) -> list[tuple]:
+    """Sorted, with overlapping and touching spans joined."""
+    out: list[list] = []
+    for a, b in sorted(spans):
+        if a >= b:
+            continue
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return [tuple(x) for x in out]
+
+
+def clip(spans, bounds) -> list[tuple]:
+    """The parts of `spans` inside `bounds`, merged."""
+    return merge(
+        (max(a, c), min(b, d)) for a, b in spans for c, d in bounds if max(a, c) < min(b, d)
+    )
+
+
+def periods_of(event) -> list[tuple]:
+    return merge((p.start, p.end) for p in event.periods.all())
+
+
+def chosen(event) -> list[tuple]:
+    """The club's own stretches, clipped to the periods; [] when it has chosen none."""
+    return clip([(r.start, r.end) for r in event.on_air_ranges.all()], periods_of(event))
+
+
+def on_air(event) -> list[tuple]:
+    """When the club means to be on the air: its chosen stretches, or the whole of the periods
+    (the contest's span) when it has chosen none."""
+    return chosen(event) or periods_of(event)
+
+
+def set_on_air(event, spans) -> list[tuple]:
+    """Store `spans` as the event's on-air hours, clipped and merged. Stretches that come to the
+    whole of the periods are stored as nothing, which means the same and follows the periods if
+    they change. Slots are never touched."""
+    periods = periods_of(event)
+    spans = clip(spans, periods)
+    OnAirRange.objects.filter(event=event).delete()
+    if spans and spans != periods:
+        OnAirRange.objects.bulk_create(OnAirRange(event=event, start=a, end=b) for a, b in spans)
+    return spans if spans != periods else []
+
+
+def hour_grid(event) -> list[dict]:
+    """The on-air hours as a grid: a row per UTC day the periods touch, a box per hour of it.
+    A box is None where the hour is outside every period; otherwise its instant and whether it
+    is on the air: "all", "part" (a stretch typed to the minute starts or ends inside it) or ""."""
+    from datetime import UTC, datetime, time
+
+    periods, live = periods_of(event), on_air(event)
+    if not periods:
+        return []
+    day, last = periods[0][0].astimezone(UTC).date(), periods[-1][1].astimezone(UTC).date()
+    rows = []
+    while day <= last:
+        boxes = []
+        for h in range(24):
+            t = datetime.combine(day, time(h), tzinfo=UTC)
+            inside = clip([(t, t + HOUR)], periods)
+            if not inside:
+                boxes.append(None)
+                continue
+            have = sum(((b - a) for a, b in clip(inside, live)), timedelta())
+            want = sum(((b - a) for a, b in inside), timedelta())
+            boxes.append({"at": t, "on": "all" if have == want else ("part" if have else "")})
+        if any(boxes):
+            rows.append({"day": day, "boxes": boxes})
+        day += timedelta(days=1)
+    return rows
+
+
+def from_ticks(event, ticked: set) -> list[tuple]:
+    """The on-air hours the grid was saved with: each ticked hour box, inside the periods. A box
+    that was partly on the air and stays ticked keeps the part it had, so saving the grid never
+    widens a stretch someone typed to the minute."""
+    periods, live, out = periods_of(event), on_air(event), []
+    for row in hour_grid(event):
+        for box in row["boxes"]:
+            if not box or box["at"] not in ticked:
+                continue
+            inside = clip([(box["at"], box["at"] + HOUR)], periods)
+            out += clip(inside, live) if box["on"] == "part" else inside
+    return merge(out)
 
 
 def scheduled_hours(event) -> float:

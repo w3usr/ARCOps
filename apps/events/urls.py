@@ -35,6 +35,7 @@ urlpatterns = [
     ),
     path("<int:pk>/slots/generate/", views_manage.slots_generate, name="slots_generate"),
     path("<int:pk>/slots/preview/", views_manage.slots_preview, name="slots_preview"),
+    path("<int:pk>/on-air/", views_manage.on_air_save, name="on_air_save"),
     path("<int:pk>/slots/add/", views_manage.slot_add, name="slot_add"),
     path("<int:pk>/duplicate/", views_manage.event_duplicate, name="event_duplicate"),
     path("<int:pk>/cancel/", views_manage.event_cancel, name="event_cancel"),

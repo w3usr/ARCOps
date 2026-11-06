@@ -3,7 +3,16 @@ with role capacities (FR-46, FR-49)."""
 
 from __future__ import annotations
 
-from ..models import Captaincy, Event, Location, OperatingPeriod, Position, RoleCapacity, Slot
+from ..models import (
+    Captaincy,
+    Event,
+    Location,
+    OnAirRange,
+    OperatingPeriod,
+    Position,
+    RoleCapacity,
+    Slot,
+)
 from .slots import fill_empty_hours, generate_slots
 
 
@@ -27,6 +36,8 @@ def duplicate_event(source: Event, actor) -> Event:
     )
     for p in source.periods.all():
         OperatingPeriod.objects.create(event=copy, start=p.start, end=p.end)
+    for r in source.on_air_ranges.all():  # the club's on-air hours go with the periods (#247)
+        OnAirRange.objects.create(event=copy, start=r.start, end=r.end)
     if hasattr(source, "limit"):
         lim = source.limit
         lim.pk = None

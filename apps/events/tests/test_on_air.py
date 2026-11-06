@@ -1,0 +1,151 @@
+"""On-air hours (#247, SK 2026-11-05; functional addendum A15): the operating periods are the
+contest's span, and the club chooses the hours it means to be on the air inside them. The
+generator and the fill use those hours; changing them never touches a slot."""
+
+from datetime import UTC, datetime, timedelta
+
+import pytest
+
+from apps.events.models import Event, OnAirRange, OperatingPeriod, Slot
+from apps.events.services.slots import (
+    clip,
+    from_ticks,
+    hour_grid,
+    merge,
+    on_air,
+    plan_slots,
+    set_on_air,
+)
+
+from .test_manage import _as, _build
+
+pytestmark = pytest.mark.django_db
+
+H = timedelta(hours=1)
+T = datetime(2026, 6, 27, 18, tzinfo=UTC)  # _build's period: Sat 18:00 to Sun 18:00
+
+
+def _ev(c):
+    ev = _build(c)
+    return ev, list(ev.locations.get().positions.all())
+
+
+def test_merge_and_clip():
+    assert merge([(T, T + H), (T + H, T + 3 * H), (T + 5 * H, T + 6 * H)]) == [
+        (T, T + 3 * H),
+        (T + 5 * H, T + 6 * H),
+    ]
+    assert clip([(T - H, T + H)], [(T, T + 10 * H)]) == [(T, T + H)]
+    assert clip([(T - 3 * H, T - H)], [(T, T + 10 * H)]) == []
+
+
+def test_the_whole_event_until_the_club_chooses(officer):
+    ev, _ = _ev(_as(officer))
+    assert on_air(ev) == [(T, T + 24 * H)] and not OnAirRange.objects.filter(event=ev).exists()
+    # choosing the whole of the periods is the same as choosing nothing, and is stored as nothing
+    assert set_on_air(ev, [(T - H, T + 30 * H)]) == []
+    assert not OnAirRange.objects.filter(event=ev).exists()
+
+
+def test_the_grid_ticks_hours_and_keeps_a_part_typed_to_the_minute(officer):
+    ev, _ = _ev(_as(officer))
+    rows = hour_grid(ev)
+    assert [len([b for b in r["boxes"] if b]) for r in rows] == [6, 18]  # Sat 18-24, Sun 00-18
+    assert all(b["on"] == "all" for r in rows for b in r["boxes"] if b)
+    set_on_air(ev, [(T, T + 6 * H), (T + 14 * H + timedelta(minutes=30), T + 20 * H)])
+    boxes = {b["at"]: b["on"] for r in hour_grid(ev) for b in r["boxes"] if b}
+    assert boxes[T] == "all" and boxes[T + 6 * H] == "" and boxes[T + 14 * H] == "part"
+    # saving the grid as it stands keeps the half hour; unticking an hour takes it out
+    ticked = {at for at, on in boxes.items() if on} - {T + 19 * H}
+    spans = from_ticks(ev, ticked)
+    assert spans == [(T, T + 6 * H), (T + 14 * H + timedelta(minutes=30), T + 19 * H)]
+
+
+def test_the_generator_and_the_fill_use_the_on_air_hours(officer):
+    c = _as(officer)
+    ev, positions = _ev(c)
+    Slot.objects.filter(position__location__event=ev).delete()
+    set_on_air(ev, [(T, T + 6 * H), (T + 14 * H, T + 20 * H)])  # Sat 18-24, Sun 08-14
+    planned = list(plan_slots(ev, positions[:1], 60, setup_slots=1, breakdown_slots=1))
+    operating = [(a, b) for _, a, b, k in planned if k == "operating"]
+    assert len(operating) == 12 and (T + 6 * H, T + 7 * H) not in operating
+    setup = [a for _, a, _, k in planned if k == "setup"]
+    breakdown = [b for _, _, b, k in planned if k == "breakdown"]
+    assert setup == [T - H] and breakdown == [T + 21 * H]  # around the first and last on-air hour
+    form = {
+        "minutes": 60,
+        "setup_slots": 0,
+        "breakdown_slots": 0,
+        "cap_operator": 1,
+        "cap_mentor": 0,
+    }
+    page = c.get(f"/events/{ev.pk}/slots/generate/").content.decode()
+    assert "in the on-air hours (2 stretches)" in page
+    c.post(f"/events/{ev.pk}/slots/generate/", form)
+    assert Slot.objects.filter(position__location__event=ev).count() == 2 * 12
+    # widening the on-air hours never touches a slot; the fill adds only the new hours
+    set_on_air(ev, [(T, T + 8 * H), (T + 14 * H, T + 20 * H)])
+    assert Slot.objects.filter(position__location__event=ev).count() == 24
+    c.post(f"/events/{ev.pk}/slots/generate/", form | {"mode": "fill"})
+    assert Slot.objects.filter(position__location__event=ev).count() == 24 + 2 * 2
+
+
+def test_saving_the_on_air_hours_from_the_slots_step(officer):
+    c = _as(officer)
+    ev, _ = _ev(c)
+    url, step = f"/events/{ev.pk}/on-air/", f"/events/{ev.pk}/manage/slots/"
+    body = c.get(step).content.decode()
+    assert "On the air for the whole event: 24 hours." in body and body.count('name="hour"') == 24
+    # the grid
+    hours = [(T + i * H).isoformat() for i in (0, 1, 2, 10, 11)]
+    r = c.post(url, {"what": "hours", "hour": hours})
+    assert r.status_code == 302 and r["Location"] == step
+    assert on_air(ev) == [(T, T + 3 * H), (T + 10 * H, T + 12 * H)]
+    body = c.get(step).content.decode()
+    assert (
+        "On the air 5 of 24 hours:" in body and "Sat 27 Jun 18:00 to Sat 27 Jun 21:00 UTC" in body
+    )
+    assert "slots fall outside the on-air hours" in body  # _build generated the whole event
+    # a range to the minute, cut to the periods
+    c.post(url, {"what": "range", "start": "2026-06-28T16:30", "end": "2026-06-28T20:00"})
+    assert on_air(ev)[-1] == (T + 22 * H + timedelta(minutes=30), T + 24 * H)
+    r = c.post(url, {"what": "range", "start": "2026-07-01T10:00", "end": "2026-07-01T12:00"})
+    assert "That range falls outside every operating period." in r.content.decode()
+    # one stretch removed, then the whole event again
+    c.post(url, {"what": "remove", "i": "0"})
+    assert on_air(ev)[0][0] == T + 10 * H
+    c.post(url, {"what": "whole"})
+    assert on_air(ev) == [(T, T + 24 * H)]
+    # nothing ticked is refused, not taken as nothing on the air
+    c.post(url, {"what": "hours"})
+    assert on_air(ev) == [(T, T + 24 * H)]
+
+
+def test_the_same_hours_every_day(officer):
+    c = _as(officer)
+    ev, _ = _ev(c)
+    c.post(f"/events/{ev.pk}/on-air/", {"what": "daily", "daily": "20:00-22:00\n06:00-07:00"})
+    assert on_air(ev) == [(T + 2 * H, T + 4 * H), (T + 12 * H, T + 13 * H)]
+    r = c.post(f"/events/{ev.pk}/on-air/", {"what": "daily", "daily": "noon"})
+    assert "is not HH:MM-HH:MM" in r.content.decode()
+
+
+def test_duplicate_copies_the_on_air_hours(officer):
+    c = _as(officer)
+    ev, _ = _ev(c)
+    set_on_air(ev, [(T, T + 6 * H)])
+    c.post(f"/events/{ev.pk}/duplicate/")
+    copy = Event.objects.exclude(pk=ev.pk).get()
+    assert on_air(copy) == [(T, T + 6 * H)] and OperatingPeriod.objects.filter(event=copy).exists()
+
+
+def test_a_member_who_is_not_a_captain_may_not_set_them(officer):
+    from apps.accounts.models import User
+
+    c = _as(officer)
+    ev, _ = _ev(c)
+    member = User.objects.create_user(
+        "m@example.org", "pw-Testing-123", groups=["member"], first_name="M", last_name="M"
+    )
+    r = _as(member).post(f"/events/{ev.pk}/on-air/", {"what": "whole"})
+    assert r.status_code == 404

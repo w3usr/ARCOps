@@ -1,12 +1,63 @@
 {% extends "events/stages/_layout.html" %}
 {% block stage %}
+{% comment %}On-air hours (#247, SK 2026-11-05; functional addendum A15): the operating periods are
+the contest's span, and these are the hours the club means to be on the air inside them. The
+generator and Add slots to the empty hours fill only these. A grid of hour boxes for the usual
+case (checkboxes, so it works by keyboard and without JavaScript; app.js adds drag to paint and All
+or None per day), a range typed to the minute, and the same hours on every day. Every form saves in
+place (#177). Changing them never touches a slot.{% endcomment %}
+<section class="section" aria-labelledby="air">
+  <h2 id="air">On-air hours</h2>
+  <p>When the club means to be on the air, inside the operating periods. Generating and adding slots to the empty hours fill only these hours.</p>
+  {% if on_air_stretches %}
+  <p><strong>On the air {{ on_air_hours|floatformat:"-1" }} of {{ event_hours|floatformat:"-1" }} hours:</strong></p>
+  <ul class="list">{% for st in on_air_stretches %}<li>{{ st.label }}
+    <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<input type="hidden" name="what" value="remove"><input type="hidden" name="i" value="{{ st.i }}"><button class="linklike danger">Remove<span class="sr-only"> {{ st.label }}</span></button></form></li>{% endfor %}</ul>
+  {% else %}
+  <p><strong>On the air for the whole event: {{ event_hours|floatformat:"-1" }} hours.</strong></p>
+  {% endif %}
+  {% if slots_outside %}<p class="msg warning"><span class="lvl">Careful:</span> {{ slots_outside }} slot{{ slots_outside|pluralize }} fall{{ slots_outside|pluralize:"s," }} outside the on-air hours. They stay as they are; cancel them on the roster if they are not wanted.</p>{% endif %}
+
+  <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">{% csrf_token %}<input type="hidden" name="what" value="hours">
+    <div class="onair-wrap">
+    <table class="onair" data-scrolls>
+      <caption class="sr-only">On-air hours, a box per hour, in UTC</caption>
+      <thead><tr><th scope="col">UTC</th>{% for h in hours24 %}<th scope="col">{{ h }}</th>{% endfor %}<th scope="col"><span class="sr-only">Whole day</span></th></tr></thead>
+      <tbody>{% for row in on_air_grid %}<tr>
+        <th scope="row">{{ row.day|date:"D j M" }}</th>
+        {% for b in row.boxes %}{% if b %}<td class="{% if b.on == 'part' %}part{% endif %}"><input type="checkbox" name="hour" value="{{ b.at.isoformat }}" id="h-{{ b.at|date:'YmdH' }}"{% if b.on %} checked{% endif %}><label for="h-{{ b.at|date:'YmdH' }}" class="sr-only">{{ b.at|date:"D j M H:i" }} UTC{% if b.on == 'part' %}, part of the hour{% endif %}</label></td>{% else %}<td class="off"></td>{% endif %}{% endfor %}
+        <td class="day-all"><span data-day-tools hidden><button type="button" class="secondary small" data-day="all">All</button> <button type="button" class="secondary small" data-day="none">None</button></span></td>
+      </tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    <p class="helptext">A ticked box is an hour on the air. A box marked with a dot is partly on the air, from a range typed to the minute; saving keeps that part.</p>
+    <div><button type="submit">Save on-air hours</button></div>
+  </form>
+  {% if on_air_stretches %}<form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %}>{% csrf_token %}<input type="hidden" name="what" value="whole"><button type="submit" class="secondary">Use the whole event</button></form>{% endif %}
+
+  <div class="cols">
+  <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack" aria-labelledby="air-range">{% csrf_token %}<input type="hidden" name="what" value="range">
+    <h3 id="air-range">Add a range to the minute</h3>
+    {% if range_form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> No range was added; correct the fields marked below.</p>{% endif %}
+    <div class="row">{% for f in range_form %}{% include "events/forms/_field.html" %}{% endfor %}</div>
+    <div><button type="submit">Add range</button></div>
+  </form>
+  <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack" aria-labelledby="air-daily">{% csrf_token %}<input type="hidden" name="what" value="daily">
+    <h3 id="air-daily">The same hours every day</h3>
+    {% if daily_form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> No hours were ticked; correct the field marked below.</p>{% endif %}
+    {% include "events/forms/_field.html" with f=daily_form.daily %}
+    <div><button type="submit">Tick these hours</button></div>
+  </form>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="gen">
   <h2 id="gen">Slots</h2>
   {% comment %}#153 (SK, 2026-11-03): once a grid exists, the generator adds to the hours that have
   no slot and keeps everything else, people or no people; replacing the grid is the red link in it,
   only before anyone signs up, through its confirmation. #168: both open in Manage's dialog, as does
   one slot by hand (FR-46), its seats set as it is made (FR-49).{% endcomment %}
-  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if not slot_count %} Generating builds the grid: one slot per position per interval across every operating period, plus setup and breakdown slots at the ends.{% else %} <strong>Add slots to the empty hours</strong> fills only the time that has no slot yet, in every position, and keeps every slot, seat count and sign-up; it makes operating slots only, and a canceled slot's hour stays empty.{% if signups_exist %} Members have signed up, so the grid can no longer be replaced; add setup, breakdown and other single slots one at a time.{% else %} <strong>Regenerate slots</strong>, in the same place, replaces the whole grid.{% endif %}{% endif %}</p>
+  <p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.{% if not slot_count %} Generating builds the grid: one slot per position per interval across the on-air hours, plus setup and breakdown slots at the ends.{% else %} <strong>Add slots to the empty hours</strong> fills only the time that has no slot yet, in every position, and keeps every slot, seat count and sign-up; it makes operating slots only, and a canceled slot's hour stays empty.{% if signups_exist %} Members have signed up, so the grid can no longer be replaced; add setup, breakdown and other single slots one at a time.{% else %} <strong>Regenerate slots</strong>, in the same place, replaces the whole grid.{% endif %}{% endif %}</p>
   {% if positions and periods %}{% url 'slots_generate' event.pk as u %}<p>{% if slot_count %}{% include "events/_dialog_link.html" with url=u label="Add slots to the empty hours" %}{% else %}{% include "events/_dialog_link.html" with url=u label="Generate slots" %}{% endif %}
   {% url 'slot_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add a slot" %}</p>{% endif %}
 </section>

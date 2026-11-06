@@ -2750,7 +2750,37 @@ a canceled slot's time is not refilled, the fill makes operating slots only, and
 confirmation. *Record:* issue #153 in the private repository and the private repository's
 session note of 2026-11-03.
 
+### A15. FR-38, FR-46 and FR-48: the club's on-air hours inside the operating periods
+
+**Original (FR-38).** "An event has one or more operating periods, each a UTC start and end.
+[…] Slots are generated within periods (FR-46)." **(FR-48)** "[…] the generator asks the officer
+which hours on each day the club intends to operate […] and generates slots only in those
+windows."
+
+**Decision.** The operating periods are the contest's span: when the event runs, as published,
+and the dates the event shows everywhere. Inside them the club chooses its **on-air hours**,
+when it means to be on the air; with none chosen, it is on the air for the whole of the periods.
+They are chosen on the event's Slots step, before the generator, three ways: a grid of hour boxes
+(a row per UTC day, a box per hour inside a period), a range typed to the minute, and the same
+hours on every day (what FR-48 asked of the generator, now a shortcut that ticks the grid). They
+are stored on the event. The generator, Regenerate and Add slots to the empty hours (A14) fill
+only the on-air hours, slots starting from the start of each stretch; setup and breakdown go
+before the first on-air hour and after the last. Changing the on-air hours never touches a slot:
+the step says how many fall outside them. Add a slot keeps its rule that an operating slot fits
+inside a period, and may sit outside the on-air hours, a captain's deliberate choice. Duplicate
+copies them. One set of hours, one slot length and one set of seats for every position, as
+before. This takes up the second reading A14 set aside, different hours on different days.
+
+**Decided by** SK, 2026-11-05: "we're going to generate slots by just specifying what ranges we
+actually want to operate in. So for example, we start off by saying, by default, let's say, it's
+going to be the entirety of the event, but then the option is going to be to choose actual custom
+time slots or operating periods at the at the generation stage", then, of the questions put to
+him, the periods as the contest's span, the hours remembered, both a grid and typed ranges,
+nothing else varying, boxes of one hour, slots from each stretch's start, setup and breakdown
+around the first and last hour, and the daily hours as a shortcut. *Record:* issue #247 in the
+private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment) and 2026-11-03 (A14), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14) and 2026-11-05 (A15), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

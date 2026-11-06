@@ -744,6 +744,20 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 .stage .stack select { width: auto; min-width: 10rem; }
 .stage-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--line); }
 
+/* On-air hours (#247): a box per hour, a row per UTC day. Native checkboxes at a 24 px target
+   (WCAG 2.5.8) with their padding; an hour outside every period is an empty cell. A box only partly
+   on the air (a range typed to the minute) carries a dot, and says so to a screen reader. */
+.onair-wrap { overflow-x: auto; position: relative; }  /* holds the hidden labels inside the scroll, or they widen the page */
+table.onair { border-collapse: collapse; font-size: var(--t-small); }
+.onair th, .onair td { padding: 3px; text-align: center; }
+.onair thead th { font-weight: 400; color: var(--muted); }
+.onair tbody th { text-align: left; padding-right: var(--s2); white-space: nowrap; }
+.onair input[type="checkbox"] { width: 1.25rem; height: 1.25rem; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.onair td.part { position: relative; }
+.onair td.part::after { content: ""; position: absolute; top: 1px; right: 1px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+.onair td.day-all { text-align: left; white-space: nowrap; padding-left: var(--s2); }
+button.small { padding: .15rem .55rem; font-size: var(--t-small); min-height: 1.5rem; }
+
 /* Everything that cannot be undone, in one place at the foot of the page, marked as such. */
 .card.dangerzone { border-color: var(--bad); }
 .card.dangerzone > h2 { color: var(--bad); margin-top: 0; }

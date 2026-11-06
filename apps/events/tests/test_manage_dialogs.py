@@ -167,15 +167,8 @@ def test_replacing_from_the_dialog_asks_there_and_never_loses_the_grid_to_bad_ho
         'hx-post="/events/' in body
         and "Keep the grid" in body.split("Replace the grid</button>")[0]
     )
-    # Hours outside every period: refused before anything is deleted (the period made 18:00-20:00).
-    p = ev.periods.get()
-    OperatingPeriod.objects.filter(pk=p.pk).update(end=p.start.replace(hour=20))
-    r = c.post(
-        f"/events/{ev.pk}/slots/generate/",
-        form | {"windows": "03:00-04:00", "confirmed": "yes"},
-        **HX,
-    )
-    assert "Those hours fall outside every operating period." in r.content.decode()
+    # Hours outside every period are refused where they are chosen, the on-air hours (#247),
+    # so the generator cannot be asked for them; nothing is deleted before the confirmation.
     assert Slot.objects.filter(position__location__event=ev).count() == before
     r = c.post(f"/events/{ev.pk}/slots/generate/", form | {"confirmed": "yes"}, **HX)
     assert r["HX-Redirect"] == f"/events/{ev.pk}/"
@@ -211,7 +204,7 @@ def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
     seats = page.split("<legend>Seats in each slot</legend>", 1)[1].split("</fieldset>", 1)[0]
     assert re.findall(r"<label[^>]*>([^<]+)</label>", seats) == ["Operator", "Mentor"]
     assert 'type="number"' not in page and page.count('inputmode="numeric"') == 5
-    assert "Hours to operate each day (optional)" in page
+    assert "Hours to operate each day" not in page  # the on-air hours' shortcut now (#247)
     assert "Setup slots before" in page  # nobody has signed up: Regenerate slots may use it
     s = Slot.objects.filter(position__location__event=ev, kind="operating").first()
     SignUp.objects.create(slot=s, user=officer, role="operator")

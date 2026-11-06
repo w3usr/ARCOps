@@ -80,6 +80,19 @@ class OperatingPeriod(models.Model):
         ordering = ["start"]
 
 
+class OnAirRange(models.Model):
+    """The club's on-air hours inside the operating periods (#247, functional addendum A15): a
+    stretch the club means to be on the air. The periods are the contest's span; with no range at
+    all, the club is on the air for the whole of them. Stored merged, in UTC."""
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="on_air_ranges")
+    start = models.DateTimeField()
+    end = models.DateTimeField()
+
+    class Meta:
+        ordering = ["start"]
+
+
 class OperatingLimit(models.Model):
     """Advisory hour limits (FR-39), e.g. School Club Roundup's 6 of 24 and 24 of 107."""
 

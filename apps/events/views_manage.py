@@ -210,7 +210,6 @@ class SeatFields:
 class GenerateForm(FieldGroups, SeatFields, forms.Form):
     GROUPS = [
         ("Slots", ["minutes", "setup_slots", "breakdown_slots"]),
-        ("", ["windows"]),
         ("Seats in each slot", ["cap_*"]),
     ]
     minutes = forms.IntegerField(
@@ -223,30 +222,6 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
         label="Breakdown slots after", min_value=0, max_value=6, initial=1, widget=_num(1)
     )
 
-    windows = forms.CharField(
-        label="Hours to operate each day (optional)",
-        help_text="Leave empty to fill the whole of each period, or give one range a line, "
-        "such as 15:00-21:00",
-        required=False,
-        widget=forms.Textarea(attrs={"rows": 2}),
-    )
-
-    def clean_windows(self):
-        out = []
-        for line in (self.cleaned_data.get("windows") or "").splitlines():
-            line = line.strip().replace(" ", "")
-            if not line:
-                continue
-            try:
-                a, b = line.split("-")
-                for t in (a, b):
-                    h, m = t.split(":")
-                    assert 0 <= int(h) < 24 and 0 <= int(m) < 60
-            except (ValueError, AssertionError) as exc:
-                raise forms.ValidationError(f"{line!r} is not HH:MM-HH:MM") from exc
-            out.append((a, b))
-        return out
-
     def __init__(self, *args, roles, fill_only=False, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
@@ -254,6 +229,46 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
         self.add_seat_fields(roles)
         if fill_only:  # filling makes operating slots only (#153), so these would do nothing
             del self.fields["setup_slots"], self.fields["breakdown_slots"]
+
+
+def _daily(text: str) -> list[tuple[str, str]]:
+    """'15:00-21:00' lines as (start, end) strings; ValidationError on anything else."""
+    out = []
+    for line in (text or "").splitlines():
+        line = line.strip().replace(" ", "")
+        if not line:
+            continue
+        try:
+            a, b = line.split("-")
+            for t in (a, b):
+                h, m = t.split(":")
+                assert 0 <= int(h) < 24 and 0 <= int(m) < 60
+        except (ValueError, AssertionError) as exc:
+            raise forms.ValidationError(f"{line!r} is not HH:MM-HH:MM") from exc
+        out.append((a, b))
+    return out
+
+
+class DailyHoursForm(forms.Form):
+    """On-air hours' shortcut (#247): the same hours on every day, as FR-48 asked of the
+    generator. In the operating limit's day basis, as before."""
+
+    daily = forms.CharField(
+        label="Tick these hours on every day",
+        help_text="One range a line, such as 15:00-21:00.",
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label_suffix", "")
+        kwargs.setdefault("auto_id", "daily-%s")
+        super().__init__(*args, **kwargs)
+
+    def clean_daily(self):
+        out = _daily(self.cleaned_data.get("daily"))
+        if not out:
+            raise forms.ValidationError("Give at least one range, such as 15:00-21:00.")
+        return out
 
 
 class LocationForm(forms.Form):
@@ -412,6 +427,8 @@ def event_manage(request, pk, step=None):
         raise Http404
     if step == "kbyg":
         return _kbyg(request, event)
+    if step == "slots":
+        return _step_page(request, event, step, **_on_air_context(event))
     return _step_page(request, event, step)
 
 
@@ -835,36 +852,25 @@ def captain_remove(request, pk, user_id):
     return to_step(pk, "publish")
 
 
-def _windows(event, form):
-    """The daily hours as instants, None for the whole periods, or [] when they miss every period."""
-    if not form.cleaned_data.get("windows"):
-        return None
-    from .services.slots import windows_from_daily
-
-    return windows_from_daily(event, form.cleaned_data["windows"])
-
-
 def _preview(event, positions, form, fill) -> str:
     """The generator's line before anything is made (#168), for the fields as they stand."""
-    from .services.slots import describe
+    from .services.slots import chosen, describe
 
     if form.is_bound and not form.is_valid():
         return ""
-    if form.is_bound:
-        d, windows = form.cleaned_data, _windows(event, form)
-        if windows == []:
-            return "Those hours fall outside every operating period."
-    else:
-        d, windows = {name: f.initial for name, f in form.fields.items()}, None
-    return describe(
+    d = form.cleaned_data if form.is_bound else {name: f.initial for name, f in form.fields.items()}
+    stretches = len(chosen(event))
+    text = describe(
         event,
         positions,
         minutes=int(d.get("minutes") or 60),
         setup_slots=int(d.get("setup_slots") or 0),
         breakdown_slots=int(d.get("breakdown_slots") or 0),
-        windows=windows,
         fill=fill,
     )
+    if stretches:  # the club's own hours, not the whole event (#247)
+        text = f"{text.rstrip('.')}, in the on-air hours ({stretches} stretch{pluralize(stretches, 'es')})."
+    return text
 
 
 def _preview_parts(text: str) -> dict:
@@ -908,8 +914,9 @@ def slots_generate(request, pk):
                 "slots are added one at a time."
                 + ("" if signups else " Regenerate slots replaces the whole grid instead.")
                 if slot_count
-                else "One slot per position per interval across every operating period, plus "
-                "setup and breakdown slots at the ends."
+                else "One slot per position per interval across the on-air hours (set above the "
+                "generator on Slots; the whole event unless chosen), plus setup and breakdown slots "
+                "at the ends."
             ),
             slot_count=slot_count,
             signups_exist=signups,
@@ -925,12 +932,6 @@ def slots_generate(request, pk):
         messages.error(request, "Members have signed up; the grid cannot be rebuilt under them.")
         return done(request, step_url(pk, "slots"))
     if not form.is_valid():
-        return page()
-    # Before anything is deleted: replacing the grid with hours outside every period used to
-    # delete the grid and then find nothing to build.
-    windows = _windows(event, form)
-    if windows == []:
-        form.add_error("windows", "Those hours fall outside every operating period.")
         return page()
     if not fill and existing.exists() and request.POST.get("confirmed") != "yes":
         # Regenerating deletes every seat count, closed flag, and eligibility override on the
@@ -958,7 +959,6 @@ def slots_generate(request, pk):
         form.cleaned_data.get("setup_slots", 0),
         form.cleaned_data.get("breakdown_slots", 0),
         form.capacities(),
-        windows=windows,
         fill=fill,
     )
     record(
@@ -982,6 +982,111 @@ def slots_generate(request, pk):
             request, f"{len(created)} slots generated across {len(positions)} position(s)."
         )
     return done(request, reverse("event_detail", args=[pk]))
+
+
+def _on_air_context(event, **forms_) -> dict:
+    """What the Slots step needs to show the on-air hours (#247): the grid, the stretches in
+    words, the hours against the whole event, and the slots that fall outside them."""
+    from .services.slots import chosen, clip, hour_grid, periods_of
+
+    stretches, periods = chosen(event), periods_of(event)
+
+    def hours(spans):
+        return sum((b - a).total_seconds() for a, b in spans) / 3600
+
+    def label(a, b):
+        return f"{a:%a %-d %b %H:%M} to {b:%a %-d %b %H:%M} UTC"
+
+    outside = 0
+    if stretches:
+        for slot in Slot.objects.filter(
+            position__location__event=event, cancelled=False, kind="operating"
+        ):
+            if clip([(slot.start, slot.end)], stretches) != [(slot.start, slot.end)]:
+                outside += 1
+    return {
+        "on_air_grid": hour_grid(event),
+        "hours24": [f"{h:02d}" for h in range(24)],
+        "on_air_stretches": [{"i": i, "label": label(a, b)} for i, (a, b) in enumerate(stretches)],
+        "on_air_hours": hours(stretches) if stretches else hours(periods),
+        "event_hours": hours(periods),
+        "slots_outside": outside,
+        "range_form": forms_.get("range_form") or PeriodForm(auto_id="onair-%s"),
+        "daily_form": forms_.get("daily_form") or DailyHoursForm(),
+    }
+
+
+@login_required
+@require_POST
+def on_air_save(request, pk):
+    """Save the on-air hours (#247, A15) four ways, each back to the Slots step in place (#177):
+    the grid's ticked hours, a range typed to the minute, the same hours on every day, or one
+    stretch removed; or go back to the whole event. Slots are never touched."""
+    from datetime import datetime
+
+    from .services.slots import chosen, clip, from_ticks, periods_of, set_on_air, windows_from_daily
+
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    what = request.POST.get("what", "")
+    base = chosen(event)  # [] means the whole event: a range added to that starts afresh
+
+    def saved(spans, note=""):
+        kept = set_on_air(event, spans)
+        record(request.user, "event.on_air_set", event, after={"stretches": len(kept)})
+        if kept:
+            hours = sum((b - a).total_seconds() for a, b in kept) / 3600
+            messages.success(
+                request,
+                f"On-air hours saved: {hours:g} hour{pluralize(hours)} in {len(kept)} "
+                f"stretch{pluralize(len(kept), 'es')}.{note}",
+            )
+        else:
+            messages.success(request, "On the air for the whole event." + note)
+        return to_step(pk, "slots")
+
+    if what == "whole":
+        return saved([])
+    if what == "remove":
+        i = int(request.POST.get("i", -1)) if request.POST.get("i", "").isdigit() else -1
+        if not 0 <= i < len(base):
+            raise Http404
+        rest = base[:i] + base[i + 1 :]
+        if not rest:
+            return saved([], " The last stretch is gone, so the whole event is on the air again.")
+        return saved(rest)
+    if what == "hours":
+        ticked = set()
+        for v in request.POST.getlist("hour"):
+            try:
+                ticked.add(datetime.fromisoformat(v))
+            except ValueError:
+                continue
+        spans = from_ticks(event, ticked)
+        if not spans:
+            messages.error(request, "Tick at least one hour, or choose Use the whole event.")
+            return to_step(pk, "slots")
+        return saved(spans)
+    if what == "range":
+        form = PeriodForm(request.POST, auto_id="onair-%s")
+        if form.is_valid():
+            asked = (form.cleaned_data["start"], form.cleaned_data["end"])
+            inside = clip([asked], periods_of(event))
+            if not inside:
+                form.add_error("start", "That range falls outside every operating period.")
+            else:
+                note = "" if inside == [asked] else " The range was cut to the operating periods."
+                return saved(base + inside, note)
+        return _step_page(request, event, "slots", **_on_air_context(event, range_form=form))
+    if what == "daily":
+        form = DailyHoursForm(request.POST)
+        if form.is_valid():
+            spans = windows_from_daily(event, form.cleaned_data["daily"])
+            if spans:
+                return saved(base + spans)
+            form.add_error("daily", "Those hours fall outside every operating period.")
+        return _step_page(request, event, "slots", **_on_air_context(event, daily_form=form))
+    raise Http404
 
 
 @login_required

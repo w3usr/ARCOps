@@ -47,7 +47,9 @@ for path in sorted(pathlib.Path("templates").rglob("*.html")):
 
     for table in TABLE.finditer(text):
         body = table.group(0)
-        if prints_only or "<thead" not in body:
+        # A table marked data-scrolls scrolls inside its own box on a phone rather than stacking
+        # (the on-air hours' grid, #247), so its cells have no column to lose.
+        if prints_only or "<thead" not in body or "data-scrolls" in body.split(">", 1)[0]:
             continue  # no header row for a stacked cell to lose, or nothing that stacks
         for row in ROW.finditer(body[body.index("</thead>"):] if "</thead>" in body else ""):
             for cell in CELL.finditer(row.group(0)):
