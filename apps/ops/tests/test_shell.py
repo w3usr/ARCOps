@@ -91,3 +91,4 @@ def test_the_server_measures_the_mixes_the_stylesheet_draws():
     }
     assert drawn == set(config.ROLE_MIXES.values())
     assert f"--bg: {config.DARK_BG}" in css and f"--accent-fg: {config.DARK_ON_ACCENT}" in css
+    assert f"--canvas: {config.CANVAS}" in css and f"--canvas: {config.DARK_CANVAS}" in css

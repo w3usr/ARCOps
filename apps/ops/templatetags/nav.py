@@ -39,15 +39,40 @@ _ICONS = {
     "close": '<path d="M6 6l12 12M18 6 6 18"/>',
     "chevrons-left": '<path d="m11 7-5 5 5 5M18 7l-5 5 5 5"/>',
     "chevrons-right": '<path d="m6 7 5 5-5 5M13 7l5 5-5 5"/>',
+    # The workspace redesign's buttons and menus (#224, D6): drawn here on the same grid, not
+    # taken from an icon set, so nothing new to license.
+    "plus": '<path d="M12 5v14M5 12h14"/>',
+    "trash": '<path d="M4 7h16"/><path d="M9.5 7V4.5h5V7"/><path d="M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7a1.5 1.5 0 0 0 1.5-1.5L18 7"/><path d="M10 11v6M14 11v6"/>',
+    "more": '<circle cx="12" cy="5.5" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="12" cy="18.5" r="1.1"/>',
+    "download": '<path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4.5 19.5h15"/>',
+    "chevron-left": '<path d="m14.5 6-6 6 6 6"/>',
+    "chevron-right": '<path d="m9.5 6 6 6-6 6"/>',
+    "chevron-down": '<path d="m6 9.5 6 6 6-6"/>',
+    "map-pin": '<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/>',
+    "grid": '<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+    "search": '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>',
+    "filter": '<path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8z"/>',
+    "send": '<path d="M20.5 3.5 10 14"/><path d="M20.5 3.5 14 20.5l-4-6.5-6.5-4z"/>',
+    "lock": '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"/>',
+    "unlock": '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5v-3a4 4 0 0 1 7.7-1.5"/>',
+    "help": '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .9-1 1.6v.6"/><path d="M12 17h.01"/>',
+    "radio": '<path d="M12 12v9"/><circle cx="12" cy="10" r="1.75"/><path d="M8.5 6.5a5 5 0 0 0 0 7M15.5 6.5a5 5 0 0 1 0 7"/><path d="M5.5 3.5a9 9 0 0 0 0 13M18.5 3.5a9 9 0 0 1 0 13"/>',
+    "table": '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>',
+    "history": '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V8h3.5"/><path d="M12 8v4l3 2"/>',
+    "check": '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    "printer": '<path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="1.5"/><path d="M7 14.5h10V20H7z"/>',
+    "megaphone": '<path d="M4 10v4a1 1 0 0 0 1 1h2l8 4.5v-15L7 9H5a1 1 0 0 0-1 1z"/><path d="m8 15 1 5h2.5l-1-4.5"/><path d="M18 9.5a3.5 3.5 0 0 1 0 5"/>',
 }
 
 
 @register.simple_tag
-def icon(name: str) -> str:
+def icon(name: str, size: str = "") -> str:
+    """`{% icon 'plus' %}`, or `{% icon 'plus' 'small' %}` for the 16 px one a small button holds."""
     body = _ICONS.get(name, "")
+    css = "icon small" if size == "small" else "icon"
     # The markup is assembled from the constants above only; nothing from the request enters it.
     return mark_safe(  # noqa: S308
-        '<svg class="icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" '
+        f'<svg class="{css}" aria-hidden="true" focusable="false" viewBox="0 0 24 24" '
         'fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
         f'stroke-linejoin="round">{body}</svg>'
     )

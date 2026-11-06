@@ -41,7 +41,9 @@ def test_a_range_by_keyboard_saves_in_place_and_is_removed(live_server, engine):
         before = page.evaluate("history.length")
         form.get_by_role("button", name="Add range").focus()
         page.keyboard.press("Enter")
-        expect(page.locator("#messages")).to_contain_text("On-air hours saved: 2 hours in 1 stretch.")
+        expect(page.locator("#messages")).to_contain_text(
+            "On-air hours saved: 2 hours in 1 stretch."
+        )
         expect(page.locator("#messages")).to_be_focused()
         expect(air).to_contain_text("On the air 2 of")
         assert page.url == url and page.evaluate("history.length") == before
@@ -56,11 +58,15 @@ def test_without_javascript_a_range_is_a_plain_post(live_server, engine):
     url, rng = _event(live_server)
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
-        ctx = browser.new_context(java_script_enabled=False, viewport={"width": 1280, "height": 900})
+        ctx = browser.new_context(
+            java_script_enabled=False, viewport={"width": 1280, "height": 900}
+        )
         page = ctx.new_page()
         sign_in(page, live_server.url, ACCOUNTS["officer"])
         page.goto(url)
         _fill(page, rng).get_by_role("button", name="Add range").click()
         page.wait_for_url(url)
-        expect(page.locator("#messages")).to_contain_text("On-air hours saved: 2 hours in 1 stretch.")
+        expect(page.locator("#messages")).to_contain_text(
+            "On-air hours saved: 2 hours in 1 stretch."
+        )
         browser.close()

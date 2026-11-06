@@ -196,6 +196,8 @@ ROLE_MIXES = {
     "dark --accent-soft": (0.45, "#111418"),
 }
 DARK_BG, DARK_ON_ACCENT = "#111418", "#0c1220"
+# The grey the signed-in column stands on, light and dark (D1): links in running text sit on it.
+CANVAS, DARK_CANVAS = "#f1f3f6", "#0d1014"
 
 
 def role_contrasts(brand: str) -> dict[str, float]:
@@ -209,6 +211,8 @@ def role_contrasts(brand: str) -> dict[str, float]:
         "dark mode's accent on the page": contrast(accent, DARK_BG),
         "text on dark mode's accent": contrast(DARK_ON_ACCENT, accent),
         "dark mode's accent on its container": contrast(accent, dark_soft),
+        "the club color on the canvas": contrast(brand, CANVAS),
+        "dark mode's accent on the canvas": contrast(accent, DARK_CANVAS),
     }
 
 
