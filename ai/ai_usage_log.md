@@ -4650,4 +4650,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (.tag as a filled badge in five tones, neutral, ok, warn, bad and info, with .note and .open kept as aliases); apps/ops/templatetags/badges.py (new: which state of an event, a member or an agreement takes which tone, and a `tone` filter; a slot's stays the roster's Presentation.tone); apps/ops/tests/test_badges.py (new: each tone's word on its fill at 4.5:1 or more, light and dark, read from app.css; every event state mapped).
 - **Nature of Contribution**: Code and tests. Departure from the issue: a filter instead of `templates/components/badge.html`, since a badge is one span and the pages that show states adopt the filter as they are restyled. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event's coverage counts, the roster, Members).
 - **Human Review Status**: Pending review
-- **Git Hash**: (pending)
+- **Git Hash**: 0c47943
