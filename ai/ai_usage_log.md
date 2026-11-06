@@ -4626,4 +4626,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/INTERFACE.md (Controls: buttons that look like buttons, the variants, sizes, icons, restyle don't rename; new Menus and Links sections; Destructive actions tier 2 as a red ghost button with a bin; Color: the club's color on the one primary, three neutral surfaces, state badges; Shape: panels on the canvas, cards inside them, the event as a workspace; the step foot's buttons; Material 3's roles); docs/TECHNICAL_REQUIREMENTS.md (addendum A10 only; the body is not edited).
 - **Nature of Contribution**: Docs, from the plan and SK's decisions; the Popover API's and CSS anchor positioning's Baseline dates read on MDN. Departure: D6's tooltip on an icon-only button is drawn by CSS from its aria-label, not a title attribute, which tools/check_interface.sh refuses and a phone never shows. The guard needs no change yet (it enforces nothing about .linklike). Verified: the three repository guards pass.
 - **Human Review Status**: Pending review (SK reads the diff, #222)
-- **Git Hash**: (pending)
+- **Git Hash**: 6576a8a
