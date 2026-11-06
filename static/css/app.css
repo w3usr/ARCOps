@@ -177,6 +177,9 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
   content: "\25be"; position: absolute; right: .7rem; top: .45rem; color: var(--muted);
 }
 .filter[open] > summary { border-color: var(--accent); }
+/* A filter button (#229): dashed while it is off, solid once it narrows the list. */
+.filter > summary { border-style: dashed; border-color: var(--line-strong); }
+.filter.set > summary { border-style: solid; }
 .filter > fieldset {
   position: absolute; z-index: 20; top: calc(100% + .25rem); left: 0; min-width: 100%;
   border: 1px solid var(--line); border-radius: var(--r-card); background: var(--panel);
@@ -314,6 +317,56 @@ footer.site .credit a { color: inherit; }
 .rows > li + li { border-top: 1px solid var(--line); }
 .rows > li > .grow { flex: 1 1 12rem; min-width: 0; }
 .rows .sub { display: block; color: var(--muted); font-size: var(--t-small); }
+
+/* ⋮ menus (#228, D7; technical addendum A10): a popover under its button, a list of links and
+   buttons, the destructive ones last and red. The disclosure pattern, not role="menu", so no
+   arrow keys to learn: Tab moves through it, Escape closes it.
+     <button type="button" class="ghost small icon-only" popovertarget="m-1" aria-label="More actions for Run">{% icon 'more' 'small' %}</button>
+     <div class="menu" id="m-1" popover> <a href="…">{% icon 'copy' 'small' %}Duplicate</a> … </div> */
+.menu {
+  margin: .25rem 0 0; padding: .3rem; min-width: 12rem; border: 1px solid var(--line); border-radius: var(--r-card);
+  background: var(--panel); color: var(--fg); box-shadow: var(--menu-shadow);
+  position-area: block-end span-inline-start; position-try-fallbacks: flip-block, flip-inline;
+}
+.menu form { margin: 0; }
+.menu :is(a, button) {
+  display: flex; align-items: center; justify-content: flex-start; gap: .6rem; width: 100%; padding: .5rem .65rem;
+  border: 0; border-radius: var(--r-button); background: none; color: var(--fg);
+  font: inherit; font-weight: 400; text-align: left; text-decoration: none; cursor: pointer;
+}
+.menu :is(a, button).danger { color: var(--bad); background: none; }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: .3rem 0; }
+
+/* A toolbar above a panel's table (#229): search, filters, and the count at the right. */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .75rem 1.25rem; }
+.toolbar .count { margin-left: auto; color: var(--muted); font-size: var(--t-small); }
+.search { position: relative; flex: 1 1 14rem; max-width: 24rem; }
+.search > .icon { position: absolute; left: .65rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search > input { padding-left: 2.2rem; max-width: none; }
+/* A switch (#229): two or three choices with counts, links with aria-current, so it is an address
+   and works with JavaScript off ("All slots 50", "Needs someone 2"). */
+.switch { display: inline-flex; flex-wrap: wrap; gap: .2rem; padding: .2rem; background: var(--panel-head); border: 1px solid var(--line); border-radius: var(--r-button); }
+.switch a { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem; border-radius: var(--r-button); color: var(--muted); font-size: var(--t-small); font-weight: 700; text-decoration: none; }
+.switch a:hover { color: var(--fg); }
+.switch a[aria-current] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+.switch .n { font-weight: 400; }
+
+/* A data table in a panel (#230, D5): quiet headings on the band, a divider per row, a tint under
+   the pointer, the row's one link (its name) underlined only under the pointer and on focus, a
+   second line for secondary facts, and the actions at the end. Phones stack it as any .table. */
+.table.data { margin: 0; }
+.table.data th, .table.data td { padding: .65rem .75rem; vertical-align: middle; }
+.table.data :is(th, td):first-child { padding-left: 1.25rem; }
+.table.data :is(th, td):last-child { padding-right: 1.25rem; }
+.table.data thead th { background: var(--panel-head); border-bottom: 1px solid var(--line); }
+.table.data tbody tr:last-child td { border-bottom: 0; }
+.table.data tbody tr:hover { background: color-mix(in srgb, var(--fg) 3%, transparent); }
+.table.data td a:not(.button) { font-weight: 700; text-decoration: none; }
+.table.data td a:not(.button):is(:hover, :focus-visible) { text-decoration: underline; }
+.table.data .sub { display: block; color: var(--muted); font-size: var(--t-small); font-weight: 400; }
+.table.data td.row-actions { text-align: right; white-space: nowrap; }
+.k-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
+.k-icons > li + li { border-top: 0; }
 :is(.card, .section) > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
 :is(.card, .section) > :last-child { margin-bottom: 0; }  /* the padding is the space under it */
 /* ...and a margin one level down collapses through its parent into that space: a table in its
@@ -385,10 +438,10 @@ button, .button {
 /* State layers (Material 3): a veil of the control's own text color over its fill, 8% under the
    pointer and 10% focused or pressed, the same on every kind of control and with no JavaScript.
    A link-like button in a line of text keeps its underline instead. */
-:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button):hover {
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a):hover {
   background-image: linear-gradient(color-mix(in srgb, currentColor 8%, transparent) 0 0);
 }
-:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button):is(:focus-visible, :active) {
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a):is(:focus-visible, :active) {
   background-image: linear-gradient(color-mix(in srgb, currentColor 10%, transparent) 0 0);
 }
 /* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
@@ -494,6 +547,8 @@ label .req { margin-left: .15rem; }
     content: attr(data-label) ": "; font-weight: 700; color: var(--muted);
   }
   .table td:empty { display: none; }
+  .table.data td.row-actions { text-align: left; }
+  .table.data td.row-actions::before { content: none; }  /* the buttons say what they do */
 }
 
 /* ------------------------------------------- management pages */

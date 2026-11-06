@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load nav %}
+{% block title %}Components · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% comment %}The kit of the workspace redesign (#231; docs/INTERFACE.md): every part, with its one-line
+contract, drawn by the same CSS the pages use, with example data and nothing that posts. When a
+part changes, it changes here first.{% endcomment %}
+<h1>Components</h1>
+<p>What every page is built from, each with the rule it follows. The rules are in the interface guide, <code>docs/INTERFACE.md</code>.</p>
+
+<section class="panel" aria-labelledby="k-buttons">
+  <header class="panel-head"><div><h2 id="k-buttons">Buttons</h2><p>Something that does something looks like a button: an icon and a word, the club's color on the one primary of a form.</p></div></header>
+  <div class="panel-body">
+    <div class="actions">
+      <button type="button">{% icon 'check' %}Primary</button>
+      <button type="button" class="secondary">{% icon 'plus' %}Secondary</button>
+      <button type="button" class="ghost">{% icon 'edit' %}Ghost</button>
+      <button type="button" class="ghost danger">{% icon 'trash' %}Remove</button>
+      <button type="button" class="danger-outline">Open a final act</button>
+      <button type="button" class="danger">Confirm a final act</button>
+    </div>
+    <p class="muted">Small, for an action on one row:</p>
+    <div class="actions">
+      <button type="button" class="small">{% icon 'check' 'small' %}Primary</button>
+      <button type="button" class="secondary small">{% icon 'plus' 'small' %}Add position</button>
+      <button type="button" class="ghost danger small">{% icon 'trash' 'small' %}Remove</button>
+      <button type="button" class="ghost small icon-only" aria-label="More actions">{% icon 'more' 'small' %}</button>
+      <button type="button" class="secondary small icon-only" aria-label="What the marks mean">{% icon 'help' 'small' %}</button>
+    </div>
+    <p class="muted">An icon alone only on ⋮ and ?; its name shows under it on hover and focus.</p>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="k-badges">
+  <header class="panel-head"><div><h2 id="k-badges">Badges</h2><p>A state: a tone and always a word. Which state takes which tone is one map, the <code>tone</code> filter.</p></div></header>
+  <div class="panel-body">
+    <div class="actions"><span class="tag">Draft</span> <span class="tag ok">Published</span> <span class="tag info">Locked</span> <span class="tag warn">Needs someone</span> <span class="tag bad">Canceled</span></div>
+  </div>
+</section>
+
+<section class="panel" aria-labelledby="k-panel">
+  <header class="panel-head">
+    <div><h2 id="k-panel">Panel with rows</h2><p>One part of a page with a job: its actions in its header, each row's at the row's end.</p></div>
+    <div class="actions"><button type="button" class="secondary">{% icon 'plus' %}Add location</button></div>
+  </header>
+  <ul class="rows">
+    <li><span class="grow"><strong>Run</strong><span class="sub">26 slots, 2 people signed up</span></span>
+      <button type="button" class="ghost danger small">{% icon 'trash' 'small' %}Remove<span class="sr-only"> Run</span></button></li>
+    <li><span class="grow"><strong>Mult</strong><span class="sub">24 slots, nobody yet</span></span>
+      <button type="button" class="ghost small icon-only" popovertarget="k-menu" aria-label="More actions for Mult">{% icon 'more' 'small' %}</button>
+      <div class="menu" id="k-menu" popover>
+        <a href="#k-panel">{% icon 'edit' 'small' %}Rename</a>
+        <a href="#k-panel">{% icon 'copy' 'small' %}Duplicate</a>
+        <hr>
+        <button type="button" class="danger" commandfor="k-confirm" command="show-modal">{% icon 'trash' 'small' %}Remove</button>
+      </div></li>
+  </ul>
+  <footer class="panel-foot"><p>A note at the left.</p><button type="button">Save</button></footer>
+</section>
+<dialog id="k-confirm" class="slot-dialog confirm-dialog" aria-labelledby="k-confirm-h">
+  <h2 id="k-confirm-h">Remove Mult?</h2>
+  <p>A confirmation names what is lost and who is told, then offers the safe choice first.</p>
+  <div class="actions"><button type="button" class="secondary" commandfor="k-confirm" command="close">Keep Mult</button>
+    <button type="button" class="danger" commandfor="k-confirm" command="close">Remove Mult</button></div>
+</dialog>
+
+<section class="panel" aria-labelledby="k-table">
+  <header class="panel-head"><div><h2 id="k-table">Toolbar, switch and data table</h2><p>One link per row, on what the row is; facts under it; states as badges; actions at the end.</p></div></header>
+  <div class="toolbar">
+    <label class="search"><span class="sr-only">Name or callsign</span>{% icon 'search' %}<input type="search" placeholder="Name or callsign"></label>
+    <details class="filter"><summary aria-label="Status">Any status</summary><fieldset><legend class="sr-only">Status</legend><div class="check"><input type="checkbox" id="k-f-a"><label for="k-f-a">Active</label></div></fieldset></details>
+    <nav class="switch" aria-label="Show"><a href="#k-table" aria-current="true">All <span class="n">2</span></a><a href="#k-table">Needs attention <span class="n">1</span></a></nav>
+    <span class="count">2 of 2</span>
+  </div>
+  <table class="table data">
+    <thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="Name"><a href="#k-table">Example One</a><span class="sub">one@example.org</span></td><td data-label="Callsign">N0CAA</td><td data-label="Status"><span class="tag ok">Active</span></td>
+        <td data-label="Actions" class="row-actions"><button type="button" class="secondary small">{% icon 'edit' 'small' %}Edit</button></td></tr>
+      <tr><td data-label="Name"><a href="#k-table">Example Two</a><span class="sub">two@example.org</span></td><td data-label="Callsign">N0CAB</td><td data-label="Status"><span class="tag warn">Provisional</span></td>
+        <td data-label="Actions" class="row-actions"><button type="button" class="secondary small">{% icon 'edit' 'small' %}Edit</button></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="panel" aria-labelledby="k-icons">
+  <header class="panel-head"><div><h2 id="k-icons">Icons</h2><p>Drawn on one grid; beside a word, never instead of one.</p></div></header>
+  <ul class="rows k-icons">{% for name in icons %}<li>{% icon name %}<span>{{ name }}</span></li>{% endfor %}</ul>
+</section>
+{% endblock %}

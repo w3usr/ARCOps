@@ -215,6 +215,7 @@ def _pages(world):
         ),
         # sysadmin tools
         ("job status", "/ops/status/", {"anonymous": AWAY, **sysadmin_only}),
+        ("the kit", "/ops/components/", {"anonymous": AWAY, **sysadmin_only}),
         ("club settings", "/ops/settings/", {"anonymous": AWAY, **sysadmin_only}),
         ("message templates", "/ops/templates/", {"anonymous": AWAY, **sysadmin_only}),
     ]

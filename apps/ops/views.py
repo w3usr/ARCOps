@@ -288,3 +288,20 @@ def branding_file(request, name):
     resp = FileResponse(path.open("rb"), content_type=ctype)
     resp["Cache-Control"] = "public, max-age=86400"
     return resp
+
+
+@login_required
+def components(request):
+    """The workspace redesign's kit (#231), every part with its one-line contract and example
+    data: what a page written next semester is built from. Sysadmins only."""
+    if not request.user.may("view_job_status"):
+        from django.http import Http404
+
+        raise Http404
+    return render(request, "ops/components.html", {"icons": sorted(_icon_names())})
+
+
+def _icon_names():
+    from .templatetags.nav import _ICONS
+
+    return _ICONS

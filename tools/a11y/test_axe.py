@@ -113,6 +113,7 @@ def pages_for(role: str) -> list[str]:
     sysadmin = [
         "/me/level/",  # only a sysadmin has levels at all (TR-43)
         "/ops/status/",
+        "/ops/components/",
         "/ops/settings/",
         "/ops/groups/",
         "/ops/templates/",

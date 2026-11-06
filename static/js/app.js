@@ -196,8 +196,42 @@ if ("serviceWorker" in navigator) {
     if (b) opener = b;
   });
   document.addEventListener("close", (ev) => {
-    if (opener && ev.target.id === opener.getAttribute("commandfor") && opener.isConnected) opener.focus();
+    if (!opener || ev.target.id !== opener.getAttribute("commandfor") || !opener.isConnected) return;
+    // Opened from a ⋮ menu (#228): the menu closed when the dialog opened, so go back to its button.
+    const menu = opener.closest("[popover]");
+    const back = menu && !menu.matches(":popover-open") ? document.querySelector(`[popovertarget="${menu.id}"]`) : opener;
+    if (back) back.focus();
   }, true);  // a dialog's close event does not bubble; catch it on the way down
+})();
+
+// ⋮ menus (#228, technical addendum A10): the popover opens and closes itself, with Escape and a
+// click outside. This moves focus to its first entry, and places it under its button where CSS
+// anchor positioning has not (a browser before 2026, or one without the popover's implicit anchor).
+(() => {
+  document.addEventListener("toggle", (ev) => {
+    const m = ev.target;
+    if (!(m instanceof HTMLElement) || !m.classList.contains("menu")) return;
+    const b = document.querySelector(`[popovertarget="${m.id}"]`);
+    if (ev.newState === "closed") {
+      // Safari does not focus a button it clicks, so it has nowhere to give focus back to and
+      // drops it on <main>: when focus is in the menu, or nowhere a reader can Tab to (the body,
+      // or a container focusable only by script), it goes back to the ⋮ button.
+      const at = document.activeElement;
+      const nowhere = !at || at === document.body || at.getAttribute("tabindex") === "-1";
+      if (b && (nowhere || m.contains(at))) b.focus();
+      return;
+    }
+    if (b) {
+      m.style.cssText = "";
+      const r = b.getBoundingClientRect(), mr = m.getBoundingClientRect();
+      if (Math.abs(mr.top - r.bottom) > 12 && Math.abs(r.top - mr.bottom) > 12) {
+        m.style.cssText = `position: fixed; inset: auto; margin: 0; top: ${r.bottom + 4}px; ` +
+          `left: ${Math.max(8, Math.min(r.right - mr.width, innerWidth - mr.width - 8))}px`;
+      }
+    }
+    const first = m.querySelector("a[href], button:not([disabled])");
+    if (first) first.focus();
+  }, true);  // toggle does not bubble either
 })();
 if (!("command" in HTMLButtonElement.prototype)) {
   document.addEventListener("click", (ev) => {

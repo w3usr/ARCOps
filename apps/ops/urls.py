@@ -8,6 +8,7 @@ from . import views, views_groups, views_settings
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("ops/status/", views.status, name="job_status"),
+    path("ops/components/", views.components, name="components"),
     path("ops/settings/", views_settings.settings_page, name="settings_page"),
     path("ops/groups/", views_groups.groups_page, name="groups_page"),
     path("ops/outbox/", comms_views.outbox, name="outbox"),

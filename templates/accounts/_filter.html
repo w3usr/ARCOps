@@ -5,7 +5,7 @@ ticked, so a narrowed table says so without being opened (NAF, 2026-09-19).{% en
 {% comment %}`name` makes the five panels an exclusive set, so opening one closes the last: they
 sit over the table, and two open at once overlap each other. A browser that does not know the
 attribute simply allows both, which is what it did before.{% endcomment %}
-<details class="filter" name="members-filter"{% if open %} open{% endif %}>
+<details class="filter{% if summary %} set{% endif %}" name="members-filter"{% if open %} open{% endif %}>
   <summary aria-label="{{ label }}">{% if summary %}{{ summary }}{% else %}Any {{ label|lower }}{% endif %}</summary>
   <fieldset>
     <legend class="sr-only">{{ label }}</legend>

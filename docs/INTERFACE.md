@@ -434,6 +434,9 @@ password changed, mail sent, a setting saved) and stay quiet when it is.
 
 ## Checking the work
 
+**The kit is a page**: `/ops/components/`, for sysadmins, shows every part above drawn by the
+same CSS the pages use, each with its one-line contract (#231). A part changes there first.
+
 `tools/check.sh` runs all of it in about two minutes:
 
 - `pytest apps` — the permission matrix is the guard that no gate moved.
