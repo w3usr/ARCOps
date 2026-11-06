@@ -4643,3 +4643,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and a test. Departures from the issue: no `templates/components/button.html`, because a button is one line of markup and a partial would only wrap it in parameters (the kit page, #231, shows the markup); no `title` on an icon-only button, which tools/check_interface.sh refuses, its name drawn by CSS instead; the allauth button override needed no change, as it already maps onto secondary and danger. Found and fixed on the contact sheet: the sidebar's Sign out and Collapse centered by the new rule. Verified: 531 application tests pass; lint, format and the three guards pass; the accessibility sweep including the new test passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Publish step, profile, sidebar).
 - **Human Review Status**: Pending review
 - **Git Hash**: 45da207
+
+## [2026-11-06 16:50 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Workspace redesign kit, badges (w3usr/w3usr.org-PRIVATE#226): one badge style, a tone and always a word.
+- **Sections/Files Affected**: static/css/app.css (.tag as a filled badge in five tones, neutral, ok, warn, bad and info, with .note and .open kept as aliases); apps/ops/templatetags/badges.py (new: which state of an event, a member or an agreement takes which tone, and a `tone` filter; a slot's stays the roster's Presentation.tone); apps/ops/tests/test_badges.py (new: each tone's word on its fill at 4.5:1 or more, light and dark, read from app.css; every event state mapped).
+- **Nature of Contribution**: Code and tests. Departure from the issue: a filter instead of `templates/components/badge.html`, since a badge is one span and the pages that show states adopt the filter as they are restyled. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event's coverage counts, the roster, Members).
+- **Human Review Status**: Pending review
+- **Git Hash**: (pending)

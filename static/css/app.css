@@ -303,8 +303,13 @@ footer.site .credit a { color: inherit; }
 .roster tr.st-viable th { border-left: 4px solid var(--ok); }
 .roster tr.st-empty th { border-left: 4px solid var(--line); }
 .status { font-weight: 700; } .status.viable { color: var(--ok); } .status.at_risk { color: var(--warn); } .status.not_viable { color: var(--bad); }
-.tag { display: inline-block; font-size: var(--t-small); padding: 0 .45rem; border-radius: var(--r-field); background: var(--surface); border: 1px solid var(--line); }
-.tag.ok { background: var(--tag-ok); } .tag.warn { background: var(--tag-warn); } .tag.bad { background: var(--tag-bad); } .tag.note { background: var(--tag-warn); }
+.tag { display: inline-flex; align-items: center; gap: .3rem; font-size: var(--t-small); font-weight: 700; line-height: 1.4; padding: .05rem .45rem; border-radius: var(--r-field); background: var(--tag-neutral); color: var(--muted); white-space: nowrap; }
+/* A badge (#226): a tone and always a word, its word at 4.5:1 or more on its fill in both themes
+   (apps/ops/tests/test_badges.py). Which state takes which tone is apps/ops/templatetags/badges.py. */
+.tag.ok { background: var(--tag-ok); color: var(--ok); }
+.tag.warn, .tag.note { background: var(--tag-warn); color: var(--warn); }
+.tag.bad { background: var(--tag-bad); color: var(--bad); }
+.tag:is(.info, .open) { background: var(--tag-info); color: var(--accent-soft-fg); }
 .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
 .messages:focus { outline: none; }
 .msg { padding: .65rem .9rem; border-radius: var(--r-card); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--panel); }
@@ -550,8 +555,6 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 @supports selector(:popover-open) { .overview { grid-template-columns: 1fr; } }
 @supports not selector(:popover-open) { .keybtn, .keyclose { display: none; } }
 .msglist { list-style: none; padding-left: 0; }
-.tag.open { color: var(--accent); }
-.tag.ok { color: var(--ok); } .tag.warn { color: var(--warn); }
 .health .tag { margin-right: .25rem; }
 
 .roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
