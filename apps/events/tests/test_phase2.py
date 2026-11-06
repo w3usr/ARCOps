@@ -426,8 +426,11 @@ def test_csv_filter_badges_feed_and_overview():
     assert "Mo Member" in csv_body and "N0MEM" in csv_body and csv_body.count("\n") >= 3
     full = c.get(f"/events/{e.pk}/").content.decode()
     problems = c.get(f"/events/{e.pk}/?filter=problems").content.decode()
-    assert "Show every slot" in problems and problems.count('class="r-cell') < full.count(
-        'class="r-cell'
+    # the switch (#235): Every slot links back, Problems only is the page you are on
+    assert (
+        '<a href="?">Every slot' in problems
+        and 'aria-current="true">Problems only' in problems
+        and problems.count('class="r-cell') < full.count('class="r-cell')
     )
     c.force_login(mem)
     assert c.get(f"/events/{e.pk}/roster.csv").status_code == 404

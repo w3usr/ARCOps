@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load richtext dicts labels workspace %}
+{% load richtext dicts labels workspace nav %}
 {% block title %}{{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% event_header event 'roster' %}
@@ -45,12 +45,16 @@
 
 {% if roster.days %}
 <form method="post" action="{% url 'event_bulk' event.pk %}" id="roster-form">{% csrf_token %}
-<div class="rosterhead">
-  <h2>Roster</h2>
-  <p class="zones muted">Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.
-    · {% if roster.filter == 'problems' %}<a href="?">Show every slot</a>{% else %}<a href="?filter=problems">Problems only</a>{% endif %} <button type="button" class="keybtn" popovertarget="roster-key-pop" aria-label="Key">?</button></p>
+<section class="panel roster-panel" aria-labelledby="roster-h">
+<div class="panel-head rosterhead">
+  <div><h2 id="roster-h">Roster</h2></div>
+  {% comment %}Every slot or Problems only as a switch with counts (#235): two links, the same
+  addresses as before, so it works without JavaScript; the Key's ? an icon button.{% endcomment %}
+  <p class="zones muted"><span>Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.</span>
+    <span class="switch" role="group" aria-label="Show"><a href="?"{% if roster.filter != 'problems' %} aria-current="true"{% endif %}>Every slot <span class="n">{{ roster.counts.total }}</span></a><a href="?filter=problems"{% if roster.filter == 'problems' %} aria-current="true"{% endif %}>Problems only <span class="n">{{ roster.counts.attention }}</span></a></span>
+    <button type="button" class="secondary small icon-only keybtn" popovertarget="roster-key-pop" aria-label="Key">{% icon 'help' 'small' %}</button></p>
 </div>
-<div class="overview">
+<div class="panel-body overview">
 {% comment %}The Key opens over the page from the ? beside Problems only (#169, SK 2026-11-02): a
 native popover, so no script of ours, and Escape or a click outside closes it. A browser without
 popover shows it in place, as before, and hides the button (app.css). Every cell says its state in
@@ -106,7 +110,7 @@ column's header, and where the event's zone differs it has a column of its own.{
         {% if roster.selectable %}<input type="checkbox" data-select-fold="{{ f.id }}" aria-label="Select the {{ f.slots }} open slot{{ f.slots|pluralize }} from {{ f.lead_range }}">{% endif %}
         <a class="slot-link fold-link" href="?open={{ f.id }}#fold-{{ f.id }}" data-open-fold="{{ f.id }}">
           <span class="state"><span class="word">{{ f.hours|floatformat:"-2" }} open hour{{ f.hours|pluralize }}</span>{% if f.slots != f.hours %}<small>{{ f.slots }} slots</small>{% endif %}</span>
-          <span class="muted">Show them</span>
+          <span class="fold-more">Show them{% icon 'chevron-down' 'small' %}</span>
         </a>
       </div>
     </div>
@@ -143,6 +147,7 @@ column's header, and where the event's zone differs it has a column of its own.{
   <button type="submit" name="action" value="cancel" class="danger">Cancel slots</button>
   {% endif %}
 </div>{% endif %}
+</section>
 </form>
 {% else %}
 {% if not event.display_only %}<section class="section"><h2>Roster</h2><p>{% if roster.filter == 'problems' %}Nothing needs attention. <a href="?">Show every slot.</a>{% else %}No slots yet.{% if is_captain %} <a href="{% url 'event_manage' event.pk %}">Add the location and generate the grid.</a>{% endif %}{% endif %}</p></section>{% endif %}

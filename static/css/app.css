@@ -617,6 +617,20 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .note { padding: .6rem .9rem; border-radius: var(--r-card); background: var(--panel); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
 .note p:first-child { margin-top: 0; } .note p:last-child { margin-bottom: 0; }
 .rosterhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+/* The roster in a panel (#235): its header holds the zones, the switch and the Key; the strip on
+   the band; the table edge to edge; the bulk bar as its footer. */
+.roster-panel { margin-top: var(--s3); }
+.roster-panel .rosterhead { margin: 0; align-items: center; }
+.rosterhead .zones { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; }
+.roster-panel .overview { margin: 0; background: var(--panel-head); }
+.roster-panel .roster { border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+.roster-panel .bulkbar { margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0 0 var(--r-card) var(--r-card); background: var(--panel-head); }
+/* The slot dialog's people (#236): rows inside the dialog, flush with its edges. */
+.slot-dialog .rows.people { margin: .5rem -.5rem; }
+.slot-dialog .rows.people > li { padding: .6rem .5rem; align-items: flex-start; }
+.slot-dialog .rows.people form.inline { margin: 0; }
+.fold-more { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .5rem; border-radius: var(--r-button); color: var(--fg); font-weight: 700; font-size: var(--t-small); }
+.r-fold:hover .fold-more { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .rosterhead h2, .rosterhead p { margin: 0; }
 .legend { font-size: var(--t-small); margin: .5rem 0 .75rem; }
 /* The coverage strip beside the key (#161): a line a day, a mark per time span with its state as a
@@ -661,7 +675,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 /* The Key behind a ? beside Problems only, opening over the page (#169, SK 2026-11-02): a native
    popover. Without popover support the button and Close go, the key stays in place beside the
    strip as before; with it the strip has the width to itself. */
-.keybtn { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; margin-left: .35rem; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--fg); font: inherit; font-weight: 700; line-height: 1; vertical-align: middle; cursor: pointer; }
+.keybtn { margin-left: .35rem; }  /* the Key's ?, an icon-only button since #235 */
 .legend:popover-open { margin: auto; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r-card); background: var(--panel); color: var(--fg); box-shadow: 0 .5rem 2rem rgb(0 0 0 / .25); }
 .legend:popover-open::backdrop { background: rgb(0 0 0 / .2); }
 .keyclose { display: block; margin-top: .75rem; }

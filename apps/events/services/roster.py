@@ -447,10 +447,10 @@ def build(
     layout = "grid" if 1 <= len(positions) <= GRID_MAX_POSITIONS else "list"
     pos_index = {p.pk: i for i, p in enumerate(positions)}
     every = list(slots)  # the coverage strip shows the whole event, whatever the filter
-    if filter == "problems":  # FR-65: only what needs attention
-        keep = {
-            pk for pk, c in cells.items() if c.shown.key in ("needs", "problem") or c.over_limit
-        }
+    # FR-65: what needs attention, which Problems only shows and its switch counts (#235)
+    keep = {pk for pk, c in cells.items() if c.shown.key in ("needs", "problem") or c.over_limit}
+    counts["attention"] = len(keep)
+    if filter == "problems":
         slots = [s for s in slots if s.pk in keep]
 
     days: dict[str, Day] = {}

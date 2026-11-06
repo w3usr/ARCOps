@@ -636,9 +636,10 @@ def test_the_key_opens_from_a_button_beside_problems_only(world):
     body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
     zones = body.split('<p class="zones muted">', 1)[1].split("</p>", 1)[0]
     assert "Problems only" in zones
-    assert (
-        '<button type="button" class="keybtn" popovertarget="roster-key-pop" aria-label="Key">?'
-        "</button>" in zones
+    # the ? an icon-only button named Key (#235), still beside Problems only
+    assert re.search(
+        r'<button type="button" class="[^"]*keybtn" popovertarget="roster-key-pop" aria-label="Key">',
+        zones,
     )
     assert '<div class="legend muted" id="roster-key-pop" popover>' in body
     assert '<ul aria-labelledby="roster-key">' in body and 'id="roster-key">Key</span>' in body
