@@ -4658,4 +4658,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (.panel, .panel-head, .panel-body, .panel-foot, .actions and .rows, with the markup in a comment); tools/check_interface.sh (a border-radius may list the corner tokens and 0, so a panel's footer rounds only its foot).
 - **Nature of Contribution**: Code. Departure from the issue: no `templates/components/panel_head.html`, since an include cannot take the header's actions as a block and the header is three lines of markup; the markup is written in app.css and shown on the kit page (#231). Verified: the three guards pass; the styles are first drawn and looked at on the kit page and the Locations pilot.
 - **Human Review Status**: Pending review
-- **Git Hash**: (pending)
+- **Git Hash**: 767407a
