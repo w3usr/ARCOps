@@ -109,7 +109,7 @@ def test_the_details_are_read_on_setup_and_edited_on_their_page(officer):
     setup = c.get(f"/events/{ev.pk}/manage/details/").content.decode()
     det = setup.split('<h2 id="det">Details</h2>', 1)[1].split("</section>", 1)[0]
     assert "<dt>Title</dt><dd>Field Day</dd>" in det and "<form" not in det
-    assert f'href="/events/{ev.pk}/details/">Edit details</a>' in det
+    assert re.search(rf'href="/events/{ev.pk}/details/">(<svg.*?</svg>)?Edit details</a>', det)
     page = c.get(f"/events/{ev.pk}/details/").content.decode()
     assert '<h1 id="dialog-title">Edit details</h1>' in page and "tinymce" in page
     form = {"title": "Field Day 2026", "type": "contest", "reminder_hours_before": "24"}

@@ -1,58 +1,52 @@
 {% extends "events/stages/_layout.html" %}
+{% load nav %}
 {% block stage %}
 {% if event.state == 'draft' %}
 {% comment %}#175: before publishing, every step in one place, each with a link to change it
 (GOV.UK's Check answers). A required step not done says so; publishing stays allowed.{% endcomment %}
-<section class="section" aria-labelledby="sum">
-  <h2 id="sum">Summary</h2>
-  <dl class="dl summary">{% for r in summary %}<dt>{{ r.name }}</dt><dd{% if r.missing %} class="missing"{% endif %}><span>{{ r.value }}</span> <a href="{% url 'event_step' event.pk r.key %}{% if r.anchor %}#{{ r.anchor }}{% endif %}">Change<span class="sr-only"> {{ r.name|lower }}</span></a></dd>{% endfor %}</dl>
+<section class="panel" aria-labelledby="sum">
+  <header class="panel-head"><div><h2 id="sum">Summary</h2><p>Every step in one place before it goes on the calendar.</p></div></header>
+  <div class="panel-body"><dl class="dl summary">{% for r in summary %}<dt>{{ r.name }}</dt><dd{% if r.missing %} class="missing"{% endif %}><span>{{ r.value }}</span> <a class="button secondary small" href="{% url 'event_step' event.pk r.key %}{% if r.anchor %}#{{ r.anchor }}{% endif %}">Change<span class="sr-only"> {{ r.name|lower }}</span></a></dd>{% endfor %}</dl></div>
 </section>
 
-<section class="section" aria-labelledby="pub">
-  <h2 id="pub">Publish</h2>
-  <p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p>
+<section class="panel" aria-labelledby="pub">
+  <header class="panel-head"><div><h2 id="pub">Publish</h2><p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p></div></header>
   <form method="post" action="{% url 'event_publish' event.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="from" value="manage">
-    <div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div>
-    <div><button type="submit">Publish</button></div>
+    <footer class="panel-foot"><div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div><button type="submit">Publish</button></footer>
   </form>
 </section>
 {% else %}
-<section class="section" aria-labelledby="st">
-  <h2 id="st">Status</h2>
-  <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
-  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p>
-  <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}
-    {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">Lock the roster</button>{% endif %}
-    {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">Unlock</button>{% endif %}
-    {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">Mark completed</button>{% endif %}
-  </form>
-  {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="linklike">Take it back to draft</button></form>{% endif %}
+<section class="panel" aria-labelledby="st">
+  <header class="panel-head"><div><h2 id="st">Status</h2><p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p></div>
+    <div class="actions">
+    <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline actions">{% csrf_token %}
+      {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
+      {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
+      {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">{% icon 'check' %}Mark completed</button>{% endif %}
+    </form>
+    {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="ghost">{% icon 'history' %}Take it back to draft</button></form>{% endif %}
+    </div></header>
+  <div class="panel-body"><p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p></div>
 </section>
 
-<section class="section" aria-labelledby="ann">
-  <h2 id="ann">Announce</h2>
-  <p><a class="button secondary" href="{% url 'event_announce' event.pk %}">Announce to this event's participants</a> <span class="helptext">Everyone signed up, or a subset by day, role, slot status, or confirmation.</span></p>
+<section class="panel" aria-labelledby="ann">
+  <header class="panel-head"><div><h2 id="ann">Announce</h2><p>Everyone signed up, or a subset by day, role, slot status, or confirmation.</p></div>
+    <div class="actions"><a class="button secondary" href="{% url 'event_announce' event.pk %}">{% icon 'megaphone' %}Announce to this event's participants</a></div></header>
 </section>
 {% endif %}
 
-<section class="section" aria-labelledby="cap">
-  <h2 id="cap">Captains</h2>
-  <ul class="list">
-    {% for c in captains %}<li>{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}
-      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form>{% endif %}</li>{% endfor %}
+<section class="panel" aria-labelledby="cap">
+  <header class="panel-head"><div><h2 id="cap">Captains</h2>{% if may_manage_events %}<p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>{% else %}<p class="helptext">An officer appoints and removes captains.</p>{% endif %}</div>
+    {% if may_manage_events %}<div class="actions">{% url 'captain_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Appoint captain" icon="user-plus" %}</div>{% endif %}</header>
+  <ul class="rows list">
+    {% for c in captains %}<li><span class="row-ic">{% icon 'user' 'small' %}</span><span class="grow">{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}</span>
+      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
-  {% if may_manage_events %}
-  <p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>
-  {% url 'captain_add' event.pk as u %}<p>{% include "events/_dialog_link.html" with url=u label="Appoint captain" %}</p>
-  {% else %}
-  <p class="helptext">An officer appoints and removes captains.</p>
-  {% endif %}
 </section>
 
-<section class="section" aria-labelledby="more">
-  <h2 id="more">Another copy</h2>
-  <p class="helptext">A draft copy with the same periods, locations, and slot grid, and nobody signed up. For next year's running, or a similar event.</p>
-  <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit" class="secondary">Duplicate this event</button></form>
+<section class="panel" aria-labelledby="more">
+  <header class="panel-head"><div><h2 id="more">Another copy</h2><p class="helptext">A draft copy with the same periods, locations, and slot grid, and nobody signed up. For next year's running, or a similar event.</p></div>
+    <div class="actions"><form method="post" action="{% url 'event_duplicate' event.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">{% icon 'copy' %}Duplicate this event</button></form></div></header>
 </section>
 
 {% if event.state != 'cancelled' and not may_manage_events %}

@@ -1,8 +1,9 @@
 {% extends "events/stages/_layout.html" %}
+{% load nav %}
 {% block stage %}
-<section class="section" aria-labelledby="det">
-  <h2 id="det">Details</h2>
-  <dl class="dl">{% for label, value in details %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>
-  <p><a class="button secondary" href="{% url 'event_edit' event.pk %}">Edit details</a></p>
+<section class="panel" aria-labelledby="det">
+  <header class="panel-head"><div><h2 id="det">Details</h2></div>
+    <div class="actions"><a class="button secondary" href="{% url 'event_edit' event.pk %}">{% icon 'edit' %}Edit details</a></div></header>
+  <div class="panel-body"><dl class="dl">{% for label, value in details %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl></div>
 </section>
 {% endblock %}

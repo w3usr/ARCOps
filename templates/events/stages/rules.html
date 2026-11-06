@@ -1,10 +1,10 @@
 {% extends "events/stages/_layout.html" %}
-{% load labels %}
+{% load labels nav %}
 {% block stage %}
-<section class="section" aria-labelledby="who">
-  <h2 id="who">Who may sign up</h2>
-  <p class="helptext">Per role. Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing. A slot can override this from its own page.</p>
+<section class="panel" aria-labelledby="who">
+  <header class="panel-head"><div><h2 id="who">Who may sign up</h2><p>Per role. Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing.</p></div></header>
   <form method="post" action="{% url 'eligibility_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">{% csrf_token %}
+    <div class="panel-body stack">
     {% for r in rule_roles %}
     <fieldset>
       <legend>{{ r.label }}</legend>
@@ -16,15 +16,15 @@
       </div>
     </fieldset>
     {% endfor %}
-    <div><button type="submit">Save who may sign up</button></div>
+    </div>
+    <footer class="panel-foot"><p>A slot can override this from its own page.</p><button type="submit">Save who may sign up</button></footer>
   </form>
 </section>
 
-<section class="section" aria-labelledby="opn">
-  <h2 id="opn">Openings</h2>
-  <p class="helptext">When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
-  {% if openings %}<ul class="list">{% for o in openings %}<li><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %}, announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}
-    <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>{% endfor %}</ul>{% endif %}
-  {% url 'opening_add' event.pk as u %}<p>{% include "events/_dialog_link.html" with url=u label="Add opening" %}</p>
+<section class="panel" aria-labelledby="opn">
+  <header class="panel-head"><div><h2 id="opn">Openings</h2><p>When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p></div>
+    <div class="actions">{% url 'opening_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add opening" icon="plus" %}</div></header>
+  {% if openings %}<ul class="rows list">{% for o in openings %}<li><span class="grow"><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|date:"D j M H:i" }} UTC to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %}, announced{% if o.announced_at %} ({{ o.announced_at|date:"j M H:i" }}){% else %} when it opens{% endif %}{% endif %}</span>
+    <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form></li>{% endfor %}</ul>{% endif %}
 </section>
 {% endblock %}

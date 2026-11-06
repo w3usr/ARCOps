@@ -3,12 +3,14 @@
 {% block stage %}
 {% comment %}Know before you go, a step of its own (#174): a page with the editor, as Edit details
 is, because the editor's menus need the page (docs/INTERFACE.md).{% endcomment %}
-<section class="section" aria-labelledby="kbyg">
-  <h2 id="kbyg">Know before you go</h2>
-  {% if form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> Nothing was saved; correct the fields marked below.</p>{% endif %}
+<section class="panel" aria-labelledby="kbyg">
+  <header class="panel-head"><div><h2 id="kbyg">Know before you go</h2><p>What a member needs on the day: where, how to get in, what to bring.</p></div></header>
   <form method="post" class="stack">{% csrf_token %}
+    <div class="panel-body stack">
+    {% if form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> Nothing was saved; correct the fields marked below.</p>{% endif %}
     {% include "events/forms/_field.html" with f=form.kbyg_html %}
-    <div><button type="submit">Save Know before you go</button></div>
+    </div>
+    <footer class="panel-foot"><p>Shown on the event page and in each slot's reminder.</p><button type="submit">Save Know before you go</button></footer>
   </form>
 </section>
 {% endblock %}

@@ -4675,3 +4675,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); before-and-after screenshots of the Locations step at 1280 and 390 px, light and dark, looked at, the header's actions found below the title and moved to the right; acceptance T11, T12, T13, T14, T18, T26, T35, T37, T41 and T52 pass locally (private repo, testing/runs/2026-11-06_155556-w3usr). T22 breaks locally in the slot dialog's "I cannot make it", as it did on 2026-11-03 and 2026-11-04 before the redesign; it passed on dev.
 - **Human Review Status**: Pending review (SK's verdict on the pilot, #233)
 - **Git Hash**: bb8dac5
+
+## [2026-11-06 20:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Workspace redesign, every Manage step in panels (w3usr/w3usr.org-PRIVATE#234), after SK approved the Locations pilot on 2026-11-06.
+- **Sections/Files Affected**: templates/events/stages/details.html, periods.html, slots.html (On-air hours, Slots and Operating limits as panels; the stretches as rows; Add range and Save limits in panel footers; Use the whole event in the header), publish.html (Summary, Publish, Status with Lock, Unlock, Mark completed and Take it back to draft in its header, Announce, Captains as rows, Another copy; the Change links as small buttons), rules.html, contest.html, kbyg.html, new.html; static/css/app.css (a panel's form without gaps, one rule between a panel's parts); apps/events/tests/test_manage_dialogs.py (the Edit details link carries an icon).
+- **Nature of Contribution**: Code and a test. Every section keeps its id, its words, its forms and their in-place saves; Remove on periods, positions, captains, openings and stretches is a red button with a bin. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Slots, Publish, Sign-up rules at 1280 px); acceptance T11, T12, T13, T14, T18, T26, T35, T36, T37, T41, T42, T45 and T52 pass locally (private repo, testing/runs of 2026-11-06).
+- **Human Review Status**: Pending review
+- **Git Hash**: (pending)

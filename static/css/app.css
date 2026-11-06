@@ -305,10 +305,16 @@ footer.site .credit a { color: inherit; }
 .panel-head :is(h2, h3) { font-size: var(--t-lede); margin: 0; }
 .panel-head p { margin: .2rem 0 0; color: var(--muted); font-size: var(--t-small); max-width: 40rem; }
 .panel-head + * { border-top: 1px solid var(--line); }
+.panel > :is(.panel-body, .rows, form) + :is(.panel-body, .rows, form) { border-top: 1px solid var(--line); }
 .panel-body { padding: 1rem 1.25rem; }
 .panel-body > :first-child { margin-top: 0; } .panel-body > :last-child { margin-bottom: 0; }
 .panel-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); padding: .75rem 1.25rem; border-top: 1px solid var(--line); background: var(--panel-head); border-radius: 0 0 var(--r-card) var(--r-card); }
 .panel-foot p { margin: 0; color: var(--muted); font-size: var(--t-small); }
+/* A form that holds a panel's body and footer: no gap between them, and one rule, not two, when
+   it opens straight onto its footer (Publish). */
+.panel > form.stack { gap: 0; }
+.panel-head + form > .panel-foot:first-child { border-top: 0; }
+.panel-foot .check { margin: 0; }
 .panel-foot > :last-child { margin-left: auto; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
 /* A list of rows inside a panel, each with its actions at the end; a phone puts them under. */

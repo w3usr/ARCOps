@@ -1,12 +1,13 @@
 {% extends "events/stages/_layout.html" %}
+{% load nav %}
 {% block stage %}
-<section class="section" aria-labelledby="per">
-  <h2 id="per">Operating periods</h2>
-  <ul class="list">
-    {% for p in periods %}<li>{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC
-      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="linklike danger">Remove</button></form></li>
+<section class="panel" aria-labelledby="per">
+  <header class="panel-head"><div><h2 id="per">Operating periods</h2><p>The contest's span, in UTC; the slots are made inside it.</p></div>
+    <div class="actions">{% url 'period_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add period" icon="plus" %}</div></header>
+  <ul class="rows list">
+    {% for p in periods %}<li><span class="row-ic">{% icon 'calendar' 'small' %}</span><span class="grow">{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC</span>
+      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form></li>
     {% empty %}<li class="empty">No operating period yet. Add one; the slots are generated inside it.</li>{% endfor %}
   </ul>
-  {% url 'period_add' event.pk as u %}<p>{% include "events/_dialog_link.html" with url=u label="Add period" %}</p>
 </section>
 {% endblock %}

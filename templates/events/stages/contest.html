@@ -1,13 +1,14 @@
 {% extends "events/stages/_layout.html" %}
 {% load dicts %}
 {% block stage %}
-<section class="section" aria-labelledby="con">
-  <h2 id="con">Contest details</h2>
-  <p class="helptext">The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorized. Shown on the event page; the exchange and logging lines also go into every reminder.</p>
+<section class="panel" aria-labelledby="con">
+  <header class="panel-head"><div><h2 id="con">Contest details</h2><p>The fields the WA7BNM Contest Calendar publishes, entered by hand until the calendar import is authorized.</p></div></header>
   <form method="post" action="{% url 'contest_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">{% csrf_token %}
+    <div class="panel-body stack">
     <div class="field"><label for="cf-ref">Calendar reference number</label><input id="cf-ref" name="calendar_ref" inputmode="numeric" value="{{ event.calendar_ref|default_if_none:'' }}"></div>
     {% for key, label, kind in contest_fields %}<div class="field"><label for="cf-{{ key }}">{{ label }}</label><input id="cf-{{ key }}" name="{{ key }}" type="{% if kind == 'url' %}url{% elif kind == 'email' %}email{% else %}text{% endif %}" maxlength="500" value="{{ event.contest_fields|dictkey:key|default:'' }}"></div>{% endfor %}
-    <div><button type="submit">Save contest details</button></div>
+    </div>
+    <footer class="panel-foot"><p>Shown on the event page; the exchange and logging lines also go into every reminder.</p><button type="submit">Save contest details</button></footer>
   </form>
 </section>
 {% endblock %}
