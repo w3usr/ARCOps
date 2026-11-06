@@ -286,6 +286,34 @@ footer.site .credit a { color: inherit; }
    event in a list (docs/INTERFACE.md, "Shape"). */
 .section { margin: 0; padding: var(--s3) 0; }
 .section + .section { border-top: 1px solid var(--line); }
+
+/* Panels (#227, SK 2026-11-06, D1; docs/INTERFACE.md, "Shape"): one part of a page with a job,
+   white on the canvas. A header names it and holds its actions at the right, with one line
+   under the name if it needs one; a body; sometimes a footer with a note at the left and the
+   save at the right. Markup, so the heading stays a real h2 or h3:
+     <section class="panel" aria-labelledby="x">
+       <header class="panel-head"><div><h2 id="x">Name</h2><p>One line.</p></div>
+         <div class="actions">buttons</div></header>
+       <div class="panel-body">…</div> or <ul class="rows">…</ul>
+       <footer class="panel-foot"><p>A note.</p><button>Save</button></footer>
+     </section> */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); margin: 0 0 var(--s3); min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--s2) var(--s3); padding: 1rem 1.25rem; }
+.panel-head :is(h2, h3) { font-size: var(--t-lede); margin: 0; }
+.panel-head p { margin: .2rem 0 0; color: var(--muted); font-size: var(--t-small); max-width: 40rem; }
+.panel-head + * { border-top: 1px solid var(--line); }
+.panel-body { padding: 1rem 1.25rem; }
+.panel-body > :first-child { margin-top: 0; } .panel-body > :last-child { margin-bottom: 0; }
+.panel-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); padding: .75rem 1.25rem; border-top: 1px solid var(--line); background: var(--panel-head); border-radius: 0 0 var(--r-card) var(--r-card); }
+.panel-foot p { margin: 0; color: var(--muted); font-size: var(--t-small); }
+.panel-foot > :last-child { margin-left: auto; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+/* A list of rows inside a panel, each with its actions at the end; a phone puts them under. */
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); padding: .75rem 1.25rem; }
+.rows > li + li { border-top: 1px solid var(--line); }
+.rows > li > .grow { flex: 1 1 12rem; min-width: 0; }
+.rows .sub { display: block; color: var(--muted); font-size: var(--t-small); }
 :is(.card, .section) > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
 :is(.card, .section) > :last-child { margin-bottom: 0; }  /* the padding is the space under it */
 /* ...and a margin one level down collapses through its parent into that space: a table in its

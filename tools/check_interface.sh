@@ -109,7 +109,9 @@ for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates
             if m.group(1).strip() not in WEIGHTS:
                 fail.append(f"{path}:{n}: font-weight {m.group(1).strip()}; the face has 400 and 700")
         for m in RADIUS.finditer(line):
-            if m.group(1).strip() not in RADII:
+            # One corner token, or a list of the same tokens and 0 (a panel's footer rounds only
+            # its foot, #227).
+            if not set(m.group(1).split()) <= RADII | {"0"} or m.group(1).split() == ["0"]:
                 fail.append(f"{path}:{n}: border-radius {m.group(1).strip()}; use var(--r-field|button|card), or 50% for a circle")
 
 for line in dict.fromkeys(fail):

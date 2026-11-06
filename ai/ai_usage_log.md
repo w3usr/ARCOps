@@ -4651,3 +4651,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests. Departure from the issue: a filter instead of `templates/components/badge.html`, since a badge is one span and the pages that show states adopt the filter as they are restyled. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event's coverage counts, the roster, Members).
 - **Human Review Status**: Pending review
 - **Git Hash**: 0c47943
+
+## [2026-11-06 17:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Workspace redesign kit, panels (w3usr/w3usr.org-PRIVATE#227, D1).
+- **Sections/Files Affected**: static/css/app.css (.panel, .panel-head, .panel-body, .panel-foot, .actions and .rows, with the markup in a comment); tools/check_interface.sh (a border-radius may list the corner tokens and 0, so a panel's footer rounds only its foot).
+- **Nature of Contribution**: Code. Departure from the issue: no `templates/components/panel_head.html`, since an include cannot take the header's actions as a block and the header is three lines of markup; the markup is written in app.css and shown on the kit page (#231). Verified: the three guards pass; the styles are first drawn and looked at on the kit page and the Locations pilot.
+- **Human Review Status**: Pending review
+- **Git Hash**: (pending)
