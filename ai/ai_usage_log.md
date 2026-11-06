@@ -4610,4 +4610,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/services/roster.py (_gaps; _strip marks every hour of the periods that no slot touches, off or none, as cells that link nowhere; build returns which the Key needs); templates/events/detail.html (the marks as spans; two Key lines, shown only when present); static/css/app.css (.sm-none dashed, .sm-off hatched without a box); apps/events/tests/test_on_air.py (a test).
 - **Nature of Contribution**: Code and a test. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); acceptance T11 (step 10 checks the strip), T12, T13, T15 and T20 pass locally; the strip looked at in T11's screenshot.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: fc4122d
