@@ -55,7 +55,7 @@ by hand; the library itself is React and is not used.
   icon and its word, the rare ones in a ⋮ menu (Menus, below). A row with one act has no menu.
 - **Icons** (D6) go before the word, drawn like the sidebar's: 24 px grid, 1.75 stroke, from
   `apps/ops/templatetags/nav.py`. The word is always there, so an icon is never the only sign.
-  The exceptions are the ⋮ that opens a menu and the ? that opens a key: `.icon`, named with
+  The exceptions are the ⋮ that opens a menu and the ? that opens a key: `.icon-only`, named with
   `aria-label`, and the same name shown beside it on hover and focus, drawn by CSS from that
   label. Never a `title`, which a phone and the keyboard never show.
 - **The club's color is on one button per form**, the primary. Every other button is neutral

@@ -4635,3 +4635,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and tests. --tag-info reuses --accent-soft rather than a new mix, so the server's contrast check already covers it; --line-strong chosen by measurement (3.41:1 on white, 3.07:1 on the canvas; dark 3.52:1). The icons are drawn here, not taken from a set, so NOTICE is unchanged; all looked at, at 20 and 16 px. Verified: 531 application tests pass; lint, format and the three guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event page and a Manage step at 1280 px).
 - **Human Review Status**: Pending review
 - **Git Hash**: d159cd2
+
+## [2026-11-06 16:20 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Workspace redesign kit, buttons (w3usr/w3usr.org-PRIVATE#225; D2, D3, D4, D6).
+- **Sections/Files Affected**: static/css/app.css (one button rule laying out an icon and a word; secondary neutral; ghost, ghost danger, danger, danger-outline; small; icon-only with its aria-label drawn under it on hover and focus; the club-colored outline rules removed; .navbtn and .linklike keep their own layout); docs/INTERFACE.md (`.icon-only`, since `.icon` is the SVG's class); tools/a11y/test_buttons.py (new: every button 24 px or more each way, every neutral and red outline 3:1 on its ground, light and dark).
+- **Nature of Contribution**: Code and a test. Departures from the issue: no `templates/components/button.html`, because a button is one line of markup and a partial would only wrap it in parameters (the kit page, #231, shows the markup); no `title` on an icon-only button, which tools/check_interface.sh refuses, its name drawn by CSS instead; the allauth button override needed no change, as it already maps onto secondary and danger. Found and fixed on the contact sheet: the sidebar's Sign out and Collapse centered by the new rule. Verified: 531 application tests pass; lint, format and the three guards pass; the accessibility sweep including the new test passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Publish step, profile, sidebar).
+- **Human Review Status**: Pending review
+- **Git Hash**: (pending)

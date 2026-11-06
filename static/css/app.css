@@ -128,7 +128,7 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 
 .navlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .125rem; }
 .navlist a, .navbtn {
-  display: flex; align-items: center; gap: .75rem;
+  display: flex; align-items: center; justify-content: flex-start; gap: .75rem;
   padding: .55rem .75rem; border-radius: var(--r-button);
   color: var(--fg); text-decoration: none; font: inherit; font-weight: 400;
   background: none; border: 0; width: 100%; text-align: left; cursor: pointer;
@@ -326,9 +326,28 @@ footer.site .credit a { color: inherit; }
 .secret code { font-size: var(--t-h2); letter-spacing: .05em; }
 
 /* ------------------------------------------------------------- forms */
+/* Buttons (#225; docs/INTERFACE.md, "Controls"): the primary in the club's color, one per form;
+   the rest neutral (SK, 2026-11-06, D3). An icon goes before the word, and the button lays the
+   two out in a row. Every variant works on <button> and on <a class="button">. */
 button, .button {
-  background: var(--accent); color: var(--accent-fg); border: 0; border-radius: var(--r-button);
-  padding: .6rem 1.1rem; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block;
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  background: var(--accent); color: var(--accent-fg); border: 1px solid transparent; border-radius: var(--r-button);
+  padding: .55rem 1.05rem; font: inherit; font-weight: 700; line-height: 1.5; cursor: pointer; text-decoration: none;
+}
+:is(button, .button).secondary { background: var(--panel); color: var(--fg); border-color: var(--line-strong); }
+:is(button, .button).ghost { background: transparent; color: var(--fg); border-color: transparent; }
+:is(button, .button).danger { background: var(--bad); color: var(--bad-fg); }
+:is(button, .button).ghost.danger { background: transparent; color: var(--bad); }
+:is(button, .button).danger-outline { background: var(--panel); color: var(--bad); border-color: var(--bad); }
+:is(button, .button).small { padding: .3rem .65rem; font-size: var(--t-small); gap: .35rem; }
+/* An icon alone, only for ⋮ and ?: square, and its aria-label shown under it on hover and focus,
+   so the name is never only in a title a phone and the keyboard never show. */
+:is(button, .button).icon-only { padding: .55rem; position: relative; }
+:is(button, .button).icon-only.small { padding: .3rem; }
+:is(button, .button).icon-only[aria-label]:is(:hover, :focus-visible)::after {
+  content: attr(aria-label); position: absolute; top: calc(100% + .3rem); left: 50%; transform: translateX(-50%);
+  z-index: 30; padding: .15rem .45rem; border-radius: var(--r-field); background: var(--fg); color: var(--panel);
+  font-size: var(--t-small); font-weight: 400; white-space: nowrap; pointer-events: none;
 }
 /* State layers (Material 3): a veil of the control's own text color over its fill, 8% under the
    pointer and 10% focused or pressed, the same on every kind of control and with no JavaScript.
@@ -342,13 +361,12 @@ button, .button {
 /* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
    (Members, Member roster; SK, 2026-10-22). */
 a.button { margin-block: .25rem; }
-button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 button.big { font-size: var(--t-h2); padding: 1rem 2rem; width: 100%; }
-button.wide, .button.wide { width: 100%; display: block; text-align: center; box-sizing: border-box; }
+button.wide, .button.wide { width: 100%; display: flex; text-align: center; box-sizing: border-box; }
 /* Controls on the library's own pages sit next to each other with no wrapper of their own. */
 .libctl { margin: .35rem .6rem .35rem 0; }
 .libctl.wide { margin: 1rem 0 0; max-width: 28rem; }  /* stacked under the field, as wide as it */
-.linklike { color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.linklike { display: inline; color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .linklike:hover { text-decoration: underline; }
 button.linklike.danger, .linklike.danger { background: none; color: var(--bad); padding: 0; font-weight: inherit; text-decoration: underline; }
 button.linklike.danger:hover, .linklike.danger:hover { background: none; filter: none; text-decoration: underline; }
@@ -457,8 +475,6 @@ label .req { margin-left: .15rem; }
    (found by the advisor, 2026-09-19). */
 .searchrow > input[type="search"] { max-width: 24rem; flex: 1 1 14rem; }
 .directory { columns: 14rem; list-style: none; padding: 0; } .directory li { padding: .25rem 0; break-inside: avoid; }
-button.danger { background: var(--bad); color: var(--bad-fg); }
-a.button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 .captain-actions { display: block; margin-top: .25rem; font-size: var(--t-small); }
 .captain-actions .linklike { margin-right: .5rem; }
 h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
@@ -770,7 +786,6 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 .dz-row h3 { margin: 0; font-size: var(--t-body); }
 .dz-row p { margin: .2rem 0 0; }
 .card.dangerzone > :is(.dz-row, dialog) + .dz-row { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
-button.danger-outline { background: transparent; color: var(--bad); border: 1px solid var(--bad); }
 
 /* A destructive act's confirmation, in a dialog over the page (docs/INTERFACE.md): what is lost,
    the reason, and the safe choice before the red one. The button opens it with invoker commands
