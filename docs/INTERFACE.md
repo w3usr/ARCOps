@@ -35,20 +35,65 @@ notifications to signups".
 
 ## Controls
 
-| Style | Use |
-|---|---|
-| Solid | The one action that commits the form. One per form. |
-| Outline (`.secondary`) | Adds a row, navigates, or commits a small side form. |
-| Link (`.linklike`) | An action on one row of a list or table. |
+**Everything that does something is a button that looks like one** (SK, 2026-11-06, #221: D2,
+D3, D6). Underlined words read as text, and a reader should never have to scrub the screen to find
+what can be clicked (Nielsen Norman Group). The vocabulary is shadcn/ui's, written into `app.css`
+by hand; the library itself is React and is not used.
+
+| Style | Class | Use |
+|---|---|---|
+| Primary | a plain `button` | The one action that commits the form, in the club's color. One per form. |
+| Secondary | `.secondary` | Neutral, outlined: adds a row, navigates, opens a dialog, commits a small side form. |
+| Ghost | `.ghost` | No border until the pointer is over it: a quiet action in a toolbar or a panel's header. |
+| Destructive, recoverable | `.ghost.danger` | Red, with a bin: tier 2 below. |
+| Destructive, in a Danger zone | `.danger-outline` | Red outline: opens the confirmation of a tier 3 act. |
+| Destructive, final | `.danger` | Solid red: the confirming button inside a tier 3 confirmation. |
+| Link | `.linklike` | An action inside a sentence, where a button would break the line. Rare. |
+
+- **Sizes:** the default, and `.small` for an action on one row of a list or table.
+- **A row's actions** are buttons at the end of the row: the frequent act a small button with its
+  icon and its word, the rare ones in a ⋮ menu (Menus, below). A row with one act has no menu.
+- **Icons** (D6) go before the word, drawn like the sidebar's: 24 px grid, 1.75 stroke, from
+  `apps/ops/templatetags/nav.py`. The word is always there, so an icon is never the only sign.
+  The exceptions are the ⋮ that opens a menu and the ? that opens a key: `.icon`, named with
+  `aria-label`, and the same name shown beside it on hover and focus, drawn by CSS from that
+  label. Never a `title`, which a phone and the keyboard never show.
+- **The club's color is on one button per form**, the primary. Every other button is neutral
+  (D3), so the one that commits is the one that stands out.
 
 If a page seems to need two solid buttons, it is two forms, or one of them is not the primary
 action. The safe choice comes first in the source order, so the keyboard reaches it first.
+
+**Restyle, don't rename.** A control that changes look keeps its accessible name and role
+(Remove stays "Remove", Generate slots stays a button named "Generate slots"), so the scenario
+scripts and the sweep keep finding it. Where an action moves into a ⋮ menu, it keeps its name
+there.
+
+## Menus
+
+A ⋮ menu (D7) is a button that opens a `popover` list of buttons and links: plain HTML, opened
+by `popovertarget` with no script, closed by Escape or a click outside (technical addendum A10).
+The menu sits under its button by CSS anchor positioning; a few lines of `app.js` place it in a
+browser older than that. Its entries are the rare acts of the row or page, each with its icon
+and its word. A destructive entry is red and opens its confirmation dialog; it never acts at
+once. A form inside a menu posts as any form does.
+
+## Links
+
+**A link is underlined where it sits in running text**, because there its color is the only
+other sign and color alone never carries meaning (WCAG 1.4.1). **It is not underlined where its
+place already says it is a link** (D5): the sidebar, the crumbs, the tabs, the step bar, a name
+that leads a table row, a card's title. It underlines under the pointer and on focus.
+
+A table row has **one link**, on the thing the row is (a member's name, an event's title); the
+row's actions are buttons at its end (#230). A column of underlined names, emails and callsigns
+reads as a wall of links.
 
 A page drawn by a library takes the same controls. The sign-in library renders its own
 two-step-verification, passkey and Confirm Access pages, and its shipped controls carry no
 styling at all, so two of them in a row read as one underlined phrase. Its button element is
 overridden once, in `templates/allauth/elements/button.html`, which maps the tags the library
-passes onto the three styles above; nothing on those pages is styled page by page.
+passes onto the styles above; nothing on those pages is styled page by page.
 
 ## Reading and editing
 
@@ -149,9 +194,10 @@ system, both of which say the same thing.)
 
 1. **Reversible** (close a slot, archive a member): an ordinary control. No confirmation.
 2. **Irreversible, but an officer can put it back** (remove somebody's sign-up, decline an
-   agreement): a red link, and a confirmation that names who is affected and what they
-   are told. Destructive controls carry `.danger` and are underlined, because color alone
-   never carries meaning (FR-62).
+   agreement, remove a period): a red ghost button with a bin and its word (`.ghost.danger`,
+   SK 2026-11-06, D4), and a confirmation that names who is affected and what they are told
+   where anybody is. The bin and the word carry it, because color alone never carries meaning
+   (FR-62); it was a red underlined word before.
 3. **Irreversible and unrecoverable** (cancel slots, replace the slot grid, delete an account):
    a solid red button, and a confirmation that names what is lost, how many people hear
    about it, and offers the safe option first.
@@ -217,8 +263,9 @@ next had been two lists of one page, and they drifted apart; one list cannot.
   club's color, a dashed mark for a step that cannot be opened yet (not a link). Under each name
   is one word of state (*Done*, *Next*, *To do*, *After Locations*), so color is never the only
   sign. Required steps are numbered; optional ones are not, because they are not a sequence.
-- Each step ends with **Back to** the step before (a link) and **Continue to** the next (an
-  outlined button), left out when the next cannot be opened yet.
+- Each step ends with **Back to** the step before and **Continue to** the next, both secondary
+  buttons with a chevron (#233; Back was a link), Continue left out when the next cannot be
+  opened yet.
 - Saving a form returns to the step it was on, and a form that comes back with an error comes
   back on its own step, with everything typed (Forms, above).
 - **A small form opens in a dialog** (SK, 2026-11-02, #168): a button on the step, and the form in
@@ -257,18 +304,26 @@ page already does without it.
 
 ## Color
 
-The club's color marks **what can be acted on**: buttons, links, and the active menu entry; a
-control under the pointer takes a veil of its own color. Everything else stands on white paper and one neutral surface
-(`--surface`, `#f4f4f6`), never tinted from the club's color (SK, 2026-10-30, #160). A club
-whose color happens to be the one a design system ships as its default then still looks like
-itself rather than like the template.
+The club's color marks **the one primary action, links in running text, and where you are**
+(the active menu entry, the current tab and step); a control under the pointer takes a veil of its
+own color (SK, 2026-11-06, D3; before, every button was the club's color). Everything else is
+neutral, never tinted from the club's color (SK, 2026-10-30, #160): a club whose color happens to
+be the one a design system ships as its default still looks like itself.
+
+**Three neutral surfaces** (D1, which changes #160's one surface):
+
+| Token | For |
+|---|---|
+| `--canvas` | The ground of the page, a light grey: what panels stand on. |
+| `--panel` | A panel, a card, a dialog, a menu, a field: white in the light theme. |
+| `--panel-head` | A panel's header and footer band, the sidebar, a table's header row. |
 
 - **A state is a word with a colored edge or a colored word**, not a club-tinted fill: an info
-  message, the "acting for" banner and the current step keep the surface and take the club's
-  color on their border; an **Open** tag and an open slot take it on the word.
-- **Status colors** (`--ok`, `--warn`, `--bad`) keep their tints, always beside a word.
+  message, the "acting for" banner and the current step take the club's color on their border;
+  an **Open** tag and an open slot take it on the word.
+- **A state badge** (`.tag`, #226) is a word on a tint of its status color: `--ok`, `--warn`,
+  `--bad`, the club's color for information, neutral otherwise. Always a word.
 - **One panel is the club's color**: the sign-in page's, the page that introduces the club.
-  The footer is the surface, under a rule.
 
 ## Type
 
@@ -305,15 +360,25 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 
 | Token | Radius | For |
 |---|---|---|
-| `--r-field` | 4 px | a field, a select, a tag, a slot's state |
-| `--r-button` | 6 px | a button, a menu entry, a toggle; never a pill |
-| `--r-card` | 8 px | a card, a message, a banner, the roster, a dialog |
+| `--r-field` | 4 px | a field, a select, a badge, a slot's state |
+| `--r-button` | 6 px | a button, a menu entry, a switch, a tab's focus ring; never a pill |
+| `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu |
 
-**A card is a thing that stands on its own**: a message, an announcement, an agreement, an event
-in a list, a result to copy (a new link, a new invitation), the slot's **Captain** controls, the
-**Danger zone**. Everything else is a **section**: its heading and what is under it on the page
-itself, with a rule above the next one (`class="section"`). A page that is all cards reads as a
-template, and a card around a whole page's form frames nothing.
+**A page's parts are panels on the canvas** (SK, 2026-11-06, D1; it replaces #160's sections on
+white paper). A panel (`.panel`) is one part of the page with a job: its header names it and holds
+its actions (Add location, Generate slots), with one line under the name if one is needed; its
+body holds the list, the table or the form; a footer, when there is one, holds a form's save at
+the right and a note at the left. A page without parts (a short form, a message) is one panel.
+
+**A card is a thing that stands on its own inside a panel or a list**: a message, an
+announcement, an agreement, an event in a list, a result to copy (a new link, a new invitation),
+the slot's **Captain** controls, the **Danger zone**. A card around a whole page's form frames
+nothing; that is a panel.
+
+**The event is a workspace** (D8): one header for the event page, Manage and Who took part (the
+title with its state badge, a line of facts with icons, Announce and a ⋮ menu at the right) and
+**Roster**, **Manage** and **Who took part** as tabs under it. The step bar stays on Manage; it
+keeps its own state words beside the header's badge.
 
 ## Material 3, in our terms
 
@@ -324,13 +389,13 @@ used (technical addendum A8). Its roles, by our names:
 |---|---|
 | primary, on-primary | `--accent`, `--accent-fg`: buttons, links |
 | primary container, on-primary container | `--accent-soft`, `--accent-soft-fg`: the active menu entry |
-| surface, surface container | `--bg` (paper), `--surface`: neutral, never mixed with the club's color |
-| outline | `--line` |
+| surface, surface container low, surface container | `--panel`, `--panel-head`, `--canvas`: neutral, never mixed with the club's color |
+| outline, outline variant | `--line-strong` (a secondary button's edge), `--line` (a panel's edge, a rule) |
 | error | `--bad`; success and warning are ours, `--ok` and `--warn` |
 | headline, title, body large, body, body small and label | `--t-h1`, `--t-h2`, `--t-lede`, `--t-body`, `--t-small` (label and body small share it) |
 | corner small, medium, large | `--r-field`, `--r-button`, `--r-card` |
-| filled, outlined and text buttons | a plain `button`, `button.secondary`, `.linklike`; no tonal or elevated buttons |
-| state layers | a veil of the control's own text color: 8% under the pointer, 10% focused or pressed; CSS only. Focus also keeps its ring and halo; a `.linklike` in a line of text underlines instead |
+| filled, outlined and text buttons | a plain `button`, `.secondary`, `.ghost`; no tonal or elevated buttons |
+| state layers | a veil of the control's own text color: 8% under the pointer, 10% focused or pressed; CSS only. Focus also keeps its ring and halo; a link in a line of text underlines instead |
 
 The primary roles are mixed from the club's color with `color-mix(in oklab, …)`, in light and
 dark. `apps/ops/config.py` makes the same mixes and refuses a club color under which any text
@@ -339,10 +404,10 @@ they carry would read below 4.5:1, falling back to the application's own.
 **Where Material 3 and these rules disagree, these win:**
 - A message stays in the list at the top of the page and takes focus; no snackbar that
   disappears on a timer (WCAG 2.2.1).
-- A destructive action stays underlined, never told by color alone (FR-62).
+- A destructive action carries a bin or a red outline and its word, never color alone (FR-62).
 - One solid button per form.
 - No ripple: it needs JavaScript, and every page works without it.
-- No pill buttons, and surfaces are not tinted from the club's color (#160).
+- No pill buttons, and surfaces are not tinted from the club's color (#160, D1).
 
 ## Tables
 

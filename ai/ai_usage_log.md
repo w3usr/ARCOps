@@ -4619,3 +4619,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Research (what the grid and the shortcut reached: the strip depends on hour_grid, so it stays), code removal, tests and docs. Verified: 529 application tests pass; lint, format and the guards pass; the accessibility sweep (66 passed) and the new range browser tests, by keyboard in place and without JavaScript, pass in Chromium and WebKit (Firefox does not launch on this machine; CI runs it); the Slots step at 1280 and 390 px looked at in the contact sheet; acceptance T11 (step 10 with ranges), T12, T35 and T52 pass locally (private repo, testing/runs of 2026-11-06).
 - **Human Review Status**: Pending review
 - **Git Hash**: 9ed6e2a
+
+## [2026-11-06 15:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Workspace redesign, the rules first (w3usr/w3usr.org-PRIVATE#222): docs/INTERFACE.md rewritten to SK's decisions D1 to D8 of 2026-11-06 (#221), and technical addendum A10 for the ⋮ menus.
+- **Sections/Files Affected**: docs/INTERFACE.md (Controls: buttons that look like buttons, the variants, sizes, icons, restyle don't rename; new Menus and Links sections; Destructive actions tier 2 as a red ghost button with a bin; Color: the club's color on the one primary, three neutral surfaces, state badges; Shape: panels on the canvas, cards inside them, the event as a workspace; the step foot's buttons; Material 3's roles); docs/TECHNICAL_REQUIREMENTS.md (addendum A10 only; the body is not edited).
+- **Nature of Contribution**: Docs, from the plan and SK's decisions; the Popover API's and CSS anchor positioning's Baseline dates read on MDN. Departure: D6's tooltip on an icon-only button is drawn by CSS from its aria-label, not a title attribute, which tools/check_interface.sh refuses and a phone never shows. The guard needs no change yet (it enforces nothing about .linklike). Verified: the three repository guards pass.
+- **Human Review Status**: Pending review (SK reads the diff, #222)
+- **Git Hash**: (pending)

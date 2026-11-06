@@ -814,7 +814,27 @@ before, so the server side is unchanged.
 
 **Decided by** SK, 2026-11-03. *Record:* the session notes of 2026-11-03 in the private repository.
 
+### A10. TR-4: a ⋮ menu is a popover, placed by CSS anchor positioning
+
+**Original (TR-4).** "**Front end: server-rendered Django templates, progressively enhanced with
+htmx** and a small amount of plain JavaScript; **no single-page framework**."
+
+**Decision.** The rare actions of a row or a page go into a ⋮ menu (`docs/INTERFACE.md`, Menus):
+a button with `popovertarget` and a list with `popover="auto"`. The Popover API opens and closes
+it with no script, and closes it on Escape and on a click outside; it is Baseline 2025, in every
+current engine since January 2025 (<https://developer.mozilla.org/docs/Web/API/Popover_API>). The
+menu is placed under its button by CSS anchor positioning (`anchor-name`, `position-anchor`,
+`position-area`), Baseline 2026, in every current engine since January 2026
+(<https://developer.mozilla.org/docs/Web/CSS/position-area>). `static/js/app.js` places it in a
+browser that has the popover but not the anchoring, a few lines measuring the button.
+
+The known gap: a browser older than January 2025 shows the ⋮ button and opens nothing, the same
+kind of gap A9 accepted for the dialogs. No menu library is added (A8).
+
+**Decided by** SK, 2026-11-06 (D7 of the workspace redesign). *Record:* issue #221 in the private
+repository and `notes/2026-11-05_workspace-redesign-plan.md` there.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8) and 2026-11-03 (A9), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9) and 2026-11-06 (A10), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>
