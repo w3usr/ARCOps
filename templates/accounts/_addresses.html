@@ -1,3 +1,4 @@
+{% load nav %}
 {% comment %}Every address on the account, one block each: the address, what it does in plain
 words, then the actions. The page posting this sets `address_subject_is_self`; an officer looking
 at someone else can confirm an address without any mail, which is what keeps signing in from
@@ -19,27 +20,27 @@ depending on delivery.{% endcomment %}
         officer can supply the missing standing here (FR-27, 2026-09-20).{% endcomment %}
         {% if a.proof == 'vouched' or not a.proof %}
           {% if address_subject_is_self %}
-          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Prove it is yours</button></form>
+          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Prove it is yours</button></form>
           {% elif perms.ops.manage_member_addresses %}
-          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Confirm it myself</button></form>
+          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Confirm it myself</button></form>
           {% endif %}
         {% endif %}
         {% if perms.ops.correct_member_addresses and not address_subject_is_self %}
-        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="linklike">Stop it signing them in</button></form>
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="secondary small">Stop it signing them in</button></form>
         {% endif %}
       {% else %}
         {% if address_subject_is_self %}
-        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Send the confirmation link</button></form>
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Send the confirmation link</button></form>
         {% else %}
-        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Send them the link</button></form>
-        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Confirm it myself</button></form>
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Send them the link</button></form>
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Confirm it myself</button></form>
         {% endif %}
       {% endif %}
       {% comment %}A member sets their own club mail and takes their own addresses off; an
       officer who needs to shut an account out suspends it, where the act is named and reasoned
       (NAF, 2026-09-19).{% endcomment %}
-      {% if address_subject_is_self or perms.ops.correct_member_addresses %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="linklike">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>{% endif %}
-      {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}<button type="button" class="linklike danger" commandfor="addr-rm-{{ forloop.counter }}" command="show-modal">Remove this address</button>{% endif %}
+      {% if address_subject_is_self or perms.ops.correct_member_addresses %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>{% endif %}
+      {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}<button type="button" class="ghost danger small" commandfor="addr-rm-{{ forloop.counter }}" command="show-modal">{% icon 'trash' 'small' %}Remove this address</button>{% endif %}
     </div>
     {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}
     <dialog id="addr-rm-{{ forloop.counter }}" class="slot-dialog confirm-dialog" aria-labelledby="addr-rm-h-{{ forloop.counter }}">

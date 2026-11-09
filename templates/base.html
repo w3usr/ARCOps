@@ -1,4 +1,4 @@
-{% load static nav %}<!DOCTYPE html>
+{% load static nav tz %}<!DOCTYPE html>
 <html lang="en" class="no-js">
 <head>
 <meta charset="utf-8">
@@ -103,6 +103,10 @@ localStorage, where they would keep member names and rosters (technical addendum
   {% comment %}Everything beside the sidebar, footer included, is one column: the footer stays under
   the page, not under the sidebar (SK, 2026-11-03).{% endcomment %}
   <div class="page">
+  {% comment %}The time every roster is written in, always in sight (#246, D9; SK 2026-11-06). Drawn
+  by the server, so without JavaScript it is the time the page was drawn, and says UTC so it never
+  passes for local; app.js keeps it ticking.{% endcomment %}
+  <div class="pagebar"><span class="utc-clock">{% icon 'clock' 'small' %}<time data-utc-clock datetime="{% timezone "UTC" %}{% now "c" %}{% endtimezone %}">{% timezone "UTC" %}{% now "H:i" %}{% endtimezone %}</time> UTC</span></div>
 {% endif %}
 {% if acting_guardian %}<div class="banner acting" role="status"><p><strong>Acting for {{ user.display_first }}</strong> (under 18). Sign-ups, cancellations, check-ins, and profile changes you make now are on their behalf and recorded in your name. You are {{ acting_guardian.display_first }}.</p><form method="post" action="{% url 'act_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop acting for them</button></form></div>{% endif %}
 {% if minor_readonly %}<div class="banner readonly" role="status"><p><strong>Read-only.</strong> A member under 18 sees their schedule, rosters, and messages here; sign-ups, changes, and profile edits are made by a guardian from their own account. You can change your own password.</p></div>{% endif %}

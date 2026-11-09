@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load times labels %}
+{% load times labels nav %}
 {% block title %}My {{ product.sked }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>My {{ product.sked }}</h1>
@@ -12,7 +12,7 @@
 <button class="big" type="submit">Check in</button></form>{% endif %}</section>
 {% endfor %}
 {% if upcoming %}
-<table class="table"><thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Position</th><th scope="col">Role</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
+<table class="table data"><thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Position</th><th scope="col">Role</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
 {% for s in upcoming %}<tr>
 <th scope="row">{% when s.slot.start s.slot.end s.slot.event %}</th>
 <td data-label="Event"><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a></td><td data-label="Position">{{ s.slot.position }}</td><td data-label="Role">{{ s.role|role_label }}</td>
@@ -27,7 +27,7 @@
 <p class="copyrow"><code id="feed-url">{{ feed_url }}</code> <button type="button" class="secondary" data-copy="#feed-url">Copy</button></p>
 {% comment %}The address is a key, so it can be replaced: the other half of not being a signed
 string that changed on every page load (NAF, 2026-09-19).{% endcomment %}
-<p><button type="button" class="linklike danger" commandfor="feed-new" command="show-modal">Replace this address</button></p>
+<p><button type="button" class="ghost danger small" commandfor="feed-new" command="show-modal">{% icon 'trash' 'small' %}Replace this address</button></p>
 <dialog id="feed-new" class="slot-dialog confirm-dialog" aria-labelledby="feed-new-h">
   <h2 id="feed-new-h">Replace your calendar address?</h2>
   <p>Use this if the address has been shared by accident. You get a new one, and any calendar subscribed to the old address stops receiving your slots until you subscribe it again.</p>

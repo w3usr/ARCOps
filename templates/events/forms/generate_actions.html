@@ -1,3 +1,4 @@
+{% load nav %}
 <div>{% if not slot_count %}<button type="submit">Generate slots</button>{% else %}<button type="submit" name="mode" value="fill">Add slots to the empty hours</button>{% endif %}
   {% if partial %}<button type="button" class="secondary" data-close>Cancel</button>{% else %}<a class="button secondary" href="{{ back }}">Cancel</a>{% endif %}
-  {% if slot_count and not signups_exist %}<button type="submit" name="mode" value="replace" class="linklike danger">Regenerate slots</button>{% endif %}</div>
+  {% if slot_count and not signups_exist %}<button type="submit" name="mode" value="replace" class="ghost danger small">{% icon 'trash' 'small' %}Regenerate slots</button>{% endif %}</div>

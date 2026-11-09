@@ -273,3 +273,13 @@ document.addEventListener("change", (ev) => {
     el.name = el.dataset.roleField + "_" + sel.value;
   });
 });
+
+// The UTC clock in the bar (#246, D9): the server draws the minute; this keeps it current. A
+// screen reader is not told each minute: it is not a live region.
+(() => {
+  const t = document.querySelector("[data-utc-clock]");
+  if (!t) return;
+  const tick = () => { const d = new Date(); t.textContent = d.toISOString().slice(11, 16); t.dateTime = d.toISOString(); };
+  tick();
+  setInterval(tick, 15000);
+})();

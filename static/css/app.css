@@ -108,6 +108,10 @@ h1 + p, h2 + p { margin-top: 0; }
 html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); }
 .shell > .page { grid-column: 2; min-width: 0; display: flex; flex-direction: column; background: var(--canvas); box-shadow: -1px 0 0 var(--line); }
 .page > main { flex: 1; }
+/* The bar over every signed-in page, holding the UTC clock (#246). */
+.pagebar { display: flex; justify-content: flex-end; padding: .5rem clamp(1rem, 4vw, 3rem) 0; }
+.utc-clock { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .6rem; border: 1px solid var(--line); border-radius: var(--r-button); background: var(--panel); font-size: var(--t-small); font-weight: 700; font-variant-numeric: tabular-nums; }
+@media print { .pagebar { display: none; } }
 .page > .banner { margin: 1rem clamp(1rem, 4vw, 3rem) 0; }
 
 .topbar { display: none; }
@@ -287,8 +291,11 @@ footer.site .credit a { color: inherit; }
 /* A part of a page: its heading and what is under it, on the page itself, with a rule above
    the next part. A card is only for a thing that stands on its own, such as a message or an
    event in a list (docs/INTERFACE.md, "Shape"). */
-.section { margin: 0; padding: var(--s3) 0; }
-.section + .section { border-top: 1px solid var(--line); }
+/* A section is a panel without a header band (D1, SK 2026-11-06; #242 to #245): every page's
+   parts stand on the canvas as white boxes, the pages not yet given panel headers included. A
+   section inside a panel or a card is a plain part of it again. */
+.section { margin: 0 0 var(--s3); padding: 1rem 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); min-width: 0; }
+:is(.panel, .card, .section) .section { margin: 0; padding: var(--s3) 0 0; background: none; border: 0; border-radius: 0; }
 
 /* Panels (#227, SK 2026-11-06, D1; docs/INTERFACE.md, "Shape"): one part of a page with a job,
    white on the canvas. A header names it and holds its actions at the right, with one line
@@ -380,6 +387,8 @@ ul.rows > li > form.inline { margin-left: auto; }
 .table.data tbody :is(td, th) a:not(.button):is(:hover, :focus-visible) { text-decoration: underline; }
 .table.data .sub { display: block; color: var(--muted); font-size: var(--t-small); font-weight: 400; overflow-wrap: anywhere; }
 .table.data td.row-actions { text-align: right; white-space: nowrap; }
+.section .table.data :is(th, td):first-child { padding-left: .5rem; }  /* the section's own padding is the inset */
+.section .table.data :is(th, td):last-child { padding-right: .5rem; }
 /* The event's header and tabs (#232, D8): the title and its state badge, a line of facts, a
    captain's actions at the right, and Roster, Manage and Who took part under it. */
 .event-head { margin-bottom: var(--s3); }
@@ -947,7 +956,13 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 .confirm-dialog { max-width: min(32rem, 94vw); }
 dialog.slot-dialog:modal { margin: auto; }  /* centered, even as a card's last child, whose margin a card zeroes */
 .slot-dialog > h2:first-child { margin-top: 0; padding-right: 2rem; }
+/* One header and footer for every confirmation (#244): its question as a header band over a rule,
+   and its choices as a footer band, the safe one first and the primary at the right. The dialog's
+   own padding is 1.25rem 1.5rem 1.5rem; the bands reach its edges. */
+.confirm-dialog > h2:first-child { margin: -1.25rem -1.5rem 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--line); }
 .confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s1); margin-top: var(--s2); }
+.confirm-dialog .confirm-actions { margin: var(--s3) -1.5rem -1.5rem; padding: .85rem 1.5rem; border-top: 1px solid var(--line); background: var(--panel-head); border-radius: 0 0 var(--r-card) var(--r-card); }
+.confirm-dialog { overflow: hidden; }
 
 /* Something more to read, folded: one look everywhere. A chevron in the action color that turns
    as it opens, and what opens set in under a thin rule, so it reads as belonging to its line. */

@@ -7,7 +7,7 @@
 <h2 id="jobs">Scheduled jobs</h2>
 <p class="muted">Each job runs on a systemd timer installed by the deployment and pings its own healthchecks.io check on success. <strong>Late</strong> means the last success is older than the job's period plus its grace; that job's check is overdue, and the watchdog has said so.</p>
 <div class="table-wrap">
-<table class="table">
+<table class="table data">
 <thead><tr><th scope="col">Job</th><th scope="col">Every</th><th scope="col">Last run (UTC)</th><th scope="col">Outcome</th><th scope="col">Last success</th><th scope="col">Detail</th></tr></thead>
 <tbody>
 {% for r in rows %}

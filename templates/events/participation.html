@@ -5,7 +5,7 @@
 {% event_header event 'people' 'Who took part' %}
 <p class="lede">Hours and people, for each operating period and for the event as a whole.</p>
 <p>Operating slots only; setup and breakdown are left out. <a href="?format=csv">Download it as a spreadsheet.</a></p>
-<div class="table-wrap"><table class="table">
+<div class="table-wrap"><table class="table data">
 <thead><tr><th scope="col">Period</th><th scope="col">Slots</th><th scope="col">Hours scheduled</th><th scope="col">Hours covered</th><th scope="col">Hours viable</th><th scope="col">People scheduled</th><th scope="col">People checked in</th></tr></thead>
 <tbody>
 {% for r in report.periods %}<tr><th scope="row">{% when r.period.start r.period.end event %}</th><td data-label="Slots">{{ r.slots }}</td><td data-label="Hours scheduled">{{ r.hours_scheduled|floatformat:"-1" }}</td><td data-label="Hours covered">{{ r.hours_covered|floatformat:"-1" }}</td><td data-label="Hours viable">{{ r.hours_viable|floatformat:"-1" }}</td><td data-label="People scheduled">{{ r.people_scheduled }}</td><td data-label="People checked in">{{ r.people_checked_in }}</td></tr>{% endfor %}

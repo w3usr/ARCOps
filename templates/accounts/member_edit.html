@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load labels %}
+{% load labels nav %}
 {% block title %}Editing {{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% comment %}The heading calls people what they are called: the preferred name where they have
@@ -60,7 +60,7 @@ stored in.{% endcomment %}
         <div class="field"><label for="ov-country">Issuing country</label><input id="ov-country" name="override_country" maxlength="60" value="{{ standing.license.override_country }}" placeholder="Canada"><span class="helptext">Only for a license issued outside the United States.</span></div>
       </div>
       <div class="field"><label for="ov-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="ov-reason" name="override_reason" maxlength="500" value="{{ standing.license.override_reason }}" required></div>
-      <div><button type="submit">Save</button> <button type="button" class="secondary" commandfor="lic-set" command="close">Cancel</button>{% if standing.license.has_override %} <button type="submit" name="lift" value="1" class="linklike">Go back to the FCC value</button>{% endif %}</div>
+      <div><button type="submit">Save</button> <button type="button" class="secondary" commandfor="lic-set" command="close">Cancel</button>{% if standing.license.has_override %} <button type="submit" name="lift" value="1" class="secondary small">Go back to the FCC value</button>{% endif %}</div>
     </form>
   </dialog>
   {% endif %}
@@ -73,7 +73,7 @@ stored in.{% endcomment %}
     {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
     <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
       {% if a.state == 'approved' and can_revoke %}
-      <button type="button" class="linklike danger" commandfor="rv-dlg-{{ a.pk }}" command="show-modal">Revoke this approval</button>
+      <button type="button" class="ghost danger small" commandfor="rv-dlg-{{ a.pk }}" command="show-modal">{% icon 'trash' 'small' %}Revoke this approval</button>
       <dialog id="rv-dlg-{{ a.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="rv-h-{{ a.pk }}">
         <h2 id="rv-h-{{ a.pk }}">Revoke {{ a.template.title }}?</h2>
         <p>They lose the access this agreement grants, and are told why.</p>
@@ -91,7 +91,7 @@ stored in.{% endcomment %}
 <section class="section" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="linklike">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
+  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="secondary small">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
   {% if member.under_18 and perms.ops.edit_member_privileges %}<form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="an address on their account" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
   {% if member.under_18 and can_convert %}<p><button type="button" class="secondary" commandfor="to-adult" command="show-modal">Convert to an adult account</button></p>
   <dialog id="to-adult" class="slot-dialog confirm-dialog" aria-labelledby="to-adult-h">
@@ -258,7 +258,7 @@ said on the profile beside the passkeys.{% endcomment %}
 <p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
 {% if push_subscriptions %}
 <ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }}, since {{ sub.created|date:"j M Y" }}{% if sub.failures %}, {{ sub.failures }} failed{% endif %}
-<form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="linklike danger">Forget this device</button></form></li>{% endfor %}</ul>
+<form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Forget this device</button></form></li>{% endfor %}</ul>
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>
 {% endif %}

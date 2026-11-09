@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load times labels %}
+{% load times labels nav %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% comment %}Home opens on what you do next (#162, SK): the heading says what the page shows.
@@ -19,7 +19,7 @@ thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
   {% elif next_action == 'check_in' and s.user.under_18 %}<p><a href="{% url 'my_schedule' %}">Check in on My schedule</a>, naming who is with you.</p>
   {% elif next_action == 'check_in' %}<form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}<button class="big" type="submit">Check in</button></form>
   {% elif next_action == 'confirm' %}<form method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm you will be there</button></form>{% endif %}
-  <p><a href="{% url 'event_detail' s.slot.event.pk %}">Open the roster</a></p>
+  <p><a class="button secondary" href="{% url 'event_detail' s.slot.event.pk %}">{% icon 'table' %}Open the roster</a></p>
 </section>
 {% endwith %}{% elif invite %}{% with e=invite.0 n=invite.1 %}
 <section class="card highlight" aria-labelledby="inv">
@@ -94,7 +94,7 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
     {% if c.open %}<span class="tag open">{{ c.open }} open</span>{% endif %}
     {% if c.covered %}<span class="tag ok">{{ c.covered }} covered</span>{% endif %}
   {% else %}Every slot is covered.{% endif %}</p>
-  <p>{% if c.needs %}<a href="{% url 'event_detail' e.pk %}?filter=problems">See the slots that need someone</a> · {% endif %}<a href="{% url 'event_detail' e.pk %}">Open the roster</a></p>
+  <p>{% if c.needs %}<a href="{% url 'event_detail' e.pk %}?filter=problems">See the slots that need someone</a> · {% endif %}<a class="button secondary small" href="{% url 'event_detail' e.pk %}">{% icon 'table' 'small' %}Open the roster</a></p>
 </section>
 {% endwith %}{% endif %}
 

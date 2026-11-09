@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load richtext %}
+{% load richtext nav %}
 {% block title %}{{ title }} · Messages · {{ club.short_name }}{% endblock %}
 {% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block content %}
@@ -12,7 +12,7 @@
   <div class="field">{{ form.body_html.label_tag }}{{ form.body_html }}{{ form.body_html.errors }}
     <span class="helptext">HTML from the allowed set (paragraphs, headings, lists, links, tables, bold, italic). Django template syntax: <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code>.</span></div>
   <p><strong>Values this message may use:</strong> {% for v in template.variables %}<code>{{ v }}</code>{% if not forloop.last %}, {% endif %}{% empty %}<span class="muted">none documented</span>{% endfor %}. Every template also has <code>club.name</code>, <code>club.short_name</code>, <code>club.contact_email</code>, and <code>site_url</code>.</p>
-  <div><button type="submit">Save</button> {% if template.edited %}<button type="submit" name="reset" value="1" class="linklike">Go back to the shipped text</button>{% endif %}</div>
+  <div><button type="submit">Save</button> {% if template.edited %}<button type="submit" name="reset" value="1" class="secondary small">Go back to the shipped text</button>{% endif %}</div>
 </form>
 <section class="card" aria-labelledby="pv"><h2 id="pv">Preview</h2>
 <p class="helptext">With sample values in place of the real ones.</p>

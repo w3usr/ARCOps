@@ -370,6 +370,13 @@ its actions (Add location, Generate slots), with one line under the name if one 
 body holds the list, the table or the form; a footer, when there is one, holds a form's save at
 the right and a note at the left. A page without parts (a short form, a message) is one panel.
 
+A part with a heading and no actions of its own may stay a **section** (`.section`): since
+phase 5 of the redesign it draws as a panel without a header band, white on the canvas, and as a
+plain part again when it sits inside a panel or a card.
+
+**The time in UTC is always in sight** (D9): a clock at the top of every signed-in page, drawn by
+the server and kept current by a few lines of `app.js`, reading "UTC" so it never passes for local.
+
 **A card is a thing that stands on its own inside a panel or a list**: a message, an
 announcement, an agreement, an event in a list, a result to copy (a new link, a new invitation),
 the slot's **Captain** controls, the **Danger zone**. A card around a whole page's form frames
