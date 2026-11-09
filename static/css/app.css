@@ -376,9 +376,9 @@ ul.rows > li > form.inline { margin-left: auto; }
 .table.data thead th { background: var(--panel-head); border-bottom: 1px solid var(--line); }
 .table.data tbody tr:last-child td { border-bottom: 0; }
 .table.data tbody tr:hover { background: color-mix(in srgb, var(--fg) 3%, transparent); }
-.table.data td a:not(.button) { font-weight: 700; text-decoration: none; }
-.table.data td a:not(.button):is(:hover, :focus-visible) { text-decoration: underline; }
-.table.data .sub { display: block; color: var(--muted); font-size: var(--t-small); font-weight: 400; }
+.table.data tbody :is(td, th) a:not(.button) { font-weight: 700; text-decoration: none; }
+.table.data tbody :is(td, th) a:not(.button):is(:hover, :focus-visible) { text-decoration: underline; }
+.table.data .sub { display: block; color: var(--muted); font-size: var(--t-small); font-weight: 400; overflow-wrap: anywhere; }
 .table.data td.row-actions { text-align: right; white-space: nowrap; }
 /* The event's header and tabs (#232, D8): the title and its state badge, a line of facts, a
    captain's actions at the right, and Roster, Manage and Who took part under it. */
@@ -583,6 +583,10 @@ label .req { margin-left: .15rem; }
 
 /* ------------------------------------------- management pages */
 .titlerow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+/* A list page's own header (#237): its heading, and its actions at the right, the primary last. */
+.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); margin-bottom: var(--s3); }
+.page-head h1 { margin: 0; }
+.table.data tbody th[scope=row] { font-weight: 400; text-align: left; }
 .titlerow h1 { margin-bottom: .5rem; }
 .crumbs { margin: 0 0 .5rem; font-size: var(--t-small); color: var(--muted); }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; align-items: start; }
@@ -791,9 +795,19 @@ input.num[size="1"], input.num[size="2"] { --num: 3; }
 .when2 { font-size: var(--t-small); }
 td .when1, th .when1 { font-weight: 700; }
 .eventcards { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
+/* The events list in panels (#238): each event a row with a date tile, not a card of its own. */
+.panel > .eventcards { display: block; }
+.panel .eventcard { border: 0; border-radius: 0; padding: .85rem 1.25rem; background: none; align-items: flex-start; }
+.datetile { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 3rem; padding: .3rem 0; border: 1px solid var(--line); border-radius: var(--r-button); background: var(--panel-head); line-height: 1.1; flex: none; }
+.datetile .d { font-weight: 700; font-size: var(--t-lede); }
+.datetile .m { font-size: var(--t-small); color: var(--muted); }
+.covline { margin: .4rem 0 0; display: flex; flex-wrap: wrap; gap: .3rem; }
+.panel.quiet { background: var(--panel-head); }
+.panel.quiet .eventcard-title { font-size: var(--t-body); }
 .eventcard { border: 1px solid var(--line); border-radius: var(--r-card); padding: .85rem 1rem; background: var(--panel); }
 .eventcard-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
-.eventcard-title { font-weight: 700; font-size: var(--t-lede); }
+.eventcard-title { font-weight: 700; font-size: var(--t-lede); text-decoration: none; }  /* D5: a card's title */
+.eventcard-title:is(:hover, :focus-visible) { text-decoration: underline; }
 .eventcard .when { margin: .35rem 0 0; font-size: var(--t-body); }
 
 /* FR-108: unread count in the sidebar; FR-82: unread rows in My messages */

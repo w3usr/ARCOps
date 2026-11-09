@@ -77,7 +77,8 @@ def test_members_see_short_names_and_officers_see_everything(people):
 
     addresses.add(people["mem"], "mo@uni.example", confirmed=True)
     body = _as(people["off"]).get("/members/").content.decode()
-    assert '<td data-label="Last"><a' in body and ">Member</a>" in body and ">Mo</a>" in body
+    # one Name link, the club's name and the surname (#237, SK 2026-11-09)
+    assert '<th scope="row" data-label="Name"><a' in body and ">Mo Member</a>" in body
     # every address an officer may write to, not one of them chosen for them
     assert "mem@home.example" in body and "mo@uni.example" in body
     assert _as(people["mem"]).get(f"/members/{people['off'].pk}/edit/").status_code == 404

@@ -229,7 +229,8 @@ def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
     start = timezone.now() + timedelta(days=10)
     OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
     body = _as(officer).get("/events/").content.decode()
-    assert '<span class="tag">Canceled</span>' in body and "Cancelled" not in body
+    # a badge in the canceled tone since #238; the word is what the house spells
+    assert '<span class="tag bad">Canceled</span>' in body and "Cancelled" not in body
 
 
 def _fill(c, ev, **extra):

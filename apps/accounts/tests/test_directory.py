@@ -64,9 +64,13 @@ def _member_names(body: str) -> list[str]:
 
 
 def _names(body: str) -> list[str]:
-    """The Last column, in the order the table shows it."""
+    """The surnames, in the order an officer's table shows them: the last word of each row's
+    Name link (#237, SK 2026-11-09: one Name column, the club's name and the surname)."""
     rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
-    return re.findall(r'<td data-label="Last"><a [^>]*>([^<]*)</a>', rows)
+    return [
+        n.split()[-1]
+        for n in re.findall(r'<th scope="row" data-label="Name"><a [^>]*>([^<]*)</a>', rows)
+    ]
 
 
 def _as(user):
@@ -135,23 +139,23 @@ def test_a_member_gets_no_category_or_access_filter(directory):
     assert re.search(r"<tbody>(.*?)</tbody>", rows, re.S).group(1).count("<tr>") == 3
 
 
-def test_an_officer_sees_the_redacted_name_beside_the_real_one(directory):
-    """So an officer can see what the club sees, without signing in as somebody else.
-
-    NAF, 2026-09-19: "make sure the name column the officers sees is the same one the members
-    see... so the officers can quickly see what is on public view."
+def test_an_officer_sees_the_name_the_club_sees_leading_the_row(directory):
+    """So an officer can see what the club sees, without signing in as somebody else (NAF,
+    2026-09-19: "make sure the name column the officers sees is the same one the members see...
+    so the officers can quickly see what is on public view."). Since #237 (SK, 2026-11-09) the
+    officer's one Name column leads with that name, adds the surname, and links to the page;
+    the address is under it as text.
     """
     body = _as(directory).get("/members/").content.decode()
     head = re.search(r"<thead>(.*?)</thead>", body, re.S).group(1)
-    assert ">Name<" in head and ">First<" in head and ">Last<" in head
-
+    assert ">Name<" in head and ">First<" not in head and ">Preferred<" not in head
     rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
     zoe = [r for r in rows.split("<tr>") if "Adams" in r][0]
-    # Zoe Adams prefers "Zed": the Name column is what the club calls her, the First column the
-    # name on the record, and the surname is a column of its own (2026-09-20).
-    assert '<th scope="row">Zed</th>' in zoe
-    assert '"First"><a href="/members/' in zoe and ">Zoe</a>" in zoe
-    assert '"Last"><a href="/members/' in zoe and ">Adams</a>" in zoe
+    # Zoe Adams prefers "Zed": the name the club calls her leads, then the surname
+    assert re.search(
+        r'<th scope="row" data-label="Name"><a href="/members/\d+/">Zed Adams</a>', zoe
+    )
+    assert "zeta@" in zoe and "mailto:" not in zoe, "the address under it, as text"
 
 
 def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
@@ -171,14 +175,16 @@ def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
     assert _member_names(body) == ["Zed", "Ann", "Al"], "and the surname is the next column"
 
 
-def test_both_halves_of_the_name_open_the_member(directory):
+def test_one_link_per_row_the_name(directory):
+    """D5 (SK, 2026-11-06), #237: the name is the row's one link; its ⋮ menu repeats it with
+    Edit profile, and nothing else in the row is a link."""
     rows = re.search(
         r"<tbody>(.*?)</tbody>", _as(directory).get("/members/").content.decode(), re.S
     ).group(1)
     zoe = User.objects.by_address("zeta@example.org").get()
-    link = f'/members/{zoe.pk}/"'
-    first_row = [r for r in rows.split("<tr>") if "Adams" in r][0]
-    assert first_row.count(link) == 2, "the first name and the last name each link to the page"
+    row = [r for r in rows.split("<tr>") if "Adams" in r][0]
+    cells = row.split('class="row-actions"')[0]
+    assert cells.count("<a ") == 1 and f'href="/members/{zoe.pk}/"' in cells
 
 
 def test_a_members_sort_falls_back_to_a_column_they_have(directory):
@@ -196,10 +202,11 @@ def test_joined_via_is_gone(directory):
     assert "Joined via" not in _as(directory).get("/members/").content.decode()
 
 
-def test_phone_stands_on_its_own(directory):
+def test_phone_is_on_the_profile_not_the_directory(directory):
+    """#237 (SK, 2026-11-09): the compact table leaves the phone to the profile."""
     body = _as(directory).get("/members/").content.decode()
-    assert '<td data-label="Phone">' in body and '<td data-label="Email">' in body
-    assert "5550002" in body
+    assert 'data-label="Phone"' not in body and 'data-label="Email"' not in body
+    assert "5550002" not in body
 
 
 def _licensed(directory):
@@ -275,9 +282,8 @@ def test_a_phone_number_is_shown_the_way_its_country_writes_it(directory):
     u = User.objects.by_address("zeta@example.org").get()
     u.cell_phone = "9737874506"
     u.save(update_fields=["cell_phone"])
-    body = _as(directory).get("/members/").content.decode()
+    body = _as(directory).get(f"/members/{u.pk}/").content.decode()  # on the profile (#237)
     assert "(973) 787-4506" in body, "formatted for display"
-    assert 'href="tel:9737874506"' in body, "dialed as stored"
     u.refresh_from_db()
     assert u.cell_phone == "9737874506", "what they typed is what is stored"
 
@@ -422,9 +428,9 @@ def test_the_status_panel_starts_empty_like_every_other_panel(directory):
     body = _as(advisor).get("/members/").content.decode()
     assert 'name="archived" value="no" checked' in body
     assert 'name="archived" value="yes" checked' not in body
-    # One roster: an advisor may ask for the archived rows beside the live ones, so a column
-    # tells them apart (NAF, 2026-09-19). An officer gets neither the column nor the filter.
-    assert "sort=archived" in body
+    # One roster: an advisor may ask for the archived rows beside the live ones; since #237 a
+    # badge beside the status tells them apart, not a column of its own.
+    assert "sort=archived" not in body
 
 
 def test_a_member_holds_any_number_of_positions_and_a_position_any_number_of_members(directory):

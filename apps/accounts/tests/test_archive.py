@@ -139,7 +139,8 @@ def test_only_a_faculty_advisor_or_above_reads_the_archive():
     # members list, and only a reader who may see one gets either (NAF, 2026-09-19)
     assert b"Archived members" not in _as(advisor).get("/").content
     body = _as(advisor).get("/members/").content.decode()
-    assert "sort=archived" in body and 'name="archived"' in body, "the column and the filter"
+    # the filter; an archived row carries a badge beside its status, not a column (#237)
+    assert 'name="archived"' in body, "the filter"
     officer_body = _as(officer).get("/members/").content.decode()
     assert "sort=archived" not in officer_body and 'name="archived"' not in officer_body
 

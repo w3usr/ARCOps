@@ -1,22 +1,41 @@
 {% extends "base.html" %}
-{% load times %}
+{% load times nav badges %}
 {% block title %}Events · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<div class="titlerow"><h1>Events</h1>{% if perms.ops.manage_events %}<span><a class="button secondary" href="{% url 'health_overview' %}">Upcoming coverage</a> <a class="button" href="{% url 'event_create' %}">New event</a></span>{% endif %}</div>
-<section aria-labelledby="u"><h2 id="u">Upcoming</h2>
-{% if upcoming %}
-<ul class="eventcards">
-{% for e in upcoming %}
-  <li class="eventcard">
-    <div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag">{{ e.get_state_display }}</span>{% endif %}</div>
-    <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
-  </li>
-{% endfor %}
-</ul>
-{% else %}<p class="empty">Nothing is coming up.{% if perms.ops.create_events %} <a href="{% url 'event_create' %}">Put an event on the calendar.</a>{% endif %}</p>{% endif %}
+{% comment %}The events list (#238): each event a row with a date tile, its title, its state as a
+badge, its span, a captain's coverage counts and Manage; New event as the page's primary
+action; past events in a quieter panel.{% endcomment %}
+<div class="page-head">
+  <h1>Events</h1>
+  {% if perms.ops.manage_events %}<div class="actions"><a class="button secondary" href="{% url 'health_overview' %}">{% icon 'activity' %}Upcoming coverage</a> <a class="button" href="{% url 'event_create' %}">{% icon 'plus' %}New event</a></div>{% endif %}
+</div>
+
+<section class="panel" aria-labelledby="u">
+  <header class="panel-head"><div><h2 id="u">Upcoming</h2></div></header>
+  {% if upcoming %}
+  <ul class="eventcards rows">
+  {% for e in upcoming %}
+    <li class="eventcard">
+      {% if e.tile %}<span class="datetile" aria-hidden="true"><span class="d">{{ e.tile|date:"j" }}</span><span class="m">{{ e.tile|date:"M" }}</span></span>{% endif %}
+      <div class="grow">
+        <div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag {{ e.state|tone:'event' }}">{{ e.get_state_display }}</span>{% endif %}</div>
+        <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
+        {% if e.cov and e.cov.total %}<p class="covline">{% if e.cov.covered %}<span class="tag ok">{{ e.cov.covered }} covered</span> {% endif %}{% if e.cov.needs %}<span class="tag warn">{{ e.cov.needs }} need someone</span> {% endif %}{% if e.cov.open %}<span class="tag open">{{ e.cov.open }} open</span>{% endif %}</p>{% endif %}
+      </div>
+      {% if e.captain %}<a class="button secondary small" href="{% url 'event_manage' e.pk %}">{% icon 'settings' 'small' %}Manage<span class="sr-only"> {{ e.title }}</span></a>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+  {% else %}<div class="panel-body"><p class="empty">Nothing is coming up.{% if perms.ops.create_events %} <a href="{% url 'event_create' %}">Put an event on the calendar.</a>{% endif %}</p></div>{% endif %}
 </section>
-{% if regular %}<section aria-labelledby="r"><h2 id="r">Regular meetings and nets</h2>
-<ul class="eventcards">{% for e in regular %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e.recurrence_text }}</p></li>{% endfor %}</ul></section>{% endif %}
-{% if past %}<section aria-labelledby="p"><h2 id="p">Past</h2>
-<ul class="eventcards">{% for e in past %}<li class="eventcard"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag">Canceled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></li>{% endfor %}</ul></section>{% endif %}
+
+{% if regular %}<section class="panel" aria-labelledby="r">
+  <header class="panel-head"><div><h2 id="r">Regular meetings and nets</h2><p>On the calendar, with no roster.</p></div></header>
+  <ul class="eventcards rows">{% for e in regular %}<li class="eventcard"><span class="row-ic">{% icon 'calendar' 'small' %}</span><div class="grow"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag {{ e.state|tone:'event' }}">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e.recurrence_text }}</p></div></li>{% endfor %}</ul>
+</section>{% endif %}
+
+{% if past %}<section class="panel quiet" aria-labelledby="p">
+  <header class="panel-head"><div><h2 id="p">Past</h2></div></header>
+  <ul class="eventcards rows">{% for e in past %}<li class="eventcard">{% if e.tile %}<span class="datetile" aria-hidden="true"><span class="d">{{ e.tile|date:"j" }}</span><span class="m">{{ e.tile|date:"M" }}</span></span>{% endif %}<div class="grow"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag bad">Canceled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></div></li>{% endfor %}</ul>
+</section>{% endif %}
 {% endblock %}

@@ -42,6 +42,17 @@ def event_list(request):
         else:
             (upcoming if (e.ends_at() or now) >= now else past).append(e)
     upcoming.sort(key=lambda e: e.starts_at() or now)
+    # Each row's date tile in UTC, the roster's axis, and a captain's coverage counts (#238).
+    from datetime import UTC
+
+    from .services.roster import coverage
+
+    for e in upcoming + past:
+        start = e.starts_at()
+        e.tile = start.astimezone(UTC) if start else None
+    for e in upcoming:
+        e.captain = request.user.can_captain(e)
+        e.cov = coverage(e, now) if e.captain else None
     return render(
         request,
         "events/list.html",

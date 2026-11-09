@@ -84,30 +84,23 @@ def _standing(user) -> dict:
 # may see, and `sort` reads the value a reader actually sees, so a column sorts by what is in
 # it rather than by the key stored behind it ("Community Member", not "community").
 DIRECTORY_COLUMNS = [
-    # The redacted name, and everybody gets it, officers included: it is how this person appears
-    # to the rest of the club, so an officer can see at a glance what is on public view without
-    # signing in as somebody else (NAF, 2026-09-19).
-    {"key": "name", "label": "Name", "show": "all"},
-    {"key": "first", "label": "First", "show": "full"},
-    # Everybody gets the last name, an initial where that is all a member may see, because a
-    # roster is read by surname and there was nothing to sort by at that level (the advisor,
-    # 2026-09-20, testing T7: "Last initials are going to need their own column to sort by last
-    # name by default.").
-    {"key": "last", "label": "Last", "show": "all"},
-    {"key": "preferred", "label": "Preferred", "show": "full"},
+    # A member reads the redacted name, and the surname as an initial in a column of its own,
+    # because a roster is read by surname (NAF, 2026-09-19; the advisor, 2026-09-20, testing T7:
+    # "Last initials are going to need their own column to sort by last name by default.").
+    {"key": "name", "label": "Name", "show": "member"},
+    {"key": "last", "label": "Last", "show": "member"},
+    # An officer reads one Name column: the name the club calls them and their surname, linking
+    # to the profile, with the address under it, sorted by surname (SK, 2026-11-09, #237: the
+    # compact table; email and phone as text, one link per row). Preferred, Email, Phone and the
+    # Archived column went: the preferred name is in the name, the address under it, the phone
+    # on the profile, and an archived record carries a badge beside its status.
+    {"key": "fullname", "label": "Name", "show": "full"},
     {"key": "callsign", "label": "Callsign", "show": "all"},
     {"key": "class", "label": "Class", "show": "all"},
     {"key": "category", "label": "Category", "show": "full"},
     {"key": "position", "label": "Positions", "show": "all"},
     {"key": "status", "label": "Status", "show": "full"},
-    # One roster, and an advisor may ask for the archived rows alongside the live ones, so the
-    # column is what tells them apart. Only a reader who may see an archived record gets it
-    # (the advisor, 2026-09-19: "Faculty advisors and above can see the archived column.
-    # Officers cannot.").
-    {"key": "archived", "label": "Archived", "show": "archive"},
     {"key": "access", "label": "Permission level", "show": "full"},
-    {"key": "email", "label": "Email", "show": "full"},
-    {"key": "phone", "label": "Phone", "show": "full"},
 ]
 
 
@@ -116,6 +109,8 @@ def _shows(column: dict, full: bool, may_see_archive: bool = False) -> bool:
     an archived record at all."""
     if column["show"] == "all":
         return True
+    if column["show"] == "member":
+        return not full
     if column["show"] == "archive":
         return full and may_see_archive
     return full
@@ -166,6 +161,7 @@ def _columns(text, positions: dict, cats: dict, ladder: list):
         "name": lambda m: (text(m.display_first), text(m.last_name)),
         "first": lambda m: (text(m.first_name), text(m.last_name)),
         "last": lambda m: (text(m.last_name), text(m.first_name)),
+        "fullname": lambda m: (text(m.last_name), text(m.display_first)),
         "preferred": lambda m: (text(m.preferred_name), text(m.last_name)),
         # A blank is not a small callsign: no-callsign sorts after every callsign going up,
         # and before them coming down, rather than mixing in among the As.
@@ -322,7 +318,7 @@ def members(request):
 
     # Last name by default, at every level: the column is there for everyone now, and a club
     # roster is read by surname.
-    default_sort = "last"
+    default_sort = "fullname" if full else "last"
     sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
     shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)}
@@ -384,6 +380,8 @@ def members(request):
         "accounts/members.html",
         {
             "members": rows,
+            # Whose profile this reader may edit, for each row's ⋮ menu (#237).
+            "editable": {m.pk for m in rows if full and may_manage(request.user, m)},
             "q": q,
             "full": full,
             "positions": positions,
