@@ -233,6 +233,28 @@ def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
     assert '<span class="tag bad">Canceled</span>' in body and "Cancelled" not in body
 
 
+def test_the_events_list_works_out_coverage_only_for_live_events(officer, monkeypatch):
+    """Dev, 2026-11-09: hundreds of canceled test events each had their coverage worked out slot by
+    slot on every visit to the Events list. Only a published or locked event has any (#238)."""
+    from apps.events.services import roster
+
+    asked = []
+    real = roster.coverage
+    monkeypatch.setattr(
+        roster, "coverage", lambda e, now=None: asked.append(e.title) or real(e, now)
+    )
+    start = timezone.now() + timedelta(days=10)
+    for title, state in (
+        ("Gone", Event.State.CANCELLED),
+        ("Plan", Event.State.DRAFT),
+        ("On", Event.State.PUBLISHED),
+    ):
+        ev = Event.objects.create(title=title, state=state, created_by=officer)
+        OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
+    assert _as(officer).get("/events/").status_code == 200
+    assert asked == ["On"]
+
+
 def _fill(c, ev, **extra):
     return c.post(
         f"/events/{ev.pk}/slots/generate/",

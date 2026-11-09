@@ -50,9 +50,12 @@ def event_list(request):
     for e in upcoming + past:
         start = e.starts_at()
         e.tile = start.astimezone(UTC) if start else None
+    # Coverage is worked out slot by slot, so only for an event members sign up to: never for a
+    # draft or a canceled one, which an officer may have hundreds of (dev, 2026-11-09).
     for e in upcoming:
         e.captain = request.user.can_captain(e)
-        e.cov = coverage(e, now) if e.captain else None
+        live = e.state in (Event.State.PUBLISHED, Event.State.LOCKED)
+        e.cov = coverage(e, now) if e.captain and live else None
     return render(
         request,
         "events/list.html",
