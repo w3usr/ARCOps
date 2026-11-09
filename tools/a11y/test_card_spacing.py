@@ -16,7 +16,8 @@ from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 # its text and controls, the leaves, so a list item's own padding counts as space too. Text is
 # measured itself, since a paragraph's last line can run on past its last link. What is inside a
 # closed <details> is not drawn, apart from its summary.
-EXTRA = """() => [...document.querySelectorAll('.card, .section')].filter(c => c.offsetParent).map(c => {
+# A panel's body and footer share the rule since the redesign (#227).
+EXTRA = """() => [...document.querySelectorAll('.card, .section, .panel-body, .panel-foot')].filter(c => c.offsetParent).map(c => {
     const cs = getComputedStyle(c), box = c.getBoundingClientRect();
     let top = box.bottom, bottom = box.top;
     const reach = r => { if (r.height) { top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom); } };

@@ -803,6 +803,11 @@ td .when1, th .when1 { font-weight: 700; }
 .datetile .m { font-size: var(--t-small); color: var(--muted); }
 .covline { margin: .4rem 0 0; display: flex; flex-wrap: wrap; gap: .3rem; }
 .panel.quiet { background: var(--panel-head); }
+/* Messages and Announcements (#241): each card a row of one panel, divided, not boxed. */
+.msglist.panel { list-style: none; padding: 0; }
+:is(.msglist.panel > li, .msgpanel > details).card { margin: 0; border: 0; border-radius: 0; background: none; padding: .85rem 1.25rem; }
+:is(.msglist.panel > li + li, .msgpanel > details + details).card { border-top: 1px solid var(--line); }
+.msglist .unread summary strong { font-weight: 700; }
 .panel.quiet .eventcard-title { font-size: var(--t-body); }
 .eventcard { border: 1px solid var(--line); border-radius: var(--r-card); padding: .85rem 1rem; background: var(--panel); }
 .eventcard-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }

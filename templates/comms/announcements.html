@@ -1,14 +1,17 @@
 {% extends "base.html" %}
-{% load richtext %}
+{% load richtext nav %}
 {% block title %}Announcements · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<div class="titlerow"><h1>Announcements</h1><a class="button" href="{% url 'announce_all' %}">Announce to every member</a></div>
+<div class="page-head"><h1>Announcements</h1><div class="actions"><a class="button" href="{% url 'announce_all' %}">{% icon 'megaphone' %}Announce to every member</a></div></div>
 <p class="lede">Every announcement sent from the system or recorded as sent outside it, with who sent it, to whom, and the text. To announce to an event's participants, use <strong>Announce</strong> on that event's Manage page.</p>
+{% comment %}#241: every announcement a row of one panel, folded until it is read.{% endcomment %}
+<div class="panel msgpanel">
 {% for a in announcements %}
 <details class="card">
   <summary><strong>{{ a.subject }}</strong> <small class="muted">sent {{ a.created|date:"j M Y H:i" }} UTC by {{ a.sender.short_name|default:"?" }} to {% if a.event %}{{ a.event.title }}{% else %}all members{% endif %}, {{ a.recipient_count }} recipient{{ a.recipient_count|pluralize }}{% if a.sent_outside %}, sent outside the system{% endif %}</small></summary>
   <p class="muted"><small>Audience: {% for k, v in a.audience.items %}{{ k }}={{ v }}{% if not forloop.last %}, {% endif %}{% empty %}everyone{% endfor %}. Recipients: {% for r in a.recipients %}{{ r.1 }}{% if not forloop.last %}, {% endif %}{% endfor %}</small></p>
   <div class="prose">{{ a.body_html|richtext }}</div>
 </details>
-{% empty %}<p class="empty">No announcements have gone out yet. The ones you send appear here, with who received each.</p>{% endfor %}
+{% empty %}<p class="empty panel-body">No announcements have gone out yet. The ones you send appear here, with who received each.</p>{% endfor %}
+</div>
 {% endblock %}

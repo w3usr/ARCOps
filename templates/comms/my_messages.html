@@ -7,7 +7,8 @@
 <p class="lede">Everything the club has sent you, newest first.</p>
 <p>A message that never reached your inbox is still here. Nothing on this page depends on email arriving.</p>
 {% if page.object_list %}
-<ul class="list msglist">
+{% comment %}#241: every message a row of one panel, an unread one marked and set in bold.{% endcomment %}
+<ul class="list msglist panel">
 {% for m in page.object_list %}
 <li class="card{% if m.was_unread %} unread{% endif %}">
   <details{% if forloop.first %} open{% endif %}>
