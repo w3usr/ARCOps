@@ -4722,4 +4722,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/views.py (the list works out coverage only for a published or locked event); apps/events/tests/test_manage.py (a test that a canceled or draft event's coverage is never worked out).
 - **Nature of Contribution**: Diagnosis and a fix. Cause: #238 (bb8dac5's phase, 6e0ef1c's commit) gave every upcoming event a captain may manage its coverage counts, worked out slot by slot, and an upcoming event includes a canceled one whose dates are ahead; on dev an officer had 377 canceled acceptance-test events. Verified: 534 application tests pass; lint and format pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: (pending)
+- **Git Hash**: 3d1a108
