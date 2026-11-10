@@ -23,12 +23,22 @@ header leaves its own out there.{% endcomment %}
       <button type="button" class="secondary icon-only" popovertarget="event-menu" aria-label="More actions for this event">{% icon 'more' %}</button>
       <div class="menu" id="event-menu" popover>
         {% if slots %}<a href="{% url 'roster_csv' event.pk %}">{% icon 'download' 'small' %}Export the roster</a>{% endif %}
-        <form method="post" action="{% url 'event_duplicate' event.pk %}">{% csrf_token %}<button type="submit">{% icon 'copy' 'small' %}Duplicate this event</button></form>
+        <button type="button" commandfor="dup-dlg" command="show-modal">{% icon 'copy' 'small' %}Duplicate this event</button>
         {% if event.state == 'published' %}
         <form method="post" action="{% url 'event_state' event.pk %}">{% csrf_token %}<input type="hidden" name="what" value="lock"><button type="submit">{% icon 'lock' 'small' %}Lock the roster</button></form>
         <form method="post" action="{% url 'event_publish' event.pk %}">{% csrf_token %}<button type="submit">{% icon 'history' 'small' %}Take it back to draft</button></form>
         {% endif %}
       </div>
+      {% comment %}FR-42: the copy on new dates. One dialog for the page, opened from the menu
+      above and from the Publish step; every date moves with the start typed here (SK, 2026-11-10).{% endcomment %}
+      <dialog id="dup-dlg" class="slot-dialog confirm-dialog" aria-labelledby="dup-h">
+        <h2 id="dup-h">Duplicate this event</h2>
+        <p>A draft copy with the same periods, on-air hours, locations, slot grid, sign-up rules and openings, and nobody signed up.{% if start %} Everything moves with the start you give it.{% endif %}</p>
+        <form method="post" action="{% url 'event_duplicate' event.pk %}" class="stack">{% csrf_token %}
+          {% if start %}<div class="field"><label for="dup-start">The copy starts (UTC)</label><input id="dup-start" name="start" type="datetime-local" value="{{ start|date:'Y-m-d\TH:i' }}" required><span class="helptext">This one starts {{ start|date:"D j M Y H:i" }} UTC.</span></div>{% endif %}
+          <div class="confirm-actions"><button type="button" class="secondary" commandfor="dup-dlg" command="close">Close</button> <button type="submit">Make the copy</button></div>
+        </form>
+      </dialog>
     </div>{% endif %}
   </div>
   {% if captain %}<nav class="tabs" aria-label="This event">

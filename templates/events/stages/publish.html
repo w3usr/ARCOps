@@ -45,8 +45,8 @@
 </section>
 
 <section class="panel" aria-labelledby="more">
-  <header class="panel-head"><div><h2 id="more">Another copy</h2><p class="helptext">A draft copy with the same periods, locations, and slot grid, and nobody signed up. For next year's running, or a similar event.</p></div>
-    <div class="actions"><form method="post" action="{% url 'event_duplicate' event.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">{% icon 'copy' %}Duplicate this event</button></form></div></header>
+  <header class="panel-head"><div><h2 id="more">Another copy</h2><p class="helptext">A draft copy on new dates: the same periods, on-air hours, locations, slot grid, sign-up rules and openings, all moved with its start, and nobody signed up. For next year's running, or a similar event.</p></div>
+    <div class="actions"><button type="button" class="secondary" commandfor="dup-dlg" command="show-modal">{% icon 'copy' %}Duplicate this event</button></div></header>
 </section>
 
 {% if event.state != 'cancelled' and not may_manage_events %}

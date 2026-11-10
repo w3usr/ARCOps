@@ -3,11 +3,14 @@ with role capacities (FR-46, FR-49)."""
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from ..models import (
     Captaincy,
     Event,
     Location,
     OnAirRange,
+    Opening,
     OperatingPeriod,
     Position,
     RoleCapacity,
@@ -16,10 +19,12 @@ from ..models import (
 from .slots import fill_empty_hours, generate_slots
 
 
-def duplicate_event(source: Event, actor) -> Event:
-    """FR-42: the copy carries every field, the operating periods, the locations and positions,
-    and the slot structure with its capacities; no sign-ups, no captains but the person copying,
-    and it starts as a draft under a marked title."""
+def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Event:
+    """FR-42: the copy carries every field, the operating periods, the on-air hours, the
+    locations and positions, the slot structure with its capacities, the eligibility rules and
+    the openings; no sign-ups, no captains but the person copying, and it starts as a draft under
+    a marked title. Every date moves by `shift`, the officer's new start less the old one, so the
+    copy keeps its shape on the new dates (SK, 2026-11-10)."""
     copy = Event.objects.create(
         type=source.type,
         title=f"{source.title} (copy)",
@@ -31,13 +36,25 @@ def duplicate_event(source: Event, actor) -> Event:
         contest_fields=source.contest_fields,
         calendar_ref=source.calendar_ref,
         kbyg_html=source.kbyg_html,
+        reminder_hours_before=source.reminder_hours_before,
+        display_only=source.display_only,
+        recurrence_text=source.recurrence_text,
         duplicated_from=source,
         created_by=actor,
     )
     for p in source.periods.all():
-        OperatingPeriod.objects.create(event=copy, start=p.start, end=p.end)
+        OperatingPeriod.objects.create(event=copy, start=p.start + shift, end=p.end + shift)
     for r in source.on_air_ranges.all():  # the club's on-air hours go with the periods (#247)
-        OnAirRange.objects.create(event=copy, start=r.start, end=r.end)
+        OnAirRange.objects.create(event=copy, start=r.start + shift, end=r.end + shift)
+    for o in source.openings.all():  # announced again on the new dates, so not yet announced
+        Opening.objects.create(
+            event=copy,
+            role=o.role,
+            opens_at=o.opens_at + shift,
+            categories=o.categories,
+            announce=o.announce,
+        )
+    new_slot = {}  # old slot pk -> its copy, for the rules that name a slot
     if hasattr(source, "limit"):
         lim = source.limit
         lim.pk = None
@@ -55,12 +72,23 @@ def duplicate_event(source: Event, actor) -> Event:
             pos.save()
             for s in slots:
                 caps = list(s.capacities.all())
+                old = s.pk
                 s.pk = None
                 s.position = pos
                 s.control_operator = None
+                s.start += shift
+                s.end += shift
                 s.save()
+                new_slot[old] = s
                 for c in caps:
                     RoleCapacity.objects.create(slot=s, role=c.role, capacity=c.capacity)
+    for rule in source.eligibility_rules.all():
+        if rule.slot_id and rule.slot_id not in new_slot:
+            continue  # a canceled slot is not copied, and nor is its rule
+        rule.pk = None
+        rule.event = copy
+        rule.slot = new_slot.get(rule.slot_id)
+        rule.save()
     Captaincy.objects.get_or_create(event=copy, user=actor)
     return copy
 

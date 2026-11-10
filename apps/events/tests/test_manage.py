@@ -127,6 +127,72 @@ def test_the_event_form_says_preferred_license_class(officer):
     assert "Preferred license class" in body and "Min license class" not in body
 
 
+def test_duplicate_moves_everything_to_the_new_start(officer):
+    """FR-42: the officer supplies the new start and the copy shifts with it: periods, on-air
+    hours, slots and openings by the same amount; it carries the eligibility rules, event-wide
+    and per slot, and every field (SK, 2026-11-10)."""
+    from datetime import timedelta
+
+    from apps.events.models import EligibilityRule, OnAirRange, Opening
+
+    c = _as(officer)
+    ev = _build(c)
+    ev.reminder_hours_before = 6
+    ev.save()
+    p = ev.periods.get()
+    OnAirRange.objects.create(event=ev, start=p.start, end=p.start + timedelta(hours=6))
+    Opening.objects.create(
+        event=ev,
+        role="operator",
+        opens_at=p.start - timedelta(days=7),
+        announce=True,
+        announced_at=p.start - timedelta(days=7),
+    )
+    first = Slot.objects.filter(position__location__event=ev).order_by("start", "pk").first()
+    EligibilityRule.objects.create(event=ev, role="operator", min_license_class="general")
+    EligibilityRule.objects.create(event=ev, slot=first, role="observer", minors_allowed=False)
+    week = timedelta(days=7)
+    new_start = p.start + week
+    r = c.post(f"/events/{ev.pk}/duplicate/", {"start": f"{new_start:%Y-%m-%dT%H:%M}"})
+    copy = Event.objects.get(duplicated_from=ev)
+    assert r["Location"] == f"/events/{copy.pk}/manage/periods/"
+    cp = copy.periods.get()
+    assert (cp.start, cp.end) == (p.start + week, p.end + week)
+    assert [(a.start, a.end) for a in copy.on_air_ranges.all()] == [
+        (p.start + week, p.start + week + timedelta(hours=6))
+    ]
+    old = sorted(Slot.objects.filter(position__location__event=ev).values_list("start", "end"))
+    new = sorted(Slot.objects.filter(position__location__event=copy).values_list("start", "end"))
+    assert new == [(a + week, b + week) for a, b in old]
+    o = copy.openings.get()
+    assert (
+        o.opens_at == p.start - timedelta(days=7) + week and o.announce and o.announced_at is None
+    )
+    assert copy.eligibility_rules.get(slot__isnull=True).min_license_class == "general"
+    moved = copy.eligibility_rules.get(slot__isnull=False)
+    assert moved.slot.position.location.event == copy and moved.slot.start == first.start + week
+    assert not moved.minors_allowed and copy.reminder_hours_before == 6
+
+
+def test_duplicate_asks_when_the_copy_starts(officer):
+    """FR-42: one dialog on the page, opened from the event's menu and from the Publish step,
+    with this event's start offered as the copy's."""
+    c = _as(officer)
+    ev = _build(c)
+    body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
+    start = ev.periods.get().start
+    assert body.count('commandfor="dup-dlg" command="show-modal"') == 2
+    assert f'name="start" type="datetime-local" value="{start:%Y-%m-%dT%H:%M}" required' in body
+
+
+def test_duplicate_refuses_a_start_it_cannot_read(officer):
+    c = _as(officer)
+    ev = _build(c)
+    r = c.post(f"/events/{ev.pk}/duplicate/", {"start": "next spring"}, follow=True)
+    assert not Event.objects.filter(duplicated_from=ev).exists()
+    assert "Nothing was copied" in r.content.decode()
+
+
 def test_slot_close_cancel_duplicate_and_cancel_event(officer):
     c = _as(officer)
     ev = _build(c)

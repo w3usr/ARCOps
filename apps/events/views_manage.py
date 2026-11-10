@@ -1144,11 +1144,35 @@ def slot_toggle(request, slot_id):
 @login_required
 @require_POST
 def event_duplicate(request, pk):
+    """FR-42: a copy on new dates. The dialog asks when the copy starts, in UTC, and every date
+    moves by the difference from this event's start; with no start given, the dates stay."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    copy = duplicate_event(event, request.user)
-    record(request.user, "event.duplicated", copy, before={"from": event.pk})
-    messages.success(request, "Copied as a draft. Fix the dates, then generate or keep the slots.")
+    shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.starts_at()
+    if typed and was:
+        try:
+            start = forms.DateTimeField().clean(typed)
+        except forms.ValidationError:
+            messages.error(request, "Nothing was copied: the start was not a date and time.")
+            return to_step(pk, "publish")
+        start = (
+            start.replace(tzinfo=UTC) if timezone.is_naive(start) else start
+        )  # the form says UTC
+        shift = start - was
+    copy = duplicate_event(event, request.user, shift=shift)
+    now = copy.starts_at()
+    record(
+        request.user,
+        "event.duplicated",
+        copy,
+        before={"from": event.pk},
+        after={"starts": now.isoformat() if now else None},
+    )
+    when = f", starting {now:%a %d %b %Y %H:%M} UTC" if now else ""
+    messages.success(
+        request,
+        f"Copied as a draft{when}. The periods, on-air hours, slots and openings moved with it.",
+    )
     return to_step(copy.pk, "periods")
 
 
