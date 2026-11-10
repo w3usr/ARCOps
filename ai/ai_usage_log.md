@@ -4763,3 +4763,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis, code and documentation. Each gap reproduced with a test that failed first; two defects found on the way (Regenerate's count, a completed event under Upcoming). Verified: 548 application tests pass; ruff and the repository checks pass; T11, T12, T13, T18, T37 pass locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: 536ace6
+
+## [2026-11-10 15:15 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: SK's amendment after trying the greyed Publish on a phone (SK, 2026-11-10: "instead of the greyed outpublish button there should be a line").
+- **Sections/Files Affected**: templates/events/stages/publish.html and detail.html (the line in place of the Publish form); static/css/app.css (the line as body text; the disabled-button comment); docs/REQUIREMENTS.md (A17's amendment); docs/INTERFACE.md (the rule); apps/events/tests/test_manage.py, test_stages.py (a line, no form).
+- **Nature of Contribution**: Code and documentation. Verified: 548 application tests pass; ruff and the repository checks pass; T11, T12, T37 pass locally.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

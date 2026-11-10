@@ -470,16 +470,21 @@ def test_publishing_is_refused_until_the_required_steps_are_done(officer):
     )
 
 
-def test_the_publish_button_is_greyed_with_what_is_missing(officer):
+def _publish_controls(page: str) -> bool:
+    """Whether a page offers the Publish form: its button or its Announce box."""
+    return ">Publish</button>" in page or 'name="announce"' in page
+
+
+def test_a_line_stands_in_place_of_publish_while_steps_are_missing(officer):
+    """SK, 2026-11-10, after trying the greyed button on a phone: "instead of the greyed out
+    publish button there should be a line"."""
     c = _as(officer)
     ev = _bare(c)
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
-    assert '<button type="submit" disabled aria-describedby="pub-missing">Publish</button>' in body
     assert "Not ready to publish: Operating periods, Locations and Slots are not done yet." in body
-    banner = c.get(f"/events/{ev.pk}/").content.decode()  # the Draft banner's Publish too
-    assert (
-        '<button type="submit" disabled aria-describedby="draft-missing">Publish</button>' in banner
-    )
+    assert not _publish_controls(body)
+    banner = c.get(f"/events/{ev.pk}/").content.decode()  # the Draft banner's too
+    assert "Not ready to publish:" in banner and not _publish_controls(banner)
     built = _build(c)  # every required step done, moved to the future (its June has passed)
     soon = timezone.now() + timedelta(days=30)
     OperatingPeriod.objects.filter(event=built).update(start=soon, end=soon + timedelta(days=1))
@@ -535,8 +540,7 @@ def test_an_event_that_has_ended_is_not_published(officer):
     end = ev.periods.get().end
     said = f"it ended on {end:%a %d %b %Y %H:%M} UTC."
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
-    assert f"Not ready to publish: {said}" in body
-    assert '<button type="submit" disabled aria-describedby="pub-missing">Publish</button>' in body
+    assert f"Not ready to publish: {said}" in body and not _publish_controls(body)
     r = c.post(f"/events/{ev.pk}/publish/", {"from": "manage", "announce": "yes"}, follow=True)
     ev.refresh_from_db()
     assert ev.state == "draft" and f"Not published: {said}" in r.content.decode()

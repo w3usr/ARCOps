@@ -232,7 +232,10 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
     Slot.objects.filter(position__location__event=ev).delete()
     dl = c.get(url).content.decode().split('<dl class="dl summary">', 1)[1]
     assert '<dt>Slots</dt><dd class="missing"><span>Not done yet</span>' in dl
-    assert ">Publish</button>" in c.get(url).content.decode()
+    page = c.get(url).content.decode()  # A17 (SK, 2026-11-10): a line in place of Publish
+    assert (
+        "Not ready to publish: Slots is not done yet." in page and ">Publish</button>" not in page
+    )
     Event.objects.filter(pk=ev.pk).update(state=Event.State.PUBLISHED)
     assert 'class="dl summary"' not in c.get(url).content.decode()
 

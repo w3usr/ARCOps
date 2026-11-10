@@ -12,9 +12,11 @@
 <section class="panel" aria-labelledby="pub">
   <header class="panel-head"><div><h2 id="pub">Publish</h2><p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p></div></header>
   <form method="post" action="{% url 'event_publish' event.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="from" value="manage">
-    {% comment %}Publishing waits for the required steps (SK, 2026-11-10): the button stays in place,
-    greyed, with what is missing beside it; each has its Change link in the Summary above.{% endcomment %}
-    <footer class="panel-foot"><div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div>{% if missing %}<p class="helptext" id="pub-missing">Not ready to publish: {{ missing }}</p><button type="submit" disabled aria-describedby="pub-missing">Publish</button>{% else %}<button type="submit">Publish</button>{% endif %}</footer>
+    {% comment %}Publishing waits for the required steps and for an event not yet over (SK,
+    2026-11-10, functional addendum A17). Until then a line saying why stands in place of the form;
+    each step has its Change link in the Summary above.{% endcomment %}
+    {% if missing %}<footer class="panel-foot"><p class="not-ready">Not ready to publish: {{ missing }}</p></footer>
+    {% else %}<footer class="panel-foot"><div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div><button type="submit">Publish</button></footer>{% endif %}
   </form>
 </section>
 {% else %}

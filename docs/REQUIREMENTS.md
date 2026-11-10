@@ -2821,6 +2821,11 @@ out with an explanation and whatever you suggested with line what's missing"; an
 past, of the options put to him, "Warn + no publish". *Record:*
 `notes/2026-11-10_event-creation-gaps.md` in the private repository.
 
+**Amended** by SK, 2026-11-10, after trying it on a phone: "instead of the greyed outpublish button
+there should be a line". Until the event can be published, the line saying why ("Not ready to
+publish: …") stands in place of the Publish form, on the Publish step and on the Draft banner;
+there is no greyed button. The rest of this entry stands.
+
 ### A18. FR-38 and FR-102: removing an operating period
 
 **Original (FR-38).** "An event has one or more operating periods, each a UTC start and end.

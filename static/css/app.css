@@ -366,10 +366,12 @@ ul.rows > li > form.inline { margin-left: auto; }
    label off the line, and a select as wide as a form's pushed the button and the count away. */
 .toolbar > label { margin: 0; }
 .toolbar > select { width: auto; }
-/* A control that cannot be used yet, with the reason beside it (SK, 2026-11-10: Publish waits for
-   the required steps): faded, as Material 3 fades a disabled control, and with no state layer.
-   WCAG 1.4.3 exempts an inactive control from contrast; the reason beside it carries the meaning. */
+/* A disabled button (Send to 0 on Announce): faded, as Material 3 fades a disabled control, and
+   with no state layer. WCAG 1.4.3 exempts an inactive control from contrast. */
 button:disabled { opacity: .45; pointer-events: none; }
+/* Where Publish cannot be done yet, the line saying why stands in its place (SK, 2026-11-10), so
+   it reads as body text rather than as a footer's help. */
+.panel-foot .not-ready { color: var(--fg); font-size: var(--t-body); }
 .search { position: relative; flex: 1 1 14rem; max-width: 24rem; }
 .search > .icon { position: absolute; left: .65rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .search > input { padding-left: 2.2rem; max-width: none; }

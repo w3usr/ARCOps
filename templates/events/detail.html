@@ -10,8 +10,10 @@
 
 {% if event.state == 'draft' and is_captain %}
 <div class="banner draft">
-  <p><strong>Draft.</strong> Only officers and captains can see this event. {% if missing %}<span id="draft-missing">Not ready to publish: {{ missing }}</span> <a href="{% url 'event_manage' event.pk %}">Finish it on Manage.</a>{% else %}Publish when the grid is ready.{% endif %}</p>
-  <form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="announce" value="yes"> Announce to members</label> <button type="submit"{% if missing %} disabled aria-describedby="draft-missing"{% endif %}>Publish</button></form>
+  {% comment %}While it cannot be published, the line saying why stands in place of the form (SK,
+  2026-11-10, functional addendum A17).{% endcomment %}
+  <p><strong>Draft.</strong> Only officers and captains can see this event. {% if missing %}Not ready to publish: {{ missing }} <a href="{% url 'event_manage' event.pk %}">Finish it on Manage.</a>{% else %}Publish when the grid is ready.{% endif %}</p>
+  {% if not missing %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="announce" value="yes"> Announce to members</label> <button type="submit">Publish</button></form>{% endif %}
 </div>
 {% elif event.state == 'locked' %}
 <div class="banner"><p><strong>Locked.</strong> {% if is_captain %}Members cannot change their sign-ups; you can, from each slot. <a href="{% url 'event_manage' event.pk %}">Unlock on Manage.</a>{% else %}The roster is frozen; to change a sign-up, contact a captain.{% endif %}</p></div>
