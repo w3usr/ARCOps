@@ -625,8 +625,8 @@ def test_the_strip_is_for_the_eye_and_the_key_reads_its_marks(world):
     )[0]
     assert strip.count('tabindex="-1"') == strip.count("<a ") == 5
     assert (
-        '<span class="sm sm-open" aria-hidden="true"></span> <span class="tag open">Open</span>'
-        in body
+        '<span class="sm sm-open" aria-hidden="true"></span> <span class="what">'
+        '<span class="tag open">Open</span>' in body
     )
 
 

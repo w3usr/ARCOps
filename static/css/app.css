@@ -400,8 +400,11 @@ ul.rows > li > form.inline { margin-left: auto; }
 .facts { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin: .5rem 0 0; color: var(--muted); font-size: var(--t-small); }
 .facts:empty { display: none; }
 .facts > span { display: inline-flex; align-items: center; gap: .4rem; }
-.tabs { display: flex; gap: .25rem; margin-top: var(--s3); border-bottom: 1px solid var(--line); overflow-x: auto; }
-.tabs a { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .8rem; margin-bottom: -1px; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 700; text-decoration: none; white-space: nowrap; }
+/* The line is an inset shadow, painted under the tabs, so the current tab's underline covers it
+   without a -1px margin: in a box that scrolls sideways that margin overflowed it by a pixel and
+   drew a vertical scrollbar (SK, 2026-11-10). */
+.tabs { display: flex; gap: .25rem; margin-top: var(--s3); box-shadow: inset 0 -1px var(--line); overflow-x: auto; }
+.tabs a { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .8rem; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .tabs a:hover { color: var(--fg); }
 .tabs a[aria-current] { color: var(--fg); border-bottom-color: var(--accent); }
 .k-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
@@ -550,7 +553,7 @@ fieldset .helptext { margin-top: 0; }
 .addresses .addr { display: grid; grid-template-columns: minmax(0, 28rem) auto; gap: .5rem 1rem; align-items: end; margin-top: .75rem; }
 .addresses .addr .check { padding-bottom: .6rem; }
 @media (max-width: 40rem) { .addresses .addr { grid-template-columns: 1fr; align-items: start; } .addresses .addr .check { padding-bottom: 0; } }
-.copyrow { display: flex; gap: .5rem; flex-wrap: wrap; } .copyrow input { flex: 1 1 16rem; }
+.copyrow { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }  /* the text on the button's middle (SK, 2026-11-10) */ .copyrow input { flex: 1 1 16rem; }
 /* The same row inside a table cell, where 16rem would push the other columns off, and
    the copy control as a glyph rather than a word: it is beside the thing it copies, so
    the label is for a screen reader (NAF, 2026-09-20, after GitHub's). */
@@ -651,7 +654,15 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .overview { display: grid; grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr); gap: var(--s3); align-items: start; margin: .5rem 0 .75rem; }
 .overview .legend { margin: 0; }
 .overview .legend-label { display: block; margin-bottom: .25rem; }
-.overview .legend li { display: block; margin: .15rem 0; } .overview .legend li + li::before { content: none; }
+.overview .legend li + li::before { content: none; }
+/* The key in two columns (SK, 2026-11-10): each symbol centred in the first, the badge and the
+   words in the second, a wrapped line hanging under the words. Every symbol is 1.25rem tall and
+   sits on the middle of the first 1.5rem line; an empty box no longer rides on the baseline. */
+.overview .legend ul { display: grid; grid-template-columns: auto 1fr; gap: .3rem .5rem; }
+.overview .legend li { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: start; margin: 0; line-height: 1.5rem; }
+.overview .legend li > :is(.sm, .mk) { justify-self: center; margin-top: .125rem; }
+.overview .legend .what { grid-column: 2; }
+.overview .legend .mk { display: inline-flex; align-items: center; justify-content: center; min-width: 1rem; height: 1.25rem; margin: 0; line-height: 1; }
 .strip { display: flex; flex-direction: column; gap: .3rem; }
 .strip-day { display: flex; gap: .5rem; align-items: center; }
 .strip-label { flex: none; width: 3.5rem; font-size: var(--t-small); color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -717,7 +728,10 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .r-time .lead { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .roster .r-time .tag { align-self: flex-start; margin-top: .2rem; }
 .roster .kind-setup, .roster .kind-breakdown { background: color-mix(in srgb, var(--surface) 60%, transparent); }
-.roster .r-cell { position: relative; border-left: 1px solid var(--line); min-height: 3.4rem; }
+.roster .r-cell { position: relative; border-left: 1px solid var(--line); min-height: 3.4rem; display: flex; flex-direction: column; }
+/* The link fills its cell, so its tone line and its target run the row's full height where the
+   time beside it is taller, as on a setup or breakdown row (SK, 2026-11-10). */
+.roster .r-cell > .slot-link { flex: 1; }
 .roster .r-cell.empty { background: repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--line) 50%, transparent) 6px 7px); }
 .roster .r-cell > input[type="checkbox"] { position: absolute; left: .6rem; top: .7rem; z-index: 1; }
 .roster .slot-link { display: flex; flex-direction: column; gap: .15rem; padding: .5rem .75rem .5rem 2.3rem; min-height: 3.4rem; color: inherit; text-decoration: none; border-left: 4px solid transparent; }

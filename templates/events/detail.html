@@ -68,18 +68,18 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
 </div>
 <div class="legend muted" id="roster-key-pop" popover><span class="legend-label" id="roster-key">Key</span>
   <ul aria-labelledby="roster-key">
-    <li><span class="sm sm-open" aria-hidden="true"></span> <span class="tag open">Open</span> anyone eligible can sign up</li>
-    <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</li>
-    {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!</span> <span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</li>{% endif %}
-    <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="tag ok">Covered</span> it can run</li>
-    <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="tag">Closed</span> not taking sign-ups</li>
-    {% if "none" in roster.strip_gaps %}<li><span class="sm sm-none" aria-hidden="true"></span> on the air, but no slot has been made for the hour yet</li>{% endif %}
-    {% if "off" in roster.strip_gaps %}<li><span class="sm sm-off" aria-hidden="true"></span> off the air: outside the club's on-air hours</li>{% endif %}
-    <li><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</li>
-    <li><span class="mk" aria-hidden="true">S</span> station access</li>
-    <li><span class="mk" aria-hidden="true">I</span> computer access</li>
-    <li><span class="mk" aria-hidden="true">CO</span> control operator</li>
-    <li><span class="mk" aria-hidden="true">✓</span> confirmed, <span class="mk ok" aria-hidden="true">in</span> checked in</li>
+    <li><span class="sm sm-open" aria-hidden="true"></span> <span class="what"><span class="tag open">Open</span> anyone eligible can sign up</span></li>
+    <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="what"><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</span></li>
+    {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!</span> <span class="what"><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</span></li>{% endif %}
+    <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="what"><span class="tag ok">Covered</span> it can run</span></li>
+    <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="what"><span class="tag">Closed</span> not taking sign-ups</span></li>
+    {% if "none" in roster.strip_gaps %}<li><span class="sm sm-none" aria-hidden="true"></span> <span class="what">on the air, but no slot has been made for the hour yet</span></li>{% endif %}
+    {% if "off" in roster.strip_gaps %}<li><span class="sm sm-off" aria-hidden="true"></span> <span class="what">off the air: outside the club's on-air hours</span></li>{% endif %}
+    <li><span class="what"><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</span></li>
+    <li><span class="mk" aria-hidden="true">S</span> <span class="what">station access</span></li>
+    <li><span class="mk" aria-hidden="true">I</span> <span class="what">computer access</span></li>
+    <li><span class="mk" aria-hidden="true">CO</span> <span class="what">control operator</span></li>
+    <li><span class="mk" aria-hidden="true">✓</span> <span class="what">confirmed, <span class="mk ok" aria-hidden="true">in</span> checked in</span></li>
   </ul>
   <button type="button" class="secondary keyclose" popovertarget="roster-key-pop" popovertargetaction="hide">Close</button>
 </div>
