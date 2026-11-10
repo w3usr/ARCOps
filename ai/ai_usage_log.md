@@ -4739,3 +4739,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis and code. Causes: #238 set the event rows to align-items: flex-start, against every other row's centre, and an undated event wrote an empty date line; in a toolbar, form label's .25rem bottom margin lifted the label, and select's width: 100% (to 28rem) stretched it. Verified on scratch pages with the real stylesheet in Chromium and WebKit, desktop and phone, measured before and after: an undated event's title 7px above the button's middle before, centred after, and a full row's tile, text and button on one centre; the Outbox's label, select, button and count on one line and one centre at 1280px, the select 240px instead of 448px; the members search box centred on its button (2px off before); no sideways scroll on a phone. apps/ops and apps/events tests pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: f5c8152
+
+## [2026-11-10 13:24 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The Events list's rows with no divider between them (SK, 2026-11-10: "event list should get divider lines").
+- **Sections/Files Affected**: static/css/app.css (.panel .eventcard + .eventcard draws the 1px line between rows).
+- **Nature of Contribution**: Diagnosis and code. Cause: .panel .eventcard's border: 0 outranked ul.rows > li + li's border-top. Verified on a scratch page with the real stylesheet in Chromium and WebKit: no line above the first row, 1px above each later one; apps/events tests and test_interface pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
