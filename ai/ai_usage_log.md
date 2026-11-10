@@ -4754,4 +4754,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/services/manage.py (duplicate_event shifts periods, on-air hours, slots and openings; copies eligibility rules, event-wide and per slot, reminder_hours_before, display_only, recurrence_text); apps/events/views_manage.py (event_duplicate reads the start, refuses one it cannot read); templates/events/_event_header.html (the dialog; the menu item opens it); templates/events/stages/publish.html (the button opens it; the panel's words); apps/events/tests/test_manage.py (three tests).
 - **Nature of Contribution**: Analysis and code. Found by reading the creation flow at SK's request: the copy kept the old dates, and its on-air hours fell back to the whole event once the periods moved. Verified: all application tests pass; ruff and the repository checks pass; T11, T12, T18, T26 pass locally. T22 not run locally (known local failure); dialog not inspected on screen before the dev deploy.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: d3cec5c
