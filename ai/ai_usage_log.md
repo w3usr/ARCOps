@@ -4755,3 +4755,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis and code. Found by reading the creation flow at SK's request: the copy kept the old dates, and its on-air hours fell back to the whole event once the periods moved. Verified: all application tests pass; ruff and the repository checks pass; T11, T12, T18, T26 pass locally. T22 not run locally (known local failure); dialog not inspected on screen before the dev deploy.
 - **Human Review Status**: Pending review
 - **Git Hash**: d3cec5c
+
+## [2026-11-10 14:52 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The event creation gaps SK asked to fix (SK, 2026-11-10, "let's tackle each of the gaps sequentially - reproduce first, research the fix and implement"): removing a period, publishing with steps undone, dates in the past.
+- **Sections/Files Affected**: apps/events/services/slots.py (held_only_by); apps/events/views_manage.py (period_delete cancels the slots only it held and refuses while anyone is signed up in them; the Periods step's counts; not_ready/publish_blocker; the past-period warning; Regenerate counts only live slots); apps/events/views.py (publish refuses; the Draft banner's reason; a completed event under Past); templates/events/stages/periods.html (the removal dialog), stages/publish.html and detail.html (greyed Publish with the reason; no "Every slot is spoken for" without slots); static/css/app.css (disabled buttons); docs/REQUIREMENTS.md (functional A17, A18); docs/INTERFACE.md (a control not usable yet); apps/events/tests/test_manage.py (13 tests).
+- **Nature of Contribution**: Analysis, code and documentation. Each gap reproduced with a test that failed first; two defects found on the way (Regenerate's count, a completed event under Upcoming). Verified: 548 application tests pass; ruff and the repository checks pass; T11, T12, T13, T18, T37 pass locally.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

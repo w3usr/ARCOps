@@ -151,6 +151,21 @@ def periods_of(event) -> list[tuple]:
     return merge((p.start, p.end) for p in event.periods.all())
 
 
+def held_only_by(period) -> list:
+    """The live operating slots `period` alone holds: an operating slot fits inside a period
+    (FR-38), so these leave with it. Setup and breakdown sit outside the periods by design (FR-47)
+    and stay. Another period that still covers a slot keeps it."""
+    rest = merge((p.start, p.end) for p in period.event.periods.exclude(pk=period.pk))
+    live = Slot.objects.filter(
+        position__location__event=period.event,
+        kind="operating",
+        cancelled=False,
+        start__lt=period.end,
+        end__gt=period.start,
+    )
+    return [s for s in live if not any(a <= s.start and s.end <= b for a, b in rest)]
+
+
 def chosen(event) -> list[tuple]:
     """The club's own stretches, clipped to the periods; [] when it has chosen none."""
     return clip([(r.start, r.end) for r in event.on_air_ranges.all()], periods_of(event))

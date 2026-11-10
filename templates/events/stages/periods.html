@@ -6,7 +6,18 @@
     <div class="actions">{% url 'period_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add period" icon="plus" %}</div></header>
   <ul class="rows list">
     {% for p in periods %}<li><span class="row-ic">{% icon 'calendar' 'small' %}</span><span class="grow">{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC</span>
-      <form method="post" action="{% url 'period_delete' event.pk p.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form></li>
+      {% comment %}Removing a period confirms first and says what goes with it (docs/INTERFACE.md,
+      Destructive actions, tier 2); while anybody is signed up in its slots it cannot go (SK, 2026-11-10).{% endcomment %}
+      <button type="button" class="ghost danger small" commandfor="per-rm-{{ p.pk }}" command="show-modal">{% icon 'trash' 'small' %}Remove</button>
+      <dialog id="per-rm-{{ p.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="per-rm-h-{{ p.pk }}">
+        <h2 id="per-rm-h-{{ p.pk }}">{% if p.people %}This period cannot be removed yet{% else %}Remove this period?{% endif %}</h2>
+        <p>{{ p.start|date:"D d M H:i" }} – {{ p.end|date:"D d M H:i" }} UTC.
+          {% if p.people %}{{ p.people }} {% if p.people == 1 %}person is{% else %}people are{% endif %} signed up in its slots. Remove them from their slots, or cancel those slots and tell them, first.
+          {% elif p.held %}Its {{ p.held }} slot{{ p.held|pluralize }} {% if p.held == 1 %}is{% else %}are{% endif %} canceled with it, because an operating slot has to fit inside a period.
+          {% else %}No slot is inside it alone, so nothing else changes.{% endif %}</p>
+        {% if p.people %}<div class="confirm-actions"><button type="button" class="secondary" commandfor="per-rm-{{ p.pk }}" command="close">Keep the period</button></div>
+        {% else %}<form method="post" action="{% url 'period_delete' event.pk p.pk %}" {% include "events/stages/_in_place.html" %} class="confirm-actions">{% csrf_token %}<button type="button" class="secondary" commandfor="per-rm-{{ p.pk }}" command="close">Keep the period</button> <button type="submit" class="danger">Remove the period</button></form>{% endif %}
+      </dialog></li>
     {% empty %}<li class="empty">No operating period yet. Add one; the slots are generated inside it.</li>{% endfor %}
   </ul>
 </section>

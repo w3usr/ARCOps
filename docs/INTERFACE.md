@@ -187,6 +187,13 @@ ticked and says so in its summary. The tick is honest there, and its absence wou
 test is what the page is showing: a tick that describes the list is right, and a tick that only
 repeats "everything" is noise.
 
+**A control that cannot be used yet stays in its place, greyed, with the reason beside it** (SK,
+2026-11-10): Publish before the required steps are done says "Not ready to publish: Slots is not
+done yet." beside it, and the reason is the button's description for a screen reader
+(`aria-describedby`). A control that vanished would leave nobody knowing it exists, and one that
+answers only after it is pressed makes the reader find out the long way. WCAG 1.4.3 exempts an
+inactive control from contrast; the words beside it carry the meaning.
+
 ## Destructive actions
 
 Three tiers, and the friction matches what is lost. (After GitLab's Pajamas and the VA design

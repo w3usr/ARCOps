@@ -373,3 +373,189 @@ def test_before_sign_ups_both_fill_and_regenerate_are_offered(officer):
     ev = _build(c)
     page = c.get(f"/events/{ev.pk}/manage/slots/").content.decode()
     assert "Add slots to the empty hours" in page and "Regenerate slots" in page
+
+
+# Removing an operating period (SK, 2026-11-10): an operating slot fits inside a period (FR-38),
+# so the slots only that period held go with it, canceled as every slot is (FR-102); and while
+# anybody is signed up in one of them, nothing goes (as the bulk cancel, FR-58).
+def _operating(ev):
+    return Slot.objects.filter(position__location__event=ev, kind="operating", cancelled=False)
+
+
+def test_removing_a_period_with_people_in_it_is_refused(officer):
+    from apps.events.models import SignUp
+
+    c = _as(officer)
+    ev = _build(c)
+    p = ev.periods.get()
+    SignUp.objects.create(slot=_operating(ev).first(), user=officer, role="operator")
+    r = c.post(f"/events/{ev.pk}/periods/{p.pk}/delete/", follow=True)
+    assert ev.periods.filter(pk=p.pk).exists() and _operating(ev).count() == 48
+    assert "1 person is signed up" in r.content.decode()
+
+
+def test_removing_a_period_cancels_the_slots_only_it_held(officer):
+    c = _as(officer)
+    ev = _build(c)
+    p = ev.periods.get()
+    later = OperatingPeriod.objects.create(
+        event=ev, start=p.end + timedelta(hours=2), end=p.end + timedelta(hours=4)
+    )
+    pos = ev.locations.get().positions.first()
+    Slot.objects.create(position=pos, start=later.start, end=later.start + timedelta(hours=1))
+    r = c.post(f"/events/{ev.pk}/periods/{later.pk}/delete/", follow=True)
+    assert not ev.periods.filter(pk=later.pk).exists()
+    assert _operating(ev).count() == 48  # the first period's slots stay
+    assert Slot.objects.filter(position=pos, start=later.start, cancelled=True).exists()
+    assert "1 slot canceled with it" in r.content.decode()
+    setup = Slot.objects.filter(position__location__event=ev, kind__in=["setup", "breakdown"])
+    assert not setup.filter(cancelled=True).exists()  # outside the periods by design (FR-47)
+
+
+def test_the_periods_step_says_what_removing_each_one_takes(officer):
+    c = _as(officer)
+    ev = _build(c)
+    p = ev.periods.get()
+    body = c.get(f"/events/{ev.pk}/manage/periods/").content.decode()
+    assert f'commandfor="per-rm-{p.pk}" command="show-modal"' in body
+    assert "Its 48 slots are canceled with it" in body
+
+
+def test_regenerate_counts_only_the_slots_on_the_roster(officer):
+    """A canceled slot is not on the roster, so Replace the whole grid? does not count it, though
+    Regenerate clears it too (found by T18, 2026-11-10)."""
+    c = _as(officer)
+    ev = _build(c)
+    _operating(ev).filter(pk=_operating(ev).first().pk).update(cancelled=True)
+    body = c.post(
+        f"/events/{ev.pk}/slots/generate/",
+        {
+            "minutes": "60",
+            "setup_slots": "1",
+            "breakdown_slots": "1",
+            "cap_operator": "2",
+            "cap_mentor": "0",
+            "mode": "replace",
+        },
+    ).content.decode()
+    assert "the 51 slots on the roster now" in body  # 52 made, 1 canceled
+
+
+# Publishing waits for the required steps (SK, 2026-11-10, reversing #175's "publishing stays
+# allowed"): an event with only a title had gone on every member's calendar, announceable to all.
+def _bare(c, **extra):
+    c.post(
+        "/events/new/",
+        {
+            "title": "Bare",
+            "type": "contest",
+            "description_html": "",
+            "rules_url": "",
+            "min_license_class": "",
+            **extra,
+        },
+    )
+    return Event.objects.get(title="Bare")
+
+
+def test_publishing_is_refused_until_the_required_steps_are_done(officer):
+    c = _as(officer)
+    ev = _bare(c)
+    r = c.post(f"/events/{ev.pk}/publish/", {"from": "manage", "announce": "yes"}, follow=True)
+    ev.refresh_from_db()
+    assert ev.state == "draft"
+    assert (
+        "Not published: Operating periods, Locations and Slots are not done yet."
+        in r.content.decode()
+    )
+
+
+def test_the_publish_button_is_greyed_with_what_is_missing(officer):
+    c = _as(officer)
+    ev = _bare(c)
+    body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
+    assert '<button type="submit" disabled aria-describedby="pub-missing">Publish</button>' in body
+    assert "Not ready to publish: Operating periods, Locations and Slots are not done yet." in body
+    banner = c.get(f"/events/{ev.pk}/").content.decode()  # the Draft banner's Publish too
+    assert (
+        '<button type="submit" disabled aria-describedby="draft-missing">Publish</button>' in banner
+    )
+    built = _build(c)  # every required step done, moved to the future (its June has passed)
+    soon = timezone.now() + timedelta(days=30)
+    OperatingPeriod.objects.filter(event=built).update(start=soon, end=soon + timedelta(days=1))
+    body = c.get(f"/events/{built.pk}/manage/publish/").content.decode()
+    assert '<button type="submit">Publish</button>' in body and "pub-missing" not in body
+
+
+def test_a_display_only_event_publishes_with_nothing_set_up(officer):
+    c = _as(officer)
+    ev = _bare(c, display_only="on", recurrence_text="Tuesdays")
+    c.post(f"/events/{ev.pk}/publish/", {"from": "manage"})
+    ev.refresh_from_db()
+    assert ev.state == "published"
+
+
+def test_an_event_with_no_slots_never_says_every_slot_is_spoken_for(officer):
+    """One published before the gate above may have none at all."""
+    c = _as(officer)
+    ev = _bare(c)
+    Event.objects.filter(pk=ev.pk).update(state="published")
+    m = User.objects.create_user(
+        "m@example.org", "pw-Testing-123", groups=["member"], first_name="M", last_name="M"
+    )
+    body = _as(m, view="member").get(f"/events/{ev.pk}/").content.decode()  # as a member reads it
+    assert "No slots yet." in body and "Every slot is spoken for" not in body
+
+
+# Dates in the past (SK, 2026-11-10): a period that has already ended is allowed, with a warning
+# that names it, since a wrong year is the likely cause; an event whose every period has ended is
+# not published, so nobody is told about an event that is over.
+def test_a_period_that_has_ended_is_added_with_a_warning(officer):
+    c = _as(officer)
+    ev = _bare(c)
+    start = (timezone.now() - timedelta(days=30)).replace(minute=0, second=0, microsecond=0)
+    end = start + timedelta(hours=4)
+    r = c.post(
+        f"/events/{ev.pk}/periods/add/",
+        {"start": f"{start:%Y-%m-%dT%H:%M}", "end": f"{end:%Y-%m-%dT%H:%M}"},
+        follow=True,
+    )
+    assert ev.periods.count() == 1
+    assert f"This period ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year." in (
+        r.content.decode()
+    )
+
+
+def test_an_event_that_has_ended_is_not_published(officer):
+    c = _as(officer)
+    ev = _build(c)  # its period is in June 2026
+    OperatingPeriod.objects.filter(event=ev).update(
+        start=timezone.now() - timedelta(days=30), end=timezone.now() - timedelta(days=29)
+    )
+    end = ev.periods.get().end
+    said = f"it ended on {end:%a %d %b %Y %H:%M} UTC."
+    body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
+    assert f"Not ready to publish: {said}" in body
+    assert '<button type="submit" disabled aria-describedby="pub-missing">Publish</button>' in body
+    r = c.post(f"/events/{ev.pk}/publish/", {"from": "manage", "announce": "yes"}, follow=True)
+    ev.refresh_from_db()
+    assert ev.state == "draft" and f"Not published: {said}" in r.content.decode()
+
+
+def test_a_completed_event_is_under_past_even_before_its_dates_end(officer):
+    """FR-44: completed by a captain, or once its last slot has ended, whichever comes first; a
+    member then finds it under Past, not Upcoming (found by T37, 2026-11-10)."""
+    c = _as(officer)
+    ev = _build(c)
+    soon = timezone.now() + timedelta(days=3)
+    OperatingPeriod.objects.filter(event=ev).update(start=soon, end=soon + timedelta(days=1))
+    c.post(f"/events/{ev.pk}/publish/", {"from": "manage"})
+    c.post(f"/events/{ev.pk}/state/", {"what": "complete"})
+    ev.refresh_from_db()
+    assert ev.state == "completed"
+    m = User.objects.create_user(
+        "m@example.org", "pw-Testing-123", groups=["member"], first_name="M", last_name="M"
+    )
+    page = _as(m, view="member").get("/events/").content.decode()
+    past = page.split('aria-labelledby="p"', 1)[1] if 'aria-labelledby="p"' in page else ""
+    assert "Field Day" in past

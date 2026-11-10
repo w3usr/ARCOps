@@ -40,7 +40,10 @@ def event_list(request):
         if e.display_only:
             regular.append(e)  # FR-45: on the calendar, no roster
         else:
-            (upcoming if (e.ends_at() or now) >= now else past).append(e)
+            # FR-44: completed by a captain or once its last slot ended, whichever came first;
+            # either way it is over, though its dates may run on (2026-11-10).
+            over = e.state == Event.State.COMPLETED or (e.ends_at() or now) < now
+            (past if over else upcoming).append(e)
     upcoming.sort(key=lambda e: e.starts_at() or now)
     # Each row's date tile in UTC, the roster's axis, and a captain's coverage counts (#238).
     from datetime import UTC
@@ -84,6 +87,10 @@ def event_detail(request, pk):
             "roster": roster,
             "health": health(event) if roster["is_captain"] else None,
             "is_captain": roster["is_captain"],
+            # the Draft banner's Publish waits for the required steps too (SK, 2026-11-10)
+            "missing": __import__("apps.events.views_manage", fromlist=["x"]).publish_blocker(event)
+            if roster["is_captain"] and event.state == Event.State.DRAFT
+            else "",
             "roles": roster["roles"],
             # The outline an untouched event starts with is headings only; the reminder drops the
             # empty ones, and the page drops the same ones (#166).
@@ -331,7 +338,12 @@ def publish(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if not request.user.can_captain(event):
         raise Http404
-    if event.state == Event.State.DRAFT:
+    from .views_manage import publish_blocker
+
+    blocked = publish_blocker(event) if event.state == Event.State.DRAFT else ""
+    if blocked:  # the button is greyed too; this is for a form posted from an older page
+        messages.error(request, f"Not published: {blocked}")
+    elif event.state == Event.State.DRAFT:
         event.state = Event.State.PUBLISHED
         event.published_at = timezone.now()
         event.published_by = request.user

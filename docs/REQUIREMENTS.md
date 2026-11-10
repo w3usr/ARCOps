@@ -2800,7 +2800,45 @@ not really needed. I think the range to a minute is fine and this is gonna be th
 actually requested it to be this. […] Also, same hours every day is not needed". *Record:* issue
 #248 in the private repository.
 
+### A17. FR-44: publishing waits for the required steps and for an event not yet over
+
+**Original (FR-44).** "Publishing is an explicit action by an officer or captain, recorded with
+who and when, and offers an announcement to members at that moment".
+
+**Decision.** A roster event is published only once its required steps are done (Details,
+Operating periods, Locations, Slots) and while its last operating period has not yet ended. Until
+then the Publish button stays in its place, greyed, with the reason beside it ("Not ready to
+publish: Slots is not done yet.", "Not ready to publish: it ended on <date> UTC."), on the Publish
+step and on the event page's Draft banner, and the server refuses a publish sent anyway. A
+display-only event (FR-45) needs none of these. A period that has already ended may still be
+added, with a warning that names its end and asks to check the year, the likeliest cause. This
+replaces "Publishing stays allowed, as it is today" in the Publish step's check (#175, confirmed
+by SK on 2026-11-04).
+
+**Decided by** SK, 2026-11-10, after a reproduction showed an event with only a title published,
+listed for every member and announceable to all of them: "refuse but the publish button is greayd
+out with an explanation and whatever you suggested with line what's missing"; and for dates in the
+past, of the options put to him, "Warn + no publish". *Record:*
+`notes/2026-11-10_event-creation-gaps.md` in the private repository.
+
+### A18. FR-38 and FR-102: removing an operating period
+
+**Original (FR-38).** "An event has one or more operating periods, each a UTC start and end.
+[…] Slots are generated within periods (FR-46)."
+
+**Decision.** Removing a period confirms first, saying what goes with it. The live operating
+slots that period alone holds are canceled with it, as every slot is canceled and never deleted
+(FR-102); setup and breakdown slots, which sit outside the periods by design (FR-47), stay, and so
+does any slot another period still covers. While anybody is signed up in one of those slots,
+nothing is removed, as with the bulk cancel: their captain removes them, or cancels the slot and
+tells them, first. Before, Remove deleted the period at once and left its slots, and the people in
+them, outside the event.
+
+**Recommended** to SK on 2026-11-10 after reading the creation flow, and built at his word that
+day: "let's tackle each of the gaps sequentially - reproduce first, research the fix and
+implement". *Record:* `notes/2026-11-10_event-creation-gaps.md` in the private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15) and 2026-11-06 (A16), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

@@ -43,7 +43,7 @@ from .models import (
     Slot,
 )
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
-from .services.slots import limit_report
+from .services.slots import held_only_by, limit_report
 from .views_rules import rules_context
 from .views_slots import roster_or_slot
 
@@ -617,6 +617,33 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
     return steps + extras
 
 
+def not_ready(event, steps) -> str:
+    """Why a draft cannot be published yet, as the end of a sentence; "" when it can. Publishing
+    waits for the required steps (SK, 2026-11-10), so nobody sees an event with nothing to sign
+    up for; and a roster event whose every period has ended is not published, so nobody is told
+    about one that is over (SK, 2026-11-10). The Publish button is greyed with this line, and the
+    server refuses the same."""
+    names = [
+        s["name"]
+        for s in steps
+        if not s.get("extra") and not s.get("optional") and not s["done"] and s["key"] != "publish"
+    ]
+    if names:
+        listed = f"{', '.join(names[:-1])} and {names[-1]}" if len(names) > 1 else names[0]
+        return f"{listed} {'are' if len(names) > 1 else 'is'} not done yet."
+    end = event.ends_at()
+    if not event.display_only and end and end <= timezone.now():
+        return f"it ended on {end:%a %d %b %Y %H:%M} UTC."
+    return ""
+
+
+def publish_blocker(event) -> str:
+    """not_ready() for an event, working out its steps."""
+    positions = Position.objects.filter(location__event=event).exists()
+    slots = Slot.objects.filter(position__location__event=event, cancelled=False).count()
+    return not_ready(event, stages(event, positions, slots))
+
+
 def to_step(pk, step):
     """Back to the step a form was on."""
     return redirect("event_step", pk=pk, step=step)
@@ -640,6 +667,11 @@ def _step_page(request, event, step, **extra):
     slot_count = Slot.objects.filter(position__location__event=event, cancelled=False).count()
     all_steps = stages(event, positions.exists(), slot_count)
     captains = event.captaincies.select_related("user").order_by("user__last_name")
+    periods = list(event.periods.order_by("start"))
+    if step == "periods":  # what removing each one takes, said in its confirmation
+        for p in periods:
+            held = held_only_by(p)
+            p.held, p.people = len(held), SignUp.objects.filter(slot__in=held).count()
     here = next((s for s in all_steps if s["key"] == step), None)
     if here is None or not here["open"]:
         raise Http404
@@ -659,7 +691,7 @@ def _step_page(request, event, step, **extra):
             "back": back,
             "onward": onward if onward and onward["open"] else None,
             "details": _details(event),
-            "periods": event.periods.order_by("start"),
+            "periods": periods,
             # each position with its slot count, for the Locations step's rows (#233)
             "locations": event.locations.prefetch_related(
                 Prefetch(
@@ -680,6 +712,7 @@ def _step_page(request, event, step, **extra):
                 "apps.events.contest_fields", fromlist=["CONTEST_FIELDS"]
             ).CONTEST_FIELDS,
             **rules_context(event),
+            "missing": not_ready(event, all_steps) if event.state == Event.State.DRAFT else "",
             "summary": _summary(event, all_steps, captains)
             if step == "publish" and event.state == Event.State.DRAFT
             else None,
@@ -699,6 +732,12 @@ def period_add(request, pk):
             event=event, start=form.cleaned_data["start"], end=form.cleaned_data["end"]
         )
         messages.success(request, "Operating period added.")
+        end = form.cleaned_data["end"]
+        if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
+            messages.warning(
+                request,
+                f"This period ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year.",
+            )
         return done(request, step_url(pk, "periods"))
     return form_page(
         request, event, form, heading="Add an operating period", submit="Add period", step="periods"
@@ -708,12 +747,33 @@ def period_add(request, pk):
 @login_required
 @require_POST
 def period_delete(request, pk, period_id):
+    """Removing a period cancels the slots only it held, as every slot is canceled and never
+    deleted (FR-102); while anybody is signed up in one, nothing goes, as with the bulk cancel:
+    their captain removes them, or cancels the slot and tells them, first (SK, 2026-11-10)."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    OperatingPeriod.objects.filter(pk=period_id, event=event).delete()
-    messages.success(
-        request, "Operating period removed. Regenerate the slots if they were built from it."
+    period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
+    slots = held_only_by(period)
+    people = SignUp.objects.filter(slot__in=slots).count()
+    if people:
+        messages.error(
+            request,
+            f"Nothing was removed: {people} {'person is' if people == 1 else 'people are'} signed "
+            "up in its slots. Remove them from their slots, or cancel those slots and tell them, "
+            "first.",
+        )
+        return to_step(pk, "periods")
+    n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(cancelled=True)
+    record(
+        request.user,
+        "event.edited",
+        event,
+        before={"period": f"{period.start:%Y-%m-%d %H:%M}–{period.end:%Y-%m-%d %H:%M} UTC"},
+        after={"period": None, "slots canceled": n},
     )
+    period.delete()
+    with_it = f"; {n} slot{pluralize(n)} canceled with it." if n else "."
+    messages.success(request, f"Operating period removed{with_it}")
     return to_step(pk, "periods")
 
 
@@ -911,7 +971,7 @@ def slots_generate(request, pk):
             "events/confirm_regenerate.html",
             {
                 "event": event,
-                "slot_count": existing.count(),
+                "slot_count": slot_count,  # on the roster; canceled ones go too, unseen
                 "partial": partial,
                 "base_template": "events/_dialog_base.html" if partial else "base.html",
                 "fields": [
