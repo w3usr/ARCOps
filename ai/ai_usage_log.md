@@ -4778,4 +4778,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/comms/tests/test_announce.py (the unsubscribe test checks the page for the member's name with the token taken out).
 - **Nature of Contribution**: Diagnosis and a test fix. Cause: the unsubscribe page carries its token in the form address; signing.dumps time-stamps the token, so about 1 in 100 contain "Mo", the test member's name, and the check for the name failed by chance. Not a product defect: the name is never shown. Verified with the clock pinned to a second whose token contains "Mo": the old check fails, the new one passes; the file's 11 tests pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 9dcdb5e
