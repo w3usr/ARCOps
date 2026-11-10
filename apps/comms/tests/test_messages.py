@@ -335,3 +335,16 @@ def test_the_date_header_carries_the_clubs_own_zone(settings):
     set_setting(None, "club.timezone", "nonsense/Zone")
     compose(None, "account", "When", "<p>now</p>", to=["m@example.org"])
     assert mail.outbox[-1].message()["Date"].endswith("+0000"), "a bad zone falls back to UTC"
+
+
+def test_an_unread_message_is_said_in_words_as_well_as_its_dot():
+    """The dot marks it for the eye (SK, 2026-11-10: "keep the dot"); a screen reader hears
+    "Unread", and not the dot, since shape alone never carries meaning (FR-62)."""
+    u = _user()
+    compose(u, "warning", "Slot at risk", "<p>Needs a licensee</p>")
+    c = Client()
+    c.force_login(u)
+    body = c.get("/me/messages/").content.decode()
+    assert '<span class="sr-only">Unread: </span><strong>Slot at risk</strong>' in body
+    again = c.get("/me/messages/").content.decode()  # read now, so no longer said
+    assert "Unread: " not in again

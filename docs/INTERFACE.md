@@ -52,7 +52,9 @@ by hand; the library itself is React and is not used.
 
 - **Sizes:** the default, and `.small` for an action on one row of a list or table.
 - **A row's actions** are buttons at the end of the row: the frequent act a small button with its
-  icon and its word, the rare ones in a ⋮ menu (Menus, below). A row with one act has no menu.
+  icon and its word, the rare ones in a ⋮ menu (Menus, below). A row with one act has no menu:
+  Approvals' Reverse this decision is a small button on its row (SK, 2026-11-10: "keep the button,
+  because a menu holding one item hides it behind an extra tap").
 - **Icons** (D6) go before the word, drawn like the sidebar's: 24 px grid, 1.75 stroke, from
   `apps/ops/templatetags/nav.py`. The word is always there, so an icon is never the only sign.
   The exceptions are the ⋮ that opens a menu and the ? that opens a key: `.icon-only`, named with
@@ -231,7 +233,9 @@ the solid red one, named for what it keeps ("Keep the account", not "Cancel"). T
 written into the page and its button opens it with `commandfor` (TECHNICAL_REQUIREMENTS A9); a
 form inside posts as any form does. A confirmation that is a step of a larger form (replacing
 the slot grid) stays a page of its own, because it carries what was typed there. A confirmation
-is never a click-to-expand in place: it read as a link and opened into the page around it.
+is never a click-to-expand in place: it read as a link and opened into the page around it. It
+has no ✕: Escape and the safe choice close it, and the safe choice says what closing keeps (SK,
+2026-11-10: "no ✕").
 
 ## Something more to read
 
@@ -329,6 +333,10 @@ be the one a design system ships as its default still looks like itself.
   an **Open** tag and an open slot take it on the word.
 - **A state badge** (`.tag`, #226) is a word on a tint of its status color: `--ok`, `--warn`,
   `--bad`, the club's color for information, neutral otherwise. Always a word.
+- **An unread message keeps its dot**, not a badge (SK, 2026-11-10: "keep the dot, since a badge
+  on every unread row is noisy and the dot is the familiar convention. A screen reader is told in
+  words either way"). The dot is drawn by CSS and kept from a screen reader, which hears a hidden
+  "Unread:" before the subject.
 - **One panel is the club's color**: the sign-in page's, the page that introduces the club.
 
 ## Type

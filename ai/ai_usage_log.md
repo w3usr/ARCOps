@@ -4779,3 +4779,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis and a test fix. Cause: the unsubscribe page carries its token in the form address; signing.dumps time-stamps the token, so about 1 in 100 contain "Mo", the test member's name, and the check for the name failed by chance. Not a product defect: the name is never shown. Verified with the clock pinned to a second whose token contains "Mo": the old check fails, the new one passes; the file's 11 tests pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: 9dcdb5e
+
+## [2026-11-10 15:53 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Record SK's decisions on three redesign choices (SK, 2026-11-10: "1. keep the button, because a menu holding one item hides it behind an extra tap 2. keep the dot, since a badge on every unread row is noisy and the dot is the familiar convention. A screen reader is told in words either way. 3. no ✕."), and make the second true.
+- **Sections/Files Affected**: docs/INTERFACE.md (a row's one act a button; an unread message keeps its dot, said in words; a confirmation has no ✕); templates/comms/my_messages.html (a hidden "Unread:" before an unread subject); static/css/app.css (the dot kept from a screen reader, with a fallback); apps/comms/tests/test_messages.py (a test).
+- **Nature of Contribution**: Documentation and a fix. Claude had told SK a screen reader hears an unread message in words; checking before recording it showed only a CSS-drawn dot, so the word was added. Verified: 549 application tests pass; the member accessibility sweep passes in Chromium and WebKit; ruff and the repository checks pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
