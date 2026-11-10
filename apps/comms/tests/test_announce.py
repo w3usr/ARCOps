@@ -149,7 +149,10 @@ def test_unsubscribe_link_and_one_click_turn_off_announcements_only():
     r = cl.get(f"/unsubscribe/{token}/")
     assert r.status_code == 200 and b"Stop these emails" in r.content
     assert b"general announcements from officers" in r.content, "it names what it stops"
-    assert b"Mo" not in r.content, "but not whose account it is: the link travels (2026-09-20)"
+    # The page carries the token in its form address, and a token is time-stamped, so about one in
+    # a hundred contains "Mo" by chance (CI, 2026-11-10); the name is what must not be there.
+    shown = r.content.replace(token.encode(), b"")
+    assert b"Mo" not in shown, "but not whose account it is: the link travels (2026-09-20)"
     r = cl.post(f"/unsubscribe/{token}/", {"List-Unsubscribe": "One-Click"})
     assert r.status_code == 200 and r.content == b"unsubscribed"
     assert NotificationPreference.objects.get(user=m, category="announcement").email is False

@@ -4771,3 +4771,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code and documentation. Verified: 548 application tests pass; ruff and the repository checks pass; T11, T12, T37 pass locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: 3140717
+
+## [2026-11-10 15:27 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI failed on a345f43 before the production deploy SK approved (SK, 2026-11-10: "go ahead with the prod deploy after ci and a6 level check"): find why and fix it.
+- **Sections/Files Affected**: apps/comms/tests/test_announce.py (the unsubscribe test checks the page for the member's name with the token taken out).
+- **Nature of Contribution**: Diagnosis and a test fix. Cause: the unsubscribe page carries its token in the form address; signing.dumps time-stamps the token, so about 1 in 100 contain "Mo", the test member's name, and the check for the name failed by chance. Not a product defect: the name is never shown. Verified with the clock pinned to a second whose token contains "Mo": the old check fails, the new one passes; the file's 11 tests pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
