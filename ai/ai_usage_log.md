@@ -4746,4 +4746,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (.panel .eventcard + .eventcard draws the 1px line between rows).
 - **Nature of Contribution**: Diagnosis and code. Cause: .panel .eventcard's border: 0 outranked ul.rows > li + li's border-top. Verified on a scratch page with the real stylesheet in Chromium and WebKit: no line above the first row, 1px above each later one; apps/events tests and test_interface pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: b3a4954
