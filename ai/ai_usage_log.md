@@ -4770,4 +4770,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/events/stages/publish.html and detail.html (the line in place of the Publish form); static/css/app.css (the line as body text; the disabled-button comment); docs/REQUIREMENTS.md (A17's amendment); docs/INTERFACE.md (the rule); apps/events/tests/test_manage.py, test_stages.py (a line, no form).
 - **Nature of Contribution**: Code and documentation. Verified: 548 application tests pass; ruff and the repository checks pass; T11, T12, T37 pass locally.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 3140717
