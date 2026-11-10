@@ -362,6 +362,10 @@ ul.rows > li > form.inline { margin-left: auto; }
 /* A toolbar above a panel's table (#229): search, filters, and the count at the right. */
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .75rem 1.25rem; }
 .toolbar .count { margin-left: auto; color: var(--muted); font-size: var(--t-small); }
+/* On one line with what it names (SK, 2026-11-10): a form label's space under it lifted the
+   label off the line, and a select as wide as a form's pushed the button and the count away. */
+.toolbar > label { margin: 0; }
+.toolbar > select { width: auto; }
 .search { position: relative; flex: 1 1 14rem; max-width: 24rem; }
 .search > .icon { position: absolute; left: .65rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .search > input { padding-left: 2.2rem; max-width: none; }
@@ -820,7 +824,7 @@ td .when1, th .when1 { font-weight: 700; }
 .eventcards { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
 /* The events list in panels (#238): each event a row with a date tile, not a card of its own. */
 .panel > .eventcards { display: block; }
-.panel .eventcard { border: 0; border-radius: 0; padding: .85rem 1.25rem; background: none; align-items: flex-start; }
+.panel .eventcard { border: 0; border-radius: 0; padding: .85rem 1.25rem; background: none; }  /* centred like every row (SK, 2026-11-10) */
 .datetile { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 3rem; padding: .3rem 0; border: 1px solid var(--line); border-radius: var(--r-button); background: var(--panel-head); line-height: 1.1; flex: none; }
 .datetile .d { font-weight: 700; font-size: var(--t-lede); }
 .datetile .m { font-size: var(--t-small); color: var(--muted); }

@@ -19,7 +19,7 @@ action; past events in a quieter panel.{% endcomment %}
       {% if e.tile %}<span class="datetile" aria-hidden="true"><span class="d">{{ e.tile|date:"j" }}</span><span class="m">{{ e.tile|date:"M" }}</span></span>{% endif %}
       <div class="grow">
         <div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag {{ e.state|tone:'event' }}">{{ e.get_state_display }}</span>{% endif %}</div>
-        <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
+        {% if e.starts_at %}<p class="when">{% when e.starts_at e.ends_at e year=True %}</p>{% endif %}
         {% if e.cov and e.cov.total %}<p class="covline">{% if e.cov.covered %}<span class="tag ok">{{ e.cov.covered }} covered</span> {% endif %}{% if e.cov.needs %}<span class="tag warn">{{ e.cov.needs }} need someone</span> {% endif %}{% if e.cov.open %}<span class="tag open">{{ e.cov.open }} open</span>{% endif %}</p>{% endif %}
       </div>
       {% if e.captain %}<a class="button secondary small" href="{% url 'event_manage' e.pk %}">{% icon 'settings' 'small' %}Manage<span class="sr-only"> {{ e.title }}</span></a>{% endif %}
@@ -36,6 +36,6 @@ action; past events in a quieter panel.{% endcomment %}
 
 {% if past %}<section class="panel quiet" aria-labelledby="p">
   <header class="panel-head"><div><h2 id="p">Past</h2></div></header>
-  <ul class="eventcards rows">{% for e in past %}<li class="eventcard">{% if e.tile %}<span class="datetile" aria-hidden="true"><span class="d">{{ e.tile|date:"j" }}</span><span class="m">{{ e.tile|date:"M" }}</span></span>{% endif %}<div class="grow"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag bad">Canceled</span>{% endif %}</div><p class="when">{% when e.starts_at e.ends_at e year=True %}</p></div></li>{% endfor %}</ul>
+  <ul class="eventcards rows">{% for e in past %}<li class="eventcard">{% if e.tile %}<span class="datetile" aria-hidden="true"><span class="d">{{ e.tile|date:"j" }}</span><span class="m">{{ e.tile|date:"M" }}</span></span>{% endif %}<div class="grow"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state == 'cancelled' %}<span class="tag bad">Canceled</span>{% endif %}</div>{% if e.starts_at %}<p class="when">{% when e.starts_at e.ends_at e year=True %}</p>{% endif %}</div></li>{% endfor %}</ul>
 </section>{% endif %}
 {% endblock %}
