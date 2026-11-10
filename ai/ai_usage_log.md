@@ -4786,4 +4786,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/INTERFACE.md (a row's one act a button; an unread message keeps its dot, said in words; a confirmation has no ✕); templates/comms/my_messages.html (a hidden "Unread:" before an unread subject); static/css/app.css (the dot kept from a screen reader, with a fallback); apps/comms/tests/test_messages.py (a test).
 - **Nature of Contribution**: Documentation and a fix. Claude had told SK a screen reader hears an unread message in words; checking before recording it showed only a CSS-drawn dot, so the word was added. Verified: 549 application tests pass; the member accessibility sweep passes in Chromium and WebKit; ruff and the repository checks pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: b2a9db9
