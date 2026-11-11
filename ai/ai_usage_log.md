@@ -4834,4 +4834,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/services/reshape.py (new: frozen, misfit, retime, split, merge); apps/events/views_slots.py (slot_retime, slot_split, slot_merge; the slot page's context); apps/events/urls.py; templates/events/_slot_body.html (Change the time, split or merge, in the captain's section); apps/comms/defaults.py (the "slot.changed" message); static/css/app.css; docs/REQUIREMENTS.md (addendum A23); apps/events/tests/test_slot_reshape.py (new, four tests).
 - **Nature of Contribution**: Code generation, test first: the four tests failed before the code. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass; the slot page's new section screenshotted. Not run: the scenario scripts.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 38c6faa
