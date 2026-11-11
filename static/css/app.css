@@ -549,8 +549,8 @@ form label, .field label { display: block; font-weight: 400; margin-bottom: .25r
    on a line of its own if not; only a line too narrow for them wraps the words, beside the box
    (SK, 2026-11-11: "This is the club / station" in the 28rem rows of a dialog). */
 .row > .field:has(> .check) { flex: 0 1 auto; }
-.field > .check { flex-wrap: nowrap; }
-.field > .check > input { flex: none; }
+.field > .check { flex-wrap: nowrap; align-items: flex-start; }
+.field > .check > input { flex: none; margin-top: .18rem; }  /* level with the words' first line */
 .field > .check > label { min-width: 0; }
 /* A row-level action after an item in a list needs air, or "Run Remove" reads as one phrase. */
 .list > li > form.inline { margin-left: .5rem; }

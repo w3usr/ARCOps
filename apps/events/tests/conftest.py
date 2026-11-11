@@ -24,3 +24,10 @@ def officer():
         first_name="Ann",
         last_name="O",
     )
+
+
+@pytest.fixture
+def member():
+    return User.objects.create_user(
+        "mem@example.org", "pw-Testing-123", groups=["member"], first_name="Mo", last_name="M"
+    )

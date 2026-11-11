@@ -26,8 +26,14 @@
     <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline actions">{% csrf_token %}
       {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
       {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
-      {% if event.state == 'published' or event.state == 'locked' %}<button name="what" value="complete" class="secondary">{% icon 'check' %}Mark completed</button>{% endif %}
     </form>
+    {% comment %}Completing cannot be taken back, so it asks first (SK, 2026-11-11).{% endcomment %}
+    {% if event.state == 'published' or event.state == 'locked' %}<button type="button" class="secondary" commandfor="complete-dlg" command="show-modal">{% icon 'check' %}Mark completed</button>
+    <dialog id="complete-dlg" class="slot-dialog confirm-dialog" aria-labelledby="complete-h">
+      <h2 id="complete-h">Mark this event completed?</h2>
+      <p>It moves to Past, and nobody signs up or changes a sign-up after that. It cannot be undone. An event completes on its own once its last slot has ended.</p>
+      <form method="post" action="{% url 'event_state' event.pk %}" class="confirm-actions">{% csrf_token %}<input type="hidden" name="what" value="complete"><button type="button" class="secondary" commandfor="complete-dlg" command="close">Not yet</button> <button type="submit">Mark completed</button></form>
+    </dialog>{% endif %}
     {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="ghost">{% icon 'history' %}Take it back to draft</button></form>{% endif %}
     </div></header>
   <div class="panel-body"><p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p></div>
@@ -58,6 +64,18 @@
 {% elif event.state != 'cancelled' %}
 <section class="card dangerzone" aria-labelledby="dz">
   <h2 id="dz">Danger zone</h2>
+  {% if deletable %}
+  <div class="dz-row"><div><h3>Delete this draft</h3><p class="helptext">It was never published, so no member has seen it. Its periods, locations and slots go with it. Cannot be undone.</p></div>
+    <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete draft</button></div>
+  <dialog id="dz-delete" class="slot-dialog confirm-dialog" aria-labelledby="dz-delete-h">
+    <h2 id="dz-delete-h">Delete this draft?</h2>
+    <p>“{{ event.title }}” is deleted with its periods, locations and slots. Nobody is told, because no member has seen it. It cannot be undone.</p>
+    <form method="post" action="{% url 'event_delete' event.pk %}" class="stack">{% csrf_token %}
+      <div class="check"><input type="checkbox" id="dc" name="confirm" value="yes" required><label for="dc">I understand this cannot be undone</label></div>
+      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-delete" command="close">Keep the draft</button> <button type="submit" class="danger">Delete the draft</button></div>
+    </form>
+  </dialog>
+  {% endif %}
   <div class="dz-row"><div><h3>Cancel this event</h3><p class="helptext">Off the calendar, every sign-up withdrawn and everyone told. Cannot be undone.</p></div>
     <button type="button" class="danger-outline" commandfor="dz-cancel" command="show-modal">Cancel event</button></div>
   <dialog id="dz-cancel" class="slot-dialog confirm-dialog" aria-labelledby="dz-cancel-h">

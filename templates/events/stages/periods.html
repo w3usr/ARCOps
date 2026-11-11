@@ -8,6 +8,7 @@
     {% for p in periods %}<li><span class="row-ic">{% icon 'calendar' 'small' %}</span><span class="grow">{{ p.start|date:"D d M Y H:i" }} – {{ p.end|date:"D d M Y H:i" }} UTC</span>
       {% comment %}Removing a period confirms first and says what goes with it (docs/INTERFACE.md,
       Destructive actions, tier 2); while anybody is signed up in its slots it cannot go (SK, 2026-11-10).{% endcomment %}
+      {% url 'period_edit' event.pk p.pk as u %}{% include "events/_dialog_link.html" with url=u label="Edit" icon="edit" small=1 %}
       <button type="button" class="ghost danger small" commandfor="per-rm-{{ p.pk }}" command="show-modal">{% icon 'trash' 'small' %}Remove</button>
       <dialog id="per-rm-{{ p.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="per-rm-h-{{ p.pk }}">
         <h2 id="per-rm-h-{{ p.pk }}">{% if p.people %}This period cannot be removed yet{% else %}Remove this period?{% endif %}</h2>

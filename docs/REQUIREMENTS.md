@@ -2843,7 +2843,71 @@ them, outside the event.
 day: "let's tackle each of the gaps sequentially - reproduce first, research the fix and
 implement". *Record:* `notes/2026-11-10_event-creation-gaps.md` in the private repository.
 
+### A19. FR-38: an operating period is edited, and two periods do not overlap
+
+**Original (FR-38).** "An event has one or more operating periods, each a UTC start and end.
+[…] Slots are generated within periods (FR-46)."
+
+**Decision.** A period has an Edit beside its Remove. Made longer, every slot stays and the new
+time is empty until Add slots to the empty hours fills it. Made shorter, the live operating slots
+left outside every period are canceled, as when a period is removed (A18); while anybody is signed
+up in one, nothing changes. The on-air hours (A15) are cut to the periods as they now stand.
+A period that shares time with another of the same event is refused, added or edited, naming the
+one it overlaps; one that starts as another ends is a second period, as a split contest has.
+Before, a wrong end time meant removing the period and adding it again, and the hours of the
+slots canceled with it could not be filled again in bulk (a canceled slot keeps its hour, A14): a
+three-hour period added back got one slot. Two overlapping periods were accepted without a word.
+
+**Decided** by SK on 2026-11-11, of the gaps put to him that day: "Yeah, i'd fix all 6".
+*Record:* `notes/2026-11-11_event-management-gaps.md` in the private repository.
+
+### A20. FR-49: slots are not made with no seat at all
+
+**Original (FR-49).** "Each slot has capacity per **role** […] each with a maximum count (0 to
+disable the role for that slot)."
+
+**Decision.** The generator and Add a slot refuse a form in which every role's count is 0: "Give
+at least one seat: a slot with none cannot be signed up for." One role at 0 is still how a role
+is turned off. Before, such a grid was made and the event published, and members saw a roster
+nobody could sign up for. A slot's seats can still all be set to 0 afterwards on its own page,
+where A3 governs.
+
+**Decided** by SK on 2026-11-11, as A19. *Record:* the same note.
+
+### A21. FR-51: removing a position
+
+**Original (FR-51).** "An event has one or more **locations**, and each location has one or more
+**positions**; every slot belongs to a position."
+
+**Decision.** Remove on a position opens a confirmation saying how many slots go with it. While
+anybody is signed up in one of them it is refused, and the dialog offers only Keep the position.
+The last position of a location takes the location with it, and the dialog says so, since a
+location is its positions. An event that is no longer a draft keeps at least one position. The
+removal is in the audit log. Before, Remove deleted the position and its slots on one click.
+The slots are deleted with their position, not canceled: a slot belongs to a position and cannot
+outlive it. That corrects A18, which said "every slot is canceled and never deleted (FR-102)":
+FR-102 is the callsign change and no requirement says it; FR-52 is the one that cancels a slot,
+and regenerating a grid nobody has signed up in (A14) deletes slots too.
+
+**Decided** by SK on 2026-11-11, as A19. *Record:* the same note.
+
+### A22. FR-44: completing asks first, and a draft never published is deleted
+
+**Original (FR-44).** "An event has a lifecycle: *draft* […], *published* […], *locked* […],
+*completed*, *canceled*. […] *Completed* is set by a captain or officer, or automatically once
+the last slot has ended, whichever comes first."
+
+**Decision.** Mark completed opens a confirmation, because it cannot be taken back: "confirmaton
+only" (SK), so a completed event is not reopened. A draft that was never published can be deleted
+outright by an officer from the Publish step, behind a confirmation with a tick box: no member
+ever saw it, so nobody is told, and the audit log keeps the line. "yes, truly delete it" (SK).
+An event that has ever been published, even one taken back to draft, is canceled and never
+deleted. Before, a draft made by mistake, or a copy not wanted, could only be canceled and stayed
+in the record.
+
+**Decided** by SK on 2026-11-11, as A19. *Record:* the same note.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A22), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

@@ -149,9 +149,12 @@ class PeriodForm(forms.Form):
         label="Ends (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, event=None, editing=None, **kwargs):
+        """`event`, when the form is an operating period's: the periods it must not overlap,
+        but for `editing`, the one being changed. The on-air hours' range gives neither."""
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
+        self.event, self.editing = event, editing
 
     def clean(self):
         d = super().clean()
@@ -162,6 +165,19 @@ class PeriodForm(forms.Form):
             d["end"] = e.replace(tzinfo=UTC) if timezone.is_naive(e) else e
             if d["end"] <= d["start"]:
                 self.add_error("end", "The end must come after the start.")
+            elif self.event:
+                # Two periods that share time are one period written twice (SK, 2026-11-11); one
+                # that starts as another ends is a second period, as a split contest has.
+                others = self.event.periods.filter(start__lt=d["end"], end__gt=d["start"])
+                if self.editing:
+                    others = others.exclude(pk=self.editing.pk)
+                clash = others.first()
+                if clash:
+                    self.add_error(
+                        "start",
+                        f"This overlaps the period {clash.start:%a %d %b %H:%M} to "
+                        f"{clash.end:%a %d %b %H:%M} UTC. Edit that one, or keep them apart.",
+                    )
         return d
 
 
@@ -204,6 +220,18 @@ class SeatFields:
                 widget=_num(2),
             )
 
+    def clean(self):
+        d = super().clean()
+        seats = [v for k, v in d.items() if k.startswith("cap_")]
+        asked = [k for k in self.fields if k.startswith("cap_")]
+        # Every role at 0 makes slots nobody can sign up for (SK, 2026-11-11). Only said once
+        # each count is a number, so it never stands beside "Enter a whole number".
+        if asked and len(seats) == len(asked) and not any(seats):
+            raise forms.ValidationError(
+                "Give at least one seat: a slot with none cannot be signed up for."
+            )
+        return d
+
     def capacities(self) -> dict[str, int]:
         return {k[4:]: v for k, v in self.cleaned_data.items() if k.startswith("cap_")}
 
@@ -232,7 +260,10 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
             del self.fields["setup_slots"], self.fields["breakdown_slots"]
 
 
-class LocationForm(forms.Form):
+class LocationForm(FieldGroups, forms.Form):
+    # One under another (SK, 2026-11-11): two tick boxes beside two text boxes read as a jumble.
+    GROUPS = [("", ["name", "address", "position", "is_club_station", "is_private_residence"])]
+
     name = forms.CharField(label="Name", max_length=120)
     address = forms.CharField(label="Address (optional)", max_length=200, required=False)
     position = forms.CharField(
@@ -240,6 +271,10 @@ class LocationForm(forms.Form):
     )
     is_club_station = forms.BooleanField(
         label="This is the club station", required=False, initial=True
+    )
+    is_private_residence = forms.BooleanField(  # FR-51, section 4.2
+        label="This is a private residence: show its address only to people signed up there",
+        required=False,
     )
 
     def __init__(self, *args, editing=False, **kwargs):
@@ -699,7 +734,8 @@ def _step_page(request, event, step, **extra):
                 Prefetch(
                     "positions",
                     queryset=Position.objects.annotate(
-                        live_slots=Count("slots", filter=Q(slots__cancelled=False))
+                        live_slots=Count("slots", filter=Q(slots__cancelled=False), distinct=True),
+                        people=Count("slots__signups", distinct=True),
                     ),
                 )
             ).order_by("order"),
@@ -707,6 +743,9 @@ def _step_page(request, event, step, **extra):
             "captains": captains,
             # Appointing captains (§2.2) and cancelling the event (SK, 2026-10-15) are officers'.
             "may_manage_events": request.user.may("manage_events"),
+            "deletable": deletable(event),
+            # an event members can see keeps a position (position_delete)
+            "keeps_a_position": event.state != Event.State.DRAFT and len(positions) == 1,
             "slot_count": slot_count,
             "signups_exist": has_signups(event),
             "limits": limit_report(event),
@@ -728,7 +767,7 @@ def _step_page(request, event, step, **extra):
 def period_add(request, pk):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
-    form = PeriodForm(request.POST or None)
+    form = PeriodForm(request.POST or None, event=event)
     if request.method == "POST" and form.is_valid():
         OperatingPeriod.objects.create(
             event=event, start=form.cleaned_data["start"], end=form.cleaned_data["end"]
@@ -743,6 +782,81 @@ def period_add(request, pk):
         return done(request, step_url(pk, "periods"))
     return form_page(
         request, event, form, heading="Add an operating period", submit="Add period", step="periods"
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def period_edit(request, pk, period_id):
+    """A period's times put right (SK, 2026-11-11). Before, a wrong end meant removing the period,
+    which cancels its slots, and adding it again, where the canceled hours could not be filled.
+    Made longer, every slot stays and the new time is empty until it is filled. Made shorter, the
+    operating slots left outside every period are canceled, as when a period is removed; while
+    anybody is signed up in one, nothing changes."""
+    from .services.slots import chosen, left_outside, set_on_air
+
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
+
+    def typed(t):  # what a datetime-local box takes, in UTC as its label says
+        return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M")
+
+    form = PeriodForm(
+        request.POST or None,
+        event=event,
+        editing=period,
+        initial={"start": typed(period.start), "end": typed(period.end)},
+    )
+    if request.method == "POST" and form.is_valid():
+        start, end = form.cleaned_data["start"], form.cleaned_data["end"]
+        slots = left_outside(period, start, end)
+        people = SignUp.objects.filter(slot__in=slots).count()
+        if people:
+            form.add_error(
+                None,
+                f"{people} {'person is' if people == 1 else 'people are'} signed up in the "
+                f"{len(slots)} slot{pluralize(len(slots))} this would leave outside the period. "
+                "Remove them from their slots, or cancel those slots and tell them, first.",
+            )
+        else:
+            was = f"{period.start:%Y-%m-%d %H:%M}–{period.end:%Y-%m-%d %H:%M} UTC"
+            period.start, period.end = start, end
+            period.save(update_fields=["start", "end"])
+            n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(cancelled=True)
+            if event.on_air_ranges.exists():  # the on-air hours stay inside the periods
+                set_on_air(event, chosen(event))
+            record(
+                request.user,
+                "event.edited",
+                event,
+                before={"period": was},
+                after={
+                    "period": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC",
+                    "slots canceled": n,
+                },
+            )
+            gone = (
+                f" The {n} slot{pluralize(n)} left outside it {'was' if n == 1 else 'were'} canceled."
+                if n
+                else ""
+            )
+            messages.success(request, f"Operating period saved.{gone}")
+            if end <= timezone.now():
+                messages.warning(
+                    request,
+                    f"This period ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year.",
+                )
+            return done(request, step_url(pk, "periods"))
+    return form_page(
+        request,
+        event,
+        form,
+        heading="Edit the operating period",
+        submit="Save period",
+        step="periods",
+        intro="Made longer, every slot stays, and Add slots to the empty hours fills the new "
+        "time. Made shorter, the slots left outside it are canceled.",
     )
 
 
@@ -791,6 +905,7 @@ def location_add(request, pk):
             event=event,
             name=d["name"].strip(),
             is_club_station=d["is_club_station"],
+            is_private_residence=d["is_private_residence"],
             address=d["address"].strip(),
             order=event.locations.count() + 1,
         )
@@ -809,7 +924,7 @@ def location_edit(request, pk, location_id):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     loc = get_object_or_404(Location, pk=location_id, event=event)
-    fields = ("name", "address", "is_club_station")
+    fields = ("name", "address", "is_club_station", "is_private_residence")
     form = LocationForm(
         request.POST or None, editing=True, initial={f: getattr(loc, f) for f in fields}
     )
@@ -818,6 +933,7 @@ def location_edit(request, pk, location_id):
         before = {f: getattr(loc, f) for f in fields}
         loc.name, loc.address = d["name"].strip(), d["address"].strip()
         loc.is_club_station = d["is_club_station"]
+        loc.is_private_residence = d["is_private_residence"]
         loc.save(update_fields=list(fields))
         after = {f: getattr(loc, f) for f in fields}
         changed = [f for f in fields if before[f] != after[f]]
@@ -888,14 +1004,42 @@ def position_edit(request, pk, position_id):
 @login_required
 @require_POST
 def position_delete(request, pk, position_id):
+    """A position removed with its slots, behind a confirmation that says how many (SK,
+    2026-11-11); never while anybody is signed up in one. The last position of a location takes
+    the location with it, since a location is its positions; an event that members can see keeps
+    at least one, or its roster would be a page with nothing on it."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     pos = get_object_or_404(Position, pk=position_id, location__event=event)
-    if SignUp.objects.filter(slot__position=pos).exists():
-        messages.error(request, "That position has sign-ups; cancel them first.")
-    else:
-        pos.delete()
-        messages.success(request, "Position removed with its slots.")
+    loc = pos.location
+    people = SignUp.objects.filter(slot__position=pos).count()
+    if people:
+        messages.error(
+            request,
+            f"Nothing was removed: {people} {'person is' if people == 1 else 'people are'} signed "
+            "up in its slots. Remove them from their slots, or cancel those slots and tell them, "
+            "first.",
+        )
+        return to_step(pk, "locations")
+    only = not Position.objects.filter(location__event=event).exclude(pk=pos.pk).exists()
+    if only and event.state != Event.State.DRAFT:
+        messages.error(
+            request, "Nothing was removed. A published event keeps at least one position."
+        )
+        return to_step(pk, "locations")
+    slots = pos.slots.filter(cancelled=False).count()
+    last_here = loc.positions.count() == 1
+    record(
+        request.user,
+        "event.edited",
+        event,
+        before={"position": pos.name, "location": loc.name, "slots": slots},
+        after={"position": None, **({"location": None} if last_here else {})},
+    )
+    (loc if last_here else pos).delete()
+    with_it = f" with its {slots} slot{pluralize(slots)}" if slots else ""
+    also = f" “{loc.name}” had no other position and went with it." if last_here else ""
+    messages.success(request, f"Position “{pos.name}” removed{with_it}.{also}")
     return to_step(pk, "locations")
 
 
@@ -1321,4 +1465,32 @@ def event_cancel(request, pk):
         request,
         f"Event canceled; {told} person(s) told. It stays in the record; members no longer see it as upcoming.",
     )
+    return redirect("event_list")
+
+
+def deletable(event) -> bool:
+    """A draft nobody but its captains ever saw: never published, so no member has met it."""
+    return event.state == Event.State.DRAFT and event.published_at is None
+
+
+@login_required
+@require_POST
+def event_delete(request, pk):
+    """A draft made by mistake, or a copy not wanted, is deleted outright (SK, 2026-11-11): no
+    member ever saw it, so there is nobody to tell and nothing for the record to keep but the
+    audit log's line. Once an event has been published it is canceled, never deleted. An
+    officer's, as canceling is."""
+    if not request.user.may("manage_events"):
+        raise Http404
+    event = get_object_or_404(Event, pk=pk)
+    if not deletable(event):
+        messages.error(request, "Nothing was deleted: only a draft never published can be.")
+        return to_step(pk, "publish")
+    if request.POST.get("confirm") != "yes":
+        messages.error(request, "Tick the confirmation to delete the draft.")
+        return to_step(pk, "publish")
+    record(request.user, "event.deleted", event, before={"title": event.title})
+    title = event.title
+    event.delete()
+    messages.success(request, f"Draft “{title}” deleted.")
     return redirect("event_list")

@@ -21,6 +21,7 @@ def _forms(ev, loc_pk):
     run, mult = ev.locations.get().positions.order_by("order")
     return {
         "periods/add": ("periods", "Add an operating period"),
+        f"periods/{ev.periods.get().pk}/edit": ("periods", "Edit the operating period"),
         "locations/add": ("locations", "Add a location"),
         f"locations/{loc_pk}/edit": ("locations", "Edit Club station"),
         f"locations/{loc_pk}/positions/add": ("locations", "Add a position at Club station"),

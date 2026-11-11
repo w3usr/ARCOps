@@ -66,6 +66,17 @@ def event_list(request):
     )
 
 
+def _address(user, location, is_captain) -> str:
+    """The address the event page shows for its one location. A private residence's goes only
+    to people signed up there and to its captains and the officers (FR-51, section 4.2)."""
+    if not location or not location.address:
+        return ""
+    if location.is_private_residence and not is_captain:
+        if not SignUp.objects.filter(slot__position__location=location, user=user).exists():
+            return ""
+    return location.address
+
+
 @login_required
 def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
@@ -87,6 +98,7 @@ def event_detail(request, pk):
             "roster": roster,
             "health": health(event) if roster["is_captain"] else None,
             "is_captain": roster["is_captain"],
+            "address": _address(request.user, roster["single_location"], roster["is_captain"]),
             # the Draft banner's Publish waits for the required steps too (SK, 2026-11-10)
             "missing": __import__("apps.events.views_manage", fromlist=["x"]).publish_blocker(event)
             if roster["is_captain"] and event.state == Event.State.DRAFT

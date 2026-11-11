@@ -17,7 +17,17 @@ Remove as a red button with a bin. The words, the forms and the in-place saves a
     <ul class="rows list">
       {% for pos in l.positions.all %}<li><span class="row-ic">{% icon 'radio' 'small' %}</span><span class="grow"><strong>{{ pos.name }}</strong><span class="sub">{% if pos.live_slots %}{{ pos.live_slots }} slot{{ pos.live_slots|pluralize }}{% else %}No slots yet{% endif %}</span></span>
         {% url 'position_edit' event.pk pos.pk as u %}{% include "events/_dialog_link.html" with url=u label="Rename" icon="edit" small=1 %}
-        <form method="post" action="{% url 'position_delete' event.pk pos.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form></li>{% endfor %}
+        {% comment %}Removing a position confirms first and says what goes with it, as removing a
+        period does (docs/INTERFACE.md, Destructive actions, tier 2; SK, 2026-11-11).{% endcomment %}
+        <button type="button" class="ghost danger small" commandfor="pos-rm-{{ pos.pk }}" command="show-modal">{% icon 'trash' 'small' %}Remove</button>
+        <dialog id="pos-rm-{{ pos.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="pos-rm-h-{{ pos.pk }}">
+          <h2 id="pos-rm-h-{{ pos.pk }}">{% if pos.people or keeps_a_position %}{{ pos.name }} cannot be removed yet{% else %}Remove {{ pos.name }}?{% endif %}</h2>
+          <p>{% if pos.people %}{{ pos.people }} {% if pos.people == 1 %}person is{% else %}people are{% endif %} signed up in its slots. Remove them from their slots, or cancel those slots and tell them, first.
+            {% elif keeps_a_position %}A published event keeps at least one position. Add another first.
+            {% else %}{% if pos.live_slots %}Its {{ pos.live_slots }} slot{{ pos.live_slots|pluralize }} go{{ pos.live_slots|pluralize:"es," }} with it.{% else %}It has no slots, so nothing else changes.{% endif %}{% if l.positions.all|length == 1 %} It is the only position at {{ l.name }}, so the location goes with it.{% endif %}{% endif %}</p>
+          {% if pos.people or keeps_a_position %}<div class="confirm-actions"><button type="button" class="secondary" commandfor="pos-rm-{{ pos.pk }}" command="close">Keep the position</button></div>
+          {% else %}<form method="post" action="{% url 'position_delete' event.pk pos.pk %}" {% include "events/stages/_in_place.html" %} class="confirm-actions">{% csrf_token %}<button type="button" class="secondary" commandfor="pos-rm-{{ pos.pk }}" command="close">Keep the position</button> <button type="submit" class="danger">Remove the position</button></form>{% endif %}
+        </dialog></li>{% endfor %}
     </ul>
   </div>
   {% empty %}<div class="panel-body"><p class="empty">No location yet. Add one. A position is one operating seat at a location, and each gets its own column of slots.</p></div>{% endfor %}

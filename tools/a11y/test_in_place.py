@@ -25,8 +25,9 @@ def test_removing_a_position_happens_in_place(live_server, engine):
         count = rows.count()
         page.evaluate("window.__kept = true")  # gone if the page reloads
         rows.filter(has_text="Spare").get_by_role("button", name="Remove").click()
+        page.locator("dialog[open]").get_by_role("button", name="Remove the position").click()
         expect(rows).to_have_count(count - 1)
-        expect(page.locator("#messages")).to_contain_text("Position removed")
+        expect(page.locator("#messages")).to_contain_text("Position “Spare” removed")
         expect(page.locator("#messages")).to_be_focused()
         assert page.evaluate("window.__kept === true")
         assert page.url == url and page.evaluate("history.length") == before
@@ -56,6 +57,7 @@ def test_without_javascript_a_remove_posts_and_comes_back(live_server, engine):
         page.locator("section[aria-labelledby=loc] ul.list li", has_text="Spare").get_by_role(
             "button", name="Remove"
         ).click()
+        page.locator("dialog[open]").get_by_role("button", name="Remove the position").click()
         page.wait_for_url(url)
-        expect(page.locator("#messages")).to_contain_text("Position removed")
+        expect(page.locator("#messages")).to_contain_text("Position “Spare” removed")
         browser.close()

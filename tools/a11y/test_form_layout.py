@@ -77,6 +77,7 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
         f"/events/{ev.pk}/{f}/"
         for f in (
             "periods/add",
+            f"periods/{ev.periods.first().pk}/edit",
             "locations/add",
             f"locations/{ev.locations.first().pk}/edit",
             f"positions/{slot.first().position_id}/edit",

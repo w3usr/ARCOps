@@ -166,6 +166,23 @@ def held_only_by(period) -> list:
     return [s for s in live if not any(a <= s.start and s.end <= b for a, b in rest)]
 
 
+def left_outside(period, start, end) -> list:
+    """The live operating slots that `period`, changed to run from `start` to `end`, would leave
+    outside every period: what held_only_by() is to removing one. Slots it never held are not
+    looked at, so a slot already outside the periods is not canceled by an edit elsewhere."""
+    now = merge(
+        [(p.start, p.end) for p in period.event.periods.exclude(pk=period.pk)] + [(start, end)]
+    )
+    live = Slot.objects.filter(
+        position__location__event=period.event,
+        kind="operating",
+        cancelled=False,
+        start__lt=period.end,
+        end__gt=period.start,
+    )
+    return [s for s in live if not any(a <= s.start and s.end <= b for a, b in now)]
+
+
 def chosen(event) -> list[tuple]:
     """The club's own stretches, clipped to the periods; [] when it has chosen none."""
     return clip([(r.start, r.end) for r in event.on_air_ranges.all()], periods_of(event))
