@@ -4843,3 +4843,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and edit. The icon paths were copied unmodified from github.com/google/material-design-icons. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped; Firefox does not launch on this machine, CI runs it); ruff and the repository guards pass, and the guard was seen to refuse the pill elsewhere; contact sheets before and after (361 shots each) and the rail, drawer and hover compared by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: 2aaaa37
+
+## [2026-11-11 15:26 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The navigation's entries 48 px high in place of Material 3's 56, at SK's word ("make it 48px", 2026-11-11), after trying #145 on dev.
+- **Sections/Files Affected**: static/css/app.css (the drawer entry's height, and in the drawer under 60rem); docs/INTERFACE.md (Shape).
+- **Nature of Contribution**: Edit. Verified: the interface guard passes; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped).
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

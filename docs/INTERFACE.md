@@ -380,10 +380,11 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 | `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu |
 | `--r-pill` | full | the navigation's entries only: sidebar, rail and drawer (#145) |
 
-**The navigation is Material 3's** (SK, 2026-11-11, #145): a drawer entry 56 px high with a
-24 px icon and a 14 px label, the rail 80 px wide with each icon in a 56 by 32 px pill, and the
-entry for this page in a pill of the club's soft color, its label bold as well. The pill is the
-one exception to the corners above, and `tools/check_interface.sh` allows it there alone.
+**The navigation is Material 3's** (SK, 2026-11-11, #145): a drawer entry 48 px high (M3 says
+56; SK chose 48 so a long menu fits) with a 24 px icon and a 14 px label, the rail 80 px wide with
+each icon in a 56 by 32 px pill, and the entry for this page in a pill of the club's soft color,
+its label bold as well. The pill is the one exception to the corners above, and
+`tools/check_interface.sh` allows it there alone.
 
 **A page's parts are panels on the canvas** (SK, 2026-11-06, D1; it replaces #160's sections on
 white paper). A panel (`.panel`) is one part of the page with a job: its header names it and holds
