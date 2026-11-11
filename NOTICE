@@ -52,5 +52,9 @@ Third-party components
   The Atkinson Hyperlegible Next Project Authors, SIL Open Font License 1.1; see
   static/fonts/OFL.txt. The web fonts from github.com/googlefonts/atkinson-hyperlegible-next,
   unmodified, checked against that repository's file hashes.
+- Material Symbols (apps/ops/templatetags/nav.py), Copyright Google LLC, Apache License
+  2.0; see apps/ops/templatetags/MATERIAL_SYMBOLS_LICENSE. The outlined 24 px SVGs from
+  github.com/google/material-design-icons, one path each copied unmodified into the icon
+  table, which names the symbol beside each.
 - Python packages named in requirements.txt carry their own licences; none is
   redistributed in this repository.

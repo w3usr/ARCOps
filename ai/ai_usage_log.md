@@ -4835,3 +4835,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first: the four tests failed before the code. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass; the slot page's new section screenshotted. Not run: the scenario scripts.
 - **Human Review Status**: Pending review
 - **Git Hash**: 38c6faa
+
+## [2026-11-11 15:15 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: #145, navigation in the Material 3 style with Material Symbols icons, at SK's word ("for 145, i want material 3 style", 2026-11-11); the pill for the navigation only, SK's choice the same day over #160's corner rule.
+- **Sections/Files Affected**: apps/ops/templatetags/nav.py (the icon table: 44 Material Symbols Outlined paths, 24 px, weight 400, in place of hand-drawn line icons; the tag draws them filled); apps/ops/templatetags/MATERIAL_SYMBOLS_LICENSE (new, Apache-2.0); NOTICE; static/css/app.css (drawer entries 56 px with 24 px icons and 14 px labels, the rail 80 px with 56 by 32 px pills, the --r-pill token); tools/check_interface.sh (the pill allowed on the navigation's entries alone); docs/INTERFACE.md (Icons, Shape, where our rules win).
+- **Nature of Contribution**: Code generation and edit. The icon paths were copied unmodified from github.com/google/material-design-icons. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped; Firefox does not launch on this machine, CI runs it); ruff and the repository guards pass, and the guard was seen to refuse the pill elsewhere; contact sheets before and after (361 shots each) and the rail, drawer and hover compared by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

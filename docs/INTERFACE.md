@@ -55,8 +55,9 @@ by hand; the library itself is React and is not used.
   icon and its word, the rare ones in a ⋮ menu (Menus, below). A row with one act has no menu:
   Approvals' Reverse this decision is a small button on its row (SK, 2026-11-10: "keep the button,
   because a menu holding one item hides it behind an extra tap").
-- **Icons** (D6) go before the word, drawn like the sidebar's: 24 px grid, 1.75 stroke, from
-  `apps/ops/templatetags/nav.py`. The word is always there, so an icon is never the only sign.
+- **Icons** (D6) go before the word: Material Symbols Outlined, weight 400, 24 px, filled in the
+  text color, from `apps/ops/templatetags/nav.py` (#145; SK, 2026-11-11). A new one is copied from
+  the same set, never drawn by hand, so they stay one family. The word is always there, so an icon is never the only sign.
   The exceptions are the ⋮ that opens a menu and the ? that opens a key: `.icon-only`, named with
   `aria-label`, and the same name shown beside it on hover and focus, drawn by CSS from that
   label. Never a `title`, which a phone and the keyboard never show.
@@ -377,6 +378,12 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 | `--r-field` | 4 px | a field, a select, a badge, a slot's state |
 | `--r-button` | 6 px | a button, a menu entry, a switch, a tab's focus ring; never a pill |
 | `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu |
+| `--r-pill` | full | the navigation's entries only: sidebar, rail and drawer (#145) |
+
+**The navigation is Material 3's** (SK, 2026-11-11, #145): a drawer entry 56 px high with a
+24 px icon and a 14 px label, the rail 80 px wide with each icon in a 56 by 32 px pill, and the
+entry for this page in a pill of the club's soft color, its label bold as well. The pill is the
+one exception to the corners above, and `tools/check_interface.sh` allows it there alone.
 
 **A page's parts are panels on the canvas** (SK, 2026-11-06, D1; it replaces #160's sections on
 white paper). A panel (`.panel`) is one part of the page with a job: its header names it and holds
@@ -428,7 +435,8 @@ they carry would read below 4.5:1, falling back to the application's own.
 - A destructive action carries a bin or a red outline and its word, never color alone (FR-62).
 - One solid button per form.
 - No ripple: it needs JavaScript, and every page works without it.
-- No pill buttons, and surfaces are not tinted from the club's color (#160, D1).
+- No pill buttons, and surfaces are not tinted from the club's color (#160, D1). The
+  navigation's entries are the one pill (#145).
 
 ## Tables
 

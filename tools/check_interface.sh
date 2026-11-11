@@ -98,10 +98,15 @@ WEIGHTS = {"400", "700", "inherit"}
 # Three corners by hierarchy (docs/INTERFACE.md, "Shape"), and a circle.
 RADIUS = re.compile(r"border-radius:\s*([^;}]+)")
 RADII = {f"var(--r-{t})" for t in ("field", "button", "card")} | {"50%"}
+# The one exception, the navigation's pill (#145; SK, 2026-11-11): its entries only.
+PILL, PILL_RULE = "var(--r-pill)", ".navlist a, .navbtn {"
 for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates").rglob("*.html"))]:
     if "email" in path.parts or path.name.endswith("_pdf.html"):
         continue  # mail and PDFs have their own type; neither loads app.css
+    rule = ""  # the selector of the rule a line sits in
     for n, line in enumerate(path.read_text().splitlines(), 1):
+        if "{" in line:
+            rule = line.strip()
         for m in SIZE.finditer(line):
             if m.group(1).strip() not in SIZES:
                 fail.append(f"{path}:{n}: font-size {m.group(1).strip()}; use one of var(--t-small|body|lede|h2|h1)")
@@ -111,7 +116,8 @@ for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates
         for m in RADIUS.finditer(line):
             # One corner token, or a list of the same tokens and 0: a panel's footer rounds only
             # its foot (#227), and a part set flush inside a panel is square (#235).
-            if not set(m.group(1).split()) <= RADII | {"0"}:
+            pill = {PILL} if rule.startswith(PILL_RULE) else set()
+            if not set(m.group(1).split()) <= RADII | {"0"} | pill:
                 fail.append(f"{path}:{n}: border-radius {m.group(1).strip()}; use var(--r-field|button|card), or 50% for a circle")
 
 for line in dict.fromkeys(fail):

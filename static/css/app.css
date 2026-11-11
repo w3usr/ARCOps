@@ -47,12 +47,13 @@
   /* Shape by hierarchy: the smaller and more numerous a thing, the squarer it is. A field or a
      tag, a button, and a card or anything else that stands on its own. */
   --r-field: 4px; --r-button: 6px; --r-card: 8px;
+  --r-pill: 999px;  /* the navigation's entries only, as Material 3 draws them (#145) */
   /* Four steps of space and five of type. Pick from these; a page that needs a sixth size
      usually needs a different structure instead. */
   --s1: .35rem; --s2: .75rem; --s3: 1.25rem; --s4: 2rem;
   --t-small: .875rem; --t-body: 1rem; --t-lede: 1.125rem; --t-h2: 1.25rem; --t-h1: 1.875rem;
   --sidebar-w: 15.5rem;
-  --rail-w: 4.5rem;
+  --rail-w: 5rem;  /* Material 3's navigation rail, 80dp (#145) */
   --shadow: 0 1px 2px rgb(0 0 0 / .06), 0 8px 24px rgb(0 0 0 / .06);
   --menu-shadow: 0 10px 30px rgb(16 24 40 / .14), 0 2px 6px rgb(16 24 40 / .08);
 }
@@ -130,27 +131,31 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .brand-name { font-weight: 700; font-size: var(--t-lede); letter-spacing: .01em; }
 .brand-sub { color: var(--muted); font-size: var(--t-small); }
 
-.navlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .125rem; }
+/* Material 3's navigation drawer (#145; SK, 2026-11-11): items 56dp high, 16dp in from the pill's
+   edge, a 24dp icon and a 14px label (400, the face has no 500); the entry for this page sits in a pill of the club's soft
+   color. Our rules still win where they differ (#143): bold for the current entry as well as
+   the pill, so color is not the only sign of it. */
+.navlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
 .navlist a, .navbtn {
   display: flex; align-items: center; justify-content: flex-start; gap: .75rem;
-  padding: .55rem .75rem; border-radius: var(--r-button);
-  color: var(--fg); text-decoration: none; font: inherit; font-weight: 400;
+  min-height: 3.5rem; padding: 0 1.5rem 0 1rem; border-radius: var(--r-pill);
+  color: var(--fg); text-decoration: none; font: inherit; font-size: var(--t-small); font-weight: 400;
   background: none; border: 0; width: 100%; text-align: left; cursor: pointer;
 }
-.navlist a .icon, .navbtn .icon, .whoami .icon { color: var(--muted); }
+.navlist a .icon, .navbtn .icon, .whoami .icon { width: 1.5rem; height: 1.5rem; color: var(--muted); }
 .navlist a[aria-current="page"] { background: var(--accent-soft); color: var(--accent-soft-fg); font-weight: 700; }
 .navlist a[aria-current="page"] .icon { color: currentColor; }
-.navsep { height: 1px; background: var(--line); margin: .5rem .75rem; }
+.navsep { height: 1px; background: var(--line); margin: .5rem 1rem; }
 /* The sidebar is three groups: what any member uses, what an officer adds, what a sysadmin
    adds. Each later group is introduced by a rule and a small label, so the dividing line is
    visible; the label names the list for a screen reader through aria-labelledby. */
 .navgroup {
-  margin: .75rem .75rem .25rem; padding-top: .75rem; border-top: 1px solid var(--line);
+  margin: .75rem 1rem .25rem; padding-top: .75rem; border-top: 1px solid var(--line);
   font-size: var(--t-small); font-weight: 700;
   color: var(--muted);
 }
 .sidenav-foot { margin-top: auto; padding-top: .75rem; padding-bottom: env(safe-area-inset-bottom, 0px); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: .125rem; }
-.whoami { display: flex; align-items: center; gap: .75rem; margin: 0; padding: .4rem .75rem; color: var(--muted); font-size: var(--t-small); min-width: 0; }
+.whoami { display: flex; align-items: center; gap: .75rem; margin: 0; padding: .5rem 1rem; color: var(--muted); font-size: var(--t-small); min-width: 0; }
 .whoami span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidenav-foot form { margin: 0; }
 .iconbtn { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--r-button); background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; }
@@ -165,7 +170,9 @@ html[data-nav="rail"] .navlist a > span,
 html[data-nav="rail"] .navbtn > span,
 html[data-nav="rail"] .navgroup > span,
 html[data-nav="rail"] .whoami > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn, html[data-nav="rail"] .whoami { justify-content: center; padding-inline: 0; }
+/* Material 3's rail: the icon in a 56 by 32dp pill, the pills 16dp apart. */
+html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn { justify-content: center; width: 3.5rem; min-height: 2rem; height: 2rem; margin: .5rem auto; padding: 0; }
+html[data-nav="rail"] .whoami { justify-content: center; padding-inline: 0; }
 html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
 
 /* A filter that takes a set: a disclosure styled as the drop-down it replaces, holding a
@@ -225,7 +232,8 @@ html[data-nav="rail"] #nav-toggle .icon { transform: rotate(180deg); }
   html.no-js .topbar .iconbtn { display: none; }
   /* The rail preference is irrelevant in a drawer. */
   html[data-nav="rail"] .brand-text, html[data-nav="rail"] .navlist a > span, html[data-nav="rail"] .navbtn > span, html[data-nav="rail"] .navgroup > span, html[data-nav="rail"] .whoami > span { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
-  html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn, html[data-nav="rail"] .whoami { justify-content: flex-start; padding-inline: .75rem; }
+  html[data-nav="rail"] .navlist a, html[data-nav="rail"] .navbtn { justify-content: flex-start; width: 100%; min-height: 3.5rem; height: auto; margin: 0; padding: 0 1.5rem 0 1rem; }
+  html[data-nav="rail"] .whoami { justify-content: flex-start; padding-inline: 1rem; }
   html[data-nav="rail"] .brand img { width: 3.5rem; height: 3.5rem; }
   .content { padding: 1.25rem 1rem 2.5rem; }
 }
