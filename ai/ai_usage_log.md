@@ -4850,4 +4850,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (the drawer entry's height, and in the drawer under 60rem); docs/INTERFACE.md (Shape).
 - **Nature of Contribution**: Edit. Verified: the interface guard passes; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped).
 - **Human Review Status**: Pending review
-- **Git Hash**: pending
+- **Git Hash**: 2541de7
