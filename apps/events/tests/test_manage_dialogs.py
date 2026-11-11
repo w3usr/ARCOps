@@ -23,7 +23,6 @@ def _forms(ev, loc_pk):
         "periods/add": ("periods", "Add an operating period"),
         f"periods/{ev.periods.get().pk}/edit": ("periods", "Edit the operating period"),
         "locations/add": ("locations", "Add a location"),
-        f"locations/{loc_pk}/edit": ("locations", "Edit Club station"),
         f"locations/{loc_pk}/positions/add": ("locations", "Add a position at Club station"),
         f"positions/{run.pk}/edit": ("locations", "Rename Run"),
         f"positions/{mult.pk}/edit": ("locations", "Rename Mult"),
@@ -238,10 +237,10 @@ def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
     ev = _build(c)
     page = c.get(f"/events/{ev.pk}/slots/generate/").content.decode()
     legends = re.findall(r'<fieldset class="group"><legend>([^<]+)</legend>', page)
-    assert legends == ["Slots", "Seats in each slot"]
+    assert legends == ["Slots", "Setup and breakdown", "Seats in each slot"]
     seats = page.split("<legend>Seats in each slot</legend>", 1)[1].split("</fieldset>", 1)[0]
     assert re.findall(r"<label[^>]*>([^<]+)</label>", seats) == ["Operator", "Mentor"]
-    assert 'type="number"' not in page and page.count('inputmode="numeric"') == 5
+    assert 'type="number"' not in page and page.count('inputmode="numeric"') == 7
     assert "Hours to operate each day" not in page  # a range a day in the on-air hours (#248)
     assert "Setup slots before" in page  # nobody has signed up: Regenerate slots may use it
     s = Slot.objects.filter(position__location__event=ev, kind="operating").first()

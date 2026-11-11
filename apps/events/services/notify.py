@@ -15,7 +15,7 @@ from django.conf import settings as dj
 from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import format_html
+from django.utils.html import escape, format_html
 
 from apps.accounts.models import User
 from apps.comms.services import send
@@ -199,8 +199,14 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
     status = evaluate(slot)
     co = status.control_operator
     caps = captains_of(event)
-    kbyg = drop_empty_sections(slot.position.location.kbyg_html) + drop_empty_sections(
-        event.kbyg_html
+    place = slot.position.location
+    # The location's directions and its own notes come first, then the event's (FR-51, FR-77).
+    # The person is signed up there, so a private residence's are theirs to read.
+    directions = drop_empty_sections(place.directions_html)
+    kbyg = (
+        (f"<h2>Getting to {escape(place.name)}</h2>{directions}" if directions else "")
+        + drop_empty_sections(place.kbyg_html)
+        + drop_empty_sections(event.kbyg_html)
     )
     local = display_zone(event)
     ctx = {
@@ -209,7 +215,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
         "when_lead": when_text(slot, UTC),
         "when_local": when_text(slot, local),
         "when_utc": when_text(slot, UTC),
-        "location": slot.position.location.name,
+        "location": ", ".join(x for x in (place.name, place.address) if x),
         "position": slot.position.name,
         "control_operator": co.short_name if co else "",
         "others": ", ".join(s.user.short_name_lettered for s in signups),

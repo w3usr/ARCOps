@@ -238,7 +238,11 @@ class SeatFields:
 
 class GenerateForm(FieldGroups, SeatFields, forms.Form):
     GROUPS = [
-        ("Slots", ["minutes", "setup_slots", "breakdown_slots"]),
+        ("Slots", ["minutes"]),
+        (
+            "Setup and breakdown",
+            ["setup_slots", "setup_minutes", "breakdown_slots", "breakdown_minutes"],
+        ),
         ("Seats in each slot", ["cap_*"]),
     ]
     minutes = forms.IntegerField(
@@ -250,6 +254,22 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
     breakdown_slots = forms.IntegerField(
         label="Breakdown slots after", min_value=0, max_value=6, initial=1, widget=_num(1)
     )
+    # FR-47: "of chosen length and count". Blank is an operating slot's length.
+    setup_minutes = forms.IntegerField(
+        label="Each setup slot (minutes)",
+        min_value=15,
+        max_value=720,
+        required=False,
+        widget=_num(3),
+    )
+    breakdown_minutes = forms.IntegerField(
+        label="Each breakdown slot (minutes)",
+        min_value=15,
+        max_value=720,
+        required=False,
+        widget=_num(3),
+        help_text="Left blank, each is as long as an operating slot.",
+    )
 
     def __init__(self, *args, roles, fill_only=False, **kwargs):
         kwargs.setdefault("label_suffix", "")
@@ -257,7 +277,8 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
         self.fields["minutes"].initial = int(setting("defaults.slot_length_minutes", 60))  # FR-89
         self.add_seat_fields(roles)
         if fill_only:  # filling makes operating slots only (#153), so these would do nothing
-            del self.fields["setup_slots"], self.fields["breakdown_slots"]
+            for name in ("setup_slots", "breakdown_slots", "setup_minutes", "breakdown_minutes"):
+                del self.fields[name]
 
 
 class LocationForm(FieldGroups, forms.Form):
@@ -280,8 +301,58 @@ class LocationForm(FieldGroups, forms.Form):
     def __init__(self, *args, editing=False, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
-        if editing:  # positions are added and renamed on their own
-            del self.fields["position"]
+        if not editing:
+            return
+        del self.fields["position"]  # positions are added and renamed on their own
+        # FR-51: a location's own directions, know-before-you-go text and viability rule. Asked
+        # once the location exists, on a page: the editor's menus need one (docs/INTERFACE.md).
+        from apps.credentials.models import CredentialType
+
+        self.fields["directions_html"] = forms.CharField(
+            label="Directions",
+            required=False,
+            widget=TinyMCE(attrs={"rows": 8}),
+            help_text="How to get there and get in. Shown on the event page and in each "
+            "reminder, to the people who are shown the address.",
+        )
+        self.fields["kbyg_html"] = forms.CharField(
+            label="Know before you go, at this location",
+            required=False,
+            widget=TinyMCE(attrs={"rows": 8}),
+            help_text="Shown with the directions, and ahead of the event's own in each reminder.",
+        )
+        self.fields["own_rule"] = forms.BooleanField(
+            label="This location has its own rule for what a slot needs", required=False
+        )
+        self.fields["needs"] = forms.MultipleChoiceField(
+            label="A slot here needs someone with",
+            required=False,
+            widget=forms.CheckboxSelectMultiple,
+            choices=[(t.key, t.label) for t in CredentialType.objects.order_by("label")],
+            help_text="Used only with the box above ticked; with none ticked here, a slot at "
+            "this location needs nothing. Without its own rule, the club's rule applies.",
+        )
+
+    def clean_directions_html(self):
+        return sanitise(self.cleaned_data.get("directions_html") or "")
+
+    def clean_kbyg_html(self):
+        return sanitise(self.cleaned_data.get("kbyg_html") or "")
+
+    def rule(self):
+        """The location's viability rule as it is stored: None for the club's (FR-61)."""
+        if not self.cleaned_data.get("own_rule"):
+            return None
+        return {
+            "require_all_of": [
+                # the license is asked for as the club's default asks: at the event's class
+                {
+                    "credential": k,
+                    **({"min_class_from_event": True} if k == "amateur_license" else {}),
+                }
+                for k in self.cleaned_data.get("needs", [])
+            ]
+        }
 
 
 class PositionForm(forms.Form):
@@ -917,38 +988,69 @@ def location_add(request, pk):
     )
 
 
+def _rule_keys(rule) -> list[str]:
+    rows = rule.get("require_all_of", []) if isinstance(rule, dict) else rule or []
+    return [r["credential"] for r in rows]
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def location_edit(request, pk, location_id):
-    """FR-51: a location's name, address and club-station mark, put right after it is added."""
+    """FR-51: everything about a location after it is added: its name, address and marks, its
+    directions and know-before-you-go text, and its own viability rule. A page, not a dialog,
+    as Edit details is: the rich text editor needs one."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     loc = get_object_or_404(Location, pk=location_id, event=event)
-    fields = ("name", "address", "is_club_station", "is_private_residence")
+    plain = ("name", "address", "is_club_station", "is_private_residence")
+    text = ("directions_html", "kbyg_html")
     form = LocationForm(
-        request.POST or None, editing=True, initial={f: getattr(loc, f) for f in fields}
+        request.POST or None,
+        editing=True,
+        initial={
+            **{f: getattr(loc, f) for f in plain + text},
+            "own_rule": loc.viability_rule is not None,
+            "needs": _rule_keys(loc.viability_rule),
+        },
     )
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
-        before = {f: getattr(loc, f) for f in fields}
+        before = {f: getattr(loc, f) for f in plain}
+        was_text, was_rule = {f: getattr(loc, f) for f in text}, loc.viability_rule
         loc.name, loc.address = d["name"].strip(), d["address"].strip()
         loc.is_club_station = d["is_club_station"]
         loc.is_private_residence = d["is_private_residence"]
-        loc.save(update_fields=list(fields))
-        after = {f: getattr(loc, f) for f in fields}
-        changed = [f for f in fields if before[f] != after[f]]
+        loc.directions_html, loc.kbyg_html = d["directions_html"], d["kbyg_html"]
+        loc.viability_rule = form.rule()
+        loc.save()
+        changed = {f: getattr(loc, f) for f in plain if before[f] != getattr(loc, f)}
+        changed |= {f: "changed" for f in text if was_text[f] != getattr(loc, f)}
+        if was_rule != loc.viability_rule:
+            changed["needs"] = (
+                _rule_keys(loc.viability_rule) if loc.viability_rule else "the club's rule"
+            )
         if changed:
             record(
                 request.user,
                 "event.edited",
                 event,
-                before={"location": before["name"], **{f: before[f] for f in changed}},
-                after={"location": loc.name, **{f: after[f] for f in changed}},
+                before={
+                    "location": before["name"],
+                    **{f: before[f] for f in changed if f in before},
+                },
+                after={"location": loc.name, **changed},
             )
         messages.success(request, f"Location “{loc.name}” saved.")
         return done(request, step_url(pk, "locations"))
     return form_page(
-        request, event, form, heading=f"Edit {loc.name}", submit="Save location", step="locations"
+        request,
+        event,
+        form,
+        heading=f"Edit {loc.name}",
+        submit="Save location",
+        step="locations",
+        fields="events/forms/_one_per_line.html",
+        editor=True,
     )
 
 
@@ -1196,6 +1298,8 @@ def slots_generate(request, pk):
         form.cleaned_data.get("breakdown_slots", 0),
         form.capacities(),
         fill=fill,
+        setup_minutes=form.cleaned_data.get("setup_minutes"),
+        breakdown_minutes=form.cleaned_data.get("breakdown_minutes"),
     )
     record(
         request.user,

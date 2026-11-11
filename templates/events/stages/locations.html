@@ -12,7 +12,7 @@ Remove as a red button with a bin. The words, the forms and the in-place saves a
   {% for l in locations %}
   <div class="group">
     <div class="group-head"><span class="grow"><strong>{{ l.name }}</strong>{% if l.is_club_station %} <span class="tag">club station</span>{% endif %}{% if l.address %}<span class="sub">{{ l.address }}</span>{% endif %}</span>
-      {% url 'location_edit' event.pk l.pk as u %}{% include "events/_dialog_link.html" with url=u label="Edit" icon="edit" small=1 %}
+      {% comment %}A page, not a dialog: it holds the directions' editor (docs/INTERFACE.md).{% endcomment %}<a class="button secondary small" href="{% url 'location_edit' event.pk l.pk %}">{% icon 'edit' 'small' %}Edit</a>
       {% url 'position_add' event.pk l.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add position" icon="plus" small=1 %}</div>
     <ul class="rows list">
       {% for pos in l.positions.all %}<li><span class="row-ic">{% icon 'radio' 'small' %}</span><span class="grow"><strong>{{ pos.name }}</strong><span class="sub">{% if pos.live_slots %}{{ pos.live_slots }} slot{{ pos.live_slots|pluralize }}{% else %}No slots yet{% endif %}</span></span>

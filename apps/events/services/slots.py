@@ -17,6 +17,8 @@ def generate_slots(
     setup_slots: int = 0,
     breakdown_slots: int = 0,
     windows=None,
+    setup_minutes: int | None = None,
+    breakdown_minutes: int | None = None,
 ):
     """Fill each operating period with slots of `minutes`, aligned to the period start, with a
     final short slot if the period length is not a multiple. `windows`, when given, is a list of
@@ -26,18 +28,36 @@ def generate_slots(
     return [
         Slot.objects.create(position=pos, start=a, end=b, kind=kind)
         for pos, a, b, kind in plan_slots(
-            event, positions, minutes, setup_slots, breakdown_slots, windows
+            event,
+            positions,
+            minutes,
+            setup_slots,
+            breakdown_slots,
+            windows,
+            setup_minutes=setup_minutes,
+            breakdown_minutes=breakdown_minutes,
         )
     ]
 
 
 def plan_slots(
-    event, positions, minutes=60, setup_slots=0, breakdown_slots=0, windows=None, fill=False
+    event,
+    positions,
+    minutes=60,
+    setup_slots=0,
+    breakdown_slots=0,
+    windows=None,
+    fill=False,
+    setup_minutes=None,
+    breakdown_minutes=None,
 ):
     """(position, start, end, kind) for each slot the generator would make, without making any:
     what generating and filling create, and what the preview counts (#168), from one place.
-    With `fill`, only the hours no slot covers, and no setup or breakdown (#153)."""
+    With `fill`, only the hours no slot covers, and no setup or breakdown (#153). Setup and
+    breakdown slots are of their own length (FR-47), an operating slot's when none is given."""
     step = timedelta(minutes=minutes)
+    before = timedelta(minutes=setup_minutes or minutes)
+    after = timedelta(minutes=breakdown_minutes or minutes)
     spans = windows or on_air(event)
     for pos in positions:
         for start, end in empty_hours(pos, spans) if fill else spans:
@@ -47,9 +67,9 @@ def plan_slots(
             continue
         first, last = min(s for s, _ in spans), max(e for _, e in spans)
         for i in range(setup_slots):
-            yield pos, first - step * (i + 1), first - step * i, "setup"
+            yield pos, first - before * (i + 1), first - before * i, "setup"
         for i in range(breakdown_slots):
-            yield pos, last + step * i, last + step * (i + 1), "breakdown"
+            yield pos, last + after * i, last + after * (i + 1), "breakdown"
 
 
 def describe(

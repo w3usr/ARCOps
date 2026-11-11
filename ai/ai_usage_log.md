@@ -4819,3 +4819,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis and code generation. Each gap was reproduced in a throwaway test before it was reported. The seven tests were written before the code but not run red before it. Verified: 557 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass; the new dialogs screenshotted at 1280px and 390px. Not run: the scenario scripts.
 - **Human Review Status**: Pending review
 - **Git Hash**: 1811945
+
+## [2026-11-11 13:58 EST]
+- **Tool**: Claude (Anthropic), claude-fable-5-2
+- **Session Purpose**: Build the two first-priority event tickets: a location's own directions, know-before-you-go text and viability rule (FR-51), and setup and breakdown slots of their own length (FR-47). SK, 2026-11-11: "let's work through the remaining ui tickets so that everything is compete".
+- **Sections/Files Affected**: apps/events/views_manage.py (Edit location is a page holding the directions, the location's notes and its own rule; the generator asks each setup and breakdown slot's length); apps/events/services/slots.py and manage.py (the lengths carried to the plan); apps/events/views.py and templates/events/detail.html (Getting there on the event page, a private residence's only to people signed up there, captains and officers); apps/events/services/notify.py (the reminder names the address and leads with the directions); templates/events/stages/locations.html (Edit links to the page); apps/events/tests/test_location_details.py (new, three tests), test_manage_dialogs.py.
+- **Nature of Contribution**: Code generation, test first: the three new tests failed before the code. No addendum: the code now does what FR-51 and FR-47 say. Verified: 560 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass; the location's page and the event page's Getting there screenshotted at 1280px. Not run: the scenario scripts.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

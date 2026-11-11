@@ -102,6 +102,8 @@ def generate_with_capacities(
     capacities: dict[str, int],
     windows=None,
     fill: bool = False,
+    setup_minutes: int | None = None,
+    breakdown_minutes: int | None = None,
 ) -> list[Slot]:
     """Slots for the positions given, then a capacity row per role with a non-zero count. With
     `fill`, only the empty hours get slots and setup and breakdown are not made (#153)."""
@@ -115,6 +117,8 @@ def generate_with_capacities(
             setup_slots=setup_slots,
             breakdown_slots=breakdown_slots,
             windows=windows,
+            setup_minutes=setup_minutes,
+            breakdown_minutes=breakdown_minutes,
         )
     rows = [
         RoleCapacity(slot=s, role=role, capacity=n)
