@@ -4802,4 +4802,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (a tick box's label grows from nothing beside its box); tools/a11y/test_form_layout.py (Manage's forms at 360px: no label starts below its box).
 - **Nature of Contribution**: Code generation, test first: the new check failed on Edit details' "Display only" label at 360px before the CSS changed. Verified: the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the contact sheet's Edit location at 390px, Edit details at 390px, Generate slots and the announcement's categories at 1280px read correctly.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 4f3dc7e
