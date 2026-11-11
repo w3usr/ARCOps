@@ -4803,3 +4803,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first: the new check failed on Edit details' "Display only" label at 360px before the CSS changed. Verified: the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the contact sheet's Edit location at 390px, Edit details at 390px, Generate slots and the announcement's categories at 1280px read correctly.
 - **Human Review Status**: Pending review
 - **Git Hash**: 4f3dc7e
+
+## [2026-11-11 13:13 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A tick box and its words on one line in a dialog (SK, 2026-11-11, after trying 4f3dc7e on dev: "just make the text and check box be on the same row, they visually make no sense right now").
+- **Sections/Files Affected**: static/css/app.css (4f3dc7e's label rule taken out, since it also stretched the labels on Choose a level; a field of tick boxes in a row of fields is as wide as its words on one line, and moves to a line of its own when they do not fit); tools/a11y/test_form_layout.py (Manage's forms at 560px and 360px: a tick box's words wrap only when its field has the whole row).
+- **Nature of Contribution**: Code generation, test first: the new check failed on Edit location's "This is the club station" and Add opening's "Community Member" before the CSS changed. Cause: a dialog's rows are 28rem wide and start each field at 8rem, so three fields shared about 138px each. Verified: the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the Edit location dialog, opened from its button, screenshotted at 1280px and 390px, shows the box and its words on one line.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

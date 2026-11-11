@@ -45,6 +45,15 @@ UNDER = """() => [...document.querySelectorAll('main input[type=checkbox], main 
 })"""
 
 
+# A tick box's words wrap only when its field already has the whole row: beside other fields, the
+# field takes the width its words need on one line (SK, 2026-11-11, "This is the club / station").
+SQUEEZED = """() => [...document.querySelectorAll('main .row > .field > .check > label')].filter(l => l.offsetParent).flatMap(l => {
+    const f = l.closest('.field').getBoundingClientRect(), row = l.closest('.row').getBoundingClientRect();
+    const wrapped = l.getBoundingClientRect().height > 1.6 * parseFloat(getComputedStyle(l).lineHeight);
+    return wrapped && f.width < row.width - 1 ? [l.textContent.trim()] : [];
+})"""
+
+
 # A select is as tall as a text box. WebKit drew a select at 23px beside a 44px text box until the
 # page drew it instead of the system.
 SHORT = """() => {
@@ -89,12 +98,14 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
             found += [(url, "beside", t) for t in page.evaluate(BESIDE)]
             found += [(url, "uneven", r) for r in page.evaluate(UNEVEN)]
             found += [(url, "short select", s) for s in page.evaluate(SHORT)]
-        page.set_viewport_size({"width": 360, "height": 800})  # where a field is narrow
-        for url in forms:
-            page.goto(f"{live_server.url}{url}")
-            found += [(url, "label under its box", t) for t in page.evaluate(UNDER)]
+        for width in (560, 360):  # as narrow as a field in a dialog, and a phone
+            page.set_viewport_size({"width": width, "height": 800})
+            for url in forms:
+                page.goto(f"{live_server.url}{url}")
+                found += [(url, width, "label under its box", t) for t in page.evaluate(UNDER)]
+                found += [(url, width, "label squeezed", t) for t in page.evaluate(SQUEEZED)]
         browser.close()
 
     assert not found, (
-        f"labels beside their fields, rows not level, short selects, or labels under their boxes: {found}"
+        f"labels beside their fields, rows not level, short selects, or tick boxes' labels under them or squeezed: {found}"
     )
