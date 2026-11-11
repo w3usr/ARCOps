@@ -4810,4 +4810,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (4f3dc7e's label rule taken out, since it also stretched the labels on Choose a level; a field of tick boxes in a row of fields is as wide as its words on one line, and moves to a line of its own when they do not fit); tools/a11y/test_form_layout.py (Manage's forms at 560px and 360px: a tick box's words wrap only when its field has the whole row).
 - **Nature of Contribution**: Code generation, test first: the new check failed on Edit location's "This is the club station" and Add opening's "Community Member" before the CSS changed. Cause: a dialog's rows are 28rem wide and start each field at 8rem, so three fields shared about 138px each. Verified: the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the Edit location dialog, opened from its button, screenshotted at 1280px and 390px, shows the box and its words on one line.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: ae8157b
