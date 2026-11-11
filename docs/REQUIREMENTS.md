@@ -2907,7 +2907,34 @@ in the record.
 
 **Decided** by SK on 2026-11-11, as A19. *Record:* the same note.
 
+### A23. FR-46: re-timing, splitting and merging a slot that has people in it
+
+**Original (FR-46).** "Slots can be added, removed, split, merged, and re-timed by hand
+afterwards."
+
+**Decision.** The text does not say what becomes of the people in the slot. On a slot's page a
+captain finds **Change the time, split or merge**:
+
+- **Moved**, the people stay in it. Each is told the old time and the new, and is asked to
+  confirm again, because the confirmation and the reminder were for the old time (FR-72). The
+  slot must still fit: an operating slot inside an operating period (FR-38), and not on another
+  slot's time in its position.
+- **Split**, each person is in both parts, since they signed up for the whole of it, with their
+  role, note and confirmation; both parts have the same seats, sign-up rules and waitlist. Nobody
+  is told, since nobody's hours change. Each part is at least 15 minutes.
+- **Merged**, only with the slot that follows straight on in the same position, of the same kind.
+  Everyone from both is in the one slot; someone in both becomes one sign-up, in the role held in
+  the earlier slot; each role keeps the larger seat count, raised to hold everyone (A3). People
+  whose hours grew are told and confirm again; someone who held both keeps a confirmation only if
+  both were confirmed. The later slot is canceled, as a slot taken off the roster is.
+- **None of it** once the slot has started, once anybody in it has been checked in or marked a
+  no-show (FR-113, FR-124), or once the event is completed or canceled: attendance stays true.
+
+**Decided** by SK on 2026-11-11, each from options put to him: "Stay, told, confirm again";
+"Both halves"; "Back-to-back only"; "Refuse". *Record:*
+`notes/2026-11-11_event-management-gaps.md` in the private repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A22), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

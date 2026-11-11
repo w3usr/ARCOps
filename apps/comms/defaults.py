@@ -121,6 +121,12 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["actor", "event.title", "when", "position", "reason", "link"],
     },
     {
+        "key": "slot.changed",
+        "subject": "Slot changed: {{ event.title }}, now {{ when }}",
+        "body_html": '<p>The slot you hold in {{ event.title }}, {{ position }}, was changed by {{ actor }}.</p><p><strong>It was:</strong> {{ was }}<br><strong>It is now:</strong> {{ when }}</p><p>Please open the slot and confirm you can still make it, or cancel if you cannot.</p><p><a href="{{ link }}">Open the slot</a></p>',
+        "variables": ["actor", "event.title", "was", "when", "position", "link"],
+    },
+    {
         "key": "event.cancelled",
         "subject": "Event canceled: {{ event.title }}",
         "body_html": (

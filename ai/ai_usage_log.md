@@ -4827,3 +4827,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first: the three new tests failed before the code. No addendum: the code now does what FR-51 and FR-47 say. Verified: 560 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass; the location's page and the event page's Getting there screenshotted at 1280px. Not run: the scenario scripts.
 - **Human Review Status**: Pending review
 - **Git Hash**: c7bb481
+
+## [2026-11-11 14:14 EST]
+- **Tool**: Claude (Anthropic), claude-fable-5-2
+- **Session Purpose**: Re-time, split or merge a slot that has people in it (FR-46), on SK's four decisions of 2026-11-11: "Stay, told, confirm again"; "Both halves"; "Back-to-back only"; "Refuse" once a slot has started or has a check-in.
+- **Sections/Files Affected**: apps/events/services/reshape.py (new: frozen, misfit, retime, split, merge); apps/events/views_slots.py (slot_retime, slot_split, slot_merge; the slot page's context); apps/events/urls.py; templates/events/_slot_body.html (Change the time, split or merge, in the captain's section); apps/comms/defaults.py (the "slot.changed" message); static/css/app.css; docs/REQUIREMENTS.md (addendum A23); apps/events/tests/test_slot_reshape.py (new, four tests).
+- **Nature of Contribution**: Code generation, test first: the four tests failed before the code. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass; the slot page's new section screenshotted. Not run: the scenario scripts.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

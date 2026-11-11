@@ -95,6 +95,13 @@ def slot_detail(request, pk, slot_id):
         "waitable": waitable,
         "my_wait": my_wait,
         "slot_rules": slot_rules,
+        # re-time, split, merge (FR-46, #156): why not, or what follows on to merge with
+        "frozen": __import__("apps.events.services.reshape", fromlist=["frozen"]).frozen(slot)
+        if is_captain
+        else "",
+        "next_slot": next_slot(slot) if is_captain else None,
+        "slot_minutes": int((slot.end - slot.start).total_seconds() // 60),
+        "slot_middle": slot.start + (slot.end - slot.start) / 2,
         "waiting_count": slot.waitlist.filter(state__in=["pending", "offered"]).count()
         if is_captain
         else 0,
@@ -323,3 +330,111 @@ def signup_no_show(request, signup_id):
         else "No-show undone; hours credited again.",
     )
     return redirect("slot_detail", pk=event.pk, slot_id=su.slot_id)
+
+
+# ------------------------------------------------ re-time, split, merge (FR-46, #156) ---
+
+
+def _typed_utc(text):
+    """A datetime-local box's text as a UTC time, or None: the forms say UTC."""
+    from datetime import UTC
+
+    from django import forms
+
+    try:
+        t = forms.DateTimeField().clean(text)
+    except forms.ValidationError:
+        return None
+    return t.replace(tzinfo=UTC) if timezone.is_naive(t) else t
+
+
+def next_slot(slot: Slot):
+    """The live slot of the same position and kind that follows straight on: what merges."""
+    return Slot.objects.filter(
+        position=slot.position, kind=slot.kind, cancelled=False, start=slot.end
+    ).first()
+
+
+@login_required
+@require_POST
+def slot_retime(request, pk, slot_id):
+    from datetime import timedelta
+
+    from .services import reshape
+
+    event, slot = _captain_slot(request, pk, slot_id)
+    start = _typed_utc(request.POST.get("start", ""))
+    minutes = request.POST.get("minutes", "")
+    why = reshape.frozen(slot)
+    if not why and not (start and minutes.isdigit() and int(minutes) <= 720):
+        why = "Give a start and a length in minutes."
+    if not why:
+        end = start + timedelta(minutes=int(minutes))
+        why = reshape.misfit(slot, start, end)
+    if why:
+        messages.error(request, f"The slot was not moved. {why}")
+        return roster_or_slot(request, slot)
+    told = reshape.retime(request.user, slot, start, end)
+    people = (
+        f" {told} {'person was' if told == 1 else 'people were'} told and asked to confirm again."
+        if told
+        else ""
+    )
+    messages.success(
+        request, f"Slot moved to {slot.start:%a %d %b %H:%M}–{slot.end:%H:%M} UTC.{people}"
+    )
+    return roster_or_slot(request, slot)
+
+
+@login_required
+@require_POST
+def slot_split(request, pk, slot_id):
+    from .services import reshape
+
+    event, slot = _captain_slot(request, pk, slot_id)
+    at = _typed_utc(request.POST.get("at", ""))
+    why = reshape.frozen(slot)
+    if not why and not at:
+        why = "Give the time to split it at."
+    if not why and not (slot.start + reshape.SHORTEST <= at <= slot.end - reshape.SHORTEST):
+        why = "Each part has to be at least 15 minutes long, inside the slot."
+    if why:
+        messages.error(request, f"The slot was not split. {why}")
+        return roster_or_slot(request, slot)
+    reshape.split(request.user, slot, at)
+    n = slot.signups.count()
+    people = (
+        f" The {n} {'person' if n == 1 else 'people'} in it {'is' if n == 1 else 'are'} in both parts."
+        if n
+        else ""
+    )
+    messages.success(request, f"Slot split at {at:%H:%M} UTC.{people}")
+    return roster_or_slot(request, slot)
+
+
+@login_required
+@require_POST
+def slot_merge(request, pk, slot_id):
+    from .services import reshape
+
+    event, slot = _captain_slot(request, pk, slot_id)
+    other = next_slot(slot)
+    why = reshape.frozen(slot)
+    if not why and (other is None or str(other.pk) != request.POST.get("with", "")):
+        why = "Only the slot that follows straight on, in the same position, can be merged."
+    if not why:
+        why = reshape.frozen(other)
+    if why:
+        messages.error(request, f"The slots were not merged. {why}")
+        return roster_or_slot(request, slot)
+    told = reshape.merge(request.user, slot, other)
+    people = (
+        f" {told} {'person was' if told == 1 else 'people were'} told and asked to confirm again."
+        if told
+        else ""
+    )
+    messages.success(
+        request,
+        f"Merged: the slot now runs {slot.start:%a %d %b %H:%M}–{slot.end:%H:%M} UTC.{people}",
+    )
+    return roster_or_slot(request, slot)

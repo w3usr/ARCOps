@@ -114,6 +114,35 @@ small buttons at the row's end; Remove them a red button with a bin (D4).{% endc
     {% if not cell.signups %}<button name="what" value="cancel" class="danger">{% icon 'trash' %}Cancel slot</button>{% endif %}
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
+  {% comment %}Re-time, split, merge (FR-46, #156; SK, 2026-11-11): with people in the slot too.
+  Moved, they are told and confirm again; split, they are in both parts; merged, with the slot
+  that follows on. Not once it has started or has a check-in.{% endcomment %}
+  <details><summary>Change the time, split or merge</summary>
+    {% if frozen %}<p class="muted">{{ frozen }}</p>{% else %}
+    <div class="stack reshape">
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_retime' event.pk slot.pk %}" class="stack" aria-labelledby="rt-h-{{ slot.pk }}">{% csrf_token %}
+      <h3 id="rt-h-{{ slot.pk }}">Move it</h3>
+      <div class="row">
+        <div class="field"><label for="rt-start-{{ slot.pk }}">Starts (UTC)</label><input id="rt-start-{{ slot.pk }}" type="datetime-local" name="start" value="{{ slot.start|date:'Y-m-d\TH:i' }}" required></div>
+        <div class="field"><label for="rt-min-{{ slot.pk }}">Length (minutes)</label><input id="rt-min-{{ slot.pk }}" name="minutes" inputmode="numeric" pattern="[0-9]*" class="num" size="3" value="{{ slot_minutes }}" required></div>
+      </div>
+      <p class="helptext">{% if cell.signups|length == 1 %}The person in it stays, is told the old and the new time, and is asked to confirm again.{% elif cell.signups %}The {{ cell.signups|length }} people in it stay, are told the old and the new time, and are asked to confirm again.{% else %}Nobody is in it, so nobody is told.{% endif %}</p>
+      <div><button type="submit" class="secondary">Move the slot</button></div>
+    </form>
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_split' event.pk slot.pk %}" class="stack" aria-labelledby="sp-h-{{ slot.pk }}">{% csrf_token %}
+      <h3 id="sp-h-{{ slot.pk }}">Split it</h3>
+      <div class="field"><label for="sp-at-{{ slot.pk }}">Split at (UTC)</label><input id="sp-at-{{ slot.pk }}" type="datetime-local" name="at" value="{{ slot_middle|date:'Y-m-d\TH:i' }}" required></div>
+      <p class="helptext">Two slots with the same seats.{% if cell.signups %} Everyone in it is in both, and nobody is told, since nobody's hours change.{% endif %}</p>
+      <div><button type="submit" class="secondary">Split the slot</button></div>
+    </form>
+    {% if next_slot %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_merge' event.pk slot.pk %}" class="stack" aria-labelledby="mg-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="with" value="{{ next_slot.pk }}">
+      <h3 id="mg-h-{{ slot.pk }}">Merge it</h3>
+      <p class="helptext">Merging with the slot that follows, {{ next_slot.start|date:"H:i" }}–{{ next_slot.end|date:"H:i" }} UTC, makes one slot of the two with everyone from both in it. Anyone whose hours grow is told and asked to confirm again.</p>
+      <div><button type="submit" class="secondary">Merge with the next slot</button></div>
+    </form>{% endif %}
+    </div>
+    {% endif %}
+  </details>
   <details><summary>Who may sign up for this slot (override)</summary>
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %}, {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %}, needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %}, no minors{% endif %}
       <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
