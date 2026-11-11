@@ -81,6 +81,8 @@ def pages_for(role: str) -> list[str]:
             for f in (
                 "periods/add",
                 "locations/add",
+                f"locations/{ev.locations.first().pk}/edit",
+                f"positions/{slot.position_id}/edit",
                 "captains/add",
                 "slots/generate",
                 "slots/add",

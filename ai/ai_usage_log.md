@@ -4787,3 +4787,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation and a fix. Claude had told SK a screen reader hears an unread message in words; checking before recording it showed only a CSS-drawn dot, so the word was added. Verified: 549 application tests pass; the member accessibility sweep passes in Chromium and WebKit; ruff and the repository checks pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: b2a9db9
+
+## [2026-11-11 12:48 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Let a captain put right a location or a position after adding it, on Manage › Locations (FR-51), instead of in the admin (SK, 2026-11-11: "we want to be able to edit the already added locations").
+- **Sections/Files Affected**: apps/events/views_manage.py (location_edit and position_edit; LocationForm drops "First position" when editing); apps/events/urls.py (two routes); templates/events/stages/locations.html (Edit beside Add position, Rename on each position row); apps/events/tests/test_manage_dialogs.py (the two forms in the dialog checks, a new test); tools/a11y/test_axe.py and tools/a11y/test_form_layout.py (the two forms in both sweeps).
+- **Nature of Contribution**: Code generation, test first: the new test failed before the views existed. Each change that alters a value is written to the audit log as an event edit, with the old and new values. A blank position name is refused on rename. Verified: 550 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass. Not done: removing a location, and a location's own directions, know before you go and viability rule (FR-51).
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

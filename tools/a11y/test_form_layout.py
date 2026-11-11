@@ -61,6 +61,8 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
         for f in (
             "periods/add",
             "locations/add",
+            f"locations/{ev.locations.first().pk}/edit",
+            f"positions/{slot.first().position_id}/edit",
             "captains/add",
             "slots/generate",
             "slots/add",

@@ -18,9 +18,19 @@ urlpatterns = [
     ),
     path("<int:pk>/locations/add/", views_manage.location_add, name="location_add"),
     path(
+        "<int:pk>/locations/<int:location_id>/edit/",
+        views_manage.location_edit,
+        name="location_edit",
+    ),
+    path(
         "<int:pk>/locations/<int:location_id>/positions/add/",
         views_manage.position_add,
         name="position_add",
+    ),
+    path(
+        "<int:pk>/positions/<int:position_id>/edit/",
+        views_manage.position_edit,
+        name="position_edit",
     ),
     path(
         "<int:pk>/positions/<int:position_id>/delete/",

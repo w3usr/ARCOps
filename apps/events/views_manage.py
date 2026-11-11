@@ -242,9 +242,11 @@ class LocationForm(forms.Form):
         label="This is the club station", required=False, initial=True
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, editing=False, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
+        if editing:  # positions are added and renamed on their own
+            del self.fields["position"]
 
 
 class PositionForm(forms.Form):
@@ -802,6 +804,40 @@ def location_add(request, pk):
 
 @login_required
 @require_http_methods(["GET", "POST"])
+def location_edit(request, pk, location_id):
+    """FR-51: a location's name, address and club-station mark, put right after it is added."""
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    loc = get_object_or_404(Location, pk=location_id, event=event)
+    fields = ("name", "address", "is_club_station")
+    form = LocationForm(
+        request.POST or None, editing=True, initial={f: getattr(loc, f) for f in fields}
+    )
+    if request.method == "POST" and form.is_valid():
+        d = form.cleaned_data
+        before = {f: getattr(loc, f) for f in fields}
+        loc.name, loc.address = d["name"].strip(), d["address"].strip()
+        loc.is_club_station = d["is_club_station"]
+        loc.save(update_fields=list(fields))
+        after = {f: getattr(loc, f) for f in fields}
+        changed = [f for f in fields if before[f] != after[f]]
+        if changed:
+            record(
+                request.user,
+                "event.edited",
+                event,
+                before={"location": before["name"], **{f: before[f] for f in changed}},
+                after={"location": loc.name, **{f: after[f] for f in changed}},
+            )
+        messages.success(request, f"Location “{loc.name}” saved.")
+        return done(request, step_url(pk, "locations"))
+    return form_page(
+        request, event, form, heading=f"Edit {loc.name}", submit="Save location", step="locations"
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
 def position_add(request, pk, location_id):
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
@@ -819,6 +855,33 @@ def position_add(request, pk, location_id):
         heading=f"Add a position at {loc.name}",
         submit="Add position",
         step="locations",
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def position_edit(request, pk, position_id):
+    """A position renamed; its slots and sign-ups stay with it."""
+    event = get_object_or_404(Event, pk=pk)
+    _captain_or_404(request.user, event)
+    pos = get_object_or_404(Position, pk=position_id, location__event=event)
+    form = PositionForm(request.POST or None, initial={"name": pos.name})
+    form.fields["name"].required = True  # adding fills in a name; renaming to nothing would not
+    if request.method == "POST" and form.is_valid():
+        old, pos.name = pos.name, form.cleaned_data["name"].strip()
+        if pos.name != old:
+            pos.save(update_fields=["name"])
+            record(
+                request.user,
+                "event.edited",
+                event,
+                before={"position": old, "location": pos.location.name},
+                after={"position": pos.name},
+            )
+        messages.success(request, f"Position “{pos.name}” saved.")
+        return done(request, step_url(pk, "locations"))
+    return form_page(
+        request, event, form, heading=f"Rename {pos.name}", submit="Save position", step="locations"
     )
 
 

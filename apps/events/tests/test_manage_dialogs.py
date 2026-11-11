@@ -18,10 +18,14 @@ HX = {"HTTP_HX_REQUEST": "true"}
 
 def _forms(ev, loc_pk):
     base = f"/events/{ev.pk}"
+    run, mult = ev.locations.get().positions.order_by("order")
     return {
         "periods/add": ("periods", "Add an operating period"),
         "locations/add": ("locations", "Add a location"),
+        f"locations/{loc_pk}/edit": ("locations", "Edit Club station"),
         f"locations/{loc_pk}/positions/add": ("locations", "Add a position at Club station"),
+        f"positions/{run.pk}/edit": ("locations", "Rename Run"),
+        f"positions/{mult.pk}/edit": ("locations", "Rename Mult"),
         "captains/add": ("publish", "Appoint a captain"),
         "slots/generate": ("slots", "Generate slots"),
         "slots/add": ("slots", "Add a slot"),
@@ -118,6 +122,39 @@ def test_the_details_are_read_on_setup_and_edited_on_their_page(officer):
     assert r["Location"] == f"/events/{ev.pk}/manage/details/" and ev.title == "Field Day 2026"
     r = c.post(f"/events/{ev.pk}/details/", form | {"title": ""})
     assert r.status_code == 200 and "Problem:" in r.content.decode()
+
+
+def test_a_location_and_a_position_are_edited_after_they_are_added(officer):
+    """FR-51: a typo in a location's name or address, or a position's name, is put right on
+    Locations, not in the admin (SK, 2026-11-11). Each change is in the audit log."""
+    from apps.ops.models import AuditLog
+
+    c = _as(officer)
+    ev = _build(c)
+    loc = ev.locations.get()
+    run = loc.positions.get(name="Run")
+    slots = run.slots.count()
+    page = c.get(f"/events/{ev.pk}/locations/{loc.pk}/edit/").content.decode()
+    assert 'value="Club station"' in page and 'name="position"' not in page
+    r = c.post(
+        f"/events/{ev.pk}/locations/{loc.pk}/edit/",
+        {"name": "Field site ", "address": "Pavilion 2"},
+        **HX,
+    )
+    assert r["HX-Redirect"] == f"/events/{ev.pk}/manage/locations/"
+    loc.refresh_from_db()
+    assert (loc.name, loc.address, loc.is_club_station) == ("Field site", "Pavilion 2", False)
+    r = c.post(f"/events/{ev.pk}/positions/{run.pk}/edit/", {"name": ""})
+    assert r.status_code == 200 and "Problem:" in r.content.decode()
+    r = c.post(f"/events/{ev.pk}/positions/{run.pk}/edit/", {"name": "Run 2"})
+    assert r["Location"] == f"/events/{ev.pk}/manage/locations/"
+    run.refresh_from_db()
+    assert run.name == "Run 2" and run.slots.count() == slots  # its slots stay with it
+    rows = AuditLog.objects.filter(action="event.edited", subject_id=str(ev.pk))
+    assert rows.filter(before__location="Club station", after__location="Field site").exists()
+    assert rows.filter(before__position="Run", after__position="Run 2").exists()
+    other = Event.objects.create(title="Other")  # never another event's location
+    assert c.get(f"/events/{other.pk}/locations/{loc.pk}/edit/").status_code == 404
 
 
 def test_the_generator_says_what_it_will_make_before_making_it(officer):
