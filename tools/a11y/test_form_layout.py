@@ -37,6 +37,14 @@ UNEVEN = """() => [...document.querySelectorAll('main .row:not(:has(.helptext, .
 })"""
 
 
+# A tick box's label starts on the box's line, and wraps its own words when the field is narrow;
+# it never drops whole under the box (SK, 2026-11-11, "This is the club station" in a dialog).
+UNDER = """() => [...document.querySelectorAll('main input[type=checkbox], main input[type=radio]')].filter(b => b.offsetParent).flatMap(b => {
+    const l = [...b.labels].find(l => l.offsetParent && !l.classList.contains('sr-only'));
+    return l && l.getBoundingClientRect().top >= b.getBoundingClientRect().bottom ? [l.textContent.trim()] : [];
+})"""
+
+
 # A select is as tall as a text box. WebKit drew a select at 23px beside a 44px text box until the
 # page drew it instead of the system.
 SHORT = """() => {
@@ -81,6 +89,12 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
             found += [(url, "beside", t) for t in page.evaluate(BESIDE)]
             found += [(url, "uneven", r) for r in page.evaluate(UNEVEN)]
             found += [(url, "short select", s) for s in page.evaluate(SHORT)]
+        page.set_viewport_size({"width": 360, "height": 800})  # where a field is narrow
+        for url in forms:
+            page.goto(f"{live_server.url}{url}")
+            found += [(url, "label under its box", t) for t in page.evaluate(UNDER)]
         browser.close()
 
-    assert not found, f"labels beside their fields, rows not level, or short selects: {found}"
+    assert not found, (
+        f"labels beside their fields, rows not level, short selects, or labels under their boxes: {found}"
+    )

@@ -4795,3 +4795,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first: the new test failed before the views existed. Each change that alters a value is written to the audit log as an event edit, with the old and new values. A blank position name is refused on rename. Verified: 550 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the repository guards and the migration check pass. Not done: removing a location, and a location's own directions, know before you go and viability rule (FR-51).
 - **Human Review Status**: Pending review
 - **Git Hash**: 8642511
+
+## [2026-11-11 13:01 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A tick box and its words on one line, the words wrapping there when the field is narrow (SK, 2026-11-11, on dev's Edit location dialog: "the check box and the text should be like one row (though wrap text if it's too long)").
+- **Sections/Files Affected**: static/css/app.css (a tick box's label grows from nothing beside its box); tools/a11y/test_form_layout.py (Manage's forms at 360px: no label starts below its box).
+- **Nature of Contribution**: Code generation, test first: the new check failed on Edit details' "Display only" label at 360px before the CSS changed. Verified: the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the contact sheet's Edit location at 390px, Edit details at 390px, Generate slots and the announcement's categories at 1280px read correctly.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
