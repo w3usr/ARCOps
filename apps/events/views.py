@@ -188,6 +188,9 @@ def confirm_remove_signup(request, signup_id):
     su = get_object_or_404(SignUp, pk=signup_id)
     if not request.user.can_captain(su.slot.event):
         raise Http404
+    if su.kept:  # #251: attendance, an ended slot or an event that is over stays in the record
+        messages.error(request, su.kept)
+        return redirect("slot_detail", pk=su.slot.event.pk, slot_id=su.slot.pk)
     return render(
         request,
         "events/confirm_remove.html",
@@ -202,6 +205,9 @@ def cancel_signup(request, signup_id):
     slot = su.slot
     if su.user != request.user and not request.user.can_captain(slot.event):
         raise Http404
+    if su.kept:  # #251, for a captain as well: attendance cannot be undone
+        messages.error(request, su.kept)
+        return redirect("event_detail", pk=slot.event.pk)
     if slot.event.state == Event.State.LOCKED and not request.user.can_captain(slot.event):
         messages.error(request, "The roster is locked; ask a captain to change your sign-up.")
         return redirect("event_detail", pk=slot.event.pk)  # FR-44
@@ -259,6 +265,8 @@ def cannot_by_token(request, token):
         # Keep it: say so here, signed out as well as in; My schedule would ask for a sign-in.
         # Nothing is recorded, and keeping a slot is not confirming attendance.
         return render(request, "events/token_confirmed.html", {"signup": su, "kept": True})
+    if su.kept:  # #251: an event completed early still sends links for slots ahead
+        return render(request, "events/token_kept.html", {"signup": su}, status=409)
     broken = would_break(su.slot, su)
     if request.method == "POST":
         record(

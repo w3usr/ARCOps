@@ -24,7 +24,7 @@ small buttons at the row's end; Remove them a red button with a bin (D4).{% endc
     {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
     {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
     </span>
-    {% if is_captain and s.user != user %}<a class="button ghost danger small" href="{% url 'confirm_remove_signup' s.pk %}">{% icon 'trash' 'small' %}Remove them</a>{% endif %}
+    {% if is_captain and s.user != user and not s.kept %}<a class="button ghost danger small" href="{% url 'confirm_remove_signup' s.pk %}">{% icon 'trash' 'small' %}Remove them</a>{% endif %}
     {% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}
       {% if is_captain or cell.mine or s.user == user %}<details class="inline"><summary>under 18: who accompanies</summary>
         {% if adults %}<ul class="list">{% for a in adults %}<li>{{ a.name }}{% if a.phone %}, {{ a.phone|phone }}{% endif %}{% if is_captain and a.email %}, {{ a.email }}{% endif %}{% if a.present_at %} <span class="tag ok">present</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No responsible adult named yet.</p>{% endif %}
@@ -48,7 +48,9 @@ small buttons at the row's end; Remove them a red button with a bin (D4).{% endc
 {% elif locked %}<p class="muted">The roster is locked; to change or give up this slot, contact a captain.</p>
 {% else %}
 <div class="stack">
-<form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>
+{% comment %}#251 (SK, 2026-11-12): a sign-up with attendance, on an ended slot or an event that is
+over stays in the record, so there is nothing to give up.{% endcomment %}
+{% if cell.mine.kept %}<p class="muted">{{ cell.mine.kept }}</p>{% else %}<form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>{% endif %}
 {% if switch_roles %}
 <form method="post" action="{% url 'signup_change_role' cell.mine.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="switch-{{ slot.pk }}">Change role to</label>

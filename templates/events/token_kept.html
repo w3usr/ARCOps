@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Sign-up kept · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% comment %}#251 (SK, 2026-11-12): a reminder's I cannot make it link on a sign-up that stays in the
+record: the event is over, or attendance is recorded. Nothing changes.{% endcomment %}
+<h1>Nothing changed</h1>
+<p>{{ signup.kept }}</p>
+<p><a class="button" href="{% url 'account_login' %}?next={% url 'my_schedule' %}">Sign in to see your schedule</a></p>
+{% endblock %}

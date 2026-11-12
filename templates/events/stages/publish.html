@@ -59,9 +59,12 @@
     <div class="actions"><button type="button" class="secondary" commandfor="dup-dlg" command="show-modal">{% icon 'copy' %}Duplicate this event</button></div></header>
 </section>
 
-{% if event.state != 'cancelled' and not may_manage_events %}
+{% comment %}Only an event still to run can be canceled (#255; SK, 2026-11-12): not one completed
+or canceled.{% endcomment %}
+{% if event.state == 'cancelled' or event.state == 'completed' %}
+{% elif not may_manage_events %}
 <p class="helptext">An officer can cancel this event.</p>
-{% elif event.state != 'cancelled' %}
+{% else %}
 <section class="card dangerzone" aria-labelledby="dz">
   <h2 id="dz">Danger zone</h2>
   {% if deletable %}

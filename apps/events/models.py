@@ -236,6 +236,22 @@ class SignUp(models.Model):
     def __str__(self) -> str:
         return f"{self.user.short_name} as {self.role} in {self.slot}"
 
+    @property
+    def kept(self) -> str:
+        """Why nobody can give this sign-up up, as a sentence; "" when it can go (#251; SK,
+        2026-11-12). Attendance cannot be undone, so once it is recorded, once the slot has ended,
+        or once the event is over, the sign-up stays in the record: hours and participation are
+        counted from it (FR-86, FR-113, FR-124)."""
+        from django.utils import timezone
+
+        if self.slot.event.state in (Event.State.COMPLETED, Event.State.CANCELLED):
+            return "The event is over, so this sign-up stays in the record."
+        if self.checked_in_at or self.no_show:
+            return "Attendance is recorded for this sign-up, so it stays in the record."
+        if self.slot.end <= timezone.now():
+            return "This slot has ended, so the sign-up stays in the record."
+        return ""
+
 
 class ResponsibleAdult(models.Model):
     """The adult accompanying a minor for one sign-up (FR-64)."""

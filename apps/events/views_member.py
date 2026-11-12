@@ -171,9 +171,10 @@ def waitlist_accept(request, pk):
             messages.success(
                 request, f"Signed up as {role_label(entry.role)}. Thank you for waiting."
             )
-        else:
-            messages.error(request, "That offer has lapsed or the place is gone.")
-        return redirect("slot_detail", pk=slot.event.pk, slot_id=slot.pk)
+            return redirect("slot_detail", pk=slot.event.pk, slot_id=slot.pk)
+        messages.error(request, "That offer has lapsed or the place is gone.")
+        # Back to the offer, which says why: a canceled slot's own page answers 404 (#252).
+        return redirect("waitlist_accept", pk=entry.pk)
     return render(
         request,
         "events/waitlist_accept.html",

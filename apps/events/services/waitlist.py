@@ -15,7 +15,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.labels import role_label
 
-from ..models import RoleCapacity, SignUp, Slot, Waitlist
+from ..models import Event, RoleCapacity, SignUp, Slot, Waitlist
 
 
 def offer_hours() -> int:
@@ -23,6 +23,11 @@ def offer_hours() -> int:
 
 
 def seats_open(slot: Slot, role: str) -> bool:
+    """A place in `role` that can be taken now: the slot is live, its event published or locked,
+    and the role has a seat free. Offering and accepting both ask this, so an offer on a slot or
+    an event canceled since cannot be made or taken (#252; SK, 2026-11-12)."""
+    if slot.cancelled or slot.event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):
+        return False
     cap = RoleCapacity.objects.filter(slot=slot, role=role).first()
     return bool(cap) and slot.signups.filter(role=role).count() < cap.capacity
 

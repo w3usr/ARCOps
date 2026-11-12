@@ -1573,8 +1573,14 @@ def event_cancel(request, pk):
         return to_step(pk, "publish")
     from .services.notify import event_cancelled
 
+    # Only an event still to run is canceled: a completed one keeps its record (A22), and a
+    # canceled one is not canceled again. One conditional update, so two at once (a stale page,
+    # a double click) cannot both send the notices (#255; SK, 2026-11-12).
+    live = (Event.State.DRAFT, Event.State.PUBLISHED, Event.State.LOCKED)
+    if not Event.objects.filter(pk=event.pk, state__in=live).update(state=Event.State.CANCELLED):
+        messages.error(request, "Nothing changed: only an event still to run can be canceled.")
+        return to_step(pk, "publish")
     event.state = Event.State.CANCELLED
-    event.save(update_fields=["state"])
     told = event_cancelled(request.user, event, reason)
     record(request.user, "event.cancelled", event, after={"reason": reason, "people_told": told})
     messages.success(

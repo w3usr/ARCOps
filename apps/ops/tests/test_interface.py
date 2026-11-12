@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.comms.models import Announcement
@@ -72,6 +73,9 @@ def test_a_captain_removing_somebody_says_why_and_asks_first(event):
     been removed and told nothing about why."""
     ev = event["event"]
     slot = Slot.objects.filter(position=event["position"]).first()
+    # A slot still ahead: one that has ended keeps its sign-ups (#251), and the fixture's is past.
+    ahead = timezone.now() + timedelta(days=7)
+    Slot.objects.filter(pk=slot.pk).update(start=ahead, end=ahead + timedelta(hours=1))
     mem = User.objects.create_user(
         "mem@example.org", PASSWORD, groups=["member"], first_name="Mo", last_name="Member"
     )

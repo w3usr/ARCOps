@@ -9,5 +9,6 @@
 <p>It is yours until {{ entry.offer_expires_at|date:"j M H:i" }} UTC.</p>
 <form method="post">{% csrf_token %}<button type="submit">Take the place</button> <a class="button secondary" href="{% url 'slot_detail' slot.event.pk slot.pk %}">Leave it</a></form>
 {% elif entry.state == 'accepted' %}<p>You already took it. <a href="{% url 'slot_detail' slot.event.pk slot.pk %}">Open the slot.</a></p>
+{% elif slot.cancelled or slot.event.state == 'cancelled' %}<p class="muted">{% if slot.event.state == 'cancelled' %}The event was canceled{% else %}This slot was canceled{% endif %}, so the place is gone. <a href="{% url 'my_schedule' %}">Open your schedule.</a></p>
 {% else %}<p class="muted">This offer has lapsed or the place is gone. <a href="{% url 'slot_detail' slot.event.pk slot.pk %}">Open the slot</a> to see what is there now.</p>{% endif %}
 {% endblock %}
