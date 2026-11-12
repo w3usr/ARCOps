@@ -339,8 +339,8 @@ be the one a design system ships as its default still looks like itself.
 | `--panel-head` | A panel's header and footer band, the sidebar, a table's header row. |
 
 - **A state is a word with a colored edge or a colored word**, not a club-tinted fill: an info
-  message and the "acting for" banner take the club's color on their border; an **Open** tag and
-  an open slot take it on the word. Where you are takes it as the navigation draws it: the
+  message and a banner take a neutral tint, with the club's color on the icon and the word (SK,
+  2026-11-11); an **Open** tag and an open slot take it on the word. Where you are takes it as the navigation draws it: the
   sidebar's and an optional step's soft fill, the current tab's indicator, the current step's
   filled mark (SK, 2026-11-11).
 - **A state badge** (`.tag`, #226) is a word on a tint of its status color: `--ok`, `--warn`,
@@ -464,7 +464,12 @@ wrapper was tried, and it pushed the whole page sideways at 390px, which FR-95 f
 ## Feedback
 
 Four levels, each with a word as well as a tint: **Done** (success), **Note** (info),
-**Careful** (warning), **Problem** (error). The list of messages is focused when the page
+**Careful** (warning), **Problem** (error). Drawn in Material 3's tonal style (SK, 2026-11-11; they
+had a thick colored left edge and an outline): the level's tint and no border, its icon at the start
+(check, info, warning, error, Material Symbols drawn by CSS) and its word in the level's color.
+Note's tint is neutral, since the club's soft fill means where you are. A banner is drawn the same
+way: a Note, except a draft and viewing as somebody else, which are Careful. In forced colors both
+keep an outline. The list of messages is focused when the page
 loads, because a live region that is already there when the page arrives announces nothing.
 
 A standing fact ("you are acting for a member under 18") is a banner, not a flash message. A

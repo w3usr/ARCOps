@@ -4859,3 +4859,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Design research and code generation. A multi-agent workflow (research, three designs with rendered mockups, three judges, a synthesis) proposed it; SK chose among its options. Verified: 565 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped; Firefox does not launch on this machine, CI runs it); ruff and the repository guards pass; the built pages screenshotted at 1280 light and dark, 390 and 360, in W3USR's color, with no page or tab-strip overflow and every chip 32px.
 - **Human Review Status**: Pending review
 - **Git Hash**: 31168ed
+
+## [2026-11-11 22:11 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Messages and banners in Material 3's tonal style, on SK's choices of 2026-11-11 from three mocked options ("A: tonal + icon"; banners "Yes, same style"): no thick left edge and outline, a tint, the level's icon and its word in the level's color.
+- **Sections/Files Affected**: static/css/app.css (four icon tokens, Material Symbols as CSS masks; .msg and its levels; .banner, its Careful variants and read-only; a forced-colors outline); docs/INTERFACE.md (Color, Feedback).
+- **Nature of Contribution**: Design and code generation. No template changes: the icon is drawn on ::before, so the inline messages across the templates keep their markup. Verified: contrast measured in the browser for every level word and icon on its tint, light and dark, for the generic and W3USR colors (lowest 5.2:1); 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the interface guard passes; rendered at 900 and 390 px in both themes.
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

@@ -44,6 +44,11 @@
   --focus: #9a6700; --focus-halo: #ffffff;
   --tag-ok: #d8f0e0; --tag-warn: #fff1cc; --tag-bad: #fbdada;
   --tag-info: var(--accent-soft); --tag-neutral: #eceff3;
+  /* A message's or banner's icon, one per level: Material Symbols (#145) drawn as a mask in the level's color. */
+  --i-ok: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z'/%3E%3C/svg%3E");
+  --i-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z'/%3E%3C/svg%3E");
+  --i-warn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z'/%3E%3C/svg%3E");
+  --i-bad: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z'/%3E%3C/svg%3E");
   /* Shape by hierarchy: the smaller and more numerous a thing, the squarer it is. A field or a
      tag, a button, and a card or anything else that stands on its own. */
   --r-field: 4px; --r-button: 6px; --r-card: 8px;
@@ -466,13 +471,19 @@ button:disabled { opacity: .45; pointer-events: none; }
 .tag:is(.info, .open) { background: var(--tag-info); color: var(--accent-soft-fg); }
 .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
 .messages:focus { outline: none; }
-.msg { padding: .65rem .9rem; border-radius: var(--r-card); border: 1px solid var(--line); border-left-width: 4px; margin: .5rem 0; background: var(--panel); }
-.msg .lvl { font-weight: 700; }
+/* Messages and banners in Material 3's tonal style (SK, 2026-11-11; they had a thick left edge and
+   an outline in the level's color): a tint and no border, the level's icon at the start and its
+   word in the level's color, so neither color nor the icon is the only sign. The icon is a mask
+   on ::before, so the thirty-odd inline messages keep their markup. Note is a neutral tint: the
+   club's soft fill means where you are. */
+.msg { --ic: var(--i-info); --tone: var(--accent); position: relative; padding: .75rem 1rem .75rem 2.75rem; border: 0; border-radius: var(--r-card); margin: .5rem 0; background: var(--tag-neutral); }
+.msg::before, .banner::before { content: ""; flex: none; width: 1.25rem; height: 1.25rem; background: var(--tone); -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat; }
+.msg::before { position: absolute; left: 1rem; top: .875rem; }
+.msg .lvl { font-weight: 700; color: var(--tone); }
 /* Four levels, each with a word and a tint. Color never carries the meaning alone (FR-62). */
-.msg.success { border-left-color: var(--ok); background: var(--tag-ok); border-color: var(--ok); }
-.msg.error { border-left-color: var(--bad); background: var(--tag-bad); border-color: var(--bad); }
-.msg.warning { border-left-color: var(--warn); background: var(--tag-warn); border-color: var(--warn); }
-.msg.info { border-left-color: var(--accent); border-color: var(--accent); }
+.msg.success { --ic: var(--i-ok); --tone: var(--ok); background: var(--tag-ok); }
+.msg.error { --ic: var(--i-bad); --tone: var(--bad); background: var(--tag-bad); }
+.msg.warning { --ic: var(--i-warn); --tone: var(--warn); background: var(--tag-warn); }
 /* Label and value (#146): two columns at desktop, about half the height of the stack, with the
    label at the regular weight in the muted color; on a phone, the label above its value. */
 .dl dt { color: var(--muted); margin-top: .5rem; } .dl dd { margin: 0; }
@@ -654,19 +665,26 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 /* ------------------------------------------------------------ roster */
 .when { margin: 0 0 .25rem; font-size: var(--t-lede); }
 .lede { font-size: var(--t-lede); }
-.banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .75rem 1rem; border-radius: var(--r-card); background: var(--tag-warn); border: 1px solid var(--warn); margin: 1rem 0; }
+.banner { --ic: var(--i-info); --tone: var(--accent); position: relative; display: flex; align-items: center; justify-content: space-between; gap: .6rem 1rem; flex-wrap: wrap; padding: .75rem 1rem .75rem 2.75rem; border-radius: var(--r-card); background: var(--tag-neutral); border: 0; margin: 1rem 0; }
+/* The icon stands where a message's does: beside the sentence, centered on it while its button sits
+   beside it, level with its first line once the button wraps under it on a phone. */
+.banner::before { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); }
+@media (max-width: 40rem) { .banner::before { top: .875rem; transform: none; } }
+.banner > p:first-of-type { flex: 1 1 20rem; }  /* the sentence takes the room; a button or a link stays at the end */
 .banner p, .banner form { margin: 0; }
-/* The three banners meant three different things and all looked like a warning. Acting for
-   somebody is a mode you chose; read-only is a fact about the account; viewing as somebody
-   else is the one that should keep catching your eye. */
-.banner.acting { background: var(--panel); border-color: var(--accent); }
+/* A banner is a standing fact, a Note; two are Careful: a draft no member can see yet, and viewing
+   as somebody else, which should keep catching your eye. Read-only is a quiet fact about the account. */
+.banner:is(.draft, .impersonating) { --ic: var(--i-warn); --tone: var(--warn); background: var(--tag-warn); }
+.banner.readonly { --tone: var(--muted); }
+@media (forced-colors: active) {
+  .msg, .banner { border: 1px solid CanvasText; }
+  .msg::before, .banner::before { background: CanvasText; }
+}
 /* A standing question wears the message strip, because that is what it reads as. Its buttons
    sit on the same line as its sentence rather than beneath them. */
 .messages.ask { margin-bottom: .5rem; }
 .messages.ask .inline { display: inline; }
 .messages.ask button { padding: .2rem .6rem; font-size: var(--t-small); margin-left: .25rem; }
-.banner.readonly { background: var(--panel); border-color: var(--line); }
-.banner.impersonating { background: var(--tag-warn); border-color: var(--warn); }
 /* A standing fact, quieter than a banner and never mistaken for something that just happened. */
 .note { padding: .6rem .9rem; border-radius: var(--r-card); background: var(--panel); border: 1px solid var(--line); margin: 1rem 0; color: var(--fg); }
 .note p:first-child { margin-top: 0; } .note p:last-child { margin-bottom: 0; }
