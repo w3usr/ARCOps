@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.password_validation import validate_password
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.http import require_http_methods, require_POST
@@ -244,23 +245,24 @@ def join_form(request, token):
             d = form.cleaned_data
             if d.get("under_18"):
                 return render(request, "accounts/invitation_minor.html", {"link": link}, status=200)
-            from .services import bring_back, returning_account
+            from .services import returning_account
 
             returning, refusal = returning_account(d["email"])
             if returning is not None:
-                # A member who left, coming back: their record is still here, so it is brought
-                # back rather than duplicated (FR-125, 2026-09-19). The link's own rules still
-                # apply, so a class link admits them at once and a community link does not.
-                user = bring_back(
-                    link.created_by or returning,
-                    returning,
-                    d["password1"],
-                    first_name=d["first_name"],
-                    last_name=d["last_name"],
-                    preferred_name=d["preferred_name"],
-                    cell_phone=d["cell_phone"],
+                # A member who left, coming back (FR-125): their record is brought back, never
+                # duplicated, but only from their own mailbox. The form proves nothing, since
+                # anyone can type an address: it used to bring the account back and sign the
+                # browser in with the password typed here (SK, 2026-11-12). It now sends the
+                # account a link, changes nothing, and answers as for any address (FR-120).
+                from apps.comms.services import send
+
+                url = _base(request) + reverse(
+                    "return_through", args=[entry.return_token(returning, link)]
                 )
-                entry.returned_through(link, user)
+                send("account.returning", returning, "account", {"link": url})
+                return render(
+                    request, "accounts/join_sent.html", {"link": link, "email": d["email"]}
+                )
             elif refusal or User.objects.by_address(d["email"]).first():
                 # The same page as success (FR-107); the person is told by email instead.
                 from apps.comms.services import send
@@ -291,15 +293,11 @@ def join_form(request, token):
                 call = user.callsign
                 user.callsign = ""
                 apply_callsign(user, call)  # FR-4, FR-16: lookup, name, or a pending confirmation
-            # A returner is a member again through any link, with nothing to verify and no email
-            # sent, so they are signed in as through an invitation (T53).
-            if returning is not None or link.kind == EntryLink.Kind.CLASS:
+            if link.kind == EntryLink.Kind.CLASS:
                 login(request, user, backend="django.contrib.auth.backends.ModelBackend")
                 messages.success(
                     request,
-                    "Welcome back. Your record is as you left it."
-                    if returning is not None
-                    else f"Welcome. Confirm your address from the email we sent within {entry.verification_days()} days.",
+                    f"Welcome. Confirm your address from the email we sent within {entry.verification_days()} days.",
                 )
                 if link.landing_event_id:
                     return redirect("event_detail", pk=link.landing_event_id)
@@ -308,6 +306,30 @@ def join_form(request, token):
     else:
         form = JoinForm(link=link)
     return render(request, "accounts/join.html", {"form": form, "link": link})
+
+
+def return_through(request, token):
+    """A former member coming back through a join link, from the link mailed to their own
+    address (FR-120, FR-125; SK, 2026-11-12): they choose a password here, and the record they
+    had is brought back with the link's own rules. A spent, altered or old link changes nothing."""
+    from django.contrib.auth.forms import SetPasswordForm
+
+    from .services import bring_back
+
+    found = entry.from_return_token(token)
+    if not found:
+        return render(request, "accounts/verify_result.html", {"outcome": "invalid"}, status=410)
+    user, link = found
+    form = SetPasswordForm(user, request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = bring_back(link.created_by or user, user, form.cleaned_data["new_password1"])
+        entry.returned_through(link, user)
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        messages.success(request, "Welcome back. Your record is as you left it.")
+        if link.landing_event_id:
+            return redirect("event_detail", pk=link.landing_event_id)
+        return redirect("event_list")
+    return render(request, "accounts/return.html", {"form": form, "person": user, "link": link})
 
 
 def verify_email(request, token):

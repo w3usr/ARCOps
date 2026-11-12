@@ -4899,3 +4899,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first. Also found and fixed on the way: the rules form could not say "a license of any class", so saving any rule for Mentor dropped the club's license requirement; and the slot override had no credentials boxes, so saving one dropped the event's. Verified: 593 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the guards and the migration check pass; the forms and their script exercised in a browser.
 - **Human Review Status**: Pending review
 - **Git Hash**: 73a889e
+
+## [2026-11-12 18:56 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Two production fixes from the 2026-11-12 compliance review, at SK's word ("lets fix the account-takeover fix and the pillow and brotli upgrade for production"): a join form with a former member's address no longer brings the account back or signs anyone in; and pillow and brotli upgraded past 42 known advisories.
+- **Sections/Files Affected**: apps/accounts/views_entry.py (join_form sends the returning account a link and answers as for any address; return_through, new); apps/accounts/entry.py (return_token, from_return_token: signed, a week, spent once back); templates/accounts/return.html (new); config/urls.py; apps/comms/defaults.py (account.returning); apps/accounts/tests/test_returning_members.py (the test that pinned the old behaviour replaced; new tests written first and seen to fail); requirements.txt (pillow 13.0.0, brotli 1.2.1); .github/workflows/ci.yml (the dependency audit can fail the build); apps/events/tests/test_defaults_shown.py (a club's name out of a docstring, which the club-neutral guard caught).
+- **Nature of Contribution**: Code generation, test first. Verified: 597 application tests pass, the PDF test included; pip-audit reports no known vulnerabilities; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the three guards and the migration check pass; scenario T53 passes locally (11).
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

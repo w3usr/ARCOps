@@ -31,6 +31,8 @@ from .models import Address, EntryLink, User
 # would invalidate every verification link already sent.
 VERIFY_SALT = "arcops.verify-email"
 VERIFY_MAX_AGE = 30 * 24 * 3600  # a link in an old email still works for a month
+RETURN_SALT = "arcops.return"
+RETURN_MAX_AGE = 7 * 24 * 3600
 
 
 def trusted_domains() -> list[str]:
@@ -82,6 +84,28 @@ def user_from_token(token: str) -> tuple[User, str] | None:
     if not user or not user.addresses.filter(address__iexact=address).exists():
         return None
     return user, address
+
+
+def return_token(user: User, link: EntryLink) -> str:
+    """The link that brings a former member back through `link`, sent to their own mail: the
+    join form alone never does it, since anyone can type an address (FR-120, FR-125; SK,
+    2026-11-12). Signed, nothing stored; good for a week, and spent once the account is back."""
+    return signing.dumps({"u": user.pk, "l": link.pk}, salt=RETURN_SALT)
+
+
+def from_return_token(token: str) -> tuple[User, EntryLink] | None:
+    """The former member and the link, while the account is still one that may come back."""
+    from .services import returning_account
+
+    try:
+        data = signing.loads(token, salt=RETURN_SALT, max_age=RETURN_MAX_AGE)
+    except signing.BadSignature:
+        return None
+    user = User.objects.filter(pk=data.get("u")).first()
+    link = EntryLink.objects.filter(pk=data.get("l")).first()
+    if not user or not link or returning_account(user.email)[0] != user:
+        return None
+    return user, link
 
 
 def send_verification(user: User, base_url: str) -> None:

@@ -26,7 +26,7 @@ jobs:
       - name: Tests
         run: pytest -n auto
       - name: Dependency audit
-        run: pip install pip-audit && pip-audit -r requirements.txt || true
+        run: pip install pip-audit && pip-audit -r requirements.txt  # fails the build on a known advisory (TR-24, TR-38; 2026-11-12)
   accessibility:
     # FR-117, TR-36: axe-core over every page of the seeded demo, at desktop and phone width
     # (FR-95). A serious or critical violation fails the build, and a red build is never deployed.

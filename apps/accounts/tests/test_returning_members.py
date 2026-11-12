@@ -117,44 +117,97 @@ def test_accepting_the_invitation_brings_the_record_back(people):
     assert Client().login(email="rae@example.org", password=NEW_PASSWORD), "the new password works"
 
 
-@pytest.mark.parametrize("kind", [EntryLink.Kind.CLASS, EntryLink.Kind.COMMUNITY])
-def test_joining_through_a_link_brings_the_record_back(people, kind):
-    officer, advisor, member = people
-    _left(advisor, member)
+def _join_as(link, password, **extra):
+    c = Client()
+    r = c.post(
+        f"/join/{link.token}/form/",
+        {
+            "email": "rae@example.org",
+            "first_name": extra.get("first_name", "Rae"),
+            "middle_name": "",
+            "last_name": "Turner",
+            "preferred_name": "",
+            "callsign": "",
+            "cell_phone": extra.get("cell_phone", ""),
+            "category": "student",
+            "password1": password,
+            "password2": password,
+            "consent": "on",
+        },
+        follow=True,
+    )
+    return c, r
+
+
+def _link(officer, kind):
     from django.utils import timezone
 
-    link = EntryLink.objects.create(
+    return EntryLink.objects.create(
         label="PHYS 101",
         kind=kind,
         required_domain="example.org" if kind == EntryLink.Kind.CLASS else "",
         created_by=officer,
         expires_at=timezone.now() + timezone.timedelta(days=30),
     )
-    c = Client()
-    r = c.post(
-        f"/join/{link.token}/form/",
-        {
-            "email": "rae@example.org",
-            "first_name": "Rae",
-            "middle_name": "",
-            "last_name": "Turner",
-            "preferred_name": "",
-            "callsign": "",
-            "cell_phone": "",
-            "category": "student",
-            "password1": NEW_PASSWORD,
-            "password2": NEW_PASSWORD,
-            "consent": "on",
-        },
-        follow=True,
+
+
+@pytest.mark.parametrize("kind", [EntryLink.Kind.CLASS, EntryLink.Kind.COMMUNITY])
+def test_a_link_never_brings_an_account_back_without_its_mailbox(people, kind):
+    """FR-120, FR-125 (SK, 2026-11-12): a join form with a former member's address and a new
+    password used to bring the account back and sign the browser in, with no proof that whoever
+    typed it held the mailbox. Now the form changes nothing and says what it says for any
+    address; the account's own mail gets a link to come back."""
+    from apps.comms.models import Outbox
+
+    officer, advisor, member = people
+    _left(advisor, member)
+    before = member.password
+    link = _link(officer, kind)
+    c, r = _join_as(link, "a-Strangers-Password-123!", first_name="Mallory", cell_phone="555-9999")
+    member.refresh_from_db()
+    assert member.is_archived and not member.is_active, "the account is not brought back"
+    assert (
+        member.password == before
+        and member.first_name != "Mallory"
+        and member.cell_phone == "555-0100"
     )
+    assert "_auth_user_id" not in c.session, "nobody is signed in"
+    assert "Check your email" in r.content.decode()
+    msg = Outbox.objects.filter(user=member, subject__icontains="come back").get()
+    assert "/join/return/" in msg.body_html
+
+
+@pytest.mark.parametrize("kind", [EntryLink.Kind.CLASS, EntryLink.Kind.COMMUNITY])
+def test_the_link_in_the_mailbox_brings_the_record_back(people, kind):
+    import re
+
+    from apps.comms.models import Outbox
+
+    officer, advisor, member = people
+    _left(advisor, member)
+    link = _link(officer, kind)
+    _join_as(link, NEW_PASSWORD)
+    body = Outbox.objects.filter(user=member, subject__icontains="come back").get().body_html
+    path = re.search(r'/join/return/[^"<\s]+/', body)[0]
+    c = Client()
+    page = c.get(path).content.decode()
+    assert 'name="new_password1"' in page and "Rae" in page
+    r = c.post(path, {"new_password1": NEW_PASSWORD, "new_password2": NEW_PASSWORD}, follow=True)
     assert User.objects.count() == 3, "no second account for the same person"
     member.refresh_from_db()
     assert member.status == "active" and not member.is_archived
     assert member.joined_via == link and member.callsign == "N0RAE"
     assert AuditLog.objects.filter(action="account.returned_via_link").exists()
-    # Signed in, as through an invitation (T53), and told of no email, since none is sent
-    body = r.content.decode()
     assert int(c.session["_auth_user_id"]) == member.pk
-    assert "Welcome back" in body
-    assert "email we sent" not in body and "Check your email" not in body
+    assert "Welcome back" in r.content.decode()
+    assert Client().login(email="rae@example.org", password=NEW_PASSWORD), "the new password works"
+    # the link is spent: the account is no longer a returning one
+    assert Client().get(path).status_code == 410
+
+
+def test_a_bad_return_link_changes_nothing(people):
+    officer, advisor, member = people
+    _left(advisor, member)
+    assert Client().get("/join/return/not-a-token/").status_code == 410
+    member.refresh_from_db()
+    assert member.is_archived

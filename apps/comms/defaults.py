@@ -63,6 +63,19 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["club.short_name"],
     },
     {
+        # FR-120, FR-125 (SK, 2026-11-12): a former member's address on a join form brings the
+        # account back only from its own mailbox.
+        "key": "account.returning",
+        "subject": "Come back to {{ club.short_name }}",
+        "body_html": (
+            "<p>Someone asked to rejoin {{ club.short_name }} with this address, through a join "
+            "link. If it was you, open the link to come back: your record is as you left it, and "
+            "you choose a new password there.</p><p>If it was not you, ignore this message; "
+            'nothing has changed.</p><p><a href="{{ link }}">Come back</a></p>'
+        ),
+        "variables": ["club.short_name", "link"],
+    },
+    {
         "key": "account.completed",
         "subject": "{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} joined {{ club.short_name }}",
         "body_html": '<p>{{ person.full_name }}{% if person.callsign %} {{ person.callsign }}{% endif %} completed the invitation sent to {{ invited_email }} as {{ category }}{% if uls_name %}. The FCC lists that callsign under the name {{ uls_name }}{% endif %}.</p><p>If that is not who you expected, set the account to No access from their profile.</p><p><a href="{{ link }}">Open their profile</a></p>',
@@ -386,6 +399,10 @@ TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "account.admitted": ("Admitted as a member", "the person admitted"),
     "account.declined": ("Not admitted", "the person who was declined"),
     "account.address_in_use": ("That address is already on an account", "whoever tried to use it"),
+    "account.returning": (
+        "A former member may come back",
+        "the former member, at their own address",
+    ),
     "account.completed": ("Somebody finished joining", "the officers and whoever invited them"),
     "account.welcome": ("Welcome", "the new member"),
     "agreement.submitted": ("An agreement is waiting for approval", "the faculty advisors"),

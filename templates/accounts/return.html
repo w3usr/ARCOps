@@ -1,0 +1,14 @@
+{% extends "allauth/layouts/base.html" %}
+{% block title %}Come back · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% comment %}A former member coming back through a join link, from the link mailed to their own
+address (FR-120, FR-125; SK, 2026-11-12). The record is theirs, so it is named; the password is
+chosen here, never on the join form.{% endcomment %}
+<h1>Come back to {{ club.name }}</h1>
+<p>Welcome back, {{ person.display_first }}. Your record is as you left it: your callsign, agreements and the events you took part in. Choose a password to finish.</p>
+<form method="post" class="stack">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for f in form %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endfor %}
+  <div><button type="submit">Come back</button></div>
+</form>
+{% endblock %}

@@ -23,7 +23,7 @@ def _club(key, value):
 
 
 def _mentor_needs_a_license():
-    """A club whose Mentor needs a valid license of any class (W3USR's own, FR-122)."""
+    """A club whose Mentor needs a valid license of any class (FR-122)."""
     _club(
         "slot_roles",
         [
