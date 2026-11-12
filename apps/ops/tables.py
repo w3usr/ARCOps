@@ -32,7 +32,7 @@ def summary(choices: Iterable[tuple[str, str]], ticked: Iterable[str], label: st
     choices = list(choices)
     names = [text for key, text in choices if key in set(ticked)]
     if not names or len(names) == len(choices):
-        return f"Any {label}"
+        return ""  # not narrowed: the filter draws "Any …" itself, and is not marked set (#266)
     return ", ".join(names) if len(names) < 3 else f"{len(names)} {label}s"
 
 

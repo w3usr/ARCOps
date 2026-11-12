@@ -533,3 +533,13 @@ def test_a_sysadmin_is_on_the_club_s_own_roster(directory):
     )
     after = _member_names(_as(member).get("/members/").content.decode())
     assert "Pro" not in after, "somebody still waiting for review is not on it yet"
+
+
+def test_a_filter_is_drawn_set_only_while_it_narrows_the_list(directory):
+    """#266 (2026-11-12): every panel carried `set`, so #229's dashed-while-off never showed."""
+    c = _as(directory)
+    body = c.get("/members/").content.decode()
+    assert 'class="filter set"' not in body
+    assert "Any status" in body and "Any position" in body and "Any positions" not in body
+    body = c.get("/members/?status=active").content.decode()
+    assert body.count('class="filter set"') == 1

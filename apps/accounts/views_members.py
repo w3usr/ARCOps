@@ -23,6 +23,7 @@ from apps.credentials.views import _is_approver
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
 from apps.ops.groups import may_set_access
+from apps.ops.tables import summary
 
 from . import entry, views_addresses
 from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
@@ -327,12 +328,9 @@ def members(request):
     descending = request.GET.get("dir") == "desc"
     rows.sort(key=keys[sort], reverse=descending)
 
-    # What each panel's summary says, so a narrowed table says so without being opened.
-    def _summary(choices, ticked, label) -> str:
-        names = [text for key, text in choices if key in ticked]
-        if not names or len(names) == len(choices):
-            return f"Any {label}"
-        return ", ".join(names) if len(names) < 3 else f"{len(names)} {label}s"
+    # What each panel's summary says, so a narrowed table says so without being opened: the
+    # shared helper (#179), "" while a filter narrows nothing, so it is not drawn as set (#266).
+    _summary = summary
 
     columns = []
     for col in DIRECTORY_COLUMNS:

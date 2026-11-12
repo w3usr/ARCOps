@@ -342,6 +342,8 @@ def notify_no_shows(now: datetime | None = None) -> int:
         checked_in_at__isnull=True,
         no_show_notified_at__isnull=True,
         slot__cancelled=False,
+        # Only an event still running: not one canceled since (#256), as reminders and warnings.
+        slot__position__location__event__state__in=[Event.State.PUBLISHED, Event.State.LOCKED],
         slot__start__lte=now - timedelta(minutes=minutes),
         slot__end__gt=now,
     ).select_related("slot__position__location__event", "user")

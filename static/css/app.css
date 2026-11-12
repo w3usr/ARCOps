@@ -899,10 +899,10 @@ td .when1, th .when1 { font-weight: 700; }
 .eventcard .when { margin: .35rem 0 0; font-size: var(--t-body); }
 
 /* FR-108: unread count in the sidebar; FR-82: unread rows in My messages */
-.badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: var(--r-card); font-size: var(--t-small); font-weight: 700; text-align: center; background: var(--brand); color: #fff; margin-left: .35em; }
+.badge { display: inline-block; min-width: 1.4em; padding: 0 .4em; border-radius: var(--r-card); font-size: var(--t-small); font-weight: 700; text-align: center; background: var(--accent); color: var(--accent-fg); margin-left: .35em; }  /* the theme's accent pair: --brand on dark was 1.5:1 (#267) */
 /* The dot is for the eye (SK, 2026-11-10: "keep the dot"); "/ ''" keeps it from a screen reader,
    which hears the hidden "Unread:" before the subject instead (FR-62). */
-.msglist .unread summary strong::before { content: "● "; content: "● " / ""; color: var(--brand); }  /* the first for a browser without the second */
+.msglist .unread summary strong::before { content: "● "; content: "● " / ""; color: var(--accent); }  /* --accent: --brand was 1.5:1 on dark (#267) */  /* the first for a browser without the second */
 .table-wrap { overflow-x: auto; position: relative; }  /* the containing block for what is
    positioned in a cell (a sort link's screen-reader words), so it scrolls with the table instead
    of widening the page: Access rosters scrolled sideways on CI's wider fonts (#157). */

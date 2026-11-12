@@ -182,17 +182,43 @@ def merge(actor, first: Slot, second: Slot) -> int:
     for c in second.capacities.all():
         seats[c.role] = max(seats.get(c.role, 0), c.capacity)
     first.end = second.end
-    first.save(update_fields=["end"])
+    first.closed = first.closed or second.closed  # closed if either was (#260)
+    first.save(update_fields=["end", "closed"])
+    # The later slot's own sign-up rules come with it where the earlier has none for that role;
+    # where both have one, the earlier's stands, as the role held in the earlier slot does, and
+    # the audit row names what was dropped (#260; split already copies them).
+    dropped = []
+    for rule in second.eligibility_rules.all():
+        if first.eligibility_rules.filter(role=rule.role).exists():
+            dropped.append(rule.role)
+        else:
+            rule.pk, rule.slot = None, first
+            rule.save()
     for role in set(seats) | set(first.signups.values_list("role", flat=True)):
         need = max(seats.get(role, 0), first.signups.filter(role=role).count())
         RoleCapacity.objects.update_or_create(slot=first, role=role, defaults={"capacity": need})
     here = set(first.signups.values_list("user_id", flat=True))
+    # The waiting move with their own rows, so an offer keeps its state and the link in its
+    # message still opens it (#253). Someone now in the slot, or already waiting in the earlier
+    # one, keeps one entry: an offer over a plain wait.
     for w in second.waitlist.filter(state__in=WAITING):
-        if w.user_id not in here:
-            Waitlist.objects.get_or_create(slot=first, user=w.user, role=w.role)
+        dup = first.waitlist.filter(user_id=w.user_id, role=w.role).first()
+        if w.user_id in here or (
+            dup and (dup.state == Waitlist.State.OFFERED or w.state != Waitlist.State.OFFERED)
+        ):
+            w.delete()
+            continue
+        if dup:
+            dup.delete()
+        w.slot = first
+        w.save(update_fields=["slot"])
     second.waitlist.all().delete()
     second.cancelled = True
     second.save(update_fields=["cancelled"])
+    from . import waitlist
+
+    for role in seats:  # the merged slot may have seats free: offer them (FR-57, #253)
+        waitlist.on_place_opened(first, role)
     told = sum(_tell(actor, [su], first, old) for su, old in grew)
     record(
         actor,
@@ -203,6 +229,7 @@ def merge(actor, first: Slot, second: Slot) -> int:
             "end": first.end.isoformat(),
             "people": len(here),
             "people told": told,
+            "rules dropped": dropped,
             "in both": len(in_both),
         },
     )

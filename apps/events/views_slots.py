@@ -158,6 +158,11 @@ def slot_capacities(request, pk, slot_id):
             RoleCapacity.objects.update_or_create(slot=slot, role=key, defaults={"capacity": n})
         else:
             RoleCapacity.objects.filter(slot=slot, role=key).delete()
+    from .services import waitlist
+
+    for key, n in seats.items():  # a seat added is a place opened (FR-57, #253)
+        if n:
+            waitlist.on_place_opened(slot, key)
     record(request.user, "slot.capacities", slot)
     messages.success(request, "Seats updated.")
     return redirect("slot_detail", pk=pk, slot_id=slot_id)

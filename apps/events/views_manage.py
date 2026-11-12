@@ -73,6 +73,25 @@ class EventForm(forms.ModelForm):
     def clean_description_html(self):
         return sanitise(self.cleaned_data.get("description_html") or "")
 
+    def clean_display_only(self):
+        """Display only does not change under an event's slots, nor once it is out of draft (#254;
+        SK, 2026-11-12: "Refuse both ways"): on, members would lose sight of their slots; off, a
+        published event would take a roster with its steps undone (A17)."""
+        on, event = self.cleaned_data.get("display_only"), self.instance
+        if not event.pk or on == event.display_only:
+            return on
+        if on and Slot.objects.filter(position__location__event=event, cancelled=False).exists():
+            raise forms.ValidationError(
+                "An event with slots cannot become display only: members would lose sight of "
+                "their slots. Make a new display-only event instead."
+            )
+        if not on and event.state != Event.State.DRAFT:
+            raise forms.ValidationError(
+                "A published display-only event cannot take a roster: take it back to draft "
+                "first, then set up its periods, locations and slots."
+            )
+        return on
+
     class Meta:
         model = Event
         fields = [
@@ -971,6 +990,10 @@ def period_delete(request, pk, period_id):
         after={"period": None, "slots canceled": n},
     )
     period.delete()
+    if event.on_air_ranges.exists():  # its stretches go with it, as an edit clips them (#260)
+        from .services.slots import chosen, set_on_air
+
+        set_on_air(event, chosen(event))
     with_it = f"; {n} slot{pluralize(n)} canceled with it." if n else "."
     messages.success(request, f"Operating period removed{with_it}")
     return to_step(pk, "periods")

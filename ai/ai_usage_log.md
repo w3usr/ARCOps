@@ -4883,3 +4883,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first. Verified: 575 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the interface guard and the migration check pass; scenario scripts T11 to T18, T36 and T37 run locally (W3USR) with one failure, T18 step 2's count of people, which failed the same way on 2026-11-11 before this change (local ordering with T14).
 - **Human Review Status**: Pending review
 - **Git Hash**: 06a293e
+
+## [2026-11-12 12:33 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The remaining bugs from the 2026-11-12 gap analysis, at SK's word ("let's work thru bugs"); Display only on SK's choice "Refuse both ways".
+- **Sections/Files Affected**: apps/events/services/waitlist.py (seats_open: a closed slot takes nobody); apps/events/views_slots.py (added seats offered to the waitlist); apps/events/services/reshape.py (merge moves waiting entries with their own rows, offers seats it opens, keeps the later slot's rules where the earlier has none, closed if either was, and records rules dropped); apps/events/services/notify.py (no "Not checked in" for an event no longer running); apps/events/views_manage.py (EventForm.clean_display_only; removing a period clips the on-air hours); apps/ops/tables.py and apps/accounts/views_members.py (the filter summary is empty while it narrows nothing, and Members uses the shared helper); templates/accounts/_filter.html and members.html ("Any position"); static/css/app.css (the unread dot and badge in the theme's accent); apps/events/tests/test_bug_batch.py (new, 9 tests) and a test in apps/accounts/tests/test_directory.py, all written first and seen to fail.
+- **Nature of Contribution**: Code generation, test first. Verified: 585 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the interface guard and the migration check pass; contrast of the unread dot measured in the browser (dark: 6.7:1 W3USR, 7.2:1 generic; it was about 1.5:1); scenario scripts T07, T08, T11, T12, T16, T36 pass locally (W3USR).
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

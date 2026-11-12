@@ -26,7 +26,7 @@ survive a bookmark. An officer's row has one link, the name, with the address un
   <label class="search"><span class="sr-only">Search members</span>{% icon 'search' %}<input id="q" name="q" type="search" value="{{ q }}" placeholder="Name or callsign{% if full %} or email{% endif %}"></label>
   {% if full %}{% include "accounts/_filter.html" with name="category" label="Category" choices=category_choices ticked=chosen.category summary=summaries.category %}{% endif %}
   {% include "accounts/_filter.html" with name="license" label="Class" choices=license_choices ticked=chosen.license summary=summaries.license %}
-  {% include "accounts/_filter.html" with name="position" label="Positions" choices=position_choices ticked=chosen.position summary=summaries.position %}
+  {% include "accounts/_filter.html" with name="position" label="Positions" any="position" choices=position_choices ticked=chosen.position summary=summaries.position %}
   {% if full %}
   {% include "accounts/_filter.html" with name="status" label="Status" choices=status_choices ticked=status_ticked summary=summaries.status %}
   {% if may_see_archive %}{% include "accounts/_filter.html" with name="archived" label="Archive" choices=archived_choices ticked=archived_ticked summary=summaries.archived %}{% endif %}
