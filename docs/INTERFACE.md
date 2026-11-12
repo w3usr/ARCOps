@@ -260,6 +260,14 @@ inside a dialog already (the slot's override): a short confirmation may open ove
 - Mark required fields. Put the error beside its field, and mark the field itself.
 - A form with a text field and two submit buttons submits the **first** one when somebody
   presses Enter. If that button is the dangerous one, split the form in two.
+- **A field that has a default shows it filled in**, never an empty box with help text saying
+  that blank means the default (NAF, 2026-11-12, #272, #277). A small tag beside it says where
+  the value comes from while it holds it: **Club default**, or **Same as a slot** for a setup or
+  breakdown length, which follows the slot length until typed in. Left as it is, nothing is
+  stored and the event **follows** the default, so a later change to the club's setting reaches
+  it (SK, 2026-11-12: "Follow"); a value equal to the default is the default. A rule (who may
+  sign up, what a slot at a location needs) starts from the rule that applies, ticked as it is.
+  `tools/check_interface.sh` rejects help text that says otherwise.
 
 ## A page that edits many things
 

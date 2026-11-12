@@ -18,6 +18,7 @@ from apps.ops.templatetags.labels import role_label
 
 from .form_pages import done, form_page, step_url
 from .models import EligibilityRule, Event, Opening, OperatingLimit, Slot
+from .services.eligibility import club_default_rule, same_rule
 from .services.lifecycle import set_state
 
 
@@ -99,28 +100,49 @@ def limits_save(request, pk):
 
 
 def _rule_from_post(post, role: str) -> dict:
+    """A rule as the form gives it. "Any class" is a valid license of any class: the license
+    among the required credentials, which is how the club's default states it (#277)."""
+    cls = post.get(f"class_{role}", "") or ""
+    creds = [c for c in post.getlist(f"cred_{role}") if c and c != "amateur_license"]
+    if cls == "any":
+        cls, creds = "", ["amateur_license", *creds]
     return {
         "categories": [c for c in post.getlist(f"cat_{role}") if c],
-        "min_license_class": post.get(f"class_{role}", "") or "",
-        "required_credentials": [c for c in post.getlist(f"cred_{role}") if c],
+        "min_license_class": cls,
+        "required_credentials": creds,
         "minors_allowed": post.get(f"minors_{role}") == "on",
     }
 
 
-def _rule_is_default(d: dict) -> bool:
-    return (
-        not d["categories"]
-        and not d["min_license_class"]
-        and not d["required_credentials"]
-        and d["minors_allowed"]
-    )
+def _as_dict(rule) -> dict:
+    return {
+        "categories": list(rule.categories or []),
+        "min_license_class": rule.min_license_class or "",
+        "required_credentials": list(rule.required_credentials or []),
+        "minors_allowed": rule.minors_allowed,
+    }
+
+
+def event_rule(event, role: str) -> dict:
+    """The rule the event applies to `role`: its own, else the club's (FR-53, FR-122)."""
+    own = EligibilityRule.objects.filter(event=event, slot__isnull=True, role=role).first()
+    return _as_dict(own) if own else club_default_rule(role)
+
+
+def shown(rule: dict) -> dict:
+    """A rule as the form draws it: "any" in the class box for a license of any class."""
+    any_class = "amateur_license" in rule["required_credentials"] and not rule["min_license_class"]
+    return rule | {
+        "class": "any" if any_class else rule["min_license_class"],
+        "credentials": [c for c in rule["required_credentials"] if c != "amateur_license"],
+    }
 
 
 @login_required
 @require_POST
 def eligibility_save(request, pk):
-    """FR-53: the event-level rule per role. A rule with nothing set is deleted, so the club's
-    configured default (FR-122) applies again."""
+    """FR-53: the event-level rule per role. A rule saved equal to the club's (FR-122), as the
+    form shows it until changed, is not stored: the event follows the club (#277)."""
     event = get_object_or_404(Event, pk=pk)
     _captain_or_404(request.user, event)
     roles = [r["key"] for r in (setting("slot_roles", []) or [])]
@@ -128,7 +150,7 @@ def eligibility_save(request, pk):
     for role in roles:
         d = _rule_from_post(request.POST, role)
         existing = EligibilityRule.objects.filter(event=event, slot__isnull=True, role=role).first()
-        if _rule_is_default(d):
+        if same_rule(d, club_default_rule(role)):
             if existing:
                 existing.delete()
                 changed[role] = "default"
@@ -153,13 +175,14 @@ def slot_eligibility(request, pk, slot_id):
     _captain_or_404(request.user, event)
     slot = get_object_or_404(Slot, pk=slot_id, position__location__event=event)
     role = request.POST.get("role", "")
-    if request.POST.get("clear"):
+    d = _rule_from_post(request.POST, role)
+    if request.POST.get("clear") or same_rule(d, event_rule(event, role)):
+        # cleared, or saved as the event's own rule, which the form starts from (#277): none
         EligibilityRule.objects.filter(slot=slot, role=role).delete()
         messages.success(
             request, f"Override for {role_label(role)} removed; the event's rule applies."
         )
     else:
-        d = _rule_from_post(request.POST, role)
         EligibilityRule.objects.update_or_create(
             slot=slot, role=role, defaults={"event": event, **d}
         )
@@ -253,8 +276,18 @@ def rules_context(event) -> dict:
     roles = setting("slot_roles", []) or []
     rules = {r.role: r for r in EligibilityRule.objects.filter(event=event, slot__isnull=True)}
     return {
+        # Each role's form starts from the rule it applies, the club's where the event has none,
+        # tagged so (#277; NAF, 2026-11-12).
         "rule_roles": [
-            {"key": r["key"], "label": r["label"], "rule": rules.get(r["key"])} for r in roles
+            {
+                "key": r["key"],
+                "label": r["label"],
+                "rule": shown(
+                    _as_dict(rules[r["key"]]) if r["key"] in rules else club_default_rule(r["key"])
+                ),
+                "is_default": r["key"] not in rules,
+            }
+            for r in roles
         ],
         "categories": setting("member_categories", []) or [],
         "ladder": ladder(),

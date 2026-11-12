@@ -44,6 +44,7 @@ from .models import (
 )
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.slots import held_only_by, limit_report
+from .services.viability import club_rule
 from .views_rules import rules_context
 from .views_slots import roster_or_slot
 
@@ -72,6 +73,12 @@ def _captain_or_404(user, event):
 class EventForm(forms.ModelForm):
     def clean_description_html(self):
         return sanitise(self.cleaned_data.get("description_html") or "")
+
+    def clean_reminder_hours_before(self):
+        """A value equal to the club's is the club's: not stored, so the event follows it (#272;
+        SK, 2026-11-12: "Follow")."""
+        n = self.cleaned_data.get("reminder_hours_before")
+        return None if n is None or n == self._reminder_default else n
 
     def clean_display_only(self):
         """Display only does not change under an event's slots, nor once it is out of draft (#254;
@@ -136,6 +143,15 @@ class EventForm(forms.ModelForm):
         self.fields[
             "description_html"
         ].help_text = "Plain text or simple HTML; shown at the top of the event."
+        # The reminder shows the club's default filled in and tagged, not an empty box standing
+        # for it (#272; NAF, 2026-11-12). Left as it is, the event follows the club's value.
+        self._reminder_default = int(setting("defaults.reminder_hours_before", 24))
+        f = self.fields["reminder_hours_before"]
+        f.default_tag, f.default_value = "Club default", self._reminder_default
+        f.widget.attrs["data-default"] = str(self._reminder_default)
+        f.help_text = "The club's default is set in Settings; a number here is this event's own."
+        if self.instance.reminder_hours_before is None:
+            self.initial["reminder_hours_before"] = self._reminder_default
 
 
 class KbygForm(forms.ModelForm):
@@ -273,7 +289,9 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
     breakdown_slots = forms.IntegerField(
         label="Breakdown slots after", min_value=0, max_value=6, initial=1, widget=_num(1)
     )
-    # FR-47: "of chosen length and count". Blank is an operating slot's length.
+    # FR-47: "of chosen length and count". They show the slot length and follow it until typed
+    # in (#277; NAF, 2026-11-12): app.js copies it while untouched and marks *_edited once a
+    # captain types; without script, a value still equal to the length shown follows the slot.
     setup_minutes = forms.IntegerField(
         label="Each setup slot (minutes)",
         min_value=15,
@@ -287,17 +305,43 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
         max_value=720,
         required=False,
         widget=_num(3),
-        help_text="Left blank, each is as long as an operating slot.",
     )
+    setup_minutes_edited = forms.CharField(required=False, widget=forms.HiddenInput)
+    breakdown_minutes_edited = forms.CharField(required=False, widget=forms.HiddenInput)
 
     def __init__(self, *args, roles, fill_only=False, **kwargs):
         kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
-        self.fields["minutes"].initial = int(setting("defaults.slot_length_minutes", 60))  # FR-89
+        self._slot_default = int(setting("defaults.slot_length_minutes", 60))
+        self.fields["minutes"].initial = self._slot_default  # FR-89
+        for name in ("setup_minutes", "breakdown_minutes"):
+            f = self.fields[name]
+            f.initial = self._slot_default
+            f.default_tag, f.default_value = "Same as a slot", self._slot_default
+            f.widget.attrs.update(
+                {"data-follows": "minutes", "data-default": str(self._slot_default)}
+            )
         self.add_seat_fields(roles)
         if fill_only:  # filling makes operating slots only (#153), so these would do nothing
-            for name in ("setup_slots", "breakdown_slots", "setup_minutes", "breakdown_minutes"):
+            for name in (
+                "setup_slots",
+                "breakdown_slots",
+                "setup_minutes",
+                "breakdown_minutes",
+                "setup_minutes_edited",
+                "breakdown_minutes_edited",
+            ):
                 del self.fields[name]
+
+    def clean(self):
+        """A setup or breakdown length nobody typed in follows the slot length (#277): the one
+        shown, unedited, while the slot length changed, is the slot's."""
+        data = super().clean()
+        for name in ("setup_minutes", "breakdown_minutes"):
+            if name in self.fields and not data.get(f"{name}_edited"):
+                if data.get(name) in (None, self._slot_default):
+                    data[name] = None  # None is an operating slot's length (slots.plan_slots)
+        return data
 
 
 class LocationForm(FieldGroups, forms.Form):
@@ -340,16 +384,22 @@ class LocationForm(FieldGroups, forms.Form):
             widget=TinyMCE(attrs={"rows": 8}),
             help_text="Shown with the directions, and ahead of the event's own in each reminder.",
         )
-        self.fields["own_rule"] = forms.BooleanField(
-            label="This location has its own rule for what a slot needs", required=False
-        )
+        # What a slot here needs starts from the club's rule, ticked as it is, and saved as it
+        # is the location keeps following the club's (#277; NAF and SK, 2026-11-12). It replaces
+        # a box for "its own rule": a change to the ticks is its own rule.
+        choices = [(t.key, t.label) for t in CredentialType.objects.order_by("label")]
+        self._club_needs = {k for k in _rule_keys(club_rule()) if k in dict(choices)}
         self.fields["needs"] = forms.MultipleChoiceField(
             label="A slot here needs someone with",
             required=False,
             widget=forms.CheckboxSelectMultiple,
-            choices=[(t.key, t.label) for t in CredentialType.objects.order_by("label")],
-            help_text="Used only with the box above ticked; with none ticked here, a slot at "
-            "this location needs nothing. Without its own rule, the club's rule applies.",
+            choices=choices,
+            help_text="Ticked as the club's rule until you change it; none ticked, a slot here "
+            "needs nothing.",
+        )
+        self.fields["needs"].default_tag = "Club default"
+        self.fields["needs"].showing_default = (
+            set(self.initial.get("needs") or []) == self._club_needs
         )
 
     def clean_directions_html(self):
@@ -359,8 +409,9 @@ class LocationForm(FieldGroups, forms.Form):
         return sanitise(self.cleaned_data.get("kbyg_html") or "")
 
     def rule(self):
-        """The location's viability rule as it is stored: None for the club's (FR-61)."""
-        if not self.cleaned_data.get("own_rule"):
+        """The location's viability rule as it is stored: None while it is the club's (FR-61),
+        so a later change to the club's rule reaches it (#277)."""
+        if set(self.cleaned_data.get("needs", [])) == self._club_needs:
             return None
         return {
             "require_all_of": [
@@ -1044,8 +1095,10 @@ def location_edit(request, pk, location_id):
         editing=True,
         initial={
             **{f: getattr(loc, f) for f in plain + text},
-            "own_rule": loc.viability_rule is not None,
-            "needs": _rule_keys(loc.viability_rule),
+            # its own rule, or the club's it follows: what applies, ticked (#277)
+            "needs": _rule_keys(
+                loc.viability_rule if loc.viability_rule is not None else club_rule()
+            ),
         },
     )
     if request.method == "POST" and form.is_valid():

@@ -90,6 +90,12 @@ def rule_for(slot) -> list[dict]:
     loc_rule = slot.position.location.viability_rule
     if loc_rule:
         return loc_rule.get("require_all_of", loc_rule) if isinstance(loc_rule, dict) else loc_rule
+    return club_rule()
+
+
+def club_rule() -> list[dict]:
+    """The club's default rule for what an operating slot needs (FR-61): what a location
+    follows until it is given its own, and what its form starts from (#277)."""
     default = setting("viability_rule_default", {}) or {}
     return default.get(
         "require_all_of",

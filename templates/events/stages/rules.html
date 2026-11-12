@@ -2,17 +2,17 @@
 {% load labels nav %}
 {% block stage %}
 <section class="panel" aria-labelledby="who">
-  <header class="panel-head"><div><h2 id="who">Who may sign up</h2><p>Per role. Nothing set means the club default: Mentor needs a valid license of any class, Operator and Observer need nothing.</p></div></header>
+  <header class="panel-head"><div><h2 id="who">Who may sign up</h2><p>Per role. Each starts from the club's rule, marked Club default, until you change it.</p></div></header>
   <form method="post" action="{% url 'eligibility_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">{% csrf_token %}
     <div class="panel-body stack">
     {% for r in rule_roles %}
     <fieldset>
-      <legend>{{ r.label }}</legend>
+      <legend>{{ r.label }}{% if r.is_default %} <span class="tag">Club default</span>{% endif %}</legend>
       <div class="row">
-        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ r.key }}" value="{{ c.key }}" id="cat-{{ r.key }}-{{ c.key }}"{% if r.rule and c.key in r.rule.categories %} checked{% endif %}><label for="cat-{{ r.key }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: any category.</span></div>
-        <div class="field"><label for="class-{{ r.key }}">Minimum license class</label><select id="class-{{ r.key }}" name="class_{{ r.key }}"><option value="">none</option>{% for l in ladder %}<option value="{{ l }}"{% if r.rule and r.rule.min_license_class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-        <div class="field"><span class="label">Required credentials</span>{% for ct in credential_types %}<div class="check"><input type="checkbox" name="cred_{{ r.key }}" value="{{ ct.key }}" id="cred-{{ r.key }}-{{ ct.key }}"{% if r.rule and ct.key in r.rule.required_credentials %} checked{% endif %}><label for="cred-{{ r.key }}-{{ ct.key }}">{{ ct.label }}</label></div>{% endfor %}</div>
-        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ r.key }}" id="minors-{{ r.key }}"{% if not r.rule or r.rule.minors_allowed %} checked{% endif %}><label for="minors-{{ r.key }}">Minors may sign up</label></div></div>
+        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ r.key }}" value="{{ c.key }}" id="cat-{{ r.key }}-{{ c.key }}"{% if c.key in r.rule.categories %} checked{% endif %}><label for="cat-{{ r.key }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: any category.</span></div>
+        <div class="field"><label for="class-{{ r.key }}">Minimum license class</label><select id="class-{{ r.key }}" name="class_{{ r.key }}"><option value=""{% if not r.rule.class %} selected{% endif %}>none</option><option value="any"{% if r.rule.class == 'any' %} selected{% endif %}>Any class</option>{% for l in ladder %}<option value="{{ l }}"{% if r.rule.class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="field"><span class="label">Required credentials</span>{% for ct in credential_types %}<div class="check"><input type="checkbox" name="cred_{{ r.key }}" value="{{ ct.key }}" id="cred-{{ r.key }}-{{ ct.key }}"{% if ct.key in r.rule.credentials %} checked{% endif %}><label for="cred-{{ r.key }}-{{ ct.key }}">{{ ct.label }}</label></div>{% endfor %}</div>
+        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ r.key }}" id="minors-{{ r.key }}"{% if r.rule.minors_allowed %} checked{% endif %}><label for="minors-{{ r.key }}">Minors may sign up</label></div></div>
       </div>
     </fieldset>
     {% endfor %}

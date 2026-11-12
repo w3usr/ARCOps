@@ -27,7 +27,7 @@ def test_a_location_is_edited_on_a_page_with_its_directions_notes_and_rule(offic
     url = f"/events/{ev.pk}/locations/{loc.pk}/edit/"
     page = c.get(url).content.decode()
     assert '<h1 id="dialog-title">Edit Shack</h1>' in page and "tinymce" in page
-    for name in ("directions_html", "kbyg_html", "own_rule", "needs"):
+    for name in ("directions_html", "kbyg_html", "needs"):
         assert f'name="{name}"' in page, name
     assert "Site lead" in page
     # the step links to the page; it is not one of the dialog's forms
@@ -41,21 +41,28 @@ def test_a_location_is_edited_on_a_page_with_its_directions_notes_and_rule(offic
         "directions_html": "<p>Third floor, <script>x</script>past the lab.</p>",
         "kbyg_html": "<p>Bring boots.</p>",
     }
-    r = c.post(url, form)
+    # #277 (SK, 2026-11-12): the needs start ticked as the club's rule; saved as shown, the
+    # location keeps following the club's. Ticks changed are its own rule; none ticked, nothing.
+    as_shown = [
+        k
+        for k in ("amateur_license", "station_access", "it_access")
+        if f'value="{k}"' in page and "checked" in page.split(f'value="{k}"', 1)[1][:40]
+    ]
+    r = c.post(url, form | {"needs": as_shown})
     assert r["Location"] == f"/events/{ev.pk}/manage/locations/"
     loc.refresh_from_db()
     assert "past the lab" in loc.directions_html and "<script>" not in loc.directions_html
     assert loc.kbyg_html == "<p>Bring boots.</p>" and loc.viability_rule is None
-    assert rule_for(slot) == default  # no rule of its own: the club's
-    c.post(url, form | {"own_rule": "on", "needs": ["site_lead"]})
+    assert as_shown and rule_for(slot) == default
+    c.post(url, form | {"needs": ["site_lead"]})
     slot.refresh_from_db()
     assert rule_for(slot) == [{"credential": "site_lead"}]
-    c.post(url, form | {"own_rule": "on"})  # its own rule, and it needs nothing
+    c.post(url, form)  # none ticked: a slot here needs nothing
     slot = Slot.objects.get(pk=slot.pk)
     assert rule_for(slot) == []
     page = c.get(url).content.decode()
-    assert 'name="own_rule"' in page and "checked" in page.split('name="own_rule"', 1)[1][:80]
-    c.post(url, form)
+    assert "checked" not in page.split('value="site_lead"', 1)[1][:40]
+    c.post(url, form | {"needs": as_shown})
     assert rule_for(Slot.objects.get(pk=slot.pk)) == default
 
 

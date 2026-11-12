@@ -149,12 +149,18 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %}, {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %}, needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %}, no minors{% endif %}
       <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
+      {% comment %}It starts from the rule the event applies to the role chosen (#277): each role's choice
+      carries that rule, the first is drawn filled in, and app.js fills the boxes when the role changes.
+      Saved unchanged, nothing is stored.{% endcomment %}
+      {% with first=override.0.rule %}
       <div class="row">
-        <div class="field"><label for="se-role-{{ slot.pk }}">Role</label><select id="se-role-{{ slot.pk }}" name="role" data-role-select>{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
-        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ roles.0.key }}" data-role-field="cat" value="{{ c.key }}" id="se-cat-{{ slot.pk }}-{{ c.key }}"><label for="se-cat-{{ slot.pk }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}</div>
-        <div class="field"><label for="se-class-{{ slot.pk }}">Minimum class</label><select id="se-class-{{ slot.pk }}" name="class_{{ roles.0.key }}" data-role-field="class"><option value="">none</option>{% for l in ladder %}<option value="{{ l }}">{{ l }}</option>{% endfor %}</select></div>
-        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ roles.0.key }}" data-role-field="minors" id="se-minors-{{ slot.pk }}" checked><label for="se-minors-{{ slot.pk }}">Minors may sign up</label></div></div>
+        <div class="field"><label for="se-role-{{ slot.pk }}">Role</label><select id="se-role-{{ slot.pk }}" name="role" data-role-select>{% for r in override %}<option value="{{ r.key }}" data-rule="{{ r.json }}">{{ r.label }}</option>{% endfor %}</select></div>
+        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ override.0.key }}" data-role-field="cat" value="{{ c.key }}" id="se-cat-{{ slot.pk }}-{{ c.key }}"{% if c.key in first.categories %} checked{% endif %}><label for="se-cat-{{ slot.pk }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}</div>
+        <div class="field"><label for="se-class-{{ slot.pk }}">Minimum class</label><select id="se-class-{{ slot.pk }}" name="class_{{ override.0.key }}" data-role-field="class"><option value=""{% if not first.class %} selected{% endif %}>none</option><option value="any"{% if first.class == 'any' %} selected{% endif %}>Any class</option>{% for l in ladder %}<option value="{{ l }}"{% if first.class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="field"><span class="label">Required credentials</span>{% for ct in override_credentials %}<div class="check"><input type="checkbox" name="cred_{{ override.0.key }}" data-role-field="cred" value="{{ ct.key }}" id="se-cred-{{ slot.pk }}-{{ ct.key }}"{% if ct.key in first.credentials %} checked{% endif %}><label for="se-cred-{{ slot.pk }}-{{ ct.key }}">{{ ct.label }}</label></div>{% endfor %}</div>
+        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ override.0.key }}" data-role-field="minors" id="se-minors-{{ slot.pk }}"{% if first.minors_allowed %} checked{% endif %}><label for="se-minors-{{ slot.pk }}">Minors may sign up</label></div></div>
       </div>
+      {% endwith %}
       <div><button type="submit">Save override</button></div>
     </form>
   </details>

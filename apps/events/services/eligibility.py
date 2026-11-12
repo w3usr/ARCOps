@@ -12,6 +12,30 @@ from ..models import EligibilityRule, Opening
 from .viability import _credential_word
 
 
+def club_default_rule(role: str) -> dict:
+    """The club's rule for `role` where an event sets none (FR-122), in the shape an event's own
+    rule takes: a role marked requires_license needs a valid license of any class, which a rule
+    states as the license among its required credentials. The rules form starts from this, and
+    a rule saved equal to it is not stored, so the event follows the club (#277; SK, 2026-11-12)."""
+    cfg = next((r for r in (setting("slot_roles", []) or []) if r.get("key") == role), {}) or {}
+    return {
+        "categories": [],
+        "min_license_class": "",
+        "required_credentials": ["amateur_license"] if cfg.get("requires_license") else [],
+        "minors_allowed": True,
+    }
+
+
+def same_rule(a: dict, b: dict) -> bool:
+    """Two rules that ask the same, whatever order their lists are in."""
+    return (
+        set(a.get("categories") or []) == set(b.get("categories") or [])
+        and (a.get("min_license_class") or "") == (b.get("min_license_class") or "")
+        and set(a.get("required_credentials") or []) == set(b.get("required_credentials") or [])
+        and bool(a.get("minors_allowed", True)) == bool(b.get("minors_allowed", True))
+    )
+
+
 def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tuple[bool, str]:
     """Returns (allowed, reason). Captains and officers are not exempt: the rules describe who
     the slot is for, and a captain who wants to override does so through the roster tools.

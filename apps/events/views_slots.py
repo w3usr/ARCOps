@@ -80,6 +80,21 @@ def slot_detail(request, pk, slot_id):
         slot=slot, user=request.user, state__in=["pending", "offered"]
     ).first()
     slot_rules = list(EligibilityRule.objects.filter(slot=slot)) if is_captain else []
+    # The override starts from the rule the event applies to each role, the club's where the
+    # event has none (#277): each role's choice carries it, and the first is drawn filled in.
+    override = []
+    if is_captain:
+        import json
+
+        from apps.credentials.models import CredentialType
+
+        from .views_rules import event_rule, shown
+
+        for r in data["roles"]:
+            rule = shown(event_rule(event, r["key"]))
+            override.append(
+                {"key": r["key"], "label": r["label"], "rule": rule, "json": json.dumps(rule)}
+            )
     ctx = {
         "event": event,
         "slot": slot,
@@ -95,6 +110,12 @@ def slot_detail(request, pk, slot_id):
         "waitable": waitable,
         "my_wait": my_wait,
         "slot_rules": slot_rules,
+        "override": override,
+        "override_credentials": list(
+            CredentialType.objects.exclude(key="amateur_license").order_by("label")
+        )
+        if is_captain
+        else [],
         # re-time, split, merge (FR-46, #156): why not, or what follows on to merge with
         "frozen": __import__("apps.events.services.reshape", fromlist=["frozen"]).frozen(slot)
         if is_captain

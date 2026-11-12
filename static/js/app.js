@@ -272,6 +272,42 @@ document.addEventListener("change", (ev) => {
   sel.form.querySelectorAll("[data-role-field]").forEach((el) => {
     el.name = el.dataset.roleField + "_" + sel.value;
   });
+  // ...and starts from the rule the event applies to that role (#277), carried on its choice.
+  const rule = JSON.parse(sel.selectedOptions[0]?.dataset.rule || "null");
+  if (!rule) return;
+  sel.form.querySelectorAll("[data-role-field]").forEach((el) => {
+    const f = el.dataset.roleField;
+    if (f === "class") el.value = rule.class || "";
+    else if (f === "minors") el.checked = !!rule.minors_allowed;
+    else if (f === "cat") el.checked = (rule.categories || []).includes(el.value);
+    else if (f === "cred") el.checked = (rule.credentials || []).includes(el.value);
+  });
+});
+
+// A field showing a default (#272, #277; NAF, 2026-11-12): its tag ("Club default", "Same as a
+// slot") goes once the value differs from it. A field that follows another (a setup slot's
+// length follows the slot length) copies it until it is typed in, and then says so to the
+// server through its *_edited box, so an untouched one keeps following there too.
+document.addEventListener("input", (ev) => {
+  const el = ev.target;
+  if (!(el instanceof HTMLInputElement) || !el.form) return;
+  const tag = (f) => f.form.querySelector(`[data-default-tag-for="${f.id}"]`);
+  if (el.dataset.follows !== undefined) {
+    el.dataset.edited = "1";
+    const flag = el.form.elements[el.name + "_edited"];
+    if (flag) flag.value = "1";
+  }
+  if (el.dataset.default !== undefined) {
+    const t = tag(el);
+    if (t) t.hidden = el.value !== el.dataset.default;
+  }
+  el.form.querySelectorAll(`[data-follows="${el.name}"]`).forEach((f) => {
+    if (f.dataset.edited) return;
+    f.value = el.value;
+    f.dataset.default = el.value;
+    const t = tag(f);
+    if (t) t.hidden = false;
+  });
 });
 
 // The UTC clock in the bar (#246, D9): the server draws the minute; this keeps it current. A

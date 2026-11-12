@@ -89,6 +89,17 @@ for path in sorted(pathlib.Path("apps").glob("*/models.py")):
         if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
+# A field with a default shows it filled in, never help text saying a blank box means it (#277;
+# NAF, 2026-11-12). Templates and the application's Python, not tests or old migrations.
+BLANK_MEANS = re.compile(r"Left blank|Blank uses|Nothing set means", re.I)
+for path in sorted(pathlib.Path("templates").rglob("*.html")) + sorted(pathlib.Path("apps").rglob("*.py")):
+    if "tests" in path.parts or "migrations" in path.parts:
+        continue
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        hit = BLANK_MEANS.search(line)
+        if hit:
+            fail.append(f"{path}:{n}: {hit.group(0)!r}; show the default filled in instead")
+
 # Five sizes of type and two weights (docs/INTERFACE.md, "Type"). A sixth size crept in one
 # rule at a time until the stylesheet had seventeen (#160).
 SIZE = re.compile(r"font-size:\s*([^;}]+)")

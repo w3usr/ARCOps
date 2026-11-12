@@ -2,7 +2,7 @@
 with its legend, and the rest one under another (NN/g: a single column, related fields grouped);
 any other form keeps its fields in a row.{% endcomment %}
 {{ form.non_field_errors }}
-{% if form.field_groups %}{% for legend, fields in form.field_groups %}{% if legend %}
+{% if form.field_groups %}{% for h in form.hidden_fields %}{{ h }}{% endfor %}{% for legend, fields in form.field_groups %}{% if legend %}
 <fieldset class="group"><legend>{{ legend }}</legend><div class="row">{% for f in fields %}{% include "events/forms/_field.html" %}{% endfor %}</div></fieldset>
 {% else %}{% for f in fields %}{% include "events/forms/_field.html" %}{% endfor %}{% endif %}{% endfor %}
 {% else %}<div class="row">{% for f in form %}{% include "events/forms/_field.html" %}{% endfor %}</div>{% endif %}
