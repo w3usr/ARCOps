@@ -4874,4 +4874,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (.preview: the Note tint and info icon in place of the thick left edge; it shares the messages' icon rule and forced-colors outline); docs/INTERFACE.md (Feedback).
 - **Nature of Contribution**: Edit. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the interface guard passes; the form screenshotted at 1280 light and dark and 390.
 - **Human Review Status**: Pending review
-- **Git Hash**: pending
+- **Git Hash**: 332a200
