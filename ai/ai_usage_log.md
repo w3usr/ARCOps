@@ -4866,4 +4866,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/css/app.css (four icon tokens, Material Symbols as CSS masks; .msg and its levels; .banner, its Careful variants and read-only; a forced-colors outline); docs/INTERFACE.md (Color, Feedback).
 - **Nature of Contribution**: Design and code generation. No template changes: the icon is drawn on ::before, so the inline messages across the templates keep their markup. Verified: contrast measured in the browser for every level word and icon on its tint, light and dark, for the generic and W3USR colors (lowest 5.2:1); 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the interface guard passes; rendered at 900 and 390 px in both themes.
 - **Human Review Status**: Pending review
-- **Git Hash**: pending
+- **Git Hash**: 2eabcb0
