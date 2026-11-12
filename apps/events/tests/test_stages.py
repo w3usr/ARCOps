@@ -179,7 +179,7 @@ def test_know_before_you_go_is_its_own_step(officer):
     url = f"/events/{ev.pk}/manage/kbyg/"
     body = c.get(url).content.decode()
     assert "Where and when" in body and "tinymce" in body
-    assert "Know before you go</a>: outline only" in _bar(body)
+    assert 'Know before you go<span class="st">: outline only</span></a>' in _bar(body)
     assert (
         "Know before you go"
         not in c.get(f"/events/{ev.pk}/manage/details/")
@@ -192,7 +192,9 @@ def test_know_before_you_go_is_its_own_step(officer):
     assert r.status_code == 302 and r["Location"] == url
     ev.refresh_from_db()
     assert "Room 101" in ev.kbyg_html and "<script" not in ev.kbyg_html
-    assert "Know before you go</a>: written" in _bar(c.get(url).content.decode())
+    assert 'Know before you go<span class="st">: written</span></a>' in _bar(
+        c.get(url).content.decode()
+    )
     Event.objects.filter(pk=ev.pk).update(display_only=True)
     assert "/manage/kbyg/" not in _bar(c.get(f"/events/{ev.pk}/manage/details/").content.decode())
 
@@ -270,3 +272,17 @@ def test_a_steps_own_forms_save_in_place(officer):
     assert (
         c.get(f"{base}/manage/publish/").content.decode().count("data-in-place") == 1
     )  # Lock, Complete
+
+
+def test_the_sidebar_marks_events_on_every_tab_of_the_workspace(officer):
+    """On Manage, its steps and Who took part the sidebar's Events entry is the current one, as on
+    the event page itself; before 2026-11-11 no entry was marked there."""
+    c = _as(officer)
+    ev = _build(c)
+    for url in (
+        f"/events/{ev.pk}/manage/",
+        f"/events/{ev.pk}/manage/locations/",
+        f"/events/{ev.pk}/participation/",
+    ):
+        body = c.get(url, follow=True).content.decode()  # /manage/ opens on a step
+        assert re.search(r'href="/events/"\s+aria-current="page"', body), url

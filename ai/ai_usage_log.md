@@ -4851,3 +4851,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit. Verified: the interface guard passes; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped).
 - **Human Review Status**: Pending review
 - **Git Hash**: 2541de7
+
+## [2026-11-11 21:51 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Rework the event's tabs, step bar and optional steps in the Material 3 style, at SK's word ("build it now", 2026-11-11), on his four choices that day: the bar on the canvas, 8px chips, the M3 tab indicator, round connected step marks. Also the sidebar marking Events on Manage and Who took part.
+- **Sections/Files Affected**: static/css/app.css (.tabs; the .stages block, including the rule that leaked the current step's fill onto the current optional step's link; the state-layer list); templates/events/stages/_layout.html (the optional steps as whole-chip links with their state inside); apps/events/views_manage.py (a `filled` flag per optional step); templates/base.html (nav_active for event_manage, event_step, participation); templates/ops/components.html (the kit's tabs, steps and chips; the Icons line); docs/INTERFACE.md (Links, A page that edits many things, Color, Shape, the workspace); apps/events/tests/test_stages.py (the chip's markup; a new test for the sidebar, seen to fail on the old line).
+- **Nature of Contribution**: Design research and code generation. A multi-agent workflow (research, three designs with rendered mockups, three judges, a synthesis) proposed it; SK chose among its options. Verified: 565 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped; Firefox does not launch on this machine, CI runs it); ruff and the repository guards pass; the built pages screenshotted at 1280 light and dark, 390 and 360, in W3USR's color, with no page or tab-strip overflow and every chip 32px.
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

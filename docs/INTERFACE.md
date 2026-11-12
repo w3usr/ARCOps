@@ -86,7 +86,9 @@ once. A form inside a menu posts as any form does.
 **A link is underlined where it sits in running text**, because there its color is the only
 other sign and color alone never carries meaning (WCAG 1.4.1). **It is not underlined where its
 place already says it is a link** (D5): the sidebar, the crumbs, the tabs, the step bar, a name
-that leads a table row, a card's title. It underlines under the pointer and on focus.
+that leads a table row, a card's title. It underlines under the pointer and on focus, except the
+sidebar, the tabs, the steps and the optional steps, which take the state-layer veil instead
+(SK, 2026-11-11).
 
 A table row has **one link**, on the thing the row is (a member's name, an event's title); the
 row's actions are buttons at its end (#230). A column of underlined names, emails and callsigns
@@ -270,10 +272,17 @@ next had been two lists of one page, and they drifted apart; one list cannot.
 - Each step is a page of its own, at its own address, drawn by the server: a list of links with
   `aria-current="step"` on the one you are on. It works with JavaScript off, and a step can be
   linked to. The page's own address opens on the first required step not done, else the last.
-- The bar is one strip of square marks: a check when a step is done, the next step outlined in the
-  club's color, a dashed mark for a step that cannot be opened yet (not a link). Under each name
-  is one word of state (*Done*, *Next*, *To do*, *After Locations*), so color is never the only
-  sign. Required steps are numbered; optional ones are not, because they are not a sequence.
+- The bar is a stepper on the canvas (SK, 2026-11-11; it was a strip of square marks in a panel,
+  #172 and #233): round marks joined by a thin line. The step you are on is the one filled mark,
+  in the club's color, its name bold; a done step is a green outline and check; the next step a
+  dark outline with its word bold; a step that cannot be opened yet a dashed mark (not a link).
+  Under each name is one word of state (*Done*, *Next*, *To do*, *After Locations*), so color is
+  never the only sign. Required steps are numbered; optional ones are not, because they are not a
+  sequence.
+- The optional steps are chips under the bar, after a muted *Optional* (SK, 2026-11-11): Material
+  3's outlined chips, 32 px, `--r-card` corners, the whole chip the link and its state inside it
+  (*Contest details: filled in*), a check when the step holds something of its own. The one you
+  are on takes the sidebar's soft fill and a bold name.
 - Each step ends with **Back to** the step before and **Continue to** the next, both secondary
   buttons with a chevron (#233; Back was a link), Continue left out when the next cannot be
   opened yet.
@@ -330,8 +339,10 @@ be the one a design system ships as its default still looks like itself.
 | `--panel-head` | A panel's header and footer band, the sidebar, a table's header row. |
 
 - **A state is a word with a colored edge or a colored word**, not a club-tinted fill: an info
-  message, the "acting for" banner and the current step take the club's color on their border;
-  an **Open** tag and an open slot take it on the word.
+  message and the "acting for" banner take the club's color on their border; an **Open** tag and
+  an open slot take it on the word. Where you are takes it as the navigation draws it: the
+  sidebar's and an optional step's soft fill, the current tab's indicator, the current step's
+  filled mark (SK, 2026-11-11).
 - **A state badge** (`.tag`, #226) is a word on a tint of its status color: `--ok`, `--warn`,
   `--bad`, the club's color for information, neutral otherwise. Always a word.
 - **An unread message keeps its dot**, not a badge (SK, 2026-11-10: "keep the dot, since a badge
@@ -377,7 +388,7 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 |---|---|---|
 | `--r-field` | 4 px | a field, a select, a badge, a slot's state |
 | `--r-button` | 6 px | a button, a menu entry, a switch, a tab's focus ring; never a pill |
-| `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu |
+| `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu, a chip (an optional step) |
 | `--r-pill` | full | the navigation's entries only: sidebar, rail and drawer (#145) |
 
 **The navigation is Material 3's** (SK, 2026-11-11, #145): a drawer entry 48 px high (M3 says
@@ -406,8 +417,10 @@ nothing; that is a panel.
 
 **The event is a workspace** (D8): one header for the event page, Manage and Who took part (the
 title with its state badge, a line of facts with icons, Announce and a ⋮ menu at the right) and
-**Roster**, **Manage** and **Who took part** as tabs under it. The step bar stays on Manage; it
-keeps its own state words beside the header's badge.
+**Roster**, **Manage** and **Who took part** as tabs under it: Material 3's primary tabs (SK,
+2026-11-11), 14 px labels at 400, the current one bold with a 3 px indicator in the club's color
+under its label; on a phone they share the width without icons. The sidebar marks Events on every
+tab. The step bar stays on Manage; it keeps its own state words beside the header's badge.
 
 ## Material 3, in our terms
 

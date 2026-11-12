@@ -83,8 +83,23 @@ part changes, it changes here first.{% endcomment %}
   </table>
 </section>
 
+<section class="panel" aria-labelledby="k-steps">
+  <header class="panel-head"><div><h2 id="k-steps">Tabs, steps and optional steps</h2><p>Where you are: bold, and the club's color on the tab's indicator, the step's filled mark or the chip's soft fill; each state also a word.</p></div></header>
+  <div class="panel-body">
+    <nav class="tabs" aria-label="Example tabs"><a href="#k-steps">{% icon 'table' 'small' %}Roster</a><a href="#k-steps" aria-current="page">{% icon 'settings' 'small' %}Manage</a><a href="#k-steps">{% icon 'users' 'small' %}Who took part</a></nav>
+    <nav class="stages" aria-label="Example steps">
+      <ol>
+        <li class="done"><a class="cell" href="#k-steps"><span class="mk" aria-hidden="true">&check;</span><span class="txt"><span class="nm">Details</span><span class="st">Done</span></span></a></li>
+        <li class="next"><a class="cell" href="#k-steps" aria-current="step"><span class="mk" aria-hidden="true">2</span><span class="txt"><span class="nm">Locations</span><span class="st">Next</span></span></a></li>
+        <li class="later"><span class="cell"><span class="mk" aria-hidden="true">3</span><span class="txt"><span class="nm">Slots</span><span class="st">After Locations</span></span></span></li>
+      </ol>
+      <ul class="opt" aria-label="Optional"><li><a href="#k-steps">{% icon 'check' 'small' %}Sign-up rules<span class="st">: set</span></a></li><li><a href="#k-steps">Know before you go<span class="st">: outline only</span></a></li></ul>
+    </nav>
+  </div>
+</section>
+
 <section class="panel" aria-labelledby="k-icons">
-  <header class="panel-head"><div><h2 id="k-icons">Icons</h2><p>Drawn on one grid; beside a word, never instead of one.</p></div></header>
+  <header class="panel-head"><div><h2 id="k-icons">Icons</h2><p>Material Symbols, one family; beside a word, never instead of one.</p></div></header>
   <ul class="rows k-icons">{% for name in icons %}<li>{% icon name %}<span>{{ name }}</span></li>{% endfor %}</ul>
 </section>
 {% endblock %}

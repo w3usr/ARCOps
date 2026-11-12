@@ -707,19 +707,31 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
                 if s.get("optional")
                 else "To do"
             )
+    # An optional step's chip carries a check when it holds something of its own (`filled`; named
+    # apart from `done`, which drives Next and Publish).
     extras = []
     if not shown_only:
         rules = (
             event.eligibility_rules.filter(slot__isnull=True).exists() or event.openings.exists()
         )
-        extras.append({"key": "rules", "word": "Set" if rules else "Club defaults"})
+        extras.append(
+            {"key": "rules", "word": "Set" if rules else "Club defaults", "filled": rules}
+        )
         filled = bool(event.contest_fields or event.calendar_ref)
         if event.type == "contest" or filled:
-            extras.append({"key": "contest", "word": "Filled in" if filled else "Not filled in"})
+            extras.append(
+                {
+                    "key": "contest",
+                    "word": "Filled in" if filled else "Not filled in",
+                    "filled": filled,
+                }
+            )
         from .services.notify import drop_empty_sections
 
         written = bool(re.sub(r"<[^>]+>|&nbsp;|\s", "", drop_empty_sections(event.kbyg_html or "")))
-        extras.append({"key": "kbyg", "word": "Written" if written else "Outline only"})
+        extras.append(
+            {"key": "kbyg", "word": "Written" if written else "Outline only", "filled": written}
+        )
     for s in extras:
         s.update(name=STEP_NAMES[s["key"]], optional=True, extra=True, open=True)
     return steps + extras

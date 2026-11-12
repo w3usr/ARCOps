@@ -422,10 +422,22 @@ button:disabled { opacity: .45; pointer-events: none; }
 /* The line is an inset shadow, painted under the tabs, so the current tab's underline covers it
    without a -1px margin: in a box that scrolls sideways that margin overflowed it by a pixel and
    drew a vertical scrollbar (SK, 2026-11-10). */
-.tabs { display: flex; gap: .25rem; margin-top: var(--s3); box-shadow: inset 0 -1px var(--line); overflow-x: auto; }
-.tabs a { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .8rem; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 700; text-decoration: none; white-space: nowrap; }
+/* Material 3's primary tabs (SK, 2026-11-11): a 48px row of 14px labels at 400; the tab you are on
+   is bold in the text color, and only its 3px indicator, as wide as its content with rounded top
+   corners, takes the club's color. */
+.tabs { display: flex; gap: 0; margin-top: var(--s2); box-shadow: inset 0 -1px var(--line); overflow-x: auto; }
+.tabs a {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 3rem; padding: 0 1rem; border-radius: var(--r-button) var(--r-button) 0 0;
+  color: var(--muted); font-size: var(--t-small); font-weight: 400; text-decoration: none; white-space: nowrap;
+}
 .tabs a:hover { color: var(--fg); }
-.tabs a[aria-current] { color: var(--fg); border-bottom-color: var(--accent); }
+.tabs a[aria-current] { color: var(--fg); font-weight: 700; }
+.tabs a[aria-current]::after {
+  content: ""; position: absolute; left: 1rem; right: 1rem; bottom: 0; height: 3px;
+  background: var(--accent); border-radius: var(--r-field) var(--r-field) 0 0;
+}
+.tabs a:focus-visible { outline-offset: -3px; }
 .k-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
 .k-icons > li + li { border-top: 0; }
 :is(.card, .section) > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
@@ -499,10 +511,10 @@ button, .button {
 /* State layers (Material 3): a veil of the control's own text color over its fill, 8% under the
    pointer and 10% focused or pressed, the same on every kind of control and with no JavaScript.
    A link-like button in a line of text keeps its underline instead. */
-:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a):hover {
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a, .tabs a, .stages .cell[href], .stages .opt a):hover {
   background-image: linear-gradient(color-mix(in srgb, currentColor 8%, transparent) 0 0);
 }
-:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a):is(:focus-visible, :active) {
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a, .tabs a, .stages .cell[href], .stages .opt a):is(:focus-visible, :active) {
   background-image: linear-gradient(color-mix(in srgb, currentColor 10%, transparent) 0 0);
 }
 /* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
@@ -940,37 +952,65 @@ li.empty { list-style: none; margin-left: -1.25rem; }
 .note.recipients { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); flex-wrap: wrap; }
 .note.recipients p { margin: 0; min-width: 0; }
 
-/* Setting an event up (#172): one strip of steps drawn like the roster's coverage strip (.sm), a
-   square mark per step, a check on green when done, the next step in the club's color. Required
-   steps are numbered because they are a sequence; optional ones are not. Only the step you are on
-   is a cell, in the pair the sidebar uses for its selected entry. */
-.stages { margin: 0 0 var(--s3); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); }  /* the bar in a panel (#233) */
-.stages ol { list-style: none; margin: 0; padding: .4rem; display: flex; gap: 2px; }
-.stages li { flex: 1 1 0; min-width: 0; }
-.stages .cell { display: flex; gap: var(--s2); align-items: flex-start; height: 100%; padding: var(--s2); border-radius: var(--r-field); color: var(--fg); text-decoration: none; }
-.stages a.cell:hover .nm { text-decoration: underline; }
-.stages .mk { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.75rem; border: 1px solid var(--line); border-radius: var(--r-field); background: var(--bg); font-size: var(--t-small); font-weight: 700; line-height: 1; color: var(--muted); }
+/* Setting an event up (#172), as a stepper on the canvas (SK, 2026-11-11; it was a strip of square
+   marks in a panel, #233). Round 24px marks joined by a 1px line. The step you are on is the one
+   filled mark, in the club's color, its name bold. Done: a green outline and check. Next: a dark
+   outline and a bold word. To do: a gray outline. Not open yet: dashed. Each keeps its word. */
+.stages { margin: var(--s1) 0 var(--s4); }
+.stages ol { list-style: none; display: flex; gap: 0; margin: 0 -.5rem; padding: 0; }
+.stages ol > li { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; }
+.stages ol > li:last-child { flex: 0 1 auto; }
+.stages ol > li:not(:last-child)::after { content: ""; flex: 1 1 1rem; min-width: 1rem; height: 1px; margin: 0 .25rem; background: var(--line-strong); }
+.stages .cell { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: .75rem; padding: .5rem; border-radius: var(--r-button); color: var(--fg); text-decoration: none; }
+.stages .mk {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem;
+  border: 1px solid var(--line-strong); border-radius: 50%;
+  font-size: var(--t-small); font-weight: 700; line-height: 1; color: var(--muted);
+}
 .stages .txt { min-width: 0; }
-.stages .nm { display: block; font-weight: 700; line-height: 1.25; }
-.stages .st { display: block; font-size: var(--t-small); color: var(--muted); line-height: 1.3; }
-.stages .done .mk { border-color: var(--ok); color: var(--ok); background: var(--tag-ok); }
-.stages .next .mk { border-color: var(--accent); color: var(--accent); }
-.stages .next .st { color: var(--accent); font-weight: 700; }
-.stages [aria-current="step"] { background: var(--accent-soft); box-shadow: inset 0 -3px 0 var(--accent); }
-.stages [aria-current="step"] .nm { color: var(--accent-soft-fg); }
-.stages .later .cell { color: var(--muted); } .stages .later .mk { border-style: dashed; }
-.stages .opt { list-style: none; margin: 0; padding: .6rem 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: var(--t-small); color: var(--muted); border-top: 1px solid var(--line); background: var(--panel-head); border-radius: 0 0 var(--r-card) var(--r-card); }
-/* An optional step as a chip: its name, a link, and its state as a word after it. */
-.stages .opt li { padding: .25rem .6rem; border: 1px solid var(--line-strong); border-radius: var(--r-button); background: var(--panel); }
-.stages .opt a { color: var(--fg); font-weight: 700; text-decoration: none; }
-.stages .opt a:is(:hover, :focus-visible) { text-decoration: underline; }
-.stages .opt a[aria-current] { color: var(--accent); }
+.stages .nm { display: block; font-size: var(--t-small); font-weight: 400; line-height: 1.3; white-space: nowrap; }
+.stages .st { display: block; font-size: var(--t-small); line-height: 1.3; color: var(--muted); white-space: nowrap; }
+.stages .done .mk { border-color: var(--ok); color: var(--ok); }
+.stages .next .mk { border-color: var(--fg); color: var(--fg); }
+.stages .next .st { color: var(--fg); font-weight: 700; }
+.stages .later .cell { color: var(--muted); }
+.stages .later .mk { border-style: dashed; }
+.stages .cell[aria-current] .mk { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.stages .cell[aria-current] .nm { color: var(--fg); font-weight: 700; }
+/* The optional steps as Material 3's outlined chips (SK, 2026-11-11): 32px, 8px corners, a 1px
+   outline at 3:1, 14px at 400. The whole chip is the link, its state inside it. The one you are on:
+   the sidebar's soft fill, the outline kept, the name bold. */
+.stages .opt { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: var(--s2) 0 0; padding: 0; font-size: var(--t-small); }
+.stages .opt::before { content: "Optional"; content: "Optional" / ""; color: var(--muted); margin-right: .25rem; }  /* the list is already named Optional */
 .stages .opt li { flex: none; }
-/* A phone: the marks stay a strip, and only the step you are on keeps its words. */
+.stages .opt a {
+  display: inline-block; line-height: 1.875rem; padding: 0 1rem;  /* 30px and the outline: 32px. Inline-block keeps "Name: state" one run */
+  border: 1px solid var(--line-strong); border-radius: var(--r-card); color: var(--fg); font-weight: 400; text-decoration: none;
+}
+.stages .opt a:has(> .icon) { padding-left: .5rem; }
+.stages .opt a > .icon { margin-right: .5rem; vertical-align: -.2rem; color: var(--ok); }
+.stages .opt .st { display: inline; color: var(--muted); }
+.stages .opt a[aria-current] { background-color: var(--accent-soft); font-weight: 700; }
+.stages .opt a[aria-current] .st { font-weight: 400; }
+@media (forced-colors: active) {
+  .tabs a[aria-current]::after { background: Highlight; }
+  .stages .opt a[aria-current] { border-width: 2px; line-height: 1.75rem; }
+}
+/* A phone: the tabs share the width without icons. The steps stay one strip: the step you are on
+   keeps its name and word, the next step its word (and its name on an optional step); the rest are
+   marks, their words read aloud. */
 @media (max-width: 40rem) {
-  .stages li:not(:has([aria-current])) { flex: none; }
-  .stages li:not(:has([aria-current])) .cell { padding: var(--s1); }
-  .stages li:not(:has([aria-current])) .txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .tabs a { flex: 1 1 0; padding: 0 .5rem; }
+  .tabs a .icon { display: none; }
+  .tabs a[aria-current]::after { left: .5rem; right: .5rem; }
+  .stages ol { margin-inline: 0; }
+  .stages ol > li:not(:last-child)::after { flex: 1 1 0; min-width: .25rem; margin: 0 .125rem; }
+  .stages .cell { gap: .5rem; padding: .25rem; }
+  .stages ol > li:not(.next):not(:has([aria-current])) .txt,
+  .stages ol:has([aria-current]) > li.next:not(:has([aria-current])) .nm {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .stages .opt::before { flex-basis: 100%; }
 }
 /* The Publish step's check (#175): what each step holds, its Change link at the end of the row;
    a required step not done in the warning color and bold, so not by color alone. */

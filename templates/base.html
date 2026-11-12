@@ -46,7 +46,7 @@ localStorage, where they would keep member names and rosters (technical addendum
     </div>
     <ul class="navlist">
       <li><a href="{% url 'dashboard' %}"{% nav_active 'dashboard' %}>{% icon 'home' %}<span>Home</span></a></li>
-      <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' %}>{% icon 'calendar' %}<span>Events</span></a></li>
+      <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' 'event_manage' 'event_step' 'participation' %}>{% icon 'calendar' %}<span>Events</span></a></li>
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
       {% if perms.ops.view_directory %}
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
