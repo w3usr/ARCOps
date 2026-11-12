@@ -4867,3 +4867,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Design and code generation. No template changes: the icon is drawn on ::before, so the inline messages across the templates keep their markup. Verified: contrast measured in the browser for every level word and icon on its tint, light and dark, for the generic and W3USR colors (lowest 5.2:1); 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the interface guard passes; rendered at 900 and 390 px in both themes.
 - **Human Review Status**: Pending review
 - **Git Hash**: 2eabcb0
+
+## [2026-11-11 22:45 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The slot generator's estimate in the same tonal style as the messages, at SK's word ("can you do something similar with the thing that estimates the slots", 2026-11-11).
+- **Sections/Files Affected**: static/css/app.css (.preview: the Note tint and info icon in place of the thick left edge; it shares the messages' icon rule and forced-colors outline); docs/INTERFACE.md (Feedback).
+- **Nature of Contribution**: Edit. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); the interface guard passes; the form screenshotted at 1280 light and dark and 390.
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

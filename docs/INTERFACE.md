@@ -468,8 +468,8 @@ Four levels, each with a word as well as a tint: **Done** (success), **Note** (i
 had a thick colored left edge and an outline): the level's tint and no border, its icon at the start
 (check, info, warning, error, Material Symbols drawn by CSS) and its word in the level's color.
 Note's tint is neutral, since the club's soft fill means where you are. A banner is drawn the same
-way: a Note, except a draft and viewing as somebody else, which are Careful. In forced colors both
-keep an outline. The list of messages is focused when the page
+way: a Note, except a draft and viewing as somebody else, which are Careful; so is the generator's
+estimate of what it will make, a Note. In forced colors all three keep an outline. The list of messages is focused when the page
 loads, because a live region that is already there when the page arrives announces nothing.
 
 A standing fact ("you are acting for a member under 18") is a banner, not a flash message. A

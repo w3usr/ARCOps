@@ -477,7 +477,7 @@ button:disabled { opacity: .45; pointer-events: none; }
    on ::before, so the thirty-odd inline messages keep their markup. Note is a neutral tint: the
    club's soft fill means where you are. */
 .msg { --ic: var(--i-info); --tone: var(--accent); position: relative; padding: .75rem 1rem .75rem 2.75rem; border: 0; border-radius: var(--r-card); margin: .5rem 0; background: var(--tag-neutral); }
-.msg::before, .banner::before { content: ""; flex: none; width: 1.25rem; height: 1.25rem; background: var(--tone); -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat; }
+.msg::before, .banner::before, .preview::before { content: ""; flex: none; width: 1.25rem; height: 1.25rem; background: var(--tone); -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat; }
 .msg::before { position: absolute; left: 1rem; top: .875rem; }
 .msg .lvl { font-weight: 700; color: var(--tone); }
 /* Four levels, each with a word and a tint. Color never carries the meaning alone (FR-62). */
@@ -677,8 +677,8 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .banner:is(.draft, .impersonating) { --ic: var(--i-warn); --tone: var(--warn); background: var(--tag-warn); }
 .banner.readonly { --tone: var(--muted); }
 @media (forced-colors: active) {
-  .msg, .banner { border: 1px solid CanvasText; }
-  .msg::before, .banner::before { background: CanvasText; }
+  .msg, .banner, .preview { border: 1px solid CanvasText; }
+  .msg::before, .banner::before, .preview::before { background: CanvasText; }
 }
 /* A standing question wears the message strip, because that is what it reads as. Its buttons
    sit on the same line as its sentence rather than beneath them. */
@@ -842,7 +842,10 @@ fieldset.group > .row > * { flex: 0 0 auto; }
 .slot-dialog fieldset.group > .row { max-width: none; }  /* a group's few small boxes share a line */
 input.num { width: calc(var(--num, 5) * 1ch + 1.6rem); }
 input.num[size="1"], input.num[size="2"] { --num: 3; }
-.preview { padding: .75rem 1rem; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--r-card); background: var(--panel); }
+/* What the generator will make (#168), drawn as a Note (SK, 2026-11-11; it had a thick left edge in
+   the club's color): the neutral tint, no border, the info icon beside its first, larger line. */
+.preview { --ic: var(--i-info); --tone: var(--accent); position: relative; padding: .75rem 1rem .75rem 2.75rem; border: 0; border-radius: var(--r-card); background: var(--tag-neutral); }
+.preview::before { position: absolute; left: 1rem; top: 1rem; }
 .preview:empty { display: none; }
 .preview strong { display: block; font-size: var(--t-lede); }
 
