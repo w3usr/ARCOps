@@ -4946,4 +4946,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/models.py (Event.signups_ahead, people_ahead); apps/events/services/lifecycle.py (set_state); apps/comms/defaults.py (the message and its description); templates/events/stages/publish.html (the dialog); apps/events/tests/test_record_kept.py (one test).
 - **Nature of Contribution**: Code generation. Verified: 610 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped).
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 7e66d35
