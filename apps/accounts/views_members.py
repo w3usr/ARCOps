@@ -22,7 +22,7 @@ from apps.credentials.models import LicenseRecord, SignedAgreement
 from apps.credentials.views import _is_approver
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
-from apps.ops.groups import may_set_access
+from apps.ops.groups import may_issue_temporary_password, may_set_access
 from apps.ops.tables import summary
 
 from . import entry, views_addresses
@@ -738,7 +738,7 @@ def member_edit(request, pk):
                 f"Account deleted. {result['withdrawn']} future sign-up(s) withdrawn; {result['agreements']} signed agreement(s) kept.",
             )
             return redirect("members")
-        elif action == "temporary_password" and actor.may("issue_temporary_password"):
+        elif action == "temporary_password" and may_issue_temporary_password(actor, member):
             temp_password = issue_temporary_password(actor, member)
             hours = int(setting("defaults.temporary_password_expiry_hours", 72))
             messages.success(
@@ -849,6 +849,7 @@ def member_edit(request, pk):
             "is_self": member == actor,
             "security": _security(member) if member == actor else None,
             "can_set_access": may_set_access(actor, member),
+            "can_issue_temp": may_issue_temporary_password(actor, member),
             "can_readmit": _may_readmit(actor, member),
             # Archiving is the second step, offered once the account is out of service: "The
             # option to Archive should only appear for accounts that are already Closed or

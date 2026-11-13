@@ -110,10 +110,10 @@ stored in.{% endcomment %}
 
 {% include "accounts/_account_form.html" with form_heading=manage_heading %}
 
-{% if perms.ops.issue_temporary_password and not is_self or perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
+{% if can_issue_temp or perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
 <section class="section" aria-labelledby="si">
   <h2 id="si">Signing in</h2>
-  {% if perms.ops.issue_temporary_password and not is_self %}
+  {% if can_issue_temp %}
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
   <p class="helptext">For a member who cannot get in. Shown once, works once, and replaces their password.</p>
   {% endif %}

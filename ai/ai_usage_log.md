@@ -4907,3 +4907,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first. Verified: 597 application tests pass, the PDF test included; pip-audit reports no known vulnerabilities; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the three guards and the migration check pass; scenario T53 passes locally (11).
 - **Human Review Status**: Pending review
 - **Git Hash**: d6e5511
+
+## [2026-11-12 19:30 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A faculty advisor may issue a temporary password (FR-7), at SK's word ("give this capability to a faculty advisor", 2026-11-12), bounded to accounts below the holder's own level so it cannot take over a peer or a sysadmin.
+- **Sections/Files Affected**: apps/ops/groups.py (may_issue_temporary_password); apps/accounts/views_members.py and templates/accounts/member_edit.html (the action and the button use it); docs/REQUIREMENTS.md (functional addendum A24); apps/accounts/tests/test_members.py (two tests, the bound one seen to fail first). The capability itself is given to W3USR's advisors in the private repository's club overlay.
+- **Nature of Contribution**: Code generation, test first. Verified: 599 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff and the three guards pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

@@ -2934,7 +2934,25 @@ captain finds **Change the time, split or merge**:
 "Both halves"; "Back-to-back only"; "Refuse". *Record:*
 `notes/2026-11-11_event-management-gaps.md` in the private repository.
 
+### A24. FR-7: a faculty advisor may issue a temporary password, below their own level
+
+**Original (FR-7).** "Sysadmins can reset any account's password to a generated temporary,
+one-time password. [...] it is shown once to the sysadmin, who passes it to the member by whatever
+means they choose."
+
+**Decision.** The capability (*Issue a one-time password for someone who cannot get in*) may be
+given to a permission level below sysadmin, as any capability is (TR-42); W3USR gives it to its
+faculty advisors. Whoever holds it below sysadmin issues one only for an account strictly below
+their own level: an advisor may help a member or an officer, never another advisor or a sysadmin.
+A temporary password signs in as the account, so from a level no higher than the account's own it
+would be a way up, as `may_set_access` already guards the groups. A sysadmin still issues one for
+anyone but themselves. Everything else in FR-7 stands: shown once, never emailed, expiring unused.
+
+**Decided** by SK on 2026-11-12: "give this capability to a faculty advisor". The bound below the
+holder's own level was added with it, since without it an advisor could take over a peer's or a
+sysadmin's account.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

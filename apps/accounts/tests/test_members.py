@@ -494,3 +494,42 @@ def test_whoever_may_confirm_an_address_finds_who_still_needs_one_proved(people)
     body = _as(people["mem"]).get("/members/?institution=unproved").content.decode()
     assert 'name="institution"' not in body and "Not proved" not in body
     assert 'name="institution"' in _as(people["off"]).get("/members/").content.decode()
+
+
+def _advisor_who_may_issue(email="adv@uni.example"):
+    """An advisor whose level carries the one-time password (a club's choice; SK, 2026-11-12)."""
+    from apps.ops.groups import permission
+
+    Group.objects.get(name="advisor").permissions.add(permission("issue_temporary_password"))
+    return User.objects.create_user(
+        email, "pw-Testing-123", groups=["advisor"], first_name="Ada", last_name="Visor"
+    )
+
+
+def test_an_advisor_given_it_issues_a_temporary_password_below_their_level(people):
+    adv = _advisor_who_may_issue()
+    c = _as(adv)
+    for who in (people["mem"], people["off"]):
+        page = c.get(f"/members/{who.pk}/edit/").content.decode()
+        assert "Issue a temporary password" in page, who
+        body = c.post(f"/members/{who.pk}/edit/", {"action": "temporary_password"}).content.decode()
+        shown = re.search(r'<code id="tpv">([^<]+)</code>', body).group(1)
+        who.refresh_from_db()
+        assert who.password_is_temporary and who.check_password(shown)
+
+
+def test_an_advisor_cannot_take_over_a_peer_or_a_sysadmin_with_one(people):
+    """A temporary password signs in as the account: from a level no higher than the account's
+    own it would be a way up (as may_set_access guards the groups)."""
+    adv = _advisor_who_may_issue()
+    peer = User.objects.create_user(
+        "adv2@uni.example", "pw-Testing-123", groups=["advisor"], first_name="Bo", last_name="Peer"
+    )
+    c = _as(adv)
+    for who in (peer, people["sys"]):
+        before = User.objects.get(pk=who.pk).password
+        page = c.get(f"/members/{who.pk}/edit/")
+        assert page.status_code == 404 or "Issue a temporary password" not in page.content.decode()
+        c.post(f"/members/{who.pk}/edit/", {"action": "temporary_password"})
+        who.refresh_from_db()
+        assert who.password == before and not who.password_is_temporary, who
