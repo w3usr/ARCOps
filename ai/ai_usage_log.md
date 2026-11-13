@@ -4914,4 +4914,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/groups.py (may_issue_temporary_password); apps/accounts/views_members.py and templates/accounts/member_edit.html (the action and the button use it); docs/REQUIREMENTS.md (functional addendum A24); apps/accounts/tests/test_members.py (two tests, the bound one seen to fail first). The capability itself is given to W3USR's advisors in the private repository's club overlay.
 - **Nature of Contribution**: Code generation, test first. Verified: 599 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff and the three guards pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: pending
+- **Git Hash**: e9a4dab
