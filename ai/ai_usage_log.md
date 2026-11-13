@@ -4939,3 +4939,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: 609 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped); the badge's contrast measured in a browser at 5.5:1 or more in both themes with the default navy and a dark purple; each changed page screenshotted light and dark and looked at.
 - **Human Review Status**: Pending review
 - **Git Hash**: bfde20c
+
+## [2026-11-12 22:14 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 258, SK's decision of 2026-11-12: marking an event completed early tells each person with a slot still to come that their slots will not run (a new message, `event.completed_early`, in the mandatory cancellation category), and the confirmation dialog says how many first.
+- **Sections/Files Affected**: apps/events/models.py (Event.signups_ahead, people_ahead); apps/events/services/lifecycle.py (set_state); apps/comms/defaults.py (the message and its description); templates/events/stages/publish.html (the dialog); apps/events/tests/test_record_kept.py (one test).
+- **Nature of Contribution**: Code generation. Verified: 610 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped).
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

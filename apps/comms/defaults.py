@@ -149,6 +149,15 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["actor", "event.title", "reason", "count"],
     },
     {
+        "key": "event.completed_early",
+        "subject": "Event finished early: {{ event.title }}",
+        "body_html": (
+            "<p>{{ event.title }} was marked completed by {{ actor }} before your slots in it "
+            "({{ count }}) came round, so they will not run. There is nothing you need to do.</p>"
+        ),
+        "variables": ["actor", "event.title", "count"],
+    },
+    {
         "key": "captain.member_cancelled",
         "subject": "{% if late %}Late cancellation{% else %}Cancellation{% endif %}: {{ person }} left {{ when }}, {{ event.title }}",
         "body_html": '<p>{{ person }} canceled their {{ role }} sign-up for {{ event.title }}, {{ when }}, {{ position }}.{% if late %} This is inside the {{ cutoff }}-hour cutoff.{% endif %}</p>{% if broken %}<p>The slot now {{ broken }}.</p>{% endif %}<p><a href="{{ link }}">Open the slot</a></p>',
@@ -412,6 +421,10 @@ TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "signup.assigned": ("A captain signed you up", "the member signed up"),
     "slot.cancelled": ("A slot was canceled", "everybody in the slot"),
     "event.cancelled": ("An event was canceled", "everybody signed up for it"),
+    "event.completed_early": (
+        "An event finished before your slot",
+        "everybody with a slot still to come",
+    ),
     "captain.member_cancelled": ("Somebody gave up a slot", "the captains"),
     "captain.access_removed": ("Somebody lost access", "the captains of events they were in"),
     "reminder": ("Your slot is tomorrow", "the member holding the slot"),

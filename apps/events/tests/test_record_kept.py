@@ -212,3 +212,26 @@ def test_removing_access_keeps_a_sign_up_with_attendance(officer):
     assert access_removed(officer, mem) == 1
     assert SignUp.objects.filter(pk=kept.pk).exists()
     assert not SignUp.objects.filter(pk=gone.pk).exists()
+
+
+# ----------------------------------------------------------------------------------- #258 ---
+
+
+def test_completing_early_tells_each_person_with_a_slot_still_to_come_once(officer):
+    """SK, 2026-11-12: they are told their slots will not run, and the dialog says so first."""
+    now = timezone.now()
+    ev, (first, second) = _event(now + timedelta(days=2), captain=officer)
+    mem, other = _user("ahead1@example.org"), _user("ahead2@example.org")
+    SignUp.objects.create(slot=first, user=mem, role="operator")
+    SignUp.objects.create(slot=second, user=mem, role="operator")
+    SignUp.objects.create(slot=first, user=other, role="mentor")
+    c = _client(officer)
+    page = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
+    dialog = page.split('<dialog id="complete-dlg"', 1)[1].split("</dialog>", 1)[0]
+    assert "2 people hold slots still to come" in dialog
+    r = c.post(f"/events/{ev.pk}/state/", {"what": "complete"}, follow=True)
+    assert Event.objects.get(pk=ev.pk).state == Event.State.COMPLETED
+    told = Outbox.objects.filter(subject__startswith="Event finished early")
+    assert sorted(told.values_list("user_id", flat=True)) == sorted([mem.pk, other.pk])
+    assert "(2)" in told.get(user=mem).body_html
+    assert "2 people with slots still to come were told" in r.content.decode()

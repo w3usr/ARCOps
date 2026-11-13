@@ -64,6 +64,20 @@ class Event(models.Model):
         p = self.periods.order_by("-end").first()
         return p.end if p else None
 
+    def signups_ahead(self):
+        """Sign-ups on slots that have not started yet: what marking the event completed early
+        leaves without a slot to run (#258)."""
+        from django.utils import timezone
+
+        return SignUp.objects.filter(
+            slot__position__location__event=self,
+            slot__start__gt=timezone.now(),
+            slot__cancelled=False,
+        )
+
+    def people_ahead(self) -> int:
+        return self.signups_ahead().values("user").distinct().count()
+
     @property
     def visible_to_members(self) -> bool:
         return self.state in (self.State.PUBLISHED, self.State.LOCKED, self.State.COMPLETED)

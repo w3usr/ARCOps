@@ -38,7 +38,22 @@ def set_state(actor, event: Event, what: str) -> str:
         event.state = st.COMPLETED
         event.completed_at = timezone.now()
         event.save(update_fields=["state", "completed_at"])
-        record(actor, "event.completed", event)
+        # The people with slots still to come are told their slots will not run; otherwise they
+        # find out by turning up (#258; SK, 2026-11-12). Reminders stop with the state.
+        by_user: dict[int, list] = {}
+        for su in event.signups_ahead().select_related("user"):
+            by_user.setdefault(su.user_id, []).append(su)
+        for sus in by_user.values():
+            send(
+                "event.completed_early",
+                sus[0].user,
+                "cancellation",
+                {"actor": actor.full_name, "event": event, "count": len(sus)},
+            )
+        record(actor, "event.completed", event, after={"people_told": len(by_user)})
+        if by_user:
+            n = len(by_user)
+            return f"Marked completed. {n} {'person' if n == 1 else 'people'} with slots still to come {'was' if n == 1 else 'were'} told."
         return "Marked completed."
     raise ValueError(f"cannot {what} an event that is {event.get_state_display().lower()}")
 

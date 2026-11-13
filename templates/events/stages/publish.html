@@ -32,6 +32,7 @@
     <dialog id="complete-dlg" class="slot-dialog confirm-dialog" aria-labelledby="complete-h">
       <h2 id="complete-h">Mark this event completed?</h2>
       <p>It moves to Past, and nobody signs up or changes a sign-up after that. It cannot be undone. An event completes on its own once its last slot has ended.</p>
+      {% with n=event.people_ahead %}{% if n %}<p>{{ n }} {{ n|pluralize:"person holds a slot,people hold slots" }} still to come. They are told the event is over and their slots will not run.</p>{% endif %}{% endwith %}
       <form method="post" action="{% url 'event_state' event.pk %}" class="confirm-actions">{% csrf_token %}<input type="hidden" name="what" value="complete"><button type="button" class="secondary" commandfor="complete-dlg" command="close">Not yet</button> <button type="submit">Mark completed</button></form>
     </dialog>{% endif %}
     {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="ghost">{% icon 'history' %}Take it back to draft</button></form>{% endif %}
