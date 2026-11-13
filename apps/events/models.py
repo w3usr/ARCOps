@@ -168,6 +168,18 @@ class Slot(models.Model):
     def is_operating(self) -> bool:
         return self.kind == "operating"
 
+    @property
+    def kept(self) -> str:
+        """Why this slot cannot be canceled, as a sentence; "" when it can. Hours and participation
+        skip a canceled slot, and canceling one with people deletes their sign-ups, so a slot
+        holding a sign-up that stays in the record (SignUp.kept) stays as well."""
+        if any(su.kept for su in self.signups.all()):
+            return (
+                "Someone in this slot has attendance recorded, or the slot has ended, "
+                "so it stays in the record and cannot be canceled."
+            )
+        return ""
+
 
 class RoleCapacity(models.Model):
     """How many of each role a slot takes (FR-49)."""

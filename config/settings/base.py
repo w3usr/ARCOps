@@ -237,6 +237,12 @@ APP_VERSION = os.environ.get("APP_VERSION", "dev")
 # Empty means no pings (development). Checks are created on first ping (?create=1).
 HEALTHCHECKS_PING_KEY = os.environ.get("HEALTHCHECKS_PING_KEY", "")
 HEALTHCHECKS_PING_URL = os.environ.get("HEALTHCHECKS_PING_URL", "https://hc-ping.com")
+# Nightly backup (TR-22): age-encrypted to a public key whose private half is held offline, so
+# the server cannot read its own backups. No recipient means the job fails rather than skip.
+BACKUP_DIR = Path(os.environ.get("BACKUP_DIR", VAR_DIR / "backup"))
+BACKUP_AGE_RECIPIENT = os.environ.get("BACKUP_AGE_RECIPIENT", "")
+BACKUP_NAME = os.environ.get("BACKUP_NAME", "ops_backup")  # the file name after the date
+BACKUP_KEEP_DAYS = 7  # the server's share; the puller keeps the long history
 # Absolute origin for links in messages composed outside a request (jobs). ALLOWED_HOSTS' first
 # entry in production; the dev server otherwise.
 SITE_URL = os.environ.get("SITE_URL", "")

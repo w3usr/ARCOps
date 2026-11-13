@@ -4915,3 +4915,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test first. Verified: 599 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff and the three guards pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: e9a4dab
+
+## [2026-11-12 20:42 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The compliance review's two data-loss findings, at SK's word ("let's fix the data loss", 2026-11-12): a slot cancel or an access removal no longer deletes a sign-up with attendance, and the nightly encrypted backup (TR-22) exists.
+- **Sections/Files Affected**: apps/events/models.py (Slot.kept); apps/events/services/notify.py (cancel_slot_with_people refuses a kept slot; access_removed leaves kept sign-ups); apps/events/views_manage.py and templates/events/_slot_body.html (the refusal and its sentence in place of the cancel button); apps/ops/management/commands/backup_nightly.py (new); apps/ops/jobs.py (backup:nightly registered); config/settings/base.py (BACKUP_DIR, BACKUP_AGE_RECIPIENT, BACKUP_NAME, BACKUP_KEEP_DAYS); docs/TECHNICAL_REQUIREMENTS.md (addendum A11); apps/events/tests/test_record_kept.py (two tests, seen to fail on the old code); apps/ops/tests/test_backup.py (three tests, new, with a stand-in age).
+- **Nature of Contribution**: Code generation. Verified: 604 application tests pass, the PDF test included; ruff, the three guards and the migration check pass; the accessibility sweep passes except three Firefox tests, which fail because Firefox does not launch on this Mac (CI runs them).
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

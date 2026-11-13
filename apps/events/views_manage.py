@@ -1578,7 +1578,9 @@ def slot_toggle(request, slot_id):
     elif what == "cancel":
         if slot.signups.exists():
             reason = request.POST.get("reason", "").strip()[:300]
-            if request.POST.get("confirmed") == "yes" and not reason:
+            if slot.kept:  # attendance would be deleted with the sign-ups
+                messages.error(request, slot.kept)
+            elif request.POST.get("confirmed") == "yes" and not reason:
                 messages.error(request, "Give a reason; the people in the slot are told it.")
             elif request.POST.get("confirmed") == "yes":
                 from .services.notify import cancel_slot_with_people

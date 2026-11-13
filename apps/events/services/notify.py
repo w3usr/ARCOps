@@ -439,7 +439,10 @@ def assigned_by_captain(actor: User, su: SignUp) -> None:
 
 
 def cancel_slot_with_people(actor: User, slot: Slot, reason: str = "") -> int:
-    """FR-52, FR-74: cancel a slot that has sign-ups; every person is told, with the reason."""
+    """FR-52, FR-74: cancel a slot that has sign-ups; every person is told, with the reason.
+    A slot with attendance to keep is refused (Slot.kept): its sign-ups would be deleted."""
+    if slot.kept:
+        raise ValueError(slot.kept)
     signups = list(slot.signups.select_related("user"))
     event = slot.event
     when = when_text(slot)
@@ -490,13 +493,16 @@ def event_cancelled(actor: User, event: Event, reason: str = "") -> int:
 
 
 def access_removed(actor: User, user: User) -> int:
-    """FR-91: the person's future sign-ups go, and each event's captains are told."""
+    """FR-91: the person's future sign-ups go, and each event's captains are told. A sign-up that
+    stays in the record (SignUp.kept: attendance in a slot under way) is left alone."""
     now = timezone.now()
-    signups = list(
-        SignUp.objects.filter(user=user, slot__end__gte=now, slot__cancelled=False).select_related(
-            "slot__position__location__event"
-        )
-    )
+    signups = [
+        su
+        for su in SignUp.objects.filter(
+            user=user, slot__end__gte=now, slot__cancelled=False
+        ).select_related("slot__position__location__event")
+        if not su.kept
+    ]
     by_event: dict[int, list[SignUp]] = {}
     for su in signups:
         by_event.setdefault(su.slot.event.pk, []).append(su)

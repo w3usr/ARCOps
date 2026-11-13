@@ -834,7 +834,28 @@ kind of gap A9 accepted for the dialogs. No menu library is added (A8).
 **Decided by** SK, 2026-11-06 (D7 of the workspace redesign). *Record:* issue #221 in the private
 repository and `notes/2026-11-05_workspace-redesign-plan.md` there.
 
+### A11. TR-22: how `backup:nightly` makes its copy
+
+**Original (TR-22).** "`backup:nightly` runs `sqlite3 .backup` for a consistent copy, tars it
+with `media/` (the signed PDFs), encrypts with `age` to a public key whose private half the
+advisor holds offline, and leaves the file in the deployment's backup directory with seven days
+retained."
+
+**Decision.** The job was never built; a compliance review on 2026-11-12 found nothing leaving
+the server. As built, it copies the database with `VACUUM INTO`: one SQL statement on the
+application's own connection, consistent against a running server in WAL mode like `.backup`,
+and compacted, which matters because about 60% of the database's pages are free after each FCC
+import (A5). The tar is gzipped and streams straight into `age`, so no unencrypted archive is
+written; the archive and its `.sha256` sidecar take their final names only when complete. The
+name after the date comes from `BACKUP_NAME`, so the file name a club's puller expects stays in
+that club's deployment configuration. The job runs only where the deployment schedules it (a
+development server holds test data). With no `BACKUP_AGE_RECIPIENT` it fails rather than skips,
+so a missing backup shows as a failed job and a late health check, never as silence.
+
+**Decided by** SK, 2026-11-12. *Record:* `notes/2026-11-12_data-loss-fixes.md` in the private
+repository.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9) and 2026-11-06 (A10), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10) and 2026-11-12 (A11), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

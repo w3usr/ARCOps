@@ -164,7 +164,9 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
       <div><button type="submit">Save override</button></div>
     </form>
   </details>
-  {% if cell.signups %}
+  {% if cell.signups and slot.kept %}
+  <p class="muted">{{ slot.kept }}</p>
+  {% elif cell.signups %}
   <p><button type="button" class="danger-outline" commandfor="slot-cancel-{{ slot.pk }}" command="show-modal">Cancel this slot</button></p>
   <dialog id="slot-cancel-{{ slot.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="slot-cancel-h-{{ slot.pk }}">
     <h2 id="slot-cancel-h-{{ slot.pk }}">Cancel this slot?</h2>

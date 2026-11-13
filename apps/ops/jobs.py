@@ -84,6 +84,12 @@ JOBS: dict[str, JobSpec] = {
             timedelta(hours=6),
         ),
         JobSpec(
+            "backup:nightly",
+            "Nightly encrypted backup (TR-22)",
+            timedelta(days=1),
+            timedelta(hours=6),
+        ),
+        JobSpec(
             "events:complete",
             "Complete events whose last slot has ended (FR-44)",
             timedelta(hours=1),

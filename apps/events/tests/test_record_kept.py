@@ -170,3 +170,45 @@ def test_a_canceled_event_is_not_canceled_twice(officer):
     ev.refresh_from_db()
     assert ev.state == Event.State.CANCELLED
     assert Outbox.objects.filter(user=mem, subject__startswith="Event canceled").count() == 1
+
+
+# --------------------------------------------------------- compliance review, 2026-11-12 ---
+
+
+def test_a_slot_under_way_with_attendance_is_not_canceled(officer):
+    """Canceling deleted every sign-up in the slot, attendance included; hours and participation
+    skip a canceled slot as well."""
+    now = timezone.now()
+    ev, (slot, _) = _event(now - timedelta(minutes=30), captain=officer)
+    here = SignUp.objects.create(
+        slot=slot, user=_user("c1@example.org"), role="operator", checked_in_at=now
+    )
+    SignUp.objects.create(slot=slot, user=_user("c2@example.org"), role="mentor")
+    c = _client(officer)
+    assert "Cancel this slot" not in c.get(f"/events/{ev.pk}/slot/{slot.pk}/").content.decode()
+    r = c.post(
+        f"/events/slot/{slot.pk}/toggle/",
+        {"what": "cancel", "confirmed": "yes", "reason": "Storm"},
+        follow=True,
+    )
+    slot.refresh_from_db()
+    assert not slot.cancelled
+    assert (
+        SignUp.objects.filter(slot=slot).count() == 2 and SignUp.objects.filter(pk=here.pk).exists()
+    )
+    assert "stays in the record" in r.content.decode()
+    assert not Outbox.objects.filter(subject__icontains="cancel").exists()
+
+
+def test_removing_access_keeps_a_sign_up_with_attendance(officer):
+    """FR-91 withdraws future sign-ups; one checked in to a slot under way is attendance."""
+    from apps.events.services.notify import access_removed
+
+    now = timezone.now()
+    mem = _user("c3@example.org")
+    ev, (on_now, later) = _event(now - timedelta(minutes=30), captain=officer)
+    kept = SignUp.objects.create(slot=on_now, user=mem, role="operator", checked_in_at=now)
+    gone = SignUp.objects.create(slot=later, user=mem, role="operator")
+    assert access_removed(officer, mem) == 1
+    assert SignUp.objects.filter(pk=kept.pk).exists()
+    assert not SignUp.objects.filter(pk=gone.pk).exists()
