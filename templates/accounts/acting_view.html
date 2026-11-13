@@ -13,11 +13,10 @@ is you, by password or by passkey, unless you did so a moment ago; moving down n
     <legend>Choose a level</legend>
     <ul class="levels">
     {% for view in views %}
-      <li>
+      <li{% if view.current %} class="current"{% endif %}>
         <div class="check">
           <input type="radio" id="v-{{ view.key }}" name="view" value="{{ view.key }}"{% if view.current %} checked{% endif %}>
-          <label for="v-{{ view.key }}">{{ view.label }}</label>
-          {% if view.current %}<span class="tag ok">where you are now</span>{% endif %}
+          <label for="v-{{ view.key }}">{{ view.label }}{% if view.current %}<span class="sr-only"> (where you are now)</span>{% endif %}</label>
           {% if view.raises %}<span class="tag warn">asks you to confirm</span>{% endif %}
         </div>
         <p class="helptext">{{ view.summary }}</p>

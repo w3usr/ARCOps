@@ -383,7 +383,11 @@ def health_overview(request):
             {"event": e, "start": start, "end": end, "health": h, "unconfirmed_48h": unconfirmed}
         )
     rows.sort(key=lambda r: r["start"])
-    return render(request, "events/health_overview.html", {"rows": rows, "weeks": weeks})
+    return render(
+        request,
+        "events/health_overview.html",
+        {"rows": rows, "weeks": weeks, "week_choices": sorted({4, 6, 12, weeks})},
+    )
 
 
 @login_required

@@ -4,7 +4,7 @@
 {% block content %}
 <h1>My {{ product.sked }}</h1>
 {% for s in ready %}
-<section class="card highlight"><h2>Check in: {{ s.slot.event.title }}</h2>
+<section class="card"><h2>Check in: {{ s.slot.event.title }}</h2>
 <p>{{ s.slot.position }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
 {% if minor_readonly %}<p class="muted">Your guardian or a captain checks you in.</p>
 {% else %}<form method="post" action="{% url 'check_in' s.pk %}" class="stack">{% csrf_token %}

@@ -14,7 +14,7 @@ stored in.{% endcomment %}
 {% endif %}
 
 {% if member.is_provisional %}
-<section class="card highlight" aria-labelledby="rv">
+<section class="card" aria-labelledby="rv">
   <h2 id="rv">Waiting for review</h2>
   <p>Joined {{ member.date_joined|date:"d M Y" }} through <strong>{{ member.joined_via.label|default:"a community link" }}</strong>{% if member.callsign %}; callsign {{ member.callsign }} ({{ member.license_letter }}){% endif %}. As a member they will see other members' names and may sign the agreements.</p>
   <div class="row">
@@ -27,7 +27,7 @@ stored in.{% endcomment %}
 {% endif %}
 
 {% if temp_password %}
-<section class="card highlight secret" aria-labelledby="tp">
+<section class="card secret" aria-labelledby="tp">
   <h2 id="tp">Temporary password for {{ member.display_first }}</h2>
   <p><code id="tpv">{{ temp_password }}</code> <button type="button" class="secondary" data-copy="#tpv">Copy</button></p>
   <p class="muted">Hand it over in person or by any means you trust. It signs in once and must be replaced at that sign-in; it is not stored and will not be shown again.</p>
@@ -172,7 +172,7 @@ once the account is already closed or suspended, because it is the second step.{
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Let them back in as a member</button></form>
   <p class="helptext">They come back as a member. A level above that is granted separately, by somebody who holds it.</p>
   {% elif member.status == 'suspended' %}
-  <p class="note">A suspension is lifted by a faculty advisor.</p>
+  <p class="msg"><span class="lvl">Note:</span> A suspension is lifted by a faculty advisor.</p>
   {% endif %}
   </div></div>
   {% endif %}

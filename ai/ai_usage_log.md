@@ -4931,3 +4931,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: 607 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped) with the new crumb test; Firefox does not launch on this Mac (CI runs it). The slot page and the new dialog were screenshotted and looked at.
 - **Human Review Status**: Pending review
 - **Git Hash**: 307189b
+
+## [2026-11-12 21:30 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Five interface items from the 2026-11-12 gap analysis (private tracker 262, 263, 264, 269, 271), with SK's choices of 2026-11-12: highlighted cards made neutral; Info and Open badges on the neutral tint with the word in the club's color; the white .note boxes drawn as Careful or Note messages; a switch's current choice drawn as the navigation's pill; the level page marks the current level by its fill; the coverage overview's weeks as a switch, its table in a panel.
+- **Sections/Files Affected**: static/css/app.css; docs/INTERFACE.md (the badge line; Shape: the pill on a switch's choices); tools/check_interface.sh (the pill allowed on `.switch a`); apps/events/views_member.py (the week choices); templates: ops/dashboard.html, events/my_schedule.html, events/health_overview.html, credentials/password.html, accounts/acting_view.html, accept_invitation.html, accept_invitation_guardian.html, entry_links.html, invitations.html, join.html, member_detail.html, member_edit.html; tests: apps/ops/tests/test_badges.py (the info pair), apps/ops/tests/test_interface.py (the coverage overview), apps/accounts/tests/test_acting_view.py (the level page).
+- **Nature of Contribution**: Code generation. Verified: 609 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped); the badge's contrast measured in a browser at 5.5:1 or more in both themes with the default navy and a dark purple; each changed page screenshotted light and dark and looked at.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

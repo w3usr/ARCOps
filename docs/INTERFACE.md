@@ -352,7 +352,9 @@ be the one a design system ships as its default still looks like itself.
   sidebar's and an optional step's soft fill, the current tab's indicator, the current step's
   filled mark (SK, 2026-11-11).
 - **A state badge** (`.tag`, #226) is a word on a tint of its status color: `--ok`, `--warn`,
-  `--bad`, the club's color for information, neutral otherwise. Always a word.
+  `--bad`, neutral otherwise. An information or Open badge is the neutral tint with the word in
+  the club's color, since the club's soft fill means where you are (SK, 2026-11-12; at least
+  5.5:1 in both themes, measured with the default navy and a dark purple). Always a word.
 - **An unread message keeps its dot**, not a badge (SK, 2026-11-10: "keep the dot, since a badge
   on every unread row is noisy and the dot is the familiar convention. A screen reader is told in
   words either way"). The dot is drawn by CSS and kept from a screen reader, which hears a hidden
@@ -395,15 +397,17 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 | Token | Radius | For |
 |---|---|---|
 | `--r-field` | 4 px | a field, a select, a badge, a slot's state |
-| `--r-button` | 6 px | a button, a menu entry, a switch, a tab's focus ring; never a pill |
+| `--r-button` | 6 px | a button, a menu entry, a tab's focus ring; never a pill |
 | `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu, a chip (an optional step) |
-| `--r-pill` | full | the navigation's entries only: sidebar, rail and drawer (#145) |
+| `--r-pill` | full | the navigation's entries (sidebar, rail and drawer, #145) and a switch's choices (#271) |
 
 **The navigation is Material 3's** (SK, 2026-11-11, #145): a drawer entry 48 px high (M3 says
 56; SK chose 48 so a long menu fits) with a 24 px icon and a 14 px label, the rail 80 px wide with
 each icon in a 56 by 32 px pill, and the entry for this page in a pill of the club's soft color,
 its label bold as well. The pill is the one exception to the corners above, and
-`tools/check_interface.sh` allows it there alone.
+`tools/check_interface.sh` allows it there alone, and on a switch's choices (`.switch`: a roster's
+*Every slot / Needs attention*, the coverage overview's weeks), whose current choice is where you
+are and is drawn as the navigation draws it (SK, 2026-11-12, #271).
 
 **A page's parts are panels on the canvas** (SK, 2026-11-06, D1; it replaces #160's sections on
 white paper). A panel (`.panel`) is one part of the page with a job: its header names it and holds
@@ -458,7 +462,7 @@ they carry would read below 4.5:1, falling back to the application's own.
 - One solid button per form.
 - No ripple: it needs JavaScript, and every page works without it.
 - No pill buttons, and surfaces are not tinted from the club's color (#160, D1). The
-  navigation's entries are the one pill (#145).
+  navigation's entries and a switch's choices are the one pill (#145, #271).
 
 ## Tables
 

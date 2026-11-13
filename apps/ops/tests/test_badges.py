@@ -31,7 +31,7 @@ def test_every_tone_reads_on_its_fill_in_both_themes():
         "ok": ("--ok", "--tag-ok"),
         "warn": ("--warn", "--tag-warn"),
         "bad": ("--bad", "--tag-bad"),
-        "info": ("--accent-soft-fg", "--tag-info"),
+        "info": ("--accent-soft-fg", "--tag-neutral"),  # #263: the word in the club's color only
     }
     low = {
         (scheme, name): round(contrast(_value(block, fg), _value(block, bg)), 2)

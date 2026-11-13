@@ -5,6 +5,7 @@ code rather than speaking to the person. A review of every template turned up a 
 that were not cosmetic at all; these are the tests for them.
 """
 
+import re
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -294,3 +295,14 @@ def test_the_footer_credits_the_authoring_club_with_a_link():
     call_command("club_import")
     body = Client().get("/accounts/login/").content.decode()
     assert f'free software from <a href="{PRODUCT_AUTHOR_URL}">{PRODUCT_AUTHOR}</a>' in body
+
+
+def test_the_coverage_overview_marks_the_window_it_shows(event):
+    """#269: 4, 6 and 12 weeks as a switch with the current one marked, and the table in a panel;
+    the default window, 6, was not among the two links it had."""
+    c = _as(event["officer"])
+    current = re.compile(r'<a href="\?weeks=(\d+)" aria-current="true">')
+    body = c.get("/events/health/").content.decode()
+    assert current.findall(body) == ["6"]
+    assert '<section class="panel" aria-label="Upcoming events">' in body
+    assert current.findall(c.get("/events/health/?weeks=12").content.decode()) == ["12"]

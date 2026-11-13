@@ -294,3 +294,11 @@ def test_next_never_leads_off_the_site():
     assert c.session["acting_view"] == "sysadmin", "the raise itself still happens"
 
     assert c.post("/me/level/", {"view": "advisor", "next": "/members/"})["Location"] == "/members/"
+
+
+def test_the_level_page_marks_the_current_level_by_fill_not_a_badge():
+    """#271: the level you act at is where you are; a screen reader still hears it in words."""
+    body = _signed_in(_sysadmin()).get("/me/level/").content.decode()
+    assert body.count('<li class="current">') == 1
+    assert '<span class="sr-only"> (where you are now)</span>' in body
+    assert 'class="tag ok"' not in body.split("Choose a level", 1)[1], "no green badge"

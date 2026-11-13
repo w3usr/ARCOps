@@ -43,7 +43,7 @@
      holds against the brand-colored panels. */
   --focus: #9a6700; --focus-halo: #ffffff;
   --tag-ok: #d8f0e0; --tag-warn: #fff1cc; --tag-bad: #fbdada;
-  --tag-info: var(--accent-soft); --tag-neutral: #eceff3;
+  --tag-neutral: #eceff3;
   /* A message's or banner's icon, one per level: Material Symbols (#145) drawn as a mask in the level's color. */
   --i-ok: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z'/%3E%3C/svg%3E");
   --i-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z'/%3E%3C/svg%3E");
@@ -300,7 +300,6 @@ footer.site .credit a { color: inherit; }
 
 /* --------------------------------------------------------- components */
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); padding: 1.25rem; margin: 1rem 0; }
-.card.highlight { border-color: var(--accent); }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
 /* A part of a page: its heading and what is under it, on the page itself, with a rule above
    the next part. A card is only for a thing that stands on its own, such as a message or an
@@ -391,10 +390,12 @@ button:disabled { opacity: .45; pointer-events: none; }
 .search > input { padding-left: 2.2rem; max-width: none; }
 /* A switch (#229): two or three choices with counts, links with aria-current, so it is an address
    and works with JavaScript off ("All slots 50", "Needs someone 2"). */
-.switch { display: inline-flex; flex-wrap: wrap; gap: .2rem; padding: .2rem; background: var(--panel-head); border: 1px solid var(--line); border-radius: var(--r-button); }
-.switch a { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem; border-radius: var(--r-button); color: var(--muted); font-size: var(--t-small); font-weight: 700; text-decoration: none; }
+.switch { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
+/* A switch's current choice is where you are, drawn as the navigation draws it: the club's soft
+   fill in a pill, the label bold (#271; SK, 2026-11-12). The others are quiet until pointed at. */
+.switch a { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .8rem; border-radius: var(--r-pill); color: var(--muted); font-size: var(--t-small); font-weight: 400; text-decoration: none; }
 .switch a:hover { color: var(--fg); }
-.switch a[aria-current] { background: var(--panel); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+.switch a[aria-current] { background: var(--accent-soft); color: var(--accent-soft-fg); font-weight: 700; }
 .switch .n { font-weight: 400; }
 
 /* A data table in a panel (#230, D5): quiet headings on the band, a divider per row, a tint under
@@ -468,7 +469,7 @@ button:disabled { opacity: .45; pointer-events: none; }
 .tag.ok { background: var(--tag-ok); color: var(--ok); }
 .tag.warn, .tag.note { background: var(--tag-warn); color: var(--warn); }
 .tag.bad { background: var(--tag-bad); color: var(--bad); }
-.tag:is(.info, .open) { background: var(--tag-info); color: var(--accent-soft-fg); }
+.tag:is(.info, .open) { background: var(--tag-neutral); color: var(--accent-soft-fg); }  /* the club's color on the word only: its soft fill means where you are (#263) */
 .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
 .messages:focus { outline: none; }
 /* Messages and banners in Material 3's tonal style (SK, 2026-11-11; they had a thick left edge and
@@ -924,7 +925,10 @@ pre { overflow-x: auto; max-width: 100%; }
 .levels > li:first-child { border-top: 0; padding-top: 0; }
 .levels > li:last-child { padding-bottom: 0; }
 .levels .check { gap: var(--s1) var(--s2); flex-wrap: wrap; }
-.levels label { font-weight: 700; }
+/* The level you act at now is where you are: the soft fill and the bold label, it alone (#271). */
+.levels > li.current { background: var(--accent-soft); border-radius: var(--r-card); padding: var(--s2); margin-inline: calc(-1 * var(--s2)); }  /* the fill reaches out; the radio stays in line */
+.levels > li.current label { font-weight: 700; color: var(--accent-soft-fg); }
+.levels > li.current + li { border-top: 0; }
 .levels .helptext { margin: var(--s1) 0 0 1.7rem; }
 .levels details { margin-left: 1.7rem; }
 .levels summary { font-size: var(--t-small); }

@@ -13,7 +13,7 @@
   <div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>
   {% endif %}
 {% endfor %}
-<p class="note">The club holds the details above so it can schedule you and reach you. Other members see only your first name, callsign, and license class. You can ask for your account to be closed at any time. The <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> has the rest.</p>
+<p class="msg"><span class="lvl">Note:</span> The club holds the details above so it can schedule you and reach you. Other members see only your first name, callsign, and license class. You can ask for your account to be closed at any time. The <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> has the rest.</p>
 <button type="submit">Create my account</button>
 </form>
 {% endblock %}

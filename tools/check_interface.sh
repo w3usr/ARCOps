@@ -109,8 +109,9 @@ WEIGHTS = {"400", "700", "inherit"}
 # Three corners by hierarchy (docs/INTERFACE.md, "Shape"), and a circle.
 RADIUS = re.compile(r"border-radius:\s*([^;}]+)")
 RADII = {f"var(--r-{t})" for t in ("field", "button", "card")} | {"50%"}
-# The one exception, the navigation's pill (#145; SK, 2026-11-11): its entries only.
-PILL, PILL_RULE = "var(--r-pill)", ".navlist a, .navbtn {"
+# The one exception, the navigation's pill (#145; SK, 2026-11-11): its entries, and a switch's
+# choices, whose current one is where you are (#271; SK, 2026-11-12).
+PILL, PILL_RULE = "var(--r-pill)", (".navlist a, .navbtn {", ".switch a {")
 for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates").rglob("*.html"))]:
     if "email" in path.parts or path.name.endswith("_pdf.html"):
         continue  # mail and PDFs have their own type; neither loads app.css

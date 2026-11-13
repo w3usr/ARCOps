@@ -11,7 +11,7 @@ N3KN"); the name and callsign stay at the foot of the sidebar, on every page.{% 
 to do about it now, the same actions as My schedule (FR-72, FR-113). It comes straight after the
 heading, and the event's link after the action, so that inside its window Check in is the first
 thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
-<section class="card highlight next-slot" aria-labelledby="next">
+<section class="card next-slot" aria-labelledby="next">
   <h2 id="next">{{ s.slot.event.title }}</h2>
   <p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
   <p><strong>{% if s.slot.start <= now %}On now{% else %}In {{ s.slot.start|timeuntil:now }}{% endif %}</strong>: {{ s.slot.position.name }} at {{ s.slot.position.location.name }}, as {{ s.role|role_label }}{% if s.checked_in_at %} <span class="tag ok">checked in</span>{% elif s.confirmed_at %} <span class="tag">confirmed</span>{% endif %}</p>
@@ -22,7 +22,7 @@ thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
   <p><a class="button secondary" href="{% url 'event_detail' s.slot.event.pk %}">{% icon 'table' %}Open the roster</a></p>
 </section>
 {% endwith %}{% elif invite %}{% with e=invite.0 n=invite.1 %}
-<section class="card highlight" aria-labelledby="inv">
+<section class="card" aria-labelledby="inv">
   <h2 id="inv"><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></h2>
   <p class="when">{% when e.starts_at e.ends_at e year=True %}</p>
   <p>{{ n }} open slot{{ n|pluralize }}. Tick the hours you can do on the roster and sign up for them together.</p>
@@ -45,10 +45,10 @@ them (NAF, 2026-09-22).{% endcomment %}
 {% if perms.ops.view_member_records %}
 {% comment %}Only the unusual state is worth saying. Mail going out is what is meant to
 happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% endcomment %}
-{% if delivery_mode != 'on' %}<p class="note"><strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all in the <a href="{% url 'outbox' %}">outbox</a>.</p>{% endif %}
+{% if delivery_mode != 'on' %}<p class="msg warning"><span class="lvl">Careful:</span> <strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all in the <a href="{% url 'outbox' %}">outbox</a>.</p>{% endif %}
 {% endif %}
 {% if pending_review %}
-<section class="card highlight" aria-labelledby="rev">
+<section class="card" aria-labelledby="rev">
   <h2 id="rev">Provisional members waiting for review</h2>
   <ul class="list">{% for p in pending_review %}<li><a href="{% url 'member_detail' p.pk %}">{{ p.full_name }}{% if p.callsign %} {{ p.callsign }} ({{ p.license_letter }}){% endif %}</a>, joined {{ p.date_joined|date:"j M" }} via {{ p.joined_via.label|default:"a community link" }}</li>{% endfor %}</ul>
 </section>
@@ -60,7 +60,7 @@ happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% 
 </section>
 {% endif %}
 {% if checkin_ready %}
-<section class="card highlight" aria-labelledby="ci">
+<section class="card" aria-labelledby="ci">
   <h2 id="ci">You can also check in now</h2>
   {% for s in checkin_ready %}
   <form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}

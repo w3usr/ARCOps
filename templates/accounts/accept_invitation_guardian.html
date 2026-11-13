@@ -13,7 +13,7 @@
   <div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>
   {% endif %}
 {% endfor %}
-<p class="note">The member's own email and mobile number are optional; yours are required. Members under 18 do not sign access agreements, and you do not sign them on their behalf. The <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> says what the club holds about both of you.</p>
+<p class="msg"><span class="lvl">Note:</span> The member's own email and mobile number are optional; yours are required. Members under 18 do not sign access agreements, and you do not sign them on their behalf. The <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> says what the club holds about both of you.</p>
 <button type="submit">Create the account{% if not guardian %}s{% endif %}</button>
 </form>
 {% endblock %}
