@@ -111,7 +111,7 @@ def _offered(officer):
 
 def test_an_offer_on_a_canceled_slot_cannot_be_taken(officer):
     ev, slot, w, entry = _offered(officer)
-    _client(officer).post(f"/events/slot/{slot.pk}/toggle/", {"what": "cancel"})
+    _client(officer).post(f"/events/slot/{slot.pk}/toggle/", {"what": "cancel", "confirmed": "yes"})
     slot.refresh_from_db()
     assert slot.cancelled
     c = _client(w)

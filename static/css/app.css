@@ -405,7 +405,7 @@ button:disabled { opacity: .45; pointer-events: none; }
 .table.data :is(th, td):first-child { padding-left: 1.25rem; }
 .table.data :is(th, td):last-child { padding-right: 1.25rem; }
 .table.data thead th { background: var(--panel-head); border-bottom: 1px solid var(--line); }
-.table.data tbody tr:last-child td { border-bottom: 0; }
+.table.data tbody tr:last-child :is(td, th) { border-bottom: 0; }  /* th too: a row heading (#268) */
 .table.data tbody tr:hover { background: color-mix(in srgb, var(--fg) 3%, transparent); }
 .table.data tbody :is(td, th) a:not(.button) { font-weight: 700; text-decoration: none; }
 .table.data tbody :is(td, th) a:not(.button):is(:hover, :focus-visible) { text-decoration: underline; }
@@ -522,10 +522,10 @@ button, .button {
 /* State layers (Material 3): a veil of the control's own text color over its fill, 8% under the
    pointer and 10% focused or pressed, the same on every kind of control and with no JavaScript.
    A link-like button in a line of text keeps its underline instead. */
-:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a, .tabs a, .stages .cell[href], .stages .opt a):hover {
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, details:not(.filter) > summary, .roster .slot-link, .tag-button, .menu a, .tabs a, .stages .cell[href], .stages .opt a):hover {
   background-image: linear-gradient(color-mix(in srgb, currentColor 8%, transparent) 0 0);
 }
-:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, .roster .slot-link, .tag-button, .menu a, .tabs a, .stages .cell[href], .stages .opt a):is(:focus-visible, :active) {
+:is(button:not(.linklike), .button, .navlist a, .navbtn, .iconbtn, .filter > summary, details:not(.filter) > summary, .roster .slot-link, .tag-button, .menu a, .tabs a, .stages .cell[href], .stages .opt a):is(:focus-visible, :active) {
   background-image: linear-gradient(color-mix(in srgb, currentColor 10%, transparent) 0 0);
 }
 /* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
@@ -650,6 +650,8 @@ label .req { margin-left: .15rem; }
 .table.data tbody th[scope=row] { font-weight: 400; text-align: left; }
 .titlerow h1 { margin-bottom: .5rem; }
 .crumbs { margin: 0 0 .5rem; font-size: var(--t-small); color: var(--muted); }
+.crumbs a { text-decoration: none; }  /* D5: underlined only under the pointer and on focus (#265) */
+.crumbs a:is(:hover, :focus-visible) { text-decoration: underline; }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; align-items: start; }
 .cols > .card, .cols > .stack > .card { margin: 0; }
 .searchrow { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
@@ -1070,15 +1072,13 @@ dialog.slot-dialog:modal { margin: auto; }  /* centered, even as a card's last c
 
 /* Something more to read, folded: one look everywhere. A chevron in the action color that turns
    as it opens, and what opens set in under a thin rule, so it reads as belonging to its line. */
-details:not(.filter) > summary { list-style: none; cursor: pointer; width: fit-content; font-weight: 700; border-radius: var(--r-field); }
+details:not(.filter) > summary { list-style: none; cursor: pointer; width: fit-content; font-weight: 700; border-radius: var(--r-field); padding: .15rem .4rem; margin-left: -.4rem; }  /* room for the state layer; the text stays put (#270) */
 details:not(.filter) > summary::-webkit-details-marker { display: none; }
 details:not(.filter) > summary::before {
   content: ""; display: inline-block; width: .45em; height: .45em; margin: 0 .6em .15em .15em;
   border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg);
 }
 details[open]:not(.filter) > summary::before { transform: rotate(45deg); margin-bottom: .3em; }
-details:not(.filter) > summary:hover { color: var(--accent); }
-details:not(.filter) > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 details:not(.filter, .inline) { margin-block: var(--s2); }
 details[open]:not(.filter, .card, .msglist details) > :not(summary) { margin-left: .35rem; padding-left: .9rem; border-left: 2px solid var(--line); }
 /* A whole message or announcement folded into its card: the summary is its heading line. */

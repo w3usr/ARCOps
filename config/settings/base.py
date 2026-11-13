@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.forms",  # its widget templates, for FORM_RENDERER below
     "allauth",
     "allauth.account",
     "allauth.mfa",
@@ -93,6 +94,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 _template_dirs = [BASE_DIR / "templates"]
 if CLUB_OVERLAY_DIR and (CLUB_OVERLAY_DIR / "templates").is_dir():
     _template_dirs.insert(0, CLUB_OVERLAY_DIR / "templates")  # overlay wins (TR-41)
+
+# Forms render through TEMPLATES, so templates/django/forms/ can restyle a form's own markup:
+# an error about the whole form is a Problem message, like any other (#261).
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 TEMPLATES = [
     {

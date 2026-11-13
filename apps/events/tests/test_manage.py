@@ -200,7 +200,7 @@ def test_slot_close_cancel_duplicate_and_cancel_event(officer):
     c.post(f"/events/slot/{s.pk}/toggle/", {"what": "close"})
     s.refresh_from_db()
     assert s.closed
-    c.post(f"/events/slot/{s.pk}/toggle/", {"what": "cancel"})
+    c.post(f"/events/slot/{s.pk}/toggle/", {"what": "cancel", "confirmed": "yes"})
     s.refresh_from_db()
     assert s.cancelled
     c.post(f"/events/{ev.pk}/duplicate/")
@@ -281,7 +281,7 @@ def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
 
     # Re-timing an empty slot: cancel it, and its time is free to add again.
     empty = Slot.objects.get(position=run, start__hour=20, kind="operating")
-    c.post(f"/events/slot/{empty.pk}/toggle/", {"what": "cancel"})
+    c.post(f"/events/slot/{empty.pk}/toggle/", {"what": "cancel", "confirmed": "yes"})
     assert add("2026-06-27T20:30", minutes="30").status_code == 302
 
     member = User.objects.create_user("mem@example.org", "pw-Testing-123", groups=["member"])

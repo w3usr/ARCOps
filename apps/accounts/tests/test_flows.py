@@ -574,3 +574,16 @@ def test_the_emailed_invitation_link_proves_the_mailbox_and_the_copied_one_does_
     )
     assert row.proof == "vouched"
     assert addresses.confirmed(User.objects.by_address("guessed@example.org").get())
+
+
+def test_an_error_about_the_whole_form_is_a_problem_message():
+    """#261: a wrong password is the whole form's error, drawn as the messages are; an error
+    under one field stays a plain list."""
+    User.objects.create_user("someone@example.org", "pw-Testing-123", groups=["member"])
+    body = (
+        Client()
+        .post("/accounts/login/", {"login": "someone@example.org", "password": "wrong-Testing-1"})
+        .content.decode()
+    )
+    assert re.search(r'<div class="msg error nonfield"><span class="lvl">Problem:</span> \S', body)
+    assert 'class="errorlist nonfield"' not in body

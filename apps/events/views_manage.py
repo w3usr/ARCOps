@@ -922,11 +922,16 @@ def period_add(request, pk):
     _captain_or_404(request.user, event)
     form = PeriodForm(request.POST or None, event=event)
     if request.method == "POST" and form.is_valid():
-        OperatingPeriod.objects.create(
-            event=event, start=form.cleaned_data["start"], end=form.cleaned_data["end"]
+        start, end = form.cleaned_data["start"], form.cleaned_data["end"]
+        OperatingPeriod.objects.create(event=event, start=start, end=end)
+        record(
+            request.user,
+            "event.edited",
+            event,
+            before={"period": None},
+            after={"period": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC"},
         )
         messages.success(request, "Operating period added.")
-        end = form.cleaned_data["end"]
         if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
             messages.warning(
                 request,
@@ -1066,7 +1071,16 @@ def location_add(request, pk):
             address=d["address"].strip(),
             order=event.locations.count() + 1,
         )
-        Position.objects.create(location=loc, name=d["position"].strip() or "Station", order=1)
+        first = Position.objects.create(
+            location=loc, name=d["position"].strip() or "Station", order=1
+        )
+        record(
+            request.user,
+            "event.edited",
+            event,
+            before={"location": None},
+            after={"location": loc.name, "position": first.name},
+        )
         messages.success(request, f"Location “{loc.name}” added with its first position.")
         return done(request, step_url(pk, "locations"))
     return form_page(
@@ -1152,6 +1166,13 @@ def position_add(request, pk, location_id):
     if request.method == "POST" and form.is_valid():
         name = form.cleaned_data["name"].strip() or f"Position {loc.positions.count() + 1}"
         Position.objects.create(location=loc, name=name, order=loc.positions.count() + 1)
+        record(
+            request.user,
+            "event.edited",
+            event,
+            before={"position": None, "location": loc.name},
+            after={"position": name},
+        )
         messages.success(request, f"Position “{name}” added.")
         return done(request, step_url(pk, "locations"))
     return form_page(
@@ -1574,6 +1595,7 @@ def slot_toggle(request, slot_id):
     if what == "close":
         slot.closed = not slot.closed
         slot.save(update_fields=["closed"])
+        record(request.user, "slot.close" if slot.closed else "slot.reopen", slot)  # as slots.close
         messages.success(request, "Slot closed." if slot.closed else "Slot reopened.")
     elif what == "cancel":
         if slot.signups.exists():
@@ -1592,11 +1614,13 @@ def slot_toggle(request, slot_id):
                     request,
                     "This slot has people in it. Cancel it from the slot page with a reason, so they are told; or remove the sign-ups first.",
                 )
-        else:
+        elif request.POST.get("confirmed") == "yes":  # the dialog's button (#257)
             slot.cancelled = True
             slot.save(update_fields=["cancelled"])
             record(request.user, "slot.cancelled", slot)
             messages.success(request, "Slot canceled.")
+        else:
+            messages.error(request, "Cancel the slot from its page; it asks you to confirm.")
     if slot.cancelled:  # gone from the roster, so there is no slot to come back to
         return redirect("event_detail", pk=event.pk)
     return roster_or_slot(request, slot)

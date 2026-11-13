@@ -190,7 +190,7 @@ def test_a_slots_override_starts_from_the_events_rule(officer):
     ev = _future(c)
     slot = _live(ev).first()
     page = c.get(f"/events/{ev.pk}/slot/{slot.pk}/").content.decode()
-    form = page.split("Who may sign up for this slot", 1)[1].split("</form>", 2)[-2]
+    form = page.split("Who may sign up for this slot", 1)[1].split("</details>", 1)[0]
     assert 'value="any"' in form  # the override can say "any class"
     assert "data-rule=" in form  # each role carries the rule it starts from
 

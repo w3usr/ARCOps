@@ -113,7 +113,6 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
   </form>{% endif %}
   <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}
     <button name="what" value="close" class="secondary">{% if slot.closed %}{% icon 'unlock' %}Reopen slot{% else %}{% icon 'lock' %}Close slot{% endif %}</button>
-    {% if not cell.signups %}<button name="what" value="cancel" class="danger">{% icon 'trash' %}Cancel slot</button>{% endif %}
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
   {% comment %}Re-time, split, merge (FR-46, #156; SK, 2026-11-11): with people in the slot too.
@@ -164,19 +163,19 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
       <div><button type="submit">Save override</button></div>
     </form>
   </details>
-  {% if cell.signups and slot.kept %}
+  {% if slot.kept %}
   <p class="muted">{{ slot.kept }}</p>
-  {% elif cell.signups %}
+  {% else %}
   <p><button type="button" class="danger-outline" commandfor="slot-cancel-{{ slot.pk }}" command="show-modal">Cancel this slot</button></p>
   <dialog id="slot-cancel-{{ slot.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="slot-cancel-h-{{ slot.pk }}">
     <h2 id="slot-cancel-h-{{ slot.pk }}">Cancel this slot?</h2>
-    <p>The slot goes off the roster and cannot be brought back. {{ cell.signups|length }} {{ cell.signups|length|pluralize:"person is,people are" }} in it, and {{ cell.signups|length|pluralize:"is,are" }} told, with your reason.</p>
+    <p>The slot goes off the roster and cannot be brought back. {% if cell.signups %}{{ cell.signups|length }} {{ cell.signups|length|pluralize:"person is,people are" }} in it, and {{ cell.signups|length|pluralize:"is,are" }} told, with your reason.{% else %}Nobody is in it, so nobody is told.{% endif %}</p>
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
-      <div class="field">
+      {% if cell.signups %}<div class="field">
         <label for="cancel-reason-{{ slot.pk }}">Reason <span class="req" aria-hidden="true">*</span></label>
         <input id="cancel-reason-{{ slot.pk }}" name="reason" maxlength="300" placeholder="Station closed for the storm" required>
-      </div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="slot-cancel-{{ slot.pk }}" command="close">Keep the slot</button> <button class="danger">Cancel the slot and tell {{ cell.signups|length }}</button></div>
+      </div>{% endif %}
+      <div class="confirm-actions"><button type="button" class="secondary" commandfor="slot-cancel-{{ slot.pk }}" command="close">Keep the slot</button> <button class="danger">{% if cell.signups %}Cancel the slot and tell {{ cell.signups|length }}{% else %}Cancel the slot{% endif %}</button></div>
     </form>
   </dialog>
   {% endif %}

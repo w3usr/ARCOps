@@ -12,7 +12,7 @@ numbered because they are a sequence; the optional ones are not. Each step's sta
 well as a mark, never color alone. Drawn as a stepper on the canvas since SK, 2026-11-11.{% endcomment %}
 <nav class="stages" id="stages" aria-label="Setting up this event">
   <ol>{% for s in steps %}
-    <li class="{% if s.done %}done{% elif s.next %}next{% elif not s.open %}later{% endif %}">{% if s.open and event %}<a class="cell" href="{% url 'event_step' event.pk s.key %}"{% if s.key == step.key %} aria-current="step"{% endif %}>{% else %}<span class="cell"{% if s.key == step.key %} aria-current="step"{% endif %}>{% endif %}<span class="mk" aria-hidden="true">{% if s.done %}&check;{% else %}{{ s.number }}{% endif %}</span><span class="txt"><span class="nm">{{ s.name }}</span><span class="st">{{ s.word }}</span></span>{% if s.open and event %}</a>{% else %}</span>{% endif %}</li>{% endfor %}
+    <li class="{% if s.done %}done{% elif s.next %}next{% elif not s.open %}later{% endif %}">{% if s.open and event %}<a class="cell" href="{% url 'event_step' event.pk s.key %}"{% if s.key == step.key %} aria-current="step"{% endif %}>{% else %}<span class="cell"{% if s.key == step.key %} aria-current="step"{% endif %}>{% endif %}<span class="mk" aria-hidden="true">{% if s.done %}{% icon 'check' 'small' %}{% else %}{{ s.number }}{% endif %}</span><span class="txt"><span class="nm">{{ s.name }}</span><span class="st">{{ s.word }}</span></span>{% if s.open and event %}</a>{% else %}</span>{% endif %}</li>{% endfor %}
   </ol>
   {% comment %}The optional steps as chips (SK, 2026-11-11): the whole chip is the link and its state is
 inside it, so the link's name says it; a check when the step holds something of its own.{% endcomment %}

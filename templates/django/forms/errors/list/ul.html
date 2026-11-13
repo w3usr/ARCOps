@@ -1,0 +1,2 @@
+{% comment %}Django's error list. An error about the whole form is a Problem message, as the
+messages are (#261); the errors under a field stay a plain list.{% endcomment %}{% if errors %}{% if "nonfield" in error_class %}<div class="msg error nonfield"><span class="lvl">Problem:</span>{% if errors|length == 1 %} {{ errors.0 }}{% else %}<ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}</div>{% else %}<ul class="{{ error_class }}">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}{% endif %}

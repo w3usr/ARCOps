@@ -4923,3 +4923,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: 604 application tests pass, the PDF test included; ruff, the three guards and the migration check pass; the accessibility sweep passes except three Firefox tests, which fail because Firefox does not launch on this Mac (CI runs them).
 - **Human Review Status**: Pending review
 - **Git Hash**: 77061fb
+
+## [2026-11-12 21:08 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Six of the open event and interface items from the 2026-11-12 gap analysis (private tracker 257, 259, 261, 265, 268, 270), at SK's word ("let's work on other tickets"): canceling an empty slot asks first; adding a period, location or position, and closing or reopening one slot, are audited; an error about a whole form is a Problem message; breadcrumbs are underlined only under the pointer and on focus; the stepper's done mark is the check icon and a table's last row has no stray line; fold-out headings take the same hover and focus as every other control.
+- **Sections/Files Affected**: apps/events/views_manage.py; templates/events/_slot_body.html; templates/events/stages/_layout.html; templates/ops/template_edit.html (the crumb no longer repeats the heading, which axe flagged once crumbs lost their underline); static/css/app.css; config/settings/base.py (FORM_RENDERER, django.forms); templates/django/forms/errors/list/ul.html (new); apps/events/tests/test_slot_cancel_and_audit.py (new); apps/accounts/tests/test_flows.py; tools/a11y/test_crumbs.py (new, seen to fail without the rule); apps/events/tests/test_manage.py, test_record_kept.py, test_defaults_shown.py (a cancel now confirms; the override form sliced by its fold-out).
+- **Nature of Contribution**: Code generation. Verified: 607 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped) with the new crumb test; Firefox does not launch on this Mac (CI runs it). The slot page and the new dialog were screenshotted and looked at.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
