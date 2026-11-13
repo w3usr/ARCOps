@@ -4947,3 +4947,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: 610 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped).
 - **Human Review Status**: Pending review
 - **Git Hash**: 7e66d35
+
+## [2026-11-12 22:58 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Two findings of the 2026-11-12 compliance audit, at SK's word (private tracker 326, 286), and the decisions behind them and private tracker 258 in the functional addendum (A25 to A27): adding or confirming an address on another account is bounded to accounts below the actor's level (A24's bound, now one `outranks()`); mail from the sign-in library reaches a minor's guardians, carries the club Reply-To, and is filed in My messages without its link.
+- **Sections/Files Affected**: apps/ops/groups.py (outranks; may_issue_temporary_password uses it); apps/accounts/views_addresses.py (may_edit, may_correct); apps/accounts/views_members.py (the two flags for the page); templates/accounts/_addresses.html (draws only what the reader may use); apps/accounts/adapter.py (render_mail: guardians and Reply-To; send_mail: the filed copy); docs/REQUIREMENTS.md (addendum A25, A26, A27); apps/accounts/tests/test_addresses.py and test_phase7.py (one test each, both seen to fail on the old code).
+- **Nature of Contribution**: Code generation and documentation. Verified: 613 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped) after the address change; check.sh's one failure is the PDF test without the Homebrew library path, which passes with it.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

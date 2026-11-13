@@ -21,17 +21,17 @@ depending on delivery.{% endcomment %}
         {% if a.proof == 'vouched' or not a.proof %}
           {% if address_subject_is_self %}
           <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Prove it is yours</button></form>
-          {% elif perms.ops.manage_member_addresses %}
+          {% elif address_may_edit %}
           <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Confirm it myself</button></form>
           {% endif %}
         {% endif %}
-        {% if perms.ops.correct_member_addresses and not address_subject_is_self %}
+        {% if address_may_correct and not address_subject_is_self %}
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="secondary small">Stop it signing them in</button></form>
         {% endif %}
       {% else %}
         {% if address_subject_is_self %}
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Send the confirmation link</button></form>
-        {% else %}
+        {% elif address_may_edit %}
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_send_link"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Send them the link</button></form>
         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_confirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Confirm it myself</button></form>
         {% endif %}
@@ -39,10 +39,10 @@ depending on delivery.{% endcomment %}
       {% comment %}A member sets their own club mail and takes their own addresses off; an
       officer who needs to shut an account out suspends it, where the act is named and reasoned
       (NAF, 2026-09-19).{% endcomment %}
-      {% if address_subject_is_self or perms.ops.correct_member_addresses %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>{% endif %}
-      {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}<button type="button" class="ghost danger small" commandfor="addr-rm-{{ forloop.counter }}" command="show-modal">{% icon 'trash' 'small' %}Remove this address</button>{% endif %}
+      {% if address_may_correct %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_delivery"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Turn club mail {% if a.delivery %}off{% else %}on{% endif %}</button></form>{% endif %}
+      {% if a.can_remove and address_may_correct %}<button type="button" class="ghost danger small" commandfor="addr-rm-{{ forloop.counter }}" command="show-modal">{% icon 'trash' 'small' %}Remove this address</button>{% endif %}
     </div>
-    {% if a.can_remove and address_subject_is_self or a.can_remove and perms.ops.correct_member_addresses %}
+    {% if a.can_remove and address_may_correct %}
     <dialog id="addr-rm-{{ forloop.counter }}" class="slot-dialog confirm-dialog" aria-labelledby="addr-rm-h-{{ forloop.counter }}">
       <h2 id="addr-rm-h-{{ forloop.counter }}">Remove {{ a.address }}?</h2>
       <p>Club mail stops going to {{ a.address }}{% if a.confirmed %}, and it stops signing {% if address_subject_is_self %}you{% else %}them{% endif %} in{% endif %}. It can be added again afterwards, and confirmed again.</p>
@@ -52,10 +52,10 @@ depending on delivery.{% endcomment %}
   </li>
 {% endfor %}
 </ul>
-<form method="post" class="row-form">{% csrf_token %}
+{% if address_may_edit %}<form method="post" class="row-form">{% csrf_token %}
   <input type="hidden" name="action" value="address_add">
   <label for="new-address">Add an address</label>
   <input type="email" id="new-address" name="address" placeholder="name@example.org" required>
   <button type="submit" class="secondary">Add</button>
-</form>
+</form>{% endif %}
 <p class="helptext">Club mail goes to every address with club mail on, confirmed or not. Signing in and password resets use any confirmed address. An account keeps at least one address.</p>

@@ -136,4 +136,54 @@ class AccountAdapter(DefaultAccountAdapter):
             if mimetype == "text/html":
                 html = wrap(content, footer_html=small_print)
                 alts[i] = type(alt)(html, mimetype) if hasattr(alt, "content") else (html, mimetype)
+        # The club's own path, which this mail does not take (#286): a minor is never written to
+        # without the guardians (FR-70), and a reply goes to the club (FR-69).
+        msg.to = sorted({*msg.to, *_guardian_addresses(context.get("user"))})
+        if setting("club.contact_email", ""):
+            msg.reply_to = [setting("club.contact_email", "")]
         return msg
+
+    def send_mail(self, template_prefix, email, context_):
+        """Send as the library does, then file a copy in the person's messages (FR-82). The copy
+        leaves the link out: officers read the outbox, and a reset link there would open the
+        account (#286). Mail to an address with no account is filed nowhere."""
+        from django.contrib.sites.shortcuts import get_current_site
+        from django.utils import timezone
+        from django.utils.html import escape
+
+        from apps.comms.models import Outbox
+        from apps.comms.services import compose
+
+        request = context.request
+        ctx = {"request": request, "email": email, "current_site": get_current_site(request)}
+        msg = self.render_mail(template_prefix, email, {**ctx, **context_})
+        msg.send()
+        user = context_.get("user")
+        if user is None or not getattr(user, "pk", None):
+            return
+        kind = "security" if "password_reset" in template_prefix else "account"
+        filed = compose(
+            user,
+            kind,
+            msg.subject,
+            f"<p>Sent to {escape(', '.join(msg.to))}. Its link is not kept here, so it works only "
+            "from the email itself. If you did not ask for it, nothing changes unless the link is "
+            "used.</p>",
+            deliver_now=False,
+            to=list(msg.to),
+        )
+        filed.state, filed.sent_at, filed.reply_to = Outbox.State.SENT, timezone.now(), msg.reply_to
+        filed.save(update_fields=["state", "sent_at", "reply_to"])
+
+
+def _guardian_addresses(user) -> list[str]:
+    """Where a minor's guardians take club mail; nothing for anyone else."""
+    if user is None or not getattr(user, "under_18", False):
+        return []
+    from apps.comms.services import recipient_addresses
+
+    return [
+        a
+        for g in user.guardianships.filter(active=True).select_related("guardian")
+        for a in recipient_addresses(g.guardian)
+    ]

@@ -830,6 +830,14 @@ def member_edit(request, pk):
             "manage_heading": "Details" if member == actor else "Manage",
             "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
             "address_subject_is_self": member == actor,
+            # Which address controls this reader has on this account (#326); the page draws
+            # nothing the POST would refuse.
+            "address_may_edit": __import__(
+                "apps.accounts.views_addresses", fromlist=["may_edit"]
+            ).may_edit(actor, member),
+            "address_may_correct": __import__(
+                "apps.accounts.views_addresses", fromlist=["may_correct"]
+            ).may_correct(actor, member),
             "deletion": __import__(
                 "apps.accounts.services", fromlist=["deletion_effects"]
             ).deletion_effects(member)

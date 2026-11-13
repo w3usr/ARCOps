@@ -2952,7 +2952,60 @@ anyone but themselves. Everything else in FR-7 stands: shown once, never emailed
 holder's own level was added with it, since without it an advisor could take over a peer's or a
 sysadmin's account.
 
+### A25. FR-82: mail the sign-in library sends is filed without its link
+
+**Original (FR-82).** "Every message the system sends, or would have sent, to a person is visible
+to that person in the application ("my messages"), so a lost or undelivered email is recoverable
+and a guardian can see what a minor was sent."
+
+**Decision.** The password reset and the address confirmation are sent by the sign-in library,
+not through the club's own messages, and until 2026-11-12 they were filed nowhere, carried no
+Reply-To (FR-69), and reached a minor without the guardians (FR-70). They now take all three. The
+copy filed in the person's messages says what was sent, when and to which addresses, and **leaves
+the link out**: officers read the outbox (FR-82's own officer view), and a live reset link there
+would open the account. Nothing that matters is lost, since a person reading their messages is
+already signed in. A minor's reset goes to the guardians as well as to the address typed in:
+FR-70 says there is no path by which a minor is messaged without the guardian, and it outranks
+FR-107's "to that address" for a minor. An adult's reset still goes only to the address typed in.
+
+**Decided** by SK on 2026-11-12, from the choice between this and keeping the whole mail hidden
+from officers: "include the addenda and commit the fixes". *Record:* private tracker 286.
+
+### A26. Section 2.6: an address is confirmed for someone else only below one's own level
+
+**Original (section 2.6).** "Any address the member has **confirmed** signs them in, by following
+a link sent to that address or by an officer saying it is theirs (the same waiver as FR-120)."
+
+**Decision.** An officer, or anyone holding *Add an address to another account, and confirm one*,
+adds and confirms an address only on an account strictly below their own level; the same holds
+for taking an address, its confirmation or its club mail off another account. A confirmed address
+receives the password reset (FR-107), so on a peer's or a sysadmin's account the officer's word
+was a way into it: the 2026-11-12 audit found an officer and an advisor could take over a
+sysadmin's account that way. The bound is A24's, shared by the code. An officer still confirms a
+member's address, which is the help section 2.6 meant; an advisor's or a sysadmin's address is
+confirmed by its owner or by a sysadmin. The page draws only the controls the reader may use.
+
+**Decided** by SK on 2026-11-12: "let's do 326", with this entry approved the same evening.
+*Record:* private tracker 326.
+
+### A27. FR-44 and FR-74: completing an event early tells the people with slots still to come
+
+**Original (FR-44).** "*Completed* is set by a captain or officer, or automatically once the last
+slot has ended, whichever comes first." **(FR-74)** "when a slot, an event, or a sign-up is
+canceled by someone other than the member, everyone affected is told".
+
+**Decision.** Completing an event by hand while people hold slots that have not started is, for
+them, a cancellation of those slots by someone else, though the event is not canceled. Each of
+them is told once that their slots will not run (*Event finished early*, in the cancellation
+category, which nobody can switch off). The confirmation (A22) says how many people that is before
+anyone confirms, and the page after says how many were told. Completion once the last slot has
+ended tells nobody, since nobody has a slot ahead.
+
+**Decided** by SK on 2026-11-12: "let's go with your recommendation" (tell them, and say how many
+in the dialog), from the choice between that and a warning in the dialog alone. *Record:* private
+tracker 258.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

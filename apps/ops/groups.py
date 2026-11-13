@@ -102,21 +102,23 @@ def may_set_access(actor, subject) -> bool:
     return theirs <= mine if actor.may("appoint_peers") else theirs < mine
 
 
-def may_issue_temporary_password(actor, subject) -> bool:
-    """Whether this person may give that account a one-time password (FR-7).
-
-    A temporary password signs in as the account, so it reaches only accounts strictly below the
-    holder's own level: a faculty advisor holding it (SK, 2026-11-12) may help a member or an
+def outranks(actor, subject) -> bool:
+    """Whether the actor's level is strictly above the subject's: what any act needs that could
+    sign in as the subject, or let somebody else do so. A faculty advisor may help a member or an
     officer, never another advisor or a sysadmin, or it would be a way up, as may_set_access
-    guards the groups. A sysadmin at the top level may help anyone but themselves.
-    """
-    if not actor.may("issue_temporary_password") or subject.pk == actor.pk:
+    guards the groups. A sysadmin at the top level outranks everyone but themselves."""
+    if subject.pk == actor.pk:
         return False
     if actor.is_superuser and getattr(actor, "acting_capabilities", None) is None:
         return True
     if subject.is_superuser:
         return False
     return capabilities_held(subject) < capabilities_held(actor)
+
+
+def may_issue_temporary_password(actor, subject) -> bool:
+    """A temporary password signs in as the account (FR-7; A24, SK, 2026-11-12)."""
+    return actor.may("issue_temporary_password") and outranks(actor, subject)
 
 
 def permission(codename: str) -> Permission:

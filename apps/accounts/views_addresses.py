@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from django.contrib import messages
 
+from apps.ops.groups import outranks
+
 from . import addresses
 from .models import Address, User
 
@@ -31,8 +33,12 @@ ACTIONS = (
 
 def may_edit(actor: User, subject: User) -> bool:
     """A member holds their own addresses; an officer can add one and confirm one, because
-    somebody has to be able to help a member who has lost the mailbox they signed up with."""
-    return actor.pk == subject.pk or actor.may("manage_member_addresses")
+    somebody has to be able to help a member who has lost the mailbox they signed up with. A
+    confirmed address receives the password reset, so only on an account below the officer's own
+    level: on a peer's or a sysadmin's it was a way into that account (#326)."""
+    return actor.pk == subject.pk or (
+        actor.may("manage_member_addresses") and outranks(actor, subject)
+    )
 
 
 def may_correct(actor: User, subject: User) -> bool:
@@ -44,7 +50,9 @@ def may_correct(actor: User, subject: User) -> bool:
     settings in their own accounts." An officer who needs to shut an account out suspends it,
     where the act is named, reasoned and lifted by somebody answerable for it (FR-91).
     """
-    return actor.pk == subject.pk or actor.may("correct_member_addresses")
+    return actor.pk == subject.pk or (
+        actor.may("correct_member_addresses") and outranks(actor, subject)
+    )  # taking a sysadmin's address off could shut them out (#326)
 
 
 def handle(request, subject: User) -> bool:

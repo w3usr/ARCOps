@@ -265,3 +265,33 @@ def test_an_officer_adds_and_confirms_but_does_not_take_away():
         {"action": "address_delivery", "address": "mem.home@example.org"},
     )
     assert not [a for a in addresses.on_file(m) if a.address == "mem.home@example.org"][0].delivery
+
+
+@pytest.mark.parametrize("level", ["officer", "advisor"])
+def test_nobody_adds_or_confirms_an_address_on_an_account_at_or_above_their_level(level):
+    """#326: a confirmed address receives the password reset, so adding and confirming one on a
+    sysadmin's or a peer's account was a way into it. The same bound as A24's temporary
+    password: only accounts strictly below the actor's level."""
+    actor = _member(f"{level}@example.edu", groups=[level])
+    peer = _member(f"peer.{level}@example.edu", groups=[level])
+    sysadmin = User.objects.create_user(
+        "sys@example.edu", PASSWORD, first_name="Sys", last_name="Admin", is_superuser=True
+    )
+    c = Client()
+    c.force_login(actor)
+    for target in (peer, sysadmin):
+        addresses.add(target, f"waiting.{target.pk}@example.org")  # unconfirmed, on file
+        body = c.get(f"/members/{target.pk}/edit/").content.decode()
+        assert "Confirm it myself" not in body and 'value="address_add"' not in body
+        for action, address in (
+            ("address_add", "attacker@example.org"),
+            ("address_confirm", f"waiting.{target.pk}@example.org"),
+        ):
+            c.post(f"/members/{target.pk}/edit/", {"action": action, "address": address})
+        on_file = {a.address for a in addresses.on_file(target)}
+        assert "attacker@example.org" not in on_file, target
+        assert f"waiting.{target.pk}@example.org" not in addresses.confirmed(target), target
+
+    below = _member("below@example.edu")  # a member: still helped, as before
+    c.post(f"/members/{below.pk}/edit/", {"action": "address_add", "address": "new@example.org"})
+    assert "new@example.org" in {a.address for a in addresses.on_file(below)}

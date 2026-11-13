@@ -444,3 +444,27 @@ def test_a_minor_with_no_address_of_their_own_holds_none_and_cannot_sign_in():
     assert User.objects.by_address("parent@example.org").get() == guardian, (
         "the guardian's address still reaches only the guardian's account"
     )
+
+
+def test_a_minor_s_password_reset_reaches_the_guardian_and_is_filed_without_its_link(settings):
+    """#286: the sign-in library's mail went around the club's own path, so a reset asked for a
+    minor's address reached the minor alone (FR-70), with no Reply-To (FR-69) and no copy in My
+    messages (FR-82). The copy leaves the link out: officers can read the outbox."""
+    from django.core import mail
+
+    from apps.comms.models import Outbox
+    from apps.ops.config import set_setting
+
+    set_setting(None, "club.contact_email", "club@example.org")
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    officer, guardian, minor = _family()
+    Client().post("/accounts/password/reset/", {"email": "kid@example.org"})
+    assert len(mail.outbox) == 1
+    sent = mail.outbox[0]
+    assert set(sent.to) == {"kid@example.org", "parent@example.org"}
+    assert sent.reply_to == ["club@example.org"]
+    filed = Outbox.objects.get(user=minor, category="security")
+    assert filed.subject == sent.subject and filed.state == Outbox.State.SENT
+    assert set(filed.to_addresses) == {"kid@example.org", "parent@example.org"}
+    assert "/accounts/password/reset/key/" not in filed.body_html + filed.body_text
+    assert "/accounts/password/reset/key/" in sent.body  # the mail itself still works
