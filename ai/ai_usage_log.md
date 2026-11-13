@@ -4954,4 +4954,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/groups.py (outranks; may_issue_temporary_password uses it); apps/accounts/views_addresses.py (may_edit, may_correct); apps/accounts/views_members.py (the two flags for the page); templates/accounts/_addresses.html (draws only what the reader may use); apps/accounts/adapter.py (render_mail: guardians and Reply-To; send_mail: the filed copy); docs/REQUIREMENTS.md (addendum A25, A26, A27); apps/accounts/tests/test_addresses.py and test_phase7.py (one test each, both seen to fail on the old code).
 - **Nature of Contribution**: Code generation and documentation. Verified: 613 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped) after the address change; check.sh's one failure is the PDF test without the Homebrew library path, which passes with it.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 9c378ce
