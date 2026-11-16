@@ -65,15 +65,14 @@ def test_only_an_advisor_or_above_approves_an_access_agreement():
     """The capability used to hang on the club position, so an elected officer in a marked
     position could approve. It is a capability of its own now, held by the advisor group."""
     from apps.credentials.services import approvers
-    from apps.credentials.views import _is_approver
 
     sysadmin = _user("sys@example.org", is_superuser=True)
     advisor = _user("adv@example.org", ["advisor"])
     officer = _user("off@example.org", ["officer"], club_positions=["faculty_advisor"])
     member = _user("mem@example.org", ["member"])
 
-    assert _is_approver(sysadmin) and _is_approver(advisor)
-    assert not _is_approver(officer) and not _is_approver(member)
+    assert sysadmin.may("approve_agreements") and advisor.may("approve_agreements")
+    assert not officer.may("approve_agreements") and not member.may("approve_agreements")
     assert {u.pk for u in approvers()} == {sysadmin.pk, advisor.pk}
 
     # and the approvals page follows the same rule

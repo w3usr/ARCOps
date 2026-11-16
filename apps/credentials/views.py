@@ -41,17 +41,6 @@ DECISION_COLUMNS = [
 ]
 
 
-def _is_approver(user) -> bool:
-    """Who may approve access to the station: a faculty advisor or a sysadmin.
-
-    This used to be a flag on the club position, so an elected officer holding a marked position
-    could approve. The advisor asked on 2026-09-17 for it to follow the access level instead:
-    "Faculty Advisors should have the ability to approve access agreements. Club officers should
-    not." Station access is the club's answer to the University, so it belongs to the level the
-    University appoints, not to a position the club votes on."""
-    return user.may("approve_agreements")
-
-
 def _applicable_templates(user):
     return [
         t
@@ -208,17 +197,9 @@ def credential_needs_institution(credential) -> bool:
     return credential.key in set(wanted) and bool(institution_domains())
 
 
-def needs_institution_email(agreement) -> bool:
-    """Whether this credential may not be granted without one."""
-    return credential_needs_institution(agreement.credential)
-
-
 def institution_domain_label() -> str:
     """The institution's domains as a person reads them: one, or several joined by "or"."""
-    domains = institution_domains()
-    if len(domains) <= 1:
-        return domains[0] if domains else ""
-    return " or ".join(domains)
+    return " or ".join(institution_domains())
 
 
 def institution_address_proved(user) -> bool:
@@ -233,7 +214,9 @@ def institution_address_ok(address: str) -> bool:
 
 @login_required
 def approvals(request):
-    if not _is_approver(request.user):
+    # A capability of the level, not of a club position: "Faculty Advisors should have the
+    # ability to approve access agreements. Club officers should not." (the advisor, 2026-09-17)
+    if not request.user.may("approve_agreements"):
         raise Http404
     # Only signatures somebody could act on. An account is ended four ways -- closed, suspended,
     # archived, deleted -- and the first two leave `is_active` alone and empty the groups
@@ -250,7 +233,7 @@ def approvals(request):
             "a": a,
             "institution_address": _institution_address(a.user),
             "institution_rows": list(a.user.addresses.filter(kind="institution")),
-            "needs_institution": needs_institution_email(a)
+            "needs_institution": credential_needs_institution(a.credential)
             and not institution_address_ok(_institution_address(a.user, proven_only=True)),
         }
         for a in queue
@@ -375,7 +358,7 @@ def _decision_log(request) -> dict:
         )
         d.needs_institution = (
             d.reversible
-            and needs_institution_email(d.agreement)
+            and credential_needs_institution(d.agreement.credential)
             and not (institution_address_ok(_institution_address(d.agreement.user)))
         )
     pager = request.GET.copy()
@@ -402,7 +385,7 @@ def _decision_log(request) -> dict:
 @login_required
 @require_POST
 def decide(request, pk):
-    if not _is_approver(request.user):
+    if not request.user.may("approve_agreements"):
         raise Http404
     # A declined signature can still be approved: the decline may have been a slip, and making
     # the member sign again to undo somebody else's mistake is the wrong way round (FR-22).
@@ -449,7 +432,7 @@ def decide(request, pk):
         messages.error(request, "That agreement is already declined.")
         return redirect("approvals")
     if request.POST.get("decision") == "approve":
-        if needs_institution_email(a):
+        if credential_needs_institution(a.credential):
             # FR-27, tightened 2026-09-20. The evidence is a **confirmed** institution address,
             # and approving is not where an address gets confirmed: the advisor asked for the
             # standard to be confirmation, with a manual confirmation as the override. That

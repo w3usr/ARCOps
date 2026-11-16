@@ -19,7 +19,6 @@ from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods
 
 from apps.credentials.models import LicenseRecord, SignedAgreement
-from apps.credentials.views import _is_approver
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
 from apps.ops.groups import may_issue_temporary_password, may_set_access
@@ -843,16 +842,14 @@ def member_edit(request, pk):
             ).deletion_effects(member)
             if actor.may("delete_accounts")
             else None,
-            "can_revoke": __import__(
-                "apps.credentials.views", fromlist=["_is_approver"]
-            )._is_approver(actor),
+            "can_revoke": actor.may("approve_agreements"),
             "temp_password": temp_password,
             "standing": _standing(member),
             "guardian_links": list(
                 member.guardianships.select_related("guardian").order_by("-active", "created")
             ),
             "wards": list(member.wards.filter(active=True).select_related("minor")),
-            "is_approver": _is_approver(actor),
+            "is_approver": actor.may("approve_agreements"),
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
             "security": _security(member) if member == actor else None,

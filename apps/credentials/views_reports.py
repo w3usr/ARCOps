@@ -28,7 +28,6 @@ from .services import (
     rotate_shared_secret,
     store_agreement_pdf,
 )
-from .views import _is_approver
 
 
 @login_required
@@ -291,7 +290,7 @@ def access_rosters(request):
 def agreement_pdf(request, pk):
     """FR-23: the signer and the approvers can download the signed agreement as a tagged PDF."""
     a = get_object_or_404(SignedAgreement, pk=pk)
-    if a.user != request.user and not _is_approver(request.user):
+    if a.user != request.user and not request.user.may("approve_agreements"):
         raise Http404
     # The stored file states a standing, so it is rebuilt when a decision is newer than it.
     # Rebuilding here rather than on every decision keeps the nightly expiry job from rendering
@@ -316,7 +315,7 @@ def agreement_pdf(request, pk):
 @require_POST
 def agreement_revoke(request, pk):
     """FR-29: an approver revokes an approval with a reason."""
-    if not _is_approver(request.user):
+    if not request.user.may("approve_agreements"):
         raise Http404
     a = get_object_or_404(SignedAgreement, pk=pk, state=SignedAgreement.State.APPROVED)
     reason = request.POST.get("reason", "").strip()
