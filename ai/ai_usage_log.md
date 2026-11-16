@@ -5097,4 +5097,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A13: `Outbox` has no channel, and its two never-written states are gone, after private tracker 185; the footer's date list).
 - **Nature of Contribution**: Analysis and documentation (addendum). Every behaviour change in the window was checked for its functional addendum (A24 to A35, all present); the one requirement left untrue was the technical data-model table's `Outbox` channel. The body is not edited. Verified: the club-neutral and requirement-ID guards.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: bc265c8
