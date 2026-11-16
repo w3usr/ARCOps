@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.conf import settings as dj
 from django.core import signing
 from django.utils import timezone
 
@@ -31,10 +30,6 @@ from .services import compose
 
 UNSUB_SALT = "announcement-unsubscribe"
 STATUS_FILTERS = {"open": "empty", "needs": "not_viable", "thin": "at_risk", "covered": "viable"}
-
-
-def _site() -> str:
-    return getattr(dj, "SITE_URL", "") or ""
 
 
 def unsubscribe_token(user, category: str = "announcement") -> str:

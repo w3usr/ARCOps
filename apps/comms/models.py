@@ -23,10 +23,8 @@ class Outbox(models.Model):
 
     class State(models.TextChoices):
         NOT_SENT = "not_sent", "Not sent (email off)"
-        QUEUED = "queued", "Queued"
         SENT = "sent", "Sent"
         FAILED = "failed", "Failed"
-        OUTSIDE = "outside", "Sent outside the system"
         SKIPPED = "skipped", "Not emailed (preference off)"
 
     user = models.ForeignKey(
@@ -37,7 +35,6 @@ class Outbox(models.Model):
     announcement = models.ForeignKey(
         "Announcement", null=True, blank=True, on_delete=models.SET_NULL, related_name="messages"
     )
-    channel = models.CharField(max_length=10, default="email")
     category = models.CharField(
         max_length=40
     )  # reminder | warning | announcement | account | agreement ...

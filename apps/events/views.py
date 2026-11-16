@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -410,11 +409,3 @@ def publish(request, pk):
     if request.POST.get("from") == "manage":
         return redirect("event_step", pk=pk, step="publish")
     return redirect("event_detail", pk=pk)
-
-
-def roster_counts(event):  # used by templates via view context if needed
-    return (
-        SignUp.objects.filter(slot__position__location__event=event)
-        .values("role")
-        .annotate(n=Count("id"))
-    )

@@ -179,10 +179,6 @@ class Slot(models.Model):
         return self.position.location.event
 
     @property
-    def is_operating(self) -> bool:
-        return self.kind == "operating"
-
-    @property
     def kept(self) -> str:
         """Why this slot cannot be canceled, as a sentence; "" when it can. Hours and participation
         skip a canceled slot, and canceling one with people deletes their sign-ups, so a slot

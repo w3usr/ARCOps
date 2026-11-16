@@ -8,11 +8,9 @@ from datetime import timedelta
 from ..models import (
     Captaincy,
     Event,
-    Location,
     OnAirRange,
     Opening,
     OperatingPeriod,
-    Position,
     RoleCapacity,
     Slot,
 )
@@ -132,6 +130,3 @@ def generate_with_capacities(
 
 def has_signups(event: Event) -> bool:
     return Slot.objects.filter(position__location__event=event, signups__isnull=False).exists()
-
-
-__all__ = ["duplicate_event", "generate_with_capacities", "has_signups", "Location", "Position"]
