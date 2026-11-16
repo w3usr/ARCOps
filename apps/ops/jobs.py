@@ -41,10 +41,6 @@ class JobSpec:
         """The healthchecks.io check slug: ops-<name> with punctuation as hyphens."""
         return "ops-" + self.name.replace(":", "-").replace("_", "-")
 
-    @property
-    def command(self) -> str:
-        return self.name.replace(":", "_")
-
 
 JOBS: dict[str, JobSpec] = {
     spec.name: spec
@@ -103,11 +99,6 @@ JOBS: dict[str, JobSpec] = {
         ),
     )
 }
-
-
-def register(spec: JobSpec) -> None:
-    """Later phases add their jobs here (reminders, warnings, uls:sync, ...)."""
-    JOBS[spec.name] = spec
 
 
 def ping(slug: str, ok: bool) -> bool:
