@@ -255,22 +255,6 @@ def _groups_line(subject: User) -> str:
     return ", ".join(names) or "No access"
 
 
-def _position_line(subject: User) -> str:
-    """The offices the member holds, in the club's own words and the club's own order, one per
-    line as the addresses above them are (the advisor, 2026-09-20)."""
-    held = set(subject.club_positions or [])
-    labels = [p["label"] for p in (setting("club_positions", []) or []) if p.get("key") in held]
-    return "\n".join(labels)
-
-
-def _label(setting_key: str, key: str) -> str:
-    """The configured label for a category or position, rather than its key."""
-    for row in setting(setting_key, []) or []:
-        if row.get("key") == key:
-            return row.get("label", key)
-    return key or ""
-
-
 # Beyond the fields: what else a person can do on somebody's account page. A reader who holds
 # none of these and no editable field sees the profile and no way to change it.
 MANAGING_CAPABILITIES = (
@@ -309,7 +293,7 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     "the stored user first, middle, and last names printed read-only in the details box", where
     a callsign makes them the FCC's and nobody's to type (FR-8).
     """
-    from apps.ops.templatetags.labels import phone
+    from apps.ops.templatetags.labels import category_label, phone, position_labels
 
     rows: list[dict] = []
 
@@ -322,8 +306,9 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     add("last_name", "Last name", subject.last_name)
     add("preferred_name", "Preferred name", subject.preferred_name)
     add("callsign", "Callsign", subject.callsign)
-    add("category", "Category", _label("member_categories", subject.category))
-    add("club_positions", "Club positions", _position_line(subject))
+    add("category", "Category", category_label(subject.category))
+    # One office per line, as the addresses above them are (the advisor, 2026-09-20).
+    add("club_positions", "Club positions", "\n".join(position_labels(subject.club_positions)))
     add("groups", "Permission level", _groups_line(subject))
     add("cell_phone", "Mobile number", phone(subject.cell_phone))
     if subject.under_18:
