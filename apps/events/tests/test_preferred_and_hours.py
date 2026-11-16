@@ -28,7 +28,7 @@ def test_a_technician_makes_a_general_event_viable_with_a_warning():
     SignUp.objects.create(slot=s, user=person("acc", None, station=True, it=True), role="operator")
     st = evaluate(s)
     assert st.status in ("viable", "at_risk") and st.below_preferred == "Technician"
-    data = build(s.event, person("viewer"), "utc")
+    data = build(s.event, person("viewer"))
     cell = data["days"][0].rows[0].cells[0]
     assert (
         cell.shown.word == "Covered"

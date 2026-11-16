@@ -4,9 +4,8 @@ The roster as the reader sees it (design run of 2026-09-13, second round).
 Everything the template needs is assembled here: slots grouped under day headings in the
 leading zone, each with its hours in that zone and in the other; a grid (time down, one column
 per position) when the event has up to four positions, a list otherwise; and a status phrased
-as what the slot needs from the reader, never as a verdict on it. FR-36 makes the event's zone
-(falling back to the club's) the display zone, so it leads and UTC follows unless the viewer
-swaps them.
+as what the slot needs from the reader, never as a verdict on it. UTC leads and the event's
+zone (falling back to the club's, FR-36) follows.
 
 The viability engine (viability.evaluate) is unchanged; this module only re-words its result.
 Red is reserved for a captain looking at a slot that has people in it, still cannot operate,
@@ -359,16 +358,13 @@ def _fold_runs(day: Day, lead_zone: ZoneInfo, other_zone: ZoneInfo | None, open_
 def build(
     event: Event,
     viewer,
-    lead: str = "utc",
     now: datetime | None = None,
     filter: str = "",
     open_fold: str = "",
 ) -> dict:
     now = now or timezone.now()
     local = display_zone(event)
-    lead_zone, other_zone = (local, UTC) if lead == "local" or local == UTC else (UTC, local)
-    if lead == "utc":
-        lead_zone, other_zone = UTC, local
+    lead_zone, other_zone = UTC, local
     starts, ends = event.starts_at(), event.ends_at()
     lead_label = zone_label(starts or now, lead_zone)
     # One of the two zones is UTC, so equal labels mean every time would print twice: a contest
@@ -508,7 +504,6 @@ def build(
         "single_location": positions[0].location if positions and single_location else None,
         "days": list(days.values()),
         "counts": counts,
-        "lead": "utc" if lead_zone == UTC else "local",
         # The event's zone at its start, not today's (FR-36): a November event read in October
         # is EST, as its rows are. ponytail: one label for the event; one that crosses a
         # change of clocks shows the zone it starts in, and each row still names its own.
@@ -535,10 +530,10 @@ def build(
     }
 
 
-def cell_for(slot: Slot, viewer, lead: str = "local") -> tuple[Cell, dict]:
+def cell_for(slot: Slot, viewer) -> tuple[Cell, dict]:
     """One slot's cell plus the zone strings the slot page shows; built through `build` so the
     wording is identical to the roster's."""
-    data = build(slot.event, viewer, lead)
+    data = build(slot.event, viewer)
     for day in data["days"]:
         for row in day.rows:
             for c in row.cells:

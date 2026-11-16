@@ -76,18 +76,15 @@ def _as(u, view="sysadmin"):
     return c
 
 
-def test_grid_layout_days_in_local_zone_with_utc_beneath(world):
-    data = build(world["ev"], world["mem"], "local")
+def test_grid_layout_days_in_utc_with_local_zone_beneath(world):
+    data = build(world["ev"], world["mem"])
     assert data["layout"] == "grid" and len(data["positions"]) == 2
-    assert data["lead_label"] == "EDT" and data["other_label"] == "UTC"
-    # 00:00Z Saturday is Friday evening locally: the setup slot and the first hours share Friday.
-    assert data["days"][0].heading == "Friday 25 September"
-    row = data["days"][0].rows[1]
-    assert row.lead_range == "20:00–21:00 EDT" and row.other_range == "Sat 00:00–01:00 UTC"
+    assert data["lead_label"] == "UTC" and data["other_label"] == "EDT"
+    assert data["days"][0].heading == "Friday 25 September"  # 23:00Z setup slot
+    assert data["days"][1].heading == "Saturday 26 September"
+    row = data["days"][1].rows[0]  # 00:00Z Saturday is Friday evening locally
+    assert row.lead_range == "00:00–01:00 UTC" and row.other_range == "Fri 20:00–21:00 EDT"
     assert len(row.cells) == 2 and all(row.cells)
-    utc = build(world["ev"], world["mem"], "utc")
-    assert utc["days"][0].heading == "Friday 25 September"  # 23:00Z setup slot
-    assert utc["days"][1].heading == "Saturday 26 September"
 
 
 def test_the_zone_label_follows_the_event_not_today(world):
@@ -96,9 +93,9 @@ def test_the_zone_label_follows_the_event_not_today(world):
     ev = world["ev"]
     start = datetime(2026, 11, 4, 18, 0, tzinfo=UTC)
     ev.periods.update(start=start, end=start + timedelta(hours=4))
-    data = build(ev, world["mem"], "local", now=datetime(2026, 10, 15, 12, 0, tzinfo=UTC))
-    assert data["lead_label"] == "EST" and data["other_label"] == "UTC"
-    assert data["span"]["lead"].endswith("EST")
+    data = build(ev, world["mem"], now=datetime(2026, 10, 15, 12, 0, tzinfo=UTC))
+    assert data["lead_label"] == "UTC" and data["other_label"] == "EST"
+    assert data["span"]["other"].endswith("EST")
 
 
 def test_a_utc_event_shows_each_time_once(world):
@@ -107,12 +104,11 @@ def test_a_utc_event_shows_each_time_once(world):
     ev = world["ev"]
     ev.display_timezone = "UTC"
     ev.save()
-    for lead in ("local", "utc"):
-        data = build(ev, world["mem"], lead)
-        row = data["days"][1].rows[0]  # Friday holds only the 23:00Z setup slot
-        assert row.lead_range == "00:00–01:00 UTC" and row.other_range == ""
-        assert data["span"]["lead"].endswith("UTC") and data["span"]["other"] == ""
-        assert data["lead_label"] == "UTC" and data["other_label"] == ""
+    data = build(ev, world["mem"])
+    row = data["days"][1].rows[0]  # Friday holds only the 23:00Z setup slot
+    assert row.lead_range == "00:00–01:00 UTC" and row.other_range == ""
+    assert data["span"]["lead"].endswith("UTC") and data["span"]["other"] == ""
+    assert data["lead_label"] == "UTC" and data["other_label"] == ""
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
     assert "Times in <strong>UTC</strong>." in body and "Lead with" not in body
 
@@ -563,7 +559,7 @@ def _rows(data):
 
 
 def test_a_run_of_open_hours_folds_into_one_line_and_setup_stays_itself(world):
-    rows = _rows(build(world["ev"], world["mem"], "utc"))
+    rows = _rows(build(world["ev"], world["mem"]))
     operating = [r for r in rows if r.kind == "operating"]
     fold = operating[0].fold
     assert fold and operating[0].fold_head and all(r.fold is fold for r in operating)
@@ -574,13 +570,13 @@ def test_a_run_of_open_hours_folds_into_one_line_and_setup_stays_itself(world):
 def test_anybody_in_a_slot_breaks_the_run_and_short_runs_do_not_fold(world):
     second = Slot.objects.filter(position=world["mult"], kind="operating").order_by("start")[1]
     SignUp.objects.create(slot=second, user=world["mem"], role="operator")
-    assert all(r.fold is None for r in _rows(build(world["ev"], world["mem"], "utc")))
+    assert all(r.fold is None for r in _rows(build(world["ev"], world["mem"])))
 
 
 def test_a_fold_opens_by_its_id_or_all_of_them(world):
-    fold = _rows(build(world["ev"], world["mem"], "utc"))[1].fold
-    assert _rows(build(world["ev"], world["mem"], "utc", open_fold=fold.id))[1].fold.open
-    assert _rows(build(world["ev"], world["mem"], "utc", open_fold="all"))[1].fold.open
+    fold = _rows(build(world["ev"], world["mem"]))[1].fold
+    assert _rows(build(world["ev"], world["mem"], open_fold=fold.id))[1].fold.open
+    assert _rows(build(world["ev"], world["mem"], open_fold="all"))[1].fold.open
 
 
 def test_the_roster_page_hides_a_folded_run_and_opens_it_without_javascript(world):
@@ -597,10 +593,9 @@ def test_the_roster_page_hides_a_folded_run_and_opens_it_without_javascript(worl
 
 
 def test_a_run_that_ends_at_midnight_ends_at_24_00(world):
-    fold = _rows(build(world["ev"], world["mem"], "utc"))[1].fold
+    fold = _rows(build(world["ev"], world["mem"]))[1].fold
     assert fold.lead_range == "00:00–04:00 UTC"  # the operating period: 00:00Z to 04:00Z
-    eastern = _rows(build(world["ev"], world["mem"], "local"))[1].fold
-    assert eastern.lead_range == "20:00–24:00 EDT"  # 00:00Z is midnight in New York's EDT
+    assert fold.other_range == "Fri 20:00–24:00 EDT"  # 04:00Z is midnight in New York's EDT
 
 
 # The coverage strip (#161).

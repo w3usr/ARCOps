@@ -99,11 +99,9 @@ def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if not _visible(request.user, event):
         raise Http404
-    lead = "utc"  # UTC is the roster's axis (functional addendum A12)
     roster = build_roster(
         event,
         request.user,
-        lead,
         filter=request.GET.get("filter", ""),
         open_fold=request.GET.get("open", ""),  # a folded run, opened without JavaScript (#161)
     )

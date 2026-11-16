@@ -39,10 +39,6 @@ from .services.viability import checkin_window_open, may_control
 from .views_rules import captained_event, event_rule, shown
 
 
-def _lead(request) -> str:
-    return "utc"  # UTC is the roster's axis (functional addendum A12)
-
-
 def _visible(user, event: Event) -> bool:
     return event.visible_to_members or user.can_captain(event)
 
@@ -61,7 +57,7 @@ def slot_detail(request, pk, slot_id):
     if not _visible(request.user, event):
         raise Http404
     slot = get_object_or_404(Slot, pk=slot_id, position__location__event=event, cancelled=False)
-    cell, data = cell_for(slot, request.user, _lead(request))
+    cell, data = cell_for(slot, request.user)
     is_captain = data["is_captain"]
     eligible_roles = []
     if data["published"] and not slot.closed and not cell.mine:
