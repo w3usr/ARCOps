@@ -498,9 +498,15 @@ def test_whoever_may_confirm_an_address_finds_who_still_needs_one_proved(people)
 
 def _advisor_who_may_issue(email="adv@uni.example"):
     """An advisor whose level carries the one-time password (a club's choice; SK, 2026-11-12)."""
-    from apps.ops.groups import permission
+    from django.contrib.auth.models import Permission
 
-    Group.objects.get(name="advisor").permissions.add(permission("issue_temporary_password"))
+    from apps.ops.capabilities import APP_LABEL
+
+    Group.objects.get(name="advisor").permissions.add(
+        Permission.objects.get(
+            content_type__app_label=APP_LABEL, codename="issue_temporary_password"
+        )
+    )
     return User.objects.create_user(
         email, "pw-Testing-123", groups=["advisor"], first_name="Ada", last_name="Visor"
     )

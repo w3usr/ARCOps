@@ -8,8 +8,8 @@ hold one, and a sysadmin can make another. The groups a fresh installation start
 (`access_groups` in club.yaml); after that they are the club's to change, and an import leaves an
 edited group alone unless it is asked to reset.
 
-Reading this module: `sync` writes configuration into groups, `capabilities_of` and `set_groups`
-are what the pages use, and `people_who_may` answers "who should be told about this", which used
+Reading this module: `sync` writes configuration into groups, `set_groups` is what the pages
+use, and `people_who_may` answers "who should be told about this", which used
 to be a query against the access ladder.
 """
 
@@ -19,10 +19,6 @@ from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 
 from .capabilities import APP_LABEL, CODENAMES, LABELS
-
-
-class GroupRefused(Exception):
-    """A change that would leave the club unable to run itself."""
 
 
 def capabilities_held(user) -> set[str]:
@@ -121,10 +117,6 @@ def may_issue_temporary_password(actor, subject) -> bool:
     return actor.may("issue_temporary_password") and outranks(actor, subject)
 
 
-def permission(codename: str) -> Permission:
-    return Permission.objects.get(content_type__app_label=APP_LABEL, codename=codename)
-
-
 def sync(configured: list[dict] | None, *, reset: bool = False) -> dict:
     """Give the configured groups the capabilities the configuration says.
 
@@ -207,12 +199,6 @@ def label_of(group: Group, configured: list[dict] | None = None) -> str:
     return group.name.replace("_", " ").capitalize()
 
 
-def capabilities_of(group: Group) -> list[tuple[str, str]]:
-    """What a group lets its members do, in the order the capability list declares."""
-    held = {p.codename for p in group.permissions.all()}
-    return [(code, LABELS[code]) for code in CODENAMES if code in held]
-
-
 def set_groups(actor, user, keys: list[str]) -> None:
     """Put an account in exactly these groups. The audit row names both sides, because this is
     the whole of what somebody may do."""
@@ -245,14 +231,3 @@ def people_who_may(codename: str, *, superusers: bool = True):
     if superusers:
         holds |= Q(is_superuser=True)
     return User.objects.filter(is_active=True).filter(holds).distinct()
-
-
-def refuse_if_last(codename: str, *, leaving) -> None:
-    """Keep at least one account able to do the thing that grants everything else. Without this
-    a sysadmin can lock the club out of its own site in one edit."""
-    remaining = people_who_may(codename).exclude(pk=getattr(leaving, "pk", None))
-    if not remaining.exists():
-        raise GroupRefused(
-            f"somebody has to be able to {LABELS.get(codename, codename).lower()}; "
-            "give it to another account first"
-        )

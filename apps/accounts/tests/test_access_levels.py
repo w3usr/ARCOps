@@ -8,7 +8,6 @@ is a set of capabilities, the club decides what is in it, and a sysadmin holds e
 """
 
 import pytest
-from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import Client
 
@@ -30,22 +29,19 @@ def _user(email, groups=(), **kw):
 
 
 def test_a_group_is_a_set_of_capabilities_and_nothing_else():
+    from apps.accounts.acting import capabilities_of
     from apps.ops.capabilities import CODENAMES
-    from apps.ops.groups import capabilities_of
 
-    advisor = Group.objects.get(name="advisor")
-    held = {code for code, _ in capabilities_of(advisor)}
+    held = capabilities_of("advisor")
     assert "approve_agreements" in held and "view_archive" in held
     assert "edit_club_settings" not in held  # the club's configuration is not theirs
     assert held <= set(CODENAMES)
 
 
 def test_an_advisor_holds_everything_an_officer_holds():
-    from apps.ops.groups import capabilities_of
+    from apps.accounts.acting import capabilities_of
 
-    officer = {code for code, _ in capabilities_of(Group.objects.get(name="officer"))}
-    advisor = {code for code, _ in capabilities_of(Group.objects.get(name="advisor"))}
-    assert officer < advisor
+    assert capabilities_of("officer") < capabilities_of("advisor")
 
 
 def test_a_sysadmin_holds_every_capability_by_being_a_superuser():
