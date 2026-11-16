@@ -5050,3 +5050,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and documentation. The boxes take 2026-11-21 21:00, 2026-11-21 2100 and ISO's 2026-11-21T21:00, and refuse anything else with how to write it (a US browser's 11/21/2026 09:00 PM included). Verified: ruff and the guards; app tests 626 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the dialog looked at in a browser set to en-US, where the boxes stay 24-hour.
 - **Human Review Status**: Pending review
 - **Git Hash**: 3ae3369
+
+## [2026-11-16 15:16 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix two faults the scenario suite found in private tracker 274's first half.
+- **Sections/Files Affected**: apps/ops/when.py (an ISO date stored as text is read as a date, and anything else shown as it is); apps/ops/tests/test_when.py; templates/accounts/member_detail.html, member_edit.html, templates/credentials/agreements.html, password_manage.html (dates printed with no filter now read 21 Nov 2026).
+- **Nature of Contribution**: Bug fix. The signed agreement's PDF answered 500 right after an approval: the approval keeps the typed expiry as text on the record it renders, which Django's own date filter had silently printed as nothing and the new filter refused (scenario T40). Four places printed a date with no filter at all, in Django's "Sept. 1, 2027" (scenario T08). Verified: app tests 627 passed; the guards.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

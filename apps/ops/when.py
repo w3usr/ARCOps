@@ -27,11 +27,14 @@ def _day(t: datetime, year: bool) -> str:
     return f"{t:%a %-d %b %Y}" if year else f"{t:%a %-d %b}"
 
 
-def utc(t: datetime | None, year: bool = True) -> str:
+def utc(t: datetime | str | None, year: bool = True) -> str:
     """`Sat 21 Nov 2026 21:00 UTC`; `Sat 21 Nov 21:00 UTC` without the year."""
-    if t is None:
+    if t in (None, ""):
         return ""
-    u = t.astimezone(UTC)
+    got = _instant(t)
+    if not isinstance(got, datetime):
+        return day(t)  # a date with no time, or not a date at all
+    u = (got if got.tzinfo else got.replace(tzinfo=UTC)).astimezone(UTC)
     return f"{_day(u, year)} {u:%H:%M} UTC"
 
 
@@ -43,10 +46,27 @@ def utc_span(start: datetime, end: datetime, year: bool = True) -> str:
     return f"{_day(s, year)} {s:%H:%M} – {_day(e, year)} {e:%H:%M} UTC"
 
 
-def day(d: date | datetime | None) -> str:
+def _instant(t):
+    """A datetime or date as given; an ISO 8601 string, as a decision record stores one, read
+    into one (the agreement PDF reads them back); None for anything else."""
+    if isinstance(t, (date, datetime)):
+        return t
+    try:
+        return datetime.fromisoformat(t) if "T" in t or " " in t.strip() else date.fromisoformat(t)
+    except (TypeError, ValueError):
+        return None
+
+
+def day(d: date | datetime | str | None) -> str:
     """`21 Nov 2026`: a plain date, or the UTC date of an instant."""
-    if d is None:
+    if d in (None, ""):
         return ""
+    got = _instant(d)
+    if got is None:
+        return str(d)  # not a date at all: shown as it is, never a page that fails
+    d = got
+    if isinstance(d, datetime) and d.tzinfo is None:
+        d = d.replace(tzinfo=UTC)
     if isinstance(d, datetime):
         d = d.astimezone(UTC).date()
     return f"{d.day} {d:%b %Y}"

@@ -71,7 +71,7 @@ stored in.{% endcomment %}
   {% if standing.agreements %}
   <dl class="dl">
     {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
+    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
       {% if a.state == 'approved' and can_revoke %}
       <button type="button" class="ghost danger small" commandfor="rv-dlg-{{ a.pk }}" command="show-modal">{% icon 'trash' 'small' %}Revoke this approval</button>
       <dialog id="rv-dlg-{{ a.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="rv-h-{{ a.pk }}">

@@ -59,7 +59,7 @@ access on the way past. The officer's view and the member's own profile are the 
   {% if standing.agreements %}
   <dl class="dl">
     {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
+    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
   </dl>
   {% else %}<p class="muted">None signed.</p>{% endif %}
 </section>
