@@ -29,7 +29,7 @@ from apps.credentials.services import (
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
 from apps.ops.groups import may_issue_temporary_password, may_set_access
-from apps.ops.tables import summary
+from apps.ops.tables import sorted_columns, summary
 
 from . import addresses, entry, views_addresses
 from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
@@ -337,37 +337,14 @@ def members(request):
 
     # Last name by default, at every level: the column is there for everyone now, and a club
     # roster is read by surname.
-    default_sort = "fullname" if full else "last"
-    sort = request.GET.get("sort", default_sort)
     keys = _sort_keys(positions, cats)
-    shown = {c["key"] for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)}
-    if sort not in keys or sort not in shown:
-        sort = default_sort
-    descending = request.GET.get("dir") == "desc"
+    sort, descending, columns = sorted_columns(
+        request,
+        [c for c in DIRECTORY_COLUMNS if _shows(c, full, may_see_archive)],
+        keys,
+        "fullname" if full else "last",
+    )
     rows.sort(key=keys[sort], reverse=descending)
-
-    # What each panel's summary says, so a narrowed table says so without being opened: the
-    # shared helper (#179), "" while a filter narrows nothing, so it is not drawn as set (#266).
-    _summary = summary
-
-    columns = []
-    for col in DIRECTORY_COLUMNS:
-        if not _shows(col, full, may_see_archive):
-            continue
-        here = col["key"] == sort
-        params = request.GET.copy()
-        params["sort"] = col["key"]
-        # Clicking the column you are already sorted by turns it round.
-        params["dir"] = "desc" if here and not descending else "asc"
-        params.pop("page", None)
-        columns.append(
-            {
-                **col,
-                "url": f"?{params.urlencode()}",
-                "here": here,
-                "aria": ("descending" if descending else "ascending") if here else "none",
-            }
-        )
 
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
     license_choices += list(STATION_CHOICES)
@@ -406,18 +383,20 @@ def members(request):
             "sort": sort,
             "dir": "desc" if descending else "asc",
             "chosen": chosen,
+            # What each panel's summary says, so a narrowed table says so without being opened:
+            # "" while a filter narrows nothing, so it is not drawn as set (#266).
             "summaries": {
-                "category": _summary(
+                "category": summary(
                     sorted(cats.items(), key=lambda kv: kv[1]), chosen["category"], "category"
                 ),
-                "license": _summary(license_choices, chosen["license"], "class"),
-                "position": _summary(
+                "license": summary(license_choices, chosen["license"], "class"),
+                "position": summary(
                     sorted(positions.items(), key=lambda kv: kv[1]), chosen["position"], "position"
                 ),
-                "status": _summary(status_choices, status_ticked, "status"),
-                "archived": _summary(archived_choices, archived_ticked, "archive"),
-                "access": _summary(access_choices, chosen["access"], "permission level"),
-                "institution": _summary(
+                "status": summary(status_choices, status_ticked, "status"),
+                "archived": summary(archived_choices, archived_ticked, "archive"),
+                "access": summary(access_choices, chosen["access"], "permission level"),
+                "institution": summary(
                     institution_choices, chosen["institution"], "institution address"
                 ),
             },
