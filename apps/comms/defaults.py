@@ -420,6 +420,7 @@ TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "signup.removed": ("A captain removed your sign-up", "the member removed"),
     "signup.assigned": ("A captain signed you up", "the member signed up"),
     "slot.cancelled": ("A slot was canceled", "everybody in the slot"),
+    "slot.changed": ("A slot's time was changed", "everybody in the slot"),
     "event.cancelled": ("An event was canceled", "everybody signed up for it"),
     "event.completed_early": (
         "An event finished before your slot",

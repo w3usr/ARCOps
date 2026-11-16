@@ -352,3 +352,10 @@ def test_an_unread_message_is_said_in_words_as_well_as_its_dot():
     assert '<span class="sr-only">Unread: </span><strong>Slot at risk</strong>' in body
     again = c.get("/me/messages/").content.decode()  # read now, so no longer said
     assert "Unread: " not in again
+
+
+def test_every_message_is_named_on_the_message_text_page():
+    """A message missing from TEMPLATE_WORDS shows as its key, with nobody it reaches (353)."""
+    from apps.comms.defaults import DEFAULTS_BY_KEY, TEMPLATE_WORDS
+
+    assert set(DEFAULTS_BY_KEY) <= set(TEMPLATE_WORDS)
