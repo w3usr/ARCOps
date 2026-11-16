@@ -5065,4 +5065,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/accounts/member_detail.html (license expiry through plain_day, missed by private tracker 274); apps/comms/views.py, templates/ops/outbox.html (the state filter is now the shared filter panel with a Search button, as on Members and Approvals; it holds a set, and paging keeps it); apps/comms/tests/test_messages.py (two states at once).
 - **Nature of Contribution**: Review and bug fix. The review walked a dozen pages of the seeded demo at desktop and phone width; its other findings (page headers, notices, card headings) are not acted on here. Verified: ruff and format; app tests 627 passed; the a11y sweep for the officer role passed in Chromium and WebKit (Firefox not run locally); Outbox looked at in a browser with no filter, two states ticked, and at phone width; the profile reads "expires 4 May 2029".
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 60fb11a
