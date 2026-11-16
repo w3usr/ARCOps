@@ -20,11 +20,8 @@ from .services.notify import drop_empty_sections
 from .services.roster import build as build_roster
 from .services.slots import health
 from .services.viability import checkin_window_open, would_break
-from .views_slots import roster_or_slot
-
-
-def _visible(user, event: Event) -> bool:
-    return event.visible_to_members or user.can_captain(event)
+from .views_rules import captained_event
+from .views_slots import _visible, roster_or_slot
 
 
 @login_required
@@ -378,9 +375,7 @@ def confirm_signup(request, signup_id):
 @login_required
 @require_POST
 def publish(request, pk):
-    event = get_object_or_404(Event, pk=pk)
-    if not request.user.can_captain(event):
-        raise Http404
+    event = captained_event(request, pk)
     from .views_manage import publish_blocker
 
     blocked = publish_blocker(event) if event.state == Event.State.DRAFT else ""

@@ -28,6 +28,7 @@ from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
 from .services.roster import cell_for
 from .services.viability import checkin_window_open, may_control
+from .views_rules import captained_event
 
 
 def _lead(request) -> str:
@@ -144,9 +145,7 @@ def slot_detail(request, pk, slot_id):
 
 
 def _captain_slot(request, pk, slot_id):
-    event = get_object_or_404(Event, pk=pk)
-    if not request.user.can_captain(event):
-        raise Http404
+    event = captained_event(request, pk)
     return event, get_object_or_404(
         Slot, pk=slot_id, position__location__event=event, cancelled=False
     )

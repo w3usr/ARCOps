@@ -22,16 +22,17 @@ from .services.eligibility import club_default_rule, same_rule
 from .services.lifecycle import set_state
 
 
-def _captain_or_404(user, event):
-    if not user.can_captain(event):
+def captained_event(request, pk) -> Event:
+    event = get_object_or_404(Event, pk=pk)
+    if not request.user.can_captain(event):
         raise Http404
+    return event
 
 
 @login_required
 @require_POST
 def event_state(request, pk):
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     try:
         messages.success(request, set_state(request.user, event, request.POST.get("what", "")))
     except ValueError as exc:
@@ -71,8 +72,7 @@ class LimitForm(forms.ModelForm):
 @require_POST
 def limits_save(request, pk):
     """FR-39: advisory limits; the roster warns and never refuses."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     limit = getattr(event, "limit", None) or OperatingLimit(event=event)
     form = LimitForm(request.POST, instance=limit)
     if form.is_valid():
@@ -143,8 +143,7 @@ def shown(rule: dict) -> dict:
 def eligibility_save(request, pk):
     """FR-53: the event-level rule per role. A rule saved equal to the club's (FR-122), as the
     form shows it until changed, is not stored: the event follows the club (#277)."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     roles = [r["key"] for r in (setting("slot_roles", []) or [])]
     changed = {}
     for role in roles:
@@ -171,8 +170,7 @@ def eligibility_save(request, pk):
 @require_POST
 def slot_eligibility(request, pk, slot_id):
     """FR-53: a per-slot override for one role, or its removal."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     slot = get_object_or_404(Slot, pk=slot_id, position__location__event=event)
     role = request.POST.get("role", "")
     d = _rule_from_post(request.POST, role)
@@ -224,8 +222,7 @@ def opening_add(request, pk):
     """FR-54: a (when, audience) pair for a role. Empty categories means everyone."""
     from django.utils import timezone
 
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     form = OpeningForm(request.POST or None)
     if request.method != "POST" or not form.is_valid():
         return form_page(
@@ -264,8 +261,7 @@ def opening_add(request, pk):
 @login_required
 @require_POST
 def opening_delete(request, pk, opening_id):
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     Opening.objects.filter(pk=opening_id, event=event).delete()
     messages.success(request, "Opening removed.")
     return redirect("event_step", pk=pk, step="rules")
@@ -305,8 +301,7 @@ def contest_save(request, pk):
     """FR-37: the WA7BNM field set, entered by hand until the calendar import is authorized."""
     from .contest_fields import KEYS
 
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     data = {k: request.POST.get(k, "").strip()[:500] for k in KEYS}
     event.contest_fields = {k: v for k, v in data.items() if v}
     if request.POST.get("calendar_ref", "").strip().isdigit():

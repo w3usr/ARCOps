@@ -45,7 +45,7 @@ from .models import (
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.slots import held_only_by, limit_report
 from .services.viability import club_rule
-from .views_rules import rules_context
+from .views_rules import captained_event, rules_context
 from .views_slots import roster_or_slot
 
 DEFAULT_EVENT_TYPES = [
@@ -63,11 +63,6 @@ def _types():
     if cfg:
         return [(t["key"], t["label"]) for t in cfg]
     return DEFAULT_EVENT_TYPES
-
-
-def _captain_or_404(user, event):
-    if not user.can_captain(event):
-        raise Http404
 
 
 class EventForm(forms.ModelForm):
@@ -556,8 +551,7 @@ def event_create(request):
 @login_required
 def event_manage(request, pk, step=None):
     """Manage, one step at a time (#172). `/manage/` opens on the step to do next."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     if step is None:
         return to_step(pk, _landing(event))
     if step in OLD_TABS:
@@ -588,8 +582,7 @@ def _kbyg(request, event):
 def event_edit(request, pk):
     """The event's details (#168): read on Setup, edited here. A page, not a dialog: the rich
     text editor puts its menus on the page body, where a modal dialog would hide them."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     form = EventForm(request.POST or None, instance=event)
     if request.method == "POST" and form.is_valid():
         before = {f: form.initial.get(f) for f in form.changed_data}
@@ -918,8 +911,7 @@ def _step_page(request, event, step, **extra):
 @login_required
 @require_http_methods(["GET", "POST"])
 def period_add(request, pk):
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     form = PeriodForm(request.POST or None, event=event)
     if request.method == "POST" and form.is_valid():
         start, end = form.cleaned_data["start"], form.cleaned_data["end"]
@@ -953,8 +945,7 @@ def period_edit(request, pk, period_id):
     anybody is signed up in one, nothing changes."""
     from .services.slots import chosen, left_outside, set_on_air
 
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
 
     def typed(t):  # what a datetime-local box takes, in UTC as its label says
@@ -1024,8 +1015,7 @@ def period_delete(request, pk, period_id):
     """Removing a period cancels the slots only it held, as every slot is canceled and never
     deleted (FR-102); while anybody is signed up in one, nothing goes, as with the bulk cancel:
     their captain removes them, or cancels the slot and tells them, first (SK, 2026-11-10)."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
     slots = held_only_by(period)
     people = SignUp.objects.filter(slot__in=slots).count()
@@ -1058,8 +1048,7 @@ def period_delete(request, pk, period_id):
 @login_required
 @require_http_methods(["GET", "POST"])
 def location_add(request, pk):
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     form = LocationForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
@@ -1099,8 +1088,7 @@ def location_edit(request, pk, location_id):
     """FR-51: everything about a location after it is added: its name, address and marks, its
     directions and know-before-you-go text, and its own viability rule. A page, not a dialog,
     as Edit details is: the rich text editor needs one."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     loc = get_object_or_404(Location, pk=location_id, event=event)
     plain = ("name", "address", "is_club_station", "is_private_residence")
     text = ("directions_html", "kbyg_html")
@@ -1159,8 +1147,7 @@ def location_edit(request, pk, location_id):
 @login_required
 @require_http_methods(["GET", "POST"])
 def position_add(request, pk, location_id):
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     loc = get_object_or_404(Location, pk=location_id, event=event)
     form = PositionForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -1189,8 +1176,7 @@ def position_add(request, pk, location_id):
 @require_http_methods(["GET", "POST"])
 def position_edit(request, pk, position_id):
     """A position renamed; its slots and sign-ups stay with it."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     pos = get_object_or_404(Position, pk=position_id, location__event=event)
     form = PositionForm(request.POST or None, initial={"name": pos.name})
     form.fields["name"].required = True  # adding fills in a name; renaming to nothing would not
@@ -1219,8 +1205,7 @@ def position_delete(request, pk, position_id):
     2026-11-11); never while anybody is signed up in one. The last position of a location takes
     the location with it, since a location is its positions; an event that members can see keeps
     at least one, or its roster would be a page with nothing on it."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     pos = get_object_or_404(Position, pk=position_id, location__event=event)
     loc = pos.location
     people = SignUp.objects.filter(slot__position=pos).count()
@@ -1332,8 +1317,7 @@ def slots_generate(request, pk):
     """The generator (FR-46 to FR-48): a page of its own, opened in Manage's dialog (#168). On an
     empty roster it builds the grid; once slots exist it adds to the empty hours (#153), and,
     while nobody has signed up, can replace the grid behind its confirmation."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     roles = setting("slot_roles", []) or []
     positions = list(Position.objects.filter(location__event=event))
     if not event.periods.exists() or not positions:
@@ -1470,8 +1454,7 @@ def on_air_save(request, pk):
     whole event again. Slots are never touched."""
     from .services.slots import chosen, clip, periods_of, set_on_air
 
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     what = request.POST.get("what", "")
     base = chosen(event)  # [] means the whole event: a range added to that starts afresh
 
@@ -1517,8 +1500,7 @@ def on_air_save(request, pk):
 @require_POST
 def slots_preview(request, pk):
     """The generator's line, again, as its fields change (htmx, #168)."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     positions = list(Position.objects.filter(location__event=event))
     live = Slot.objects.filter(position__location__event=event, cancelled=False).exists()
     # The same form the page drew: without setup and breakdown once only filling is possible.
@@ -1537,8 +1519,7 @@ def slots_preview(request, pk):
 def slot_add(request, pk):
     """One slot by hand, whether or not anyone has signed up: nothing else on the grid changes
     (FR-46). Its seats are set as it is made, which is when a captain knows them (FR-49)."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     form = AddSlotForm(request.POST or None, event=event, roles=setting("slot_roles", []) or [])
     if request.method != "POST" or not form.is_valid():
         return form_page(
@@ -1590,7 +1571,8 @@ def slot_toggle(request, slot_id):
     """FR-52: close (not bookable) or reopen a slot; cancel it outright."""
     slot = get_object_or_404(Slot, pk=slot_id)
     event = slot.event
-    _captain_or_404(request.user, event)
+    if not request.user.can_captain(event):
+        raise Http404
     what = request.POST.get("what")
     if what == "close":
         slot.closed = not slot.closed
@@ -1631,8 +1613,7 @@ def slot_toggle(request, slot_id):
 def event_duplicate(request, pk):
     """FR-42: a copy on new dates. The dialog asks when the copy starts, in UTC, and every date
     moves by the difference from this event's start; with no start given, the dates stay."""
-    event = get_object_or_404(Event, pk=pk)
-    _captain_or_404(request.user, event)
+    event = captained_event(request, pk)
     shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.starts_at()
     if typed and was:
         try:

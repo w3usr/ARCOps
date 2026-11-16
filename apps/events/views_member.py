@@ -25,6 +25,7 @@ from .services.eligibility import can_sign_up
 from .services.roster import UTC, display_zone
 from .services.slots import health
 from .services.viability import evaluate
+from .views_rules import captained_event
 
 FEED_SALT = "ical-feed"
 
@@ -288,9 +289,7 @@ def ical_feed(request, token):
 
 @login_required
 def roster_csv(request, pk):
-    event = get_object_or_404(Event, pk=pk)
-    if not request.user.can_captain(event):
-        raise Http404
+    event = captained_event(request, pk)
     zone = display_zone(event)
     resp = HttpResponse(content_type="text/csv")
     resp["Content-Disposition"] = f'attachment; filename="roster-{event.pk}.csv"'
@@ -395,9 +394,7 @@ def participation_report(request, pk):
     """FR-86: hours scheduled, covered, and viable; people scheduled and checked in; first-timers."""
     from .services.participation import participation
 
-    event = get_object_or_404(Event, pk=pk)
-    if not request.user.can_captain(event):
-        raise Http404
+    event = captained_event(request, pk)
     report = participation(event)
     if request.GET.get("format") == "csv":
         resp = HttpResponse(content_type="text/csv")
