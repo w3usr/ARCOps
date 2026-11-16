@@ -4970,3 +4970,11 @@ carries the actual running model ID.
   Verified: ruff, the three guards, compile_locale and the migration check pass; every application test passes; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped). Firefox does not launch on this Mac; CI covers it.
 - **Human Review Status**: Pending review
 - **Git Hash**: 632a17f to 77d3695 (code), b3017cf (this entry)
+
+## [2026-11-16 12:21 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the app tests' random failures under xdist (private tracker 351), at SK's word.
+- **Sections/Files Affected**: conftest.py (an autouse fixture that clears the cache before each test, so allauth's rate-limit counters do not carry from one test to the next in a worker).
+- **Nature of Contribution**: Code generation. Verified: ruff passes; `pytest apps -n auto` passed five runs in a row (609 passed each); the a11y sysadmin role passes in Chromium and WebKit with the fixture in place.
+- **Human Review Status**: Pending review
+- **Git Hash**: 
