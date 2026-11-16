@@ -4977,4 +4977,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: conftest.py (an autouse fixture that clears the cache before each test, so allauth's rate-limit counters do not carry from one test to the next in a worker).
 - **Nature of Contribution**: Code generation. Verified: ruff passes; `pytest apps -n auto` passed five runs in a row (609 passed each); the a11y sysadmin role passes in Chromium and WebKit with the fixture in place.
 - **Human Review Status**: Pending review
-- **Git Hash**: 
+- **Git Hash**: 7c53c5a
