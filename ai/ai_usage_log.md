@@ -5010,3 +5010,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and documentation. The tooltip shows on hover only: the marks sit inside the slot's link and take no focus of their own; keyboard and touch users have the Key and the slot's dialog. Verified: ruff and the guards pass; app tests 617 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the roster, the tooltip and the review page looked at in screenshots, where a wrap of the lettered name was found and fixed.
 - **Human Review Status**: Pending review
 - **Git Hash**: 7afd51f
+
+## [2026-11-16 13:24 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Record SK's decision on private tracker 275 (2026-11-16: one start and end per event; a split contest's break as on-air hours) as functional addendum A32. The build waits on a findings report to SK.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (A32; the addendum's footer).
+- **Nature of Contribution**: Documentation (decision record, drafted from SK's message).
+- **Human Review Status**: Pending review
+- **Git Hash**: 

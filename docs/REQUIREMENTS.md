@@ -3063,7 +3063,25 @@ slot already and whoever the role's rule would refuse. Members are listed withou
 **Decided** by NAF on 2026-11-12 ("I don't think this is sustainable as a drop-down in the
 long-term") and by SK on 2026-11-16: the role first. *Record:* private tracker 281.
 
+### A32. FR-38: one start and end per event; a split contest's break is on-air hours
+
+**Original (FR-38).** "An event has one or more operating periods, each a UTC start and end.
+Contests with an overnight break (the Pennsylvania QSO Party runs 1600Z to 0400Z Saturday into
+Sunday and again 1300Z to 2200Z Sunday) are two periods."
+
+**Decision.** An event has one **start and end**, its whole span. A split contest's break is
+expressed as **on-air hours** (A15, A16) inside that span, not as a second period. One word per
+idea: *Event start and end* is the event's span; *on-air hours* are when the club is on the air
+inside it; *slots* are what people sign up for. No page says "operating period"; "operating"
+stays only as the kind of slot. Events made with more than one period are merged into one span,
+from the first start to the last end, and their breaks become time outside the on-air hours, so
+nothing that was off the air comes on.
+
+**Decided** by SK on 2026-11-16, from the choice NAF's ticket set out ("Operating periods" read
+as what a slot is; option (b), one span per event, over (a), words only). *Record:* private
+tracker 275.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A31), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A32), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
