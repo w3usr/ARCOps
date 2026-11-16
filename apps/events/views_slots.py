@@ -362,15 +362,12 @@ def signup_no_show(request, signup_id):
 
 def _typed_utc(text):
     """A datetime-local box's text as a UTC time, or None: the forms say UTC."""
-    from datetime import UTC
-
     from django import forms
 
     try:
-        t = forms.DateTimeField().clean(text)
+        return forms.DateTimeField().clean(text)
     except forms.ValidationError:
         return None
-    return t.replace(tzinfo=UTC) if timezone.is_naive(t) else t
 
 
 def next_slot(slot: Slot):

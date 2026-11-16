@@ -220,8 +220,6 @@ class OpeningForm(forms.Form):
 @require_http_methods(["GET", "POST"])
 def opening_add(request, pk):
     """FR-54: a (when, audience) pair for a role. Empty categories means everyone."""
-    from django.utils import timezone
-
     event = captained_event(request, pk)
     form = OpeningForm(request.POST or None)
     if request.method != "POST" or not form.is_valid():
@@ -236,8 +234,6 @@ def opening_add(request, pk):
             "first and everyone later.",
         )
     opens = form.cleaned_data["opens_at"]
-    if timezone.is_naive(opens):
-        opens = timezone.make_aware(opens, timezone.utc)
     o = Opening.objects.create(
         event=event,
         role=form.cleaned_data["role"],

@@ -46,7 +46,7 @@ from .services.manage import duplicate_event, generate_with_capacities, has_sign
 from .services.slots import held_only_by, limit_report
 from .services.viability import club_rule
 from .views_rules import captained_event, rules_context
-from .views_slots import roster_or_slot
+from .views_slots import _typed_utc, roster_or_slot
 
 DEFAULT_EVENT_TYPES = [
     ("contest", "Contest"),
@@ -190,9 +190,6 @@ class PeriodForm(forms.Form):
         d = super().clean()
         s, e = d.get("start"), d.get("end")
         if s and e:
-            # datetime-local carries no zone; the form says UTC, so that is what it is.
-            d["start"] = s.replace(tzinfo=UTC) if timezone.is_naive(s) else s
-            d["end"] = e.replace(tzinfo=UTC) if timezone.is_naive(e) else e
             if d["end"] <= d["start"]:
                 self.add_error("end", "The end must come after the start.")
             elif self.event:
@@ -483,8 +480,6 @@ class AddSlotForm(FieldGroups, SeatFields, forms.Form):
         start, minutes, position = d.get("start"), d.get("minutes"), d.get("position")
         if not (start and minutes and position):
             return d
-        # datetime-local carries no zone; the form says UTC, so that is what it is.
-        start = start.replace(tzinfo=UTC) if timezone.is_naive(start) else start
         end = start + timedelta(minutes=minutes)
         d["start"], d["end"] = start, end
         # An operating slot sits inside an operating period (FR-38); setup, training and the
@@ -1616,14 +1611,10 @@ def event_duplicate(request, pk):
     event = captained_event(request, pk)
     shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.starts_at()
     if typed and was:
-        try:
-            start = forms.DateTimeField().clean(typed)
-        except forms.ValidationError:
+        start = _typed_utc(typed)
+        if start is None:
             messages.error(request, "Nothing was copied: the start was not a date and time.")
             return to_step(pk, "publish")
-        start = (
-            start.replace(tzinfo=UTC) if timezone.is_naive(start) else start
-        )  # the form says UTC
         shift = start - was
     copy = duplicate_event(event, request.user, shift=shift)
     now = copy.starts_at()

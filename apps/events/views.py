@@ -42,13 +42,10 @@ def event_list(request):
             (past if over else upcoming).append(e)
     upcoming.sort(key=lambda e: e.starts_at() or now)
     # Each row's date tile in UTC, the roster's axis, and a captain's coverage counts (#238).
-    from datetime import UTC
-
     from .services.roster import coverage
 
     for e in upcoming + past:
-        start = e.starts_at()
-        e.tile = start.astimezone(UTC) if start else None
+        e.tile = e.starts_at()
     # Coverage is worked out slot by slot, so only for an event members sign up to: never for a
     # draft or a canceled one, which an officer may have hundreds of (dev, 2026-11-09).
     for e in upcoming:
