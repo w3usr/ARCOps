@@ -33,7 +33,7 @@ from apps.ops.tables import summary
 
 from . import addresses, entry, views_addresses
 from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
-from .guardian import convert_to_adult, link_guardian, unlink_guardian
+from .guardian import convert_to_adult, guardians_of, link_guardian, unlink_guardian
 from .models import Guardianship, User
 from .services import (
     ArchiveRefused,
@@ -531,9 +531,7 @@ def member_detail(request, pk):
             **(_preferences(member) if is_self else {}),
             "addresses": addresses.state(member),
             "standing": _standing(member),
-            "guardian_links": list(
-                member.guardianships.select_related("guardian").order_by("-active", "created")
-            ),
+            "guardian_links": list(guardians_of(member, active_only=False)),
             "wards": list(member.wards.filter(active=True).select_related("minor")),
             "can_edit": may_manage(actor, member) and not _minor_readonly(request, member),
             "is_self": is_self,
@@ -827,9 +825,7 @@ def member_edit(request, pk):
             "can_revoke": actor.may("approve_agreements"),
             "temp_password": temp_password,
             "standing": _standing(member),
-            "guardian_links": list(
-                member.guardianships.select_related("guardian").order_by("-active", "created")
-            ),
+            "guardian_links": list(guardians_of(member, active_only=False)),
             "wards": list(member.wards.filter(active=True).select_related("minor")),
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
