@@ -8,8 +8,6 @@ None of it once a slot has started or has a check-in or a no-show, so attendance
 
 from __future__ import annotations
 
-from datetime import timedelta
-
 from django.db import transaction
 from django.utils import timezone
 
@@ -18,8 +16,8 @@ from apps.ops.audit import record
 
 from ..models import Event, ResponsibleAdult, RoleCapacity, SignUp, Slot, Waitlist
 from .notify import slot_link, when_text
+from .slots import SHORTEST
 
-SHORTEST = timedelta(minutes=15)  # as the generator's and Add a slot's
 WAITING = (Waitlist.State.PENDING, Waitlist.State.OFFERED)
 
 

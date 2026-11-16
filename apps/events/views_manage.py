@@ -44,6 +44,7 @@ from .models import (
     Slot,
 )
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
+from .services.reshape import misfit
 from .services.slots import held_only_by, limit_report
 from .services.viability import club_rule
 from .views_rules import captained_event, rules_context
@@ -483,24 +484,9 @@ class AddSlotForm(FieldGroups, SeatFields, forms.Form):
             return d
         end = start + timedelta(minutes=minutes)
         d["start"], d["end"] = start, end
-        # An operating slot sits inside an operating period (FR-38); setup, training and the
-        # rest may sit before, after or between them (FR-47).
-        if (
-            d.get("kind") == "operating"
-            and not self.event.periods.filter(start__lte=start, end__gte=end).exists()
-        ):
-            self.add_error("start", "An operating slot has to fit inside an operating period.")
-        # A canceled slot is off the roster, so its time is free again: canceling a mistake and
-        # adding it afresh is how a slot is re-timed.
-        clash = Slot.objects.filter(
-            position=position, cancelled=False, start__lt=end, end__gt=start
-        ).first()
-        if clash:
-            self.add_error(
-                "start",
-                f"{position} already has a slot from {clash.start:%a %d %b %H:%M} to "
-                f"{clash.end:%H:%M} UTC.",
-            )
+        why = misfit(Slot(position=position, kind=d.get("kind")), start, end)
+        if why:
+            self.add_error("start", why)
         return d
 
 
