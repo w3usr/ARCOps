@@ -4,7 +4,6 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.password_validation import validate_password
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -16,7 +15,7 @@ from apps.ops.config import setting
 
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
-from .forms import password_field
+from .forms import check_passwords, password_field
 from .models import Address, Invitation, User
 from .services import (
     admit_from_invitation,
@@ -232,10 +231,7 @@ class AcceptForm(PrivacyConsentMixin, forms.Form):
 
     def clean(self):
         data = super().clean()
-        if data.get("password1") != data.get("password2"):
-            raise forms.ValidationError("The passwords do not match.")
-        if data.get("password1"):
-            validate_password(data["password1"])
+        check_passwords(self, "The passwords do not match.")
         return data
 
 
@@ -284,10 +280,7 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
 
     def clean(self):
         data = super().clean()
-        if data.get("password1") != data.get("password2"):
-            self.add_error("password2", "The member's passwords do not match.")
-        elif data.get("password1"):
-            validate_password(data["password1"])
+        check_passwords(self, "The member's passwords do not match.", field="password2")
         addr = (data.get("minor_email") or "").lower()
         if addr and addr == self.guardian_email:
             self.add_error(
@@ -296,10 +289,7 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
         elif addr and User.objects.by_address(addr, confirmed_only=True).exists():
             self.add_error("minor_email", "An account already uses that address.")
         if "guardian_password1" in self.fields:
-            if data.get("guardian_password1") != data.get("guardian_password2"):
-                self.add_error("guardian_password2", "Your passwords do not match.")
-            elif data.get("guardian_password1"):
-                validate_password(data["guardian_password1"])
+            check_passwords(self, "Your passwords do not match.", "guardian_", "guardian_password2")
         return data
 
 

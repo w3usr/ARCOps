@@ -6,7 +6,10 @@ from allauth.account import forms as allauth_forms
 from allauth.account.forms import default_token_generator  # the library's email-aware one
 from allauth.account.internal import flows
 from django import forms
-from django.contrib.auth.password_validation import password_validators_help_text_html
+from django.contrib.auth.password_validation import (
+    password_validators_help_text_html,
+    validate_password,
+)
 
 from .addresses import sign_in_addresses
 from .models import User
@@ -55,3 +58,13 @@ def password_field(label: str, *, first: bool = False) -> forms.CharField:
         strip=False,
         help_text=password_validators_help_text_html() if first else "",
     )
+
+
+def check_passwords(form, message: str, prefix: str = "", field: str | None = None) -> None:
+    """The two password boxes agree and the validators accept the password. A mismatch is put on
+    `field` (the form as a whole when None) in the form's own words; a refused password raises."""
+    data = form.cleaned_data
+    if data.get(f"{prefix}password1") != data.get(f"{prefix}password2"):
+        form.add_error(field, message)
+    elif data.get(f"{prefix}password1"):
+        validate_password(data[f"{prefix}password1"])

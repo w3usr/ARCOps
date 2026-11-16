@@ -9,7 +9,6 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.password_validation import validate_password
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -24,7 +23,7 @@ from apps.ops.config import setting
 
 from . import entry
 from .consent import PrivacyConsentMixin, consent_field
-from .forms import password_field
+from .forms import check_passwords, password_field
 from .models import EntryLink, User
 
 
@@ -187,10 +186,7 @@ class JoinForm(PrivacyConsentMixin, forms.Form):
 
     def clean(self):
         d = super().clean()
-        if d.get("password1") != d.get("password2"):
-            raise forms.ValidationError("The passwords do not match.")
-        if d.get("password1"):
-            validate_password(d["password1"])
+        check_passwords(self, "The passwords do not match.")
         return d
 
 
