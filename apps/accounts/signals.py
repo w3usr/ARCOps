@@ -14,11 +14,6 @@ def _clear(user):
         record(user, "password.temporary_replaced", user)
 
 
-@receiver(password_changed)
-def on_password_changed(sender, request, user, **kwargs):
-    _clear(user)
-
-
-@receiver(password_reset)
-def on_password_reset(sender, request, user, **kwargs):
+@receiver([password_changed, password_reset])
+def on_password_set(sender, user, **kwargs):
     _clear(user)
