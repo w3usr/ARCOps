@@ -25,16 +25,6 @@ class SlotStatus:
     )
 
     @property
-    def label(self) -> str:
-        """The state's name, for the code and the requirements (FR-73); a reader gets `needs`."""
-        return {
-            "empty": "Empty",
-            "not_viable": "Not viable",
-            "viable": "Viable",
-            "at_risk": "At risk",
-        }[self.status]
-
-    @property
     def needs(self) -> str:
         """What the slot needs, in the roster's words, finishing "the slot …" (FR-62; SK,
         2026-10-26: every reader, captains included)."""
