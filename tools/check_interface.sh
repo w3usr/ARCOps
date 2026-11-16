@@ -26,11 +26,10 @@ BRITISH = re.compile(
     re.I,
 )
 # Identifiers keep the spelling they were created with: renaming one is a migration, not a
-# proofread. The same goes for the HTML attribute aria-labelledby.
-# Identifiers keep the spelling they were created with: renaming one is a migration, not a
-# proofread. Each identifier is blanked out of the line before the line is checked, so a line
-# carrying both a state key and visible text is still checked for the visible text. Exempting
-# the whole line let <span class="tag">Cancelled</span> sit beside state == 'cancelled' unseen.
+# proofread. The same goes for the HTML attribute aria-labelledby. Each identifier is blanked
+# out of the line before the line is checked, so a line carrying both a state key and visible
+# text is still checked for the visible text. Exempting the whole line let
+# <span class="tag">Cancelled</span> sit beside state == 'cancelled' unseen.
 IDENTIFIER = re.compile(
     r"'cancelled'|\"cancelled\"|\bcancelled\s*=|\.cancelled\b|\bcancelled__|labelledby"
 )

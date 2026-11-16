@@ -62,8 +62,7 @@ def _date(text: str) -> dt.date | None:
     if not text:
         return None
     try:
-        m, d, y = (int(x) for x in text.split("/"))
-        return dt.date(y, m, d)
+        return dt.datetime.strptime(text, "%m/%d/%Y").date()
     except (ValueError, TypeError):
         return None
 
