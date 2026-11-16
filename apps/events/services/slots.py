@@ -204,35 +204,6 @@ def set_on_air(event, spans) -> list[tuple]:
     return spans if spans != periods else []
 
 
-def hour_grid(event) -> list[dict]:
-    """The periods hour by hour, for the coverage strip (roster._gaps): a row per UTC day the
-    periods touch, a box per hour of it. A box is None where the hour is outside every period;
-    otherwise its instant and whether it is on the air: "all", "part" (a stretch typed to the
-    minute starts or ends inside it) or "". Not shown as a grid since #248."""
-    from datetime import UTC, datetime, time
-
-    periods, live = periods_of(event), on_air(event)
-    if not periods:
-        return []
-    day, last = periods[0][0].astimezone(UTC).date(), periods[-1][1].astimezone(UTC).date()
-    rows = []
-    while day <= last:
-        boxes = []
-        for h in range(24):
-            t = datetime.combine(day, time(h), tzinfo=UTC)
-            inside = clip([(t, t + HOUR)], periods)
-            if not inside:
-                boxes.append(None)
-                continue
-            have = sum(((b - a) for a, b in clip(inside, live)), timedelta())
-            want = sum(((b - a) for a, b in inside), timedelta())
-            boxes.append({"at": t, "on": "all" if have == want else ("part" if have else "")})
-        if any(boxes):
-            rows.append({"day": day, "boxes": boxes})
-        day += timedelta(days=1)
-    return rows
-
-
 def health(event) -> dict:
     """FR-66: counts by status, hours against limits."""
     counts = {"total": 0, "empty": 0, "not_viable": 0, "viable": 0, "at_risk": 0}

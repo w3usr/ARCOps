@@ -263,17 +263,20 @@ def _gaps(event, slots) -> list[tuple]:
     """(start, end, state) for each hour of the periods that no slot touches: "off" outside the
     club's on-air hours, "none" on the air with no slot yet (#247). Without them a strip could
     not tell an hour the club means to skip from one nobody has made a slot for."""
-    from .slots import HOUR, hour_grid
+    from .slots import HOUR, clip, on_air, periods_of
 
+    periods, live = periods_of(event), on_air(event)
+    if not periods:
+        return []
     taken = [(s.start, s.end) for s in slots]
     out = []
-    for row in hour_grid(event):
-        for box in row["boxes"]:
-            if not box:
-                continue
-            a, b = box["at"], box["at"] + HOUR
-            if not any(s < b and e > a for s, e in taken):
-                out.append((a, b, "none" if box["on"] else "off"))
+    t = periods[0][0].astimezone(UTC).replace(minute=0, second=0, microsecond=0)
+    while t < periods[-1][1]:
+        a, b = t, t + HOUR
+        t = b
+        inside = clip([(a, b)], periods)
+        if inside and not any(s < b and e > a for s, e in taken):
+            out.append((a, b, "none" if clip(inside, live) else "off"))
     return out
 
 
