@@ -62,14 +62,6 @@ def has_factor(user) -> bool:
     ).exists()
 
 
-def in_use(user) -> bool:
-    """Whether the second step is actually asked of this account: they turned it on, or their
-    level requires it and they have something to answer with."""
-    if not user.is_authenticated:
-        return False
-    return (user.two_factor_enabled or is_required(user)) and has_factor(user)
-
-
 def deadline(user):
     """When a required account that has not enrolled stops being let in. Counted from the date
     the club's requirement first met this account, which is when they last signed in without it;
