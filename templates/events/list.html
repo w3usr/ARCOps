@@ -31,7 +31,7 @@ action; past events in a quieter panel.{% endcomment %}
 
 {% if regular %}<section class="panel" aria-labelledby="r">
   <header class="panel-head"><div><h2 id="r">Regular meetings and nets</h2><p>On the calendar, with no roster.</p></div></header>
-  <ul class="eventcards rows">{% for e in regular %}<li class="eventcard"><span class="row-ic">{% icon 'calendar' 'small' %}</span><div class="grow"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag {{ e.state|tone:'event' }}">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e.recurrence_text }}</p></div></li>{% endfor %}</ul>
+  <ul class="eventcards rows">{% for e in regular %}<li class="eventcard"><span class="row-ic">{% icon 'calendar' 'small' %}</span><div class="grow"><div class="eventcard-head"><a class="eventcard-title" href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if e.state != 'published' %}<span class="tag {{ e.state|tone:'event' }}">{{ e.get_state_display }}</span>{% endif %}</div><p class="when">{{ e|meets_line|default:e.meeting_note }}</p>{% if e|meets_line and e.meeting_note %}<p class="muted">{{ e.meeting_note }}</p>{% endif %}</div></li>{% endfor %}</ul>
 </section>{% endif %}
 
 {% if past %}<section class="panel quiet" aria-labelledby="p">

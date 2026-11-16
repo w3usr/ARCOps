@@ -88,7 +88,10 @@ def _details(ev, **change):
 
 def test_an_event_with_slots_cannot_become_display_only(officer):
     ev, _ = _event(timezone.now() + timedelta(days=2), captain=officer)
-    r = _client(officer).post(f"/events/{ev.pk}/details/", _details(ev, display_only="on"))
+    r = _client(officer).post(
+        f"/events/{ev.pk}/details/",
+        _details(ev, display_only="on", repeats="weekly", repeat_weekday="1", meets_at="20:00"),
+    )
     ev.refresh_from_db()
     assert not ev.display_only
     assert "cannot become display only" in r.content.decode()
@@ -110,7 +113,10 @@ def test_a_draft_may_still_change_display_only(officer):
     from apps.events.models import Captaincy
 
     Captaincy.objects.create(event=ev, user=officer)
-    _client(officer).post(f"/events/{ev.pk}/details/", _details(ev, display_only="on"))
+    _client(officer).post(
+        f"/events/{ev.pk}/details/",
+        _details(ev, display_only="on", repeats="weekly", repeat_weekday="1", meets_at="20:00"),
+    )
     ev.refresh_from_db()
     assert ev.display_only
 

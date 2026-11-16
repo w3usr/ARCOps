@@ -34,9 +34,16 @@ class Event(models.Model):
         null=True, blank=True, help_text="Empty follows the club's default (#272)."
     )
     display_only = models.BooleanField(default=False)  # FR-45: on the calendar, no roster
-    recurrence_text = models.CharField(
-        max_length=120, blank=True, help_text="For display-only events: 'Tuesdays 20:00 ET'."
-    )
+    # When a display-only event meets, in fields (private tracker 273; services/meets.py): the
+    # pattern, its weekday (0 Monday), which week (1 to 4, -1 the last) or day of the month, and
+    # the time in the event's own zone. The note says what the fields cannot.
+    repeats = models.CharField(max_length=16, blank=True)
+    repeat_weekday = models.PositiveSmallIntegerField(null=True, blank=True)
+    repeat_week = models.SmallIntegerField(null=True, blank=True)
+    repeat_day = models.PositiveSmallIntegerField(null=True, blank=True)
+    meets_at = models.TimeField(null=True, blank=True)
+    meets_until = models.TimeField(null=True, blank=True)
+    meeting_note = models.CharField(max_length=200, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)  # FR-44
     published_at = models.DateTimeField(null=True, blank=True)
     published_by = models.ForeignKey(

@@ -62,16 +62,20 @@ document.addEventListener("click", (ev) => {
 
 // Progressive disclosure: an element with data-reveal-when="#control" is shown only while that
 // control is ticked (the guardian field on the invitation form), or, with data-reveal-value,
-// while the control holds that value (the student fields on a member's page). The server
-// enforces the underlying rule regardless.
-document.querySelectorAll("[data-reveal-when]").forEach((el) => {
-  const ctl = document.querySelector(el.dataset.revealWhen);
-  if (!ctl) return;
-  const want = el.dataset.revealValue;
-  const sync = () => { el.hidden = want === undefined ? !ctl.checked : ctl.value !== want; };
-  ctl.addEventListener("change", sync);
-  sync();
-});
+// while the control holds one of those space-separated values (the student fields on a member's
+// page). A control that is itself hidden hides what it reveals, so they nest (when a net meets,
+// #273); all are synced in page order on any change. The server enforces the rule regardless.
+(() => {
+  const reveals = [...document.querySelectorAll("[data-reveal-when]")];
+  const sync = () => reveals.forEach((el) => {
+    const ctl = document.querySelector(el.dataset.revealWhen);
+    if (!ctl) return;
+    const want = el.dataset.revealValue;
+    const on = want === undefined ? ctl.checked : want.split(" ").includes(ctl.value);
+    el.hidden = !on || !!ctl.closest("[hidden]");
+  });
+  if (reveals.length) { document.addEventListener("change", sync); sync(); }
+})();
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});  // served by Django, never cached (FR-96)

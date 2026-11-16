@@ -3083,7 +3083,25 @@ break (SK, 2026-11-16, after the findings).
 as what a slot is; option (b), one span per event, over (a), words only). *Record:* private
 tracker 275.
 
+### A33. FR-45: a regular meeting or net says when it meets in fields
+
+**Original (FR-45).** "Events can be marked as recurring for display purposes (the club's weekly
+net, monthly meeting) without slots". When it met was free text ("When it recurs, in words"), on
+every event's form, with the time zone typed inside the text.
+
+**Decision.** A display-only event says when it meets in fields, asked only of a display-only
+event: how often (every week; every month on a weekday, first to fourth or last; every month on a
+date), the day, a start time and an optional end, in the event's own time zone chosen from the
+list. The site writes the line members read ("Tuesdays, 8:00 PM EST") and shows the next date on
+the event's page. An optional note says what the fields cannot ("not during finals week"). The
+free text already saved was read into the fields where it could be, and kept as the note where it
+could not; nothing was guessed.
+
+**Decided** by NAF on 2026-11-12 (structured times, shown only when Display only is ticked) and by
+SK on 2026-11-16: the three patterns, the note, reading the old text, and the next date. *Record:*
+private tracker 273.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A32), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A33), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

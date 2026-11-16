@@ -41,3 +41,20 @@ def when(context, start, end=None, event=None, year=False):
         _one(start, end, UTC, year),
         _one(start, end, local, year),
     )
+
+
+@register.filter
+def meets_line(event) -> str:
+    """When a regular meeting or net meets, as members read it (private tracker 273)."""
+    from ..services.meets import describe
+
+    return describe(event)
+
+
+@register.filter
+def next_meets(event) -> str:
+    """ "Tue 24 Nov, 8:00 PM EST": its next meeting, in its own zone; "" with no pattern."""
+    from ..services.meets import _clock, next_meeting
+
+    at = next_meeting(event)
+    return f"{at:%a %-d %b}, {_clock(at.time())} {at:%Z}" if at else ""

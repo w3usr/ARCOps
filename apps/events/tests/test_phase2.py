@@ -3,6 +3,7 @@
 filter and badges (FR-65), waitlist (FR-57), calendar feed (FR-59), cross-event view (FR-68),
 display-only events (FR-45)."""
 
+from datetime import time as dt_time
 from datetime import timedelta
 
 import pytest
@@ -471,12 +472,15 @@ def test_display_only_event_has_no_roster_and_lists_as_regular():
         title="Tuesday Net",
         state=Event.State.PUBLISHED,
         display_only=True,
-        recurrence_text="Tuesdays 20:00 ET",
+        repeats="weekly",
+        repeat_weekday=1,
+        meets_at=dt_time(20, 0),
+        display_timezone="America/New_York",
     )
     c = Client()
     c.force_login(cap)
     body = c.get("/events/").content.decode()
-    assert "Regular meetings and nets" in body and "Tuesdays 20:00 ET" in body
+    assert "Regular meetings and nets" in body and "Tuesdays, 8:00 PM E" in body  # EST or EDT
     body = c.get(f"/events/{e.pk}/").content.decode()
     assert "no roster, no sign-up" in body and "No slots yet" not in body
     r = c.post(
@@ -485,7 +489,10 @@ def test_display_only_event_has_no_roster_and_lists_as_regular():
             "title": "Monthly meeting",
             "type": "other",
             "display_only": "on",
-            "recurrence_text": "First Monday 19:00",
+            "repeats": "monthly_weekday",
+            "repeat_weekday": "0",
+            "repeat_week": "1",
+            "meets_at": "19:00",
             "description_html": "",
             "rules_url": "",
             "min_license_class": "",

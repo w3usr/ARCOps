@@ -44,6 +44,7 @@ from .models import (
     SignUp,
     Slot,
 )
+from .services import meets
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.reshape import misfit
 from .services.slots import left_outside, limit_report
@@ -97,6 +98,37 @@ class EventForm(NoColon, forms.ModelForm):
             )
         return on
 
+    MEETS = ["repeats", "repeat_weekday", "repeat_week", "repeat_day", "meets_at", "meets_until"]
+
+    def clean(self):
+        """A display-only event says when it meets in fields (private tracker 273): the pattern and
+        a time, and what that pattern needs; any other event keeps none of them."""
+        d = super().clean()
+        if not d.get("display_only"):
+            for f in self.MEETS:
+                d[f] = None if f != "repeats" else ""
+            return d
+        needs = {
+            "repeats": "Choose how often it meets.",
+            "meets_at": "Give the time it starts.",
+            "repeat_weekday": "Choose the day of the week."
+            if d.get("repeats") in (meets.WEEKLY, meets.MONTHLY_WEEKDAY)
+            else None,
+            "repeat_week": "Choose which week of the month."
+            if d.get("repeats") == meets.MONTHLY_WEEKDAY
+            else None,
+            "repeat_day": "Give the day of the month, 1 to 31."
+            if d.get("repeats") == meets.MONTHLY_DATE
+            else None,
+        }
+        for field, said in needs.items():
+            if said and d.get(field) in (None, ""):
+                self.add_error(field, said)
+        start, end = d.get("meets_at"), d.get("meets_until")
+        if start and end and end <= start:
+            self.add_error("meets_until", "It has to end after it starts.")
+        return d
+
     class Meta:
         model = Event
         fields = [
@@ -108,7 +140,13 @@ class EventForm(NoColon, forms.ModelForm):
             "display_timezone",
             "reminder_hours_before",
             "display_only",
-            "recurrence_text",
+            "repeats",
+            "repeat_weekday",
+            "repeat_week",
+            "repeat_day",
+            "meets_at",
+            "meets_until",
+            "meeting_note",
         ]
         labels = {
             "description_html": "Description",
@@ -116,9 +154,20 @@ class EventForm(NoColon, forms.ModelForm):
             "min_license_class": "Preferred license class",
             "reminder_hours_before": "Reminder, hours before each slot",
             "display_only": "Display only: on the calendar, no roster (a net, a meeting)",
-            "recurrence_text": "When it recurs, in words",
+            "meets_at": "Starts, local time",
+            "meets_until": "Ends, local time (optional)",
+            "meeting_note": "Note (optional)",
         }
-        widgets = {"description_html": TinyMCE(attrs={"rows": 8})}  # FR-115
+        help_texts = {
+            "meets_at": "In the event's local time zone, above.",
+            "meeting_note": 'Anything the times do not say: "not during finals week", "on 146.52 '
+            'MHz".',
+        }
+        widgets = {
+            "description_html": TinyMCE(attrs={"rows": 8}),  # FR-115
+            "meets_at": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "meets_until": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -149,6 +198,37 @@ class EventForm(NoColon, forms.ModelForm):
         f.help_text = "The club's default is set in Settings; a number here is this event's own."
         if self.instance.reminder_hours_before is None:
             self.initial["reminder_hours_before"] = self._reminder_default
+        # When it meets (private tracker 273): asked only of a display-only event, and each part
+        # only where the pattern needs it (the page reveals them; clean() checks the same).
+        self.fields["repeats"] = forms.ChoiceField(
+            label="How often it meets", choices=[("", "Choose…"), *meets.PATTERNS], required=False
+        )
+        self.fields["repeat_weekday"] = forms.TypedChoiceField(
+            label="Day of the week",
+            choices=[("", "Choose…"), *enumerate(meets.DAYS)],
+            coerce=int,
+            empty_value=None,
+            required=False,
+        )
+        self.fields["repeat_week"] = forms.TypedChoiceField(
+            label="Which week of the month",
+            choices=[("", "Choose…"), *meets.WEEKS],
+            coerce=int,
+            empty_value=None,
+            required=False,
+        )
+        self.fields["repeat_day"] = forms.IntegerField(
+            label="Day of the month", min_value=1, max_value=31, required=False
+        )
+        only = "#id_display_only"
+        for name in self.MEETS + ["meeting_note"]:
+            self.fields[name].reveal = (only, "")
+        self.fields["repeat_weekday"].reveal = (
+            "#id_repeats",
+            f"{meets.WEEKLY} {meets.MONTHLY_WEEKDAY}",
+        )
+        self.fields["repeat_week"].reveal = ("#id_repeats", meets.MONTHLY_WEEKDAY)
+        self.fields["repeat_day"].reveal = ("#id_repeats", meets.MONTHLY_DATE)
 
 
 class KbygForm(NoColon, forms.ModelForm):
@@ -542,14 +622,18 @@ def event_edit(request, pk):
     event = captained_event(request, pk)
     form = EventForm(request.POST or None, instance=event)
     if request.method == "POST" and form.is_valid():
-        before = {f: form.initial.get(f) for f in form.changed_data}
+
+        def plain(v):  # a meeting's time (#273) is not JSON; the audit row keeps it as text
+            return v.isoformat() if hasattr(v, "isoformat") else v
+
+        before = {f: plain(form.initial.get(f)) for f in form.changed_data}
         form.save()
         record(
             request.user,
             "event.edited",
             event,
             before=before,
-            after={f: getattr(event, f) for f in form.changed_data},
+            after={f: plain(getattr(event, f)) for f in form.changed_data},
         )
         messages.success(request, "Saved.")
         return to_step(pk, "details")
@@ -589,9 +673,8 @@ def _details(event) -> list[tuple[str, str]]:
         ),
     ]
     if event.display_only:
-        rows.append(
-            ("Display only", f"Yes: on the calendar, no roster. {event.recurrence_text}".strip())
-        )
+        said = " ".join(x for x in (meets.describe(event), event.meeting_note) if x)
+        rows.append(("Display only", f"Yes: on the calendar, no roster. {said}".strip()))
     return rows
 
 

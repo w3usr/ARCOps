@@ -5026,3 +5026,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, data migration, documentation. The edit refusal counts people, not sign-ups (the part of private tracker 352 still on this path). Verified: ruff, the guards and the migration check pass; app tests 615 passed, including the migration test (a split contest, own hours running into a gap, touching periods, none); the a11y sweep 76 passed, 1 skipped (Chromium and WebKit). Dev and production hold no event with more than one period (read-only checks).
 - **Human Review Status**: Pending review
 - **Git Hash**: 27ee4d4
+
+## [2026-11-16 14:43 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build NAF's ticket on when a regular meeting or net meets (private tracker 273; SK, 2026-11-16: weekly, monthly on a weekday, monthly on a date; an optional note; the old text read where it can be; the next date shown). Record it as functional addendum A33.
+- **Sections/Files Affected**: apps/events/services/meets.py (new: the line, the next meeting, the parser for old text); apps/events/models.py and migrations/0011 (fields; recurrence_text renamed meeting_note and read into the fields); views_manage.py (EventForm's fields, reveal and checks; the details summary; times kept as text in the audit row); services/manage.py (duplicate carries them); templatetags/times.py (meets_line, next_meets); templates/events/forms/_field.html (data-reveal attributes), list.html, detail.html; static/js/app.js (reveals nest and take several values); docs/REQUIREMENTS.md (A33); tests: test_meets.py (new), test_migration_one_span.py, test_manage.py, test_phase2.py, test_bug_batch.py.
+- **Nature of Contribution**: Code generation, data migration, documentation. A real bug found on the way: saving the details wrote a time into the audit row's JSON and failed; fixed. Verified: ruff, the guards, the migration check; app tests 621 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the form looked at in a browser, where the fields stay hidden until Display only is ticked and hide again when it is unticked.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

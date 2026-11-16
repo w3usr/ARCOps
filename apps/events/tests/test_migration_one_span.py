@@ -49,3 +49,29 @@ def test_periods_become_one_span_and_the_breaks_stay_off_the_air():
     assert got("Chose") == ((T, T + 8 * H), [(T + 2 * H, T + 4 * H), (T + 6 * H, T + 7 * H)])
     assert got("Touching") == ((T, T + 5 * H), [])  # the whole span is stored as nothing
     assert got("Net") == ((None, None), [])
+
+
+def test_the_old_free_text_is_read_into_fields_and_kept_as_the_note_where_it_cannot_be():
+    """Private tracker 273: migration 0011 reads "When it recurs, in words"."""
+    from datetime import time
+
+    to, at = (
+        [("events", "0010_one_start_and_end_per_event")],
+        [("events", "0011_when_it_meets_in_fields")],
+    )
+    ex = MigrationExecutor(connection)
+    ex.migrate(to)
+    Event = ex.loader.project_state(to).apps.get_model("events", "Event")
+    Event.objects.create(title="Read", display_only=True, recurrence_text="Tuesdays 20:00 ET")
+    Event.objects.create(title="Kept", display_only=True, recurrence_text="when the band is open")
+    ex = MigrationExecutor(connection)
+    ex.migrate(at)
+    Event = ex.loader.project_state(at).apps.get_model("events", "Event")
+    read, kept = Event.objects.get(title="Read"), Event.objects.get(title="Kept")
+    assert (read.repeats, read.repeat_weekday, read.meets_at, read.meeting_note) == (
+        "weekly",
+        1,
+        time(20),
+        "",
+    )
+    assert (kept.repeats, kept.meeting_note) == ("", "when the band is open")

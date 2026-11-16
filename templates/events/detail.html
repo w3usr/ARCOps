@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load richtext dicts labels workspace nav %}
+{% load richtext dicts labels workspace nav times %}
 {% block title %}{{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% event_header event 'roster' %}
@@ -23,7 +23,7 @@
 <div class="banner"><p><strong>Canceled.</strong> Kept for the record.</p></div>
 {% endif %}
 {% if event.display_only %}
-<section class="section"><h2>When</h2><p>{{ event.recurrence_text|default:"See the club's calendar." }}</p><p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
+<section class="section"><h2>When</h2><p>{{ event|meets_line|default:"See the club's calendar." }}</p>{% with nxt=event|next_meets %}{% if nxt %}<p>Next: {{ nxt }}</p>{% endif %}{% endwith %}{% if event.meeting_note %}<p>{{ event.meeting_note }}</p>{% endif %}<p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
 {% endif %}
 
 {% if event.description_html %}<div class="prose">{{ event.description_html|richtext }}</div>{% endif %}

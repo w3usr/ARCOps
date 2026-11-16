@@ -461,7 +461,7 @@ def test_a_line_stands_in_place_of_publish_while_steps_are_missing(officer):
 
 def test_a_display_only_event_publishes_with_nothing_set_up(officer):
     c = _as(officer)
-    ev = _bare(c, display_only="on", recurrence_text="Tuesdays")
+    ev = _bare(c, display_only="on", repeats="weekly", repeat_weekday="1", meets_at="20:00")
     c.post(f"/events/{ev.pk}/publish/", {"from": "manage"})
     ev.refresh_from_db()
     assert ev.state == "published"
@@ -553,5 +553,15 @@ def test_a_new_event_starts_at_the_club_station_and_a_net_has_no_location(office
         True,
     )
     assert [p.name for p in loc.positions.all()] == ["Station"]
-    c.post("/events/new/", {"title": "Net", "type": "net", "display_only": "on"})
+    c.post(
+        "/events/new/",
+        {
+            "title": "Net",
+            "type": "net",
+            "display_only": "on",
+            "repeats": "weekly",
+            "repeat_weekday": "1",
+            "meets_at": "20:00",
+        },
+    )
     assert not Event.objects.get(title="Net").locations.exists()
