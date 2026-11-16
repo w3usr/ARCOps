@@ -15,19 +15,38 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods
 
-from apps.credentials.models import LicenseRecord, SignedAgreement
+from apps.credentials.models import LicenseRecord, SignedAgreement, UlsLicense
+from apps.credentials.services import (
+    apply_override,
+    ladder,
+    lift_override,
+    refresh_license_from_local_table,
+)
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
 from apps.ops.groups import may_issue_temporary_password, may_set_access
 from apps.ops.tables import summary
 
-from . import entry, views_addresses
+from . import addresses, entry, views_addresses
 from .account import AccountForm, may_manage, profile_rows, readonly_rows, save_account
-from .models import User
-from .services import issue_temporary_password
+from .guardian import convert_to_adult, link_guardian, unlink_guardian
+from .models import Guardianship, User
+from .services import (
+    ArchiveRefused,
+    DeletionRefused,
+    archive_member,
+    close_account,
+    delete_account,
+    deletion_effects,
+    issue_temporary_password,
+    readmit,
+    restore_member,
+    suspend,
+)
 
 # The classes the ladder does not hold: a station the FCC gives no operator class, and no
 # license at all. The key narrows the directory; the letter is what the Class column shows.
@@ -510,7 +529,7 @@ def member_detail(request, pk):
             # the name among them, because with a callsign the name is the FCC's (FR-8).
             "rows": profile_rows(member),
             **(_preferences(member) if is_self else {}),
-            "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
+            "addresses": addresses.state(member),
             "standing": _standing(member),
             "guardian_links": list(
                 member.guardianships.select_related("guardian").order_by("-active", "created")
@@ -627,9 +646,6 @@ def member_edit(request, pk):
             # for when somebody cannot wait for it. The advisor, 2026-09-19: "only sysadmins
             # should be able to force a call-sign relook up." The capability that governs the
             # license record is the one that governs forcing its refresh.
-            from apps.credentials.models import UlsLicense
-            from apps.credentials.services import refresh_license_from_local_table
-
             if not member.callsign:
                 messages.error(request, "This member has no callsign to look up.")
             else:
@@ -651,9 +667,6 @@ def member_edit(request, pk):
                     )
             return redirect("member_edit", pk=member.pk)
         elif action == "license_override" and actor.may("override_license"):  # FR-15, FR-20
-            from apps.credentials.models import LicenseRecord
-            from apps.credentials.services import apply_override, lift_override
-
             lic, _ = LicenseRecord.objects.get_or_create(
                 user=member, defaults={"callsign": member.callsign}
             )
@@ -663,8 +676,6 @@ def member_edit(request, pk):
             elif not request.POST.get("override_reason", "").strip():
                 messages.error(request, "An override needs a reason.")
             else:
-                from django.utils.dateparse import parse_date
-
                 apply_override(
                     actor,
                     lic,
@@ -684,8 +695,6 @@ def member_edit(request, pk):
                 )
             return redirect("member_edit", pk=pk)
         elif action == "convert_adult" and member.under_18 and actor.may("convert_minor_accounts"):
-            from .guardian import convert_to_adult
-
             temp_password = convert_to_adult(actor, member)
             messages.success(
                 request,
@@ -694,8 +703,6 @@ def member_edit(request, pk):
         elif (
             action == "link_guardian" and actor.may("edit_member_privileges") and member.under_18
         ):  # §2.4
-            from .guardian import link_guardian
-
             g = User.objects.by_address(request.POST.get("guardian_email", "")).first()
             if g is None or g.under_18 or g == member:
                 messages.error(
@@ -706,9 +713,6 @@ def member_edit(request, pk):
                 link_guardian(actor, member, g, request.POST.get("relationship", "").strip()[:40])
                 messages.success(request, f"{g.full_name} linked as guardian.")
         elif action == "unlink_guardian" and actor.may("edit_member_privileges"):
-            from .guardian import unlink_guardian
-            from .models import Guardianship
-
             link = get_object_or_404(
                 Guardianship, pk=request.POST.get("link"), minor=member, active=True
             )
@@ -721,8 +725,6 @@ def member_edit(request, pk):
                 unlink_guardian(actor, link)
                 messages.success(request, f"{link.guardian.full_name} unlinked.")
         elif action == "delete" and actor.may("delete_accounts"):  # FR-118
-            from .services import DeletionRefused, delete_account
-
             reason = request.POST.get("reason", "").strip()
             if request.POST.get("confirm") != "yes" or not reason:
                 messages.error(request, "Deletion needs the confirmation ticked and a reason.")
@@ -745,8 +747,6 @@ def member_edit(request, pk):
                 f"Temporary password issued. It works once, within {hours} hours, and is shown only here.",
             )
         elif action == "shut" and actor.may("archive_members") and member != actor:
-            from .services import close_account
-
             close_account(actor, member, request.POST.get("reason", ""))
             messages.success(
                 request,
@@ -755,8 +755,6 @@ def member_edit(request, pk):
             )
             return redirect("member_edit", pk=member.pk)
         elif action == "close" and may_set_access(actor, member):
-            from .services import suspend
-
             if member == actor:
                 messages.error(request, "You cannot suspend your own account.")
             else:
@@ -764,16 +762,12 @@ def member_edit(request, pk):
                 messages.success(request, f"{member.short_name} is suspended.")
                 return redirect("member_edit", pk=member.pk)
         elif action == "reopen" and _may_readmit(actor, member):
-            from .services import readmit
-
             # Back as a member, whether they asked to leave or somebody suspended them; a level
             # above that is granted deliberately, by somebody who holds it (§2.3).
             readmit(actor, member)
             messages.success(request, f"{member.short_name} is a member again.")
             return redirect("member_edit", pk=member.pk)
         elif action == "archive" and actor.may("archive_members"):  # FR-125
-            from .services import ArchiveRefused, archive_member
-
             if member == actor:
                 messages.error(request, "You cannot archive your own account.")
                 return redirect("member_edit", pk=member.pk)
@@ -789,8 +783,6 @@ def member_edit(request, pk):
                 )
             return redirect("member_edit", pk=member.pk)
         elif action == "restore" and actor.may("archive_members"):
-            from .services import restore_member
-
             restore_member(actor, member)
             messages.success(
                 request,
@@ -813,8 +805,6 @@ def member_edit(request, pk):
         else:
             raise Http404
 
-    from apps.credentials.services import ladder
-
     ctx_ladder = ladder()
     return render(
         request,
@@ -827,21 +817,13 @@ def member_edit(request, pk):
             # What the card over these fields is called. On your own account they are your
             # details; on somebody else's they are what this reader may manage.
             "manage_heading": "Details" if member == actor else "Manage",
-            "addresses": __import__("apps.accounts.addresses", fromlist=["state"]).state(member),
+            "addresses": addresses.state(member),
             "address_subject_is_self": member == actor,
             # Which address controls this reader has on this account (#326); the page draws
             # nothing the POST would refuse.
-            "address_may_edit": __import__(
-                "apps.accounts.views_addresses", fromlist=["may_edit"]
-            ).may_edit(actor, member),
-            "address_may_correct": __import__(
-                "apps.accounts.views_addresses", fromlist=["may_correct"]
-            ).may_correct(actor, member),
-            "deletion": __import__(
-                "apps.accounts.services", fromlist=["deletion_effects"]
-            ).deletion_effects(member)
-            if actor.may("delete_accounts")
-            else None,
+            "address_may_edit": views_addresses.may_edit(actor, member),
+            "address_may_correct": views_addresses.may_correct(actor, member),
+            "deletion": deletion_effects(member) if actor.may("delete_accounts") else None,
             "can_revoke": actor.may("approve_agreements"),
             "temp_password": temp_password,
             "standing": _standing(member),
@@ -849,7 +831,6 @@ def member_edit(request, pk):
                 member.guardianships.select_related("guardian").order_by("-active", "created")
             ),
             "wards": list(member.wards.filter(active=True).select_related("minor")),
-            "is_approver": actor.may("approve_agreements"),
             "can_convert": actor.may("convert_minor_accounts"),
             "is_self": member == actor,
             "security": _security(member) if member == actor else None,
