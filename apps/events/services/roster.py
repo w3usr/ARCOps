@@ -14,6 +14,7 @@ and starts within two days.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -129,10 +130,7 @@ class Cell:
         people holding no license at all.
         """
         order = "EAGTNCRMU"
-        counts: dict[str, int] = {}
-        for su in self.signups:
-            letter = su.user.license_letter
-            counts[letter] = counts.get(letter, 0) + 1
+        counts = Counter(su.user.license_letter for su in self.signups)
         return ", ".join(f"{counts[k]} {k}" for k in order if k in counts)
 
 
@@ -210,10 +208,8 @@ def coverage(event: Event, now: datetime | None = None) -> dict:
     )
     for s in slots:
         signups = list(s.signups.all())
-        taken: dict[str, int] = {}
-        for su in signups:
-            taken[su.role] = taken.get(su.role, 0) + 1
-        open_roles = [c.role for c in s.capacities.all() if taken.get(c.role, 0) < c.capacity]
+        taken = Counter(su.role for su in signups)
+        open_roles = [c.role for c in s.capacities.all() if taken[c.role] < c.capacity]
         shown = present(
             s,
             evaluate(s),
@@ -403,10 +399,8 @@ def build(
         st = evaluate(s)
         signups = list(s.signups.all())
         caps = {c.role: c.capacity for c in s.capacities.all()}
-        taken: dict[str, int] = {}
-        for su in signups:
-            taken[su.role] = taken.get(su.role, 0) + 1
-        open_roles = [r for r, c in caps.items() if taken.get(r, 0) < c]
+        taken = Counter(su.role for su in signups)
+        open_roles = [r for r, c in caps.items() if taken[r] < c]
         shown = present(
             s,
             st,
