@@ -26,15 +26,7 @@ from django.views.decorators.http import require_http_methods
 
 from apps.ops.audit import record
 
-from .acting import (
-    SYSADMIN,
-    available_views,
-    capabilities_of,
-    current_view,
-    full_capabilities,
-    raises_privilege,
-    set_view,
-)
+from .acting import available_views, current_view, raises_privilege, set_view
 
 # The public module of this name is a deprecation shim around the same function; the
 # library's own views import it from here.
@@ -111,17 +103,10 @@ def acting_view(request):
             )
         return redirect(nxt or "dashboard")
 
-    held = full_capabilities(user)
-    rows = []
-    for view in views:
-        granted = capabilities_of(view["key"]) if view["key"] != SYSADMIN else held
-        rows.append(
-            {
-                **view,
-                "current": view["key"] == now,
-                "raises": bool(granted - (capabilities_of(now) if now else held)),
-            }
-        )
+    rows = [
+        {**view, "current": view["key"] == now, "raises": raises_privilege(user, now, view["key"])}
+        for view in views
+    ]
     return render(
         request,
         "accounts/acting_view.html",

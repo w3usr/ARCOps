@@ -85,14 +85,10 @@ def available_views(user) -> list[dict]:
                     "key": group.name,
                     "label": label_of(group, configured),
                     "capabilities": capabilities,
-                    "raises": False,
                 }
             )
     views.sort(key=lambda v: len(v["capabilities"]))  # smallest first: the list reads as a ladder
-    if user.is_superuser:
-        views.append(
-            {"key": SYSADMIN, "label": "Sysadmin", "capabilities": set(held), "raises": True}
-        )
+    views.append({"key": SYSADMIN, "label": "Sysadmin", "capabilities": set(held)})
     # Each level is described by what it lets somebody do, never by how many permissions it
     # holds: a count of database rows means nothing to the person reading the page.
     below: set[str] = set()
@@ -122,7 +118,7 @@ def default_view(user) -> str | None:
     if not wanted:
         return None
     if wanted == SYSADMIN:
-        return SYSADMIN if user.is_superuser else None
+        return SYSADMIN
     held = full_capabilities(user)
     granted = capabilities_of(wanted)
     if granted and granted < held:  # strictly smaller, or it is no reduction at all
