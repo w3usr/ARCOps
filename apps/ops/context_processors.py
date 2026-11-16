@@ -1,14 +1,8 @@
-"""Makes the club's identity (`club`, TR-40) and the product's (`product`, NAME.md) available
-to every template."""
+"""Makes the club's identity (`club`, TR-40) available to every template."""
 
 from django.conf import settings as dj
 
-from .branding import product_context
 from .config import branding, institution_email_domain, setting
-
-
-def product(request):
-    return product_context()
 
 
 def club(request):

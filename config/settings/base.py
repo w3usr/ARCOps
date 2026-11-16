@@ -110,7 +110,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.ops.context_processors.club",
-                "apps.ops.context_processors.product",
+                "apps.ops.branding.product_context",
                 "apps.accounts.acting.context",
                 "apps.comms.context_processors.unread",
                 "apps.credentials.context_processors.approvals_waiting",
