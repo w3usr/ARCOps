@@ -5073,4 +5073,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/tables.py (`chosen` skips blank values, for every page that uses it: Outbox, Approvals, Access rosters); apps/comms/tests/test_messages.py (`?state=&page=1` shows every message).
 - **Nature of Contribution**: Review and bug fix. Verified: ruff and format; app tests passed; the new check fails without the fix. The a11y sweep was not re-run: no page markup changed.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 9fb2ee7
