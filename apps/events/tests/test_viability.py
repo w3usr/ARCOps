@@ -90,11 +90,11 @@ def test_empty():
     assert evaluate(slot_for()).status == "empty"
 
 
-def test_one_person_holding_everything_is_at_risk_not_viable_alone():
+def test_one_person_holding_everything_is_viable():
     s = slot_for()
     SignUp.objects.create(slot=s, user=person("ann", "Extra", True, True), role="operator")
     st = evaluate(s)
-    assert st.status == "at_risk"  # viable, but depends on one person
+    assert st.status == "viable"  # covered, though it depends on one person (279)
     assert st.control_operator.first_name == "ann"
 
 
@@ -138,11 +138,11 @@ def test_a_captains_choice_of_control_operator_must_still_qualify():
 
 def test_technician_below_preferred_is_viable_with_a_warning():
     # FR-61 as amended 2026-09-15: any class makes the slot viable; below the event's preferred
-    # class is a warning. One person holding everything is still "at risk".
+    # class is a warning.
     s = slot_for("General")
     SignUp.objects.create(slot=s, user=person("tec", "Technician", True, True), role="operator")
     st = evaluate(s)
-    assert st.status == "at_risk" and st.below_preferred == "Technician"
+    assert st.status == "viable" and st.below_preferred == "Technician"
     assert not any("General or higher" in r for r in st.reasons)  # no longer a missing credential
 
 
@@ -164,13 +164,14 @@ def test_an_observer_carries_station_and_it_access():
     assert st.below_preferred == "Technician"
 
 
-def test_an_observer_who_alone_carries_the_access_is_one_the_slot_depends_on():
+def test_a_slot_that_depends_on_one_person_is_simply_covered():
+    """Private tracker 279 (NAF, 2026-11-12): no "depends on one person" state anywhere."""
     s = slot_for()
     for name in ("gen1", "gen2"):  # either can go; the observer cannot
         SignUp.objects.create(slot=s, user=person(name, "General"), role="operator")
     SignUp.objects.create(slot=s, user=person("obs", None, True, True), role="observer")
     st = evaluate(s)
-    assert st.status == "at_risk" and st.reasons == ["depends on obs T. alone"]
+    assert st.status == "viable" and st.reasons == [] and st.word == "Covered"
 
 
 def test_minor_needs_responsible_adult():

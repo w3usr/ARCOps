@@ -228,7 +228,7 @@ def _state_key(status, unconfirmed: bool) -> str:
 
 
 def send_warnings(now: datetime | None = None) -> dict:
-    """FR-73: for each future slot inside the horizon that cannot run, depends on one person, or
+    """FR-73: for each future slot inside the horizon that cannot run, or
     has an unconfirmed sign-up within 24 hours, warn the people in it and the captains, at most
     once per state per 12 hours. Notes added inside 48 hours ride along to the captains
     (FR-110). Then FR-113's no-show notices."""
@@ -255,7 +255,7 @@ def send_warnings(now: datetime | None = None) -> dict:
         unconfirmed = slot.start - now <= timedelta(hours=24) and any(
             not s.confirmed_at and not s.checked_in_at for s in signups
         )
-        if status.status not in ("not_viable", "at_risk") and not unconfirmed:
+        if status.status != "not_viable" and not unconfirmed:
             continue
         key = _state_key(status, unconfirmed)
         recent = SlotWarning.objects.filter(
@@ -263,7 +263,7 @@ def send_warnings(now: datetime | None = None) -> dict:
         ).exists()
         if recent:
             continue
-        short = status.status in ("not_viable", "at_risk")
+        short = status.status == "not_viable"
         # What the slot needs, in the roster's words, for everyone who reads it (FR-62; SK,
         # 2026-10-26); the captains' line adds who has not confirmed.
         needs = status.needs if short else ""
@@ -550,7 +550,7 @@ def send_digest(now: datetime | None = None) -> dict:
             st = evaluate(s, list(s.signups.all()))
             if st.status == "empty":
                 open_n += 1
-            elif st.status in ("not_viable", "at_risk"):
+            elif st.status == "not_viable":
                 needs_n += 1
         total_open += open_n
         start, end = e.starts_at(), e.ends_at()

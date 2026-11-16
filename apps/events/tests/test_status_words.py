@@ -28,8 +28,6 @@ SAYS = "needs someone with station access and someone with computer access"
 def test_a_state_reads_as_what_the_slot_needs():
     assert BROKEN.needs == SAYS
     assert BROKEN.word == "Needs someone with station access"
-    thin = SlotStatus("at_risk", ["depends on Ben N0CAM alone"])
-    assert thin.needs == "needs one more person alongside Ben N0CAM" and thin.word == "Covered"
     empty = SlotStatus("empty", ["no one signed up"])
     assert empty.needs == "has nobody in it" and empty.word == "Open"
     assert SlotStatus("viable").word == "Covered"

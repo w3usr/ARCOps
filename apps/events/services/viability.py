@@ -16,7 +16,7 @@ ON_AIR_ROLES_DEFAULT = {"operator", "mentor"}
 
 @dataclass
 class SlotStatus:
-    status: str  # empty | not_viable | viable | at_risk
+    status: str  # empty | not_viable | viable
     reasons: list[str] = field(default_factory=list)
     control_operator = None  # a User or None
     missing: list[str] = field(default_factory=list)
@@ -55,8 +55,6 @@ def needs_from_reasons(reasons: list[str]) -> list[str]:
             out.append("someone with " + r[len("nobody with ") :])
         elif r.endswith("has no responsible adult designated"):
             out.append("a responsible adult for " + r.split(" (under 18)")[0])
-        elif r.startswith("depends on ") and r.endswith(" alone"):
-            out.append("one more person alongside " + r[len("depends on ") : -len(" alone")])
         elif r != "no one signed up":
             out.append(r)
     return out
@@ -169,15 +167,9 @@ def evaluate(slot, signups=None) -> SlotStatus:
     if not ok:
         return SlotStatus("not_viable", reasons, missing=missing)
 
-    # At risk: removing any one person breaks it (FR-62).
+    # A slot that can run is Covered, whoever it depends on: no "depends on one person" state
+    # (NAF, 2026-11-12, private tracker 279: "Don't worry about backups").
     low = below_preferred(slot.event, [u for u, air in people if air], slot.start.date())
-    for i in range(len(people)):
-        others = people[:i] + people[i + 1 :]
-        if not others or not _satisfied(rule, others, slot)[0]:
-            status = SlotStatus("at_risk", [f"depends on {people[i][0].short_name} alone"])
-            status.below_preferred = low
-            status.control_operator = control_operator(slot, on_air)
-            return status
     status = SlotStatus("viable", [f"below preferred class ({low})"] if low else [])
     if low:
         status.below_preferred = low
@@ -227,10 +219,6 @@ def would_break(slot, without_signup) -> SlotStatus | None:
     remaining = [s for s in slot.signups.select_related("user").all() if s.pk != without_signup.pk]
     before = evaluate(slot)
     after = evaluate(slot, remaining)
-    if (
-        before.status in ("viable", "at_risk")
-        and after.status in ("not_viable", "empty", "at_risk")
-        and after.status != before.status
-    ):
+    if before.status == "viable" and after.status in ("not_viable", "empty"):
         return after
     return None

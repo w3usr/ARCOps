@@ -206,7 +206,7 @@ def set_on_air(event, spans) -> list[tuple]:
 
 def health(event) -> dict:
     """FR-66: counts by status, hours against limits."""
-    counts = {"total": 0, "empty": 0, "not_viable": 0, "viable": 0, "at_risk": 0}
+    counts = {"total": 0, "empty": 0, "not_viable": 0, "viable": 0}
     for slot in Slot.objects.filter(
         position__location__event=event, cancelled=False
     ).prefetch_related("signups__user"):

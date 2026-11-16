@@ -30,7 +30,8 @@ from .models import Announcement
 from .services import compose
 
 UNSUB_SALT = "announcement-unsubscribe"
-STATUS_FILTERS = {"open": "empty", "needs": "not_viable", "thin": "at_risk", "covered": "viable"}
+# "thin" (depends on one person) went with private tracker 279; a draft saved with it means covered.
+STATUS_FILTERS = {"open": "empty", "needs": "not_viable", "thin": "viable", "covered": "viable"}
 
 
 def unsubscribe_token(user, category: str = "announcement") -> str:

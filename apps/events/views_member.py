@@ -85,11 +85,7 @@ def signup_change_role(request, signup_id):
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     before = evaluate(slot)
     after = _status_if_role(slot, su, new_role)
-    breaks = (
-        before.status in ("viable", "at_risk")
-        and after.status in ("not_viable", "at_risk")
-        and after.status != before.status
-    )
+    breaks = before.status == "viable" and after.status == "not_viable"
     if breaks and request.POST.get("confirmed") != "yes":
         return render(
             request,

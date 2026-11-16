@@ -63,7 +63,6 @@ class Presentation:
             "open": "open",
             "needs": "warn",
             "covered": "ok",
-            "thin": "ok",
             "low": "warn",
             "full": "muted",
             "closed": "muted",
@@ -99,13 +98,8 @@ def present(
             return Presentation("problem", word, "; ".join(["within 48 hours", *needs[1:]]))
         return Presentation("needs", word, "; ".join(needs[1:]))
     low = getattr(status, "below_preferred", None)
-    if low:  # FR-61: viable, with the warning; it may also depend on one person
-        detail = f"below preferred class ({low})"
-        if status.status == "at_risk" and needs:
-            detail += "; " + needs[0]
-        return Presentation("low", "Covered", detail)
-    if status.status == "at_risk":
-        return Presentation("thin", "Covered", needs[0] if needs else "")
+    if low:  # FR-61: viable, with the warning
+        return Presentation("low", "Covered", f"below preferred class ({low})")
     if open_roles and published:
         return Presentation("covered", "Covered", "room for more")
     if not open_roles and published:
@@ -192,7 +186,6 @@ BUCKET = {
     "open": "open",
     "not_open": "open",
     "covered": "covered",
-    "thin": "covered",
     "low": "covered",
     "full": "covered",
     "needs": "needs",

@@ -393,16 +393,6 @@ def test_present_wording():
         now=now,
     )
     assert p.word == "Needs someone with station access (General or higher)" and p.tone == "warn"
-    p = present(
-        Sl(),
-        St("at_risk", ["depends on Mo N0MEM alone"]),
-        [object()],
-        [],
-        published=True,
-        is_captain=False,
-        now=now,
-    )
-    assert p.word == "Covered" and "one more person alongside Mo N0MEM" in p.detail
 
 
 def test_the_captains_red_within_48_hours_says_so_in_words(world):

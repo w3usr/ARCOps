@@ -4986,3 +4986,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Sign someone up, Appoint a captain and a responsible adult choose a member by typing part of a name or callsign; the page answers ?q= itself, so Find (script off) and as-you-type (htmx) share one server path. The slot's captain box is a closed disclosure, Manage this slot, open again after an action from inside it, with its two inner folds flattened. Verified: ruff, the three guards and the migration check pass; app tests 613 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the new browser test passes in both and was looked at in screenshots at desktop and phone width. The scenario suite has not yet been run on this change.
 - **Human Review Status**: Pending review
 - **Git Hash**: e8d5730
+
+## [2026-11-16 12:47 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build NAF's ticket on the "depends on one person" state (private tracker 279; NAF, 2026-11-12: remove it everywhere, the warning emails included).
+- **Sections/Files Affected**: apps/events/services/viability.py (evaluate no longer produces at_risk; would_break and the reasons follow), roster.py, notify.py, slots.py, participation.py; apps/events/views_member.py; apps/comms/announce.py and views_announce.py (the filter choice goes; a saved "thin" means covered); templates/events/health_overview.html; tests in apps/events/tests (test_viability, test_roster, test_status_words).
+- **Nature of Contribution**: Code generation (removal). A slot that can run is Covered with no note; no warning email, role-change confirmation, announce filter or count for depending on one person; "below preferred class" kept (FR-61). The setting defaults.at_risk_horizon_hours keeps its key: it is still the warnings' horizon and its words on Settings already read "short of people". Verified: ruff, the guards, app tests 613 passed.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

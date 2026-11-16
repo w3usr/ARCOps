@@ -45,9 +45,7 @@ def participation(event: Event) -> dict:
 
     def block(sub):
         covered = [s for s in sub if s.signups.exists()]
-        viable = [
-            s for s in sub if evaluate(s, list(s.signups.all())).status in ("viable", "at_risk")
-        ]
+        viable = [s for s in sub if evaluate(s, list(s.signups.all())).status == "viable"]
         checked = {
             su.user_id for s in sub for su in s.signups.all() if su.checked_in_at and not su.no_show
         }

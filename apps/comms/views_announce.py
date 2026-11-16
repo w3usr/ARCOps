@@ -80,7 +80,6 @@ def _compose(request, event, form, filters, roles, categories):
             "statuses": [
                 ("open", "Open (nobody yet)"),
                 ("needs", "Needs someone"),
-                ("thin", "Covered, depends on one person"),
                 ("covered", "Covered"),
             ],
         },
