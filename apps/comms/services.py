@@ -100,7 +100,7 @@ def _small_print(msg: Outbox | None) -> str:
 
     from apps.ops.config import accent_color
 
-    site = getattr(dj, "SITE_URL", "") or ""
+    site = dj.SITE_URL
     style = f'style="color:{accent_color()};"'
     prefs = f"{site}{reverse('profile_edit')}#notifications"
     lines = [f'Change what reaches you: <a href="{prefs}" {style}>your notification settings</a>.']
@@ -176,7 +176,7 @@ def deliver(msg: Outbox) -> Outbox:
 
             from .announce import unsubscribe_token
 
-            one_click = f"{getattr(dj, 'SITE_URL', '')}{reverse('unsubscribe', args=[unsubscribe_token(msg.user, msg.category)])}"
+            one_click = f"{dj.SITE_URL}{reverse('unsubscribe', args=[unsubscribe_token(msg.user, msg.category)])}"
             club = setting("club.contact_email", "")
             email.extra_headers["List-Unsubscribe"] = f"<{one_click}>" + (
                 f", <mailto:{club}?subject=unsubscribe>" if club else ""
@@ -197,7 +197,7 @@ def _push(msg: Outbox) -> None:
     if msg.user is None or not push_wanted(msg.user, msg.category):
         return
     try:
-        send_push(msg.user, msg.subject, f"{getattr(dj, 'SITE_URL', '')}/me/messages/")
+        send_push(msg.user, msg.subject, f"{dj.SITE_URL}/me/messages/")
     except Exception as exc:  # noqa: BLE001 - never blocks the email or the copy
         import logging
 
@@ -214,7 +214,7 @@ def base_context() -> dict:
             "short_name": setting("club.short_name", "the club"),
             "contact_email": setting("club.contact_email", ""),
         },
-        "site_url": getattr(dj, "SITE_URL", ""),
+        "site_url": dj.SITE_URL,
     }
 
 

@@ -66,7 +66,7 @@ def create_invitation(
 
     from apps.comms.services import send
 
-    base_url = base_url or getattr(dj, "SITE_URL", "")
+    base_url = base_url or dj.SITE_URL
     to = [inv.guardian_email] if inv.is_minor and inv.guardian_email else [inv.email]
     msg = send(
         "invitation",
@@ -272,7 +272,7 @@ def _completion_notices(inv: Invitation, user: User) -> None:
 
     from apps.comms.services import send
 
-    site = getattr(dj, "SITE_URL", "") or ""
+    site = dj.SITE_URL
     link = site + reverse("member_detail", args=[user.pk])
     lic = getattr(user, "license", None)
     uls_name = lic.licensee_name if lic else ""

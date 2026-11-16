@@ -371,7 +371,7 @@ def agreement_expiry_run(now=None) -> dict:
 
     now = now or timezone.now()
     today = now.date()
-    site = getattr(dj, "SITE_URL", "") or ""
+    site = dj.SITE_URL
     notice_days = int(setting("defaults.agreement_expiry_notice_days", 30))
 
     # FR-30: superseded versions with a re-sign date that has passed
@@ -505,7 +505,7 @@ def revoke(actor, agreement: SignedAgreement, reason: str) -> SignedAgreement:
             "title": agreement.template.title if agreement.template else agreement.credential.label,
             "approver": actor.full_name,
             "reason": reason,
-            "link": (getattr(dj, "SITE_URL", "") or "") + reverse("agreements"),
+            "link": dj.SITE_URL + reverse("agreements"),
         },
     )
     return agreement
@@ -531,7 +531,7 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
         .values_list("actor_id", flat=True)
     )
     set_shared_secret(actor, plaintext, effective_date)
-    link = (getattr(dj, "SITE_URL", "") or "") + reverse("computer_password")
+    link = dj.SITE_URL + reverse("computer_password")
     current = [u for u in User.objects.with_access() if holds(u, "it_access", today)]
     for u in current:
         send("password.rotated", u, "security", {"effective": effective_date, "link": link})

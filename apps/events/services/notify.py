@@ -78,12 +78,8 @@ def when_text(slot: Slot, zone=None) -> str:
     return mail_when(slot.start, slot.end, slot.event)
 
 
-def site() -> str:
-    return getattr(dj, "SITE_URL", "") or ""
-
-
 def slot_link(slot: Slot) -> str:
-    return site() + reverse("slot_detail", args=[slot.event.pk, slot.pk])
+    return dj.SITE_URL + reverse("slot_detail", args=[slot.event.pk, slot.pk])
 
 
 # ---------------------------------------------------------------- confirm tokens ---
@@ -213,8 +209,8 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
         "position": slot.position.name,
         "control_operator": co.short_name if co else "",
         "others": ", ".join(s.user.short_name_lettered for s in signups),
-        "confirm_link": site() + reverse("confirm_by_token", args=[confirm_token(su)]),
-        "cannot_link": site() + reverse("cannot_by_token", args=[confirm_token(su)]),
+        "confirm_link": dj.SITE_URL + reverse("confirm_by_token", args=[confirm_token(su)]),
+        "cannot_link": dj.SITE_URL + reverse("cannot_by_token", args=[confirm_token(su)]),
         "kbyg": kbyg + _contest_kbyg(event),
         "captains": [contact_line(c) for c in caps],
         "advisors": [contact_line(a) for a in advisors() if a not in caps],
@@ -409,7 +405,7 @@ def removed_by_captain(actor: User, su: SignUp, reason: str = "") -> None:
             "position": slot.position.name,
             "role": role_label(su.role),
             "reason": reason,
-            "link": site() + reverse("event_detail", args=[event.pk]),
+            "link": dj.SITE_URL + reverse("event_detail", args=[event.pk]),
         },
     )
 
@@ -451,7 +447,7 @@ def cancel_slot_with_people(actor: User, slot: Slot, reason: str = "") -> int:
                 "when": when,
                 "position": slot.position.name,
                 "reason": reason,
-                "link": site() + reverse("event_detail", args=[event.pk]),
+                "link": dj.SITE_URL + reverse("event_detail", args=[event.pk]),
             },
         )
         record(
@@ -515,7 +511,7 @@ def access_removed(actor: User, user: User) -> int:
                     "count": len(sus),
                     "event": event,
                     "slots": "; ".join(when_text(s.slot) for s in sus),
-                    "link": site() + reverse("event_detail", args=[event.pk]),
+                    "link": dj.SITE_URL + reverse("event_detail", args=[event.pk]),
                 },
             )
         for su in sus:
@@ -564,7 +560,7 @@ def send_digest(now: datetime | None = None) -> dict:
                 "when": mail_when(start, end, e, " to "),
                 "open": open_n,
                 "needs": needs_n,
-                "link": site() + reverse("event_detail", args=[e.pk]),
+                "link": dj.SITE_URL + reverse("event_detail", args=[e.pk]),
             }
         )
     members = people_who_may("view_directory")

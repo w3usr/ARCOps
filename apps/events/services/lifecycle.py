@@ -16,10 +16,6 @@ from apps.ops.templatetags.labels import role_label
 from ..models import Event, Opening, Slot
 
 
-def _site() -> str:
-    return getattr(dj, "SITE_URL", "") or ""
-
-
 def set_state(actor, event: Event, what: str) -> str:
     """lock | unlock | complete. Returns a message for the page; raises ValueError if the move
     is not allowed from the current state."""
@@ -86,7 +82,7 @@ def announce_published(actor, event: Event) -> int:
 
     start, end = event.starts_at(), event.ends_at()
     when = mail_when(start, end, event, " to ") if start and end else ""
-    link = _site() + reverse("event_detail", args=[event.pk])
+    link = dj.SITE_URL + reverse("event_detail", args=[event.pk])
     members = people_who_may("view_directory")
     n = 0
     for u in members:
@@ -116,7 +112,7 @@ def announce_openings(now: datetime | None = None) -> int:
         audience = people_who_may("view_directory")
         if o.categories:
             audience = audience.filter(category__in=o.categories)
-        link = _site() + reverse("event_detail", args=[o.event.pk])
+        link = dj.SITE_URL + reverse("event_detail", args=[o.event.pk])
         for u in audience:
             send(
                 "opening.announced",

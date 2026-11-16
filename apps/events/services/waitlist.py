@@ -75,7 +75,7 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
     entry.state, entry.offered_at, entry.offer_expires_at = Waitlist.State.OFFERED, now, expires
     from .notify import when_text
 
-    site = getattr(dj, "SITE_URL", "") or ""
+    site = dj.SITE_URL
     send(
         "waitlist.offer",
         entry.user,

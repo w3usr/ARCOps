@@ -166,7 +166,7 @@ def sign(request, template_id):
 
     from .services import approvers
 
-    link = (getattr(dj, "SITE_URL", "") or "") + reverse("approvals")
+    link = dj.SITE_URL + reverse("approvals")
     for ap in approvers():
         send(
             "agreement.submitted",
@@ -502,7 +502,7 @@ def decide(request, pk):
             {
                 "title": a.template.title,
                 "reason": a.decision_reason,
-                "link": (getattr(dj, "SITE_URL", "") or "") + reverse("agreements"),
+                "link": dj.SITE_URL + reverse("agreements"),
             },
         )
         messages.info(request, "Declined.")
