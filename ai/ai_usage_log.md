@@ -5041,4 +5041,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/when.py (new: utc, utc_span, day, local, local_span); apps/events/templatetags/times.py (the when tag through it; filters utc_time, utc_time_short, plain_day; tag utc_span); services/roster.py (_span), notify mail through it; 21 templates (accounts, comms, credentials including the agreement PDF, events, ops); Python messages and mail in apps/accounts, apps/credentials, apps/events (views, views_manage, views_rules, views_slots, services eligibility, mentors, reshape); Slot.__str__; tools/check_interface.sh (refuses a hand-written UTC format); docs/INTERFACE.md (Dates and times); tests updated for the wording, and apps/ops/tests/test_when.py (new).
 - **Nature of Contribution**: Code generation and documentation. One wording change beyond the format: a slot clash now reads "already has a slot at <span>" (it said "from … to …"). CSV, the calendar feed, the audit log's values and value= attributes keep ISO 8601. Verified: ruff, the guards (the new rule included), app tests 624 passed.
 - **Human Review Status**: Pending review
-- **Git Hash**: 
+- **Git Hash**: cf10c8e
