@@ -10,6 +10,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.utils import timezone
 
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 
@@ -176,7 +177,7 @@ def expire_due(now=None) -> int:
                 agreement,
                 CredentialDecision.Action.EXPIRED,
                 None,
-                note=f"reached its expiry date, {agreement.expires_on:%d %B %Y}",
+                note=f"reached its expiry date, {when.day(agreement.expires_on)}",
             )
     return n
 
@@ -424,7 +425,7 @@ def agreement_expiry_run(now=None) -> dict:
         )
         SignedAgreement.objects.filter(pk__in=[a.pk for a in items]).update(notice_30_sent_on=today)
         due_summary.append(
-            f"{user.full_name}{' ' + user.callsign if user.callsign else ''}: {expires:%d %b}"
+            f"{user.full_name}{' ' + user.callsign if user.callsign else ''}: {when.day(expires)}"
         )
         sent30 += 1
     # day-of notices: expired today (state now expired, expires_on == yesterday or today)

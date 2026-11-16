@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load labels %}
+{% load labels times %}
 {% block title %}{{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% comment %}A profile, read-only. Nothing on this page changes anything: every control lives on
@@ -21,11 +21,11 @@ access on the way past. The officer's view and the member's own profile are the 
 </section>
 {% endif %}
 
-{% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|date:"j M Y" }}. The row stays so past rosters keep their shape.</p>{% endif %}
-{% if member.is_archived %}<p class="msg"><span class="lvl">Note:</span> In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>{% endif %}
+{% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|plain_day }}. The row stays so past rosters keep their shape.</p>{% endif %}
+{% if member.is_archived %}<p class="msg"><span class="lvl">Note:</span> In the archive since {{ member.archived_at|plain_day }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted.</p>{% endif %}
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.{% if no_access_because %} {{ no_access_because }}{% endif %}</p>{% endif %}
-{% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. {% if is_self %}You{% else %}They{% endif %} joined {{ member.date_joined|date:"d M Y" }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
-{% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> {% if is_self %}your{% else %}their{% endif %} address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>{% endif %}
+{% if member.is_provisional %}<p class="msg warning"><span class="lvl">Careful:</span> waiting for review. {% if is_self %}You{% else %}They{% endif %} joined {{ member.date_joined|plain_day }} through {{ member.joined_via.label|default:"a community link" }}{% if can_edit %}; admit or decline them on the <a href="{% url 'member_edit' member.pk %}">edit page</a>{% endif %}.</p>{% endif %}
+{% if member.verification_deadline and not member.has_confirmed_address %}<p class="msg warning"><span class="lvl">Careful:</span> {% if is_self %}your{% else %}their{% endif %} address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|utc_time }}{% endif %}.</p>{% endif %}
 
 <section class="section" aria-labelledby="d">
   <h2 id="d">Details</h2>
@@ -68,7 +68,7 @@ access on the way past. The officer's view and the member's own profile are the 
 <section class="section" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>{% if is_self %}You are under 18: a guardian acts for you, every message to you goes to every active guardian, and you sign in read-only. A responsible adult named by your guardian accompanies you at every slot.{% else %}This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.{% endif %}</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
+  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|plain_day }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
 </section>
 {% endif %}
 
@@ -107,7 +107,7 @@ and two-step verification is asked for rather than inferred from one (NAF, 2026-
     {% if security.on %}After your password, sign-in asks for a code or your passkey.{% else %}Sign-in asks for your password alone.{% endif %}
     {% if security.on %}{% if not security.required %}<a href="{% url 'member_edit' member.pk %}#security">Turn it off</a>{% endif %}{% else %}<a href="{% url 'member_edit' member.pk %}#security">Turn it on</a>{% endif %}
     {% if not security.on and not security.factor %}<span class="helptext">You will be asked to add an authenticator app or a passkey first.</span>{% endif %}
-    {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> your access level requires this. Set it up before {{ security.deadline|date:"j F Y" }}, after which sign-in will ask you to.</p>{% endif %}
+    {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> your access level requires this. Set it up before {{ security.deadline|plain_day }}, after which sign-in will ask you to.</p>{% endif %}
   </dd>
 </dl></section>
 {% if minor_readonly %}<p class="msg"><span class="lvl">Note:</span> Your guardian makes changes to this account while acting for you. You can change your own password.</p>{% endif %}

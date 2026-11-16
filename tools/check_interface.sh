@@ -131,6 +131,23 @@ for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates
             if not set(m.group(1).split()) <= RADII | {"0"} | pill:
                 fail.append(f"{path}:{n}: border-radius {m.group(1).strip()}; use var(--r-field|button|card), or 50% for a circle")
 
+# One form for every UTC date and time (#274; apps/ops/when.py): a template or a module writing
+# its own with a clock in it drifts from the rest, as a dozen of them had. ISO 8601 for machines
+# (value=, CSV, the calendar feed, the audit log), a line marked "# machine", and one marked
+# "# allowed:" with its reason are let through.
+DATE_TIME = re.compile(r"""\|date:(["'])([^"']*H:i[^"']*)\1""")
+for path in sorted(pathlib.Path("templates").rglob("*.html")):
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        for m in DATE_TIME.finditer(line):
+            if not m.group(2).startswith("Y-m-d"):
+                fail.append(f"{path}:{n}: |date:\"{m.group(2)}\"; use |utc_time, |utc_time_short or {{% utc_span %}}")
+for path in sorted(pathlib.Path("apps").rglob("*.py")):
+    if "/tests/" in str(path) or "/migrations/" in str(path) or path.name == "when.py":
+        continue
+    for n, line in enumerate(path.read_text().splitlines(), 1):
+        if "%H:%M" in line and "%Y" not in line and "# machine" not in line and "# allowed:" not in line:
+            fail.append(f"{path}:{n}: a hand-written time format; use apps/ops/when.py")
+
 for line in dict.fromkeys(fail):
     print(line)
 if fail:

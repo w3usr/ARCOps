@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load labels nav badges %}
+{% load labels nav badges times %}
 {% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block main_class %} wide{% endblock %}
 {% block content %}
@@ -62,7 +62,7 @@ survive a bookmark. An officer's row has one link, the name, with the address un
   {% if full %}<td data-label="Category">{{ m.category|category_label }}</td>{% endif %}
   <td data-label="Positions">{% for label in m.club_positions|position_labels %}{{ label }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="muted">—</span>{% endfor %}</td>
   {% if full %}
-  <td data-label="Status"><span class="tag {{ m.status|tone:'member' }}">{{ m.status_label }}</span>{% if m.archived_at %} <span class="tag">archived {{ m.archived_at|date:"d M Y" }}</span>{% endif %}</td>
+  <td data-label="Status"><span class="tag {{ m.status|tone:'member' }}">{{ m.status_label }}</span>{% if m.archived_at %} <span class="tag">archived {{ m.archived_at|plain_day }}</span>{% endif %}</td>
   <td data-label="Permission level">{{ m.access_label }}{% if m.verification_deadline and not m.has_confirmed_address %} <span class="tag warn">unverified</span>{% endif %}</td>
   <td data-label="Actions" class="row-actions">{% if m.pk in editable %}<button type="button" class="ghost small icon-only" popovertarget="m-menu-{{ m.pk }}" aria-label="More actions for {{ m.display_first }} {{ m.last_name }}">{% icon 'more' 'small' %}</button>
     <div class="menu" id="m-menu-{{ m.pk }}" popover><a href="{% url 'member_detail' m.pk %}">{% icon 'user' 'small' %}View profile</a><a href="{% url 'member_edit' m.pk %}">{% icon 'edit' 'small' %}Edit profile</a></div>{% endif %}</td>

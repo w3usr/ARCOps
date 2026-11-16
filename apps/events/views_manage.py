@@ -28,6 +28,7 @@ from tinymce.widgets import TinyMCE
 from apps.accounts.models import User
 from apps.accounts.pick import matches
 from apps.credentials.services import ladder
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.forms import NoColon
@@ -165,8 +166,8 @@ class EventForm(NoColon, forms.ModelForm):
         }
         widgets = {
             "description_html": TinyMCE(attrs={"rows": 8}),  # FR-115
-            "meets_at": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
-            "meets_until": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "meets_at": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),  # machine
+            "meets_until": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),  # machine
         }
 
     def __init__(self, *args, **kwargs):
@@ -684,10 +685,7 @@ def _summary(event, steps, captains) -> list[dict]:
     reads "Not done yet"; publishing stays allowed, as it was."""
     from apps.ops.templatetags.labels import role_label
 
-    def fmt(t):
-        return f"{t:%a %d %b %H:%M}"
-
-    span = f"{fmt(event.start)} to {fmt(event.end)} UTC" if event.start and event.end else ""
+    span = when.utc_span(event.start, event.end) if event.start and event.end else ""
     places = "; ".join(
         f"{loc.name}: {', '.join(p.name for p in loc.positions.all())}"
         for loc in event.locations.prefetch_related("positions").order_by("order")
@@ -850,7 +848,7 @@ def not_ready(event, steps) -> str:
         return f"{listed} {'are' if len(names) > 1 else 'is'} not done yet."
     end = event.end
     if not event.display_only and end and end <= timezone.now():
-        return f"it ended on {end:%a %d %b %Y %H:%M} UTC."
+        return f"it ended on {when.utc(end)}."
     return ""
 
 
@@ -992,7 +990,7 @@ def span_edit(request, pk):
             if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
                 messages.warning(
                     request,
-                    f"This event ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year.",
+                    f"This event ended on {when.utc(end)}, before now. Check the year.",
                 )
             return done(request, step_url(pk, "span"))
     return form_page(
@@ -1400,7 +1398,7 @@ def _on_air_context(event, **forms_) -> dict:
         return sum((b - a).total_seconds() for a, b in spans) / 3600
 
     def label(a, b):
-        return f"{a:%a %-d %b %H:%M} to {b:%a %-d %b %H:%M} UTC"
+        return when.utc_span(a, b)
 
     outside = 0
     if stretches:
@@ -1533,7 +1531,7 @@ def slot_add(request, pk):
             'Slot added: <a href="{}">{} {}</a>.',
             reverse("slot_detail", args=[event.pk, slot.pk]),
             d["position"],
-            f"{d['start']:%a %d %b %H:%M}–{d['end']:%H:%M} UTC",
+            when.utc_span(d["start"], d["end"]),
         ),
     )
     return done(request, step_url(pk, "slots"))
@@ -1604,10 +1602,10 @@ def event_duplicate(request, pk):
         before={"from": event.pk},
         after={"starts": now.isoformat() if now else None},
     )
-    when = f", starting {now:%a %d %b %Y %H:%M} UTC" if now else ""
+    starting = f", starting {when.utc(now)}" if now else ""
     messages.success(
         request,
-        f"Copied as a draft{when}. Its start and end, on-air hours, slots and openings moved "
+        f"Copied as a draft{starting}. Its start and end, on-air hours, slots and openings moved "
         "with it.",
     )
     return to_step(copy.pk, "span")

@@ -165,7 +165,9 @@ class Slot(models.Model):
         ordering = ["start", "position__location__order", "position__order"]
 
     def __str__(self) -> str:
-        return f"{self.position} {self.start:%a %H:%M}–{self.end:%H:%M}Z"
+        from apps.ops.when import utc_span
+
+        return f"{self.position} {utc_span(self.start, self.end, year=False)}"
 
     @property
     def event(self) -> Event:

@@ -12,6 +12,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.comms.services import send
+from apps.ops import when
 from apps.ops.audit import record
 
 from ..models import Event, ResponsibleAdult, RoleCapacity, SignUp, Slot, Waitlist
@@ -50,10 +51,7 @@ def misfit(slot: Slot, start, end) -> str:
         .first()
     )
     if clash:
-        return (
-            f"{slot.position} already has a slot from {clash.start:%a %d %b %H:%M} to "
-            f"{clash.end:%H:%M} UTC."
-        )
+        return f"{slot.position} already has a slot at {when.utc_span(clash.start, clash.end)}."
     return ""
 
 

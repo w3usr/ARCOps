@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.templatetags.labels import role_label
 
@@ -156,9 +157,7 @@ def sign_up(request, slot_id):
         messages.info(request, "You already hold this slot.")
     else:
         record(request.user, "signup.created", su, after={"role": role})
-        messages.success(
-            request, f"Signed up as {role_label(role)} for {slot.start:%a %d %b %H:%M}Z."
-        )
+        messages.success(request, f"Signed up as {role_label(role)} for {when.utc(slot.start)}.")
         if request.user.under_18:  # FR-64: the guardian names who accompanies the minor
             messages.info(
                 request,

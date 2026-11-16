@@ -143,7 +143,9 @@ def test_a_required_account_is_told_before_it_is_stopped():
     body.force_login(officer)
     page = body.get(f"/members/{officer.pk}/").content.decode()
     assert "required for your access level" in page
-    assert when.strftime("%B") in page, "the date it stops being optional"
+    assert f"{when.day} {when:%b %Y}" in page, (
+        "the date it stops being optional"
+    )  # 21 Nov 2026 (#274)
 
     _key(officer)
     assert mfa.deadline(officer) is None, "enrolled, so there is nothing to count down to"

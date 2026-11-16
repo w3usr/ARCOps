@@ -120,8 +120,8 @@ def test_an_open_cell_reads_its_state_and_its_link_names_the_action(world):
     action and the slot are in the link's accessible name, for a screen reader (FR-62, FR-95)."""
     body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
     assert "<small>sign up</small>" not in body
-    assert 'aria-label="Open: sign up for Run, Sat 00:00 UTC"' in body
-    assert 'aria-label="Open: sign up for Mult, Fri 23:00 UTC"' in body  # the setup slot
+    assert 'aria-label="Open: sign up for Run, Sat 26 Sep 00:00 UTC"' in body
+    assert 'aria-label="Open: sign up for Mult, Fri 25 Sep 23:00 UTC"' in body  # the setup slot
 
 
 def test_know_before_you_go_shows_only_the_sections_written(world):
@@ -323,7 +323,7 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     # and names the slots it leaves alone, not only how many (acceptance test T14, 2026-10-14):
     # 00:00Z and 02:00Z hold sign-ups, and neither is among the slots that go
     kept = r.content.decode().split("left alone:")[1].split("Remove the people first")[0]
-    assert "Sat 26 Sep 00:00Z" in kept and "Sat 26 Sep 02:00Z" in kept
+    assert "Sat 26 Sep 00:00 UTC" in kept and "Sat 26 Sep 02:00 UTC" in kept
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], cancelled=False).count() == 4
     co.post(
         f"/events/{ev.pk}/bulk/",
@@ -434,7 +434,9 @@ def test_events_list_and_home_show_both_zones(world, monkeypatch):
     c = _as(world["mem"])
     body = c.get("/events/").content.decode()
     # The operating period runs 00:00Z to 04:00Z on Saturday 26th: Friday evening locally.
-    assert "Fri 25 Sep 2026 20:00 – Sat 26 Sep 2026 00:00 EDT" in body
+    assert (
+        "Fri, Sep 25, 2026, 8:00 PM – Sat, Sep 26, 2026, 12:00 AM EDT" in body
+    )  # local: en-US (#274)
     assert "Sat 26 Sep 2026 00:00–04:00 UTC" in body
     assert "00:00</td>" not in body and "Z<" not in body
     body = c.get("/").content.decode()  # UTC leads everywhere (functional addendum A12)
@@ -666,10 +668,12 @@ def test_mail_leads_with_utc_and_gives_the_events_zone_beside_it(world):
 
     slot = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
     text = when_text(slot)
-    assert re.fullmatch(r"\w{3} \d+ \w{3} \d\d:\d\d–\d\d:\d\d UTC \(.+ E[SD]T\)", text), text
+    assert re.fullmatch(
+        r"\w{3} \d+ \w{3} \d{4} \d\d:\d\d–\d\d:\d\d UTC \(.+ [AP]M E[SD]T\)", text
+    ), text
     ev = world["ev"]
     span = mail_when(ev.start, ev.end, ev, " to ")
-    assert span.index("UTC") < span.index("(") and " to " in span
+    assert span.index("UTC") < span.index("(") and " – " in span  # across days (#274)
 
 
 def test_sign_someone_up_finds_by_any_part_of_a_name_or_call_and_leaves_out_who_is_in(

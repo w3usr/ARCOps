@@ -46,9 +46,11 @@ def zone_label(dt: datetime, zone: ZoneInfo) -> str:
 
 
 def _span(start: datetime, end: datetime, z, sep: str = "–") -> str:
-    s, e = start.astimezone(z), end.astimezone(z)
-    tail = f"{e:%H:%M}" if sep == "–" else f"{e:%a %-d %b %H:%M}"
-    return f"{s:%a %-d %b %H:%M}{sep}{tail} {zone_label(start, z)}"
+    """A span in one zone: UTC in the one form, the event's zone in the US convention (#274).
+    `sep` is no longer read: each form decides how a span across days reads."""
+    from apps.ops import when
+
+    return when.utc_span(start, end) if z == UTC else when.local_span(start, end, z, year=True)
 
 
 @dataclass
@@ -175,7 +177,7 @@ class Day:
 
 def _hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -> str:
     s, e = start.astimezone(zone), end.astimezone(zone)
-    text = f"{s:%H:%M}–{e:%H:%M}"
+    text = f"{s:%H:%M}–{e:%H:%M}"  # allowed: a row's own hours, under its day heading
     if with_day:
         text = f"{s:%a} {text}"
     return f"{text} {zone_label(start, zone)}"

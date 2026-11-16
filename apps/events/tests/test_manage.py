@@ -265,7 +265,7 @@ def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
 
     # Refused, and the reason is beside the field: a clash, and an operating slot outside the
     # on-air hours (A32).
-    assert "already has a slot from Sat 27 Jun 20:00" in add("2026-06-27T20:30").content.decode()
+    assert "already has a slot at Sat 27 Jun 2026 20:00" in add("2026-06-27T20:30").content.decode()
     assert "inside the on-air hours" in add("2026-06-29T10:00").content.decode()
     assert Slot.objects.filter(position__location__event=ev).count() == before
 

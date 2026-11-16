@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from django import forms
 
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.forms import NoColon
@@ -312,7 +313,7 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
             if p
         )
         add("graduation_year", "Graduation", graduation)
-    joined = subject.date_joined.strftime("%d %b %Y") if subject.date_joined else ""
+    joined = when.day(subject.date_joined)
     if subject.joined_via_id and subject.joined_via:
         joined += f" via {subject.joined_via.label}"
     add("date_joined", "Joined", joined)

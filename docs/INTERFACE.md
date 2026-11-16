@@ -35,6 +35,23 @@ reader, so it is never the only place something is explained.
 **Say what happens, not what the code does.** "Everyone in the slot is told" beats "sends
 notifications to signups".
 
+## Dates and times
+
+One form for every date and time, so a reader learns it once (NAF, 2026-11-12; SK, 2026-11-16;
+private tracker 274). They are written by `apps/ops/when.py`, and `tools/check_interface.sh`
+refuses a format written by hand.
+
+- **A UTC instant:** `Sat 21 Nov 2026 21:00 UTC`: weekday, day, month as a word, year, a
+  24-hour time, `UTC`. In rows and lists where the event gives the year, `Sat 21 Nov 21:00 UTC`.
+  A span within a day, `Sat 21 Nov 2026 21:00–23:00 UTC`; across days, both ends in full.
+- **A plain date** that is not an instant (a license's expiry, a join date): `21 Nov 2026`.
+- **A local time** beside UTC (the event's own zone): the US convention, `Sat, Nov 21, 4:00 PM
+  EST`.
+- **For machines** (CSV, the calendar feed, a box's `value=`): ISO 8601, `2026-11-21T21:00Z`.
+- **Typed in UTC:** a date as `2026-11-21` and a 24-hour time as `21:00` or `2100`, whatever the
+  browser's language; never the browser's own date and time box, which follows the computer's
+  locale.
+
 ## Controls
 
 **Everything that does something is a button that looks like one** (SK, 2026-11-06, #221: D2,

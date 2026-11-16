@@ -1,4 +1,4 @@
-{% load dicts labels nav %}
+{% load dicts labels nav times %}
 {% comment %}One slot: the same content on its own page and inside the roster's dialog. In the dialog
 (partial), its forms go through htmx and come back here, with the flash messages above and the
 slot's roster cell for the page behind (#139). I cannot make it and Change role stay ordinary
@@ -77,7 +77,7 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
 {% elif cell.open_roles %}<p class="muted">Seats are open in this slot, but none of them in a role you are eligible for. Ask a captain if you think that is wrong.</p>
 {% else %}<p class="muted">Full.</p>{% endif %}
 {% if my_wait %}
-<p>You are on the waitlist for <strong>{{ my_wait.role|role_label }}</strong>{% if my_wait.state == 'offered' %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|date:"j M H:i" }} UTC{% endif %}.</p>
+<p>You are on the waitlist for <strong>{{ my_wait.role|role_label }}</strong>{% if my_wait.state == 'offered' %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|utc_time_short }}{% endif %}.</p>
 <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button class="secondary small">Leave the waitlist</button></form>
 {% elif waitable %}
 <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_join' slot.pk %}" class="stack">{% csrf_token %}
@@ -143,7 +143,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     </form>
     {% if next_slot %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_merge' event.pk slot.pk %}" class="stack" aria-labelledby="mg-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="with" value="{{ next_slot.pk }}">
       <h4 id="mg-h-{{ slot.pk }}">Merge it</h4>
-      <p class="helptext">Merging with the slot that follows, {{ next_slot.start|date:"H:i" }}–{{ next_slot.end|date:"H:i" }} UTC, makes one slot of the two with everyone from both in it. Anyone whose hours grow is told and asked to confirm again.</p>
+      <p class="helptext">Merging with the slot that follows, {% utc_span next_slot.start next_slot.end False %}, makes one slot of the two with everyone from both in it. Anyone whose hours grow is told and asked to confirm again.</p>
       <div><button type="submit" class="secondary">Merge with the next slot</button></div>
     </form>{% endif %}
     </div>

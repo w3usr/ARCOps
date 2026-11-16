@@ -12,20 +12,44 @@ from datetime import datetime
 from django import template
 from django.utils.html import format_html
 
-from ..services.roster import UTC, display_zone, zone_label
+from apps.ops import when as when_
+
+from ..services.roster import UTC, display_zone
 
 register = template.Library()
 
 
+@register.filter
+def utc_time(t):
+    """`Sat 21 Nov 2026 21:00 UTC` (#274)."""
+    return when_.utc(t)
+
+
+@register.filter
+def utc_time_short(t):
+    """`Sat 21 Nov 21:00 UTC`, for rows and lists where the event gives the year (#274)."""
+    return when_.utc(t, year=False)
+
+
+@register.filter
+def plain_day(d):
+    """`21 Nov 2026`: a plain date, or an instant's UTC date (#274)."""
+    return when_.day(d)
+
+
+@register.simple_tag
+def utc_span(start, end, year=True):
+    """`Sat 21 Nov 2026 21:00–23:00 UTC` (#274)."""
+    return when_.utc_span(start, end, year) if start and end else ""
+
+
 def _one(start: datetime, end: datetime | None, zone, with_year: bool) -> str:
-    s = start.astimezone(zone)
-    day = "%a %-d %b %Y" if with_year else "%a %-d %b"
+    """UTC in the one form (apps/ops/when.py); the event's zone in the US convention beneath."""
+    if zone == UTC:
+        return when_.utc(start, with_year) if end is None else when_.utc_span(start, end, with_year)
     if end is None:
-        return f"{s:{day} %H:%M} {zone_label(start, zone)}"
-    e = end.astimezone(zone)
-    if s.date() == e.date():
-        return f"{s:{day} %H:%M}–{e:%H:%M} {zone_label(start, zone)}"
-    return f"{s:{day} %H:%M} – {e:{day} %H:%M} {zone_label(start, zone)}"
+        return when_.local(start, zone, with_year)
+    return when_.local_span(start, end, zone, with_year)
 
 
 @register.simple_tag(takes_context=True)

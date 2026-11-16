@@ -5034,3 +5034,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, data migration, documentation. A real bug found on the way: saving the details wrote a time into the audit row's JSON and failed; fixed. Verified: ruff, the guards, the migration check; app tests 621 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the form looked at in a browser, where the fields stay hidden until Display only is ticked and hide again when it is unticked.
 - **Human Review Status**: Pending review
 - **Git Hash**: 83dd539
+
+## [2026-11-16 14:53 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: NAF's ticket on dates and times (private tracker 274), first half: one form for every date and time shown (SK, 2026-11-16: the year dropped in rows and lists; plain dates as 21 Nov 2026; ISO kept for machines). The UTC entry boxes follow in the next commit.
+- **Sections/Files Affected**: apps/ops/when.py (new: utc, utc_span, day, local, local_span); apps/events/templatetags/times.py (the when tag through it; filters utc_time, utc_time_short, plain_day; tag utc_span); services/roster.py (_span), notify mail through it; 21 templates (accounts, comms, credentials including the agreement PDF, events, ops); Python messages and mail in apps/accounts, apps/credentials, apps/events (views, views_manage, views_rules, views_slots, services eligibility, mentors, reshape); Slot.__str__; tools/check_interface.sh (refuses a hand-written UTC format); docs/INTERFACE.md (Dates and times); tests updated for the wording, and apps/ops/tests/test_when.py (new).
+- **Nature of Contribution**: Code generation and documentation. One wording change beyond the format: a slot clash now reads "already has a slot at <span>" (it said "from … to …"). CSV, the calendar feed, the audit log's values and value= attributes keep ISO 8601. Verified: ruff, the guards (the new rule included), app tests 624 passed.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

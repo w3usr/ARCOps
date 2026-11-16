@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.utils import timezone
 
 from apps.credentials.services import class_rank, holds
+from apps.ops import when
 from apps.ops.config import setting
 from apps.ops.templatetags.labels import category_label, role_label
 
@@ -62,7 +63,7 @@ def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tu
             if upcoming:
                 return (
                     False,
-                    f"{role_label(role)} opens to you on {upcoming[0].opens_at:%d %b %Y %H:%M}Z",
+                    f"{role_label(role)} opens to you on {when.utc(upcoming[0].opens_at)}",
                 )
             return False, f"{role_label(role)} is not open to your membership category"
 

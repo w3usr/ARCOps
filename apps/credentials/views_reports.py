@@ -17,6 +17,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.tables import chosen, export_url, sorted_columns, summary
@@ -51,7 +52,7 @@ def password_manage(request):
                 return redirect("password_manage")
             messages.success(
                 request,
-                f"Password set, effective {eff:%d %B %Y}. {result['notified']} member(s) with current computer access told; "
+                f"Password set, effective {when.day(eff)}. {result['notified']} member(s) with current computer access told; "
                 f"{len(result['former'])} former viewer(s) without access listed in your messages.",
             )
             return redirect("password_manage")

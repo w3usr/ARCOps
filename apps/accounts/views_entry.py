@@ -18,6 +18,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.events.models import Event
 from apps.events.services.mentors import mentor_needs
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.forms import NoColon
@@ -135,7 +136,7 @@ def entry_link_action(request, pk):
         request,
         f"Link “{link.label}”: {action}d."
         if action != "extend"
-        else f"Link “{link.label}” now runs to {link.expires_at:%d %b %Y}.",
+        else f"Link “{link.label}” now runs to {when.day(link.expires_at)}.",
     )
     return redirect("entry_links")
 

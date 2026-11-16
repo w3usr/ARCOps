@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load labels nav %}
+{% load labels nav times %}
 {% block title %}Editing {{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% comment %}The heading calls people what they are called: the preferred name where they have
@@ -9,14 +9,14 @@ stored in.{% endcomment %}
 <div class="titlerow"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div>
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
 {% if member.verification_deadline and not member.has_confirmed_address %}
-<div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|date:"d M Y H:i" }} UTC{% endif %}.</p>
+<div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|utc_time }}{% endif %}.</p>
 <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="mark_verified"><button type="submit" class="secondary">Mark address verified</button></form></div>
 {% endif %}
 
 {% if member.is_provisional %}
 <section class="card" aria-labelledby="rv">
   <h2 id="rv">Waiting for review</h2>
-  <p>Joined {{ member.date_joined|date:"d M Y" }} through <strong>{{ member.joined_via.label|default:"a community link" }}</strong>{% if member.callsign %}; callsign {{ member.callsign }} ({{ member.license_letter }}){% endif %}. As a member they will see other members' names and may sign the agreements.</p>
+  <p>Joined {{ member.date_joined|plain_day }} through <strong>{{ member.joined_via.label|default:"a community link" }}</strong>{% if member.callsign %}; callsign {{ member.callsign }} ({{ member.license_letter }}){% endif %}. As a member they will see other members' names and may sign the agreements.</p>
   <div class="row">
     <form method="post">{% csrf_token %}<input type="hidden" name="action" value="admit"><button type="submit">Admit as member</button></form>
     <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="decline">
@@ -91,7 +91,7 @@ stored in.{% endcomment %}
 <section class="section" aria-labelledby="gd">
   <h2 id="gd">Guardians</h2>
   {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|date:"j M Y" }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="secondary small">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
+  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|plain_day }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button class="secondary small">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
   {% if member.under_18 and perms.ops.edit_member_privileges %}<form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="an address on their account" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
   {% if member.under_18 and can_convert %}<p><button type="button" class="secondary" commandfor="to-adult" command="show-modal">Convert to an adult account</button></p>
   <dialog id="to-adult" class="slot-dialog confirm-dialog" aria-labelledby="to-adult-h">
@@ -127,7 +127,7 @@ stored in.{% endcomment %}
 {% if can_restore %}
 <section class="section" aria-labelledby="mb">
   <h2 id="mb">In the archive</h2>
-  <p>In the archive since {{ member.archived_at|date:"j M Y" }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted, and they are still {{ member.status_label|lower|cut:" · archived" }}.</p>
+  <p>In the archive since {{ member.archived_at|plain_day }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted, and they are still {{ member.status_label|lower|cut:" · archived" }}.</p>
   <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Take them out of the archive</button></form>
   <p class="helptext">The record comes back as it went in. Giving them access again is a separate step.</p>
 </section>
@@ -190,7 +190,7 @@ once the account is already closed or suspended, because it is the second step.{
   </dialog>
   {% endif %}
   {% if perms.ops.delete_accounts and not is_self %}
-  {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|date:"j M Y" }}. The row stays so past rosters keep their shape.</p>
+  {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|plain_day }}. The row stays so past rosters keep their shape.</p>
   {% else %}
   <div class="dz-row"><div><h3>Delete this account</h3><p class="helptext">Cannot be undone. Personal details go; signed agreements and the audit log stay.</p></div>
     <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete account</button></div>
@@ -219,7 +219,7 @@ said on the profile beside the passkeys.{% endcomment %}
 <section class="section" aria-labelledby="sec" id="security">
   <h2 id="sec">Two-step verification</h2>
   <p>{% if security.on %}<strong>On</strong>: after your password, sign-in asks for a code or your passkey.{% else %}<strong>Off</strong>: sign-in asks for your password alone. A passkey still signs you in without one.{% endif %}{% if security.required %} Your access level requires it, so it cannot be turned off.{% endif %}</p>
-  {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> set it up before {{ security.deadline|date:"j F Y" }}, after which sign-in will ask you to.</p>{% endif %}
+  {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> set it up before {{ security.deadline|plain_day }}, after which sign-in will ask you to.</p>{% endif %}
   {% if not security.required or not security.on %}
   <form method="post" action="{% url 'two_factor' %}" class="inline">{% csrf_token %}
     <input type="hidden" name="state" value="{% if security.on %}off{% else %}on{% endif %}">
@@ -257,7 +257,7 @@ said on the profile beside the passkeys.{% endcomment %}
 <form method="post" action="{% url 'push_test' %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Send a test notification</button></form>
 <p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
 {% if push_subscriptions %}
-<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }}, since {{ sub.created|date:"j M Y" }}{% if sub.failures %}, {{ sub.failures }} failed{% endif %}
+<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }}, since {{ sub.created|plain_day }}{% if sub.failures %}, {{ sub.failures }} failed{% endif %}
 <form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Forget this device</button></form></li>{% endfor %}</ul>
 {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>

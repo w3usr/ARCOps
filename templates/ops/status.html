@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load labels %}
+{% load labels times %}
 {% block title %}Status · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <h1>Status</h1>
@@ -14,9 +14,9 @@
 <tr>
   <td data-label="Job"><strong>{{ r.spec.name }}</strong><br><small class="muted">{{ r.spec.label }} (<code>{{ r.spec.slug }}</code>)</small></td>
   <td data-label="Every">Every {{ r.spec.period|duration }}<br><small class="muted">{{ r.spec.grace|duration }} of grace</small></td>
-  <td data-label="Last run (UTC)">{% if r.last %}{{ r.last.started|date:"j M H:i:s" }}{% if r.last.finished %} to {{ r.last.finished|date:"H:i:s" }}{% endif %}{% else %}<span class="muted">never</span>{% endif %}</td>
+  <td data-label="Last run (UTC)">{% if r.last %}{% if r.last.finished %}{% utc_span r.last.started r.last.finished False %}{% else %}{{ r.last.started|utc_time_short }}{% endif %}{% else %}<span class="muted">never</span>{% endif %}</td>
   <td data-label="Outcome">{% if r.stale %}<span class="tag bad">late</span> {% endif %}{% if r.last %}<span class="tag{% if r.last.outcome == 'ok' %} ok{% elif r.last.outcome == 'failed' %} bad{% endif %}">{% if r.last.outcome == 'ok' %}worked{% elif r.last.outcome == 'failed' %}failed{% else %}{{ r.last.outcome }}{% endif %}</span>{% endif %}</td>
-  <td data-label="Last success">{% if r.last_ok %}{{ r.last_ok.finished|date:"j M H:i" }}{% else %}<span class="muted">never</span>{% endif %}</td>
+  <td data-label="Last success">{% if r.last_ok %}{{ r.last_ok.finished|utc_time_short }}{% else %}<span class="muted">never</span>{% endif %}</td>
   <td data-label="Detail"><small><code>{{ r.last.detail|default:"" }}</code></small></td>
 </tr>
 {% endfor %}
@@ -29,7 +29,7 @@
 <dl class="dl">
 <dt>Email delivery</dt><dd><strong>{{ mail.mode }}</strong></dd>
 <dt>Last 24 hours</dt><dd>{{ mail.sent_24h }} sent · {{ mail.failed_24h }} failed · {{ mail.not_sent_24h }} recorded and not sent</dd>
-<dt>Last successful delivery</dt><dd>{% if mail.last_sent %}{{ mail.last_sent|date:"j M Y H:i" }} UTC{% else %}<span class="muted">none yet</span>{% endif %}</dd>
+<dt>Last successful delivery</dt><dd>{% if mail.last_sent %}{{ mail.last_sent|utc_time }}{% else %}<span class="muted">none yet</span>{% endif %}</dd>
 </dl>
 <p><a href="{% url 'outbox' %}">Outbox</a> · <a href="{% url 'healthz' %}">/healthz</a> · <a href="{% url 'admin:ops_jobrun_changelist' %}">every job run</a></p>
 </section>

@@ -7,6 +7,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.groups import people_who_may
@@ -93,7 +94,7 @@ def invitation_text(inv: Invitation, base_url: str) -> str:
     return (
         f"You are invited to join {club}'s operations site.\n\n"
         f"Open this link to create your account: {link}\n"
-        f"The link works once and expires on {inv.expires_at:%d %B %Y}.\n\n"
+        f"The link works once and expires on {when.day(inv.expires_at)}.\n\n"
         f"Questions: {contact}"
     )
 

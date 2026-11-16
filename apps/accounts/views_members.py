@@ -26,6 +26,7 @@ from apps.credentials.services import (
     lift_override,
     refresh_license_from_local_table,
 )
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
 from apps.ops.groups import may_issue_temporary_password, may_set_access
@@ -531,12 +532,12 @@ def _no_access_because(member) -> str:
     if member.suspended_at:
         who = member.suspended_by.short_name if member.suspended_by else "an officer"
         said = f": {member.suspended_reason}" if member.suspended_reason else ""
-        return f"Suspended by {who} on {member.suspended_at:%d %b %Y}{said}."
+        return f"Suspended by {who} on {when.day(member.suspended_at)}{said}."
     if member.closure_requested_at:
-        when = f"{member.closure_requested_at:%d %b %Y}"
+        when_ = when.day(member.closure_requested_at)
         if member.closed_by:
-            return f"Closed by {member.closed_by.short_name} on {when}."
-        return f"Closed at their own request on {when}."
+            return f"Closed by {member.closed_by.short_name} on {when_}."
+        return f"Closed at their own request on {when_}."
     return ""
 
 

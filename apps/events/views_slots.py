@@ -28,6 +28,7 @@ from apps.accounts.models import User
 from apps.accounts.pick import find_redirect, matches
 from apps.credentials.models import CredentialType
 from apps.credentials.services import ladder
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.labels import role_label
@@ -314,17 +315,17 @@ def event_bulk(request, pk):
         done, refused = [], []
         for s in slots:
             if s.closed:
-                refused.append(f"{s.start:%a %H:%M}Z: closed")
+                refused.append(f"{when.utc(s.start, year=False)}: closed")
                 continue
             if not waitlist.seats_open(s, role):
-                refused.append(f"{s.start:%a %H:%M}Z: no {role_label(role)} seat open")
+                refused.append(f"{when.utc(s.start, year=False)}: no {role_label(role)} seat open")
                 continue
             if s.signups.filter(user=request.user).exists():
-                refused.append(f"{s.start:%a %H:%M}Z: you already hold it")
+                refused.append(f"{when.utc(s.start, year=False)}: you already hold it")
                 continue
             ok, reason = can_sign_up(request.user, s, role)
             if not ok:
-                refused.append(f"{s.start:%a %H:%M}Z: {reason}")
+                refused.append(f"{when.utc(s.start, year=False)}: {reason}")
                 continue
             su = SignUp.objects.create(slot=s, user=request.user, role=role, note=note)
             record(request.user, "signup.created", su, after={"role": role, "bulk": True})
@@ -402,7 +403,7 @@ def _bulk_seats(request, event, slots):
         seats = {k: v for k, v in seats.items() if v != now.get(k, 0)}
         why = seats_refused(s, seats)
         if why:
-            refused.append(f"{s.start:%a %H:%M}Z, {s.position.name}: {why}")
+            refused.append(f"{when.utc(s.start, year=False)}, {s.position.name}: {why}")
         elif seats:
             plan.append((s, seats))
     step = request.POST.get("step", "")
@@ -495,9 +496,7 @@ def slot_retime(request, pk, slot_id):
         if told
         else ""
     )
-    messages.success(
-        request, f"Slot moved to {slot.start:%a %d %b %H:%M}–{slot.end:%H:%M} UTC.{people}"
-    )
+    messages.success(request, f"Slot moved to {when.utc_span(slot.start, slot.end)}.{people}")
     return roster_or_slot(request, slot)
 
 
@@ -521,7 +520,7 @@ def slot_split(request, pk, slot_id):
         if n
         else ""
     )
-    messages.success(request, f"Slot split at {at:%H:%M} UTC.{people}")
+    messages.success(request, f"Slot split at {when.utc(at)}.{people}")
     return roster_or_slot(request, slot)
 
 
@@ -546,6 +545,6 @@ def slot_merge(request, pk, slot_id):
     )
     messages.success(
         request,
-        f"Merged: the slot now runs {slot.start:%a %d %b %H:%M}–{slot.end:%H:%M} UTC.{people}",
+        f"Merged: the slot now runs {when.utc_span(slot.start, slot.end)}.{people}",
     )
     return roster_or_slot(request, slot)

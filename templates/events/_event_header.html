@@ -1,4 +1,4 @@
-{% load nav badges %}
+{% load nav badges times %}
 {% comment %}One header for the event (#232, D8): the event page, every Manage step and Who took part
 draw it the same. The h1 keeps each page's words for a screen reader and the scripts ("Manage:
 <title>"), with the prefix not shown. It is swapped with a step's in-place saves, so the badge
@@ -12,7 +12,7 @@ header leaves its own out there.{% endcomment %}
       <div class="title-line"><h1>{% if prefix %}<span class="sr-only">{{ prefix }}: </span>{% endif %}{{ event.title }}</h1>
         <span class="tag {{ event.state|tone:'event' }}">{{ event.get_state_display }}</span></div>
       <p class="facts">
-        {% if start and tab != 'roster' %}<span>{% icon 'calendar' 'small' %}{{ start|date:"D j M H:i" }} – {{ end|date:"D j M H:i" }} UTC</span>{% endif %}
+        {% if start and tab != 'roster' %}<span>{% icon 'calendar' 'small' %}{% utc_span start end %}</span>{% endif %}
         {% if place %}<span>{% icon 'map-pin' 'small' %}{{ place }}</span>{% elif places > 1 %}<span>{% icon 'map-pin' 'small' %}{{ places }} locations</span>{% endif %}
         {% if captain %}<span>{% icon 'grid' 'small' %}{{ slots }} slot{{ slots|pluralize }}</span><span>{% icon 'users' 'small' %}{{ captains }} captain{{ captains|pluralize }}</span>{% endif %}
         {% if upcoming %}<span>{% icon 'clock' 'small' %}Starts in {{ start|timeuntil }}</span>{% elif running %}<span>{% icon 'clock' 'small' %}Ends in {{ end|timeuntil }}</span>{% endif %}
@@ -35,7 +35,7 @@ header leaves its own out there.{% endcomment %}
         <h2 id="dup-h">Duplicate this event</h2>
         <p>A draft copy with the same start and end, on-air hours, locations, slot grid, sign-up rules and openings, and nobody signed up.{% if start %} Everything moves with the start you give it.{% endif %}</p>
         <form method="post" action="{% url 'event_duplicate' event.pk %}" class="stack">{% csrf_token %}
-          {% if start %}<div class="field"><label for="dup-start">The copy starts (UTC)</label><input id="dup-start" name="start" type="datetime-local" value="{{ start|date:'Y-m-d\TH:i' }}" required><span class="helptext">This one starts {{ start|date:"D j M Y H:i" }} UTC.</span></div>{% endif %}
+          {% if start %}<div class="field"><label for="dup-start">The copy starts (UTC)</label><input id="dup-start" name="start" type="datetime-local" value="{{ start|date:'Y-m-d\TH:i' }}" required><span class="helptext">This one starts {{ start|utc_time }}.</span></div>{% endif %}
           <div class="confirm-actions"><button type="button" class="secondary" commandfor="dup-dlg" command="close">Close</button> <button type="submit">Make the copy</button></div>
         </form>
       </dialog>

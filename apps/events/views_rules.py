@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.credentials.models import CredentialType
 from apps.credentials.services import ladder
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.forms import NoColon
@@ -247,7 +248,7 @@ def opening_add(request, pk):
     )
     messages.success(
         request,
-        f"{o.role.capitalize()} opens {opens:%d %b %H:%M}Z to {', '.join(o.categories) or 'everyone'}.",
+        f"{o.role.capitalize()} opens {when.utc(opens)} to {', '.join(o.categories) or 'everyone'}.",
     )
     return done(request, step_url(pk, "rules"))
 

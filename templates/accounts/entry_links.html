@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load nav %}
+{% load nav times %}
 {% block title %}Entry links · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 <p class="crumbs"><a href="{% url 'invitations' %}">Invite</a></p>
@@ -8,7 +8,7 @@
 {% if created %}
 <section class="card" aria-labelledby="c"><h2 id="c">Link created: {{ created.label }}</h2>
 <div class="field"><label for="lnk">Send this</label><div class="copyrow"><input id="lnk" readonly value="{{ created_link }}"> <button type="button" class="secondary" data-copy="#lnk">Copy link</button></div></div>
-<p class="helptext">{% if created.kind == 'class' %}Only {{ created.required_domain }} addresses can use it; each person is a member as soon as they finish the form and has {{ verification_days }} days to confirm their address.{% else %}Anyone can use it; each person is provisional until an officer admits them.{% endif %} Expires {{ created.expires_at|date:"d M Y" }}{% if created.cap %}; at most {{ created.cap }} accounts{% endif %}.</p>
+<p class="helptext">{% if created.kind == 'class' %}Only {{ created.required_domain }} addresses can use it; each person is a member as soon as they finish the form and has {{ verification_days }} days to confirm their address.{% else %}Anyone can use it; each person is provisional until an officer admits them.{% endif %} Expires {{ created.expires_at|plain_day }}{% if created.cap %}; at most {{ created.cap }} accounts{% endif %}.</p>
 </section>
 {% endif %}
 <form method="post" class="section stack">{% csrf_token %}
@@ -20,7 +20,7 @@
 <table class="table data"><thead><tr><th scope="col">Label</th><th scope="col">Kind</th><th scope="col">Domain</th><th scope="col">Expires</th><th scope="col">Joined</th><th scope="col">State</th><th scope="col">Actions</th></tr></thead><tbody>
 {% for l in links %}<tr>
 <td data-label="Label"><strong>{{ l.label }}</strong><br><small class="muted"><code>{{ base }}/join/{{ l.token }}/</code></small></td>
-<td data-label="Kind">{% if l.kind == 'class' %}Class{% else %}Community{% endif %}</td><td data-label="Domain">{{ l.required_domain|default:"any" }}</td><td data-label="Expires">{{ l.expires_at|date:"d M Y" }}</td>
+<td data-label="Kind">{% if l.kind == 'class' %}Class{% else %}Community{% endif %}</td><td data-label="Domain">{{ l.required_domain|default:"any" }}</td><td data-label="Expires">{{ l.expires_at|plain_day }}</td>
 <td data-label="Joined">{{ l.joined_count }}{% if l.cap %} / {{ l.cap }}{% endif %}</td>
 <td data-label="State">{% if l.is_open %}<span class="tag ok">open</span>{% else %}<span class="tag">{{ l.get_state_display|lower }}{% if l.state == 'active' %}, closed{% endif %}</span>{% endif %}</td>
 <td data-label="Actions"><form method="post" action="{% url 'entry_link_action' l.pk %}" class="inline">{% csrf_token %}

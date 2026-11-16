@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from django.utils import timezone
 
+from apps.ops import when
 from apps.ops.config import setting
 
 from ..models import Event, Slot
-from .roster import UTC, _span, display_zone, zone_label
+from .roster import UTC, _span, display_zone
 
 
 def mentor_role_key() -> str:
@@ -50,9 +51,7 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
                         "open": open_seats,
                         # UTC leads, the event's zone beside it (functional addendum A12)
                         "lead": _span(s.start, s.end, UTC),
-                        "other": ""
-                        if zone == UTC
-                        else f"{s.start.astimezone(zone):%a %H:%M}–{s.end.astimezone(zone):%H:%M} {zone_label(s.start, zone)}",
+                        "other": "" if zone == UTC else when.local_span(s.start, s.end, zone),
                     }
                 )
         if not rows:

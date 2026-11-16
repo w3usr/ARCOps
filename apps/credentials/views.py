@@ -17,6 +17,7 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts import views_addresses
 from apps.accounts.reauth import is_confirmed, spend
+from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
 from apps.ops.tables import chosen, export_url, sorted_columns, summary
@@ -481,7 +482,7 @@ def decide(request, pk):
         messages.success(
             request,
             ("Decision reversed. Approved, expires " if was_declined else "Approved; expires ")
-            + f"{a.expires_on:%d %B %Y}.",
+            + f"{when.day(a.expires_on)}.",
         )
     else:
         a.state = SignedAgreement.State.DECLINED
