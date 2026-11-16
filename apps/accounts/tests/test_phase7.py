@@ -14,7 +14,6 @@ from apps.events.models import (
     Captaincy,
     Event,
     Location,
-    OperatingPeriod,
     Position,
     ResponsibleAdult,
     SignUp,
@@ -52,7 +51,8 @@ def _as(user, view="sysadmin"):
 def _slot(captain, days=5, minutes=60):
     ev = Event.objects.create(title="Test Contest", state="published")
     start = timezone.now() + dt.timedelta(days=days)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + dt.timedelta(minutes=minutes))
+    ev.start, ev.end = start, start + dt.timedelta(minutes=minutes)
+    ev.save(update_fields=["start", "end"])
     pos = Position.objects.create(
         location=Location.objects.create(event=ev, name="Station"), name="Run"
     )

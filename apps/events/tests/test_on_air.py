@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from apps.events.models import Event, OnAirRange, OperatingPeriod, Slot
+from apps.events.models import Event, OnAirRange, Slot
 from apps.events.services.slots import (
     clip,
     merge,
@@ -99,7 +99,7 @@ def test_saving_the_on_air_hours_from_the_slots_step(officer):
     c.post(url, {"what": "range", "start": "2026-06-28T16:30", "end": "2026-06-28T20:00"})
     assert on_air(ev)[-1] == (T + 22 * H + timedelta(minutes=30), T + 24 * H)
     r = c.post(url, {"what": "range", "start": "2026-07-01T10:00", "end": "2026-07-01T12:00"})
-    assert "That range falls outside every operating period." in r.content.decode()
+    assert "That range falls outside the event&#x27;s start and end." in r.content.decode()
     # one stretch removed, then the whole event again
     c.post(url, {"what": "remove", "i": "0"})
     assert on_air(ev)[0][0] == T + 10 * H
@@ -116,7 +116,7 @@ def test_duplicate_copies_the_on_air_hours(officer):
     set_on_air(ev, [(T, T + 6 * H)])
     c.post(f"/events/{ev.pk}/duplicate/")
     copy = Event.objects.exclude(pk=ev.pk).get()
-    assert on_air(copy) == [(T, T + 6 * H)] and OperatingPeriod.objects.filter(event=copy).exists()
+    assert on_air(copy) == [(T, T + 6 * H)] and copy.start is not None
 
 
 def test_a_member_who_is_not_a_captain_may_not_set_them(officer):

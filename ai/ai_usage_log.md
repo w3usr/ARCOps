@@ -5018,3 +5018,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation (decision record, drafted from SK's message).
 - **Human Review Status**: Pending review
 - **Git Hash**: b0cedfa
+
+## [2026-11-16 13:54 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build private tracker 275 as SK decided on 2026-11-16: one start and end per event, as two fields on Event (OperatingPeriod deleted); a split contest's break as time outside the on-air hours; the start and end edited, never removed; an operating slot has to fit inside the on-air hours. No page says "operating period".
+- **Sections/Files Affected**: apps/events/models.py, migrations/0010_one_start_and_end_per_event.py (merges each event's periods, keeps breaks off the air); services/slots.py (span_of, left_outside on the event, fits_on_air, on-air helpers), reshape.py, manage.py (duplicate), participation.py (a row per stretch of on-air hours), roster.py, notify.py, lifecycle.py, mentors.py; views_manage.py (span_edit and SpanForm replace period_add, period_edit, period_delete and the overlap check; the step "span", the old "periods" address redirects), views.py, views_member.py, views_slots.py, urls.py, admin.py, templatetags/workspace.py; apps/ops/api.py, views.py, seed_demo.py; templates (events/stages/span.html, renamed from periods.html, and the stages, header, participation, dashboard and list pages); docs: REQUIREMENTS.md (A32 completed), TECHNICAL_REQUIREMENTS.md (A12), INTERFACE.md; tests across apps/events, apps/accounts, apps/comms, apps/ops and tools/a11y, and a new migration test.
+- **Nature of Contribution**: Code generation, data migration, documentation. The edit refusal counts people, not sign-ups (the part of private tracker 352 still on this path). Verified: ruff, the guards and the migration check pass; app tests 615 passed, including the migration test (a split contest, own hours running into a gap, touching periods, none); the a11y sweep 76 passed, 1 skipped (Chromium and WebKit). Dev and production hold no event with more than one period (read-only checks).
+- **Human Review Status**: Pending review
+- **Git Hash**: 

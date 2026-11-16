@@ -5,6 +5,8 @@ button on closing; a save lands on the step with its message. With JavaScript of
 link to the form's page, which posts and comes back to the step.
 """
 
+from datetime import timedelta
+
 import pytest
 from playwright.sync_api import expect, sync_playwright
 from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
@@ -20,38 +22,40 @@ def _event():
 
 def test_a_form_opens_in_the_dialog_keeps_focus_and_comes_back(live_server, engine):
     ev = _event()
-    setup = f"{live_server.url}/events/{ev.pk}/manage/periods/"
+    setup = f"{live_server.url}/events/{ev.pk}/manage/span/"
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
         page = browser.new_page(viewport={"width": 1280, "height": 900})
         sign_in(page, live_server.url, ACCOUNTS["officer"])
         page.goto(setup)
-        button = page.get_by_role("link", name="Add period")
+        button = page.get_by_role("link", name="Edit")
         button.click()
         dialog = page.locator("#manage-dialog")
         expect(dialog).to_be_visible()
-        expect(dialog.get_by_role("heading", name="Add an operating period")).to_be_visible()
+        expect(dialog.get_by_role("heading", name="Event start and end")).to_be_visible()
         expect(dialog.get_by_label("Starts (UTC)")).to_be_focused()
 
-        dialog.get_by_label("Starts (UTC)").fill("2030-07-01T18:00")
-        dialog.get_by_label("Ends (UTC)").fill("2030-07-01T17:00")
-        dialog.get_by_role("button", name="Add period").click()
+        start, later = f"{ev.start:%Y-%m-%dT%H:%M}", ev.end + timedelta(hours=1)
+        dialog.get_by_label("Starts (UTC)").fill(start)
+        dialog.get_by_label("Ends (UTC)").fill(f"{ev.start - timedelta(hours=1):%Y-%m-%dT%H:%M}")
+        dialog.get_by_role("button", name="Save start and end").click()
         expect(dialog.locator(".msg.error")).to_contain_text("Problem:")
         expect(dialog.locator(".msg.error")).to_be_focused()
-        expect(dialog.get_by_label("Starts (UTC)")).to_have_value("2030-07-01T18:00")
+        expect(dialog.get_by_label("Starts (UTC)")).to_have_value(start)
         assert page.url == setup
 
         page.keyboard.press("Escape")
         expect(dialog).to_be_hidden()
         expect(button).to_be_focused()
 
-        button.click()
-        dialog.get_by_label("Starts (UTC)").fill("2030-07-01T18:00")
-        dialog.get_by_label("Ends (UTC)").fill("2030-07-01T20:00")
-        dialog.get_by_role("button", name="Add period").click()
+        button.click()  # one hour longer: every slot stays, so nothing is refused
+        dialog.get_by_label("Ends (UTC)").fill(f"{later:%Y-%m-%dT%H:%M}")
+        dialog.get_by_role("button", name="Save start and end").click()
         page.wait_for_url(setup)
-        expect(page.locator("#messages")).to_contain_text("Operating period added.")
-        expect(page.locator("section[aria-labelledby=per]")).to_contain_text("01 Jul 2030 18:00")
+        expect(page.locator("#messages")).to_contain_text("Start and end saved.")
+        expect(page.locator("section[aria-labelledby=span]")).to_contain_text(
+            f"{later:%d %b %Y %H:%M}"
+        )
         browser.close()
 
 
@@ -78,7 +82,7 @@ def test_the_generator_says_what_it_will_make_as_the_fields_change(live_server, 
 
 def test_without_javascript_the_button_is_the_forms_page(live_server, engine):
     ev = _event()
-    setup = f"{live_server.url}/events/{ev.pk}/manage/periods/"
+    setup = f"{live_server.url}/events/{ev.pk}/manage/span/"
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
         ctx = browser.new_context(
@@ -87,11 +91,10 @@ def test_without_javascript_the_button_is_the_forms_page(live_server, engine):
         page = ctx.new_page()
         sign_in(page, live_server.url, ACCOUNTS["officer"])
         page.goto(setup)
-        page.get_by_role("link", name="Add period").click()
-        page.wait_for_url(f"{live_server.url}/events/{ev.pk}/periods/add/")
-        page.get_by_label("Starts (UTC)").fill("2030-08-01T18:00")
-        page.get_by_label("Ends (UTC)").fill("2030-08-01T20:00")
-        page.get_by_role("button", name="Add period").click()
+        page.get_by_role("link", name="Edit").click()
+        page.wait_for_url(f"{live_server.url}/events/{ev.pk}/span/")
+        page.get_by_label("Ends (UTC)").fill(f"{ev.end + timedelta(hours=2):%Y-%m-%dT%H:%M}")
+        page.get_by_role("button", name="Save start and end").click()
         page.wait_for_url(setup)
-        expect(page.locator("#messages")).to_contain_text("Operating period added.")
+        expect(page.locator("#messages")).to_contain_text("Start and end saved.")
         browser.close()

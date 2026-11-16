@@ -43,7 +43,7 @@ def test_a_slot_with_people_is_re_timed_and_they_are_told_and_confirm_again(offi
     r = c.post(url, {"start": "2027-06-26T18:30", "minutes": "60"}, follow=True)
     assert "already has a slot from" in r.content.decode()
     r = c.post(url, {"start": "2027-06-26T22:00", "minutes": "60"}, follow=True)
-    assert "has to fit inside an operating period" in r.content.decode()
+    assert "has to fit inside the on-air hours" in r.content.decode()
     d.refresh_from_db()
     assert d.start.hour == 21 and not _told(member).exists()
     # half an hour shorter, inside the period
@@ -155,7 +155,7 @@ def test_a_slot_that_has_started_or_has_a_check_in_keeps_its_time(officer, membe
         {"start": "2020-01-01T00:00", "minutes": "60"},
         follow=True,
     )
-    assert "has to fit inside an operating period" in r.content.decode()
+    assert "has to fit inside the on-air hours" in r.content.decode()
     # a member who is not a captain has none of it
     assert (
         _as(member)

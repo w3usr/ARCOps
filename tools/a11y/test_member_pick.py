@@ -32,7 +32,9 @@ def test_typing_part_of_a_name_offers_them_and_signs_them_up(live_server, engine
         page.click(f'a[data-slot="{slot.pk}"]')
         dialog = page.locator("#slot-dialog")
         manage = dialog.locator("summary", has_text="Manage this slot")
-        expect(dialog.get_by_label("Member", exact=True)).to_be_hidden()  # folded until opened (280)
+        expect(
+            dialog.get_by_label("Member", exact=True)
+        ).to_be_hidden()  # folded until opened (280)
         manage.focus()
         page.keyboard.press("Enter")  # by keyboard, as a captain without a mouse would
         box = dialog.get_by_label("Member", exact=True)
@@ -42,5 +44,7 @@ def test_typing_part_of_a_name_offers_them_and_signs_them_up(live_server, engine
         choice.check()
         dialog.get_by_role("button", name="Add").click()
         expect(dialog.locator(".messages")).to_contain_text("signed up as")
-        expect(dialog.locator("details.manage-slot")).to_have_attribute("open", "")  # still open after
+        expect(dialog.locator("details.manage-slot")).to_have_attribute(
+            "open", ""
+        )  # still open after
         browser.close()

@@ -146,18 +146,18 @@ def test_a_merge_keeps_the_later_slots_own_rule_and_closed_state(officer):
     ).exists()
 
 
-def test_removing_a_period_clips_the_on_air_hours(officer):
-    from apps.events.models import OperatingPeriod
-
-    start = timezone.now().replace(microsecond=0) + timedelta(days=30)
-    ev, _ = _event(start, hours=2, captain=officer, state=Event.State.DRAFT)
-    later = OperatingPeriod.objects.create(
-        event=ev, start=start + timedelta(hours=5), end=start + timedelta(hours=8)
-    )
+def test_shortening_the_start_and_end_clips_the_on_air_hours(officer):
+    """#260, as A32 has it: the on-air hours stay inside the event's start and end."""
+    start = timezone.now().replace(second=0, microsecond=0) + timedelta(days=30)
+    ev, _ = _event(start, hours=8, captain=officer, state=Event.State.DRAFT)
     OnAirRange.objects.create(event=ev, start=start, end=start + timedelta(hours=1))
     OnAirRange.objects.create(
         event=ev, start=start + timedelta(hours=6), end=start + timedelta(hours=7)
     )
-    _client(officer).post(f"/events/{ev.pk}/periods/{later.pk}/delete/")
-    assert not OperatingPeriod.objects.filter(pk=later.pk).exists()
+    Slot.objects.filter(position__location__event=ev).delete()
+    end = start + timedelta(hours=2)
+    _client(officer).post(
+        f"/events/{ev.pk}/span/",
+        {"start": f"{start:%Y-%m-%dT%H:%M}", "end": f"{end:%Y-%m-%dT%H:%M}"},
+    )
     assert list(ev.on_air_ranges.values_list("start", flat=True)) == [start]

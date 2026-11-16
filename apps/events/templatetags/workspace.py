@@ -16,8 +16,7 @@ def event_header(context, event, tab: str, prefix: str = ""):
 
     user = context["request"].user
     captain = user.is_authenticated and user.can_captain(event)
-    periods = list(event.periods.order_by("start"))
-    start, end = (periods[0].start, periods[-1].end) if periods else (None, None)
+    start, end = event.start, event.end
     now = timezone.now()
     locations = list(event.locations.all())
     slots = (

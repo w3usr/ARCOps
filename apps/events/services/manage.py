@@ -10,7 +10,6 @@ from ..models import (
     Event,
     OnAirRange,
     Opening,
-    OperatingPeriod,
     RoleCapacity,
     Slot,
 )
@@ -18,7 +17,7 @@ from .slots import generate_slots
 
 
 def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Event:
-    """FR-42: the copy carries every field, the operating periods, the on-air hours, the
+    """FR-42: the copy carries every field, the start and end, the on-air hours, the
     locations and positions, the slot structure with its capacities, the eligibility rules and
     the openings; no sign-ups, no captains but the person copying, and it starts as a draft under
     a marked title. Every date moves by `shift`, the officer's new start less the old one, so the
@@ -29,6 +28,8 @@ def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Ev
         description_html=source.description_html,
         state=Event.State.DRAFT,
         display_timezone=source.display_timezone,
+        start=source.start + shift if source.start else None,
+        end=source.end + shift if source.end else None,
         min_license_class=source.min_license_class,
         rules_url=source.rules_url,
         contest_fields=source.contest_fields,
@@ -40,9 +41,7 @@ def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Ev
         duplicated_from=source,
         created_by=actor,
     )
-    for p in source.periods.all():
-        OperatingPeriod.objects.create(event=copy, start=p.start + shift, end=p.end + shift)
-    for r in source.on_air_ranges.all():  # the club's on-air hours go with the periods (#247)
+    for r in source.on_air_ranges.all():  # the club's on-air hours go with the span (#247)
         OnAirRange.objects.create(event=copy, start=r.start + shift, end=r.end + shift)
     for o in source.openings.all():  # announced again on the new dates, so not yet announced
         Opening.objects.create(

@@ -7,18 +7,12 @@ from .models import (
     Location,
     Opening,
     OperatingLimit,
-    OperatingPeriod,
     Position,
     ResponsibleAdult,
     RoleCapacity,
     SignUp,
     Slot,
 )
-
-
-class PeriodInline(admin.TabularInline):
-    model = OperatingPeriod
-    extra = 1
 
 
 class LocationInline(admin.TabularInline):
@@ -36,7 +30,7 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ("title", "type", "state", "min_license_class", "created_by")
     list_filter = ("state", "type")
     search_fields = ("title",)
-    inlines = [PeriodInline, LocationInline, CaptaincyInline]
+    inlines = [LocationInline, CaptaincyInline]
 
 
 class PositionInline(admin.TabularInline):

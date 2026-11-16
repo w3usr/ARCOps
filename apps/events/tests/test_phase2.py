@@ -21,7 +21,6 @@ from apps.events.models import (
     Location,
     Opening,
     OperatingLimit,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -71,7 +70,8 @@ def _station(u):
 
 def _event(start, hours=2, captain=None, state=Event.State.PUBLISHED):
     e = Event.objects.create(title="Sprint", state=state)
-    OperatingPeriod.objects.create(event=e, start=start, end=start + timedelta(hours=hours))
+    e.start, e.end = start, start + timedelta(hours=hours)
+    e.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=e, name="Club station")
     pos = Position.objects.create(location=loc, name="Run")
     slots = []
@@ -163,9 +163,8 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     cap = _user("cap@example.org", "officer")
     e = Event.objects.create(title="SCR", state=Event.State.PUBLISHED)
     start = now + timedelta(days=3)
-    OperatingPeriod.objects.create(
-        event=e, start=start.replace(hour=13), end=start.replace(hour=13) + timedelta(days=2)
-    )
+    e.start, e.end = start.replace(hour=13), start.replace(hour=13) + timedelta(days=2)
+    e.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=e, name="Station")
     pos = Position.objects.create(location=loc, name="Run")
     Captaincy.objects.create(event=e, user=cap)

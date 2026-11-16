@@ -1,0 +1,14 @@
+{% extends "events/stages/_layout.html" %}
+{% load nav %}
+{% block stage %}
+{% comment %}The event's start and end (FR-38 as functional addendum A32): one per event, edited and
+never removed. A split contest's break is time outside the on-air hours, on Slots.{% endcomment %}
+<section class="panel" aria-labelledby="span">
+  <header class="panel-head"><div><h2 id="span">Event start and end</h2><p>When the event begins and ends, in UTC; the slots are made inside its on-air hours.</p></div>
+    <div class="actions">{% url 'span_edit' event.pk as u %}{% if event.start %}{% include "events/_dialog_link.html" with url=u label="Edit" icon="edit" %}{% else %}{% include "events/_dialog_link.html" with url=u label="Set start and end" icon="plus" %}{% endif %}</div></header>
+  <ul class="rows list">
+    {% if event.start and event.end %}<li><span class="row-ic">{% icon 'calendar' 'small' %}</span><span class="grow">{{ event.start|date:"D d M Y H:i" }} – {{ event.end|date:"D d M Y H:i" }} UTC</span></li>
+    {% else %}<li class="empty">Not set yet. The slots are generated inside it.</li>{% endif %}
+  </ul>
+</section>
+{% endblock %}

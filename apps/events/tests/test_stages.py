@@ -1,4 +1,4 @@
-"""Manage as steps under one progress bar (#172, SK 2026-11-03): Details, Operating periods,
+"""Manage as steps under one progress bar (#172, SK 2026-11-03): Details, Event start and end,
 Locations, Slots and Publish, then the optional Sign-up rules and Contest details, each a page of
 its own drawn by the server, so a step can be linked to and works without JavaScript."""
 
@@ -12,10 +12,10 @@ from .test_manage import _as, _build
 
 pytestmark = pytest.mark.django_db
 
-STEPS = ["details", "periods", "locations", "slots", "publish"]
+STEPS = ["details", "span", "locations", "slots", "publish"]
 HOLDS = {  # each step's sections, by the heading ids the page has always had
     "details": ["det"],
-    "periods": ["per"],
+    "span": ["span"],
     "locations": ["loc"],
     "slots": ["gen", "lim"],
     "publish": ["pub", "cap", "more", "dz"],  # a draft; published, Status and Announce for Publish
@@ -67,19 +67,19 @@ def test_manage_opens_on_the_first_step_not_done_or_publish(officer):
     assert land() == f"/events/{ev.pk}/manage/slots/"
     ev.locations.all().delete()
     assert land() == f"/events/{ev.pk}/manage/locations/"
-    ev.periods.all().delete()
-    assert land() == f"/events/{ev.pk}/manage/periods/"
+    Event.objects.filter(pk=ev.pk).update(start=None, end=None)
+    assert land() == f"/events/{ev.pk}/manage/span/"
 
 
 def test_the_old_tabs_redirect_to_their_steps(officer):
     c = _as(officer)
     ev = _build(c)
-    for old, new in (("setup", "details"), ("status", "publish")):
+    for old, new in (("setup", "details"), ("status", "publish"), ("periods", "span")):
         r = c.get(f"/events/{ev.pk}/manage/{old}/")
         assert r.status_code == 301 and r["Location"] == f"/events/{ev.pk}/manage/{new}/"
 
 
-def test_slots_is_not_a_link_until_there_is_a_period_and_a_position(officer):
+def test_slots_is_not_a_link_until_there_is_a_start_and_end_and_a_position(officer):
     c = _as(officer)
     ev = _build(c)
     ev.locations.all().delete()
@@ -96,9 +96,9 @@ def test_the_foot_walks_the_numbered_steps(officer):
     ev = _build(c)
     body = c.get(f"/events/{ev.pk}/manage/locations/").content.decode()
     foot = body.split('class="stage-foot"', 1)[1].split("</p>", 1)[0]
-    assert "Back to Operating periods" in foot and "Continue to Slots" in foot
+    assert "Back to Event start and end" in foot and "Continue to Slots" in foot
     body = c.get(f"/events/{ev.pk}/manage/details/").content.decode()
-    assert "Back to" not in body and "Continue to Operating periods" in body
+    assert "Back to" not in body and "Continue to Event start and end" in body
 
 
 def test_a_display_only_event_has_three_steps(officer):
@@ -108,7 +108,7 @@ def test_a_display_only_event_has_three_steps(officer):
     bar = _bar(c.get(f"/events/{ev.pk}/manage/details/").content.decode())
     assert re.findall(r'href="/events/\d+/manage/([a-z]+)/"', bar) == [
         "details",
-        "periods",
+        "span",
         "publish",
     ]
 
@@ -130,8 +130,8 @@ def test_a_save_returns_to_its_step(officer):
     ev = _build(c)
     base = f"/events/{ev.pk}"
     saves = {
-        "periods": (
-            f"{base}/periods/add/",
+        "span": (
+            f"{base}/span/",
             {"start": "2026-07-01T18:00", "end": "2026-07-01T20:00"},
         ),
         "slots": (f"{base}/limits/", {"max_hours_per_day": "6", "day_basis": "utc"}),
@@ -149,8 +149,8 @@ def test_a_save_returns_to_its_step(officer):
     assert c.post(f"{base}/publish/")["Location"] == f"{base}/"
 
 
-def test_a_new_event_is_the_details_step_and_goes_on_to_periods(officer):
-    """#173: no first period on the create form; creating lands on Operating periods."""
+def test_a_new_event_is_the_details_step_and_goes_on_to_its_start_and_end(officer):
+    """#173: no start and end on the create form; creating lands on Event start and end (A32)."""
     c = _as(officer)
     body = c.get("/events/new/").content.decode()
     bar = _bar(body)
@@ -159,16 +159,16 @@ def test_a_new_event_is_the_details_step_and_goes_on_to_periods(officer):
     assert "Create draft and continue" in body and "Starts (UTC)" not in body
     r = c.post("/events/new/", {"title": "Net night", "type": "net"}, follow=True)
     ev = Event.objects.get(title="Net night")
-    assert r.redirect_chain[-1][0] == f"/events/{ev.pk}/manage/periods/"
-    assert "Draft created." in r.content.decode() and not ev.periods.exists()
+    assert r.redirect_chain[-1][0] == f"/events/{ev.pk}/manage/span/"
+    assert "Draft created." in r.content.decode() and ev.start is None
 
 
-def test_duplicating_lands_on_operating_periods(officer):
+def test_duplicating_lands_on_its_start_and_end(officer):
     c = _as(officer)
     ev = _build(c)
     r = c.post(f"/events/{ev.pk}/duplicate/")
     copy = Event.objects.exclude(pk=ev.pk).get()
-    assert r["Location"] == f"/events/{copy.pk}/manage/periods/"
+    assert r["Location"] == f"/events/{copy.pk}/manage/span/"
 
 
 def test_know_before_you_go_is_its_own_step(officer):
@@ -210,7 +210,7 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
     names = re.findall(r"<dt>([^<]+)</dt>", dl)
     assert names == [
         "Details",
-        "Operating periods",
+        "Event start and end",
         "Locations",
         "Slots",
         "Sign-up rules",
@@ -221,7 +221,7 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
     links = re.findall(r'href="/events/\d+/manage/([a-z]+)/(?:#cap)?">Change', dl)
     assert links == [
         "details",
-        "periods",
+        "span",
         "locations",
         "slots",
         "rules",
@@ -229,7 +229,11 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
         "kbyg",
         "publish",
     ]
-    assert "Field Day, Contest" in dl and "1 period, " in dl and "Club station: Run, Mult" in dl
+    assert (
+        "Field Day, Contest" in dl
+        and "Sat 27 Jun 18:00 to Sun 28 Jun 18:00 UTC" in dl
+        and "Club station: Run, Mult" in dl
+    )
     assert "Not done yet" not in dl
     Slot.objects.filter(position__location__event=ev).delete()
     dl = c.get(url).content.decode().split('<dl class="dl summary">', 1)[1]
@@ -249,7 +253,7 @@ def test_a_steps_own_forms_save_in_place(officer):
     ev = _build(c)
     base = f"/events/{ev.pk}"
     marked = {
-        "periods": 1,  # Remove on the period
+        "span": 0,  # its one form is a dialog
         "locations": 2,  # Remove on each position
         "slots": 2,  # Add range (#247, ranges only since #248), Save limits
         "rules": 1,  # Save who may sign up (no opening yet)

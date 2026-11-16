@@ -1,6 +1,8 @@
 """Gaps in managing an event, found by reading the flow and closed at SK's word, 2026-11-11:
-a private residence's address (FR-51), editing a period, overlapping periods, a slot with no
+a private residence's address (FR-51), editing the start and end (one per event since A32), a slot with no
 seat, completing by one click, removing a position, and deleting a draft never published."""
+
+from datetime import timedelta
 
 import pytest
 
@@ -21,11 +23,10 @@ def _future(c, title="Sweepstakes"):
     c.post("/events/new/", {"title": title, "type": "contest"})
     ev = Event.objects.get(title=title)
     ev.locations.all().delete()  # its club station by default (276): this adds its own
-    c.post(
-        f"/events/{ev.pk}/periods/add/", {"start": "2027-06-26T18:00", "end": "2027-06-26T22:00"}
-    )
+    c.post(f"/events/{ev.pk}/span/", {"start": "2027-06-26T18:00", "end": "2027-06-26T22:00"})
     c.post(f"/events/{ev.pk}/locations/add/", {"name": "Shack", "position": "Run"})
     c.post(f"/events/{ev.pk}/slots/generate/", GEN)
+    ev.refresh_from_db()  # the start and end were posted after it was read
     return ev
 
 
@@ -60,57 +61,59 @@ def test_a_private_residence_shows_its_address_only_to_those_signed_up_there(off
     assert "12 Elm Street" in m.get(f"/events/{ev.pk}/").content.decode()
 
 
-def test_a_period_is_edited_and_keeps_or_cancels_its_slots(officer, member):
+def test_the_start_and_end_is_edited_and_keeps_or_cancels_its_slots(officer, member):
+    """FR-38 as A32: one start and end per event, edited and never removed (SK, 2026-11-16)."""
     c = _as(officer)
     ev = _future(c)
-    p = ev.periods.get()
-    url = f"/events/{ev.pk}/periods/{p.pk}/edit/"
+    url = f"/events/{ev.pk}/span/"
     page = c.get(url).content.decode()
     assert 'value="2027-06-26T18:00"' in page and 'value="2027-06-26T22:00"' in page
-    assert f'href="{url}"' in c.get(f"/events/{ev.pk}/manage/periods/").content.decode()
+    step = c.get(f"/events/{ev.pk}/manage/span/").content.decode()
+    assert f'href="{url}"' in step and "Remove" not in step.split('aria-labelledby="span"')[1]
     # longer: every slot stays, and the new hour is empty until it is filled
     c.post(url, {"start": "2027-06-26T18:00", "end": "2027-06-26T23:00"})
-    p.refresh_from_db()
-    assert p.end.hour == 23 and _live(ev).count() == 4
+    ev.refresh_from_db()
+    assert ev.end.hour == 23 and _live(ev).count() == 4
     c.post(f"/events/{ev.pk}/slots/generate/", GEN | {"mode": "fill"})
     assert _live(ev).count() == 5
-    # shorter, with someone in the hour that would go: refused, nothing changes
-    last = _live(ev).order_by("start").last()
-    su = SignUp.objects.create(slot=last, user=member, role="operator")
-    r = c.post(url, {"start": "2027-06-26T18:00", "end": "2027-06-26T22:00"})
-    p.refresh_from_db()
-    assert r.status_code == 200 and "1 person is signed up" in r.content.decode()
-    assert p.end.hour == 23 and _live(ev).count() == 5
+    # shorter, with someone in the hour that would go: refused, nothing changes; one member in
+    # two of those slots is one person (private tracker 352)
+    last2 = list(_live(ev).order_by("start"))[-2:]
+    for s in last2:
+        SignUp.objects.create(slot=s, user=member, role="operator")
+    r = c.post(url, {"start": "2027-06-26T18:00", "end": "2027-06-26T21:00"})
+    ev.refresh_from_db()
+    assert r.status_code == 200 and "1 person is signed up in the 2 slots" in r.content.decode()
+    assert ev.end.hour == 23 and _live(ev).count() == 5
     # shorter, nobody there: the slots left outside are canceled, and it is in the audit log
-    su.delete()
+    SignUp.objects.filter(user=member).delete()
     r = c.post(url, {"start": "2027-06-26T19:00", "end": "2027-06-26T22:00"}, follow=True)
     assert _live(ev).count() == 3
     assert "2 slots left outside it were canceled" in r.content.decode()
     row = (
         AuditLog.objects.filter(action="event.edited", subject_id=str(ev.pk)).order_by("pk").last()
     )
-    assert row.after["slots canceled"] == 2 and "18:00" in row.before["period"]
+    assert row.after["slots canceled"] == 2 and "18:00" in row.before["start and end"]
 
 
-def test_a_period_that_overlaps_another_is_refused(officer):
+def test_an_operating_slot_in_a_split_contests_break_is_refused(officer):
+    """A32 (SK, 2026-11-16): the break is time outside the on-air hours, and an operating slot
+    has to fit inside them; a setup slot is not held to it."""
+    from apps.events.services.slots import set_on_air
+
     c = _as(officer)
-    ev = _future(c)
-    r = c.post(
-        f"/events/{ev.pk}/periods/add/", {"start": "2027-06-26T21:00", "end": "2027-06-27T02:00"}
-    )
-    assert r.status_code == 200 and ev.periods.count() == 1
-    assert "overlaps the period Sat 26 Jun 18:00 to Sat 26 Jun 22:00 UTC" in r.content.decode()
-    # one that starts as the other ends is a second period, as a split contest has
-    c.post(
-        f"/events/{ev.pk}/periods/add/", {"start": "2027-06-26T22:00", "end": "2027-06-27T02:00"}
-    )
-    assert ev.periods.count() == 2
-    second = ev.periods.order_by("start").last()
-    r = c.post(  # editing one into the other is refused the same way
-        f"/events/{ev.pk}/periods/{second.pk}/edit/",
-        {"start": "2027-06-26T21:00", "end": "2027-06-27T02:00"},
-    )
-    assert r.status_code == 200 and "overlaps the period" in r.content.decode()
+    ev = _future(c)  # 18:00 to 22:00, four one-hour slots
+    t = ev.start
+    set_on_air(ev, [(t, t + timedelta(hours=1)), (t + timedelta(hours=3), ev.end)])
+    Slot.objects.filter(position__location__event=ev, start__gte=t + timedelta(hours=1)).filter(
+        start__lt=t + timedelta(hours=3)
+    ).update(cancelled=True)
+    pos = ev.locations.get().positions.get()
+    by_hand = {"position": pos.pk, "minutes": "60", **SEATS}
+    add = f"/events/{ev.pk}/slots/add/"
+    r = c.post(add, by_hand | {"start": "2027-06-26T19:00", "kind": "operating"})
+    assert "has to fit inside the on-air hours" in r.content.decode()
+    assert _live(ev).count() == 2
 
 
 def test_slots_are_not_made_with_no_seat_at_all(officer):

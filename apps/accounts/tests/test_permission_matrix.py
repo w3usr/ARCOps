@@ -18,7 +18,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.credentials.models import AgreementTemplate, CredentialType
-from apps.events.models import Event, Location, OperatingPeriod, Position
+from apps.events.models import Event, Location, Position
 from apps.events.services.slots import generate_slots
 
 pytestmark = pytest.mark.django_db
@@ -60,7 +60,8 @@ def world():
     people["sysadmin"].save()
     ev = Event.objects.create(title="Matrix Contest", state="published")
     start = timezone.now() + dt.timedelta(days=5)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + dt.timedelta(hours=2))
+    ev.start, ev.end = start, start + dt.timedelta(hours=2)
+    ev.save(update_fields=["start", "end"])
     pos = Position.objects.create(
         location=Location.objects.create(event=ev, name="Station"), name="Run"
     )

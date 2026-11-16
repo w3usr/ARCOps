@@ -14,11 +14,7 @@ urlpatterns = [
     path("<int:pk>/manage/", views_manage.event_manage, name="event_manage"),
     path("<int:pk>/details/", views_manage.event_edit, name="event_edit"),
     path("<int:pk>/manage/<slug:step>/", views_manage.event_manage, name="event_step"),
-    path("<int:pk>/periods/add/", views_manage.period_add, name="period_add"),
-    path("<int:pk>/periods/<int:period_id>/edit/", views_manage.period_edit, name="period_edit"),
-    path(
-        "<int:pk>/periods/<int:period_id>/delete/", views_manage.period_delete, name="period_delete"
-    ),
+    path("<int:pk>/span/", views_manage.span_edit, name="span_edit"),
     path("<int:pk>/locations/add/", views_manage.location_add, name="location_add"),
     path(
         "<int:pk>/locations/<int:location_id>/edit/",

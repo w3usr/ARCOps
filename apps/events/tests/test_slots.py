@@ -3,21 +3,23 @@ import datetime as dt
 import pytest
 from django.utils import timezone
 
-from apps.events.models import Event, Location, OperatingPeriod, Position, Slot
+from apps.events.models import Event, Location, OnAirRange, Position, Slot
 from apps.events.services.slots import generate_slots
 
 pytestmark = pytest.mark.django_db
 
 
-def make(periods):
-    ev = Event.objects.create(title="T")
-    for s, e in periods:
-        OperatingPeriod.objects.create(event=ev, start=s, end=e)
+def make(stretches):
+    """An event from the first start to the last end; more than one stretch is a split contest,
+    its break the time outside its on-air hours (A32)."""
+    ev = Event.objects.create(title="T", start=stretches[0][0], end=stretches[-1][1])
+    if len(stretches) > 1:
+        OnAirRange.objects.bulk_create(OnAirRange(event=ev, start=s, end=e) for s, e in stretches)
     loc = Location.objects.create(event=ev, name="L")
     return ev, Position.objects.create(location=loc, name="P")
 
 
-def test_two_period_contest_generates_only_inside_periods():
+def test_a_split_contest_generates_only_inside_its_on_air_hours():
     t0 = timezone.make_aware(dt.datetime(2026, 10, 10, 16, 0), dt.UTC)
     ev, pos = make(
         [
@@ -66,7 +68,8 @@ def _hours(slots):
 def test_a_period_added_later_is_filled_and_the_grid_is_kept():
     ev, pos = make([(T0, T0 + 6 * H)])
     grid = generate_slots(ev, [pos], minutes=60)
-    OperatingPeriod.objects.create(event=ev, start=T0 + 24 * H, end=T0 + 28 * H)
+    ev.start, ev.end = T0 + 24 * H, T0 + 28 * H
+    ev.save(update_fields=["start", "end"])
     added = generate_slots(ev, [pos], minutes=60, fill=True)
     assert _hours(added) == [(T0 + (24 + i) * H, T0 + (25 + i) * H) for i in range(4)]
     assert set(Slot.objects.filter(position=pos).values_list("pk", flat=True)) >= {

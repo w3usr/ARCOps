@@ -3075,7 +3075,9 @@ idea: *Event start and end* is the event's span; *on-air hours* are when the clu
 inside it; *slots* are what people sign up for. No page says "operating period"; "operating"
 stays only as the kind of slot. Events made with more than one period are merged into one span,
 from the first start to the last end, and their breaks become time outside the on-air hours, so
-nothing that was off the air comes on.
+nothing that was off the air comes on. Once set, the start and end are edited and never removed,
+and an operating slot has to fit inside the on-air hours, so none is placed in a split contest's
+break (SK, 2026-11-16, after the findings).
 
 **Decided** by SK on 2026-11-16, from the choice NAF's ticket set out ("Operating periods" read
 as what a slot is; option (b), one span per event, over (a), words only). *Record:* private

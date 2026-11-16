@@ -16,7 +16,6 @@ from apps.events.models import (
     Captaincy,
     Event,
     Location,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -40,7 +39,8 @@ def _event(start, hours=2, captain=None, title="Test Contest"):
     e = Event.objects.create(
         title=title, state=Event.State.PUBLISHED, kbyg_html="<p>Bring a headset.</p>"
     )
-    OperatingPeriod.objects.create(event=e, start=start, end=start + timedelta(hours=hours))
+    e.start, e.end = start, start + timedelta(hours=hours)
+    e.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=e, name="Club station")
     pos = Position.objects.create(location=loc, name="Run")
     slots = []

@@ -14,7 +14,7 @@ from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 def test_the_time_sits_on_one_line_and_utc_shows_once(live_server, engine, zone):
     from apps.events.models import Event
 
-    ev = Event.objects.filter(periods__isnull=False).distinct().first()
+    ev = Event.objects.filter(start__isnull=False).first()
     Event.objects.filter(pk=ev.pk).update(display_timezone=zone)
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()

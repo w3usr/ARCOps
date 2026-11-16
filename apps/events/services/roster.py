@@ -255,21 +255,21 @@ STRIP_ORDER = list(STRIP_MARKS)
 
 
 def _gaps(event, slots) -> list[tuple]:
-    """(start, end, state) for each hour of the periods that no slot touches: "off" outside the
+    """(start, end, state) for each hour of the event's span that no slot touches: "off" outside the
     club's on-air hours, "none" on the air with no slot yet (#247). Without them a strip could
     not tell an hour the club means to skip from one nobody has made a slot for."""
-    from .slots import HOUR, clip, on_air, periods_of
+    from .slots import HOUR, clip, on_air, span_of
 
-    periods, live = periods_of(event), on_air(event)
-    if not periods:
+    span, live = span_of(event), on_air(event)
+    if not span:
         return []
     taken = [(s.start, s.end) for s in slots]
     out = []
-    t = periods[0][0].astimezone(UTC).replace(minute=0, second=0, microsecond=0)
-    while t < periods[-1][1]:
+    t = span[0][0].astimezone(UTC).replace(minute=0, second=0, microsecond=0)
+    while t < span[0][1]:
         a, b = t, t + HOUR
         t = b
-        inside = clip([(a, b)], periods)
+        inside = clip([(a, b)], span)
         if inside and not any(s < b and e > a for s, e in taken):
             out.append((a, b, "none" if clip(inside, live) else "off"))
     return out
@@ -363,7 +363,7 @@ def build(
     now = now or timezone.now()
     local = display_zone(event)
     lead_zone, other_zone = UTC, local
-    starts, ends = event.starts_at(), event.ends_at()
+    starts, ends = event.start, event.end
     lead_label = zone_label(starts or now, lead_zone)
     # One of the two zones is UTC, so equal labels mean every time would print twice: a contest
     # shown in UTC leaves the second zone's strings empty, and the templates skip them.

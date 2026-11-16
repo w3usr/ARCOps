@@ -11,11 +11,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def _event(live_server):
-    """The Slots step's address, and a two-hour range inside the event's first period."""
+    """The Slots step's address, and a two-hour range inside the event's start and end."""
     from apps.events.models import Event
 
-    ev = Event.objects.filter(periods__isnull=False).order_by("pk").first()
-    start = ev.periods.order_by("start").first().start + timedelta(hours=1)
+    ev = Event.objects.filter(start__isnull=False).order_by("pk").first()
+    start = ev.start + timedelta(hours=1)
     rng = (f"{start:%Y-%m-%dT%H:%M}", f"{start + timedelta(hours=2):%Y-%m-%dT%H:%M}")
     return f"{live_server.url}/events/{ev.pk}/manage/slots/", rng
 

@@ -855,7 +855,24 @@ so a missing backup shows as a failed job and a late health check, never as sile
 **Decided by** SK, 2026-11-12. *Record:* `notes/2026-11-12_data-loss-fixes.md` in the private
 repository.
 
+### A12. The data model: an event's start and end are two fields on `Event`
+
+**Original (the data model table, `events`).** "`Event` (type, title, …), `OperatingPeriod`,
+`OperatingLimit`, …": an event held its spans in a table of their own, one or more per event.
+
+**Decision.** With one start and end per event (functional addendum A32), `Event` holds them as
+two fields, `start` and `end`, empty until set, and `OperatingPeriod` is gone. A split contest's
+break is time outside the event's on-air hours (`OnAirRange`, functional A15 and A16). Migration
+`events/0010` merges each event's periods into one span, from the first start to the last end,
+and keeps its breaks off the air: the club's own on-air hours, or the old periods where it had
+chosen none, clipped to the old periods. Reversing it makes one period per event; the database
+snapshot taken before a deploy is the way back for anything more.
+
+**Decided by** SK, 2026-11-16, on the recommendation in the findings for private tracker 275 (two
+fields on `Event` over keeping the table with one row per event). Dev and production each held 3
+events, none with more than one period, when it was decided.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10) and 2026-11-12 (A11), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11) and 2026-11-16 (A12), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

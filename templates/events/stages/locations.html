@@ -17,8 +17,8 @@ Remove as a red button with a bin. The words, the forms and the in-place saves a
     <ul class="rows list">
       {% for pos in l.positions.all %}<li><span class="row-ic">{% icon 'radio' 'small' %}</span><span class="grow"><strong>{{ pos.name }}</strong><span class="sub">{% if pos.live_slots %}{{ pos.live_slots }} slot{{ pos.live_slots|pluralize }}{% else %}No slots yet{% endif %}</span></span>
         {% url 'position_edit' event.pk pos.pk as u %}{% include "events/_dialog_link.html" with url=u label="Rename" icon="edit" small=1 %}
-        {% comment %}Removing a position confirms first and says what goes with it, as removing a
-        period does (docs/INTERFACE.md, Destructive actions, tier 2; SK, 2026-11-11).{% endcomment %}
+        {% comment %}Removing a position confirms first and says what goes with it
+        (docs/INTERFACE.md, Destructive actions, tier 2; SK, 2026-11-11).{% endcomment %}
         <button type="button" class="ghost danger small" commandfor="pos-rm-{{ pos.pk }}" command="show-modal">{% icon 'trash' 'small' %}Remove</button>
         <dialog id="pos-rm-{{ pos.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="pos-rm-h-{{ pos.pk }}">
           <h2 id="pos-rm-h-{{ pos.pk }}">{% if pos.people or keeps_a_position %}{{ pos.name }} cannot be removed yet{% else %}Remove {{ pos.name }}?{% endif %}</h2>

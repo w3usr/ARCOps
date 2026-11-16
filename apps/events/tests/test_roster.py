@@ -13,7 +13,6 @@ from apps.events import views_slots
 from apps.events.models import (
     Event,
     Location,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -57,7 +56,8 @@ def world():
     )
     ev = Event.objects.create(title="RTTY", state=Event.State.PUBLISHED, created_by=off)
     start = datetime(2026, 9, 26, 0, 0, tzinfo=UTC)  # Friday 20:00 EDT
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
+    ev.start, ev.end = start, start + timedelta(hours=4)
+    ev.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=ev, name="Club station")
     run = Position.objects.create(location=loc, name="Run", order=1)
     mult = Position.objects.create(location=loc, name="Mult", order=2)
@@ -93,7 +93,8 @@ def test_the_zone_label_follows_the_event_not_today(world):
     acceptance test T12, 2026-10-14)."""
     ev = world["ev"]
     start = datetime(2026, 11, 4, 18, 0, tzinfo=UTC)
-    ev.periods.update(start=start, end=start + timedelta(hours=4))
+    Event.objects.filter(pk=ev.pk).update(start=start, end=start + timedelta(hours=4))
+    ev.refresh_from_db()
     data = build(ev, world["mem"], now=datetime(2026, 10, 15, 12, 0, tzinfo=UTC))
     assert data["lead_label"] == "UTC" and data["other_label"] == "EST"
     assert data["span"]["other"].endswith("EST")
@@ -172,7 +173,8 @@ def test_a_row_names_its_zone_where_the_clocks_have_changed(world):
     zone the event starts in, and a row after the change says it is in EST."""
     ev = world["ev"]
     start = datetime(2026, 11, 1, 3, 0, tzinfo=UTC)  # 23:00 EDT; clocks go back at 06:00Z
-    ev.periods.update(start=start, end=start + timedelta(hours=6))
+    Event.objects.filter(pk=ev.pk).update(start=start, end=start + timedelta(hours=6))
+    ev.refresh_from_db()
     Slot.objects.filter(position__location__event=ev).delete()
     generate_slots(ev, [world["run"]], minutes=60)
     data = build(ev, world["mem"])
@@ -666,7 +668,7 @@ def test_mail_leads_with_utc_and_gives_the_events_zone_beside_it(world):
     text = when_text(slot)
     assert re.fullmatch(r"\w{3} \d+ \w{3} \d\d:\d\d–\d\d:\d\d UTC \(.+ E[SD]T\)", text), text
     ev = world["ev"]
-    span = mail_when(ev.starts_at(), ev.ends_at(), ev, " to ")
+    span = mail_when(ev.start, ev.end, ev, " to ")
     assert span.index("UTC") < span.index("(") and " to " in span
 
 

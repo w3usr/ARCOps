@@ -30,7 +30,7 @@ def test_adding_and_closing_are_in_the_audit_log(officer):
     c = _as(officer)
     ev = _build(c)
     after = [a.after for a in AuditLog.objects.filter(action="event.edited")]
-    assert {"period": "2026-06-27 18:00–2026-06-28 18:00 UTC"} in after
+    assert {"start and end": "2026-06-27 18:00–2026-06-28 18:00 UTC", "slots canceled": 0} in after
     assert {"location": "Club station", "position": "Run"} in after
     assert {"position": "Mult"} in after
     s = Slot.objects.filter(position__location__event=ev, kind="operating").first()

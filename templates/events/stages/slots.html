@@ -1,13 +1,13 @@
 {% extends "events/stages/_layout.html" %}
 {% load nav %}
 {% block stage %}
-{% comment %}On-air hours (#247, SK 2026-11-05; functional addendum A15): the operating periods are
-the contest's span, and these are the hours the club means to be on the air inside them. The
+{% comment %}On-air hours (#247, SK 2026-11-05; functional addendum A15): the event's start and end
+is its span (A32), and these are the hours the club means to be on the air inside it. The
 generator and Add slots to the empty hours fill only these. Since #248 (SK 2026-11-06, at NAF's
 request; A16) they are chosen only as ranges typed to the minute: no grid of hour boxes and no
 same hours every day. Every form saves in place (#177). Changing them never touches a slot.{% endcomment %}
 <section class="panel" aria-labelledby="air">
-  <header class="panel-head"><div><h2 id="air">On-air hours</h2><p>When the club means to be on the air, inside the operating periods. Generating and adding slots to the empty hours fill only these hours.</p></div>
+  <header class="panel-head"><div><h2 id="air">On-air hours</h2><p>When the club means to be on the air, inside the event's start and end; a split contest's break is the time between two ranges. Generating and adding slots to the empty hours fill only these hours, and an operating slot has to fit inside them.</p></div>
     {% if on_air_stretches %}<div class="actions"><form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<input type="hidden" name="what" value="whole"><button type="submit" class="secondary">Use the whole event</button></form></div>{% endif %}</header>
   <div class="panel-body">
   {% if on_air_stretches %}
@@ -25,7 +25,7 @@ same hours every day. Every form saves in place (#177). Changing them never touc
     {% if range_form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> No range was added; correct the fields marked below.</p>{% endif %}
     <div class="row">{% for f in range_form %}{% include "events/forms/_field.html" %}{% endfor %}</div>
     </div>
-    <footer class="panel-foot"><p>{% if on_air_stretches %}Added to the hours above; one that overlaps or touches a stretch joins it.{% else %}The first range replaces the whole event; each one after it is added.{% endif %} Any part outside the operating periods is cut off.</p><button type="submit">Add range</button></footer>
+    <footer class="panel-foot"><p>{% if on_air_stretches %}Added to the hours above; one that overlaps or touches a stretch joins it.{% else %}The first range replaces the whole event; each one after it is added.{% endif %} Any part outside the event's start and end is cut off.</p><button type="submit">Add range</button></footer>
   </form>
 </section>
 
@@ -35,7 +35,7 @@ same hours every day. Every form saves in place (#177). Changing them never touc
   only before anyone signs up, through its confirmation. #168: both open in Manage's dialog, as does
   one slot by hand (FR-46), its seats set as it is made (FR-49).{% endcomment %}
   <header class="panel-head"><div><h2 id="gen">Slots</h2><p>{{ slot_count }} slot{{ slot_count|pluralize }} on the roster.</p></div>
-    {% if positions and periods %}<div class="actions">{% url 'slots_generate' event.pk as u %}{% if slot_count %}{% include "events/_dialog_link.html" with url=u label="Add slots to the empty hours" icon="plus" %}{% else %}{% include "events/_dialog_link.html" with url=u label="Generate slots" icon="grid" %}{% endif %}
+    {% if positions and event.start %}<div class="actions">{% url 'slots_generate' event.pk as u %}{% if slot_count %}{% include "events/_dialog_link.html" with url=u label="Add slots to the empty hours" icon="plus" %}{% else %}{% include "events/_dialog_link.html" with url=u label="Generate slots" icon="grid" %}{% endif %}
     {% url 'slot_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add a slot" icon="plus" %}</div>{% endif %}</header>
   <div class="panel-body"><p>{% if not slot_count %}Generating builds the grid: one slot per position per interval across the on-air hours, plus setup and breakdown slots at the ends.{% else %}<strong>Add slots to the empty hours</strong> fills only the time that has no slot yet, in every position, and keeps every slot, seat count and sign-up; it makes operating slots only, and a canceled slot's hour stays empty.{% if signups_exist %} Members have signed up, so the grid can no longer be replaced; add setup, breakdown and other single slots one at a time.{% else %} <strong>Regenerate slots</strong>, in the same place, replaces the whole grid.{% endif %}{% endif %}</p></div>
 </section>

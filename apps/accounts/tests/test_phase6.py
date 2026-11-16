@@ -11,7 +11,7 @@ from apps.accounts.models import Invitation, User
 from apps.accounts.services import DeletionRefused, delete_account
 from apps.comms.models import Outbox
 from apps.credentials.models import AgreementTemplate, CredentialType, SignedAgreement
-from apps.events.models import Captaincy, Event, Location, OperatingPeriod, Position, SignUp
+from apps.events.models import Captaincy, Event, Location, Position, SignUp
 from apps.events.services.slots import generate_slots
 from apps.ops.models import AuditLog
 from apps.ops.retention import apply
@@ -57,7 +57,8 @@ def _template():
 def _slot(captain, days=5):
     ev = Event.objects.create(title="Test Contest", state="published")
     start = timezone.now() + dt.timedelta(days=days)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + dt.timedelta(hours=1))
+    ev.start, ev.end = start, start + dt.timedelta(hours=1)
+    ev.save(update_fields=["start", "end"])
     pos = Position.objects.create(
         location=Location.objects.create(event=ev, name="Station"), name="Run"
     )

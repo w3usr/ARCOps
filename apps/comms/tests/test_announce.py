@@ -15,7 +15,6 @@ from apps.events.models import (
     Captaincy,
     Event,
     Location,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -36,7 +35,8 @@ def _user(email, level="member", category="student", **kw):
 
 def _event(start, captain):
     e = Event.objects.create(title="Sprint", state=Event.State.PUBLISHED)
-    OperatingPeriod.objects.create(event=e, start=start, end=start + timedelta(hours=2))
+    e.start, e.end = start, start + timedelta(hours=2)
+    e.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=e, name="Station")
     pos = Position.objects.create(location=loc, name="Run")
     slots = [

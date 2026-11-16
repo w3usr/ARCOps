@@ -1,4 +1,4 @@
-"""Events, periods, locations, positions, slots, sign-ups (FR-36 to FR-68, FR-110 to FR-113)."""
+"""Events, locations, positions, slots, sign-ups (FR-36 to FR-68, FR-110 to FR-113)."""
 
 from __future__ import annotations
 
@@ -19,6 +19,10 @@ class Event(models.Model):
     description_html = models.TextField(blank=True)
     state = models.CharField(max_length=10, choices=State.choices, default=State.DRAFT)
     display_timezone = models.CharField(max_length=60, blank=True)  # falls back to club.timezone
+    # The event's start and end, its whole span in UTC (FR-38 as functional addendum A32: one per
+    # event; a split contest's break is time outside the on-air hours). Empty until set.
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
     min_license_class = models.CharField(  # the *preferred* class since 2026-09-15 (FR-36, FR-61)
         max_length=20, blank=True, verbose_name="preferred license class"
     )
@@ -56,14 +60,6 @@ class Event(models.Model):
     def __str__(self) -> str:
         return self.title
 
-    def starts_at(self):
-        p = self.periods.order_by("start").first()
-        return p.start if p else None
-
-    def ends_at(self):
-        p = self.periods.order_by("-end").first()
-        return p.end if p else None
-
     def signups_ahead(self):
         """Sign-ups on slots that have not started yet: what marking the event completed early
         leaves without a slot to run (#258)."""
@@ -83,21 +79,11 @@ class Event(models.Model):
         return self.state in (self.State.PUBLISHED, self.State.LOCKED, self.State.COMPLETED)
 
 
-class OperatingPeriod(models.Model):
-    """A contiguous on-air span (FR-38); a split contest has several."""
-
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="periods")
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-
-    class Meta:
-        ordering = ["start"]
-
-
 class OnAirRange(models.Model):
-    """The club's on-air hours inside the operating periods (#247, functional addendum A15): a
-    stretch the club means to be on the air. The periods are the contest's span; with no range at
-    all, the club is on the air for the whole of them. Stored merged, in UTC."""
+    """The club's on-air hours inside the event's start and end (#247, functional addendum A15):
+    a stretch the club means to be on the air. With no range at all, the club is on the air for
+    the whole span; a split contest's break is the time between two ranges (A32). Stored merged,
+    in UTC."""
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="on_air_ranges")
     start = models.DateTimeField()

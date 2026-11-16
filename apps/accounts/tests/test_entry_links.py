@@ -11,7 +11,7 @@ from django.utils import timezone
 from apps.accounts import entry
 from apps.accounts.models import EntryLink, User
 from apps.comms.models import Outbox
-from apps.events.models import Event, Location, OperatingPeriod, Position, RoleCapacity
+from apps.events.models import Event, Location, Position, RoleCapacity
 from apps.events.services.slots import generate_slots
 from apps.ops.models import ClubSetting
 
@@ -68,7 +68,8 @@ def world():
         title="RTTY", state=Event.State.PUBLISHED, created_by=off, min_license_class="General"
     )
     start = datetime(2027, 9, 25, 0, 0, tzinfo=UTC)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=3))
+    ev.start, ev.end = start, start + timedelta(hours=3)
+    ev.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=ev, name="Station, Room 596")
     pos = Position.objects.create(location=loc, name="Run")
     for s in generate_slots(ev, [pos], minutes=60):

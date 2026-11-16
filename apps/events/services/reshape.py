@@ -16,7 +16,7 @@ from apps.ops.audit import record
 
 from ..models import Event, ResponsibleAdult, RoleCapacity, SignUp, Slot, Waitlist
 from .notify import slot_link, when_text
-from .slots import SHORTEST
+from .slots import SHORTEST, fits_on_air
 
 WAITING = (Waitlist.State.PENDING, Waitlist.State.OFFERED)
 
@@ -38,14 +38,12 @@ def frozen(slot: Slot, now=None) -> str:
 
 def misfit(slot: Slot, start, end) -> str:
     """Why `slot` cannot run from `start` to `end`; "" when it can. Add a slot's two rules: an
-    operating slot sits inside an operating period (FR-38), and a position has one slot at a time."""
+    operating slot sits inside the on-air hours (A32: so not in a split contest's break), and a
+    position has one slot at a time."""
     if end - start < SHORTEST:
         return "A slot is at least 15 minutes long."
-    if (
-        slot.kind == "operating"
-        and not slot.event.periods.filter(start__lte=start, end__gte=end).exists()
-    ):
-        return "An operating slot has to fit inside an operating period."
+    if slot.kind == "operating" and not fits_on_air(slot.event, start, end):
+        return "An operating slot has to fit inside the on-air hours."
     clash = (
         Slot.objects.filter(position=slot.position, cancelled=False, start__lt=end, end__gt=start)
         .exclude(pk=slot.pk)

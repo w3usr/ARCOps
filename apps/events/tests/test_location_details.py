@@ -108,7 +108,8 @@ def test_setup_and_breakdown_slots_have_their_own_length(officer):
             "breakdown_minutes": "30",
         },
     )
-    start, end = ev.starts_at(), ev.ends_at()
+    ev.refresh_from_db()
+    start, end = ev.start, ev.end
     setup = Slot.objects.get(kind="setup")
     assert (setup.start, setup.end) == (start - timedelta(hours=2), start)
     down = list(Slot.objects.filter(kind="breakdown").order_by("start"))

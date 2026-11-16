@@ -8,7 +8,6 @@ from apps.credentials.models import CredentialType, LicenseRecord, SignedAgreeme
 from apps.events.models import (
     Event,
     Location,
-    OperatingPeriod,
     Position,
     ResponsibleAdult,
     SignUp,
@@ -80,7 +79,8 @@ def person(name, cls=None, station=False, it=False, minor=False):
 def slot_for(min_class="General"):
     ev = Event.objects.create(title="T", state="published", min_license_class=min_class)
     start = timezone.now() + dt.timedelta(days=3)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + dt.timedelta(hours=2))
+    ev.start, ev.end = start, start + dt.timedelta(hours=2)
+    ev.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=ev, name="Station")
     pos = Position.objects.create(location=loc, name="Run")
     return generate_slots(ev, [pos], minutes=60)[0]

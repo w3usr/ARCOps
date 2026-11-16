@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.accounts.services import archive_member, delete_account
-from apps.events.models import Event, Location, OperatingPeriod, Position, SignUp
+from apps.events.models import Event, Location, Position, SignUp
 from apps.events.services.slots import generate_slots
 
 pytestmark = pytest.mark.django_db
@@ -82,7 +82,8 @@ def test_a_deleted_member_still_holds_their_place_on_a_past_roster():
         title="Past contest", state=Event.State.COMPLETED, created_by=sysadmin
     )
     start = datetime(2026, 1, 3, 0, 0, tzinfo=UTC)
-    OperatingPeriod.objects.create(event=event, start=start, end=start + timedelta(hours=2))
+    event.start, event.end = start, start + timedelta(hours=2)
+    event.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=event, name="Club station")
     pos = Position.objects.create(location=loc, name="Run", order=1)
     slot = generate_slots(event, [pos], minutes=60)[0]

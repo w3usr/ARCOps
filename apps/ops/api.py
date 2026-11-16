@@ -29,7 +29,7 @@ def ping(request):
 def list_events(request):
     out = []
     for e in Event.objects.filter(state__in=["published", "locked", "completed"]).order_by("id"):
-        s, en = e.starts_at(), e.ends_at()
+        s, en = e.start, e.end
         out.append(
             EventOut(
                 id=e.id,

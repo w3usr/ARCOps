@@ -28,7 +28,7 @@ from .views_slots import _visible, roster_or_slot
 @login_required
 def event_list(request):
     now = timezone.now()
-    events = Event.objects.prefetch_related("periods")
+    events = Event.objects.all()
     if not request.user.may("manage_events"):
         events = events.filter(state__in=["published", "locked", "completed"]) | events.filter(
             captaincies__user=request.user
@@ -40,14 +40,14 @@ def event_list(request):
         else:
             # FR-44: completed by a captain or once its last slot ended, whichever came first;
             # either way it is over, though its dates may run on (2026-11-10).
-            over = e.state == Event.State.COMPLETED or (e.ends_at() or now) < now
+            over = e.state == Event.State.COMPLETED or (e.end or now) < now
             (past if over else upcoming).append(e)
-    upcoming.sort(key=lambda e: e.starts_at() or now)
+    upcoming.sort(key=lambda e: e.start or now)
     # Each row's date tile in UTC, the roster's axis, and a captain's coverage counts (#238).
     from .services.roster import coverage
 
     for e in upcoming + past:
-        e.tile = e.starts_at()
+        e.tile = e.start
     # Coverage is worked out slot by slot, so only for an event members sign up to: never for a
     # draft or a canceled one, which an officer may have hundreds of (dev, 2026-11-09).
     for e in upcoming:

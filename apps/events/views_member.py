@@ -362,8 +362,8 @@ def health_overview(request):
     rows = []
     for e in Event.objects.filter(
         state__in=[Event.State.PUBLISHED, Event.State.LOCKED], display_only=False
-    ).prefetch_related("periods"):
-        start, end = e.starts_at(), e.ends_at()
+    ):
+        start, end = e.start, e.end
         if not start or start > until or (end and end < now):
             continue
         h = health(e)
@@ -404,10 +404,9 @@ def participation_report(request, pk):
             "people_scheduled",
             "people_checked_in",
         ]
-        w.writerow(["period_start_utc", "period_end_utc", *cols])
-        for r in report["periods"]:
-            p = r["period"]
-            w.writerow([p.start.isoformat(), p.end.isoformat(), *(r[c] for c in cols)])
+        w.writerow(["start_utc", "end_utc", *cols])  # one row per stretch of on-air hours (A32)
+        for r in report["stretches"]:
+            w.writerow([r["start"].isoformat(), r["end"].isoformat(), *(r[c] for c in cols)])
         t = report["total"]
         w.writerow(["total", "", *(t[c] for c in cols)])
         w.writerow(["first_time_participants", t["first_timers"]])

@@ -99,8 +99,8 @@ def dashboard(request):
         state__in=["published", "locked"], display_only=False
     ).order_by("id")[:10]
     upcoming_events = sorted(
-        (e for e in upcoming_events if e.ends_at() and e.ends_at() >= now),
-        key=lambda e: e.starts_at() or now,
+        (e for e in upcoming_events if e.end and e.end >= now),
+        key=lambda e: e.start or now,
     )
     # Open slots, as the roster counts them (setup and teardown too, as on the event's own page):
     # nobody in them, not closed, in an event still taking sign-ups. One query for every event.

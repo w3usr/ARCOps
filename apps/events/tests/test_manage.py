@@ -7,7 +7,7 @@ from django.test import Client
 from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.events.models import Captaincy, Event, OperatingPeriod, Slot
+from apps.events.models import Captaincy, Event, Slot
 from apps.ops.models import ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -37,9 +37,7 @@ def _build(c):
     ev = Event.objects.get(title="Field Day")
     ev.locations.all().delete()  # its club station by default (276): these tests add their own
     # The first period is added on Operating periods like any other (#173).
-    c.post(
-        f"/events/{ev.pk}/periods/add/", {"start": "2026-06-27T18:00", "end": "2026-06-28T18:00"}
-    )
+    c.post(f"/events/{ev.pk}/span/", {"start": "2026-06-27T18:00", "end": "2026-06-28T18:00"})
     c.post(
         f"/events/{ev.pk}/locations/add/",
         {"name": "Club station", "position": "Run", "is_club_station": "on"},
@@ -56,6 +54,7 @@ def _build(c):
             "cap_mentor": "1",
         },
     )
+    ev.refresh_from_db()  # the start and end were posted after it was read
     return ev
 
 
@@ -129,7 +128,7 @@ def test_the_event_form_says_preferred_license_class(officer):
 
 
 def test_duplicate_moves_everything_to_the_new_start(officer):
-    """FR-42: the officer supplies the new start and the copy shifts with it: periods, on-air
+    """FR-42: the officer supplies the new start and the copy shifts with it: start and end, on-air
     hours, slots and openings by the same amount; it carries the eligibility rules, event-wide
     and per slot, and every field (SK, 2026-11-10)."""
     from datetime import timedelta
@@ -140,7 +139,7 @@ def test_duplicate_moves_everything_to_the_new_start(officer):
     ev = _build(c)
     ev.reminder_hours_before = 6
     ev.save()
-    p = ev.periods.get()
+    p = ev  # its start and end (A32)
     OnAirRange.objects.create(event=ev, start=p.start, end=p.start + timedelta(hours=6))
     Opening.objects.create(
         event=ev,
@@ -156,8 +155,8 @@ def test_duplicate_moves_everything_to_the_new_start(officer):
     new_start = p.start + week
     r = c.post(f"/events/{ev.pk}/duplicate/", {"start": f"{new_start:%Y-%m-%dT%H:%M}"})
     copy = Event.objects.get(duplicated_from=ev)
-    assert r["Location"] == f"/events/{copy.pk}/manage/periods/"
-    cp = copy.periods.get()
+    assert r["Location"] == f"/events/{copy.pk}/manage/span/"
+    cp = copy
     assert (cp.start, cp.end) == (p.start + week, p.end + week)
     assert [(a.start, a.end) for a in copy.on_air_ranges.all()] == [
         (p.start + week, p.start + week + timedelta(hours=6))
@@ -181,7 +180,7 @@ def test_duplicate_asks_when_the_copy_starts(officer):
     c = _as(officer)
     ev = _build(c)
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
-    start = ev.periods.get().start
+    start = ev.start
     assert body.count('commandfor="dup-dlg" command="show-modal"') == 2
     assert f'name="start" type="datetime-local" value="{start:%Y-%m-%dT%H:%M}" required' in body
 
@@ -264,10 +263,10 @@ def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
         form |= {"cap_operator": "1", "cap_mentor": "0"} | seats
         return c.post(f"/events/{ev.pk}/slots/add/", form)
 
-    # Refused, and the reason is beside the field: a clash, and an operating slot outside every
-    # operating period.
+    # Refused, and the reason is beside the field: a clash, and an operating slot outside the
+    # on-air hours (A32).
     assert "already has a slot from Sat 27 Jun 20:00" in add("2026-06-27T20:30").content.decode()
-    assert "inside an operating period" in add("2026-06-29T10:00").content.decode()
+    assert "inside the on-air hours" in add("2026-06-29T10:00").content.decode()
     assert Slot.objects.filter(position__location__event=ev).count() == before
 
     # A training slot after the contest, with three operators' seats.
@@ -294,7 +293,8 @@ def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
     event "Cancelled", from the state's label, beside a "Canceled." banner."""
     ev = Event.objects.create(title="Sprint", state=Event.State.CANCELLED, created_by=officer)
     start = timezone.now() + timedelta(days=10)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
+    ev.start, ev.end = start, start + timedelta(hours=4)
+    ev.save(update_fields=["start", "end"])
     body = _as(officer).get("/events/").content.decode()
     # a badge in the canceled tone since #238; the word is what the house spells
     assert '<span class="tag bad">Canceled</span>' in body and "Cancelled" not in body
@@ -317,7 +317,8 @@ def test_the_events_list_works_out_coverage_only_for_live_events(officer, monkey
         ("On", Event.State.PUBLISHED),
     ):
         ev = Event.objects.create(title=title, state=state, created_by=officer)
-        OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=4))
+        ev.start, ev.end = start, start + timedelta(hours=4)
+        ev.save(update_fields=["start", "end"])
     assert _as(officer).get("/events/").status_code == 200
     assert asked == ["On"]
 
@@ -338,7 +339,7 @@ def _fill(c, ev, **extra):
     )
 
 
-def test_after_sign_ups_a_new_period_gets_slots_and_nothing_else_moves(officer):
+def test_after_sign_ups_a_longer_event_gets_slots_and_nothing_else_moves(officer):
     """#153, SK 2026-11-03: the generator adds to the empty hours without replacing the grid."""
     from apps.events.models import SignUp
     from apps.ops.models import AuditLog
@@ -351,8 +352,11 @@ def test_after_sign_ups_a_new_period_gets_slots_and_nothing_else_moves(officer):
     page = c.get(f"/events/{ev.pk}/manage/slots/").content.decode()
     assert "Add slots to the empty hours" in page and "Regenerate slots" not in page
 
-    start = ev.periods.get().end + timedelta(days=1)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=3))
+    # four hours more on the end (A32: one start and end, made longer); the breakdown slot already
+    # holds the first, so three are filled
+    start = ev.end + timedelta(hours=1)
+    ev.end = start + timedelta(hours=3)
+    ev.save(update_fields=["end"])
     body = " ".join(_fill(c, ev).content.decode().split())
     after = Slot.objects.filter(position__location__event=ev)
     assert set(after.values_list("pk", "start")) >= before and after.count() == len(before) + 6
@@ -376,50 +380,8 @@ def test_before_sign_ups_both_fill_and_regenerate_are_offered(officer):
     assert "Add slots to the empty hours" in page and "Regenerate slots" in page
 
 
-# Removing an operating period (SK, 2026-11-10): an operating slot fits inside a period (FR-38),
-# so the slots only that period held go with it, canceled as every slot is (FR-102); and while
-# anybody is signed up in one of them, nothing goes (as the bulk cancel, FR-58).
 def _operating(ev):
     return Slot.objects.filter(position__location__event=ev, kind="operating", cancelled=False)
-
-
-def test_removing_a_period_with_people_in_it_is_refused(officer):
-    from apps.events.models import SignUp
-
-    c = _as(officer)
-    ev = _build(c)
-    p = ev.periods.get()
-    SignUp.objects.create(slot=_operating(ev).first(), user=officer, role="operator")
-    r = c.post(f"/events/{ev.pk}/periods/{p.pk}/delete/", follow=True)
-    assert ev.periods.filter(pk=p.pk).exists() and _operating(ev).count() == 48
-    assert "1 person is signed up" in r.content.decode()
-
-
-def test_removing_a_period_cancels_the_slots_only_it_held(officer):
-    c = _as(officer)
-    ev = _build(c)
-    p = ev.periods.get()
-    later = OperatingPeriod.objects.create(
-        event=ev, start=p.end + timedelta(hours=2), end=p.end + timedelta(hours=4)
-    )
-    pos = ev.locations.get().positions.first()
-    Slot.objects.create(position=pos, start=later.start, end=later.start + timedelta(hours=1))
-    r = c.post(f"/events/{ev.pk}/periods/{later.pk}/delete/", follow=True)
-    assert not ev.periods.filter(pk=later.pk).exists()
-    assert _operating(ev).count() == 48  # the first period's slots stay
-    assert Slot.objects.filter(position=pos, start=later.start, cancelled=True).exists()
-    assert "1 slot canceled with it" in r.content.decode()
-    setup = Slot.objects.filter(position__location__event=ev, kind__in=["setup", "breakdown"])
-    assert not setup.filter(cancelled=True).exists()  # outside the periods by design (FR-47)
-
-
-def test_the_periods_step_says_what_removing_each_one_takes(officer):
-    c = _as(officer)
-    ev = _build(c)
-    p = ev.periods.get()
-    body = c.get(f"/events/{ev.pk}/manage/periods/").content.decode()
-    assert f'commandfor="per-rm-{p.pk}" command="show-modal"' in body
-    assert "Its 48 slots are canceled with it" in body
 
 
 def test_regenerate_counts_only_the_slots_on_the_roster(officer):
@@ -468,7 +430,7 @@ def test_publishing_is_refused_until_the_required_steps_are_done(officer):
     ev.refresh_from_db()
     assert ev.state == "draft"
     assert (
-        "Not published: Operating periods, Locations and Slots are not done yet."
+        "Not published: Event start and end, Locations and Slots are not done yet."
         in r.content.decode()
     )
 
@@ -484,13 +446,15 @@ def test_a_line_stands_in_place_of_publish_while_steps_are_missing(officer):
     c = _as(officer)
     ev = _bare(c)
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
-    assert "Not ready to publish: Operating periods, Locations and Slots are not done yet." in body
+    assert (
+        "Not ready to publish: Event start and end, Locations and Slots are not done yet." in body
+    )
     assert not _publish_controls(body)
     banner = c.get(f"/events/{ev.pk}/").content.decode()  # the Draft banner's too
     assert "Not ready to publish:" in banner and not _publish_controls(banner)
     built = _build(c)  # every required step done, moved to the future (its June has passed)
     soon = timezone.now() + timedelta(days=30)
-    OperatingPeriod.objects.filter(event=built).update(start=soon, end=soon + timedelta(days=1))
+    Event.objects.filter(pk=built.pk).update(start=soon, end=soon + timedelta(days=1))
     body = c.get(f"/events/{built.pk}/manage/publish/").content.decode()
     assert '<button type="submit">Publish</button>' in body and "pub-missing" not in body
 
@@ -518,29 +482,31 @@ def test_an_event_with_no_slots_never_says_every_slot_is_spoken_for(officer):
 # Dates in the past (SK, 2026-11-10): a period that has already ended is allowed, with a warning
 # that names it, since a wrong year is the likely cause; an event whose every period has ended is
 # not published, so nobody is told about an event that is over.
-def test_a_period_that_has_ended_is_added_with_a_warning(officer):
+def test_a_start_and_end_that_has_ended_is_saved_with_a_warning(officer):
     c = _as(officer)
     ev = _bare(c)
     start = (timezone.now() - timedelta(days=30)).replace(minute=0, second=0, microsecond=0)
     end = start + timedelta(hours=4)
     r = c.post(
-        f"/events/{ev.pk}/periods/add/",
+        f"/events/{ev.pk}/span/",
         {"start": f"{start:%Y-%m-%dT%H:%M}", "end": f"{end:%Y-%m-%dT%H:%M}"},
         follow=True,
     )
-    assert ev.periods.count() == 1
-    assert f"This period ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year." in (
+    ev.refresh_from_db()
+    assert ev.end == end
+    assert f"This event ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year." in (
         r.content.decode()
     )
 
 
 def test_an_event_that_has_ended_is_not_published(officer):
     c = _as(officer)
-    ev = _build(c)  # its period is in June 2026
-    OperatingPeriod.objects.filter(event=ev).update(
+    ev = _build(c)  # its start and end are in June 2026
+    Event.objects.filter(pk=ev.pk).update(
         start=timezone.now() - timedelta(days=30), end=timezone.now() - timedelta(days=29)
     )
-    end = ev.periods.get().end
+    ev.refresh_from_db()
+    end = ev.end
     said = f"it ended on {end:%a %d %b %Y %H:%M} UTC."
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
     assert f"Not ready to publish: {said}" in body and not _publish_controls(body)
@@ -555,7 +521,7 @@ def test_a_completed_event_is_under_past_even_before_its_dates_end(officer):
     c = _as(officer)
     ev = _build(c)
     soon = timezone.now() + timedelta(days=3)
-    OperatingPeriod.objects.filter(event=ev).update(start=soon, end=soon + timedelta(days=1))
+    Event.objects.filter(pk=ev.pk).update(start=soon, end=soon + timedelta(days=1))
     c.post(f"/events/{ev.pk}/publish/", {"from": "manage"})
     c.post(f"/events/{ev.pk}/state/", {"what": "complete"})
     ev.refresh_from_db()

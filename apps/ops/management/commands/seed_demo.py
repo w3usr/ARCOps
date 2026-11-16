@@ -17,7 +17,6 @@ from apps.events.models import (
     Captaincy,
     Event,
     Location,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -145,7 +144,8 @@ class Command(BaseCommand):
             },
         )
         if created:
-            OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=48))
+            ev.start, ev.end = start, start + timedelta(hours=48)
+            ev.save(update_fields=["start", "end"])
             loc = Location.objects.create(event=ev, name="Club station", is_club_station=True)
             pos = Position.objects.create(location=loc, name="Run", order=1)
             Captaincy.objects.create(event=ev, user=users["Ben"])

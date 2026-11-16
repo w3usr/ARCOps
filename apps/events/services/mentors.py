@@ -22,7 +22,7 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
     role = mentor_role_key()
     out = []
     for ev in Event.objects.filter(state=Event.State.PUBLISHED).order_by("id"):
-        if not ev.ends_at() or ev.ends_at() < now:
+        if not ev.end or ev.end < now:
             continue
         zone = display_zone(ev)
         slots = (
@@ -67,10 +67,8 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
                 if viewer_is_member
                 else f"the {setting('club.short_name', 'club')} station",
                 "preferred_class": ev.min_license_class,
-                "span": _span(ev.starts_at(), ev.ends_at(), UTC, " – "),
-                "span_other": ""
-                if zone == UTC
-                else _span(ev.starts_at(), ev.ends_at(), zone, " – "),
+                "span": _span(ev.start, ev.end, UTC, " – "),
+                "span_other": "" if zone == UTC else _span(ev.start, ev.end, zone, " – "),
             }
         )
     return out

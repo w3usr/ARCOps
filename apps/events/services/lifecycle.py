@@ -66,7 +66,7 @@ def complete_ended(now: datetime | None = None) -> int:
             .order_by("-end")
             .first()
         )
-        end = last.end if last else e.ends_at()
+        end = last.end if last else e.end
         if end and end < now:
             e.state = Event.State.COMPLETED
             e.completed_at = now
@@ -80,7 +80,7 @@ def announce_published(actor, event: Event) -> int:
     """FR-44: the optional announcement when an event becomes visible."""
     from .notify import mail_when
 
-    start, end = event.starts_at(), event.ends_at()
+    start, end = event.start, event.end
     when = mail_when(start, end, event, " to ") if start and end else ""
     link = dj.SITE_URL + reverse("event_detail", args=[event.pk])
     members = people_who_may("view_directory")

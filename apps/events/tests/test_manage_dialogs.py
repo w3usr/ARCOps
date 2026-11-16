@@ -7,7 +7,7 @@ import re
 import pytest
 
 from apps.accounts.models import User
-from apps.events.models import Event, OperatingPeriod, Slot
+from apps.events.models import Event, Slot
 
 from .test_manage import _as, _build
 
@@ -20,8 +20,7 @@ def _forms(ev, loc_pk):
     base = f"/events/{ev.pk}"
     run, mult = ev.locations.get().positions.order_by("order")
     return {
-        "periods/add": ("periods", "Add an operating period"),
-        f"periods/{ev.periods.get().pk}/edit": ("periods", "Edit the operating period"),
+        "span": ("span", "Event start and end"),
         "locations/add": ("locations", "Add a location"),
         f"locations/{loc_pk}/positions/add": ("locations", "Add a position at Club station"),
         f"positions/{run.pk}/edit": ("locations", "Rename Run"),
@@ -57,7 +56,7 @@ def test_each_step_opens_its_forms_from_buttons_in_one_dialog(officer):
     ev = _build(c)
     forms, base = _forms(ev, ev.locations.get().pk)
     seen = set()
-    for tab in ("periods", "locations", "slots", "rules", "publish"):
+    for tab in ("span", "locations", "slots", "rules", "publish"):
         body = c.get(f"{base}/manage/{tab}/").content.decode()
         assert body.count('<dialog id="manage-dialog"') == 1
         for href, target in re.findall(
@@ -69,9 +68,9 @@ def test_each_step_opens_its_forms_from_buttons_in_one_dialog(officer):
     assert seen == set(forms)
     assert (
         "<form"
-        not in c.get(f"{base}/manage/periods/")
+        not in c.get(f"{base}/manage/span/")
         .content.decode()
-        .split('aria-labelledby="per"', 1)[1]
+        .split('aria-labelledby="span"', 1)[1]
         .split("</ul>", 1)[1]
         .split("</section>", 1)[0]
     )
@@ -80,20 +79,21 @@ def test_each_step_opens_its_forms_from_buttons_in_one_dialog(officer):
 def test_a_save_from_the_dialog_sends_the_page_to_its_step(officer):
     c = _as(officer)
     ev = _build(c)
-    url = f"/events/{ev.pk}/periods/add/"
+    url = f"/events/{ev.pk}/span/"
     data = {"start": "2026-07-01T18:00", "end": "2026-07-01T20:00"}
     r = c.post(url, data, **HX)
-    assert r.status_code == 200 and r["HX-Redirect"] == f"/events/{ev.pk}/manage/periods/"
-    assert ev.periods.count() == 2
+    assert r.status_code == 200 and r["HX-Redirect"] == f"/events/{ev.pk}/manage/span/"
+    ev.refresh_from_db()
+    assert f"{ev.start:%Y-%m-%d %H:%M}" == "2026-07-01 18:00"  # one start and end, edited (A32)
     r = c.post(url, {"start": "2026-07-02T18:00", "end": "2026-07-02T20:00"})
-    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/periods/"
+    assert r.status_code == 302 and r["Location"] == f"/events/{ev.pk}/manage/span/"
 
 
 def test_a_refusal_comes_back_in_the_dialog_with_what_was_typed(officer):
     c = _as(officer)
     ev = _build(c)
     r = c.post(
-        f"/events/{ev.pk}/periods/add/",
+        f"/events/{ev.pk}/span/",
         {"start": "2026-07-01T18:00", "end": "2026-07-01T17:00"},
         **HX,
     )
@@ -102,7 +102,8 @@ def test_a_refusal_comes_back_in_the_dialog_with_what_was_typed(officer):
     assert (
         '<span class="lvl">Problem:</span>' in body and "The end must come after the start." in body
     )
-    assert 'value="2026-07-01T18:00"' in body and ev.periods.count() == 1
+    ev.refresh_from_db()
+    assert 'value="2026-07-01T18:00"' in body and f"{ev.start:%m-%d}" == "06-27"
     r = c.post(f"/events/{ev.pk}/slots/add/", {"start": "2026-06-27T20:30", "minutes": "60"}, **HX)
     assert "No slot was added; correct the fields marked below." in r.content.decode()
 
@@ -222,10 +223,7 @@ def test_a_member_captain_cannot_open_the_captain_form(officer):
     assert (
         "Appoint captain" not in _as(mem).get(f"/events/{ev.pk}/manage/publish/").content.decode()
     )
-    assert (
-        Event.objects.filter(pk=ev.pk).exists()
-        and OperatingPeriod.objects.filter(event=ev).exists()
-    )
+    assert Event.objects.filter(pk=ev.pk).exists() and Event.objects.get(pk=ev.pk).start is not None
 
 
 def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):

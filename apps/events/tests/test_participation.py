@@ -12,7 +12,7 @@ from apps.events.models import (
     Captaincy,
     Event,
     Location,
-    OperatingPeriod,
+    OnAirRange,
     Position,
     RoleCapacity,
     SignUp,
@@ -36,8 +36,11 @@ def test_participation_counts_hours_people_and_first_timers():
         u.save()
     start = timezone.now() - timedelta(days=2)
     e = Event.objects.create(title="Past Sprint", state=Event.State.COMPLETED)
-    p1 = OperatingPeriod.objects.create(event=e, start=start, end=start + timedelta(hours=2))
-    OperatingPeriod.objects.create(
+    # a split contest (A32): one start and end, and on-air hours with a break between
+    e.start, e.end = start, start + timedelta(hours=6)
+    e.save(update_fields=["start", "end"])
+    OnAirRange.objects.create(event=e, start=start, end=start + timedelta(hours=2))
+    OnAirRange.objects.create(
         event=e, start=start + timedelta(hours=5), end=start + timedelta(hours=6)
     )
     loc = Location.objects.create(event=e, name="Station")
@@ -73,7 +76,9 @@ def test_participation_counts_hours_people_and_first_timers():
         t["people_scheduled"] == 2 and t["people_checked_in"] == 1
     )  # a's second check-in is a no-show
     assert (
-        t["first_timers"] == 1 and r["periods"][0]["period"] == p1 and r["periods"][0]["slots"] == 2
+        t["first_timers"] == 1
+        and r["stretches"][0]["start"] == start
+        and r["stretches"][0]["slots"] == 2
     )
     c = Client()
     c.force_login(cap)

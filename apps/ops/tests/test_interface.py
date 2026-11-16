@@ -18,7 +18,6 @@ from apps.credentials.models import AgreementTemplate, CredentialType, SignedAgr
 from apps.events.models import (
     Event,
     Location,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -47,7 +46,8 @@ def event():
     )
     ev = Event.objects.create(title="RTTY", state=Event.State.PUBLISHED, created_by=off)
     start = datetime(2026, 9, 26, 0, 0, tzinfo=UTC)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + timedelta(hours=3))
+    ev.start, ev.end = start, start + timedelta(hours=3)
+    ev.save(update_fields=["start", "end"])
     loc = Location.objects.create(event=ev, name="Club station")
     pos = Position.objects.create(location=loc, name="Run", order=1)
     for s in generate_slots(ev, [pos], minutes=60):
@@ -232,7 +232,7 @@ def test_no_page_carries_an_inline_event_handler(event):
             f"/events/{ev.pk}/manage/{t}/"
             for t in (
                 "details",
-                "periods",
+                "span",
                 "locations",
                 "slots",
                 "publish",

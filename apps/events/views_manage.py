@@ -2,9 +2,9 @@
 Creating and running an event without the Django admin (§2.2, FR-42, FR-44, FR-46 to FR-52).
 
 Officers create events. An event's captains (every officer is one by definition; a member
-becomes one by appointment) edit it from a single manage page: the details, the operating
-periods, the locations and positions, the captains, and the slot grid, which is generated from
-the periods and can be regenerated freely until someone has signed up.
+becomes one by appointment) edit it from a single manage page: the details, the start and end,
+the locations and positions, the captains, and the slot grid, which is generated inside the
+on-air hours and can be regenerated freely until someone has signed up.
 """
 
 from __future__ import annotations
@@ -39,7 +39,6 @@ from .models import (
     Captaincy,
     Event,
     Location,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -94,7 +93,7 @@ class EventForm(NoColon, forms.ModelForm):
         if not on and event.state != Event.State.DRAFT:
             raise forms.ValidationError(
                 "A published display-only event cannot take a roster: take it back to draft "
-                "first, then set up its periods, locations and slots."
+                "first, then set up its start and end, locations and slots."
             )
         return on
 
@@ -170,7 +169,9 @@ class KbygForm(NoColon, forms.ModelForm):
         widgets = {"kbyg_html": TinyMCE(attrs={"rows": 16})}
 
 
-class PeriodForm(NoColon, forms.Form):
+class SpanForm(NoColon, forms.Form):
+    """A start and an end in UTC: the event's own (A32), or a range of on-air hours."""
+
     start = forms.DateTimeField(
         label="Starts (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
     )
@@ -178,31 +179,10 @@ class PeriodForm(NoColon, forms.Form):
         label="Ends (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
     )
 
-    def __init__(self, *args, event=None, editing=None, **kwargs):
-        """`event`, when the form is an operating period's: the periods it must not overlap,
-        but for `editing`, the one being changed. The on-air hours' range gives neither."""
-        super().__init__(*args, **kwargs)
-        self.event, self.editing = event, editing
-
     def clean(self):
         d = super().clean()
-        s, e = d.get("start"), d.get("end")
-        if s and e:
-            if d["end"] <= d["start"]:
-                self.add_error("end", "The end must come after the start.")
-            elif self.event:
-                # Two periods that share time are one period written twice (SK, 2026-11-11); one
-                # that starts as another ends is a second period, as a split contest has.
-                others = self.event.periods.filter(start__lt=d["end"], end__gt=d["start"])
-                if self.editing:
-                    others = others.exclude(pk=self.editing.pk)
-                clash = others.first()
-                if clash:
-                    self.add_error(
-                        "start",
-                        f"This overlaps the period {clash.start:%a %d %b %H:%M} to "
-                        f"{clash.end:%a %d %b %H:%M} UTC. Edit that one, or keep them apart.",
-                    )
+        if d.get("start") and d.get("end") and d["end"] <= d["start"]:
+            self.add_error("end", "The end must come after the start.")
         return d
 
 
@@ -446,7 +426,7 @@ class AddSlotForm(NoColon, FieldGroups, SeatFields, forms.Form):
     kind = forms.ChoiceField(label="Kind")
 
     def __init__(self, *args, event, roles, **kwargs):
-        # Its own ids: the period and generator forms on the same page have a start, a length and
+        # Its own ids: the on-air range and generator forms on the same page have a start, a length and
         # seats too, and a label must not point at another form's field.
         kwargs.setdefault("auto_id", "slot-%s")
         super().__init__(*args, **kwargs)
@@ -495,7 +475,7 @@ def kbyg_outline() -> str:
 @require_http_methods(["GET", "POST"])
 def event_create(request):
     """New event (#173): the Details step of an event not made yet. Saving makes the draft and
-    goes on to Operating periods; the first period is added there like any other."""
+    goes on to its start and end (A32)."""
     if not request.user.may("manage_events"):
         raise Http404
     form = EventForm(request.POST or None)
@@ -517,7 +497,7 @@ def event_create(request):
         Captaincy.objects.get_or_create(event=event, user=request.user)
         record(request.user, "event.created", event, after={"title": event.title})
         messages.success(request, "Draft created.")
-        return to_step(event.pk, "periods")
+        return to_step(event.pk, "span")
     return render(
         request,
         "events/stages/new.html",
@@ -624,13 +604,7 @@ def _summary(event, steps, captains) -> list[dict]:
     def fmt(t):
         return f"{t:%a %d %b %H:%M}"
 
-    periods = list(event.periods.order_by("start"))
-    span = (
-        f"{len(periods)} period{pluralize(len(periods))}, {fmt(periods[0].start)} to "
-        f"{fmt(max(p.end for p in periods))} UTC"
-        if periods
-        else ""
-    )
+    span = f"{fmt(event.start)} to {fmt(event.end)} UTC" if event.start and event.end else ""
     places = "; ".join(
         f"{loc.name}: {', '.join(p.name for p in loc.positions.all())}"
         for loc in event.locations.prefetch_related("positions").order_by("order")
@@ -653,7 +627,7 @@ def _summary(event, steps, captains) -> list[dict]:
     said += [f"{openings} opening{pluralize(openings)}"] if openings else []
     holds = {
         "details": f"{event.title}, {dict(_types()).get(event.type, event.type)}",
-        "periods": span,
+        "span": span,
         "locations": places,
         "slots": held,
         "rules": "; ".join(said).capitalize() if said else "Club defaults",
@@ -663,7 +637,7 @@ def _summary(event, steps, captains) -> list[dict]:
         if st["key"] == "publish":
             continue
         value = holds.get(st["key"]) or st["word"]
-        if st["key"] in ("details", "periods", "locations", "slots") and not holds[st["key"]]:
+        if st["key"] in ("details", "span", "locations", "slots") and not holds[st["key"]]:
             value = "None" if st.get("optional") else "Not done yet"
         rows.append(
             {
@@ -684,7 +658,7 @@ def _summary(event, steps, captains) -> list[dict]:
 # works with JavaScript off and can be linked to. docs/INTERFACE.md, "A page that edits many things".
 STEP_NAMES = {
     "details": "Details",
-    "periods": "Operating periods",
+    "span": "Event start and end",
     "locations": "Locations",
     "slots": "Slots",
     "publish": "Publish",
@@ -693,7 +667,7 @@ STEP_NAMES = {
     "kbyg": "Know before you go",
 }
 # The tabs' addresses before #172: bookmarks and pages left open still land.
-OLD_TABS = {"setup": "details", "status": "publish"}
+OLD_TABS = {"setup": "details", "status": "publish", "periods": "span"}  # periods: until A32
 LIVE = (Event.State.PUBLISHED, Event.State.LOCKED, Event.State.COMPLETED)
 
 
@@ -702,7 +676,7 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
 
     Each says whether it is done, whether it can be opened yet, and one word of state. A
     display-only event (a net, a meeting) has no roster, so no locations, slots or sign-up rules,
-    and an operating period is optional for it. With no event, it is one being created (#173):
+    and a start and end is optional for it. With no event, it is one being created (#173):
     Details is the step you are on, and nothing else can be opened until it is saved."""
     if event is None:
         new = [
@@ -714,11 +688,11 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
             s.update(name=STEP_NAMES[s["key"]], number=n, next=s["key"] == "details")
             s["word"] = "Next" if s["open"] else "After Details"
         return new
-    periods = event.periods.exists()
+    spanned = bool(event.start and event.end)
     shown_only = event.display_only
     steps = [
         {"key": "details", "done": True},
-        {"key": "periods", "done": periods, "optional": shown_only},
+        {"key": "span", "done": spanned, "optional": shown_only},
     ]
     if not shown_only:
         steps += [
@@ -726,8 +700,8 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
             {
                 "key": "slots",
                 "done": bool(slot_count),
-                "open": periods and positions,
-                "after": "Locations" if not positions else "Operating periods",
+                "open": spanned and positions,
+                "after": "Locations" if not positions else "Event start and end",
             },
         ]
     steps.append({"key": "publish", "done": event.state in LIVE, "word": event.get_state_display()})
@@ -780,7 +754,7 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
 def not_ready(event, steps) -> str:
     """Why a draft cannot be published yet, as the end of a sentence; "" when it can. Publishing
     waits for the required steps (SK, 2026-11-10), so nobody sees an event with nothing to sign
-    up for; and a roster event whose every period has ended is not published, so nobody is told
+    up for; and a roster event that has ended is not published, so nobody is told
     about one that is over (SK, 2026-11-10). The Publish button is greyed with this line, and the
     server refuses the same."""
     names = [
@@ -791,7 +765,7 @@ def not_ready(event, steps) -> str:
     if names:
         listed = f"{', '.join(names[:-1])} and {names[-1]}" if len(names) > 1 else names[0]
         return f"{listed} {'are' if len(names) > 1 else 'is'} not done yet."
-    end = event.ends_at()
+    end = event.end
     if not event.display_only and end and end <= timezone.now():
         return f"it ended on {end:%a %d %b %Y %H:%M} UTC."
     return ""
@@ -827,11 +801,6 @@ def _step_page(request, event, step, **extra):
     slot_count = Slot.objects.filter(position__location__event=event, cancelled=False).count()
     all_steps = stages(event, positions.exists(), slot_count)
     captains = event.captaincies.select_related("user").order_by("user__last_name")
-    periods = list(event.periods.order_by("start"))
-    if step == "periods":  # what removing each one takes, said in its confirmation
-        for p in periods:
-            held = left_outside(p)
-            p.held, p.people = len(held), SignUp.objects.filter(slot__in=held).count()
     here = next((s for s in all_steps if s["key"] == step), None)
     if here is None or not here["open"]:
         raise Http404
@@ -851,7 +820,6 @@ def _step_page(request, event, step, **extra):
             "back": back,
             "onward": onward if onward and onward["open"] else None,
             "details": _details(event),
-            "periods": periods,
             # each position with its slot count, for the Locations step's rows (#233)
             "locations": event.locations.prefetch_related(
                 Prefetch(
@@ -885,78 +853,50 @@ def _step_page(request, event, step, **extra):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def period_add(request, pk):
-    event = captained_event(request, pk)
-    form = PeriodForm(request.POST or None, event=event)
-    if request.method == "POST" and form.is_valid():
-        start, end = form.cleaned_data["start"], form.cleaned_data["end"]
-        OperatingPeriod.objects.create(event=event, start=start, end=end)
-        record(
-            request.user,
-            "event.edited",
-            event,
-            before={"period": None},
-            after={"period": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC"},
-        )
-        messages.success(request, "Operating period added.")
-        if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
-            messages.warning(
-                request,
-                f"This period ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year.",
-            )
-        return done(request, step_url(pk, "periods"))
-    return form_page(
-        request, event, form, heading="Add an operating period", submit="Add period", step="periods"
-    )
-
-
-@login_required
-@require_http_methods(["GET", "POST"])
-def period_edit(request, pk, period_id):
-    """A period's times put right (SK, 2026-11-11). Before, a wrong end meant removing the period,
-    which cancels its slots, and adding it again, where the canceled hours could not be filled.
-    Made longer, every slot stays and the new time is empty until it is filled. Made shorter, the
-    operating slots left outside every period are canceled, as when a period is removed; while
-    anybody is signed up in one, nothing changes."""
+def span_edit(request, pk):
+    """The event's start and end, set or put right (FR-38 as A32: one per event; SK, 2026-11-16:
+    edited, never removed). Made longer, every slot stays and Add slots to the empty hours fills
+    the new time. Made shorter, the operating slots left outside it are canceled; while anybody is
+    signed up in one, nothing changes (SK, 2026-11-11)."""
     from .services.slots import chosen, set_on_air
 
     event = captained_event(request, pk)
-    period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
 
     def typed(t):  # what a datetime-local box takes, in UTC as its label says
-        return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M")
+        return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M") if t else ""
 
-    form = PeriodForm(
-        request.POST or None,
-        event=event,
-        editing=period,
-        initial={"start": typed(period.start), "end": typed(period.end)},
+    form = SpanForm(
+        request.POST or None, initial={"start": typed(event.start), "end": typed(event.end)}
     )
     if request.method == "POST" and form.is_valid():
         start, end = form.cleaned_data["start"], form.cleaned_data["end"]
-        slots = left_outside(period, start, end)
-        people = SignUp.objects.filter(slot__in=slots).count()
+        slots = left_outside(event, start, end)
+        people = SignUp.objects.filter(slot__in=slots).values("user").distinct().count()
         if people:
             form.add_error(
                 None,
                 f"{people} {'person is' if people == 1 else 'people are'} signed up in the "
-                f"{len(slots)} slot{pluralize(len(slots))} this would leave outside the period. "
+                f"{len(slots)} slot{pluralize(len(slots))} this would leave outside the event. "
                 "Remove them from their slots, or cancel those slots and tell them, first.",
             )
         else:
-            was = f"{period.start:%Y-%m-%d %H:%M}–{period.end:%Y-%m-%d %H:%M} UTC"
-            period.start, period.end = start, end
-            period.save(update_fields=["start", "end"])
+            was = (
+                f"{event.start:%Y-%m-%d %H:%M}–{event.end:%Y-%m-%d %H:%M} UTC"
+                if event.start and event.end
+                else None
+            )
+            event.start, event.end = start, end
+            event.save(update_fields=["start", "end"])
             n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(cancelled=True)
-            if event.on_air_ranges.exists():  # the on-air hours stay inside the periods
+            if event.on_air_ranges.exists():  # the on-air hours stay inside the start and end
                 set_on_air(event, chosen(event))
             record(
                 request.user,
                 "event.edited",
                 event,
-                before={"period": was},
+                before={"start and end": was},
                 after={
-                    "period": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC",
+                    "start and end": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC",
                     "slots canceled": n,
                 },
             )
@@ -965,59 +905,27 @@ def period_edit(request, pk, period_id):
                 if n
                 else ""
             )
-            messages.success(request, f"Operating period saved.{gone}")
-            if end <= timezone.now():
+            messages.success(request, f"Start and end saved.{gone}")
+            if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
                 messages.warning(
                     request,
-                    f"This period ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year.",
+                    f"This event ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year.",
                 )
-            return done(request, step_url(pk, "periods"))
+            return done(request, step_url(pk, "span"))
     return form_page(
         request,
         event,
         form,
-        heading="Edit the operating period",
-        submit="Save period",
-        step="periods",
-        intro="Made longer, every slot stays, and Add slots to the empty hours fills the new "
-        "time. Made shorter, the slots left outside it are canceled.",
+        heading="Event start and end",
+        submit="Save start and end",
+        step="span",
+        intro="When the event begins and ends, in UTC. A break in the middle, as a split contest "
+        "has, goes in the on-air hours on Slots. Made longer, every slot stays, and Add slots to "
+        "the empty hours fills the new time. Made shorter, the slots left outside it are canceled."
+        if event.start
+        else "When the event begins and ends, in UTC. A break in the middle, as a split contest "
+        "has, goes in the on-air hours on Slots.",
     )
-
-
-@login_required
-@require_POST
-def period_delete(request, pk, period_id):
-    """Removing a period cancels the slots only it held, as every slot is canceled and never
-    deleted (FR-102); while anybody is signed up in one, nothing goes, as with the bulk cancel:
-    their captain removes them, or cancels the slot and tells them, first (SK, 2026-11-10)."""
-    event = captained_event(request, pk)
-    period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
-    slots = left_outside(period)
-    people = SignUp.objects.filter(slot__in=slots).count()
-    if people:
-        messages.error(
-            request,
-            f"Nothing was removed: {people} {'person is' if people == 1 else 'people are'} signed "
-            "up in its slots. Remove them from their slots, or cancel those slots and tell them, "
-            "first.",
-        )
-        return to_step(pk, "periods")
-    n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(cancelled=True)
-    record(
-        request.user,
-        "event.edited",
-        event,
-        before={"period": f"{period.start:%Y-%m-%d %H:%M}–{period.end:%Y-%m-%d %H:%M} UTC"},
-        after={"period": None, "slots canceled": n},
-    )
-    period.delete()
-    if event.on_air_ranges.exists():  # its stretches go with it, as an edit clips them (#260)
-        from .services.slots import chosen, set_on_air
-
-        set_on_air(event, chosen(event))
-    with_it = f"; {n} slot{pluralize(n)} canceled with it." if n else "."
-    messages.success(request, f"Operating period removed{with_it}")
-    return to_step(pk, "periods")
 
 
 @login_required
@@ -1301,8 +1209,8 @@ def slots_generate(request, pk):
     event = captained_event(request, pk)
     roles = setting("slot_roles", []) or []
     positions = list(Position.objects.filter(location__event=event))
-    if not event.periods.exists() or not positions:
-        messages.error(request, "Add an operating period and a location first.")
+    if not (event.start and event.end) or not positions:
+        messages.error(request, "Set the event's start and end, and add a location, first.")
         return done(request, step_url(pk, "slots"))
     existing = Slot.objects.filter(position__location__event=event)
     slot_count = existing.filter(cancelled=False).count()
@@ -1401,9 +1309,9 @@ def slots_generate(request, pk):
 def _on_air_context(event, **forms_) -> dict:
     """What the Slots step needs to show the on-air hours (#247, ranges only since #248): the
     stretches in words, the hours against the whole event, and the slots that fall outside them."""
-    from .services.slots import chosen, clip, periods_of
+    from .services.slots import chosen, clip, span_of
 
-    stretches, periods = chosen(event), periods_of(event)
+    stretches, span = chosen(event), span_of(event)
 
     def hours(spans):
         return sum((b - a).total_seconds() for a, b in spans) / 3600
@@ -1420,10 +1328,10 @@ def _on_air_context(event, **forms_) -> dict:
                 outside += 1
     return {
         "on_air_stretches": [{"i": i, "label": label(a, b)} for i, (a, b) in enumerate(stretches)],
-        "on_air_hours": hours(stretches) if stretches else hours(periods),
-        "event_hours": hours(periods),
+        "on_air_hours": hours(stretches) if stretches else hours(span),
+        "event_hours": hours(span),
         "slots_outside": outside,
-        "range_form": forms_.get("range_form") or PeriodForm(auto_id="onair-%s"),
+        "range_form": forms_.get("range_form") or SpanForm(auto_id="onair-%s"),
     }
 
 
@@ -1433,7 +1341,7 @@ def on_air_save(request, pk):
     """Save the on-air hours (#247, A15; A16 since #248), each back to the Slots step in place
     (#177): a range typed to the minute, added to the stretches; one stretch removed; or the
     whole event again. Slots are never touched."""
-    from .services.slots import chosen, clip, periods_of, set_on_air
+    from .services.slots import chosen, clip, set_on_air, span_of
 
     event = captained_event(request, pk)
     what = request.POST.get("what", "")
@@ -1464,14 +1372,16 @@ def on_air_save(request, pk):
             return saved([], " The last stretch is gone, so the whole event is on the air again.")
         return saved(rest)
     if what == "range":
-        form = PeriodForm(request.POST, auto_id="onair-%s")
+        form = SpanForm(request.POST, auto_id="onair-%s")
         if form.is_valid():
             asked = (form.cleaned_data["start"], form.cleaned_data["end"])
-            inside = clip([asked], periods_of(event))
+            inside = clip([asked], span_of(event))
             if not inside:
-                form.add_error("start", "That range falls outside every operating period.")
+                form.add_error("start", "That range falls outside the event's start and end.")
             else:
-                note = "" if inside == [asked] else " The range was cut to the operating periods."
+                note = (
+                    "" if inside == [asked] else " The range was cut to the event's start and end."
+                )
                 return saved(base + inside, note)
         return _step_page(request, event, "slots", **_on_air_context(event, range_form=form))
     raise Http404
@@ -1595,7 +1505,7 @@ def event_duplicate(request, pk):
     """FR-42: a copy on new dates. The dialog asks when the copy starts, in UTC, and every date
     moves by the difference from this event's start; with no start given, the dates stay."""
     event = captained_event(request, pk)
-    shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.starts_at()
+    shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.start
     if typed and was:
         start = _typed_utc(typed)
         if start is None:
@@ -1603,7 +1513,7 @@ def event_duplicate(request, pk):
             return to_step(pk, "publish")
         shift = start - was
     copy = duplicate_event(event, request.user, shift=shift)
-    now = copy.starts_at()
+    now = copy.start
     record(
         request.user,
         "event.duplicated",
@@ -1614,9 +1524,10 @@ def event_duplicate(request, pk):
     when = f", starting {now:%a %d %b %Y %H:%M} UTC" if now else ""
     messages.success(
         request,
-        f"Copied as a draft{when}. The periods, on-air hours, slots and openings moved with it.",
+        f"Copied as a draft{when}. Its start and end, on-air hours, slots and openings moved "
+        "with it.",
     )
-    return to_step(copy.pk, "periods")
+    return to_step(copy.pk, "span")
 
 
 @login_required

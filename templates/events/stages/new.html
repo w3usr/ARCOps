@@ -2,7 +2,7 @@
 {% block extra_head %}{% include "ops/_editor.html" %}{% endblock %}
 {% block stage %}
 {% comment %}New event (#173): the Details step of an event not made yet. It starts as a draft;
-saving goes on to Operating periods, where the first period is added like any other.{% endcomment %}
+saving goes on to the event's start and end (A32).{% endcomment %}
 <section class="panel" aria-labelledby="new-det">
   <header class="panel-head"><div><h2 id="new-det">Details</h2><p>It starts as a draft that only officers and captains can see.</p></div></header>
   <form method="post" class="stack">{% csrf_token %}
@@ -10,7 +10,7 @@ saving goes on to Operating periods, where the first period is added like any ot
     {% if form.errors %}<p class="msg error" role="alert"><span class="lvl">Problem:</span> Nothing was saved; correct the fields marked below.</p>{% endif %}
     {% include "events/forms/_one_per_line.html" %}
     </div>
-    <footer class="panel-foot"><p>Next: its operating periods.</p><button type="submit">Create draft and continue</button></footer>
+    <footer class="panel-foot"><p>Next: its start and end.</p><button type="submit">Create draft and continue</button></footer>
   </form>
 </section>
 {% endblock %}

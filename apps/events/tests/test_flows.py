@@ -13,7 +13,6 @@ from apps.events.models import (
     Event,
     Location,
     Opening,
-    OperatingPeriod,
     Position,
     RoleCapacity,
     SignUp,
@@ -40,7 +39,8 @@ def user(name, **kw):
 def event_with_slot(state="published"):
     ev = Event.objects.create(title="Test Contest", state=state, min_license_class="General")
     start = timezone.now() + dt.timedelta(days=5)
-    OperatingPeriod.objects.create(event=ev, start=start, end=start + dt.timedelta(hours=2))
+    ev.start, ev.end = start, start + dt.timedelta(hours=2)
+    ev.save(update_fields=["start", "end"])
     pos = Position.objects.create(
         location=Location.objects.create(event=ev, name="Station"), name="Run"
     )

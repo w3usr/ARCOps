@@ -277,7 +277,7 @@ open a second one.
 
 **A page that edits more than a few things is split into steps under one progress bar** (SK,
 2026-11-03, #172; it replaced #167's tabs of 2026-11-02). Manage was one page of fourteen sections
-and about fifteen forms; it is now Details, Operating periods, Locations, Slots and Publish, with
+and about fifteen forms; it is now Details, Event start and end, Locations, Slots and Publish, with
 Sign-up rules and Contest details as optional steps beside them. Tabs and a guide to what to do
 next had been two lists of one page, and they drifted apart; one list cannot.
 

@@ -67,7 +67,7 @@ def pages_for(role: str) -> list[str]:
             f"/events/{ev.pk}/manage/{t}/"
             for t in (
                 "details",
-                "periods",
+                "span",
                 "locations",
                 "slots",
                 "publish",
@@ -79,8 +79,7 @@ def pages_for(role: str) -> list[str]:
         *(
             f"/events/{ev.pk}/{f}/"
             for f in (
-                "periods/add",
-                f"periods/{ev.periods.first().pk}/edit",
+                "span",
                 "locations/add",
                 f"locations/{ev.locations.first().pk}/edit",
                 f"positions/{slot.position_id}/edit",

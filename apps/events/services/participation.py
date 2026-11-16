@@ -1,10 +1,11 @@
 """Participation report (FR-86): what the club reports to the University and puts in a grant
-application, so it should be right. Per event and per operating period: hours scheduled,
+application, so it should be right. Per event and per stretch of on-air hours: hours scheduled,
 covered, and viable; people scheduled and checked in; first-time participants."""
 
 from __future__ import annotations
 
 from ..models import Event, SignUp, Slot
+from .slots import on_air
 from .viability import evaluate
 
 
@@ -18,7 +19,6 @@ def participation(event: Event) -> dict:
         .prefetch_related("signups__user", "signups__user__license", "signups__responsible_adults")
         .order_by("start")
     )
-    periods = list(event.periods.order_by("start"))
     people = {}
     first_timers = set()
     for s in slots:
@@ -59,15 +59,15 @@ def participation(event: Event) -> dict:
             "people_checked_in": len(checked),
         }
 
-    rows = []
-    for p in periods:
-        sub = [s for s in slots if p.start <= s.start < p.end]
-        rows.append({"period": p, **block(sub)})
+    rows = []  # one per stretch of on-air hours, so a split contest's halves stay apart (A32)
+    for a, b in on_air(event):
+        sub = [s for s in slots if a <= s.start < b]
+        rows.append({"start": a, "end": b, **block(sub)})
     total = block(slots)
     total["first_timers"] = len(first_timers)
     return {
         "event": event,
-        "periods": rows,
+        "stretches": rows,
         "total": total,
         "people": sorted(
             people.values(), key=lambda x: (x["user"].last_name, x["user"].first_name)

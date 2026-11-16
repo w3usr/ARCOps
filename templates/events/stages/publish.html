@@ -56,7 +56,7 @@
 </section>
 
 <section class="panel" aria-labelledby="more">
-  <header class="panel-head"><div><h2 id="more">Another copy</h2><p class="helptext">A draft copy on new dates: the same periods, on-air hours, locations, slot grid, sign-up rules and openings, all moved with its start, and nobody signed up. For next year's running, or a similar event.</p></div>
+  <header class="panel-head"><div><h2 id="more">Another copy</h2><p class="helptext">A draft copy on new dates: the same start and end, on-air hours, locations, slot grid, sign-up rules and openings, all moved with its start, and nobody signed up. For next year's running, or a similar event.</p></div>
     <div class="actions"><button type="button" class="secondary" commandfor="dup-dlg" command="show-modal">{% icon 'copy' %}Duplicate this event</button></div></header>
 </section>
 
@@ -69,11 +69,11 @@ or canceled.{% endcomment %}
 <section class="card dangerzone" aria-labelledby="dz">
   <h2 id="dz">Danger zone</h2>
   {% if deletable %}
-  <div class="dz-row"><div><h3>Delete this draft</h3><p class="helptext">It was never published, so no member has seen it. Its periods, locations and slots go with it. Cannot be undone.</p></div>
+  <div class="dz-row"><div><h3>Delete this draft</h3><p class="helptext">It was never published, so no member has seen it. Its locations and slots go with it. Cannot be undone.</p></div>
     <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete draft</button></div>
   <dialog id="dz-delete" class="slot-dialog confirm-dialog" aria-labelledby="dz-delete-h">
     <h2 id="dz-delete-h">Delete this draft?</h2>
-    <p>“{{ event.title }}” is deleted with its periods, locations and slots. Nobody is told, because no member has seen it. It cannot be undone.</p>
+    <p>“{{ event.title }}” is deleted with its locations and slots. Nobody is told, because no member has seen it. It cannot be undone.</p>
     <form method="post" action="{% url 'event_delete' event.pk %}" class="stack">{% csrf_token %}
       <div class="check"><input type="checkbox" id="dc" name="confirm" value="yes" required><label for="dc">I understand this cannot be undone</label></div>
       <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-delete" command="close">Keep the draft</button> <button type="submit" class="danger">Delete the draft</button></div>

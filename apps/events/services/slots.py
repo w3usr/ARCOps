@@ -21,11 +21,11 @@ def generate_slots(
     breakdown_minutes: int | None = None,
     fill: bool = False,
 ):
-    """Fill each operating period with slots of `minutes`, aligned to the period start, with a
-    final short slot if the period length is not a multiple. `windows`, when given, is a list of
-    (start, end) datetimes to fill; otherwise the event's on-air hours (#247), which are the whole
-    periods unless the club has chosen otherwise.
-    Setup slots go before the first period and breakdown slots after the last (FR-47).
+    """Fill each stretch of on-air hours with slots of `minutes`, aligned to its start, with a
+    final short slot if its length is not a multiple. `windows`, when given, is a list of
+    (start, end) datetimes to fill; otherwise the event's on-air hours (#247), which are its whole
+    start and end unless the club has chosen otherwise.
+    Setup slots go before the first stretch and breakdown slots after the last (FR-47).
     With `fill` (#153, FR-48), only the hours no slot has yet, and no setup or breakdown: every
     existing slot, its seats and its sign-ups stay as they are, so this runs after people have
     signed up. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
@@ -157,51 +157,46 @@ def clip(spans, bounds) -> list[tuple]:
     )
 
 
-def periods_of(event) -> list[tuple]:
-    return merge((p.start, p.end) for p in event.periods.all())
+def span_of(event) -> list[tuple]:
+    """The event's start and end as a list of one span, or [] until both are set (A32)."""
+    return [(event.start, event.end)] if event.start and event.end else []
 
 
-def left_outside(period, start=None, end=None) -> list:
-    """The live operating slots that `period` would leave outside every period, changed to run
-    from `start` to `end`, or removed when no span is given: an operating slot fits inside a
-    period (FR-38), so these leave with it. Setup and breakdown sit outside the periods by design
-    (FR-47) and stay. Slots it never held are not looked at, so a slot already outside the
-    periods is not canceled by an edit elsewhere."""
-    now = merge(
-        [(p.start, p.end) for p in period.event.periods.exclude(pk=period.pk)]
-        + ([(start, end)] if start is not None else [])
-    )
-    live = Slot.objects.filter(
-        position__location__event=period.event,
-        kind="operating",
-        cancelled=False,
-        start__lt=period.end,
-        end__gt=period.start,
-    )
-    return [s for s in live if not any(a <= s.start and s.end <= b for a, b in now)]
+def left_outside(event, start, end) -> list:
+    """The live operating slots a start and end of `start` to `end` would leave outside the event:
+    an operating slot fits inside it (FR-38, A32), so these go if it changes. Setup and breakdown
+    sit outside it by design (FR-47) and stay."""
+    live = Slot.objects.filter(position__location__event=event, kind="operating", cancelled=False)
+    return [s for s in live if not (start <= s.start and s.end <= end)]
 
 
 def chosen(event) -> list[tuple]:
-    """The club's own stretches, clipped to the periods; [] when it has chosen none."""
-    return clip([(r.start, r.end) for r in event.on_air_ranges.all()], periods_of(event))
+    """The club's own stretches, clipped to the event's start and end; [] when it has chosen
+    none."""
+    return clip([(r.start, r.end) for r in event.on_air_ranges.all()], span_of(event))
 
 
 def on_air(event) -> list[tuple]:
-    """When the club means to be on the air: its chosen stretches, or the whole of the periods
-    (the contest's span) when it has chosen none."""
-    return chosen(event) or periods_of(event)
+    """When the club means to be on the air: its chosen stretches, or the event's whole span when
+    it has chosen none. A split contest's break is the time between two stretches (A32)."""
+    return chosen(event) or span_of(event)
+
+
+def fits_on_air(event, start, end) -> bool:
+    """An operating slot has to fit inside the on-air hours (SK, 2026-11-16, A32)."""
+    return any(a <= start and end <= b for a, b in on_air(event))
 
 
 def set_on_air(event, spans) -> list[tuple]:
     """Store `spans` as the event's on-air hours, clipped and merged. Stretches that come to the
-    whole of the periods are stored as nothing, which means the same and follows the periods if
-    they change. Slots are never touched."""
-    periods = periods_of(event)
-    spans = clip(spans, periods)
+    whole span are stored as nothing, which means the same and follows the span if it changes.
+    Slots are never touched."""
+    span = span_of(event)
+    spans = clip(spans, span)
     OnAirRange.objects.filter(event=event).delete()
-    if spans and spans != periods:
+    if spans and spans != span:
         OnAirRange.objects.bulk_create(OnAirRange(event=event, start=a, end=b) for a, b in spans)
-    return spans if spans != periods else []
+    return spans if spans != span else []
 
 
 def health(event) -> dict:

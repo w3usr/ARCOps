@@ -534,10 +534,8 @@ def send_digest(now: datetime | None = None) -> dict:
     until = now + timedelta(days=14)
     events = [
         e
-        for e in Event.objects.filter(
-            state__in=[Event.State.PUBLISHED, Event.State.LOCKED]
-        ).prefetch_related("periods")
-        if e.starts_at() and e.starts_at() <= until and (e.ends_at() or now) >= now
+        for e in Event.objects.filter(state__in=[Event.State.PUBLISHED, Event.State.LOCKED])
+        if e.start and e.start <= until and (e.end or now) >= now
     ]
     rows = []
     total_open = 0
@@ -553,7 +551,7 @@ def send_digest(now: datetime | None = None) -> dict:
             elif st.status == "not_viable":
                 needs_n += 1
         total_open += open_n
-        start, end = e.starts_at(), e.ends_at()
+        start, end = e.start, e.end
         rows.append(
             {
                 "title": e.title,
