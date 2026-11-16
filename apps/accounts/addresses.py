@@ -207,13 +207,10 @@ def from_token(value: str) -> tuple[User, str] | None:
     return user, address
 
 
-def send_confirmation(user: User, address: str, base_url: str = "") -> None:
+def send_confirmation(user: User, address: str, base_url: str) -> None:
     """A link to the address itself, which is the only thing that proves it."""
-    from django.conf import settings as dj
-
     from apps.comms.services import send
 
-    base_url = base_url or getattr(dj, "SITE_URL", "")
     link = base_url + reverse("verify_address", args=[token(user, address)])
     send(
         "account.verify_address",

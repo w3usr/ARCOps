@@ -593,7 +593,7 @@ def member_edit(request, pk):
                         "You cannot take away your own ability to decide who may do what.",
                     )
                 else:
-                    result = save_account(form, actor, f"{request.scheme}://{request.get_host()}")
+                    result = save_account(form, actor)
                     call = result["callsign"]
                     # Your own pending callsign is asked about by the standing "Is this you?"
                     # question; one warning about one fact (NAF, 2026-09-22).

@@ -196,7 +196,7 @@ class AccountForm(forms.ModelForm):
         return data
 
 
-def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
+def save_account(form: AccountForm, actor: User) -> dict:
     """The one save path. A callsign always goes through the lookup and the name check, whoever
     typed it, and the change is audited once. Addresses are rows with their own controls, so
     nothing here touches them.
@@ -211,7 +211,7 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
     # The level is recorded by set_groups as groups.changed, with both sides (FR-92); the
     # member.edited row is for everything else on the page.
     edited = [f for f in form.changed_data if f != "groups"]
-    before = {f: _auditable(User.objects.get(pk=subject.pk), f) for f in edited}
+    before = {f: getattr(User.objects.get(pk=subject.pk), f) for f in edited}
     old_callsign = User.objects.get(pk=subject.pk).callsign
     user = form.save(commit=False)
     new_callsign = (user.callsign or "").upper().strip()
@@ -230,18 +230,9 @@ def save_account(form: AccountForm, actor: User, base_url: str = "") -> dict:
             "member.edited",
             user,
             before=before,
-            after={f: _auditable(user, f) for f in edited},
+            after={f: getattr(user, f) for f in edited},
         )
     return {"callsign": callsign_result}
-
-
-def _auditable(user: User, field: str):
-    """A field's value in a form the audit log can hold. The access groups are a relation, so
-    they are recorded as the names that mean something to a reader."""
-    value = getattr(user, field)
-    if field == "groups":
-        return sorted(g.name for g in value.all())
-    return value
 
 
 def _groups_line(subject: User) -> str:
