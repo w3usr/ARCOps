@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import functools
 import re
 
 from cryptography.fernet import Fernet
@@ -629,8 +630,6 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
 # carry no text at all, and neither does an image, so the whole thing is decorative by
 # construction and the word still says what it says to a reader's eye.
 
-_WATERMARK_CACHE: dict[tuple, str] = {}
-
 
 def _word_outline(word: str, size: float) -> tuple[str, float]:
     """The word as one SVG path, plus its width, from the outlines of a real font.
@@ -713,15 +712,12 @@ def _seal_data_uri() -> str:
     return ""
 
 
+@functools.cache
 def watermark_background(word: str, color: str) -> str:
     """A `background-image` value: the club's seal, and the standing across it.
 
     Returns an empty string where neither can be drawn, and the page simply has no watermark.
     """
-    key = (word, color)
-    if key in _WATERMARK_CACHE:
-        return _WATERMARK_CACHE[key]
-
     w, h = 720.0, 900.0
     outline, width = _word_outline(word, 132.0)
     seal = _seal_data_uri()
@@ -740,7 +736,6 @@ def watermark_background(word: str, color: str) -> str:
             f'fill="#{color}" fill-opacity="0.11">{outline}</g>'
         )
     if not layers:
-        _WATERMARK_CACHE[key] = ""
         return ""
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
@@ -754,9 +749,7 @@ def watermark_background(word: str, color: str) -> str:
     encoded = _b64.b64encode(svg.encode("utf-8")).decode("ascii")
     # No quotes around it: base64 needs none, and a template's autoescaping turned them into
     # &#x27; so the renderer went looking for a file of that name (2026-09-20).
-    value = f"url(data:image/svg+xml;base64,{encoded})"
-    _WATERMARK_CACHE[key] = value
-    return value
+    return f"url(data:image/svg+xml;base64,{encoded})"
 
 
 def agreement_pdf_name(agreement: SignedAgreement) -> str:
