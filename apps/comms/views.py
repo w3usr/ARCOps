@@ -11,6 +11,7 @@ from tinymce.widgets import TinyMCE
 
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.tables import chosen, summary
 from apps.ops.templatetags.richtext import sanitise
 
 from .defaults import DEFAULTS_BY_KEY, TEMPLATE_WORDS
@@ -36,10 +37,10 @@ def my_messages(request):
 def outbox(request):
     if not request.user.may("view_outbox"):
         raise Http404
-    state = request.GET.get("state", "")
+    picked = chosen(request, "state")["state"]
     qs = Outbox.objects.select_related("user")
-    if state:
-        qs = qs.filter(state=state)
+    if picked:
+        qs = qs.filter(state__in=picked)
     since = timezone.now() - timezone.timedelta(days=30)
     recent = Outbox.objects.filter(created__gte=since)
     counts = {
@@ -49,13 +50,17 @@ def outbox(request):
         "not_sent": recent.filter(state=Outbox.State.NOT_SENT).count(),
         "skipped": recent.filter(state=Outbox.State.SKIPPED).count(),
     }
+    pager = request.GET.copy()
+    pager.pop("page", None)
     return render(
         request,
         "ops/outbox.html",
         {
             "page": Paginator(qs, 100).get_page(request.GET.get("page")),
-            "state": state,
+            "picked": picked,
             "states": Outbox.State.choices,
+            "state_summary": summary(Outbox.State.choices, picked, "state"),
+            "pager": pager.urlencode(),
             "counts": counts,
             "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },
