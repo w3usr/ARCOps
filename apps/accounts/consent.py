@@ -17,8 +17,10 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
+from apps.ops.forms import NoColon
 
-class PrivacyConsentMixin:
+
+class PrivacyConsentMixin(NoColon):
     """Put the linked privacy notice into a form's `consent` label.
 
     Built in `__init__` rather than at import, because reversing a URL needs the URL
@@ -29,7 +31,6 @@ class PrivacyConsentMixin:
     consent_after = ""
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")  # the house style puts no colon after a label
         super().__init__(*args, **kwargs)
         field = self.fields.get("consent")
         if field is None:

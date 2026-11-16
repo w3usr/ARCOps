@@ -14,6 +14,7 @@ from apps.credentials.models import CredentialType
 from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.forms import NoColon
 from apps.ops.templatetags.labels import role_label
 
 from .form_pages import done, form_page, step_url
@@ -40,7 +41,7 @@ def event_state(request, pk):
     return redirect("event_step", pk=pk, step="publish")
 
 
-class LimitForm(forms.ModelForm):
+class LimitForm(NoColon, forms.ModelForm):
     class Meta:
         model = OperatingLimit
         fields = ["max_hours_per_day", "day_basis", "max_total_hours", "min_break_minutes"]
@@ -62,10 +63,6 @@ class LimitForm(forms.ModelForm):
                 attrs={"inputmode": "numeric", "class": "num", "size": 3}
             ),
         }
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(*args, **kwargs)
 
 
 @login_required
@@ -189,7 +186,7 @@ def slot_eligibility(request, pk, slot_id):
     return redirect("slot_detail", pk=pk, slot_id=slot_id)
 
 
-class OpeningForm(forms.Form):
+class OpeningForm(NoColon, forms.Form):
     role = forms.ChoiceField(label="Role")
     opens_at = forms.DateTimeField(
         label="Opens at (UTC)",
@@ -205,7 +202,6 @@ class OpeningForm(forms.Form):
     announce = forms.BooleanField(required=False, label="Announce when it opens")
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         kwargs.setdefault("auto_id", "op-%s")
         super().__init__(*args, **kwargs)
         self.fields["role"].choices = [

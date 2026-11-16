@@ -29,6 +29,7 @@ from apps.accounts.models import User
 from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.forms import NoColon
 from apps.ops.templatetags.richtext import sanitise
 
 from .contest_fields import CONTEST_FIELDS
@@ -67,7 +68,7 @@ def _types():
     return DEFAULT_EVENT_TYPES
 
 
-class EventForm(forms.ModelForm):
+class EventForm(NoColon, forms.ModelForm):
     def clean_description_html(self):
         return sanitise(self.cleaned_data.get("description_html") or "")
 
@@ -120,7 +121,6 @@ class EventForm(forms.ModelForm):
         widgets = {"description_html": TinyMCE(attrs={"rows": 8})}  # FR-115
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.fields["type"] = forms.ChoiceField(choices=_types())
         self.fields["min_license_class"] = forms.ChoiceField(  # replaced, so Meta.labels is lost
@@ -151,7 +151,7 @@ class EventForm(forms.ModelForm):
             self.initial["reminder_hours_before"] = self._reminder_default
 
 
-class KbygForm(forms.ModelForm):
+class KbygForm(NoColon, forms.ModelForm):
     """Know before you go, a step of its own (#174): written last, once the location's
     arrangements are known, and what participants read before they come."""
 
@@ -168,12 +168,8 @@ class KbygForm(forms.ModelForm):
         }
         widgets = {"kbyg_html": TinyMCE(attrs={"rows": 16})}
 
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(*args, **kwargs)
 
-
-class PeriodForm(forms.Form):
+class PeriodForm(NoColon, forms.Form):
     start = forms.DateTimeField(
         label="Starts (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
     )
@@ -184,7 +180,6 @@ class PeriodForm(forms.Form):
     def __init__(self, *args, event=None, editing=None, **kwargs):
         """`event`, when the form is an operating period's: the periods it must not overlap,
         but for `editing`, the one being changed. The on-air hours' range gives neither."""
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.event, self.editing = event, editing
 
@@ -265,7 +260,7 @@ class SeatFields:
         return {k[4:]: v for k, v in self.cleaned_data.items() if k.startswith("cap_")}
 
 
-class GenerateForm(FieldGroups, SeatFields, forms.Form):
+class GenerateForm(NoColon, FieldGroups, SeatFields, forms.Form):
     GROUPS = [
         ("Slots", ["minutes"]),
         (
@@ -304,7 +299,6 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
     breakdown_minutes_edited = forms.CharField(required=False, widget=forms.HiddenInput)
 
     def __init__(self, *args, roles, fill_only=False, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self._slot_default = int(setting("defaults.slot_length_minutes", 60))
         self.fields["minutes"].initial = self._slot_default  # FR-89
@@ -338,7 +332,7 @@ class GenerateForm(FieldGroups, SeatFields, forms.Form):
         return data
 
 
-class LocationForm(FieldGroups, forms.Form):
+class LocationForm(NoColon, FieldGroups, forms.Form):
     # One under another (SK, 2026-11-11): two tick boxes beside two text boxes read as a jumble.
     GROUPS = [("", ["name", "address", "position", "is_club_station", "is_private_residence"])]
 
@@ -356,7 +350,6 @@ class LocationForm(FieldGroups, forms.Form):
     )
 
     def __init__(self, *args, editing=False, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         if not editing:
             return
@@ -419,21 +412,16 @@ class LocationForm(FieldGroups, forms.Form):
         }
 
 
-class PositionForm(forms.Form):
+class PositionForm(NoColon, forms.Form):
     name = forms.CharField(
         label="Position name", max_length=60, required=False, help_text="Run, Mult, VHF…"
     )
 
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(*args, **kwargs)
 
-
-class CaptainForm(forms.Form):
+class CaptainForm(NoColon, forms.Form):
     user = forms.ModelChoiceField(queryset=User.objects.none(), label="Member", empty_label=None)
 
     def __init__(self, *args, event, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.fields["user"].queryset = (
             User.objects.with_access()
@@ -445,7 +433,7 @@ class CaptainForm(forms.Form):
         )
 
 
-class AddSlotForm(FieldGroups, SeatFields, forms.Form):
+class AddSlotForm(NoColon, FieldGroups, SeatFields, forms.Form):
     """One slot by hand, beside a grid that may already have people in it (FR-46, FR-47)."""
 
     GROUPS = [("", ["position", "start", "minutes", "kind"]), ("Seats in this slot", ["cap_*"])]
@@ -460,7 +448,6 @@ class AddSlotForm(FieldGroups, SeatFields, forms.Form):
     kind = forms.ChoiceField(label="Kind")
 
     def __init__(self, *args, event, roles, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         # Its own ids: the period and generator forms on the same page have a start, a length and
         # seats too, and a label must not point at another form's field.
         kwargs.setdefault("auto_id", "slot-%s")

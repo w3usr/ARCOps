@@ -15,6 +15,7 @@ from django import forms
 
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.forms import NoColon
 
 from .models import User
 
@@ -83,7 +84,7 @@ def editable_fields(actor: User, subject: User) -> list[str]:
     return sorted(set(fields), key=lambda f: order.index(f) if f in order else 99)
 
 
-class AccountForm(forms.ModelForm):
+class AccountForm(NoColon, forms.ModelForm):
     """The one form both pages use. `actor` is who is typing, the instance is whose account it
     is; the fields follow from the two."""
 
@@ -99,7 +100,6 @@ class AccountForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, actor: User, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         allowed = set(editable_fields(actor, self.instance))
         for name in list(self.fields):

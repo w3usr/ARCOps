@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.forms import NoColon
 
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
@@ -107,7 +108,7 @@ def notifications(request):
     return redirect(reverse("profile_edit") + "#notifications")
 
 
-class InviteForm(forms.Form):
+class InviteForm(NoColon, forms.Form):
     returning = None  # set by clean() when the address belongs to a member who left
     email = forms.EmailField(
         required=False,
@@ -130,7 +131,6 @@ class InviteForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         cats = setting("member_categories", []) or []
         self.fields["category"].choices = [(c["key"], c["label"]) for c in cats]

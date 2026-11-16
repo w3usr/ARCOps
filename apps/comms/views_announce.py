@@ -14,23 +14,20 @@ from tinymce.widgets import TinyMCE
 from apps.events.models import Event
 from apps.events.services.roster import display_zone
 from apps.ops.config import setting
+from apps.ops.forms import NoColon
 from apps.ops.templatetags.richtext import sanitise
 
 from . import announce
 from .models import Announcement
 
 
-class AnnounceForm(forms.Form):
+class AnnounceForm(NoColon, forms.Form):
     subject = forms.CharField(max_length=200)
     body_html = forms.CharField(widget=TinyMCE(attrs={"rows": 10}), label="Message")  # FR-115
     day = forms.CharField(required=False)
     role = forms.CharField(required=False)
     status = forms.CharField(required=False)
     confirmation = forms.CharField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
-        super().__init__(*args, **kwargs)
 
     def clean_body_html(self):
         text = self.cleaned_data["body_html"].strip()

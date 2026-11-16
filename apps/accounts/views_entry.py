@@ -20,6 +20,7 @@ from apps.events.models import Event
 from apps.events.services.mentors import mentor_needs
 from apps.ops.audit import record
 from apps.ops.config import setting
+from apps.ops.forms import NoColon
 
 from . import entry
 from .consent import PrivacyConsentMixin, consent_field
@@ -31,7 +32,7 @@ def _base(request) -> str:
     return f"{request.scheme}://{request.get_host()}"
 
 
-class LinkForm(forms.Form):
+class LinkForm(NoColon, forms.Form):
     label = forms.CharField(
         max_length=80,
         help_text="The course or the organization; recorded on every account that joins.",
@@ -47,7 +48,6 @@ class LinkForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         domains = entry.trusted_domains()
         self.fields["required_domain"].choices = [("", "None")] + [(d, d) for d in domains]
@@ -161,7 +161,6 @@ class JoinForm(PrivacyConsentMixin, forms.Form):
     consent = consent_field()
 
     def __init__(self, *args, link: EntryLink, **kwargs):
-        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.link = link
         if link.kind == EntryLink.Kind.CLASS:
