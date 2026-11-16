@@ -110,7 +110,7 @@ def issue_temporary_password(actor: User, user: User) -> str:
     return password
 
 
-def set_access(actor: User, user: User, groups: list[str], reason: str = "") -> None:
+def set_access(actor: User, user: User, groups: list[str], reason: str) -> None:
     """Put an account in exactly these access groups, which is the whole of what it may do.
 
     This was `set_access_level`, a move up or down one ladder. The ladder is gone: a group is a
@@ -139,8 +139,7 @@ def set_access(actor: User, user: User, groups: list[str], reason: str = "") -> 
                 "suspended_reason",
             ]
         )
-    if reason:
-        record(actor, "access.changed", user, after={"groups": sorted(groups), "reason": reason})
+    record(actor, "access.changed", user, after={"groups": sorted(groups), "reason": reason})
     if had_access and not user.has_access:
         from apps.events.services.notify import access_removed
 
@@ -529,28 +528,14 @@ def suspend(actor: User, user: User, reason: str) -> None:
     set_access(actor, user, [], reason or "suspended")
 
 
-def readmit(actor: User, user: User, groups: list[str] | None = None) -> None:
+def readmit(actor: User, user: User) -> None:
     """Give a closed or suspended account access again, as a member.
 
     Whoever held an officer's place before comes back a member and is re-appointed by somebody
     who may appoint one (§2.3): coming back is not the moment to hand privileges out.
     """
     was = user.status
-    user.suspended_at = None
-    user.suspended_by = None
-    user.suspended_reason = ""
-    user.closure_requested_at = None
-    user.closed_by = None
-    user.save(
-        update_fields=[
-            "suspended_at",
-            "suspended_by",
-            "suspended_reason",
-            "closure_requested_at",
-            "closed_by",
-        ]
-    )
-    set_access(actor, user, groups or ["member"], "readmitted")
+    set_access(actor, user, ["member"], "readmitted")
     record(actor, "member.readmitted", user, before={"status": was})
 
 
