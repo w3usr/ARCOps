@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponseForbidden
-from django.shortcuts import redirect, render
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -91,13 +91,9 @@ def context(request):
 @require_POST
 def act_start(request, pk):
     real = getattr(request, "acting_guardian", None) or request.user
-    link = (
-        Guardianship.objects.filter(minor_id=pk, guardian=real, active=True)
-        .select_related("minor")
-        .first()
+    link = get_object_or_404(
+        Guardianship.objects.select_related("minor"), minor_id=pk, guardian=real, active=True
     )
-    if link is None:
-        raise Http404
     request.session[SESSION_KEY] = link.minor.pk
     record(real, "guardian.acting_started", link.minor)
     messages.info(
@@ -124,13 +120,9 @@ def ward_password(request, pk):
     from .services import issue_temporary_password
 
     real = getattr(request, "acting_guardian", None) or request.user
-    link = (
-        Guardianship.objects.filter(minor_id=pk, guardian=real, active=True)
-        .select_related("minor")
-        .first()
+    link = get_object_or_404(
+        Guardianship.objects.select_related("minor"), minor_id=pk, guardian=real, active=True
     )
-    if link is None:
-        raise Http404
     password = issue_temporary_password(real, link.minor)
     return render(
         request, "accounts/ward_password.html", {"minor": link.minor, "password": password}
