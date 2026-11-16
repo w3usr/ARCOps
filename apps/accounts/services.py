@@ -571,11 +571,6 @@ def _someone_else_can_administer(user: User) -> bool:
     return people_who_may("assign_groups").exclude(pk=user.pk).exists()
 
 
-def archived_members():
-    """Everyone in the archive, most recently archived first."""
-    return User.objects.filter(archived_at__isnull=False).order_by("-archived_at")
-
-
 # ------------------------------------------------------ closure and deletion (FR-11, FR-118) ---
 
 

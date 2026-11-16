@@ -76,10 +76,6 @@ def stop(request):
     return redirect(reverse("member_detail", args=[target_id]) if target_id else "dashboard")
 
 
-def is_impersonating(request) -> bool:
-    return getattr(request, "impersonator", None) is not None
-
-
 def context(request):
     """Template context: the banner needs to know."""
     imp = getattr(request, "impersonator", None)

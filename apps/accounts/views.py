@@ -555,9 +555,3 @@ def verify_address(request, token):
         "accounts/verify_address.html",
         {"outcome": outcome, "address": address, "person": user},
     )
-
-
-def addresses_state(user):
-    from . import addresses
-
-    return addresses.state(user)

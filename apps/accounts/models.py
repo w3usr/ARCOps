@@ -5,7 +5,6 @@ from __future__ import annotations
 import secrets
 from uuid import uuid4
 
-from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models, transaction
 from django.utils import timezone
@@ -226,11 +225,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         instance: the code that takes access away asks this before and after, and a cached answer
         made the second one wrong."""
         return bool(self.is_superuser or self.groups.exists())
-
-    @property
-    def is_sysadmin(self) -> bool:
-        """Kept as the name the pages use for a superuser: the person who answers for the site."""
-        return self.is_superuser
 
     @property
     def email(self) -> str:
@@ -568,10 +562,6 @@ class PushSubscription(models.Model):
         if not browser:
             return "a browser"
         return f"{browser} on {system}" if system else browser
-
-
-def settings_user_model():  # convenience for type hints elsewhere
-    return settings.AUTH_USER_MODEL
 
 
 class EntryLink(models.Model):
