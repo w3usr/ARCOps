@@ -5017,4 +5017,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (A32; the addendum's footer).
 - **Nature of Contribution**: Documentation (decision record, drafted from SK's message).
 - **Human Review Status**: Pending review
-- **Git Hash**: 
+- **Git Hash**: b0cedfa
