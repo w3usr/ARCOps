@@ -28,6 +28,7 @@ from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
 from .services.roster import cell_for
 from .services.viability import checkin_window_open, may_control
+from .services.waitlist import seats_open
 from .views_rules import captained_event
 
 
@@ -281,8 +282,7 @@ def event_bulk(request, pk):
             if s.closed:
                 refused.append(f"{s.start:%a %H:%M}Z: closed")
                 continue
-            cap = RoleCapacity.objects.filter(slot=s, role=role).first()
-            if not cap or s.signups.filter(role=role).count() >= cap.capacity:
+            if not seats_open(s, role):
                 refused.append(f"{s.start:%a %H:%M}Z: no {role_label(role)} seat open")
                 continue
             if s.signups.filter(user=request.user).exists():
