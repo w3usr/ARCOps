@@ -46,7 +46,7 @@ from .models import (
 )
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.reshape import misfit
-from .services.slots import held_only_by, limit_report
+from .services.slots import left_outside, limit_report
 from .services.viability import club_rule
 from .views_rules import captained_event, rules_context
 from .views_slots import _typed_utc, roster_or_slot
@@ -822,7 +822,7 @@ def _step_page(request, event, step, **extra):
     periods = list(event.periods.order_by("start"))
     if step == "periods":  # what removing each one takes, said in its confirmation
         for p in periods:
-            held = held_only_by(p)
+            held = left_outside(p)
             p.held, p.people = len(held), SignUp.objects.filter(slot__in=held).count()
     here = next((s for s in all_steps if s["key"] == step), None)
     if here is None or not here["open"]:
@@ -910,7 +910,7 @@ def period_edit(request, pk, period_id):
     Made longer, every slot stays and the new time is empty until it is filled. Made shorter, the
     operating slots left outside every period are canceled, as when a period is removed; while
     anybody is signed up in one, nothing changes."""
-    from .services.slots import chosen, left_outside, set_on_air
+    from .services.slots import chosen, set_on_air
 
     event = captained_event(request, pk)
     period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
@@ -984,7 +984,7 @@ def period_delete(request, pk, period_id):
     their captain removes them, or cancels the slot and tells them, first (SK, 2026-11-10)."""
     event = captained_event(request, pk)
     period = get_object_or_404(OperatingPeriod, pk=period_id, event=event)
-    slots = held_only_by(period)
+    slots = left_outside(period)
     people = SignUp.objects.filter(slot__in=slots).count()
     if people:
         messages.error(
