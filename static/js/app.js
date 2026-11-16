@@ -77,6 +77,17 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});  // served by Django, never cached (FR-96)
 }
 
+// The slot and Manage dialogs: a link htmx could not fetch opens as its own page, as it does
+// without JavaScript; the backdrop or a [data-close] button closes the dialog, which empties it
+// and gives focus back to what refocus() returns.
+function wireDialog(dlg, opener, refocus) {
+  const fallBack = (ev) => { const a = ev.detail.elt.closest(opener); if (a) window.location = a.href; };
+  document.addEventListener("htmx:responseError", fallBack);
+  document.addEventListener("htmx:sendError", fallBack);
+  dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
+  dlg.addEventListener("close", () => { dlg.querySelector(".dialog-body").innerHTML = ""; const a = refocus(); if (a) a.focus(); });
+}
+
 // Roster: a slot opens in a dialog; the checkboxes drive a bulk bar; a day heading's box selects
 // its whole day. Without JavaScript the slot link is a page and the bar is simply always shown.
 (() => {
@@ -100,17 +111,8 @@ if ("serviceWorker" in navigator) {
       const f = body.querySelector(".messages") || body.querySelector("h1");
       if (f) { f.setAttribute("tabindex", "-1"); f.focus(); }
     });
-    // A slot htmx could not fetch opens as its own page, as it does without JavaScript.
-    const fallBack = (ev) => { const a = ev.detail.elt.closest("a[data-slot]"); if (a) window.location = a.href; };
-    document.addEventListener("htmx:responseError", fallBack);
-    document.addEventListener("htmx:sendError", fallBack);
-    dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
     // Back to the slot's link, found afresh, when an action in the dialog replaced its cell.
-    dlg.addEventListener("close", () => {
-      body.innerHTML = "";
-      const a = openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`);
-      if (a) a.focus();
-    });
+    wireDialog(dlg, "a[data-slot]", () => openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`));
   }
 
   const bar = document.getElementById("bulk-bar");
@@ -158,12 +160,7 @@ if ("serviceWorker" in navigator) {
       || body.querySelector("h1");
     if (f) { if (f.matches(".msg, h1")) f.setAttribute("tabindex", "-1"); f.focus(); }
   });
-  // A form htmx could not fetch opens as its own page, as it does without JavaScript.
-  const fallBack = (ev) => { const a = ev.detail.elt.closest("a[data-dialog]"); if (a) window.location = a.href; };
-  document.addEventListener("htmx:responseError", fallBack);
-  document.addEventListener("htmx:sendError", fallBack);
-  dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
-  dlg.addEventListener("close", () => { body.innerHTML = ""; if (opener) opener.focus(); });
+  wireDialog(dlg, "a[data-dialog]", () => opener);
 })();
 
 // A step's own form saved in place (#177): htmx swaps the step and the bar, and focus would be
