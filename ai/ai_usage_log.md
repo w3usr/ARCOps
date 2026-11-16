@@ -4969,4 +4969,4 @@ carries the actual running model ID.
   - Announce filters from the raw POST are not whitespace-stripped.
   Verified: ruff, the three guards, compile_locale and the migration check pass; every application test passes; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped). Firefox does not launch on this Mac; CI covers it.
 - **Human Review Status**: Pending review
-- **Git Hash**: 632a17f..77d3695
+- **Git Hash**: 632a17f to 77d3695 (code), b3017cf (this entry)
