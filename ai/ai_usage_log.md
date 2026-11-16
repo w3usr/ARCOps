@@ -5081,4 +5081,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/comms/defaults.py (`TEMPLATE_WORDS` gains `slot.changed`: "A slot's time was changed", everybody in the slot); apps/comms/tests/test_messages.py (every message in `DEFAULTS` has an entry in `TEMPLATE_WORDS`).
 - **Nature of Contribution**: Bug fix and test. Verified: the new test fails without the entry and passes with it, so slot.changed was the only one missing; ruff and format; app tests passed; scenario T29 against a local server, 20 pass, 0 fail (its script fix is in the private repository).
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 39c5e4b
