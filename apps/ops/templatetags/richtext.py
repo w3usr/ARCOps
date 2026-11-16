@@ -46,14 +46,12 @@ ALLOWED_TAGS = {
 }
 ALLOWED_ATTRS = {"a": {"href"}, "th": {"scope"}}
 
-_SHIFT = {"h4": "h5", "h3": "h4", "h2": "h3", "h1": "h2"}  # deepest first so nothing shifts twice
 
-
-def shift_headings(html: str, levels: int = 1) -> str:
-    for _ in range(levels):
-        for src, dst in _SHIFT.items():
-            html = re.sub(rf"<(/?){src}(\s|>)", rf"<\1{dst}\2", html, flags=re.I)
-    return html
+def shift_headings(html: str) -> str:
+    """h1-h4 down one level, in one pass so nothing shifts twice."""
+    return re.sub(
+        r"<(/?)h([1-4])(\s|>)", lambda m: f"<{m[1]}h{int(m[2]) + 1}{m[3]}", html, flags=re.I
+    )
 
 
 def sanitise(value: str) -> str:
@@ -65,7 +63,4 @@ def sanitise(value: str) -> str:
 @register.filter(name="richtext")
 def richtext(value: str) -> str:
     """Sanitise, shift headings one level, mark safe."""
-    if not value:
-        return ""
-    clean = nh3.clean(value, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS, link_rel="noopener")
-    return mark_safe(shift_headings(clean))  # noqa: S308 - sanitised immediately above
+    return mark_safe(shift_headings(sanitise(value)))  # noqa: S308 - sanitised immediately above
