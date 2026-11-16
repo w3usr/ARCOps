@@ -38,19 +38,6 @@ class AnnounceForm(forms.Form):
             text = "".join(f"<p>{p.strip()}</p>" for p in text.split("\n\n") if p.strip())
         return sanitise(text)
 
-    def filters(self, categories):
-        return {
-            k: v
-            for k, v in {
-                "day": self.cleaned_data.get("day", ""),
-                "role": self.cleaned_data.get("role", ""),
-                "status": self.cleaned_data.get("status", ""),
-                "confirmation": self.cleaned_data.get("confirmation", ""),
-                "categories": categories,
-            }.items()
-            if v
-        }
-
 
 def _filters_from(data):
     return {
@@ -115,7 +102,6 @@ def announce_view(request, pk=None):
     categories = setting("member_categories", []) or []
     roles = setting("slot_roles", []) or []
     if request.method == "POST":
-        cats = [c for c in request.POST.getlist("categories") if c]
         if request.POST.get("action") == "recount":
             # Recounting used to be a GET, and the GET branch rebuilt the form without the
             # body, so pressing Recount threw away everything the officer had written. It is a
@@ -125,7 +111,7 @@ def announce_view(request, pk=None):
             return _compose(request, event, form, filters, roles, categories)
         form = AnnounceForm(request.POST)
         if form.is_valid():
-            filters = form.filters(cats)
+            filters = _filters_from(request.POST)
             if request.POST.get("action") == "outside":
                 ann = announce.send_announcement(
                     request.user,
@@ -154,7 +140,7 @@ def announce_view(request, pk=None):
                 if event is None
                 else redirect("event_detail", pk=event.pk)
             )
-        filters = form.filters(cats)
+        filters = _filters_from(request.POST)
     else:
         form = AnnounceForm(
             initial={
