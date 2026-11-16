@@ -13,7 +13,6 @@ Two small gates on every request:
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
-from django.urls import reverse
 from django.utils import timezone
 
 ALLOWED_WHILE_TEMPORARY = (
@@ -33,32 +32,30 @@ class AccountGateMiddleware:
     def __call__(self, request):
         user = getattr(request, "user", None)
         if user is not None and user.is_authenticated:
-            if not user.has_access:
-                logout(request)
-                messages.error(
-                    request, "This account does not currently have access. Contact a club officer."
-                )
-                return redirect(reverse("account_login"))
-            if (
-                user.password_is_temporary
-                and user.temporary_password_expires
-                and user.temporary_password_expires < timezone.now()
+            for signed_out, message in (
+                (
+                    not user.has_access,
+                    "This account does not currently have access. Contact a club officer.",
+                ),
+                (
+                    user.password_is_temporary
+                    and user.temporary_password_expires
+                    and user.temporary_password_expires < timezone.now(),
+                    "That temporary password has expired. Ask a sysadmin for a new one.",
+                ),
+                (
+                    user.verification_overdue
+                    and not request.path.startswith(
+                        ("/verify/", "/accounts/logout/", "/static/", "/healthz")
+                    ),
+                    "Please confirm your email address first: open the link in the message we "
+                    "sent you, or ask a club officer to mark it verified.",
+                ),
             ):
-                logout(request)
-                messages.error(
-                    request, "That temporary password has expired. Ask a sysadmin for a new one."
-                )
-                return redirect(reverse("account_login"))
-            if user.verification_overdue and not request.path.startswith(
-                ("/verify/", "/accounts/logout/", "/static/", "/healthz")
-            ):
-                logout(request)
-                messages.error(
-                    request,
-                    "Please confirm your email address first: open the link in the message we sent "
-                    "you, or ask a club officer to mark it verified.",
-                )
-                return redirect(reverse("account_login"))
+                if signed_out:
+                    logout(request)
+                    messages.error(request, message)
+                    return redirect("account_login")
             gate = _two_factor_gate(request, user)
             if gate is not None:
                 return gate
@@ -92,4 +89,4 @@ def _two_factor_gate(request, user):
         "Your access level requires two-step verification. Add an authenticator app or a "
         "passkey to carry on.",
     )
-    return redirect(reverse("mfa_index"))
+    return redirect("mfa_index")

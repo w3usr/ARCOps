@@ -11,7 +11,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
 from django.utils.deprecation import MiddlewareMixin
 from django.views.decorators.http import require_POST
 
@@ -73,7 +72,7 @@ def stop(request):
     target_id = request.session.pop(SESSION_KEY, None)
     if target_id and real.is_authenticated:
         record(real, "impersonation.stopped", User.objects.filter(pk=target_id).first())
-    return redirect(reverse("member_detail", args=[target_id]) if target_id else "dashboard")
+    return redirect("member_detail", target_id) if target_id else redirect("dashboard")
 
 
 def context(request):
