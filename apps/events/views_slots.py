@@ -11,6 +11,10 @@ Nothing here deletes: a slot with history is canceled, never removed (FR-102).
 
 from __future__ import annotations
 
+import json
+from datetime import timedelta
+
+from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -20,16 +24,19 @@ from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
+from apps.credentials.models import CredentialType
+from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.labels import role_label
 
-from .models import Event, RoleCapacity, SignUp, Slot
+from .models import EligibilityRule, Event, RoleCapacity, SignUp, Slot, Waitlist
+from .services import reshape, waitlist
 from .services.eligibility import can_sign_up
+from .services.notify import assigned_by_captain
 from .services.roster import cell_for
 from .services.viability import checkin_window_open, may_control
-from .services.waitlist import seats_open
-from .views_rules import captained_event
+from .views_rules import captained_event, event_rule, shown
 
 
 def _lead(request) -> str:
@@ -48,7 +55,6 @@ def roster_or_slot(request, slot: Slot):
     return redirect("event_detail", pk=slot.event.pk)
 
 
-@login_required
 @login_required
 def slot_detail(request, pk, slot_id):
     event = get_object_or_404(Event, pk=pk)
@@ -76,8 +82,6 @@ def slot_detail(request, pk, slot_id):
                 switch_roles.append(role)
             if not cell.mine and role not in cell.open_roles:
                 waitable.append(role)
-    from .models import EligibilityRule, Waitlist
-
     my_wait = Waitlist.objects.filter(
         slot=slot, user=request.user, state__in=["pending", "offered"]
     ).first()
@@ -86,12 +90,6 @@ def slot_detail(request, pk, slot_id):
     # event has none (#277): each role's choice carries it, and the first is drawn filled in.
     override = []
     if is_captain:
-        import json
-
-        from apps.credentials.models import CredentialType
-
-        from .views_rules import event_rule, shown
-
         for r in data["roles"]:
             rule = shown(event_rule(event, r["key"]))
             override.append(
@@ -119,9 +117,7 @@ def slot_detail(request, pk, slot_id):
         if is_captain
         else [],
         # re-time, split, merge (FR-46, #156): why not, or what follows on to merge with
-        "frozen": __import__("apps.events.services.reshape", fromlist=["frozen"]).frozen(slot)
-        if is_captain
-        else "",
+        "frozen": reshape.frozen(slot) if is_captain else "",
         "next_slot": next_slot(slot) if is_captain else None,
         "slot_minutes": int((slot.end - slot.start).total_seconds() // 60),
         "slot_middle": slot.start + (slot.end - slot.start) / 2,
@@ -129,8 +125,8 @@ def slot_detail(request, pk, slot_id):
         if is_captain
         else 0,
         "categories": setting("member_categories", []) or [],
-        "ladder": __import__("apps.credentials.services", fromlist=["ladder"]).ladder(),
-        "capacities": {c.role: c.capacity for c in slot.capacities.all()},
+        "ladder": ladder(),
+        "capacities": caps,
         "on_air": [s for s in cell.signups],
         "members": User.objects.with_access().order_by("last_name", "first_name")
         if is_captain
@@ -179,8 +175,6 @@ def slot_capacities(request, pk, slot_id):
             RoleCapacity.objects.update_or_create(slot=slot, role=key, defaults={"capacity": n})
         else:
             RoleCapacity.objects.filter(slot=slot, role=key).delete()
-    from .services import waitlist
-
     for key, n in seats.items():  # a seat added is a place opened (FR-57, #253)
         if n:
             waitlist.on_place_opened(slot, key)
@@ -239,8 +233,6 @@ def slot_assign(request, pk, slot_id):
     if created:
         record(request.user, "signup.assigned", su, after={"role": role, "user": member.pk})
         if member != request.user:
-            from .services.notify import assigned_by_captain
-
             assigned_by_captain(request.user, su)  # FR-58
         messages.success(request, f"{member.short_name} signed up as {role_label(role)}.")
     else:
@@ -282,7 +274,7 @@ def event_bulk(request, pk):
             if s.closed:
                 refused.append(f"{s.start:%a %H:%M}Z: closed")
                 continue
-            if not seats_open(s, role):
+            if not waitlist.seats_open(s, role):
                 refused.append(f"{s.start:%a %H:%M}Z: no {role_label(role)} seat open")
                 continue
             if s.signups.filter(user=request.user).exists():
@@ -362,8 +354,6 @@ def signup_no_show(request, signup_id):
 
 def _typed_utc(text):
     """A datetime-local box's text as a UTC time, or None: the forms say UTC."""
-    from django import forms
-
     try:
         return forms.DateTimeField().clean(text)
     except forms.ValidationError:
@@ -380,10 +370,6 @@ def next_slot(slot: Slot):
 @login_required
 @require_POST
 def slot_retime(request, pk, slot_id):
-    from datetime import timedelta
-
-    from .services import reshape
-
     event, slot = _captain_slot(request, pk, slot_id)
     start = _typed_utc(request.POST.get("start", ""))
     minutes = request.POST.get("minutes", "")
@@ -411,8 +397,6 @@ def slot_retime(request, pk, slot_id):
 @login_required
 @require_POST
 def slot_split(request, pk, slot_id):
-    from .services import reshape
-
     event, slot = _captain_slot(request, pk, slot_id)
     at = _typed_utc(request.POST.get("at", ""))
     why = reshape.frozen(slot)
@@ -437,8 +421,6 @@ def slot_split(request, pk, slot_id):
 @login_required
 @require_POST
 def slot_merge(request, pk, slot_id):
-    from .services import reshape
-
     event, slot = _captain_slot(request, pk, slot_id)
     other = next_slot(slot)
     why = reshape.frozen(slot)

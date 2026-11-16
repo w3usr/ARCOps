@@ -1,5 +1,7 @@
 from django.urls import path
 
+from apps.comms.views_announce import announce_view
+
 from . import views, views_adults, views_manage, views_member, views_rules, views_slots
 
 urlpatterns = [
@@ -91,11 +93,7 @@ urlpatterns = [
     ),
     path("<int:pk>/roster.csv", views_member.roster_csv, name="roster_csv"),
     path("<int:pk>/participation/", views_member.participation_report, name="participation"),
-    path(
-        "<int:pk>/announce/",
-        __import__("apps.comms.views_announce", fromlist=["announce_view"]).announce_view,
-        name="event_announce",
-    ),
+    path("<int:pk>/announce/", announce_view, name="event_announce"),
     path("<int:pk>/contest/", views_rules.contest_save, name="contest_save"),
     path(
         "signup/<int:signup_id>/role/", views_member.signup_change_role, name="signup_change_role"

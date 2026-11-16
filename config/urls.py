@@ -5,6 +5,8 @@ from django.urls import include, path
 from django.views.generic import RedirectView, TemplateView
 
 from apps.accounts import impersonate, views_entry, views_members, views_mfa
+from apps.accounts.views import verify_address
+from apps.credentials.views_reports import member_roster
 from apps.ops import views_settings
 from apps.ops.api import api
 from apps.ops.views import branding_file, healthz, manifest, service_worker
@@ -41,11 +43,7 @@ urlpatterns = [
     path("members/<int:pk>/view-as/", impersonate.start, name="impersonate_start"),
     path("members/archive/", views_members.archive, name="archive"),
     path("members/hours/", views_members.hours, name="hours"),
-    path(
-        "members/roster/",
-        __import__("apps.credentials.views_reports", fromlist=["member_roster"]).member_roster,
-        name="member_roster",
-    ),
+    path("members/roster/", member_roster, name="member_roster"),
     # Entry links (FR-119, FR-120, FR-123): public pages, gated by the link's own state.
     path("join/<str:token>/", views_entry.join, name="join"),
     path("join/<str:token>/form/", views_entry.join_form, name="join_form"),
@@ -53,11 +51,7 @@ urlpatterns = [
     path("join/return/<str:token>/", views_entry.return_through, name="return_through"),
     path("verify/<str:token>/", views_entry.verify_email, name="verify_email"),
     path("privacy/", views_settings.privacy, name="privacy"),
-    path(
-        "verify-address/<str:token>/",
-        __import__("apps.accounts.views", fromlist=["verify_address"]).verify_address,
-        name="verify_address",
-    ),
+    path("verify-address/<str:token>/", verify_address, name="verify_address"),
     path("sw.js", service_worker, name="service_worker"),
     path("branding/<str:name>", branding_file, name="branding_file"),
     path("", include("apps.ops.urls")),

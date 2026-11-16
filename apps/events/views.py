@@ -13,12 +13,14 @@ from django.views.decorators.http import require_POST
 from apps.ops.audit import record
 from apps.ops.templatetags.labels import role_label
 
+from . import contest_fields
 from .models import Event, RoleCapacity, SignUp, Slot
 from .services.eligibility import can_sign_up
 from .services.notify import drop_empty_sections
 from .services.roster import build as build_roster
 from .services.slots import health
 from .services.viability import checkin_window_open, would_break
+from .views_manage import publish_blocker
 from .views_rules import captained_event
 from .views_slots import _visible, roster_or_slot
 
@@ -116,16 +118,14 @@ def event_detail(request, pk):
             "address": _address(request.user, roster["single_location"], roster["is_captain"]),
             "places": _places(request.user, event, roster["is_captain"]),
             # the Draft banner's Publish waits for the required steps too (SK, 2026-11-10)
-            "missing": __import__("apps.events.views_manage", fromlist=["x"]).publish_blocker(event)
+            "missing": publish_blocker(event)
             if roster["is_captain"] and event.state == Event.State.DRAFT
             else "",
             "roles": roster["roles"],
             # The outline an untouched event starts with is headings only; the reminder drops the
             # empty ones, and the page drops the same ones (#166).
             "kbyg": drop_empty_sections(event.kbyg_html),
-            "contest": __import__("apps.events.contest_fields", fromlist=["present"]).present(
-                event.contest_fields or {}
-            ),
+            "contest": contest_fields.present(event.contest_fields or {}),
         },
     )
 
@@ -372,8 +372,6 @@ def confirm_signup(request, signup_id):
 @require_POST
 def publish(request, pk):
     event = captained_event(request, pk)
-    from .views_manage import publish_blocker
-
     blocked = publish_blocker(event) if event.state == Event.State.DRAFT else ""
     if blocked:  # the button is greyed too; this is for a form posted from an older page
         messages.error(request, f"Not published: {blocked}")

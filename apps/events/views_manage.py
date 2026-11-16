@@ -31,6 +31,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.templatetags.richtext import sanitise
 
+from .contest_fields import CONTEST_FIELDS
 from .form_pages import done, form_page, step_url
 from .models import (
     Captaincy,
@@ -890,9 +891,7 @@ def _step_page(request, event, step, **extra):
             "slot_count": slot_count,
             "signups_exist": has_signups(event),
             "limits": limit_report(event),
-            "contest_fields": __import__(
-                "apps.events.contest_fields", fromlist=["CONTEST_FIELDS"]
-            ).CONTEST_FIELDS,
+            "contest_fields": CONTEST_FIELDS,
             **rules_context(event),
             "missing": not_ready(event, all_steps) if event.state == Event.State.DRAFT else "",
             "summary": _summary(event, all_steps, captains)
