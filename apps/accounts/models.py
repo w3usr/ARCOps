@@ -208,9 +208,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Whether this account holds a capability (apps.ops.capabilities). Every permission
         decision in the application asks this and nothing else, so what a person may do is one
         list, read the same way everywhere."""
-        from apps.ops.capabilities import holds
+        from apps.ops.capabilities import APP_LABEL
 
-        return holds(self, capability)
+        return self.has_perm(f"{APP_LABEL}.{capability}")
 
     def in_group(self, key: str) -> bool:
         return self.groups.filter(name=key).exists()

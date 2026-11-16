@@ -75,10 +75,6 @@ LABELS = dict(CAPABILITIES)
 APP_LABEL = "ops"
 
 
-def full(codename: str) -> str:
-    return f"{APP_LABEL}.{codename}"
-
-
 def ensure_permissions(permission_model=None, content_type_model=None) -> int:
     """Write any capability that has no permission row yet, and correct the labels.
 
@@ -104,9 +100,3 @@ def ensure_permissions(permission_model=None, content_type_model=None) -> int:
             row.name = label
             row.save(update_fields=["name"])
     return written
-
-
-def holds(user, codename: str) -> bool:
-    """Whether this person holds a capability. A superuser holds every one; an account that
-    cannot be used holds none, which Django's own backend already enforces."""
-    return bool(getattr(user, "is_authenticated", False)) and user.has_perm(full(codename))
