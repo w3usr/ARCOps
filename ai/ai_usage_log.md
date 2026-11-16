@@ -4955,3 +4955,18 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and documentation. Verified: 613 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped) after the address change; check.sh's one failure is the PDF test without the Homebrew library path, which passes with it.
 - **Human Review Status**: Pending review
 - **Git Hash**: 9c378ce
+
+## [2026-11-15 22:02 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5; four subagents on claude-opus-5-5, each in its own git worktree, one area each
+- **Session Purpose**: Work through the over-engineering tickets at SK's word ("let's work thru these tickets"): private tracker 178 to 216, 218 to 220, and 344 to 350. SK's decisions on 2026-11-15: the publish and openings announcements go to people_who_may("view_directory") (219); seats_open replaces the hand check only in the bulk sign-up (215); 217 (Pillow) is not done.
+- **Sections/Files Affected**: 72 files under apps/, config/, static/ and tools/, 50 commits (from 54ff8c0, one per ticket; the range is listed in the hash field). New: apps/ops/forms.py (NoColon); apps/comms/migrations/0004 (drops Outbox.channel and two states never set). Deleted: apps/events/services/calendar.py and its test; apps/accounts/management/. Net 1,189 lines out, 474 in.
+- **Nature of Contribution**: Code generation (refactoring). The behaviour changes are only the ones the tickets state:
+  - A two-level account gets one announcement, not two, and superusers are now included (new test, seen to fail on the old code).
+  - A slot that misses both rules shows one error, not two.
+  - The club_import allow-list gains h5, details, summary and small.
+  - The outbox filter loses two options that matched nothing.
+  - The components page lists three fewer icons.
+  - Announce filters from the raw POST are not whitespace-stripped.
+  Verified: ruff, the three guards, compile_locale and the migration check pass; every application test passes; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped). Firefox does not launch on this Mac; CI covers it.
+- **Human Review Status**: Pending review
+- **Git Hash**: 632a17f..77d3695
