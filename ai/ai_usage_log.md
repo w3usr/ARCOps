@@ -5002,3 +5002,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: ruff, the guards and the migration check pass; app tests 615 passed; the sysadmin a11y sweep passes in Chromium and WebKit with the Settings page's three editors.
 - **Human Review Status**: Pending review
 - **Git Hash**: d9225f8
+
+## [2026-11-16 13:13 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build NAF's tickets on changing seats across many slots (private tracker 282; SK, 2026-11-16: set, add or remove N) and on the roster marks saying what they mean (278); record SK's and NAF's decisions of 2026-11-12 and 2026-11-16 as functional addendum A28 to A31.
+- **Sections/Files Affected**: apps/events/views_slots.py (seats_refused and set_seats shared by Save seats and the new Change seats bulk action); templates/events/confirm_bulk_seats.html (new: choose, review, apply); templates/events/detail.html (Change seats in the bulk bar, Select every slot for captains, the Key's line on the license letter); static/js/app.js (Select every slot); templates/events/_roster_cell.html, static/css/app.css, apps/accounts/models.py (license_letter_says; a hover tooltip on each mark and on the letter); docs/REQUIREMENTS.md (A28 to A31: 279, 276, 282, 281); tests in apps/events/tests/test_roster.py and apps/accounts/tests/test_entry_links.py.
+- **Nature of Contribution**: Code generation and documentation. The tooltip shows on hover only: the marks sit inside the slot's link and take no focus of their own; keyboard and touch users have the Key and the slot's dialog. Verified: ruff and the guards pass; app tests 617 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the roster, the tooltip and the review page looked at in screenshots, where a wrap of the lettered name was found and fixed.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

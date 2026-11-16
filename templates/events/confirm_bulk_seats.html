@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load labels %}
+{% block title %}Change seats · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+{% comment %}Change seats on the ticked slots (private tracker 282): choose, review, apply
+(apps/events/views_slots.py, _bulk_seats).{% endcomment %}
+<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a></p>
+<h1>Change seats on {{ slots|length }} slot{{ slots|length|pluralize }}</h1>
+<form method="post" action="{% url 'event_bulk' event.pk %}" class="stack">{% csrf_token %}
+  <input type="hidden" name="action" value="seats">
+  {% for s in slots %}<input type="hidden" name="slots" value="{{ s.pk }}">{% endfor %}
+  {% if review %}
+  {% for r in roles %}{% if r.op != 'keep' %}<input type="hidden" name="op_{{ r.key }}" value="{{ r.op }}"><input type="hidden" name="n_{{ r.key }}" value="{{ r.n }}">{% endif %}{% endfor %}
+  <ul class="list">{% for r in roles %}{% if r.op != 'keep' %}<li><strong>{{ r.label }}</strong>: {% if r.op == 'set' %}set to {{ r.n }}{% elif r.op == 'add' %}add {{ r.n }}{% else %}remove {{ r.n }}{% endif %} seat{{ r.n|pluralize }}</li>{% endif %}{% endfor %}</ul>
+  <p>{% if plan %}{{ plan|length }} slot{{ plan|length|pluralize }} change{{ plan|length|pluralize:"s," }}. Everyone signed up keeps their seat, and a seat added is offered to the waitlist.{% else %}No slot changes.{% endif %}</p>
+  {% if refused %}<p class="msg warning"><span class="lvl">Careful:</span> {{ refused|length }} slot{{ refused|length|pluralize }} {{ refused|length|pluralize:"is,are" }} left as {{ refused|length|pluralize:"it is,they are" }}, because people hold more seats than {{ refused|length|pluralize:"it,they" }} would have:</p>
+  <ul class="list">{% for r in refused %}<li>{{ r }}</li>{% endfor %}</ul>{% endif %}
+  <div>{% if plan %}<button type="submit" name="step" value="apply">Change seats on {{ plan|length }} slot{{ plan|length|pluralize }}</button> {% endif %}<button type="submit" name="step" value="" class="secondary">Change the numbers</button> <a class="button secondary" href="{% url 'event_detail' event.pk %}">Keep them as they are</a></div>
+  {% else %}
+  <p>For each role, leave its seats as they are, or set, add or remove a number of seats on every slot you ticked.</p>
+  {% for r in roles %}
+  <fieldset class="group"><legend>{{ r.label }}</legend>
+    <div class="row">
+      <div class="field"><label for="op-{{ r.key }}">Change</label><select id="op-{{ r.key }}" name="op_{{ r.key }}">{% for k, label in ops %}<option value="{{ k }}"{% if k == r.op %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="n-{{ r.key }}">Seats</label><input id="n-{{ r.key }}" name="n_{{ r.key }}" type="number" min="0" max="20" value="{{ r.n }}"></div>
+    </div>
+  </fieldset>
+  {% endfor %}
+  <div><button type="submit" name="step" value="review">Review the change</button> <a class="button secondary" href="{% url 'event_detail' event.pk %}">Cancel</a></div>
+  {% endif %}
+</form>
+{% endblock %}

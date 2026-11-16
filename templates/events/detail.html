@@ -49,7 +49,7 @@
 <form method="post" action="{% url 'event_bulk' event.pk %}" id="roster-form">{% csrf_token %}
 <section class="panel roster-panel" aria-labelledby="roster-h">
 <div class="panel-head rosterhead">
-  <div><h2 id="roster-h">Roster</h2></div>
+  <div><h2 id="roster-h">Roster</h2>{% if is_captain and roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-all aria-label="Select every slot"><span>Select every slot</span></label>{% endif %}</div>
   {% comment %}Every slot or Problems only as a switch with counts (#235): two links, the same
   addresses as before, so it works without JavaScript; the Key's ? an icon button.{% endcomment %}
   <p class="zones muted"><span>Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.</span>
@@ -82,6 +82,7 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
     <li><span class="mk" aria-hidden="true">I</span> <span class="what">computer access</span></li>
     <li><span class="mk" aria-hidden="true">CO</span> <span class="what">control operator</span></li>
     <li><span class="mk" aria-hidden="true">✓</span> <span class="what">confirmed, <span class="mk ok" aria-hidden="true">in</span> checked in</span></li>
+    <li><span class="mk" aria-hidden="true">(E)</span> <span class="what">after a name, the license class: E Extra, A Advanced, G General, T Technician, N Novice; C a club station; U no license on file</span></li>
   </ul>
   <button type="button" class="secondary keyclose" popovertarget="roster-key-pop" popovertargetaction="hide">Close</button>
 </div>
@@ -144,6 +145,7 @@ column's header, and where the event's zone differs it has a column of its own.{
   <button type="submit" name="action" value="signup">Sign up for these</button>
   {% endif %}
   {% if is_captain %}
+  <button type="submit" name="action" value="seats" class="secondary">Change seats</button>
   <button type="submit" name="action" value="close" class="secondary">Close</button>
   <button type="submit" name="action" value="reopen" class="secondary">Reopen</button>
   <button type="submit" name="action" value="cancel" class="danger">Cancel slots</button>

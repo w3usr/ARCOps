@@ -1109,3 +1109,13 @@ a.whoami { text-decoration: none; color: inherit; display: flex; }
 .reshape { gap: 1.5rem; margin-top: .75rem; }
 .reshape h3 { margin: 0; font-size: var(--t-body); }
 .reshape .helptext { margin: 0; }
+
+/* A roster mark says what it means on hover (private tracker 278): the words a screen reader
+   already reads from its .sr-only text, shown for the eye. The marks sit inside the slot's link,
+   so they take no focus of their own; the Key and the slot's dialog say the same in words. */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  white-space: nowrap; padding: .15rem .45rem; border-radius: var(--r-field); background: var(--fg); color: var(--panel);
+  font-size: var(--t-small); font-weight: 400; pointer-events: none; z-index: 20;
+}

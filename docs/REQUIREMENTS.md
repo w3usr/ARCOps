@@ -3005,7 +3005,65 @@ ended tells nobody, since nobody has a slot ahead.
 in the dialog), from the choice between that and a warning in the dialog alone. *Record:* private
 tracker 258.
 
+### A28. FR-62 and FR-73: a slot that can run is Covered, with no note about one person
+
+**Original (FR-62).** "*Covered* with a note when it depends on one person (if they cancel, it
+fails)". **(FR-73)** "when a slot inside a configurable horizon … is *not viable*, *at risk*, or has
+an unconfirmed sign-up within 24 hours, the captains receive a warning".
+
+**Decision.** A slot that can run reads **Covered**, whoever it depends on. There is no "depends
+on one person" state anywhere a person sees it: no note on the roster or in the slot, no choice in
+Announce's filter, no count, no confirmation when changing role, and no warning email. FR-73's
+warning goes when a slot cannot run or has an unconfirmed sign-up within 24 hours. *Below preferred
+class* (FR-61) stays.
+
+**Decided** by NAF on 2026-11-12: "just simplify it to 'Covered'. Don't worry about backups", and
+the scope confirmed the same day: "remove it everywhere, including the captains' and slot-mates'
+warning emails". *Record:* private tracker 279.
+
+### A29. FR-51: a new event starts at the club station, described in Settings
+
+**Original (FR-51).** "The default event has one location, the club station, with one position,
+and a captain adds more." A new event had no location at all.
+
+**Decision.** Every new event that is not display-only is created with one location, the club
+station, named by the club setting **What the station is called**, marked as the club station,
+with one position, **Station**. The station's address, directions and know-before-you-go text are
+club settings beside its name, and the new location carries them. A captain renames, removes or
+adds locations as before; events made earlier are left as they are; a display-only event has none.
+
+**Decided** by NAF on 2026-11-12 (the club station as the default location) and by SK on
+2026-11-16: created with the event, with the station's details as club settings. *Record:* private
+tracker 276.
+
+### A30. FR-49: changing seats on many slots at once
+
+**Original (FR-49).** "Event-level defaults apply to generated slots and can be overridden slot by
+slot." Once people had signed up, seats could be changed one slot at a time only.
+
+**Decision.** A captain ticks slots on the roster (or **Select every slot**) and uses **Change
+seats**: for each role, leave as is, set to N, add N or remove N. A review says what changes, on
+how many slots, and which slots are left alone because people hold more seats than they would
+have; nothing changes until it is confirmed. Everyone signed up keeps their seat, a seat added is
+offered to the waitlist (FR-57), and each slot changed is in the audit log.
+
+**Decided** by NAF on 2026-11-12 ("a way to make global changes to all slots, even after people
+have signed up") and by SK on 2026-11-16: set, add or remove. *Record:* private tracker 282.
+
+### A31. FR-58 and FR-64: a member is chosen by typing, not from a list of everyone
+
+**Original (FR-58).** "Captains, officers, and sysadmins can add … any sign-up". The forms that
+name a member (sign someone up, appoint a captain, a responsible adult who is a member) listed the
+whole membership in one drop-down.
+
+**Decision.** Each of them asks for part of a name or callsign and offers the few members who
+match. In **Sign someone up** the role comes first, and the matches leave out whoever is in the
+slot already and whoever the role's rule would refuse. Members are listed without regard to case.
+
+**Decided** by NAF on 2026-11-12 ("I don't think this is sustainable as a drop-down in the
+long-term") and by SK on 2026-11-16: the role first. *Record:* private tracker 281.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A31), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

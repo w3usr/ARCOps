@@ -126,6 +126,9 @@ function wireDialog(dlg, opener, refocus) {
     };
     form.addEventListener("change", (ev) => {
       const t = ev.target;
+      if (t.matches("[data-select-all]")) {  // every slot, for a captain's bulk change (282)
+        form.querySelectorAll('input[name="slots"], [data-select-day]').forEach((b) => { b.checked = t.checked; });
+      }
       if (t.matches("[data-select-day]")) {
         form.querySelectorAll(`input[name="slots"][data-day="${t.dataset.selectDay}"]`).forEach((b) => { b.checked = t.checked; });
       }

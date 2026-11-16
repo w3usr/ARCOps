@@ -736,3 +736,45 @@ def test_manage_this_slot_is_folded_until_used_and_open_after(world):
     assert r.url == f"{page}?manage=1"
     assert '<details class="card manage-slot" open>' in c.get(r.url).content.decode()
     assert _as(world["mem"]).get(page).content.decode().count("Manage this slot") == 0
+
+
+def test_change_seats_on_ticked_slots_reviews_first_and_refuses_per_slot(world):
+    """Private tracker 282 (NAF, 2026-11-12; SK, 2026-11-16: set, add or remove N): after sign-
+    ups, nothing changes until the review is confirmed; a slot whose people would outnumber its
+    seats is left alone and named; every other slot changes."""
+    c = _as(world["off"])
+    ev, mem = world["ev"], world["mem"]
+    a, b = Slot.objects.filter(position=world["mult"], kind="operating").order_by("start")[:2]
+    SignUp.objects.create(slot=a, user=mem, role="observer")
+    url = f"/events/{ev.pk}/bulk/"
+    ticked = {"action": "seats", "slots": [a.pk, b.pk]}
+    seats = lambda s: {x.role: x.capacity for x in s.capacities.all()}  # noqa: E731
+    assert "Leave as is" in c.post(url, ticked).content.decode()
+    change = {
+        **ticked,
+        "op_operator": "add",
+        "n_operator": "1",
+        "op_observer": "set",
+        "n_observer": "0",
+    }
+    body = c.post(url, {**change, "step": "review"}).content.decode()
+    assert "Change seats on 1 slot" in body and "Careful:" in body and "Mult" in body
+    assert seats(a) == seats(b) == {"operator": 1, "observer": 2}  # the review changes nothing
+    r = c.post(url, {**change, "step": "apply"}, follow=True)
+    assert "Seats changed on 1 slot." in r.content.decode()
+    assert seats(a) == {"operator": 1, "observer": 2}  # MEM holds Observer here: left alone
+    assert seats(b) == {"operator": 2}  # +1 Operator, Observer set to 0
+    assert SignUp.objects.filter(slot=a, user=mem).exists()
+    assert _as(mem).post(url, {**change, "step": "apply"}).status_code == 404
+
+
+def test_a_roster_mark_and_the_license_letter_say_what_they_mean_on_hover(world):
+    """Private tracker 278: each mark carries its words as a tooltip, the letter after a name its
+    class in full, and the Key explains the letter."""
+    ev, mem = world["ev"], world["mem"]
+    slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
+    SignUp.objects.create(slot=slot, user=mem, role="observer", confirmed_at=slot.start)
+    body = _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
+    assert f'data-tip="{mem.license_letter_says}">{mem.license_letter}</span>' in body
+    assert 'data-tip="Confirmed"' in body and "after a name, the license class" in body
+    assert mem.license_letter_says == "No license on file"

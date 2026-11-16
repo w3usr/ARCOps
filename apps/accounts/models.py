@@ -337,6 +337,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         return STATION_LETTERS.get((getattr(lic, "licensee_type", "") or "").strip().upper(), "C")
 
     @property
+    def license_letter_says(self) -> str:
+        """What the letter after a name stands for, in words: its tooltip on the roster and its
+        line in the roster's Key (private tracker 278)."""
+        if self.license_class:
+            return f"{self.license_class} class"
+        stations = {"C": "Club station", "R": "RACES station", "M": "Military recreation station"}
+        return stations.get(self.license_letter, "No license on file")
+
+    @property
     def license_class(self) -> str:
         """The class in full ("Extra"), or empty for a station and for no license at all.
 

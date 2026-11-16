@@ -184,28 +184,40 @@ def slot_capacities(request, pk, slot_id):
             seats[r["key"]] = max(0, min(20, int(request.POST.get(f"cap_{r['key']}", "0") or 0)))
         except ValueError:
             continue
-    # Fewer seats than people already in the role is refused, and nothing is saved: the people
-    # would be left holding seats that no longer exist (SK, 2026-10-16).
+    refused = seats_refused(slot, seats)
+    if refused:
+        messages.error(request, refused[0].upper() + refused[1:] + ".")
+        return back_to_slot(request, pk, slot_id)
+    set_seats(request.user, slot, seats)
+    messages.success(request, "Seats updated.")
+    return back_to_slot(request, pk, slot_id)
+
+
+def seats_refused(slot, seats: dict[str, int]) -> str:
+    """Why these seats cannot be set, or "". Fewer seats than people already in the role is
+    refused: they would be left holding seats that no longer exist (SK, 2026-10-16)."""
     for key, n in seats.items():
         held = slot.signups.filter(role=key).count()
         if n < held:
-            messages.error(
-                request,
+            return (
                 f"{held} {'person holds' if held == 1 else 'people hold'} {role_label(key)} here; "
-                f"remove them first, or keep at least {held} seat{'s' if held != 1 else ''}.",
+                f"remove them first, or keep at least {held} seat{'s' if held != 1 else ''}"
             )
-            return back_to_slot(request, pk, slot_id)
+    return ""
+
+
+def set_seats(user, slot, seats: dict[str, int]) -> None:
+    """FR-49: the slot's seats per role, for the roles in `seats`; a seat added is a place
+    opened, offered to the waitlist (FR-57, #253). Shared by Save seats and Change seats (282)."""
     for key, n in seats.items():
         if n:
             RoleCapacity.objects.update_or_create(slot=slot, role=key, defaults={"capacity": n})
         else:
             RoleCapacity.objects.filter(slot=slot, role=key).delete()
-    for key, n in seats.items():  # a seat added is a place opened (FR-57, #253)
+    for key, n in seats.items():
         if n:
             waitlist.on_place_opened(slot, key)
-    record(request.user, "slot.capacities", slot)
-    messages.success(request, "Seats updated.")
-    return back_to_slot(request, pk, slot_id)
+    record(user, "slot.capacities", slot, after=seats)
 
 
 @login_required
@@ -328,6 +340,8 @@ def event_bulk(request, pk):
 
     if not request.user.can_captain(event):
         raise Http404
+    if action == "seats":
+        return _bulk_seats(request, event, slots)
     if action in ("close", "reopen"):
         n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(closed=(action == "close"))
         record(request.user, f"slots.{action}", event, after={"count": n})
@@ -357,6 +371,69 @@ def event_bulk(request, pk):
     else:
         raise Http404
     return redirect("event_detail", pk=pk)
+
+
+SEAT_OPS = [("keep", "Leave as is"), ("set", "Set to"), ("add", "Add"), ("remove", "Remove")]
+
+
+def _bulk_seats(request, event, slots):
+    """Change seats on the ticked slots (private tracker 282; NAF, 2026-11-12; SK, 2026-11-16:
+    set, add or remove N per role). Three passes over one page: choose, review what it will do
+    and what it refuses, then apply. A slot that would leave people holding seats that no longer
+    exist is refused on its own, as Save seats refuses it; every other slot is changed."""
+    roles = setting("slot_roles", []) or []
+    chosen = {}
+    for r in roles:
+        op = request.POST.get(f"op_{r['key']}", "keep")
+        try:
+            n = max(0, min(20, int(request.POST.get(f"n_{r['key']}") or 0)))
+        except ValueError:
+            n = 0
+        if op in ("set", "add", "remove"):
+            chosen[r["key"]] = (op, n)
+    plan, refused = [], []
+    for s in slots:
+        now = {c.role: c.capacity for c in s.capacities.all()}
+        seats = {}
+        for key, (op, n) in chosen.items():
+            cur = now.get(key, 0)
+            new = {"set": n, "add": cur + n, "remove": cur - n}[op]
+            seats[key] = max(0, min(20, new))
+        seats = {k: v for k, v in seats.items() if v != now.get(k, 0)}
+        why = seats_refused(s, seats)
+        if why:
+            refused.append(f"{s.start:%a %H:%M}Z, {s.position.name}: {why}")
+        elif seats:
+            plan.append((s, seats))
+    step = request.POST.get("step", "")
+    if step == "apply" and chosen:
+        for s, seats in plan:
+            set_seats(request.user, s, seats)
+        n = len(plan)
+        messages.success(request, f"Seats changed on {n} slot{'s' if n != 1 else ''}.")
+        for r in refused:
+            messages.warning(request, "Not changed. " + r)
+        return redirect("event_detail", pk=event.pk)
+    return render(
+        request,
+        "events/confirm_bulk_seats.html",
+        {
+            "event": event,
+            "slots": slots,
+            "roles": [
+                {
+                    **r,
+                    "op": chosen.get(r["key"], ("keep", 0))[0],
+                    "n": chosen.get(r["key"], ("", ""))[1],
+                }
+                for r in roles
+            ],
+            "ops": SEAT_OPS,
+            "review": step == "review" and bool(chosen),
+            "plan": plan,
+            "refused": refused,
+        },
+    )
 
 
 @login_required

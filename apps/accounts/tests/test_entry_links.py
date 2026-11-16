@@ -1,6 +1,7 @@
 """Entry links (FR-119, FR-120), the Provisional level and its review (FR-121), the mentor-needs
 page (FR-123). Test plan T23 to T25."""
 
+import re
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -267,7 +268,7 @@ def test_provisional_sees_counts_not_names_and_no_directory_or_agreements(world)
     prov.refresh_from_db()
     assert prov.in_group("member")
     body = _as(prov).get(f"/events/{world['ev'].pk}/").content.decode()
-    assert "Stu N0STU (U)" in body
+    assert "Stu N0STU (U)" in re.sub(r"<[^>]+>", "", body)  # the letter is its own span (278)
     assert Outbox.objects.filter(user=prov, subject__startswith="Welcome").exists()
 
 
