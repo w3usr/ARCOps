@@ -25,7 +25,7 @@ from apps.ops.groups import people_who_may
 from apps.ops.templatetags.labels import role_label
 
 from ..models import Event, SignUp, Slot, SlotWarning
-from .roster import UTC, display_zone, zone_label
+from .roster import UTC, _span, display_zone
 from .viability import evaluate, needs_from_reasons
 
 CONFIRM_SALT = "signup-confirm"
@@ -61,12 +61,6 @@ def contact_line(u: User) -> str:
 
 
 # -------------------------------------------------------------------------- times ---
-
-
-def _span(start: datetime, end: datetime, z, sep: str = "–") -> str:
-    s, e = start.astimezone(z), end.astimezone(z)
-    tail = f"{e:%H:%M}" if sep == "–" else f"{e:%a %-d %b %H:%M}"
-    return f"{s:%a %-d %b %H:%M}{sep}{tail} {zone_label(start, z)}"
 
 
 def mail_when(start: datetime, end: datetime, event: Event, sep: str = "–") -> str:

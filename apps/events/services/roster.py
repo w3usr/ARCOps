@@ -45,6 +45,12 @@ def zone_label(dt: datetime, zone: ZoneInfo) -> str:
     return dt.astimezone(zone).strftime("%Z") or str(zone)
 
 
+def _span(start: datetime, end: datetime, z, sep: str = "–") -> str:
+    s, e = start.astimezone(z), end.astimezone(z)
+    tail = f"{e:%H:%M}" if sep == "–" else f"{e:%a %-d %b %H:%M}"
+    return f"{s:%a %-d %b %H:%M}{sep}{tail} {zone_label(start, z)}"
+
+
 @dataclass
 class Presentation:
     key: str  # open | needs | covered | thin | full | closed | not_open | problem
@@ -511,10 +517,8 @@ def build(
         "strip": strip,
         "strip_gaps": gap_states,  # which of the two no-slot marks the Key explains
         "span": {
-            "lead": f"{starts.astimezone(lead_zone):%a %-d %b %H:%M} – {ends.astimezone(lead_zone):%a %-d %b %H:%M} {zone_label(starts, lead_zone)}"
-            if starts and ends
-            else "",
-            "other": f"{starts.astimezone(other_zone):%a %-d %b %H:%M} – {ends.astimezone(other_zone):%a %-d %b %H:%M} {zone_label(starts, other_zone)}"
+            "lead": _span(starts, ends, lead_zone, " – ") if starts and ends else "",
+            "other": _span(starts, ends, other_zone, " – ")
             if starts and ends and not one_zone
             else "",
         },
