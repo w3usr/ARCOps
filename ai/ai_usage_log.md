@@ -5066,3 +5066,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Review and bug fix. The review walked a dozen pages of the seeded demo at desktop and phone width; its other findings (page headers, notices, card headings) are not acted on here. Verified: ruff and format; app tests 627 passed; the a11y sweep for the officer role passed in Chromium and WebKit (Firefox not run locally); Outbox looked at in a browser with no filter, two states ticked, and at phone width; the profile reads "expires 4 May 2029".
 - **Human Review Status**: Pending review
 - **Git Hash**: 60fb11a
+
+## [2026-11-16 17:08 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix the one finding from a review of 60fb11a: an Outbox link from before the shared filter (`?state=`, the old drop-down's "All") showed an empty table under a filter reading "Any state".
+- **Sections/Files Affected**: apps/ops/tables.py (`chosen` skips blank values, for every page that uses it: Outbox, Approvals, Access rosters); apps/comms/tests/test_messages.py (`?state=&page=1` shows every message).
+- **Nature of Contribution**: Review and bug fix. Verified: ruff and format; app tests passed; the new check fails without the fix. The a11y sweep was not re-run: no page markup changed.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

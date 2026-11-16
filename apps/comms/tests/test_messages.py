@@ -150,6 +150,8 @@ def test_outbox_is_officers_only_and_filters_by_state():
     assert "Sent one" in body and "Kept one" not in body
     body = c.get("/ops/outbox/?state=sent&state=not_sent").content.decode()
     assert "Sent one" in body and "Kept one" in body  # the state filter holds a set
+    body = c.get("/ops/outbox/?state=&page=1").content.decode()
+    assert "Sent one" in body and "Kept one" in body  # an old "All" link narrows nothing
     home = c.get("/").content.decode()
     assert "<strong>Mail is not being sent.</strong>" in home
 

@@ -24,7 +24,8 @@ def chosen(request, *names: str) -> dict[str, list[str]]:
     An empty list means the filter is off, which is the convention every panel follows: a panel
     nobody has touched narrows nothing (`docs/INTERFACE.md`).
     """
-    return {name: request.GET.getlist(name) for name in names}
+    # A blank value ticks nothing: the Outbox's old drop-down sent `?state=` for "All".
+    return {name: [v for v in request.GET.getlist(name) if v] for name in names}
 
 
 def summary(choices: Iterable[tuple[str, str]], ticked: Iterable[str], label: str) -> str:
