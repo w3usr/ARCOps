@@ -65,13 +65,13 @@ def test_accent_that_fails_aa_contrast_falls_back_to_the_default():
     assert config.accent_color() == config.DEFAULT_ACCENT
     _set("branding.accent", "#401068")
     assert config.accent_color() == "#401068"
-    assert config.contrast_with_white("#401068") > 4.5
+    assert config.contrast("#ffffff", "#401068") > 4.5
 
 
 def test_an_accent_that_carries_white_but_not_its_own_tint_falls_back(caplog):
     """#767676 is 4.54:1 under white text, but the active menu entry sets it as text on its
     own 9% tint, which is lighter than white is dark: about 4.1:1 (#143)."""
-    assert config.contrast_with_white("#767676") > 4.5
+    assert config.contrast("#ffffff", "#767676") > 4.5
     _set("branding.accent", "#767676")
     assert config.accent_color() == config.DEFAULT_ACCENT
     assert "the club color on its container" in caplog.text

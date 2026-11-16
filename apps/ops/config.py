@@ -134,11 +134,6 @@ def _relative_luminance(hex_color: str) -> float:
     return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
 
 
-def contrast_with_white(hex_color: str) -> float:
-    """WCAG contrast ratio of white text on the color."""
-    return 1.05 / (_relative_luminance(hex_color) + 0.05)
-
-
 def contrast(a: str, b: str) -> float:
     """WCAG contrast ratio between two colors, whichever is lighter."""
     hi, lo = sorted((_relative_luminance(a), _relative_luminance(b)), reverse=True)
