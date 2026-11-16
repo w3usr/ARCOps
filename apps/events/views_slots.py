@@ -14,7 +14,6 @@ from __future__ import annotations
 import json
 from datetime import timedelta
 
-from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -461,10 +460,12 @@ def signup_no_show(request, signup_id):
 
 
 def _typed_utc(text):
-    """A datetime-local box's text as a UTC time, or None: the forms say UTC."""
+    """A UTC box's text (2026-11-21 21:00, 2100 too; #274) as a time, or None."""
+    from apps.ops.when import Unreadable, parse_utc
+
     try:
-        return forms.DateTimeField().clean(text)
-    except forms.ValidationError:
+        return parse_utc(text)
+    except Unreadable:
         return None
 
 

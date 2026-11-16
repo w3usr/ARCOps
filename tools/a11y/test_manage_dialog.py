@@ -54,7 +54,7 @@ def test_a_form_opens_in_the_dialog_keeps_focus_and_comes_back(live_server, engi
         page.wait_for_url(setup)
         expect(page.locator("#messages")).to_contain_text("Start and end saved.")
         expect(page.locator("section[aria-labelledby=span]")).to_contain_text(
-            f"{later:%d %b %Y %H:%M}"
+            f"{later.day} {later:%b %Y %H:%M}"  # 9 Dec, not 09 (#274)
         )
         browser.close()
 

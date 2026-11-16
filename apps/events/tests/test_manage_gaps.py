@@ -67,7 +67,7 @@ def test_the_start_and_end_is_edited_and_keeps_or_cancels_its_slots(officer, mem
     ev = _future(c)
     url = f"/events/{ev.pk}/span/"
     page = c.get(url).content.decode()
-    assert 'value="2027-06-26T18:00"' in page and 'value="2027-06-26T22:00"' in page
+    assert 'value="2027-06-26 18:00"' in page and 'value="2027-06-26 22:00"' in page  # #274
     step = c.get(f"/events/{ev.pk}/manage/span/").content.decode()
     assert f'href="{url}"' in step and "Remove" not in step.split('aria-labelledby="span"')[1]
     # longer: every slot stays, and the new hour is empty until it is filled
@@ -204,3 +204,15 @@ def test_a_draft_never_published_is_deleted_and_any_other_event_is_not(officer, 
     assert "Delete this draft" not in c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
     c.post(f"/events/{ev.pk}/delete/", {"confirm": "yes"})
     assert Event.objects.filter(pk=ev.pk).exists()
+
+
+def test_the_start_and_end_are_typed_in_utc_as_contest_rules_write_them(officer):
+    """#274: 2300 with no colon is taken; a US browser's 11/21 form is refused with how to write it."""
+    c = _as(officer)
+    ev = _future(c)
+    url = f"/events/{ev.pk}/span/"
+    c.post(url, {"start": "2027-06-26 1800", "end": "2027-06-26 2300"})
+    ev.refresh_from_db()
+    assert (ev.start.hour, ev.end.hour) == (18, 23)
+    body = c.post(url, {"start": "06/26/2027 06:00 PM", "end": "2027-06-26 23:00"}).content.decode()
+    assert "Write it as 2026-11-21 21:00" in body and 'value="06/26/2027 06:00 PM"' in body

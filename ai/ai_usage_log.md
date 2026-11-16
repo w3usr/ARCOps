@@ -5042,3 +5042,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and documentation. One wording change beyond the format: a slot clash now reads "already has a slot at <span>" (it said "from … to …"). CSV, the calendar feed, the audit log's values and value= attributes keep ISO 8601. Verified: ruff, the guards (the new rule included), app tests 624 passed.
 - **Human Review Status**: Pending review
 - **Git Hash**: cf10c8e
+
+## [2026-11-16 15:00 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 274, second half: UTC typed as numbers whatever the browser's locale (SK, 2026-11-16: 2100 accepted); record 274 as functional addendum A34.
+- **Sections/Files Affected**: apps/ops/when.py (parse_utc, typed, HELP), apps/ops/forms.py (utc_field: a plain text box); apps/events/views_manage.py (SpanForm, which the on-air range form shares, and AddSlotForm; span_edit), views_rules.py (OpeningForm), views_slots.py (_typed_utc for re-time, split and duplicate); templates/events/_slot_body.html, _event_header.html (text boxes with their help); plain dates typed as 2026-11-21: apps/accounts/views_entry.py, templates/accounts/member_edit.html, templates/credentials/password_manage.html; docs/REQUIREMENTS.md (A34); tests: apps/ops/tests/test_when.py, test_manage_gaps.py (through the form), test_manage.py, test_slot_reshape.py, tools/a11y/test_manage_dialog.py.
+- **Nature of Contribution**: Code generation and documentation. The boxes take 2026-11-21 21:00, 2026-11-21 2100 and ISO's 2026-11-21T21:00, and refuse anything else with how to write it (a US browser's 11/21/2026 09:00 PM included). Verified: ruff and the guards; app tests 626 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the dialog looked at in a browser set to en-US, where the boxes stay 24-hour.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

@@ -15,7 +15,7 @@ from apps.credentials.services import ladder
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
-from apps.ops.forms import NoColon
+from apps.ops.forms import NoColon, utc_field
 from apps.ops.templatetags.labels import role_label
 
 from .form_pages import done, form_page, step_url
@@ -191,11 +191,7 @@ def slot_eligibility(request, pk, slot_id):
 
 class OpeningForm(NoColon, forms.Form):
     role = forms.ChoiceField(label="Role")
-    opens_at = forms.DateTimeField(
-        label="Opens at (UTC)",
-        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"],
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
-    )
+    opens_at = utc_field("Opens at (UTC)")
     categories = forms.MultipleChoiceField(
         label="To",
         required=False,

@@ -10,7 +10,7 @@ on-air hours and can be regenerated freely until someone has signed up.
 from __future__ import annotations
 
 import re
-from datetime import UTC, timedelta
+from datetime import timedelta
 
 from django import forms
 from django.contrib import messages
@@ -31,7 +31,7 @@ from apps.credentials.services import ladder
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
-from apps.ops.forms import NoColon
+from apps.ops.forms import NoColon, utc_field
 from apps.ops.templatetags.richtext import sanitise
 
 from .contest_fields import CONTEST_FIELDS
@@ -253,12 +253,8 @@ class KbygForm(NoColon, forms.ModelForm):
 class SpanForm(NoColon, forms.Form):
     """A start and an end in UTC: the event's own (A32), or a range of on-air hours."""
 
-    start = forms.DateTimeField(
-        label="Starts (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
-    )
-    end = forms.DateTimeField(
-        label="Ends (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
-    )
+    start = utc_field("Starts (UTC)")
+    end = utc_field("Ends (UTC)", help_text="")
 
     def clean(self):
         d = super().clean()
@@ -498,9 +494,7 @@ class AddSlotForm(NoColon, FieldGroups, SeatFields, forms.Form):
     GROUPS = [("", ["position", "start", "minutes", "kind"]), ("Seats in this slot", ["cap_*"])]
 
     position = forms.ModelChoiceField(queryset=Position.objects.none(), empty_label=None)
-    start = forms.DateTimeField(
-        label="Starts (UTC)", widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
-    )
+    start = utc_field("Starts (UTC)")
     minutes = forms.IntegerField(
         label="Length (minutes)", min_value=15, max_value=720, widget=_num(3)
     )
@@ -943,9 +937,7 @@ def span_edit(request, pk):
 
     event = captained_event(request, pk)
 
-    def typed(t):  # what a datetime-local box takes, in UTC as its label says
-        return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M") if t else ""
-
+    typed = when.typed  # 2026-11-21 21:00, as the box takes it (#274)
     form = SpanForm(
         request.POST or None, initial={"start": typed(event.start), "end": typed(event.end)}
     )

@@ -182,7 +182,10 @@ def test_duplicate_asks_when_the_copy_starts(officer):
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
     start = ev.start
     assert body.count('commandfor="dup-dlg" command="show-modal"') == 2
-    assert f'name="start" type="datetime-local" value="{start:%Y-%m-%dT%H:%M}" required' in body
+    assert (
+        f'name="start" type="text" autocomplete="off" spellcheck="false" size="16" value="{start:%Y-%m-%d %H:%M}" required'
+        in body
+    )
 
 
 def test_duplicate_refuses_a_start_it_cannot_read(officer):

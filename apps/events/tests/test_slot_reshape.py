@@ -38,7 +38,7 @@ def test_a_slot_with_people_is_re_timed_and_they_are_told_and_confirm_again(offi
     )
     url = f"/events/{ev.pk}/slot/{d.pk}/retime/"
     page = c.get(f"/events/{ev.pk}/slot/{d.pk}/").content.decode()
-    assert f'action="{url}"' in page and 'value="2027-06-26T21:00"' in page
+    assert f'action="{url}"' in page and 'value="2027-06-26 21:00"' in page  # #274
     # onto another slot's time, or outside the period: refused, nothing moves, nobody told
     r = c.post(url, {"start": "2027-06-26T18:30", "minutes": "60"}, follow=True)
     assert "already has a slot at" in r.content.decode()

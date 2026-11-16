@@ -16,6 +16,7 @@ a hand-written UTC format anywhere else.
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
@@ -73,3 +74,42 @@ def local_span(start: datetime, end: datetime, zone, year: bool = False) -> str:
         return f"{head}, {a}–{b} {s:%Z}"
     tail = f"{e:%a, %b} {e.day}" + (f", {e.year}" if year else "")
     return f"{head}, {_clock(s)} – {tail}, {_clock(e)} {e:%Z}"
+
+
+# ---------------------------------------------------------------- typed in UTC ---
+
+# A box the browser does not format (#274): the browser's own date and time box follows the
+# computer's locale, so on a US machine it read 11/21/2026 09:00 PM and one wrong AM/PM click put
+# a period twelve hours off. "2026-11-21 21:00", "2026-11-21 2100" (as contest rules write it) and
+# ISO's "2026-11-21T21:00" are all taken.
+_TYPED = re.compile(
+    r"^\s*(\d{4})-(\d{2})-(\d{2})(?:[ T]+(?:(\d{1,2}):(\d{2})|(\d{2})(\d{2})))?\s*(?:UTC|Z)?\s*$",
+    re.I,
+)
+HELP = "As 2026-11-21 21:00: the date, then a 24-hour time in UTC (2100 works too)."
+
+
+class Unreadable(ValueError):
+    """What was typed is not a date and time; the message says how to write one."""
+
+
+def parse_utc(text: str, need_time: bool = True) -> datetime | None:
+    """A UTC instant from what was typed, None for nothing typed; Unreadable otherwise."""
+    if not (text or "").strip():
+        return None
+    m = _TYPED.match(text)
+    if not m or (need_time and m.group(4) is None and m.group(6) is None):
+        raise Unreadable("Write it as 2026-11-21 21:00: the date, then a 24-hour time.")
+    y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    h, mi = (int(m.group(4) or m.group(6) or 0), int(m.group(5) or m.group(7) or 0))
+    if h > 23 or mi > 59:
+        raise Unreadable("That is not a time: hours run 00 to 23, minutes 00 to 59.")
+    try:
+        return datetime(y, mo, d, h, mi, tzinfo=UTC)
+    except ValueError:
+        raise Unreadable("That is not a date: check the month and the day.") from None
+
+
+def typed(t: datetime | None) -> str:
+    """What a UTC box shows: `2026-11-21 21:00`."""
+    return t.astimezone(UTC).strftime("%Y-%m-%d %H:%M") if t else ""
