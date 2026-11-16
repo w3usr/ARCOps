@@ -19,7 +19,9 @@ spelling it was created with, because changing it is a migration and not a proof
 
 **Headings are plain nouns.** "Email", not "Where we write, and how you sign in". "Guardians",
 not "The adults who can act for you". The heading names the thing; the sentence under it, if
-one is needed at all, explains it.
+one is needed at all, explains it. One deliberate exception: a slot's box of captain's controls
+is headed **Manage this slot**, chosen by NAF (2026-11-16) to match the event's **Manage** tab;
+"Manage …" may head a box of controls.
 
 **Nothing from inside the program reaches a page.** No counts of database rows, no dotted
 setting keys, no enum values, no state names, no Python `timedelta` strings, no file format
@@ -247,8 +249,10 @@ can do, a contest's details, a message in a list. They all look the same: a chev
 color that turns as it opens, and what opens set in under a thin rule. A whole message or
 announcement folded into its card keeps the card instead of the rule. A disclosure never holds a
 form somebody fills in to change something: that is a button and a dialog. The one exception is
-inside a dialog already (the slot's override): a short confirmation may open over a dialog
-(canceling a slot from it), but a form to fill in does not open a second one.
+inside a dialog already: a slot's **Manage this slot**, closed until a captain opens it and open
+again after anything done from inside it, with no fold inside it (NAF, 2026-11-16). A short
+confirmation may open over a dialog (canceling a slot from it), but a form to fill in does not
+open a second one.
 
 ## Forms
 

@@ -91,38 +91,43 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
 {% elif not published %}<p class="muted">Sign-ups open when the event is published.</p>{% endif %}
 
 {% if is_captain %}
-<section class="card stack" aria-labelledby="captain-{{ slot.pk }}">
-<h2 id="captain-{{ slot.pk }}">Captain</h2>
-  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_capacities' event.pk slot.pk %}" class="stack">{% csrf_token %}
+{% comment %}Manage this slot (NAF, 2026-11-16, private tracker 280): folded away until a captain opens
+it, and open again after anything done from inside it (each form posts manage=1, and the slot comes
+back with ?manage=1). A disclosure holding forms is allowed here because it is inside a dialog
+(docs/INTERFACE.md, "Something more to read").{% endcomment %}
+<details class="card manage-slot"{% if manage_open %} open{% endif %}>
+<summary><h2 id="captain-{{ slot.pk }}">Manage this slot</h2></summary>
+<div class="stack">
+  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_capacities' event.pk slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="manage" value="1">
     <div class="row">{% for r in roles %}<div class="field"><label for="cap-{{ slot.pk }}-{{ r.key }}">{{ r.label }} seats</label><input id="cap-{{ slot.pk }}-{{ r.key }}" type="number" min="0" max="20" name="cap_{{ r.key }}" value="{{ capacities|default_if_none:''|dictkey:r.key|default:0 }}"></div>{% endfor %}</div>
     <div><button type="submit">Save seats</button></div>
   </form>
   {% if cell.signups %}
-  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_control_operator' event.pk slot.pk %}" class="stack">{% csrf_token %}
+  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_control_operator' event.pk slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="manage" value="1">
     <div class="field"><label for="co-{{ slot.pk }}">Control operator</label>
     <select id="co-{{ slot.pk }}" name="user"><option value="">By the rule (highest class on air)</option>{% for s in cell.co_choices %}<option value="{{ s.user.pk }}"{% if slot.control_operator_id == s.user.pk %} selected{% endif %}>{{ s.user.short_name }}</option>{% endfor %}</select></div>
     <div><button type="submit" class="secondary">Set</button></div>
   </form>
   {% endif %}
-  {% if published or locked %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_assign' event.pk slot.pk %}" class="stack">{% csrf_token %}
-    <div class="field"><label for="assign-{{ slot.pk }}">Sign someone up</label>
-    <select id="assign-{{ slot.pk }}" name="user">{% for m in members %}<option value="{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</option>{% endfor %}</select></div>
+  {% if published or locked %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_assign' event.pk slot.pk %}" class="stack" aria-labelledby="assign-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1">
+    <h3 id="assign-h-{{ slot.pk }}">Sign someone up</h3>
     <div class="field"><label for="assign-role-{{ slot.pk }}">Role</label>
-    <select id="assign-role-{{ slot.pk }}" name="role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select></div>
+    <select id="assign-role-{{ slot.pk }}" name="role" hx-get="{% url 'slot_detail' event.pk slot.pk %}" hx-trigger="change" hx-select="#assign-{{ slot.pk }}-found" hx-target="#assign-{{ slot.pk }}-found" hx-swap="outerHTML" hx-include="#assign-{{ slot.pk }}-q">{% for r in roles %}<option value="{{ r.key }}"{% if r.key == assign_role %} selected{% endif %}>{{ r.label }}</option>{% endfor %}</select></div>
+    {% url 'slot_detail' event.pk slot.pk as pick_url %}{% include "_member_pick.html" with pick_id=assign_id label="Member" name="user" url=pick_url q=assign_q found=assign_found more=assign_more include=assign_include %}
     <div><button type="submit" class="secondary">Add</button></div>
   </form>{% endif %}
-  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}
+  <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="manage" value="1">
     <button name="what" value="close" class="secondary">{% if slot.closed %}{% icon 'unlock' %}Reopen slot{% else %}{% icon 'lock' %}Close slot{% endif %}</button>
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
   {% comment %}Re-time, split, merge (FR-46, #156; SK, 2026-11-11): with people in the slot too.
   Moved, they are told and confirm again; split, they are in both parts; merged, with the slot
   that follows on. Not once it has started or has a check-in.{% endcomment %}
-  <details><summary>Change the time, split or merge</summary>
+  <section class="stack" aria-labelledby="reshape-h-{{ slot.pk }}"><h3 id="reshape-h-{{ slot.pk }}">Change the time, split or merge</h3>
     {% if frozen %}<p class="muted">{{ frozen }}</p>{% else %}
     <div class="stack reshape">
-    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_retime' event.pk slot.pk %}" class="stack" aria-labelledby="rt-h-{{ slot.pk }}">{% csrf_token %}
-      <h3 id="rt-h-{{ slot.pk }}">Move it</h3>
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_retime' event.pk slot.pk %}" class="stack" aria-labelledby="rt-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1">
+      <h4 id="rt-h-{{ slot.pk }}">Move it</h4>
       <div class="row">
         <div class="field"><label for="rt-start-{{ slot.pk }}">Starts (UTC)</label><input id="rt-start-{{ slot.pk }}" type="datetime-local" name="start" value="{{ slot.start|date:'Y-m-d\TH:i' }}" required></div>
         <div class="field"><label for="rt-min-{{ slot.pk }}">Length (minutes)</label><input id="rt-min-{{ slot.pk }}" name="minutes" inputmode="numeric" pattern="[0-9]*" class="num" size="3" value="{{ slot_minutes }}" required></div>
@@ -130,24 +135,24 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
       <p class="helptext">{% if cell.signups|length == 1 %}The person in it stays, is told the old and the new time, and is asked to confirm again.{% elif cell.signups %}The {{ cell.signups|length }} people in it stay, are told the old and the new time, and are asked to confirm again.{% else %}Nobody is in it, so nobody is told.{% endif %}</p>
       <div><button type="submit" class="secondary">Move the slot</button></div>
     </form>
-    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_split' event.pk slot.pk %}" class="stack" aria-labelledby="sp-h-{{ slot.pk }}">{% csrf_token %}
-      <h3 id="sp-h-{{ slot.pk }}">Split it</h3>
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_split' event.pk slot.pk %}" class="stack" aria-labelledby="sp-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1">
+      <h4 id="sp-h-{{ slot.pk }}">Split it</h4>
       <div class="field"><label for="sp-at-{{ slot.pk }}">Split at (UTC)</label><input id="sp-at-{{ slot.pk }}" type="datetime-local" name="at" value="{{ slot_middle|date:'Y-m-d\TH:i' }}" required></div>
       <p class="helptext">Two slots with the same seats.{% if cell.signups %} Everyone in it is in both, and nobody is told, since nobody's hours change.{% endif %}</p>
       <div><button type="submit" class="secondary">Split the slot</button></div>
     </form>
-    {% if next_slot %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_merge' event.pk slot.pk %}" class="stack" aria-labelledby="mg-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="with" value="{{ next_slot.pk }}">
-      <h3 id="mg-h-{{ slot.pk }}">Merge it</h3>
+    {% if next_slot %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_merge' event.pk slot.pk %}" class="stack" aria-labelledby="mg-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="with" value="{{ next_slot.pk }}">
+      <h4 id="mg-h-{{ slot.pk }}">Merge it</h4>
       <p class="helptext">Merging with the slot that follows, {{ next_slot.start|date:"H:i" }}–{{ next_slot.end|date:"H:i" }} UTC, makes one slot of the two with everyone from both in it. Anyone whose hours grow is told and asked to confirm again.</p>
       <div><button type="submit" class="secondary">Merge with the next slot</button></div>
     </form>{% endif %}
     </div>
     {% endif %}
-  </details>
-  <details><summary>Who may sign up for this slot (override)</summary>
+  </section>
+  <section class="stack" aria-labelledby="override-h-{{ slot.pk }}"><h3 id="override-h-{{ slot.pk }}">Who may sign up for this slot (override)</h3>
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %}, {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %}, needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %}, no minors{% endif %}
-      <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
-    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}
+      <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="manage" value="1">
       {% comment %}It starts from the rule the event applies to the role chosen (#277): each role's choice
       carries that rule, the first is drawn filled in, and app.js fills the boxes when the role changes.
       Saved unchanged, nothing is stored.{% endcomment %}
@@ -162,7 +167,7 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
       {% endwith %}
       <div><button type="submit">Save override</button></div>
     </form>
-  </details>
+  </section>
   {% if slot.kept %}
   <p class="muted">{{ slot.kept }}</p>
   {% else %}
@@ -170,7 +175,7 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
   <dialog id="slot-cancel-{{ slot.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="slot-cancel-h-{{ slot.pk }}">
     <h2 id="slot-cancel-h-{{ slot.pk }}">Cancel this slot?</h2>
     <p>The slot goes off the roster and cannot be brought back. {% if cell.signups %}{{ cell.signups|length }} {{ cell.signups|length|pluralize:"person is,people are" }} in it, and {{ cell.signups|length|pluralize:"is,are" }} told, with your reason.{% else %}Nobody is in it, so nobody is told.{% endif %}</p>
-    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
+    <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="what" value="cancel"><input type="hidden" name="confirmed" value="yes">
       {% if cell.signups %}<div class="field">
         <label for="cancel-reason-{{ slot.pk }}">Reason <span class="req" aria-hidden="true">*</span></label>
         <input id="cancel-reason-{{ slot.pk }}" name="reason" maxlength="300" placeholder="Station closed for the storm" required>
@@ -179,6 +184,7 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
     </form>
   </dialog>
   {% endif %}
-</section>
+</div>
+</details>
 {% endif %}
 {% if partial %}{% include "events/_roster_cell.html" with c=cell oob=True %}{% endif %}

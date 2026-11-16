@@ -9,6 +9,7 @@ import datetime as dt
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -372,7 +373,7 @@ def member_roster(request):
         User.objects.with_access()
         .select_related("license", "joined_via")
         .prefetch_related("addresses")
-        .order_by("last_name", "first_name")
+        .order_by(Lower("last_name"), Lower("first_name"))
     )
     rows = _member_roster_rows(list(users))
     if request.GET.get("graduated") == "1":

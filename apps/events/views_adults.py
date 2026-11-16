@@ -8,9 +8,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.accounts.models import Guardianship, User
+from apps.accounts.pick import find_redirect, matches
 from apps.ops.audit import record
 
 from .models import ResponsibleAdult, SignUp
@@ -73,6 +75,10 @@ def adults(request, signup_id):
                 )
                 record(request.user, "responsible_adult.named", su, after={"name": name.strip()})
                 messages.success(request, f"{name.strip()} will accompany {su.user.display_first}.")
+        elif action == "member" and request.POST.get("find"):  # script off (private tracker 281)
+            return find_redirect(request, reverse("signup_adults", args=[su.pk]))
+        elif action == "member" and not request.POST.get("member"):
+            messages.error(request, "Type part of a name or callsign, then choose who.")
         elif action == "member":
             member = get_object_or_404(User, pk=request.POST.get("member"), under_18=False)
             if not member.has_access:
@@ -115,8 +121,12 @@ def adults(request, signup_id):
             "saved": previously_named(su),
             # with_access(), not every row: an archived or deleted account is no longer somebody
             # who can be named as the adult accompanying a member under 18.
-            "members": User.objects.with_access()
-            .filter(under_18=False)
-            .order_by("last_name", "first_name"),
+            "pick": _pick(request, User.objects.with_access().filter(under_18=False)),
         },
     )
+
+
+def _pick(request, people):
+    q = request.GET.get("q", "").strip()
+    found, more = matches(people, q)
+    return {"q": q, "found": found, "more": more}

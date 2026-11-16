@@ -9,6 +9,7 @@ from django.test import Client
 
 from apps.accounts.models import User
 from apps.credentials.models import LicenseRecord
+from apps.events import views_slots
 from apps.events.models import (
     Event,
     Location,
@@ -677,3 +678,71 @@ def test_mail_leads_with_utc_and_gives_the_events_zone_beside_it(world):
     ev = world["ev"]
     span = mail_when(ev.starts_at(), ev.ends_at(), ev, " to ")
     assert span.index("UTC") < span.index("(") and " to " in span
+
+
+def test_sign_someone_up_finds_by_any_part_of_a_name_or_call_and_leaves_out_who_is_in(
+    world, monkeypatch
+):
+    """Private tracker 281: typed, not a drop-down of the membership; the role first (SK,
+    2026-11-16), and nobody already in the slot."""
+    c = _as(world["off"])
+    ev, mem = world["ev"], world["mem"]
+    slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
+    page = f"/events/{ev.pk}/slot/{slot.pk}/"
+    choice = f'name="user" value="{mem.pk}"'
+    assert choice not in c.get(page).content.decode()  # nothing typed, nobody listed
+    for q in ("n0m", "MEMB", "mo mem"):
+        assert choice in c.get(page, {"q": q, "role": "observer"}).content.decode(), q
+    assert "Nobody here matches" in c.get(page, {"q": "zzz", "role": "observer"}).content.decode()
+    # Find with script off posts, and comes back to the slot with what was typed and the role
+    r = c.post(f"{page}assign/", {"find": "1", "q": "n0m", "role": "observer", "manage": "1"})
+    assert r.status_code == 302 and r.url == f"{page}?q=n0m&role=observer&manage=1"
+    assert not SignUp.objects.filter(slot=slot).exists()
+    # the role's own rule decides who is offered: one that refuses Operator leaves Mo out of it
+    monkeypatch.setattr(
+        views_slots, "can_sign_up", lambda m, s, role, **kw: (role != "operator", "no license")
+    )
+    assert choice not in c.get(page, {"q": "n0m", "role": "operator"}).content.decode()
+    assert choice in c.get(page, {"q": "n0m", "role": "observer"}).content.decode()
+    SignUp.objects.create(slot=slot, user=mem, role="observer")
+    assert choice not in c.get(page, {"q": "n0m", "role": "observer"}).content.decode()
+
+
+def test_appoint_a_captain_finds_by_name_and_leaves_out_the_captains(world):
+    c = _as(world["off"])
+    ev, mem = world["ev"], world["mem"]
+    page = f"/events/{ev.pk}/captains/add/"
+    assert f'value="{mem.pk}"' in c.get(page, {"q": "mo"}).content.decode()
+    r = c.post(page, {"find": "1", "q": "member"})
+    assert r.status_code == 200 and f'value="{mem.pk}"' in r.content.decode()
+    assert not ev.captaincies.filter(user=mem).exists()
+    c.post(page, {"user": mem.pk})
+    assert ev.captaincies.filter(user=mem).exists()
+    assert f'value="{mem.pk}"' not in c.get(page, {"q": "mo"}).content.decode()
+
+
+def test_members_sort_without_regard_to_case(world):
+    """A name stored in capitals no longer comes first (private tracker 281)."""
+    User.objects.create_user("z@example.org", "pw-Testing-123", first_name="Al", last_name="ABEL")
+    User.objects.create_user("a@example.org", "pw-Testing-123", first_name="Bo", last_name="aaron")
+    assert [
+        u.last_name
+        for u in User.objects.filter(last_name__iexact="abel")
+        | User.objects.filter(last_name="aaron")
+    ] == ["aaron", "ABEL"]
+
+
+def test_manage_this_slot_is_folded_until_used_and_open_after(world):
+    """Private tracker 280 (NAF, 2026-11-16): the captain's box is a closed disclosure named
+    Manage this slot, and comes back open after an action taken from inside it."""
+    c = _as(world["off"])
+    ev = world["ev"]
+    slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
+    page = f"/events/{ev.pk}/slot/{slot.pk}/"
+    body = c.get(page).content.decode()
+    assert '<details class="card manage-slot">' in body and "Manage this slot" in body
+    assert ">Captain<" not in body
+    r = c.post(f"{page}seats/", {"cap_operator": "2", "cap_observer": "2", "manage": "1"})
+    assert r.url == f"{page}?manage=1"
+    assert '<details class="card manage-slot" open>' in c.get(r.url).content.decode()
+    assert _as(world["mem"]).get(page).content.decode().count("Manage this slot") == 0

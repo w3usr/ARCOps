@@ -14,6 +14,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.core import signing
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 from apps.accounts.models import User
@@ -70,7 +71,7 @@ def resolve_audience(event: Event | None, filters: dict) -> list[User]:
         )
         if cats:
             qs = qs.filter(category__in=cats)
-        return list(qs.order_by("last_name", "first_name"))
+        return list(qs.order_by(Lower("last_name"), Lower("first_name")))
     now = timezone.now()
     signups = (
         SignUp.objects.filter(

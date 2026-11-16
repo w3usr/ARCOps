@@ -4978,3 +4978,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: ruff passes; `pytest apps -n auto` passed five runs in a row (609 passed each); the a11y sysadmin role passes in Chromium and WebKit with the fixture in place.
 - **Human Review Status**: Pending review
 - **Git Hash**: 7c53c5a
+
+## [2026-11-16 12:45 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build two of NAF's tickets at SK's word ("let's work through NAF tickets"): the member picker (private tracker 281; SK, 2026-11-16: the role first) and Manage this slot (280).
+- **Sections/Files Affected**: New: apps/accounts/pick.py, templates/_member_pick.html, templates/events/forms/_captain_pick.html, tools/a11y/test_member_pick.py, apps/accounts/migrations/0027 (the user ordering ignores case). Changed: apps/events/views_slots.py, views_manage.py, views_adults.py, views_rules.py; templates/events/_slot_body.html, adults.html; static/css/app.css; apps/accounts/models.py, apps/comms/announce.py, apps/credentials/views_reports.py (case-insensitive ordering); docs/INTERFACE.md (the heading and the disclosure exceptions); apps/events/tests/test_roster.py.
+- **Nature of Contribution**: Code generation. Sign someone up, Appoint a captain and a responsible adult choose a member by typing part of a name or callsign; the page answers ?q= itself, so Find (script off) and as-you-type (htmx) share one server path. The slot's captain box is a closed disclosure, Manage this slot, open again after an action from inside it, with its two inner folds flattened. Verified: ruff, the three guards and the migration check pass; app tests 613 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the new browser test passes in both and was looked at in screenshots at desktop and phone width. The scenario suite has not yet been run on this change.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

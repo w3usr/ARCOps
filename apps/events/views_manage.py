@@ -26,6 +26,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from tinymce.widgets import TinyMCE
 
 from apps.accounts.models import User
+from apps.accounts.pick import matches
 from apps.credentials.services import ladder
 from apps.ops.audit import record
 from apps.ops.config import setting
@@ -419,18 +420,15 @@ class PositionForm(NoColon, forms.Form):
 
 
 class CaptainForm(NoColon, forms.Form):
-    user = forms.ModelChoiceField(queryset=User.objects.none(), label="Member", empty_label=None)
+    user = forms.ModelChoiceField(
+        queryset=User.objects.none(),
+        label="Member",
+        error_messages={"required": "Type part of a name or callsign, then choose who."},
+    )
 
     def __init__(self, *args, event, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["user"].queryset = (
-            User.objects.with_access()
-            .exclude(captaincies__event=event)
-            .order_by("last_name", "first_name")
-        )
-        self.fields["user"].label_from_instance = lambda u: " ".join(
-            x for x in (u.full_name, u.callsign) if x
-        )
+        self.fields["user"].queryset = User.objects.with_access().exclude(captaincies__event=event)
 
 
 class AddSlotForm(NoColon, FieldGroups, SeatFields, forms.Form):
@@ -1214,8 +1212,12 @@ def captain_add(request, pk):
     if not request.user.may("manage_events"):
         raise Http404
     event = get_object_or_404(Event, pk=pk)
-    form = CaptainForm(request.POST or None, event=event)
-    if request.method == "POST" and form.is_valid():
+    # Find (private tracker 281): with script off it posts, and the page comes back with the matches
+    finding = bool(request.POST.get("find"))
+    form = CaptainForm(None if finding else (request.POST or None), event=event)
+    q = (request.POST if finding else request.GET).get("q", "").strip()
+    found, more = matches(form.fields["user"].queryset, q)
+    if request.method == "POST" and not finding and form.is_valid():
         user = form.cleaned_data["user"]
         Captaincy.objects.get_or_create(event=event, user=user)
         record(request.user, "captain.added", event, after={"user": user.pk})
@@ -1230,6 +1232,8 @@ def captain_add(request, pk):
         step="publish",
         intro="Every officer already has a captain's powers on every event; appoint here to "
         "give them to a member for this event only.",
+        fields="events/forms/_captain_pick.html",
+        pick={"q": q, "found": found, "more": more},
     )
 
 

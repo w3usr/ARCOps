@@ -183,7 +183,9 @@ def slot_eligibility(request, pk, slot_id):
         )
         messages.success(request, f"Override for {role_label(role)} saved on this slot.")
     record(request.user, "slot.eligibility", slot, after={"role": role})
-    return redirect("slot_detail", pk=pk, slot_id=slot_id)
+    from .views_slots import back_to_slot  # views_slots imports this module
+
+    return back_to_slot(request, pk, slot_id)
 
 
 class OpeningForm(NoColon, forms.Form):

@@ -19,11 +19,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
+from apps.accounts.pick import find_redirect, matches
 from apps.credentials.models import CredentialType
 from apps.credentials.services import ladder
 from apps.ops.audit import record
@@ -43,11 +45,18 @@ def _visible(user, event: Event) -> bool:
     return event.visible_to_members or user.can_captain(event)
 
 
+def back_to_slot(request, pk, slot_id):
+    """The slot again, with Manage this slot still open when the action came from inside it (its
+    forms post manage=1; private tracker 280)."""
+    url = reverse("slot_detail", args=[pk, slot_id])
+    return redirect(f"{url}?manage=1" if request.POST.get("manage") else url)
+
+
 def roster_or_slot(request, slot: Slot):
     """Where an action on a slot lands: the roster, or from the roster's dialog (an htmx request)
     the slot again, so the dialog shows what changed and the roster stays where it was (#139)."""
     if request.headers.get("HX-Request"):
-        return redirect("slot_detail", pk=slot.event.pk, slot_id=slot.pk)
+        return back_to_slot(request, slot.event.pk, slot.pk)
     return redirect("event_detail", pk=slot.event.pk)
 
 
@@ -124,10 +133,9 @@ def slot_detail(request, pk, slot_id):
         "ladder": ladder(),
         "capacities": caps,
         "on_air": [s for s in cell.signups],
-        "members": User.objects.with_access().order_by("last_name", "first_name")
-        if is_captain
-        else [],
+        **(_assign_pick(request, slot, data["roles"]) if is_captain else {}),
         "partial": bool(request.headers.get("HX-Request")),
+        "manage_open": request.GET.get("manage") == "1",
         "roster": data,  # for the roster cell sent back with the dialog
         "day": data["day"],
     }
@@ -135,6 +143,27 @@ def slot_detail(request, pk, slot_id):
     response = render(request, template, ctx)
     patch_vary_headers(response, ["HX-Request"])  # one URL, two answers: never cache one for both
     return response
+
+
+def _assign_pick(request, slot, roles):
+    """Sign someone up: the role first, then whoever matches what was typed and may take that
+    role here, leaving out the people already in the slot (private tracker 281; SK, 2026-11-16)."""
+    keys = [r["key"] for r in roles]
+    role = request.GET.get("role") if request.GET.get("role") in keys else (keys[0] if keys else "")
+    q = request.GET.get("q", "").strip()
+    found, more = matches(
+        User.objects.with_access().exclude(signups__slot=slot),
+        q,
+        keep=lambda m: can_sign_up(m, slot, role, by_captain=True)[0],
+    )
+    return {
+        "assign_role": role,
+        "assign_q": q,
+        "assign_found": found,
+        "assign_more": more,
+        "assign_id": f"assign-{slot.pk}",
+        "assign_include": f"#assign-role-{slot.pk}",
+    }
 
 
 def _captain_slot(request, pk, slot_id):
@@ -165,7 +194,7 @@ def slot_capacities(request, pk, slot_id):
                 f"{held} {'person holds' if held == 1 else 'people hold'} {role_label(key)} here; "
                 f"remove them first, or keep at least {held} seat{'s' if held != 1 else ''}.",
             )
-            return redirect("slot_detail", pk=pk, slot_id=slot_id)
+            return back_to_slot(request, pk, slot_id)
     for key, n in seats.items():
         if n:
             RoleCapacity.objects.update_or_create(slot=slot, role=key, defaults={"capacity": n})
@@ -176,7 +205,7 @@ def slot_capacities(request, pk, slot_id):
             waitlist.on_place_opened(slot, key)
     record(request.user, "slot.capacities", slot)
     messages.success(request, "Seats updated.")
-    return redirect("slot_detail", pk=pk, slot_id=slot_id)
+    return back_to_slot(request, pk, slot_id)
 
 
 @login_required
@@ -188,21 +217,21 @@ def slot_control_operator(request, pk, slot_id):
     su = slot.signups.select_related("user").filter(user_id=uid).first() if uid else None
     if uid and su is None:
         messages.error(request, "The control operator must be signed up for the slot.")
-        return redirect("slot_detail", pk=pk, slot_id=slot_id)
+        return back_to_slot(request, pk, slot_id)
     if su and not may_control(slot, su):  # an unlicensed member cannot be one (SK, 2026-10-15)
         messages.error(
             request,
             "The control operator must hold a valid amateur license and be signed up in an "
             "on-air role.",
         )
-        return redirect("slot_detail", pk=pk, slot_id=slot_id)
+        return back_to_slot(request, pk, slot_id)
     slot.control_operator_id = uid
     slot.save(update_fields=["control_operator"])
     record(request.user, "slot.control_operator", slot, after={"user": uid})
     messages.success(
         request, "Control operator set." if uid else "Control operator left to the default rule."
     )
-    return redirect("slot_detail", pk=pk, slot_id=slot_id)
+    return back_to_slot(request, pk, slot_id)
 
 
 @login_required
@@ -212,17 +241,22 @@ def slot_assign(request, pk, slot_id):
     event, slot = _captain_slot(request, pk, slot_id)
     if event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):  # SK, 2026-10-16
         messages.error(request, "Captains sign people up once the event is published.")
-        return redirect("slot_detail", pk=pk, slot_id=slot_id)
+        return back_to_slot(request, pk, slot_id)
+    if request.POST.get("find"):  # with script off: list who matches (private tracker 281)
+        return find_redirect(request, reverse("slot_detail", args=[pk, slot_id]), "role", "manage")
+    if not request.POST.get("user"):
+        messages.error(request, "Type part of a name or callsign, then choose who.")
+        return back_to_slot(request, pk, slot_id)
     member = get_object_or_404(User, pk=request.POST.get("user"))
     role = request.POST.get("role", "")
     cap = RoleCapacity.objects.filter(slot=slot, role=role).first()
     if not cap or slot.signups.filter(role=role).count() >= cap.capacity:
         messages.error(request, "No seat open in that role.")
-        return redirect("slot_detail", pk=pk, slot_id=slot_id)
+        return back_to_slot(request, pk, slot_id)
     ok, reason = can_sign_up(member, slot, role, by_captain=True)
     if not ok:
         messages.error(request, f"{member.short_name} cannot take that role: {reason}.")
-        return redirect("slot_detail", pk=pk, slot_id=slot_id)
+        return back_to_slot(request, pk, slot_id)
     su, created = SignUp.objects.get_or_create(
         slot=slot, user=member, defaults={"role": role, "note": ""}
     )
@@ -233,7 +267,7 @@ def slot_assign(request, pk, slot_id):
         messages.success(request, f"{member.short_name} signed up as {role_label(role)}.")
     else:
         messages.info(request, f"{member.short_name} already holds this slot.")
-    return redirect("slot_detail", pk=pk, slot_id=slot_id)
+    return back_to_slot(request, pk, slot_id)
 
 
 @login_required

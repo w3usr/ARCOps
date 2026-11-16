@@ -573,6 +573,8 @@ form label, .field label { display: block; font-weight: 400; margin-bottom: .25r
 /* A field whose whole content is one checkbox sits beside fields that have a label above their
    input. Without this it floats level with the labels instead of level with the inputs. */
 .row > .field > .check:only-child { margin-top: 1.7rem; }
+/* The member picker's search box with its Find button beside it (private tracker 281). */
+.pick-q { display: flex; gap: .5rem; } .pick-q input { flex: 1 1 auto; min-width: 0; }
 /* A field of tick boxes is as wide as its words on one line, beside other fields if they fit and
    on a line of its own if not; only a line too narrow for them wraps the words, beside the box
    (SK, 2026-11-11: "This is the club / station" in the 28rem rows of a dialog). */
@@ -1070,6 +1072,9 @@ details:not(.filter) > summary::before {
 }
 details[open]:not(.filter) > summary::before { transform: rotate(45deg); margin-bottom: .3em; }
 details:not(.filter, .inline) { margin-block: var(--s2); }
+/* Manage this slot: its heading is the summary, on the chevron's line (private tracker 280). */
+.manage-slot > summary > h2 { display: inline; margin: 0; }
+.manage-slot[open] > summary { margin-bottom: var(--s2); }
 details[open]:not(.filter, .card, .msglist details) > :not(summary) { margin-left: .35rem; padding-left: .9rem; border-left: 2px solid var(--line); }
 /* A whole message or announcement folded into its card: the summary is its heading line. */
 details[open]:is(.card, .msglist details) > :not(summary) { margin-left: 1.25rem; }

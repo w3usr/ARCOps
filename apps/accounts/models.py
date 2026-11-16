@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models, transaction
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 # FR-67: the class after a name; a station letter where the FCC issues no class, U when there
@@ -181,7 +182,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
     class Meta:
-        ordering = ["last_name", "first_name"]
+        ordering = [Lower("last_name"), Lower("first_name")]  # "RACHEL" sorts as "rachel" (281)
 
     def __str__(self) -> str:
         return f"{self.full_name} ({self.callsign})" if self.callsign else self.full_name

@@ -29,10 +29,9 @@
   <button type="submit" class="secondary">Add</button>
 </form></section>{% endif %}
 <section class="section" aria-labelledby="mem"><h2 id="mem">A member, by name</h2>
-<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="member">
-  <label for="a-member">Member</label>
-  <select id="a-member" name="member">{% for m in members %}<option value="{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</option>{% endfor %}</select>
-  <button type="submit" class="secondary">Add</button>
+<form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="member">
+  {% url 'signup_adults' su.pk as pick_url %}{% include "_member_pick.html" with pick_id="a-member" label="Member" name="member" url=pick_url q=pick.q found=pick.found more=pick.more %}
+  <div><button type="submit" class="secondary">Add</button></div>
 </form></section>
 </div>
 </div>
