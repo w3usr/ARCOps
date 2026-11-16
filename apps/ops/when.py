@@ -98,15 +98,13 @@ def local_span(start: datetime, end: datetime, zone, year: bool = False) -> str:
 
 # ---------------------------------------------------------------- typed in UTC ---
 
-# A box the browser does not format (#274): the browser's own date and time box follows the
-# computer's locale, so on a US machine it read 11/21/2026 09:00 PM and one wrong AM/PM click put
-# a period twelve hours off. "2026-11-21 21:00", "2026-11-21 2100" (as contest rules write it) and
-# ISO's "2026-11-21T21:00" are all taken.
+# The browser's own date and time box (A35, SK 2026-11-16, reversing A34's plain box): it sends
+# ISO's "2026-11-21T21:00" whatever it shows. A link or script may still send "2026-11-21 21:00"
+# or "2026-11-21 2100" (as contest rules write it), so those are taken too.
 _TYPED = re.compile(
     r"^\s*(\d{4})-(\d{2})-(\d{2})(?:[ T]+(?:(\d{1,2}):(\d{2})|(\d{2})(\d{2})))?\s*(?:UTC|Z)?\s*$",
     re.I,
 )
-HELP = "As 2026-11-21 21:00: the date, then a 24-hour time in UTC (2100 works too)."
 
 
 class Unreadable(ValueError):
@@ -131,5 +129,5 @@ def parse_utc(text: str, need_time: bool = True) -> datetime | None:
 
 
 def typed(t: datetime | None) -> str:
-    """What a UTC box shows: `2026-11-21 21:00`."""
-    return t.astimezone(UTC).strftime("%Y-%m-%d %H:%M") if t else ""
+    """What a UTC box holds: `2026-11-21T21:00`, the value a datetime-local box takes (A35)."""
+    return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M") if t else ""

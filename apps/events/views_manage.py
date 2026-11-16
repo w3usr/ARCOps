@@ -31,7 +31,7 @@ from apps.credentials.services import ladder
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
-from apps.ops.forms import NoColon, utc_field
+from apps.ops.forms import NoColon, clock, utc_field
 from apps.ops.templatetags.richtext import sanitise
 
 from .contest_fields import CONTEST_FIELDS
@@ -48,6 +48,7 @@ from .models import (
 from .services import meets
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.reshape import misfit
+from .services.roster import display_zone
 from .services.slots import left_outside, limit_report
 from .services.viability import club_rule
 from .views_rules import captained_event, rules_context
@@ -937,10 +938,11 @@ def span_edit(request, pk):
 
     event = captained_event(request, pk)
 
-    typed = when.typed  # 2026-11-21 21:00, as the box takes it (#274)
+    typed = when.typed  # 2026-11-21T21:00, as the box takes it (A35)
     form = SpanForm(
         request.POST or None, initial={"start": typed(event.start), "end": typed(event.end)}
     )
+    clock(form, request.POST, display_zone(event))
     if request.method == "POST" and form.is_valid():
         start, end = form.cleaned_data["start"], form.cleaned_data["end"]
         slots = left_outside(event, start, end)
@@ -992,11 +994,11 @@ def span_edit(request, pk):
         heading="Event start and end",
         submit="Save start and end",
         step="span",
-        intro="When the event begins and ends, in UTC. A break in the middle, as a split contest "
+        intro="When the event begins and ends. A break in the middle, as a split contest "
         "has, goes in the on-air hours on Slots. Made longer, every slot stays, and Add slots to "
         "the empty hours fills the new time. Made shorter, the slots left outside it are canceled."
         if event.start
-        else "When the event begins and ends, in UTC. A break in the middle, as a split contest "
+        else "When the event begins and ends. A break in the middle, as a split contest "
         "has, goes in the on-air hours on Slots.",
     )
 
@@ -1404,7 +1406,8 @@ def _on_air_context(event, **forms_) -> dict:
         "on_air_hours": hours(stretches) if stretches else hours(span),
         "event_hours": hours(span),
         "slots_outside": outside,
-        "range_form": forms_.get("range_form") or SpanForm(auto_id="onair-%s"),
+        "range_form": forms_.get("range_form")
+        or clock(SpanForm(auto_id="onair-%s"), None, display_zone(event)),
     }
 
 
@@ -1445,7 +1448,7 @@ def on_air_save(request, pk):
             return saved([], " The last stretch is gone, so the whole event is on the air again.")
         return saved(rest)
     if what == "range":
-        form = SpanForm(request.POST, auto_id="onair-%s")
+        form = clock(SpanForm(request.POST, auto_id="onair-%s"), request.POST, display_zone(event))
         if form.is_valid():
             asked = (form.cleaned_data["start"], form.cleaned_data["end"])
             inside = clip([asked], span_of(event))
@@ -1485,6 +1488,7 @@ def slot_add(request, pk):
     (FR-46). Its seats are set as it is made, which is when a captain knows them (FR-49)."""
     event = captained_event(request, pk)
     form = AddSlotForm(request.POST or None, event=event, roles=setting("slot_roles", []) or [])
+    clock(form, request.POST, display_zone(event))
     if request.method != "POST" or not form.is_valid():
         return form_page(
             request,
@@ -1580,7 +1584,7 @@ def event_duplicate(request, pk):
     event = captained_event(request, pk)
     shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.start
     if typed and was:
-        start = _typed_utc(typed)
+        start = _typed_utc(typed, request.POST, event)
         if start is None:
             messages.error(request, "Nothing was copied: the start was not a date and time.")
             return to_step(pk, "publish")

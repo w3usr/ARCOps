@@ -41,7 +41,7 @@ def test_a_utc_box_takes_the_date_and_a_24_hour_time_however_the_browser_is_set(
         " 2026-11-21 21:00 UTC ",
     ):
         assert parse_utc(text) == A, text
-    assert typed(A) == "2026-11-21 21:00" and parse_utc("") is None
+    assert typed(A) == "2026-11-21T21:00" and parse_utc("") is None  # a datetime-local value (A35)
     for text, said in (
         ("11/21/2026 09:00 PM", "Write it as 2026-11-21 21:00"),
         ("2026-11-21", "Write it as"),
@@ -60,3 +60,25 @@ def test_a_date_stored_as_text_reads_the_same_and_nothing_else_fails():
     assert when.day("2027-09-01") == "1 Sep 2027"
     assert when.utc("2026-11-21T21:00:00+00:00") == "Sat 21 Nov 2026 21:00 UTC"
     assert when.day("not a date") == "not a date" and when.utc("") == ""
+
+
+def test_a_time_box_reads_the_events_own_clock_only_when_the_form_says_local():
+    """A35: forms.clock() points each UTC box at the event's zone when the switch posts local."""
+    from zoneinfo import ZoneInfo
+
+    from django import forms
+
+    from apps.ops.forms import clock, utc_field
+    from apps.ops.when import typed
+
+    class F(forms.Form):
+        start = utc_field("Starts (UTC)")
+
+    ny = ZoneInfo("America/New_York")
+    local = clock(F({"start": "2026-11-21T16:00", "clock": "local"}), {"clock": "local"}, ny)
+    assert local.is_valid() and typed(local.cleaned_data["start"]) == "2026-11-21T21:00"  # EST
+    plain = clock(F({"start": "2026-11-21T16:00"}), {}, ny)
+    assert plain.is_valid() and typed(plain.cleaned_data["start"]) == "2026-11-21T16:00"
+    assert 'data-zone="America/New_York"' in str(plain["start"]) and "data-clock" not in str(
+        plain["start"]
+    )

@@ -129,7 +129,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_retime' event.pk slot.pk %}" class="stack" aria-labelledby="rt-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1">
       <h4 id="rt-h-{{ slot.pk }}">Move it</h4>
       <div class="row">
-        <div class="field"><label for="rt-start-{{ slot.pk }}">Starts (UTC)</label><input id="rt-start-{{ slot.pk }}" type="text" autocomplete="off" spellcheck="false" size="16" name="start" value="{{ slot.start|date:'Y-m-d H:i' }}" required><span class="helptext">As 2026-11-21 21:00: the date, then a 24-hour time in UTC (2100 works too).</span></div>
+        <div class="field"><label for="rt-start-{{ slot.pk }}">Starts (UTC)</label><input id="rt-start-{{ slot.pk }}" type="datetime-local" autocomplete="off" name="start" value="{{ slot.start|date:'Y-m-d\TH:i' }}" data-zone="{{ event|zone_name }}" required></div>
         <div class="field"><label for="rt-min-{{ slot.pk }}">Length (minutes)</label><input id="rt-min-{{ slot.pk }}" name="minutes" inputmode="numeric" pattern="[0-9]*" class="num" size="3" value="{{ slot_minutes }}" required></div>
       </div>
       <p class="helptext">{% if cell.signups|length == 1 %}The person in it stays, is told the old and the new time, and is asked to confirm again.{% elif cell.signups %}The {{ cell.signups|length }} people in it stay, are told the old and the new time, and are asked to confirm again.{% else %}Nobody is in it, so nobody is told.{% endif %}</p>
@@ -137,7 +137,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     </form>
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_split' event.pk slot.pk %}" class="stack" aria-labelledby="sp-h-{{ slot.pk }}">{% csrf_token %}<input type="hidden" name="manage" value="1">
       <h4 id="sp-h-{{ slot.pk }}">Split it</h4>
-      <div class="field"><label for="sp-at-{{ slot.pk }}">Split at (UTC)</label><input id="sp-at-{{ slot.pk }}" type="text" autocomplete="off" spellcheck="false" size="16" name="at" value="{{ slot_middle|date:'Y-m-d H:i' }}" required><span class="helptext">As 2026-11-21 21:00: the date, then a 24-hour time in UTC (2100 works too).</span></div>
+      <div class="field"><label for="sp-at-{{ slot.pk }}">Split at (UTC)</label><input id="sp-at-{{ slot.pk }}" type="datetime-local" autocomplete="off" name="at" value="{{ slot_middle|date:'Y-m-d\TH:i' }}" data-zone="{{ event|zone_name }}" required></div>
       <p class="helptext">Two slots with the same seats.{% if cell.signups %} Everyone in it is in both, and nobody is told, since nobody's hours change.{% endif %}</p>
       <div><button type="submit" class="secondary">Split the slot</button></div>
     </form>

@@ -67,7 +67,7 @@ def test_the_start_and_end_is_edited_and_keeps_or_cancels_its_slots(officer, mem
     ev = _future(c)
     url = f"/events/{ev.pk}/span/"
     page = c.get(url).content.decode()
-    assert 'value="2027-06-26 18:00"' in page and 'value="2027-06-26 22:00"' in page  # #274
+    assert 'value="2027-06-26T18:00"' in page and 'value="2027-06-26T22:00"' in page  # A35
     step = c.get(f"/events/{ev.pk}/manage/span/").content.decode()
     assert f'href="{url}"' in step and "Remove" not in step.split('aria-labelledby="span"')[1]
     # longer: every slot stays, and the new hour is empty until it is filled

@@ -323,3 +323,103 @@ document.addEventListener("input", (ev) => {
   tick();
   setInterval(tick, 15000);
 })();
+
+// UTC or the event's own clock in a time box (A35, SK 2026-11-16): contests run in UTC, and not
+// everyone reads it. Each form with a time box gets a "Times in" switch, starting in UTC or the
+// person's last choice; flipping it converts the boxes, and a line under each gives the same
+// moment in the other clock. The server reads `clock` (apps/ops/forms.py clock()). Without
+// JavaScript there is no switch, and every box is UTC.
+(() => {
+  const KEY = "arcops.clock";
+  const remembered = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
+  const remember = (v) => { try { localStorage.setItem(KEY, v); } catch { /* storage blocked */ } };
+  const pad = (n) => String(n).padStart(2, "0");
+  const asUtc = (v) => Date.UTC(+v.slice(0, 4), +v.slice(5, 7) - 1, +v.slice(8, 10), +v.slice(11, 13), +v.slice(14, 16));
+  const wall = (ms, zone) => {  // the wall clock in `zone` at instant `ms`, as a box value
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
+      timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+    return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+  };
+  const instant = (v, mode, zone) => {  // the UTC instant a box value means in its clock
+    const guess = asUtc(v);
+    if (mode === "utc") return guess;
+    const off = (ms) => asUtc(wall(ms, zone)) - ms;
+    return guess - off(guess - off(guess));
+  };
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const utcText = (ms) => {  // Sat 21 Nov 2026 21:00 UTC, as the pages write it (A34)
+    const d = new Date(ms);
+    return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+  };
+  const localText = (ms, zone) => new Intl.DateTimeFormat("en-US", {
+    timeZone: zone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  }).format(new Date(ms));
+  const zoneName = (zone, style) => {
+    try {
+      return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: style })
+        .formatToParts(new Date()).find((x) => x.type === "timeZoneName").value;
+    } catch { return zone; }
+  };
+  const valid = (v) => /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(v);
+  let made = 0;
+
+  const wire = (root) => {
+    root.querySelectorAll('input[type="datetime-local"][data-zone]').forEach((first) => {
+      const form = first.form;
+      const zone = first.dataset.zone;
+      if (!form || form.dataset.clock || zone === "UTC") return;
+      const boxes = [...form.querySelectorAll('input[type="datetime-local"][data-zone]')];
+      const short = zoneName(zone, "shortGeneric");
+      const n = ++made;
+      const set = document.createElement("fieldset");
+      set.className = "clock";
+      const legend = document.createElement("legend");
+      legend.textContent = "Times in";
+      set.append(legend);
+      const radios = ["utc", "local"].map((value) => {
+        const row = document.createElement("div");
+        row.className = "check";
+        const r = Object.assign(document.createElement("input"), { type: "radio", name: "clock", value, id: `clock-${value}-${n}` });
+        const l = Object.assign(document.createElement("label"), { htmlFor: r.id });
+        l.textContent = value === "utc" ? "UTC" : `${zoneName(zone, "longGeneric")} (${short})`;
+        row.append(r, l);
+        set.append(row);
+        return r;
+      });
+      (first.closest(".row") || first.closest(".field") || first).before(set);
+      const parts = boxes.map((box) => {
+        const label = form.querySelector(`label[for="${box.id}"]`);
+        const other = Object.assign(document.createElement("span"), { className: "helptext clock-other" });
+        box.after(other);
+        return { box, label, text: label ? label.textContent : "", other };
+      });
+      let mode = boxes.some((b) => b.dataset.clock === "local") ? "local" : "utc";
+      const show = () => {
+        radios.forEach((r) => { r.checked = r.value === mode; });
+        parts.forEach(({ box, label, text, other }) => {
+          if (label) label.textContent = mode === "utc" ? text : text.replace("(UTC)", `(${short})`);
+          const v = box.value.slice(0, 16);
+          const ms = valid(v) ? instant(v, mode, zone) : null;
+          other.textContent = ms === null ? "" : `= ${mode === "utc" ? localText(ms, zone) : utcText(ms)}`;
+        });
+      };
+      const switchTo = (next) => {
+        if (next === mode) return show();
+        parts.forEach(({ box }) => {
+          const v = box.value.slice(0, 16);
+          if (valid(v)) box.value = wall(instant(v, mode, zone), next === "utc" ? "UTC" : zone);
+        });
+        mode = next;
+        show();
+      };
+      form.dataset.clock = "on";
+      radios.forEach((r) => r.addEventListener("change", () => { switchTo(r.value); remember(r.value); }));
+      boxes.forEach((b) => b.addEventListener("input", show));
+      if (mode === "utc" && remembered() === "local") switchTo("local"); else show();
+    });
+  };
+  wire(document);
+  document.addEventListener("htmx:afterSettle", (ev) => wire(ev.target));
+})();

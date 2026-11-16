@@ -183,7 +183,7 @@ def test_duplicate_asks_when_the_copy_starts(officer):
     start = ev.start
     assert body.count('commandfor="dup-dlg" command="show-modal"') == 2
     assert (
-        f'name="start" type="text" autocomplete="off" spellcheck="false" size="16" value="{start:%Y-%m-%d %H:%M}" required'
+        f'name="start" type="datetime-local" autocomplete="off" value="{start:%Y-%m-%dT%H:%M}" data-zone='
         in body
     )
 

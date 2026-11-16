@@ -15,13 +15,14 @@ from apps.credentials.services import ladder
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
-from apps.ops.forms import NoColon, utc_field
+from apps.ops.forms import NoColon, clock, utc_field
 from apps.ops.templatetags.labels import role_label
 
 from .form_pages import done, form_page, step_url
 from .models import EligibilityRule, Event, Opening, OperatingLimit, Slot
 from .services.eligibility import club_default_rule, same_rule
 from .services.lifecycle import set_state
+from .services.roster import display_zone
 
 
 def captained_event(request, pk) -> Event:
@@ -216,7 +217,7 @@ class OpeningForm(NoColon, forms.Form):
 def opening_add(request, pk):
     """FR-54: a (when, audience) pair for a role. Empty categories means everyone."""
     event = captained_event(request, pk)
-    form = OpeningForm(request.POST or None)
+    form = clock(OpeningForm(request.POST or None), request.POST, display_zone(event))
     if request.method != "POST" or not form.is_valid():
         return form_page(
             request,

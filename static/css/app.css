@@ -1119,3 +1119,7 @@ a.whoami { text-decoration: none; color: inherit; display: flex; }
   white-space: nowrap; padding: .15rem .45rem; border-radius: var(--r-field); background: var(--fg); color: var(--panel);
   font-size: var(--t-small); font-weight: 400; pointer-events: none; z-index: 20;
 }
+
+/* The "Times in" switch app.js puts on a form with time boxes (A35): two radios on one line. */
+fieldset.clock { border: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); }
+fieldset.clock legend { padding: 0; margin-bottom: var(--s1); }

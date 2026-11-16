@@ -82,3 +82,9 @@ def next_meets(event) -> str:
 
     at = next_meeting(event)
     return f"{at:%a %-d %b}, {_clock(at.time())} {at:%Z}" if at else ""
+
+
+@register.filter
+def zone_name(event):
+    """The event's own zone, `America/New_York`, for a time box's local clock (A35)."""
+    return getattr(display_zone(event), "key", "UTC")

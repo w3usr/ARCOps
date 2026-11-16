@@ -3123,7 +3123,41 @@ displayed in [this] 24 hour format, not just the pickers"; "Keep the weekday"; t
 word) and by SK on 2026-11-16: the year dropped in rows and lists, plain dates as `21 Nov 2026`,
 ISO kept for machines, and `2100` accepted. *Record:* private tracker 274.
 
+### A35. A34: the browser's own date and time picker, in UTC or the event's own clock
+
+**Original (A34).** "UTC is typed as numbers in a plain box: `2026-11-21 21:00`, or `2100` with no
+colon as contest rules write it, whatever the browser's language. A plain date is typed
+`2026-11-21`."
+
+**Decision.**
+- Every box that takes a UTC date and time is the browser's own date and time picker
+  (`datetime-local`): Event start and end, the on-air hours, Add a slot, a slot's Move and Split,
+  The copy starts, and an opening's Opens at.
+- Each form with such a box has a **Times in** switch: **UTC**, or the event's own zone (its
+  display zone, else the club's), named as the browser names it, *Eastern Time (ET)*. Flipping it
+  converts the boxes, the labels follow (*Starts (UTC)*, *Starts (ET)*), and a line under each
+  box gives the same moment in the other clock (*= Sat, Nov 21, 4:00 PM EST*, or *= Sat 21 Nov
+  2026 21:00 UTC*). It starts in UTC, or on the clock the person last chose in that browser.
+  Whatever the clock, the time is stored and shown in UTC as A34 says.
+- Without JavaScript there is no switch and every box is UTC. Where the event's zone is UTC there
+  is nothing to switch to, and no switch.
+- Every box that takes a plain date is the browser's own date picker: an entry link's Expires on,
+  a license override's Expires, and the computer password's Effective date.
+- The picker shows the date and time the way the computer's language writes them (on a US
+  machine, `11/21/2026, 09:00 PM`). What it sends is ISO 8601; a typed `2026-11-21 21:00` or
+  `2100` still reads where a box is filled some other way.
+- A local time that happens twice, the hour the clocks go back, is read as the first of the two.
+- Everything A34 says about how a date and time reads on a page, in mail, the PDF, the outbox
+  and for machines is unchanged.
+
+**Decided** by SK on 2026-11-16: "we need date and time picker rather [than] free form" for
+events, slots and the rest, choosing the browser's own picker over a calendar with a separate
+24-hour time box and over a picker built for ARCOps; then "two modes, either UTC or local time",
+because, as NAF raised, some people know only US time while contests run in UTC. SK chose a
+switch on each form over a profile setting and over both clocks side by side, starting in UTC.
+*Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A34), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A35), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

@@ -40,12 +40,11 @@ class LinkForm(NoColon, forms.Form):
     )
     kind = forms.ChoiceField(choices=EntryLink.Kind.choices)
     required_domain = forms.ChoiceField(required=False, label="Required email domain (class links)")
-    # Typed as 2026-11-21 in a plain box, not the browser's locale date box (#274)
+    # The browser's own date box (A35), which sends 2026-11-21 whatever it shows
     expires_at = forms.DateField(
         label="Expires on",
         input_formats=["%Y-%m-%d"],
-        help_text="As 2026-11-21.",
-        widget=forms.DateInput(format="%Y-%m-%d", attrs={"autocomplete": "off", "size": 10}),
+        widget=forms.DateInput(format="%Y-%m-%d", attrs={"type": "date", "autocomplete": "off"}),
     )
     cap = forms.IntegerField(
         required=False, min_value=1, max_value=500, label="Cap on accounts (optional)"
