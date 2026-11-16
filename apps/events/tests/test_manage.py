@@ -35,6 +35,7 @@ def _build(c):
         },
     )
     ev = Event.objects.get(title="Field Day")
+    ev.locations.all().delete()  # its club station by default (276): these tests add their own
     # The first period is added on Operating periods like any other (#173).
     c.post(
         f"/events/{ev.pk}/periods/add/", {"start": "2026-06-27T18:00", "end": "2026-06-28T18:00"}
@@ -455,7 +456,9 @@ def _bare(c, **extra):
             **extra,
         },
     )
-    return Event.objects.get(title="Bare")
+    ev = Event.objects.get(title="Bare")
+    ev.locations.all().delete()  # bare: not even the default club station (276)
+    return ev
 
 
 def test_publishing_is_refused_until_the_required_steps_are_done(officer):
@@ -563,3 +566,26 @@ def test_a_completed_event_is_under_past_even_before_its_dates_end(officer):
     page = _as(m, view="member").get("/events/").content.decode()
     past = page.split('aria-labelledby="p"', 1)[1] if 'aria-labelledby="p"' in page else ""
     assert "Field Day" in past
+
+
+def test_a_new_event_starts_at_the_club_station_and_a_net_has_no_location(officer):
+    """FR-51 and private tracker 276 (SK, 2026-11-16): the club station, named and described
+    from Settings, with one position; a display-only event gets none."""
+    for key, value in {
+        "club.station_location_name": "The shack",
+        "club.station_address": "Room 596",
+        "club.station_directions_html": "<p>Fifth floor.</p>",
+    }.items():
+        ClubSetting.objects.update_or_create(key=key, defaults={"value": value})
+    c = _as(officer)
+    c.post("/events/new/", {"title": "Sprint", "type": "contest"})
+    loc = Event.objects.get(title="Sprint").locations.get()
+    assert (loc.name, loc.address, loc.directions_html, loc.is_club_station) == (
+        "The shack",
+        "Room 596",
+        "<p>Fifth floor.</p>",
+        True,
+    )
+    assert [p.name for p in loc.positions.all()] == ["Station"]
+    c.post("/events/new/", {"title": "Net", "type": "net", "display_only": "on"})
+    assert not Event.objects.get(title="Net").locations.exists()

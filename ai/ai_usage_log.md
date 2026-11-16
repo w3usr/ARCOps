@@ -4994,3 +4994,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation (removal). A slot that can run is Covered with no note; no warning email, role-change confirmation, announce filter or count for depending on one person; "below preferred class" kept (FR-61). The setting defaults.at_risk_horizon_hours keeps its key: it is still the warnings' horizon and its words on Settings already read "short of people". Verified: ruff, the guards, app tests 613 passed.
 - **Human Review Status**: Pending review
 - **Git Hash**: 25bafe0
+
+## [2026-11-16 12:54 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Build NAF's ticket on the club station as a new event's location (private tracker 276; SK, 2026-11-16: created with the event, with the station's address, directions and notes as club settings).
+- **Sections/Files Affected**: apps/events/views_manage.py (event_create makes the club station location and a position, Station, for every event that is not display-only); apps/ops/views_settings.py and templates/ops/settings.html (club.station_address, club.station_directions_html, club.station_kbyg_html; a rich-text kind for Settings); config/club.example.yaml; tests: test_manage.py (new test; two helpers clear the default location so the tests that add their own keep their meaning), test_manage_gaps.py, apps/ops/tests/test_settings_and_privacy.py (new test).
+- **Nature of Contribution**: Code generation. Verified: ruff, the guards and the migration check pass; app tests 615 passed; the sysadmin a11y sweep passes in Chromium and WebKit with the Settings page's three editors.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

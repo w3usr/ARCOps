@@ -20,6 +20,7 @@ def _future(c, title="Sweepstakes"):
     """A draft a year ahead: one four-hour period, one location, one position, four slots."""
     c.post("/events/new/", {"title": title, "type": "contest"})
     ev = Event.objects.get(title=title)
+    ev.locations.all().delete()  # its club station by default (276): this adds its own
     c.post(
         f"/events/{ev.pk}/periods/add/", {"start": "2027-06-26T18:00", "end": "2027-06-26T22:00"}
     )

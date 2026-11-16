@@ -504,6 +504,16 @@ def event_create(request):
         event.created_by = request.user
         event.kbyg_html = kbyg_outline()  # FR-77: it starts with the outline (#174)
         event.save()
+        if not event.display_only:  # FR-51: it starts at the club station (private tracker 276)
+            station = Location.objects.create(
+                event=event,
+                name=setting("club.station_location_name") or "Club station",
+                is_club_station=True,
+                address=setting("club.station_address") or "",
+                directions_html=setting("club.station_directions_html") or "",
+                kbyg_html=setting("club.station_kbyg_html") or "",
+            )
+            Position.objects.create(location=station, name="Station")
         Captaincy.objects.get_or_create(event=event, user=request.user)
         record(request.user, "event.created", event, after={"title": event.title})
         messages.success(request, "Draft created.")

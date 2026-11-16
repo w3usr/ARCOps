@@ -39,6 +39,9 @@ GROUPS = [
             "club.timezone",
             "club.phone_region",
             "club.station_location_name",
+            "club.station_address",
+            "club.station_directions_html",
+            "club.station_kbyg_html",
             "club.postal_address",
         ],
     ),
@@ -153,6 +156,20 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
     "club.station_location_name": (
         "What the station is called",
         'The name members would use for it: "Club station", "The shack".',
+    ),
+    # A new event starts with the club station as its location, carrying these (private tracker
+    # 276; SK, 2026-11-16). Changing them later leaves events already made as they are.
+    "club.station_address": (
+        "The station's address",
+        "Given to each new event's club station location.",
+    ),
+    "club.station_directions_html": (
+        "Directions to the station",
+        "How to get there and get in. Given to each new event's club station location.",
+    ),
+    "club.station_kbyg_html": (
+        "Know before you go, at the station",
+        "Given to each new event's club station location.",
     ),
     "club.sending_address": (
         "Mail comes from",
@@ -301,12 +318,14 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
 }
 
 
-RICH = ["privacy_notice_html"]
+RICH = ["privacy_notice_html", "club.station_directions_html", "club.station_kbyg_html"]
 # Field kinds beyond text, number, and JSON. A time zone is always a drop-down (NAF,
 # 2026-09-16, after a typo in the free-text field); a color gets the color picker; an image
 # gets an uploader with a preview, stored under MEDIA_ROOT/branding/ (FR-89).
 KIND_OF = {
     "club.timezone": "tz",
+    "club.station_directions_html": "rich",
+    "club.station_kbyg_html": "rich",
     "security.two_factor_required_groups": "json",
     "branding.accent": "color",
     **{f"branding.{k}": "image" for k in BRANDING_IMAGES},
@@ -393,7 +412,7 @@ def settings_page(request):
                         except ValueError as exc:
                             errors[key] = str(exc)
                     continue
-                if key not in request.POST:
+                if key not in request.POST or kind == "rich":  # rich text: the RICH pass below
                     continue
                 raw = request.POST.get(key, "")
                 typed[key] = raw
@@ -489,6 +508,10 @@ def settings_page(request):
             or current.get("privacy_notice_html")
             or "",
             "mce_conf": mce_conf,
+            # the editor attaches to its own textarea when the configuration names no selector
+            "rich_conf": json.dumps(
+                {k: v for k, v in settings.TINYMCE_DEFAULT_CONFIG.items() if k != "selector"}
+            ),
             "zones": zone_names(),
             "default_accent": DEFAULT_ACCENT,
         },

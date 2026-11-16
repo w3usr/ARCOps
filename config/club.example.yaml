@@ -23,6 +23,10 @@ club:
   # own country's shape, with the international prefix.
   phone_region: "US"
   station_location_name: "Club station"
+  # Given to each new event's club station location; edited in Settings (FR-51).
+  station_address: null
+  station_directions_html: null
+  station_kbyg_html: null
   # Where the club is, for the foot of bulk mail: the FTC's guide asks a sender to "tell
   # recipients where you're located", and a street address, a registered PO box or a registered
   # private mailbox all qualify. Left empty, the line is simply absent.

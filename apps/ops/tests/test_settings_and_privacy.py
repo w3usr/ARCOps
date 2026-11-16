@@ -200,3 +200,17 @@ def test_the_shipped_privacy_notice_says_where_the_data_is_held(settings):
     heads = [h for h in ("Who sees what", "Where it is", "Closing your account") if h in notice]
     assert heads == ["Who sees what", "Where it is", "Closing your account"]
     assert "replaces this" in notice, "worded as a placeholder a club replaces, not a claim"
+
+
+def test_the_stations_directions_are_rich_text_and_cleaned():
+    """Private tracker 276: the club station's directions are edited in Settings like the privacy
+    notice, and what is saved is cleaned the same way."""
+    c, _ = _as("sysadmin")
+    body = c.get("/ops/settings/").content.decode()
+    assert 'name="club.station_directions_html" class="tinymce"' in body
+    r = c.post(
+        "/ops/settings/",
+        {"club.station_directions_html": "<p>Room 596</p><script>x()</script>"},
+    )
+    assert r.status_code == 302
+    assert ClubSetting.objects.get(key="club.station_directions_html").value == "<p>Room 596</p>"

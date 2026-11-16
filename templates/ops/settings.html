@@ -18,6 +18,7 @@
       <input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp,image/x-icon">
       {% if r.url %}<label class="check inline"><input type="checkbox" name="{{ r.key }}__clear"> remove</label>{% endif %}</span>
       <span class="helptext">PNG, JPEG, SVG, WebP, or ICO, 2 MB at most. Today: <code>{{ r.value|default:"none" }}</code>.</span>
+    {% elif r.kind == 'rich' %}<textarea id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" class="tinymce" data-mce-conf="{{ rich_conf }}">{{ r.value }}</textarea>
     {% elif r.kind == 'int' %}<input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" type="number" value="{{ r.value }}">
     {% else %}<input id="s-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" name="{{ r.key }}" value="{{ r.value }}">{% endif %}
     {% if r.error %}<span class="fielderror">{{ r.error }}</span>{% endif %}
