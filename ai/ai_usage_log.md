@@ -5090,3 +5090,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, documentation (addendum), tests. Verified: ruff, format and the interface guard; app tests passed, with two new (a form reads Eastern only when its switch says so; a slot moved in Eastern lands at the right UTC); the switch's conversion checked in Node across both 2026 DST changes (the repeated 01:30 in November reads as the first, as the server does); the a11y sweep in Chromium and WebKit (its demo club is UTC, so the switch itself is not swept); in a browser, an event in America/New_York shows the switch, converts to Eastern, and saving in Eastern keeps the same UTC start and end. The scenario suite against a local generic server: 45 passed, 5 errors (T08, T16, T25, T31, T51), none in a time box: the generic club's UTC zone and mail off, a button row's layout, a level marking.
 - **Human Review Status**: Pending review
 - **Git Hash**: ddc7720
+
+## [2026-11-16 18:50 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconcile the requirements with the 12 to 16 November window (fbcaae8..242faf9), from the private repository's /reconcile.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A13: `Outbox` has no channel, and its two never-written states are gone, after private tracker 185; the footer's date list).
+- **Nature of Contribution**: Analysis and documentation (addendum). Every behaviour change in the window was checked for its functional addendum (A24 to A35, all present); the one requirement left untrue was the technical data-model table's `Outbox` channel. The body is not edited. Verified: the club-neutral and requirement-ID guards.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

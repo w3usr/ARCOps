@@ -872,7 +872,23 @@ snapshot taken before a deploy is the way back for anything more.
 fields on `Event` over keeping the table with one row per event). Dev and production each held 3
 events, none with more than one period, when it was decided.
 
+### A13. The data model: `Outbox` has no channel
+
+**Original (the data model table, `comms`).** "`Outbox` (recipient, channel, category, body,
+state, sent/failed)".
+
+**Decision.** `Outbox` carries no channel. The field held `email` on every row and nothing read
+it; a message's other routes are its own (the in-application copy is the row itself, FR-82, and a
+browser notification is sent per device, FR-112), and SMS (FR-83) is Later. Its states are *not
+sent (email off)*, *sent*, *failed* and *not emailed (preference off)*: *queued* and *sent outside
+the system* were never written. An announcement copied to an officer's own mail client is still
+recorded as sent outside the system (FR-106), on the announcement. Migration `comms/0004` drops the
+column.
+
+**Decided by** SK: filed at SK's request on 2026-11-04 from the over-engineering audit (private
+tracker 185) and worked through on 2026-11-12; on production since 2026-11-16.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11) and 2026-11-16 (A12), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11) and 2026-11-16 (A12, A13), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>
