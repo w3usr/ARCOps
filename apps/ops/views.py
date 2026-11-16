@@ -18,6 +18,7 @@ from apps.events.services.viability import checkin_window_open
 from . import jobs
 from .config import setting
 from .models import JobRun
+from .templatetags.nav import _ICONS
 
 
 def healthz(request):
@@ -298,10 +299,4 @@ def components(request):
         from django.http import Http404
 
         raise Http404
-    return render(request, "ops/components.html", {"icons": sorted(_icon_names())})
-
-
-def _icon_names():
-    from .templatetags.nav import _ICONS
-
-    return _ICONS
+    return render(request, "ops/components.html", {"icons": sorted(_ICONS)})
