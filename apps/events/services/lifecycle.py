@@ -8,9 +8,9 @@ from django.conf import settings as dj
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.accounts.models import User
 from apps.comms.services import send
 from apps.ops.audit import record
+from apps.ops.groups import people_who_may
 from apps.ops.templatetags.labels import role_label
 
 from ..models import Event, Opening, Slot
@@ -87,10 +87,7 @@ def announce_published(actor, event: Event) -> int:
     start, end = event.starts_at(), event.ends_at()
     when = mail_when(start, end, event, " to ") if start and end else ""
     link = _site() + reverse("event_detail", args=[event.pk])
-    members = User.objects.filter(
-        is_active=True,
-        groups__permissions__codename="view_directory",
-    )
+    members = people_who_may("view_directory")
     n = 0
     for u in members:
         # Its own category, so that turning off an officer's announcements does not silently
@@ -116,10 +113,7 @@ def announce_openings(now: datetime | None = None) -> int:
         # ponytail: at most once; a run that dies mid-send leaves the rest untold, not told twice.
         if not Opening.objects.filter(pk=o.pk, announced_at__isnull=True).update(announced_at=now):
             continue
-        audience = User.objects.filter(
-            is_active=True,
-            groups__permissions__codename="view_directory",
-        )
+        audience = people_who_may("view_directory")
         if o.categories:
             audience = audience.filter(category__in=o.categories)
         link = _site() + reverse("event_detail", args=[o.event.pk])

@@ -357,6 +357,22 @@ def test_two_runs_at_once_announce_an_opening_once(monkeypatch):
     assert Outbox.objects.filter(user=stu, category="opening").count() == 1
 
 
+def test_an_account_in_two_levels_is_announced_to_once():
+    """A member who is also an officer got each publish and openings announcement twice, once
+    per group that grants the directory."""
+    now = timezone.now()
+    both = _user("both@example.org")
+    both.groups.add(Group.objects.get(name="officer"))
+    e, _ = _event(now + timedelta(days=4))
+    assert lifecycle.announce_published(both, e) == 1
+    Opening.objects.create(
+        event=e, role="observer", opens_at=now - timedelta(minutes=1), announce=True
+    )
+    lifecycle.announce_openings(now)
+    assert Outbox.objects.filter(user=both, category="event_published").count() == 1
+    assert Outbox.objects.filter(user=both, category="opening").count() == 1
+
+
 def _racing(monkeypatch, other):
     """Run `other` once, inside the first offer_next, after it has read the next entry and
     before it writes the offer: offer_hours() sits between the two."""
