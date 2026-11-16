@@ -68,14 +68,6 @@ class LicenseRecord(models.Model):
         )
 
     @property
-    def effective_source(self) -> str:
-        if self.has_override:
-            return "sysadmin override" + (
-                f", {self.override_country}" if self.override_country else ""
-            )
-        return self.source or "unverified"
-
-    @property
     def effective_class(self) -> str:
         return self.override_class or self.operator_class
 
