@@ -19,41 +19,13 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-import nh3
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from apps.credentials.models import AgreementTemplate, CredentialType
 from apps.ops.config import config_dir, flatten, load_yaml
 from apps.ops.models import ClubSetting
-
-ALLOWED_TAGS = {
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "p",
-    "ol",
-    "ul",
-    "li",
-    "strong",
-    "em",
-    "a",
-    "table",
-    "thead",
-    "tbody",
-    "tr",
-    "th",
-    "td",
-    "br",
-    "blockquote",
-}
-
-
-def sanitise(html: str) -> str:
-    return nh3.clean(
-        html, tags=ALLOWED_TAGS, attributes={"a": {"href"}, "th": {"scope"}}, link_rel="noopener"
-    )
+from apps.ops.templatetags.richtext import sanitise
 
 
 class Command(BaseCommand):
