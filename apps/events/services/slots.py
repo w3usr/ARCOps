@@ -245,15 +245,6 @@ def hour_grid(event) -> list[dict]:
     return rows
 
 
-def scheduled_hours(event) -> float:
-    total = timedelta()
-    for s in Slot.objects.filter(
-        position__location__event=event, kind="operating", cancelled=False
-    ):
-        total += s.end - s.start
-    return total.total_seconds() / 3600
-
-
 def health(event) -> dict:
     """FR-66: counts by status, hours against limits."""
     counts = {"total": 0, "empty": 0, "not_viable": 0, "viable": 0, "at_risk": 0}
@@ -262,11 +253,10 @@ def health(event) -> dict:
     ).prefetch_related("signups__user"):
         counts["total"] += 1
         counts[evaluate(slot).status] += 1
-    hours = scheduled_hours(event)
     report = limit_report(event)
     return {
         "counts": counts,
-        "scheduled_hours": round(hours, 1),
+        "scheduled_hours": report["total"],
         "over_total_limit": report["over_total"],
         "limits": report,
     }
