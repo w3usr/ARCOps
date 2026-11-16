@@ -19,12 +19,16 @@ def generate_slots(
     windows=None,
     setup_minutes: int | None = None,
     breakdown_minutes: int | None = None,
+    fill: bool = False,
 ):
     """Fill each operating period with slots of `minutes`, aligned to the period start, with a
     final short slot if the period length is not a multiple. `windows`, when given, is a list of
     (start, end) datetimes to fill; otherwise the event's on-air hours (#247), which are the whole
     periods unless the club has chosen otherwise.
-    Setup slots go before the first period and breakdown slots after the last (FR-47)."""
+    Setup slots go before the first period and breakdown slots after the last (FR-47).
+    With `fill` (#153, FR-48), only the hours no slot has yet, and no setup or breakdown: every
+    existing slot, its seats and its sign-ups stay as they are, so this runs after people have
+    signed up. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
     return [
         Slot.objects.create(position=pos, start=a, end=b, kind=kind)
         for pos, a, b, kind in plan_slots(
@@ -34,6 +38,7 @@ def generate_slots(
             setup_slots,
             breakdown_slots,
             windows,
+            fill=fill,
             setup_minutes=setup_minutes,
             breakdown_minutes=breakdown_minutes,
         )
@@ -72,15 +77,11 @@ def plan_slots(
             yield pos, last + after * i, last + after * (i + 1), "breakdown"
 
 
-def describe(
-    event, positions, minutes=60, setup_slots=0, breakdown_slots=0, windows=None, fill=False
-) -> str:
+def describe(event, positions, minutes=60, setup_slots=0, breakdown_slots=0, fill=False) -> str:
     """The line the generator shows before anything is made (#168): how many slots, per position
     and across positions; or, filling, how many go into the empty hours. ponytail: per position
     as the first position has it, which is every position's count when generating."""
-    planned = list(
-        plan_slots(event, positions, minutes, setup_slots, breakdown_slots, windows, fill)
-    )
+    planned = list(plan_slots(event, positions, minutes, setup_slots, breakdown_slots, fill=fill))
     n = len(planned)
     if fill:
         if not n:
@@ -129,17 +130,6 @@ def empty_hours(position, spans) -> list[tuple]:
         if end - t >= SHORTEST:
             out.append((t, end))
     return out
-
-
-def fill_empty_hours(event, positions, minutes: int = 60, windows=None) -> list[Slot]:
-    """#153 (FR-46, FR-48): operating slots for the on-air hours (or `windows`) that
-    have no slot yet, position by position. Every existing slot, its seats and its sign-ups stay
-    as they are, so this runs after people have signed up: a range or a period added later, or a
-    new position, gets its slots. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
-    return [
-        Slot.objects.create(position=pos, start=a, end=b, kind=kind)
-        for pos, a, b, kind in plan_slots(event, positions, minutes, windows=windows, fill=True)
-    ]
 
 
 # ------------------------------------------------------------- on-air hours (#247, A15) ---
