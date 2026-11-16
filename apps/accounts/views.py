@@ -200,8 +200,11 @@ def invitations(request):
             form = InviteForm()
     else:
         form = InviteForm()
+    return _invitations_page(request, form, created)
+
+
+def _invitations_page(request, form, created):
     base = f"{request.scheme}://{request.get_host()}"
-    recent = Invitation.objects.order_by("-created")[:25]
     return render(
         request,
         "accounts/invitations.html",
@@ -210,7 +213,7 @@ def invitations(request):
             "created": created,
             "created_text": invitation_text(created, base) if created else "",
             "created_link": f"{base}/me/invite/{created.token}/" if created else "",
-            "recent": recent,
+            "recent": Invitation.objects.order_by("-created")[:25],
             "base": base,
         },
     )
@@ -469,22 +472,10 @@ def invitation_action(request, pk):
     elif action == "reissue":
         base = f"{request.scheme}://{request.get_host()}"
         new = reissue_invitation(request.user, inv, base_url=base)
-        recent = Invitation.objects.order_by("-created")[:25]
         messages.success(
             request, f"New invitation issued to {new.email}; the old link no longer works."
         )
-        return render(
-            request,
-            "accounts/invitations.html",
-            {
-                "form": InviteForm(),
-                "created": new,
-                "created_text": invitation_text(new, base),
-                "created_link": f"{base}/me/invite/{new.token}/",
-                "recent": recent,
-                "base": base,
-            },
-        )
+        return _invitations_page(request, InviteForm(), new)
     else:
         raise Http404
     return redirect("invitations")
