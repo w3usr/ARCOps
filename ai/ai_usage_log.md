@@ -5146,3 +5146,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, documentation (addendum), tests. The partial Change seats was first reproduced on a throwaway demo database with a real SQLite lock (2, 2, 2 became 3, 2, 2, then 4, 3, 3 on retry); the new test fails without the transaction and passes with it. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T11, T12, T37 and T41 locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: 25399b7
+
+## [2026-11-17 15:47 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 327 and 334 (FR-67): a member's email and phone, and a surname or a first name kept behind a preferred one, no longer reach members through the responsible-adult page or the directory's search. SK chose the shape for 327 on 2026-11-17: the picker keeps offering any adult member by name; their details stay with captains and officers.
+- **Sections/Files Affected**: apps/events/models.py (`ResponsibleAdult.contact_email` and `contact_phone`: a named member's own details); apps/events/views_adults.py (naming a member, by the picker or from the saved list, links them and copies nothing); apps/events/migrations/0012_a_named_member_is_a_link_not_a_copy.py (clears the copies already stored on rows that link a member); templates/events/_slot_body.html (captains read the contact details; others the phone a guardian typed, never a member's); apps/accounts/views_members.py (a member's search matches the preferred name, the first name where there is none, and the callsign; the surname, the first name and the addresses are an officer's search); tests: apps/accounts/tests/test_phase7.py, test_members.py.
+- **Nature of Contribution**: Code generation, a data migration, tests. Each new test fails against the code before it and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit (one member-picker timing failure under load, passing alone twice; that test covers the slot dialog, untouched here); scenarios T07, T11, T22, T23, T24, T38, T44, T47 and T53 locally.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

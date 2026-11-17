@@ -56,6 +56,29 @@ def _as(user, view="sysadmin"):
     return c
 
 
+def test_a_member_finds_others_only_by_what_they_see_of_them(people):
+    """Private tracker 334 (FR-67): a member sees "Ann O." and "Bob", so a search for the surname
+    or for the first name behind a preferred one finds nobody for them; an officer finds both."""
+    User.objects.create_user(
+        "rob@uni.example",
+        "pw-Testing-123",
+        groups=["member"],
+        first_name="Robert",
+        preferred_name="Bob",
+        last_name="Quillfeather",
+    )
+
+    def found(user, q):
+        body = _as(user).get(f"/members/?q={q}").content.decode()
+        return re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
+
+    mem, off = people["mem"], people["off"]
+    assert "Ann" not in found(mem, "Officer") and "Bob" not in found(mem, "Quillf")
+    assert "Bob" not in found(mem, "Robert")
+    assert "Ann" in found(mem, "ann") and "Bob" in found(mem, "bob") and "Mo" in found(mem, "n0mem")
+    assert "Ann" in found(off, "Officer") and "Quillfeather" in found(off, "Robert")
+
+
 def test_members_see_short_names_and_officers_see_everything(people):
     """Everyone gets the same table; a member gets fewer columns in it (NAF, 2026-09-19).
 

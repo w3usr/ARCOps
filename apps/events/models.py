@@ -271,7 +271,9 @@ class SignUp(models.Model):
 
 
 class ResponsibleAdult(models.Model):
-    """The adult accompanying a minor for one sign-up (FR-64)."""
+    """The adult accompanying a minor for one sign-up (FR-64). A member named here is a link, not
+    a copy: their email and phone stay on their own account, shown only to those who may see them
+    (FR-67; private tracker 327). `email` and `phone` are what the guardian typed for anyone else."""
 
     signup = models.ForeignKey(SignUp, on_delete=models.CASCADE, related_name="responsible_adults")
     name = models.CharField(max_length=120)
@@ -281,6 +283,14 @@ class ResponsibleAdult(models.Model):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     present_at = models.DateTimeField(null=True, blank=True)  # recorded at check-in
+
+    @property
+    def contact_email(self) -> str:
+        return self.member.email if self.member_id else self.email
+
+    @property
+    def contact_phone(self) -> str:
+        return self.member.cell_phone if self.member_id else self.phone
 
 
 class Captaincy(models.Model):

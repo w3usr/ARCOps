@@ -64,7 +64,13 @@ def adults(request, signup_id):
             messages.success(request, f"{a.name} removed.")
         elif action == "pick":  # from the saved list: "name|email|phone|member_id"
             name, email, phone, member_id = (request.POST.get("saved", "") + "|||").split("|")[:4]
-            member = User.objects.filter(pk=member_id).first() if member_id else None
+            member = (
+                User.objects.with_access().filter(pk=member_id, under_18=False).first()
+                if member_id
+                else None
+            )
+            if member:  # a link to the member, never a copy of their details (327)
+                name, email, phone = member.full_name, "", ""
             if name.strip():
                 ResponsibleAdult.objects.create(
                     signup=su,
@@ -83,13 +89,9 @@ def adults(request, signup_id):
             member = get_object_or_404(User, pk=request.POST.get("member"), under_18=False)
             if not member.has_access:
                 raise Http404
-            ResponsibleAdult.objects.create(
-                signup=su,
-                name=member.full_name,
-                email=member.email,
-                phone=member.cell_phone,
-                member=member,
-            )
+            # The member, linked: their email and phone are not copied here, where the guardian and
+            # the slot's other members would read them (FR-67; private tracker 327).
+            ResponsibleAdult.objects.create(signup=su, name=member.full_name, member=member)
             record(
                 request.user,
                 "responsible_adult.named",

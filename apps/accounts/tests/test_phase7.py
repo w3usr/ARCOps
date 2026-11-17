@@ -261,6 +261,37 @@ def test_roster_shows_adults_to_slot_mates_and_guardians_to_captains():
     assert b"Uncle Ray" in page and b"ray@example.org" in page and b"parent@example.org" in page
 
 
+def test_a_member_named_as_the_adult_is_a_link_and_only_captains_read_their_details():
+    """Private tracker 327 (FR-67): a guardian who names a member, by the picker or from the saved
+    list, stores no copy of their email or phone; the guardian and the slot's other members read the
+    name only, and the captains read the member's own details."""
+    officer, guardian, minor = _family()
+    adult = _user("pat@example.org", cell_phone="5705550142", category="community")
+    mate = _user("mate@example.org")
+    slot = _slot(officer)
+    su = SignUp.objects.create(slot=slot, user=minor, role="observer")
+    SignUp.objects.create(slot=slot, user=mate, role="observer")
+    c = _as(guardian)
+    c.post(f"/events/signup/{su.pk}/adults/", {"action": "member", "member": adult.pk})
+    row = ResponsibleAdult.objects.get(signup=su)
+    assert row.member == adult and row.email == "" and row.phone == ""
+    page = c.get(f"/events/signup/{su.pk}/adults/").content.decode()
+    assert "Pat Tester" in page and "pat@example.org" not in page and "555-0142" not in page
+    # the saved list cannot carry the details back in, whatever is posted
+    slot2 = _slot(officer, days=6)
+    su2 = SignUp.objects.create(slot=slot2, user=minor, role="observer")
+    c.post(
+        f"/events/signup/{su2.pk}/adults/",
+        {"action": "pick", "saved": f"Pat Tester|pat@example.org|5705550142|{adult.pk}"},
+    )
+    assert ResponsibleAdult.objects.filter(signup=su2, member=adult, email="", phone="").exists()
+    url = f"/events/{slot.event.pk}/slot/{slot.pk}/"
+    page = _as(mate).get(url).content.decode()
+    assert "Pat Tester" in page and "pat@example.org" not in page and "555-0142" not in page
+    page = _as(officer).get(url).content.decode()
+    assert "pat@example.org" in page and "555-0142" in page
+
+
 def test_the_roster_says_with_an_adult_only_once_one_is_named():
     """T47, 2026-10-21: members outside the slot read "under 18, with an adult" while nobody had
     been named, beside the slot's own "Needs a responsible adult"."""
