@@ -494,6 +494,12 @@ taken off screen and the label is what replaces it. A table with a header row an
 Every table stacks there. Letting a wide one keep its shape and scroll sideways inside a
 wrapper was tried, and it pushed the whole page sideways at 390px, which FR-95 forbids.
 
+Stacked, a row is set off from the next by a rule, as on a wide screen, not drawn as a card of
+its own, and every line of it sits at one inset (SK, 2026-11-17). The header row is hidden as
+Tailwind's `sr-only` hides a thing, a 1px clipped box: moved off to the side at full height, it
+still counted in Firefox, and an empty table's `.table-wrap` became a scrolling region with
+nothing in it to focus.
+
 ## Feedback
 
 Four levels, each with a word as well as a tint: **Done** (success), **Note** (info),

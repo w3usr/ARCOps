@@ -627,9 +627,17 @@ label .req { margin-left: .15rem; }
 @media (max-width: 40rem) {
   .table, .table thead, .table tbody,
   .table tr, .table th, .table td { display: block; }
-  .table thead { position: absolute; left: -999px; }
-  .table tr { border: 1px solid var(--line); border-radius: var(--r-card); margin: .5rem 0; padding: .25rem; }
+  /* Hidden as Tailwind's sr-only hides: a 1px box, not the whole header moved aside. Moved aside,
+     its full height still counted in Firefox, so an empty table's .table-wrap scrolled with
+     nothing to focus (axe scrollable-region-focusable, the Invite page, CI 2026-11-17). */
+  .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* A row is told from the next by a rule, as on a wide screen, not drawn as a card of its own
+     (SK, 2026-11-17). Every line of it at one inset: the panel's, or a section's. */
+  .table tr { border-bottom: 1px solid var(--line); padding: .5rem 0; }
+  .table tbody tr:last-child { border-bottom: 0; }
   .table td, .table th { border: 0; padding: .25rem .5rem; }
+  .table.data :is(th, td):is(*, :first-child, :last-child) { padding: .25rem 1.25rem; }
+  .section .table.data :is(th, td):is(*, :first-child, :last-child) { padding: .25rem .5rem; }
   /* Stacked, a cell has lost its column heading. data-label puts it back; a table with a
      header row and no data-label is unreadable here, which is what tools/check_interface.sh
      refuses. Every table stacks: one wide enough to want sideways scrolling instead overflowed

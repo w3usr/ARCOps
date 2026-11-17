@@ -5130,3 +5130,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, documentation. Measured before and after in a browser on the demo, every page the sidebar reaches plus an event, its Manage page, profile editing and mentors: box names were 18 px in panels and 20 px in sections and cards, cards 4 px lower; after, all 29 read 18 px at 17 px. Verified: the three repository guards; app tests all passed; the a11y sweep in Chromium and WebKit; screenshots of the profile and Invite at desktop and phone width.
 - **Human Review Status**: Pending review
 - **Git Hash**: 908e7c9
+
+## [2026-11-17 14:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Fix CI's Firefox accessibility failure on Invite (axe scrollable-region-focusable on `.table-wrap` at 390 px) at its root, and, at SK's word, set a stacked table's rows apart by a rule instead of drawing each as a card.
+- **Sections/Files Affected**: static/css/app.css (under 40rem a table's header row is hidden as Tailwind's `sr-only` hides a thing, a 1px clipped box, not moved off to the left at full height; a stacked row has a rule below it, not a border and corners of its own, and every line of it sits at one inset); docs/INTERFACE.md (Tables: both, with the reason).
+- **Nature of Contribution**: Bug fix, research, design change. Research: MDN's overflow page (`overflow-x: auto` makes `overflow-y` auto too) and Tailwind's `sr-only` declarations from its source. Measured in Chromium and WebKit: the hidden header of the empty Approvals log reached 236 px below its wrapper, counted by neither; Approvals passed in Firefox only because its header holds sort links, which axe accepts as focusable content; after the change the header is a 1px box inside the wrapper on every page measured. Verified: the interface guard; the a11y sweep in Chromium and WebKit, twice (one member-picker timing failure that passed alone); screenshots at 390 px of Outbox, Invite, Members, Approvals and the profile. Firefox does not launch on this Mac (an upstream bug), so CI is its only check.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
