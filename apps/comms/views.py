@@ -10,7 +10,6 @@ from django.utils import timezone
 from tinymce.widgets import TinyMCE
 
 from apps.ops.audit import record
-from apps.ops.config import setting
 from apps.ops.tables import chosen, summary
 from apps.ops.templatetags.richtext import sanitise
 
@@ -62,7 +61,6 @@ def outbox(request):
             "state_summary": summary(Outbox.State.choices, picked, "state"),
             "pager": pager.urlencode(),
             "counts": counts,
-            "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },
     )
 

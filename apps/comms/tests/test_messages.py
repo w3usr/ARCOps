@@ -152,8 +152,14 @@ def test_outbox_is_officers_only_and_filters_by_state():
     assert "Sent one" in body and "Kept one" in body  # the state filter holds a set
     body = c.get("/ops/outbox/?state=&page=1").content.decode()
     assert "Sent one" in body and "Kept one" in body  # an old "All" link narrows nothing
+    assert "They are all below." in body  # the Outbox does not link to itself
     home = c.get("/").content.decode()
-    assert "<strong>Mail is not being sent.</strong>" in home
+    assert (
+        "<strong>Mail is not being sent.</strong>" in home
+        and 'the <a href="/ops/outbox/">outbox</a>' in home
+    )
+    invite = c.get("/me/invitations/").content.decode()
+    assert "<strong>Mail is not being sent.</strong>" in invite  # one notice, on all three pages
 
 
 def test_template_edit_page_is_sysadmin_only_sanitises_and_audits():

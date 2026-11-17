@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% load labels times %}
 {% load nav %}
-{% block title %}Invitations · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block title %}Invite a member · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block main_class %} wide{% endblock %}
 {% block content %}
 <div class="titlerow"><h1>Invite a member</h1><a class="button secondary" href="{% url 'entry_links' %}">Entry links</a></div>
 <p class="lede">One person at a time. For a whole class, or a neighboring club, make an <a href="{% url 'entry_links' %}">entry link</a> instead.</p>
+{% include "ops/_mail_off.html" %}
 {% if created %}
 <section class="card" aria-labelledby="c"><h2 id="c">Invitation created for {{ created.email|default:"a member under 18, via their guardian" }}</h2>
 <p>{% if created.emailed_at %}It has been sent to them.{% else %}Mail is not being sent, so <strong>pass this on yourself</strong>, by any means you trust.{% endif %}</p>

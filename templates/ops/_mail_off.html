@@ -1,0 +1,3 @@
+{% comment %}The one "mail is off" notice, on Home, the Outbox and Invite. Only the unusual state is
+worth saying: mail going out is what is meant to happen (NAF, 2026-09-19).{% endcomment %}
+{% if not email_delivery_on %}<p class="msg warning"><span class="lvl">Careful:</span> <strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all {% if request.resolver_match.url_name == 'outbox' %}below{% else %}in the <a href="{% url 'outbox' %}">outbox</a>{% endif %}.</p>{% endif %}

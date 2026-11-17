@@ -163,7 +163,6 @@ def dashboard(request):
             "pending_review": pending,
             "has_notices": bool(notice_categories),
             "banner_action": banner_action,
-            "delivery_mode": str(setting("defaults.email_delivery", "off")).lower(),
         },
     )
 

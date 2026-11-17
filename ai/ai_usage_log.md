@@ -5106,3 +5106,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Research, code generation, documentation, tests. The research (practitioner docs and threads, no usability study found) mostly confirmed A35; it found that at 2:30 AM on the night the clocks go forward the switch's line said 06:30 UTC while the server stored 07:30 UTC, which was reproduced before the fix. Verified: ruff, format and the interface guard; app tests passed with the new cases; the switch's arithmetic checked in Node (8 Mar 2:30 none, 1 Nov 1:30 two, ordinary times unchanged); the a11y sweep in Chromium and WebKit; in a browser, 2:30 AM on 8 Mar on Eastern warns under the box and is refused on save with the form kept.
 - **Human Review Status**: Pending review
 - **Git Hash**: 9d49c2d
+
+## [2026-11-17 12:43 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The quick interface fixes from SK's 2026-11-16 review: the Outbox's dates, one "Mail is not being sent" notice, and page names that agree between sidebar, tab title and heading.
+- **Sections/Files Affected**: templates/ops/_mail_off.html (new: the one notice; on the Outbox it ends "They are all below." instead of linking to itself); templates/ops/dashboard.html, templates/accounts/invitations.html, templates/ops/outbox.html (use it; the Outbox's column reads When and its dates carry the year; the unused `nav` load goes); apps/ops/views.py, apps/comms/views.py (the duplicate `delivery_mode` goes; the club context processor's `email_delivery_on` serves all three); templates/credentials/approvals.html (heading Approvals); templates/comms/my_messages.html (tab title Messages); templates/accounts/invitations.html (tab title Invite a member); apps/comms/tests/test_messages.py.
+- **Nature of Contribution**: Code generation, tests. Verified: ruff, format, the three repository guards, makemigrations --check; app tests all passed, with the extended Outbox test (the notice on Home, Outbox and Invite; the Outbox not linking to itself); the a11y sweep in Chromium and WebKit.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

@@ -43,9 +43,7 @@ them (NAF, 2026-09-22).{% endcomment %}
 </div>
 {% endif %}
 {% if perms.ops.view_member_records %}
-{% comment %}Only the unusual state is worth saying. Mail going out is what is meant to
-happen, and whoever may read the outbox has it in the menu (NAF, 2026-09-19).{% endcomment %}
-{% if delivery_mode != 'on' %}<p class="msg warning"><span class="lvl">Careful:</span> <strong>Mail is not being sent.</strong> Invitation links and notices are shown inside the application, and delivering them is yours to do. They are all in the <a href="{% url 'outbox' %}">outbox</a>.</p>{% endif %}
+{% include "ops/_mail_off.html" %}
 {% endif %}
 {% if pending_review %}
 <section class="card" aria-labelledby="rev">
