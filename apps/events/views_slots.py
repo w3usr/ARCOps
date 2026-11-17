@@ -460,17 +460,21 @@ def signup_no_show(request, signup_id):
 
 
 def _typed_utc(text, data, event):
-    """A time box's text as a UTC time, or None: in the event's own clock when the form's switch
-    says local (A35), else UTC (2026-11-21T21:00, 2026-11-21 2100 too; #274)."""
-    from apps.ops.when import UTC, Unreadable, parse_utc
+    """A time box's text as (a UTC time or None, why not). Read on the event's own clock when the
+    form's switch says local (A35), else UTC (2026-11-21T21:00, 2026-11-21 2100 too; #274). `why`
+    is said only for a local time the clocks skip or repeat; anything else unreadable is None."""
+    from apps.ops.when import Unreadable, in_zone, parse_utc
 
     try:
         t = parse_utc(text)
     except Unreadable:
-        return None
+        return None, ""
     if t and data.get("clock") == "local":
-        return t.replace(tzinfo=display_zone(event)).astimezone(UTC)
-    return t
+        try:
+            return in_zone(t, display_zone(event)), ""
+        except Unreadable as exc:
+            return None, str(exc)
+    return t, ""
 
 
 def next_slot(slot: Slot):
@@ -484,9 +488,9 @@ def next_slot(slot: Slot):
 @require_POST
 def slot_retime(request, pk, slot_id):
     event, slot = _captain_slot(request, pk, slot_id)
-    start = _typed_utc(request.POST.get("start", ""), request.POST, event)
+    start, unreadable = _typed_utc(request.POST.get("start", ""), request.POST, event)
     minutes = request.POST.get("minutes", "")
-    why = reshape.frozen(slot)
+    why = reshape.frozen(slot) or unreadable
     if not why and not (start and minutes.isdigit() and int(minutes) <= 720):
         why = "Give a start and a length in minutes."
     if not why:
@@ -509,8 +513,8 @@ def slot_retime(request, pk, slot_id):
 @require_POST
 def slot_split(request, pk, slot_id):
     event, slot = _captain_slot(request, pk, slot_id)
-    at = _typed_utc(request.POST.get("at", ""), request.POST, event)
-    why = reshape.frozen(slot)
+    at, unreadable = _typed_utc(request.POST.get("at", ""), request.POST, event)
+    why = reshape.frozen(slot) or unreadable
     if not why and not at:
         why = "Give the time to split it at."
     if not why and not (slot.start + reshape.SHORTEST <= at <= slot.end - reshape.SHORTEST):

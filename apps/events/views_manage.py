@@ -1584,9 +1584,14 @@ def event_duplicate(request, pk):
     event = captained_event(request, pk)
     shift, typed, was = timedelta(0), request.POST.get("start", "").strip(), event.start
     if typed and was:
-        start = _typed_utc(typed, request.POST, event)
+        start, unreadable = _typed_utc(typed, request.POST, event)
         if start is None:
-            messages.error(request, "Nothing was copied: the start was not a date and time.")
+            messages.error(
+                request,
+                f"Nothing was copied. {unreadable}"
+                if unreadable
+                else "Nothing was copied: the start was not a date and time.",
+            )
             return to_step(pk, "publish")
         shift = start - was
     copy = duplicate_event(event, request.user, shift=shift)

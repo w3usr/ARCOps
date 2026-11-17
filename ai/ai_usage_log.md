@@ -5098,3 +5098,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis and documentation (addendum). Every behaviour change in the window was checked for its functional addendum (A24 to A35, all present); the one requirement left untrue was the technical data-model table's `Outbox` channel. The body is not edited. Verified: the club-neutral and requirement-ID guards.
 - **Human Review Status**: Pending review
 - **Git Hash**: bc265c8
+
+## [2026-11-16 19:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: After research into dual UTC/local time entry (SK's request), refuse a local time the clocks skip or repeat instead of guessing it, and make the line under each time box readable by a screen reader (A35).
+- **Sections/Files Affected**: apps/ops/when.py (`in_zone`: a box's time on the event's clock, refused in the hour the clocks go forward and the hour they go back); apps/ops/forms.py (`utc_field` reads through it); apps/events/views_slots.py (`_typed_utc` returns why a local time was refused; Move and Split say so); apps/events/views_manage.py (The copy starts says so); static/js/app.js (the switch finds none or two instants for such a time, warns under the box, empties the box rather than guess when switching, and links the line to its box with aria-describedby); docs/REQUIREMENTS.md (A35's line on repeated times now says they are refused); tests: apps/ops/tests/test_when.py, apps/events/tests/test_slot_reshape.py.
+- **Nature of Contribution**: Research, code generation, documentation, tests. The research (practitioner docs and threads, no usability study found) mostly confirmed A35; it found that at 2:30 AM on the night the clocks go forward the switch's line said 06:30 UTC while the server stored 07:30 UTC, which was reproduced before the fix. Verified: ruff, format and the interface guard; app tests passed with the new cases; the switch's arithmetic checked in Node (8 Mar 2:30 none, 1 Nov 1:30 two, ordinary times unchanged); the a11y sweep in Chromium and WebKit; in a browser, 2:30 AM on 8 Mar on Eastern warns under the box and is refused on save with the form kept.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

@@ -178,6 +178,8 @@ def test_a_slot_is_moved_in_the_events_own_clock_when_the_switch_says_local(offi
     c.post(url, {"start": "2027-06-26T17:15", "minutes": "45", "clock": "local"})
     d.refresh_from_db()
     assert (d.start.hour, d.start.minute) == (21, 15)  # 17:15 EDT is 21:15 UTC
+    r = c.post(url, {"start": "2027-03-14T02:30", "minutes": "60", "clock": "local"}, follow=True)
+    assert "2:30 AM on 14 Mar does not happen" in r.content.decode()  # the clocks go forward
     c.post(url, {"start": "2027-06-26T21:00", "minutes": "60"})  # no switch: UTC, as without JS
     d.refresh_from_db()
     assert (d.start.hour, d.start.minute) == (21, 0)

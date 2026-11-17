@@ -341,11 +341,17 @@ document.addEventListener("input", (ev) => {
     }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
     return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
   };
-  const instant = (v, mode, zone) => {  // the UTC instant a box value means in its clock
-    const guess = asUtc(v);
-    if (mode === "utc") return guess;
-    const off = (ms) => asUtc(wall(ms, zone)) - ms;
-    return guess - off(guess - off(guess));
+  // The instants whose wall clock in `zone` reads v: none in the hour the clocks go forward, two
+  // in the hour they go back. The server refuses both (when.in_zone), so the line here warns.
+  const instants = (v, zone) => {
+    const guess = asUtc(v), day = 864e5, off = (ms) => asUtc(wall(ms, zone)) - ms;
+    const tries = new Set([off(guess - day), off(guess + day)].map((o) => guess - o));
+    return [...tries].filter((t) => wall(t, zone) === v);
+  };
+  const instant = (v, mode, zone) => {  // the UTC instant a box value means, or null if none or two
+    if (mode === "utc") return asUtc(v);
+    const found = instants(v, zone);
+    return found.length === 1 ? found[0] : null;
   };
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -391,8 +397,9 @@ document.addEventListener("input", (ev) => {
       (first.closest(".row") || first.closest(".field") || first).before(set);
       const parts = boxes.map((box) => {
         const label = form.querySelector(`label[for="${box.id}"]`);
-        const other = Object.assign(document.createElement("span"), { className: "helptext clock-other" });
+        const other = Object.assign(document.createElement("span"), { className: "helptext clock-other", id: `${box.id}-other` });
         box.after(other);
+        box.setAttribute("aria-describedby", [box.getAttribute("aria-describedby"), other.id].filter(Boolean).join(" "));
         return { box, label, text: label ? label.textContent : "", other };
       });
       let mode = boxes.some((b) => b.dataset.clock === "local") ? "local" : "utc";
@@ -401,15 +408,20 @@ document.addEventListener("input", (ev) => {
         parts.forEach(({ box, label, text, other }) => {
           if (label) label.textContent = mode === "utc" ? text : text.replace("(UTC)", `(${short})`);
           const v = box.value.slice(0, 16);
-          const ms = valid(v) ? instant(v, mode, zone) : null;
-          other.textContent = ms === null ? "" : `= ${mode === "utc" ? localText(ms, zone) : utcText(ms)}`;
+          if (!valid(v)) { other.textContent = ""; return; }
+          const ms = instant(v, mode, zone);
+          if (ms !== null) { other.textContent = `= ${mode === "utc" ? localText(ms, zone) : utcText(ms)}`; return; }
+          other.textContent = instants(v, zone).length
+            ? "This time happens twice here, as the clocks go back. Enter it in UTC instead."
+            : "This time does not happen here: the clocks go forward that night. Enter it in UTC instead.";
         });
       };
       const switchTo = (next) => {
         if (next === mode) return show();
         parts.forEach(({ box }) => {
           const v = box.value.slice(0, 16);
-          if (valid(v)) box.value = wall(instant(v, mode, zone), next === "utc" ? "UTC" : zone);
+          const ms = valid(v) ? instant(v, mode, zone) : null;
+          box.value = ms === null ? "" : wall(ms, next === "utc" ? "UTC" : zone);  // no guessing
         });
         mode = next;
         show();

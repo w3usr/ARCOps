@@ -22,9 +22,9 @@ def utc_field(label: str, required: bool = True, help_text: str = ""):
         def to_python(self, value):
             try:
                 t = when.parse_utc(value)
+                return when.in_zone(t, self.zone) if t and self.zone else t
             except when.Unreadable as exc:
                 raise forms.ValidationError(str(exc)) from None
-            return t.replace(tzinfo=self.zone).astimezone(when.UTC) if t and self.zone else t
 
         def prepare_value(self, value):
             return when.typed(value) if hasattr(value, "astimezone") else value

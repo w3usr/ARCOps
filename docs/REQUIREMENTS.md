@@ -3146,7 +3146,11 @@ colon as contest rules write it, whatever the browser's language. A plain date i
 - The picker shows the date and time the way the computer's language writes them (on a US
   machine, `11/21/2026, 09:00 PM`). What it sends is ISO 8601; a typed `2026-11-21 21:00` or
   `2100` still reads where a box is filled some other way.
-- A local time that happens twice, the hour the clocks go back, is read as the first of the two.
+- On the event's clock, a time the clocks skip (the hour they go forward) or repeat (the hour they
+  go back) is refused, not guessed: "1:30 AM on 1 Nov happens twice in the event's time zone, as
+  the clocks go back. Enter it in UTC instead." The line under the box says the same before the
+  form is sent. (SK, 2026-11-16, after research found a guess there put the line under the box
+  and the stored time an hour apart.)
 - Everything A34 says about how a date and time reads on a page, in mail, the PDF, the outbox
   and for machines is unchanged.
 

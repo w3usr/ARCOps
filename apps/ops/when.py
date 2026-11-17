@@ -128,6 +128,26 @@ def parse_utc(text: str, need_time: bool = True) -> datetime | None:
         raise Unreadable("That is not a date: check the month and the day.") from None
 
 
+def in_zone(t: datetime, zone) -> datetime:
+    """A box's date and time read on `zone`'s clock rather than UTC's (A35), as UTC. The hour the
+    clocks go forward never happens there, and the hour they go back happens twice; either is
+    refused rather than guessed, since a guess can put a slot an hour off."""
+    wall = t.replace(tzinfo=None)
+    first, second = wall.replace(tzinfo=zone, fold=0), wall.replace(tzinfo=zone, fold=1)
+    if first.utcoffset() != second.utcoffset():
+        at = f"{wall.hour % 12 or 12}:{wall:%M} {'AM' if wall.hour < 12 else 'PM'} on {wall.day} {wall:%b}"
+        if first.astimezone(UTC).astimezone(zone).replace(tzinfo=None) != wall:
+            raise Unreadable(
+                f"{at} does not happen in the event's time zone: the clocks go "
+                "forward that night. Enter it in UTC instead."
+            )
+        raise Unreadable(
+            f"{at} happens twice in the event's time zone, as the clocks go back. "
+            "Enter it in UTC instead."
+        )
+    return first.astimezone(UTC)
+
+
 def typed(t: datetime | None) -> str:
     """What a UTC box holds: `2026-11-21T21:00`, the value a datetime-local box takes (A35)."""
     return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M") if t else ""

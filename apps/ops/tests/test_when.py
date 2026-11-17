@@ -82,3 +82,21 @@ def test_a_time_box_reads_the_events_own_clock_only_when_the_form_says_local():
     assert 'data-zone="America/New_York"' in str(plain["start"]) and "data-clock" not in str(
         plain["start"]
     )
+
+
+def test_a_local_time_the_clocks_skip_or_repeat_is_refused_not_guessed():
+    """A35: 2:30 AM on the night the clocks go forward never happens in New York, and 1:30 AM on
+    the night they go back happens twice; a guess would put a slot an hour off."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    import pytest
+
+    from apps.ops.when import UTC, Unreadable, in_zone, typed
+
+    ny = ZoneInfo("America/New_York")
+    assert typed(in_zone(datetime(2026, 11, 21, 16, 0, tzinfo=UTC), ny)) == "2026-11-21T21:00"
+    with pytest.raises(Unreadable, match="2:30 AM on 8 Mar does not happen"):
+        in_zone(datetime(2026, 3, 8, 2, 30, tzinfo=UTC), ny)
+    with pytest.raises(Unreadable, match="1:30 AM on 1 Nov happens twice"):
+        in_zone(datetime(2026, 11, 1, 1, 30, tzinfo=UTC), ny)
