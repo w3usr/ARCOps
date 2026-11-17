@@ -82,14 +82,10 @@ def test_forced_password_change_lands_on_home_and_a_voluntary_one_on_the_profile
     u.save()
     c = Client()
     c.force_login(u)
-    assert c.get("/events/")["Location"] == "/accounts/password/change/"
-    r = c.post(
-        "/accounts/password/change/",
-        {
-            "oldpassword": "pw-Testing-123",
-            "password1": "a-New-Long-Password-9",
-            "password2": "a-New-Long-Password-9",
-        },
+    assert c.get("/events/")["Location"] == "/accounts/password/set/"
+    r = c.post(  # the temporary password was spent at sign-in, so no old one is asked (287)
+        "/accounts/password/set/",
+        {"password1": "a-New-Long-Password-9", "password2": "a-New-Long-Password-9"},
     )
     assert r.status_code == 302 and r["Location"] == "/"
     assert "Welcome, Ann" in c.get("/").content.decode()

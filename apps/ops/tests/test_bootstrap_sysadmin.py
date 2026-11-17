@@ -31,7 +31,7 @@ def test_the_first_sysadmin_can_sign_in_with_the_address_it_was_given(capsys):
     c = Client()
     assert c.login(email="first@example.org", password=password)
     # and it lands on the forced password change, because the password is temporary (FR-7)
-    assert c.get("/events/")["Location"].startswith("/accounts/password/change/")
+    assert c.get("/events/")["Location"].startswith("/accounts/password/set/")
 
 
 def test_running_it_again_promotes_the_same_account_rather_than_making_a_second():

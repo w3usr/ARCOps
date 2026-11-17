@@ -16,6 +16,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 
 ALLOWED_WHILE_TEMPORARY = (
+    "/accounts/password/set/",  # the temporary password is spent at sign-in (signals.py)
     "/accounts/password/change/",
     "/accounts/logout/",
     "/static/",
@@ -64,7 +65,7 @@ class AccountGateMiddleware:
                     request, "You signed in with a temporary password. Set your own to continue."
                 )
                 request.session["forced_password_change"] = True
-                return redirect("/accounts/password/change/")
+                return redirect("/accounts/password/set/")
         return self.get_response(request)
 
 

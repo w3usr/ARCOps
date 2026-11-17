@@ -192,12 +192,35 @@ def test_temporary_password_forces_change_and_expires():
         session["acting_view"] = "sysadmin"
         session.save()
     r = c.get("/events/")
-    assert r.status_code == 302 and r["Location"].startswith("/accounts/password/change/")
-    assert c.get("/accounts/password/change/").status_code == 200
+    assert r.status_code == 302 and r["Location"].startswith("/accounts/password/set/")
+    assert c.get("/accounts/password/set/").status_code == 200
     u.temporary_password_expires = timezone.now() - dt.timedelta(hours=1)
     u.save()
     r = c.get("/events/")
     assert r.status_code == 302 and "/accounts/login/" in r["Location"]
+
+
+def test_a_temporary_password_works_for_exactly_one_sign_in():
+    """FR-7, private tracker 287: the first sign-in spends it; that session sets the member's own
+    password with no old one asked; a second sign-in with the temporary password is refused."""
+    o = officer()
+    u = User.objects.create_user(
+        "once@example.org", "x", first_name="O", last_name="N", groups=["member"]
+    )
+    temporary = issue_temporary_password(o, u)
+    first = Client()
+    assert first.login(email="once@example.org", password=temporary)
+    assert first.get("/events/")["Location"] == "/accounts/password/set/"
+    assert not Client().login(email="once@example.org", password=temporary)
+    r = first.post(
+        "/accounts/password/set/",
+        {"password1": "a-New-Long-Password-9", "password2": "a-New-Long-Password-9"},
+    )
+    assert r.status_code == 302 and r["Location"] == "/"
+    u.refresh_from_db()
+    assert not u.password_is_temporary
+    assert Client().login(email="once@example.org", password="a-New-Long-Password-9")
+    assert first.get("/events/").status_code == 200
 
 
 def test_admin_add_user_page_renders_with_custom_forms():

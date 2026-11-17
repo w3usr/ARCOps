@@ -5154,3 +5154,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, a data migration, tests. Each new test fails against the code before it and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit (one member-picker timing failure under load, passing alone twice; that test covers the slot dialog, untouched here); scenarios T07, T11, T22, T23, T24, T38, T44, T47 and T53 locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: ee8f191
+
+## [2026-11-17 16:00 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 287 (FR-7): a temporary password works for exactly one sign-in.
+- **Sections/Files Affected**: apps/accounts/signals.py (at the sign-in that uses it, the temporary password is made unusable and the session keeps its auth hash, so that session can only set the member's own password; audit row `password.temporary_spent`; the flag also clears on allauth's `password_set`); apps/accounts/middleware.py (the forced step is Set Password, `/accounts/password/set/`, which asks for no current password); tests: apps/accounts/tests/test_flows.py (new: one sign-in, a second refused, the session sets a password and goes on), test_profile_and_invites.py and apps/ops/tests/test_bootstrap_sysadmin.py (the forced step's new address).
+- **Nature of Contribution**: Code generation, tests. The new test fails on the old signals at the second sign-in ("assert not True") and passes on the new. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T07, T22, T46 and T48 locally.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
