@@ -594,3 +594,30 @@ def test_the_license_source_reads_as_words_and_never_as_its_stored_key():
     lic.save(update_fields=["source"])
     assert lic.source_label == ""
     assert "some_new_source" not in c.get(f"/members/{u.pk}/").content.decode()
+
+
+def test_a_callsign_change_ends_a_license_override_and_tells_whoever_may_set_one():
+    """FR-102, private tracker 310 (SK, 2026-11-17: drop it, tell sysadmins): the override goes
+    with the old callsign, the audit row keeps what it said, and re-entering it re-confirms it."""
+    from apps.credentials.services import apply_override
+
+    s = User.objects.create_user("s@example.org", "pw-Testing-123", first_name="Sys", last_name="A")
+    s.is_superuser = True
+    s.save()
+    u = User.objects.create_user(
+        "o@example.org", "pw-Testing-123", first_name="Ov", last_name="Er", callsign="N0OLD"
+    )
+    u.groups.set(Group.objects.filter(name="member"))
+    lic = LicenseRecord.objects.create(user=u, callsign="N0OLD", operator_class="Technician")
+    apply_override(s, lic, {"override_class": "Extra", "override_reason": "upgrade in the mail"})
+    apply_callsign(u, "N0NEW", previous="N0OLD")
+    lic.refresh_from_db()
+    assert not lic.has_override and lic.effective_class != "Extra"
+    told = Outbox.objects.get(user=s, subject__contains="override ended")
+    assert (
+        "N0OLD" in told.body_html and "N0NEW" in told.body_html and "class Extra" in told.body_html
+    )
+    row = AuditLog.objects.filter(action="license.override").order_by("pk").last()
+    assert row.before["override_class"] == "Extra" and row.after["override_class"] == ""
+    apply_callsign(u, "N0NEW", previous="N0NEW")  # no change: nothing more is said
+    assert Outbox.objects.filter(user=s, subject__contains="override ended").count() == 1

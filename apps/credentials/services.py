@@ -224,8 +224,8 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
         # stay: a member who moved from a Technician callsign to one the FCC has no record of
         # kept the class, the licensee name and the expiry of the callsign they left (the
         # collaborator on T10, 2026-09-20: "Switching from KC3ABC to WC1XYZ keeps the name and
-        # Technician category of KC3ABC"). An override is a sysadmin's deliberate act and is
-        # left alone (FR-15).
+        # Technician category of KC3ABC"). An override was dropped by the callsign change
+        # itself (apply_callsign, FR-102); the nightly sync leaves one alone (FR-15).
         lic.licensee_name = ""
         lic.operator_class = ""
         lic.licensee_type = ""

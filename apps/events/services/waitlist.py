@@ -57,7 +57,17 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
     now = now or timezone.now()
     if not seats_open(slot, role):
         return None
-    entry = Waitlist.objects.filter(slot=slot, role=role, state=Waitlist.State.PENDING).first()
+    # The first in line who can still use it: an account without access is passed over (#328).
+    entry = next(
+        (
+            e
+            for e in Waitlist.objects.filter(
+                slot=slot, role=role, state=Waitlist.State.PENDING
+            ).select_related("user")
+            if e.user.has_access
+        ),
+        None,
+    )
     if entry is None:
         return None
     # One conditional update makes the offer: the entry still pending and no offer already out
@@ -93,15 +103,24 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
 
 
 def accept(user, entry: Waitlist) -> SignUp | None:
+    from .eligibility import can_sign_up
+
     if entry.user_id != user.pk or entry.state != Waitlist.State.OFFERED:
         return None
     if entry.offer_expires_at and entry.offer_expires_at < timezone.now():
         return None
     if not seats_open(entry.slot, entry.role):
         return None
-    su, _ = SignUp.objects.get_or_create(
-        slot=entry.slot, user=user, defaults={"role": entry.role, "note": ""}
-    )
+    holds = entry.slot.signups.filter(user=user).exists()
+    if holds or not can_sign_up(user, entry.slot, entry.role)[0]:
+        # Already in the slot in another role, or no longer eligible (#299): the offer passes
+        # on rather than being marked taken while the seat stays empty.
+        entry.state = Waitlist.State.WITHDRAWN
+        entry.save(update_fields=["state"])
+        record(user, "waitlist.withdrawn", entry, after={"by": "not taken up at acceptance"})
+        offer_next(entry.slot, entry.role)
+        return None
+    su = SignUp.objects.create(slot=entry.slot, user=user, role=entry.role, note="")
     entry.state = Waitlist.State.ACCEPTED
     entry.save(update_fields=["state"])
     record(user, "signup.created", su, after={"role": entry.role, "waitlist": entry.pk})
@@ -136,3 +155,20 @@ def on_place_opened(slot: Slot, role: str) -> None:
         import logging
 
         logging.getLogger(__name__).exception("waitlist offer failed")
+
+
+def access_removed(actor, user) -> None:
+    """FR-118, FR-57 (private tracker 328, 299): an account losing access leaves every waitlist,
+    and an offer it held passes on to the next in line."""
+    now = timezone.now()
+    for entry in Waitlist.objects.filter(
+        user=user,
+        state__in=[Waitlist.State.PENDING, Waitlist.State.OFFERED],
+        slot__end__gte=now,
+    ).select_related("slot"):
+        offered = entry.state == Waitlist.State.OFFERED
+        entry.state = Waitlist.State.WITHDRAWN
+        entry.save(update_fields=["state"])
+        record(actor, "waitlist.withdrawn", entry, after={"by": "access removed"})
+        if offered:
+            offer_next(entry.slot, entry.role, now)

@@ -116,7 +116,10 @@ def access_rosters(request):
     picked["status"] = request.GET.getlist("status") or ["active"]
     qs = (
         SignedAgreement.objects.filter(
-            state__in=[SignedAgreement.State.APPROVED, SignedAgreement.State.EXPIRED]
+            state__in=[SignedAgreement.State.APPROVED, SignedAgreement.State.EXPIRED],
+            # Who holds access now (FR-31): an account closed, suspended, archived or deleted
+            # holds none, whatever its agreement says (FR-118; private tracker 330, SK 2026-11-17)
+            user__in=User.objects.with_access(),
         )
         .select_related("user", "credential", "approver", "template")
         .prefetch_related("user__addresses")

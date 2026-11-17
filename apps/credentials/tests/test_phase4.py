@@ -159,6 +159,32 @@ def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so()
     assert a.state == "expired" and "superseded by version 2" in a.decision_reason
 
 
+def test_the_access_roster_lists_only_accounts_that_hold_access_now():
+    """Private tracker 330 (FR-31, FR-118; SK, 2026-11-17): a suspended, archived or deleted
+    member's approved agreement is not station access held now, on the page or in the CSV."""
+    from apps.accounts.services import archive_member, delete_account, suspend
+
+    st, it, t_st, t_it = _setup()
+    adv = _user("adv@example.org", "advisor", "advisor", first_name="Ad", last_name="Visor")
+    sys = _user("root@example.org", "sysadmin", first_name="Sy", last_name="S")
+    today = timezone.now().date()
+    people = {}
+    for call in ("N0KEP", "N0SUS", "N0ARC", "N0DEL"):
+        u = _user(f"{call.lower()}@example.org", first_name=call, last_name="T", callsign=call)
+        _approved(u, t_st, today + dt.timedelta(days=200))
+        people[call] = u
+    suspend(sys, people["N0SUS"], "testing")
+    archive_member(sys, people["N0ARC"], "testing")
+    delete_account(sys, people["N0DEL"], "testing")
+    c = Client()
+    c.force_login(adv)
+    page = c.get("/credentials/access-rosters/").content.decode()
+    sheet = c.get("/credentials/access-rosters/?format=csv").content.decode()
+    for text in (page, sheet):
+        assert "N0KEP" in text
+        assert "N0SUS" not in text and "N0ARC" not in text and "Deleted" not in text
+
+
 def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
     st, it, t_st, t_it = _setup()
     adv = _user("adv@example.org", "advisor", "advisor", first_name="Ad", last_name="Visor")

@@ -172,3 +172,55 @@ def test_shortening_the_start_and_end_clips_the_on_air_hours(officer):
         {"start": f"{start:%Y-%m-%dT%H:%M}", "end": f"{end:%Y-%m-%dT%H:%M}"},
     )
     assert list(ev.on_air_ranges.values_list("start", flat=True)) == [start]
+
+
+# ---------------------------------------------------------------------------- #328, #299 ---
+
+
+def test_losing_access_leaves_every_waitlist_and_each_place_freed_is_offered(officer):
+    """Private tracker 328 (FR-118, FR-57): a deleted account leaves the waitlists, and an offer
+    passes over anyone without access. 299 (a): a place freed by suspension is offered."""
+    from apps.accounts.services import delete_account, suspend
+
+    now = timezone.now()
+    holder, gone, lost, nxt = (_user(f"{n}@example.org") for n in ("hold", "gone", "lost", "next"))
+    ev, (slot, _) = _event(now + timedelta(days=2), captain=officer)
+    SignUp.objects.create(slot=slot, user=holder, role="operator")  # the one Operator seat
+    for u in (gone, lost, nxt):
+        waitlist.join(u, slot, "operator")
+    delete_account(officer, gone, "testing")
+    assert Waitlist.objects.get(user=gone).state == Waitlist.State.WITHDRAWN
+    lost.groups.clear()  # no access, though still pending: passed over
+    suspend(officer, holder, "testing")
+    assert not SignUp.objects.filter(slot=slot, user=holder).exists()
+    assert Waitlist.objects.get(user=lost).state == Waitlist.State.PENDING
+    assert Waitlist.objects.get(user=nxt).state == Waitlist.State.OFFERED
+
+
+def test_one_place_per_person_in_a_slot_and_eligibility_again_at_acceptance(officer):
+    """Private tracker 299 (b) (SK, 2026-11-17: refuse the second wait): holding the slot, a
+    member cannot wait for another role in it; an offer to someone already in the slot or no
+    longer eligible is not marked taken, and passes on. (c): eligibility asked again."""
+    from apps.events.models import EligibilityRule
+
+    now = timezone.now()
+    holder, mem, w, x = (_user(f"{n}@example.org") for n in ("h2", "m2", "w2", "x2"))
+    ev, (slot, _) = _event(now + timedelta(days=2), captain=officer)
+    SignUp.objects.create(slot=slot, user=holder, role="operator")
+    SignUp.objects.create(slot=slot, user=mem, role="observer")
+    _client(mem).post(f"/events/slot/{slot.pk}/waitlist/", {"role": "operator"})
+    assert not Waitlist.objects.filter(user=mem).exists()
+    early = Waitlist.objects.create(slot=slot, user=mem, role="operator")  # joined before this
+    later = Waitlist.objects.create(slot=slot, user=w, role="operator")
+    last = Waitlist.objects.create(slot=slot, user=x, role="operator")
+    SignUp.objects.filter(user=holder).delete()
+    waitlist.on_place_opened(slot, "operator")
+    early.refresh_from_db()
+    assert early.state == Waitlist.State.OFFERED and waitlist.accept(mem, early) is None
+    assert SignUp.objects.get(slot=slot, user=mem).role == "observer"
+    later.refresh_from_db()
+    assert later.state == Waitlist.State.OFFERED  # passed on
+    EligibilityRule.objects.create(event=ev, role="operator", categories=["faculty"])
+    assert waitlist.accept(w, later) is None  # a student, no longer eligible
+    last.refresh_from_db()
+    assert last.state == Waitlist.State.OFFERED

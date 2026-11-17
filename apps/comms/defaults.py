@@ -349,6 +349,19 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["effective", "notified", "cut_off", "former"],
     },
     {
+        "key": "license.override_dropped",
+        "subject": "{{ person }}'s license override ended with a callsign change",
+        # FR-102 (private tracker 310): it survives only if re-confirmed, and entering it again is
+        # how a sysadmin does that.
+        "body_html": (
+            "<p>{{ person }} changed callsign from {{ old }} to {{ new }}, so the license override "
+            "{{ by }} set for {{ old }} no longer applies: {{ was }}. The FCC's record for "
+            "{{ new }} applies now.</p><p>If the override still holds for the new callsign, "
+            '<a href="{{ link }}">enter it again on their profile</a>.</p>'
+        ),
+        "variables": ["person", "old", "new", "was", "by", "link"],
+    },
+    {
         "key": "account.locked_out",
         "subject": "Sign-in to your {{ club.short_name }} account is paused",
         # FR-99, TR-18 (private tracker 288): once per lockout, and what to do if it was not them.
@@ -413,6 +426,10 @@ DEFAULT_TEMPLATES: list[dict] = [
 # ("slot.cancelled") and nothing else, which named the code rather than the message.
 TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "account.locked_out": ("Sign-in paused after failed attempts", "the account's owner"),
+    "license.override_dropped": (
+        "A license override ended with a callsign change",
+        "whoever may set a license override",
+    ),
     "invitation": ("Invitation to join", "the person being invited"),
     "account.verify_member": ("Confirm your address", "a new member"),
     "account.verify_provisional": (

@@ -296,6 +296,51 @@ def _completion_notices(inv: Invitation, user: User) -> None:
     send("account.welcome", user, "account")
 
 
+def _drop_license_override(user: User, previous: str, new_callsign: str) -> None:
+    """FR-102: a sysadmin's override "survives a callsign change only if the sysadmin re-confirms
+    it" (private tracker 310; SK, 2026-11-17: drop it and tell them). It goes with the old
+    callsign, the audit row keeps what it said, and whoever may set one is told; entering it
+    again is the re-confirmation."""
+    from django.conf import settings as dj
+    from django.urls import reverse
+
+    from apps.comms.services import send
+    from apps.credentials.models import LicenseRecord
+    from apps.credentials.services import lift_override
+    from apps.ops.groups import people_who_may
+
+    lic = LicenseRecord.objects.filter(user=user).first()
+    if lic is None or not lic.has_override:
+        return
+    was = ", ".join(
+        f"{label} {value}"
+        for label, value in (
+            ("class", lic.override_class),
+            ("status", lic.override_status),
+            ("expiry", when.day(lic.override_expiry) if lic.override_expiry else ""),
+            ("name", lic.override_name),
+            ("country", lic.override_country),
+        )
+        if value
+    )
+    by = lic.override_by.full_name if lic.override_by else "a sysadmin"
+    lift_override(None, lic)
+    for admin in people_who_may("override_license"):
+        send(
+            "license.override_dropped",
+            admin,
+            "account",
+            {
+                "person": user.full_name,
+                "old": previous,
+                "new": new_callsign or "none",
+                "was": was,
+                "by": by,
+                "link": dj.SITE_URL + reverse("member_edit", args=[user.pk]),
+            },
+        )
+
+
 def apply_callsign(user: User, new_callsign: str, previous: str = "") -> dict:
     """FR-102, FR-16: set a callsign, look it up, and decide what happens to the name.
 
@@ -317,6 +362,7 @@ def apply_callsign(user: User, new_callsign: str, previous: str = "") -> dict:
             before={"callsign": previous},
             after={"callsign": new_callsign},
         )
+        _drop_license_override(user, previous, new_callsign)
     user.callsign = new_callsign
     user.pending_uls_name = {}
     if not new_callsign:

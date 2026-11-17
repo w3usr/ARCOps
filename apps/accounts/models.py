@@ -499,6 +499,11 @@ class Invitation(models.Model):
     def is_valid(self) -> bool:
         return self.state == self.State.CREATED and self.expires_at > timezone.now()
 
+    @property
+    def is_expired(self) -> bool:
+        """Unused and past its expiry: what the issuer reads as Expired (FR-3; tracker 304)."""
+        return self.state == self.State.CREATED and self.expires_at <= timezone.now()
+
     def __str__(self) -> str:
         return f"invitation to {self.email} ({self.state})"
 

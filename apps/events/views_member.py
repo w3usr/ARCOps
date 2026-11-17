@@ -134,6 +134,13 @@ def waitlist_join(request, slot_id):
     if not RoleCapacity.objects.filter(slot=slot, role=role).exists():
         messages.error(request, "That role is not in this slot.")
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
+    if slot.signups.filter(user=request.user).exists():  # #299: one place per person in a slot
+        messages.error(
+            request,
+            "You already hold a place in this slot. To take another role, change your role "
+            "here while a seat in it is open.",
+        )
+        return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
     ok, reason = can_sign_up(request.user, slot, role)
     if not ok:
         messages.error(request, f"You cannot wait for that role: {reason}.")

@@ -533,6 +533,11 @@ def access_removed(actor: User, user: User) -> int:
                 before={"role": su.role, "user": su.user_id, "by": "access removed"},
             )
     SignUp.objects.filter(pk__in=[s.pk for s in signups]).delete()
+    from . import waitlist
+
+    waitlist.access_removed(actor, user)  # off every waitlist (#328)
+    for su in signups:  # each place freed is offered, as a cancellation's is (#299)
+        waitlist.on_place_opened(su.slot, su.role)
     return len(signups)
 
 

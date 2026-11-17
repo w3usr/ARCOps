@@ -534,6 +534,35 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
     assert f"/me/invite/{inv.token}/" not in body
 
 
+def test_an_expired_invitation_reads_expired_with_no_link_and_offers_a_new_one():
+    """FR-3, private tracker 304: past its expiry a row reads Expired, shows no link, and offers
+    Make a new link only; every row says whether it was emailed."""
+    off = officer()
+    inv = create_invitation(off, "late@example.org", "student")
+    inv.expires_at = timezone.now() - dt.timedelta(minutes=1)
+    inv.save(update_fields=["expires_at"])
+    c = Client()
+    c.force_login(off)
+    row = re.search(
+        r"<tr>(?:(?!</tr>).)*late@example\.org.*?</tr>",
+        c.get("/me/invitations/").content.decode(),
+        re.S,
+    ).group(0)
+    assert "Expired" in row and "Created" not in row
+    assert (
+        f"/me/invite/{inv.token}/" not in row and "Revoke" not in row and "Make a new link" in row
+    )
+    assert ("Emailed" in row) == bool(inv.emailed_at) and ("Link only" in row) == (
+        not inv.emailed_at
+    )
+    c.post(f"/me/invitations/{inv.pk}/", {"action": "reissue"})
+    inv.refresh_from_db()
+    assert (
+        inv.state == "revoked"
+        and Invitation.objects.filter(email="late@example.org", state="created").exists()
+    )
+
+
 def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
     """A warning that sends somebody somewhere carries the way there, and is said once.
 
