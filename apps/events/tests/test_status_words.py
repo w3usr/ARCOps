@@ -50,7 +50,7 @@ def test_the_pages_that_warn_before_a_change_say_what_the_slot_needs(monkeypatch
     assert f"without you the slot {SAYS}." in body and "not viable" not in body
     # said once, by the page: the flash that repeated it is gone
     assert body.count("Careful:") == 1
-    token = notify.confirm_token(su)
+    token = notify.confirm_token(su, "cannot")
     body = Client().get(f"/events/cannot/{token}/").content.decode()
     assert f"without you the slot {SAYS}." in body and "not viable" not in body
     c.force_login(cap)

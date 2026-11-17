@@ -127,13 +127,38 @@ def test_reminder_escapes_contest_fields_and_names_only_advisors():
     assert "Dee Visor" in body and "Ada Root" not in body
 
 
+def test_a_reminder_link_does_its_one_thing_for_the_time_it_was_sent_and_not_when_locked():
+    """Private tracker 293 (FR-100): Confirm and I cannot make it each carry their own token, and a
+    slot moved since the reminder asks again, so the old link no longer answers. 297 (FR-44): on a
+    locked roster the cannot link changes nothing and names the captains."""
+    now = timezone.now()
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    e, slots = _event(now + timedelta(hours=5), captain=cap)
+    su = SignUp.objects.create(slot=slots[0], user=mem, role="operator")
+    c = Client()
+    confirm, cannot = notify.confirm_token(su), notify.confirm_token(su, "cannot")
+    assert c.post(f"/events/cannot/{confirm}/").status_code == 410  # a confirm link cancels nothing
+    assert c.get(f"/events/confirm/{cannot}/").status_code == 410
+    assert SignUp.objects.filter(pk=su.pk).exists()
+    slot = su.slot
+    Slot.objects.filter(pk=slot.pk).update(start=slot.start + timedelta(minutes=30))
+    assert c.get(f"/events/confirm/{confirm}/").status_code == 410  # the old time's link
+    su = SignUp.objects.get(pk=su.pk)
+    assert c.get(f"/events/confirm/{notify.confirm_token(su)}/").status_code == 200
+    Event.objects.filter(pk=e.pk).update(state=Event.State.LOCKED)
+    r = c.post(f"/events/cannot/{notify.confirm_token(su, 'cannot')}/")
+    assert r.status_code == 409 and "Cap" in r.content.decode()
+    assert SignUp.objects.filter(pk=su.pk).exists()
+
+
 def test_cannot_make_it_token_cancels_and_tells_the_captains_late(monkeypatch):
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now + timedelta(hours=5), captain=cap)
     su = SignUp.objects.create(slot=slots[0], user=mem, role="operator")
-    token = notify.confirm_token(su)
+    token = notify.confirm_token(su, "cannot")
     c = Client()
     # Signed out, the warning and the order are the signed-in page's: Careful, then the safe
     # option first (T31 step 3, 2026-10-20).
@@ -368,7 +393,7 @@ def test_keep_it_from_the_reminder_says_nothing_changed_without_a_sign_in():
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
     e, slots = _event(now + timedelta(hours=20))
     su = SignUp.objects.create(slot=slots[0], user=mem, role="operator")
-    token = notify.confirm_token(su)
+    token = notify.confirm_token(su, "cannot")
     c = Client()
     page = c.get(f"/events/cannot/{token}/").content.decode()
     assert 'href="?kept=1">Keep it</a>' in page

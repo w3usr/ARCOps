@@ -67,7 +67,7 @@ def test_the_cannot_make_it_link_in_a_reminder_keeps_a_sign_up_on_a_completed_ev
     mem = _user("m4@example.org")
     ev, (slot, _) = _event(now + timedelta(days=1), state=Event.State.COMPLETED)
     su = SignUp.objects.create(slot=slot, user=mem, role="operator")
-    r = Client().post(f"/events/cannot/{confirm_token(su)}/")
+    r = Client().post(f"/events/cannot/{confirm_token(su, 'cannot')}/")
     assert SignUp.objects.filter(pk=su.pk).exists()
     assert "stays in the record" in r.content.decode()
 

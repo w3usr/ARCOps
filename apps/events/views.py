@@ -248,7 +248,7 @@ def cannot_by_token(request, token):
     from .services import notify
     from .services.notify import signup_from_token
 
-    su = signup_from_token(token)
+    su = signup_from_token(token, "cannot")
     if su is None:
         return render(request, "events/token_invalid.html", status=410)
     if request.method == "GET" and request.GET.get("kept"):
@@ -256,7 +256,14 @@ def cannot_by_token(request, token):
         # Nothing is recorded, and keeping a slot is not confirming attendance.
         return render(request, "events/token_confirmed.html", {"signup": su, "kept": True})
     if su.kept:  # #251: an event completed early still sends links for slots ahead
-        return render(request, "events/token_kept.html", {"signup": su}, status=409)
+        return render(request, "events/token_kept.html", {"why": su.kept}, status=409)
+    event = su.slot.event
+    if event.state == Event.State.LOCKED:  # FR-44, as the signed-in cancel (private tracker 297)
+        captains = ", ".join(c.user.short_name for c in event.captaincies.select_related("user"))
+        why = "The roster is locked, so a late change goes through a captain" + (
+            f": {captains}." if captains else "."
+        )
+        return render(request, "events/token_kept.html", {"why": why}, status=409)
     broken = would_break(su.slot, su)
     if request.method == "POST":
         record(

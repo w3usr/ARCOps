@@ -85,23 +85,34 @@ def slot_link(slot: Slot) -> str:
 # ---------------------------------------------------------------- confirm tokens ---
 
 
-def confirm_token(su: SignUp) -> str:
-    return signing.dumps({"s": su.pk, "u": su.user_id}, salt=CONFIRM_SALT)
+def _when(slot: Slot) -> list[int]:
+    return [int(slot.start.timestamp()), int(slot.end.timestamp())]
 
 
-def signup_from_token(token: str) -> SignUp | None:
-    """The sign-up a token names, if the token is genuine, unexpired (the slot has not ended),
-    and the sign-up still exists (FR-100)."""
+def confirm_token(su: SignUp, action: str = "confirm") -> str:
+    """A reminder's link (FR-100): bound to one action, `confirm` or `cannot`, and to the slot's
+    time when it was sent (private tracker 293)."""
+    return signing.dumps(
+        {"s": su.pk, "u": su.user_id, "a": action, "w": _when(su.slot)}, salt=CONFIRM_SALT
+    )
+
+
+def signup_from_token(token: str, action: str = "confirm") -> SignUp | None:
+    """The sign-up a token names, if the token is genuine, made for this `action`, unexpired (the
+    slot has not ended), and the sign-up still exists at the time the link was sent for. A slot
+    moved, split or merged since asks again, so the old link no longer answers for it (293)."""
     try:
         data = signing.loads(token, salt=CONFIRM_SALT, max_age=timedelta(days=60))
     except signing.BadSignature:
+        return None
+    if data.get("a") != action:
         return None
     su = (
         SignUp.objects.filter(pk=data.get("s"), user_id=data.get("u"))
         .select_related("slot")
         .first()
     )
-    if su is None or su.slot.end < timezone.now():
+    if su is None or su.slot.end < timezone.now() or data.get("w") != _when(su.slot):
         return None
     return su
 
@@ -210,7 +221,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
         "control_operator": co.short_name if co else "",
         "others": ", ".join(s.user.short_name_lettered for s in signups),
         "confirm_link": dj.SITE_URL + reverse("confirm_by_token", args=[confirm_token(su)]),
-        "cannot_link": dj.SITE_URL + reverse("cannot_by_token", args=[confirm_token(su)]),
+        "cannot_link": dj.SITE_URL + reverse("cannot_by_token", args=[confirm_token(su, "cannot")]),
         "kbyg": kbyg + _contest_kbyg(event),
         "captains": [contact_line(c) for c in caps],
         "advisors": [contact_line(a) for a in advisors() if a not in caps],
