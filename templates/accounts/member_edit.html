@@ -6,7 +6,7 @@
 set one (NAF, 2026-09-19). The name on the record is in Details, in the three fields it is
 stored in.{% endcomment %}
 <p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> › {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
-<div class="titlerow"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div>
+<div class="page-head"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><div class="actions"><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div></div>
 {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
 {% if member.verification_deadline and not member.has_confirmed_address %}
 <div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|utc_time }}{% endif %}.</p>

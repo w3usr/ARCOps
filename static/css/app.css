@@ -641,12 +641,11 @@ label .req { margin-left: .15rem; }
 }
 
 /* ------------------------------------------- management pages */
-.titlerow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-/* A list page's own header (#237): its heading, and its actions at the right, the primary last. */
-.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); margin-bottom: var(--s3); }
+/* Every page's header with actions (#237): its heading, and its actions at the right, the primary
+   last. 1rem below, the same as a heading on its own, so every page starts its content at one height. */
+.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); margin-bottom: 1rem; }
 .page-head h1 { margin: 0; }
 .table.data tbody th[scope=row] { font-weight: 400; text-align: left; }
-.titlerow h1 { margin-bottom: .5rem; }
 .crumbs { margin: 0 0 .5rem; font-size: var(--t-small); color: var(--muted); }
 .crumbs a { text-decoration: none; }  /* D5: underlined only under the pointer and on focus (#265) */
 .crumbs a:is(:hover, :focus-visible) { text-decoration: underline; }
@@ -860,7 +859,7 @@ input.num[size="1"], input.num[size="2"] { --num: 3; }
 }
 @media print {
   .roster .r-row[hidden] { display: grid !important; } .roster .r-fold { display: none; }  /* every slot, on paper (FR-65, FR-85) */
-  .sidenav, .topbar, footer.site, .bulkbar, .legend, .zones a, .keybtn, .banner form, .titlerow .button, .crumbs, .roster input[type="checkbox"], .skip { display: none !important; }
+  .sidenav, .topbar, footer.site, .bulkbar, .legend, .zones a, .keybtn, .banner form, .page-head .actions, .crumbs, .roster input[type="checkbox"], .skip { display: none !important; }
   .shell { display: block; } .content { padding: 0; max-width: none; }
   .roster { border-color: #999; } .roster .slot-link { padding-left: .5rem; }
   .roster .r-head, .roster .r-dayhead { position: static; }

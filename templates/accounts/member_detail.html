@@ -6,9 +6,9 @@
 the edit page behind the button, so a page opened to read somebody's callsign cannot alter their
 access on the way past. The officer's view and the member's own profile are the same page.{% endcomment %}
 {% if perms.ops.view_directory %}<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>{% endif %}
-<div class="titlerow">
+<div class="page-head">
   <h1>{{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
-  {% if can_edit %}<a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit {% if is_self %}profile and preferences{% else %}profile{% endif %}</a>{% endif %}
+  {% if can_edit %}<div class="actions"><a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit {% if is_self %}profile and preferences{% else %}profile{% endif %}</a></div>{% endif %}
 </div>
 
 {% if is_self and my_wards %}

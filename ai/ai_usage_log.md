@@ -5114,3 +5114,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, tests. Verified: ruff, format, the three repository guards, makemigrations --check; app tests all passed, with the extended Outbox test (the notice on Home, Outbox and Invite; the Outbox not linking to itself); the a11y sweep in Chromium and WebKit.
 - **Human Review Status**: Pending review
 - **Git Hash**: 01f7cfb
+
+## [2026-11-17 12:58 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: One page header for every page with actions, after SK's 2026-11-16 interface review: Approvals and Invite laid out their heading rows differently.
+- **Sections/Files Affected**: templates/accounts/invitations.html, member_detail.html, member_edit.html (`titlerow` becomes `page-head`, the button inside `.actions`); static/css/app.css (`.titlerow` deleted; `.page-head` leaves 1rem below, the same as a plain heading, where it left 1.25rem and `titlerow` .5rem plus the lede's margin; print hides every header's actions).
+- **Nature of Contribution**: Code generation. Verified: the three repository guards; app tests all passed; the a11y sweep in Chromium and WebKit; screenshots of the profile and Invite pages.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

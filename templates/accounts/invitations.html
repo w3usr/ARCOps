@@ -4,7 +4,7 @@
 {% block title %}Invite a member · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block main_class %} wide{% endblock %}
 {% block content %}
-<div class="titlerow"><h1>Invite a member</h1><a class="button secondary" href="{% url 'entry_links' %}">Entry links</a></div>
+<div class="page-head"><h1>Invite a member</h1><div class="actions"><a class="button secondary" href="{% url 'entry_links' %}">Entry links</a></div></div>
 <p class="lede">One person at a time. For a whole class, or a neighboring club, make an <a href="{% url 'entry_links' %}">entry link</a> instead.</p>
 {% include "ops/_mail_off.html" %}
 {% if created %}
