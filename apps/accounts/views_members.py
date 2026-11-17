@@ -29,7 +29,7 @@ from apps.credentials.services import (
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import institution_domains, setting
-from apps.ops.groups import may_issue_temporary_password, may_set_access
+from apps.ops.groups import may_issue_temporary_password, may_set_access, within_minor_levels
 from apps.ops.tables import sorted_columns, summary
 
 from . import addresses, entry, views_addresses
@@ -679,11 +679,18 @@ def member_edit(request, pk):
                 )
             return redirect("member_edit", pk=pk)
         elif action == "convert_adult" and member.under_18 and actor.may("convert_minor_accounts"):
-            temp_password = convert_to_adult(actor, member)
-            messages.success(
-                request,
-                f"{member.display_first} now holds their own account; the guardians have been told. Pass on the temporary password below.",
-            )
+            if not within_minor_levels(member):  # its password never opens more than Member (332)
+                messages.error(
+                    request,
+                    "This account holds a level above Member, which a member under 18 no longer "
+                    "may. Set it to Member first, then convert it.",
+                )
+            else:
+                temp_password = convert_to_adult(actor, member)
+                messages.success(
+                    request,
+                    f"{member.display_first} now holds their own account; the guardians have been told. Pass on the temporary password below.",
+                )
         elif (
             action == "link_guardian" and actor.may("edit_member_privileges") and member.under_18
         ):  # §2.4

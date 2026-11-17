@@ -3179,7 +3179,24 @@ participants."
 was that the report's *Hours covered* counted slots the roster marks as needing someone.
 *Record:* this addendum.
 
+### A37. §2.4: a member under 18 holds at most the Member level
+
+**Original (§2.4).** The section says how a guardian acts for a minor and resets their password
+(FR-7), and says nothing about which level a minor's account may hold.
+
+**Decision.**
+- An account under 18 holds the Provisional or the Member level and nothing above it, and is
+  never a sysadmin. The permission level list offers nothing higher for one, and nothing gives
+  one a higher level.
+- A guardian's password reset for their ward therefore never hands out more than Member; for an
+  account that holds more from before this, the reset is refused.
+- Converting a minor's account at 18 (FR-109) issues a temporary password, so it is refused, in
+  the same way, for an account that holds more than Member from before this.
+
+**Decided** by SK on 2026-11-17, answering private tracker 332: "under-18 account only up to
+member". *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

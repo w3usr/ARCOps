@@ -120,9 +120,13 @@ def ward_password(request, pk):
     from .services import issue_temporary_password
 
     real = getattr(request, "acting_guardian", None) or request.user
+    from apps.ops.groups import within_minor_levels
+
     link = get_object_or_404(
         Guardianship.objects.select_related("minor"), minor_id=pk, guardian=real, active=True
     )
+    if not within_minor_levels(link.minor):  # a guardian never hands out more than Member (332)
+        return HttpResponseForbidden("Ask a club officer to reset this password.")
     password = issue_temporary_password(real, link.minor)
     return render(
         request, "accounts/ward_password.html", {"minor": link.minor, "password": password}

@@ -5178,3 +5178,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, message text, tests. Each new test fails on the code before (no notice; the idle session stayed signed in) and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T21 and T22 locally. Noted, not changed: the rate limits are counted in each gunicorn process's memory (no CACHES setting), so with two workers a limit can take up to twice its count.
 - **Human Review Status**: Pending review
 - **Git Hash**: 17cf9af
+
+## [2026-11-17 17:25 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 332, with SK's decision of 2026-11-17 ("under-18 account only up to member"): a minor's account holds at most the Member level, and the two routes that issue a minor a temporary password stay within it.
+- **Sections/Files Affected**: apps/ops/groups.py (`MINOR_LEVELS`, `within_minor_levels`; `assignable_groups` offers a minor only Provisional and Member; `set_groups` refuses more); apps/accounts/account.py (no Sysadmin checkbox for a minor); apps/accounts/guardian.py (`ward_password` refused for a ward holding more than Member); apps/accounts/views_members.py (conversion at 18 refused for an account holding more than Member); docs/REQUIREMENTS.md (addendum A37); tests: apps/accounts/tests/test_phase7.py (new).
+- **Nature of Contribution**: Code generation, documentation (addendum), tests. The first version bound the conversion by `may_issue_temporary_password`, which needs a capability the generic club file gives no level, so the generic advisor could no longer convert (caught by test_acting_view and T48); it is bound by the minor's level instead, as the guardian's reset is. Each part of the new test fails without its fix. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T07, T46, T47 and T48 locally; dev holds no under-18 accounts.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

@@ -35,6 +35,18 @@ def capabilities_held(user) -> set[str]:
     return full_capabilities(user)
 
 
+# A member under 18 holds at most the Member level: none above it, and never sysadmin (SK,
+# 2026-11-17; private tracker 332). A guardian may reset their ward's password (§2.4), so a ward
+# above Member would hand that level to whoever the guardian lets in.
+MINOR_LEVELS = frozenset({"provisional", "member"})
+
+
+def within_minor_levels(user, keys=None) -> bool:
+    """Whether an account, or these group keys for it, stay within what a minor may hold."""
+    held = set(keys) if keys is not None else {g.name for g in user.groups.all()}
+    return not user.is_superuser and held <= MINOR_LEVELS
+
+
 def assignable_groups(actor, subject=None):
     """The groups this person may put an account into.
 
@@ -69,6 +81,8 @@ def assignable_groups(actor, subject=None):
             continue
         if not may_lower and not theirs <= granted:
             continue  # promotions only
+        if subject is not None and subject.under_18 and group.name not in MINOR_LEVELS:
+            continue
         out.append(group)
     return out
 
@@ -113,7 +127,9 @@ def outranks(actor, subject) -> bool:
 
 
 def may_issue_temporary_password(actor, subject) -> bool:
-    """A temporary password signs in as the account (FR-7; A24, SK, 2026-11-12)."""
+    """A temporary password signs in as the account (FR-7; A24, SK, 2026-11-12). Every route that
+    issues one asks this, except the two for a minor's account, a guardian's reset and the
+    conversion at 18, which issue one only while the account is within `MINOR_LEVELS` (332)."""
     return actor.may("issue_temporary_password") and outranks(actor, subject)
 
 
@@ -204,6 +220,8 @@ def set_groups(actor, user, keys: list[str]) -> None:
     the whole of what somebody may do."""
     from apps.ops.audit import record
 
+    if user.under_18 and not within_minor_levels(user, keys):
+        raise ValueError("A member under 18 holds at most the Member level (private tracker 332).")
     before = sorted(g.name for g in user.groups.all())
     user.groups.set(Group.objects.filter(name__in=keys))
     after = sorted(g.name for g in user.groups.all())

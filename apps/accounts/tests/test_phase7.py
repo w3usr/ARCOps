@@ -353,6 +353,29 @@ def test_conversion_at_18_by_an_approver():
     assert g.post(f"/me/wards/{minor.pk}/act/").status_code == 404
 
 
+def test_a_member_under_18_holds_at_most_the_member_level():
+    """Private tracker 332 (SK, 2026-11-17: an under-18 account only up to Member). Nobody may give
+    one a higher level; and for one that holds a higher level from before, neither the guardian's
+    password reset nor a conversion by someone who does not outrank them issues a password."""
+    import pytest
+    from django.contrib.auth.models import Group
+
+    from apps.ops.groups import assignable_groups, set_groups
+
+    officer, guardian, minor = _family()
+    advisor = _user("adv@example.org", "advisor")
+    assert {g.name for g in assignable_groups(advisor, minor)} <= {"provisional", "member"}
+    with pytest.raises(ValueError):
+        set_groups(advisor, minor, ["officer"])
+    page = _as(_user("root@example.org", "sysadmin")).get(f"/members/{minor.pk}/edit/").content
+    assert b'name="is_superuser"' not in page
+    minor.groups.set(Group.objects.filter(name="advisor"))  # as an account could hold before
+    assert _as(guardian).post(f"/me/wards/{minor.pk}/password/").status_code == 403
+    _as(advisor).post(f"/members/{minor.pk}/edit/", {"action": "convert_adult"})
+    minor.refresh_from_db()
+    assert minor.under_18 and not minor.password_is_temporary
+
+
 def test_sysadmin_links_and_unlinks_guardians():
     officer, guardian, minor = _family()
     sys = _user("sys@example.org", "sysadmin")

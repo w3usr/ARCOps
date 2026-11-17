@@ -79,7 +79,8 @@ def editable_fields(actor: User, subject: User) -> list[str]:
     if may_set_access(actor, subject) and subject.pk and subject.has_access:
         fields.append("groups")
     if actor.is_superuser and getattr(actor, "acting_capabilities", None) is None:
-        fields.append("is_superuser")  # a sysadmin is made by a sysadmin, at the top level
+        if not subject.under_18:  # a member under 18 is never a sysadmin (332)
+            fields.append("is_superuser")  # a sysadmin is made by a sysadmin, at the top level
     # the model's own order, so the page reads the same however the lists are built
     order = [f.name for f in User._meta.get_fields() if hasattr(f, "name")]
     return sorted(set(fields), key=lambda f: order.index(f) if f in order else 99)
