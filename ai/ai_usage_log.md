@@ -5161,4 +5161,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/signals.py (at the sign-in that uses it, the temporary password is made unusable and the session keeps its auth hash, so that session can only set the member's own password; audit row `password.temporary_spent`; the flag also clears on allauth's `password_set`); apps/accounts/middleware.py (the forced step is Set Password, `/accounts/password/set/`, which asks for no current password); tests: apps/accounts/tests/test_flows.py (new: one sign-in, a second refused, the session sets a password and goes on), test_profile_and_invites.py and apps/ops/tests/test_bootstrap_sysadmin.py (the forced step's new address).
 - **Nature of Contribution**: Code generation, tests. The new test fails on the old signals at the second sign-in ("assert not True") and passes on the new. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T07, T22, T46 and T48 locally.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: e94914e
