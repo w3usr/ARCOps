@@ -5122,3 +5122,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation. Verified: the three repository guards; app tests all passed; the a11y sweep in Chromium and WebKit; screenshots of the profile and Invite pages.
 - **Human Review Status**: Pending review
 - **Git Hash**: 2469de9
+
+## [2026-11-17 13:22 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Card headings, after SK's 2026-11-16 interface review: every box's name reads as a panel header's does.
+- **Sections/Files Affected**: static/css/app.css (a section's or card's `h2` at `--t-lede`, as a panel header's; a card's padding 1rem 1.25rem, as a section's, so every box's name sits 17 px from its edge); templates/accounts/invitations.html (Invitations so far is a panel with a header, as Approvals' Decisions taken); docs/INTERFACE.md (the type table: a box's name is 18 px).
+- **Nature of Contribution**: Code generation, documentation. Measured before and after in a browser on the demo, every page the sidebar reaches plus an event, its Manage page, profile editing and mentors: box names were 18 px in panels and 20 px in sections and cards, cards 4 px lower; after, all 29 read 18 px at 17 px. Verified: the three repository guards; app tests all passed; the a11y sweep in Chromium and WebKit; screenshots of the profile and Invite at desktop and phone width.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

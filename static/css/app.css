@@ -298,7 +298,7 @@ footer.site .credit { font-size: var(--t-small); color: var(--muted); margin-top
 footer.site .credit a { color: inherit; }
 
 /* --------------------------------------------------------- components */
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); padding: 1.25rem; margin: 1rem 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-card); padding: 1rem 1.25rem; margin: 1rem 0; }
 .card.narrow { max-width: 28rem; margin: 2rem auto; }
 /* A part of a page: its heading and what is under it, on the page itself, with a rule above
    the next part. A card is only for a thing that stands on its own, such as a message or an
@@ -447,6 +447,8 @@ button:disabled { opacity: .45; pointer-events: none; }
 .k-icons > li + li { border-top: 0; }
 :is(.card, .section) > :nth-child(1 of :not(input[type=hidden])) { margin-top: 0; }  /* a form's hidden fields draw nothing */
 :is(.card, .section) > :last-child { margin-bottom: 0; }  /* the padding is the space under it */
+/* A box's name reads as a panel header's does: 18 px, 17 px down from its edge (INTERFACE.md, Shape). */
+:is(.card, .section) > h2 { font-size: var(--t-lede); }
 /* ...and a margin one level down collapses through its parent into that space: a table in its
    wrapper, the last line of a message, the last paragraph of rich text. */
 :is(.card, .section) > .table-wrap:last-child > .table, :is(.card, .section) > details:last-child > :last-child,

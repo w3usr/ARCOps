@@ -402,8 +402,8 @@ One family, served from this site: **Atkinson Hyperlegible Next**, in two weight
   |---|---|---|
   | `--t-small` | 14 px | tags, badges, help, errors, legends, table headers, a roster's second lines |
   | `--t-body` | 16 px | everything read as text |
-  | `--t-lede` | 18 px | `h3`, a page's opening line, an event's time, a card's title |
-  | `--t-h2` | 20 px | `h2`, the slot dialog's heading, a password shown to be copied |
+  | `--t-lede` | 18 px | `h3`, a page's opening line, an event's time, a card's title, the name of every box: a panel's, a section's, a card's (SK, 2026-11-17) |
+  | `--t-h2` | 20 px | an `h2` on the page itself (an event's long text), the slot dialog's heading, a password shown to be copied |
   | `--t-h1` | 30 px | `h1`, the sign-in page's callsign |
 
   Something that seems to need a sixth size usually needs a different structure instead.
