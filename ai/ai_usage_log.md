@@ -5131,7 +5131,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review
 - **Git Hash**: 908e7c9
 
-## [2026-11-17 14:05 EST]
+## [2026-11-17 14:02 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Fix CI's Firefox accessibility failure on Invite (axe scrollable-region-focusable on `.table-wrap` at 390 px) at its root, and, at SK's word, set a stacked table's rows apart by a rule instead of drawing each as a card.
 - **Sections/Files Affected**: static/css/app.css (under 40rem a table's header row is hidden as Tailwind's `sr-only` hides a thing, a 1px clipped box, not moved off to the left at full height; a stacked row has a rule below it, not a border and corners of its own, and every line of it sits at one inset); docs/INTERFACE.md (Tables: both, with the reason).
