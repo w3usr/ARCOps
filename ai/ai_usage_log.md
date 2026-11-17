@@ -5113,4 +5113,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/ops/_mail_off.html (new: the one notice; on the Outbox it ends "They are all below." instead of linking to itself); templates/ops/dashboard.html, templates/accounts/invitations.html, templates/ops/outbox.html (use it; the Outbox's column reads When and its dates carry the year; the unused `nav` load goes); apps/ops/views.py, apps/comms/views.py (the duplicate `delivery_mode` goes; the club context processor's `email_delivery_on` serves all three); templates/credentials/approvals.html (heading Approvals); templates/comms/my_messages.html (tab title Messages); templates/accounts/invitations.html (tab title Invite a member); apps/comms/tests/test_messages.py.
 - **Nature of Contribution**: Code generation, tests. Verified: ruff, format, the three repository guards, makemigrations --check; app tests all passed, with the extended Outbox test (the notice on Home, Outbox and Invite; the Outbox not linking to itself); the a11y sweep in Chromium and WebKit.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 01f7cfb
