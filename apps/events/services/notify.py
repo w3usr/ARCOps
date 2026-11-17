@@ -126,8 +126,16 @@ def reminder_hours(event: Event) -> int:
 
 def send_reminders(now: datetime | None = None) -> dict:
     """FR-72: once per sign-up, when the slot is within the event's reminder window."""
+    from django.db.models import Max
+
     now = now or timezone.now()
-    horizon = now + timedelta(hours=72)
+    # As far ahead as any event asks, not a fixed 72 hours (private tracker 317, SK 2026-11-17);
+    # each sign-up below is still sent at its own event's time.
+    longest = max(
+        int(setting("defaults.reminder_hours_before", 24)),
+        Event.objects.aggregate(m=Max("reminder_hours_before"))["m"] or 0,
+    )
+    horizon = now + timedelta(hours=longest)
     due = (
         SignUp.objects.filter(
             reminder_sent_at__isnull=True,

@@ -236,7 +236,8 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "digest.weekly",
-        "subject": "{{ club.short_name }} this fortnight: {{ events|length }} event(s), {{ open_slots }} open slot(s)",
+        # Sent weekly, about the next two weeks (private tracker 318).
+        "subject": "{{ club.short_name }}, the next two weeks: {{ events|length }} event(s), {{ open_slots }} open slot(s)",
         "body_html": (
             "<p>Hello {{ user.display_first }}.</p>"
             "{% if events %}<h2>Coming up</h2><ul>{% for e in events %}<li><strong>{{ e.title }}</strong>, {{ e.when }}: "
@@ -464,7 +465,7 @@ TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "warning.person": ("Your slot is short of people", "the members in the slot"),
     "warning.captains": ("Slots that need attention", "the captains"),
     "captain.no_show": ("Somebody did not check in", "the captains"),
-    "digest.weekly": ("The fortnightly digest", "every member"),
+    "digest.weekly": ("The weekly digest", "every member"),
     "event.published": ("A new event is on the calendar", "every member"),
     "captain.role_changed": ("A role changed close to the slot", "the captains"),
     "opening.announced": ("Seats opened in an event", "the members who may take them"),

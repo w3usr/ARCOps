@@ -107,6 +107,19 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
     assert r.status_code == 410 and b"no longer valid" in r.content
 
 
+def test_a_reminder_time_above_72_hours_is_sent_at_that_time():
+    """Private tracker 317 (SK, 2026-11-17: the job looks further): an event set to remind 96
+    hours ahead sends its reminder at 90 hours out, where the job used to look 72 hours only."""
+    now = timezone.now()
+    cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    e, slots = _event(now + timedelta(hours=90), captain=cap)
+    e.reminder_hours_before = 96
+    e.save(update_fields=["reminder_hours_before"])
+    SignUp.objects.create(slot=slots[0], user=mem, role="operator")
+    assert notify.send_reminders(now)["sent"] == 1
+
+
 def test_reminder_escapes_contest_fields_and_names_only_advisors():
     """A captain's contest details reach every participant's mail, so they are escaped; and a
     sysadmin is not named as a faculty advisor for being a superuser (T31, T42, 2026-10-20)."""

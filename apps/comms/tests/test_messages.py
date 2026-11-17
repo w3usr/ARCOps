@@ -365,3 +365,11 @@ def test_every_message_is_named_on_the_message_text_page():
     from apps.comms.defaults import DEFAULTS_BY_KEY, TEMPLATE_WORDS
 
     assert set(DEFAULTS_BY_KEY) <= set(TEMPLATE_WORDS)
+
+
+def test_the_weekly_digest_calls_itself_weekly():
+    """Private tracker 318: it is sent weekly, about the next two weeks."""
+    from apps.comms.defaults import DEFAULTS_BY_KEY, TEMPLATE_WORDS
+
+    assert "fortnight" not in DEFAULTS_BY_KEY["digest.weekly"]["subject"]
+    assert TEMPLATE_WORDS["digest.weekly"][0] == "The weekly digest"

@@ -156,3 +156,15 @@ def test_setting_change_from_the_admin_is_audited():
     )
     assert entries.count() == 2
     assert entries.last().before == {"value": "off"} and entries.last().after == {"value": "on"}
+
+
+def test_the_nightly_backup_is_watched_only_where_a_recipient_is_set():
+    """Technical addendum A11, private tracker 335: a server that schedules no backup (no
+    recipient) does not show it stale forever; one that has a recipient still does."""
+    now = timezone.now()
+    first = JobRun.objects.create(name="selfcheck", outcome="ok")
+    JobRun.objects.filter(pk=first.pk).update(started=now - timedelta(days=3))
+    with override_settings(BACKUP_AGE_RECIPIENT=""):
+        assert "backup:nightly" not in jobs.stale_jobs(now)
+    with override_settings(BACKUP_AGE_RECIPIENT="age1example"):
+        assert "backup:nightly" in jobs.stale_jobs(now)

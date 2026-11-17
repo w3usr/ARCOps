@@ -130,6 +130,8 @@ def is_stale(spec: JobSpec, now: datetime | None = None) -> bool:
     never succeeded and the JobRun table has existed for longer than that (the first run of a
     fresh deployment gets the same grace as every later one)."""
     now = now or timezone.now()
+    if spec.name == "backup:nightly" and not settings.BACKUP_AGE_RECIPIENT:
+        return False  # A11: it runs only where the deployment schedules it, with a recipient (335)
     if spec.name == "uls:sync" and _weekly_overdue(now):
         return True
     last = last_ok(spec.name)

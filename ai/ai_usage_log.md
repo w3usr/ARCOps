@@ -5194,3 +5194,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, message text, tests. Each new test fails on the code before and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T05, T11, T12, T13, T15, T24, T36, T37, T38, T40, T44 (after its two roster checks were brought to the new rule) and T52 locally; T51 fails locally as before (its level marking), unrelated.
 - **Human Review Status**: Pending review
 - **Git Hash**: cc367c1
+
+## [2026-11-17 18:51 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The quick fixes, private tracker 318, 317, 316, 311 and 335, with SK's decision of 2026-11-17 for 317 (the reminder job looks further, rather than the form refusing).
+- **Sections/Files Affected**: apps/comms/defaults.py (318: the digest's subject says the next two weeks, its line on the templates page The weekly digest; an edited template is kept, as before); apps/events/services/notify.py (317: `send_reminders` looks as far ahead as the longest reminder time any event or the club default asks for); templates/accounts/invitation_invalid.html, verify_result.html (316: a sign-in link on each); apps/accounts/services.py (311: the ready-to-send text opens with who is inviting); apps/ops/jobs.py (335: `backup:nightly` is not stale where no backup recipient is set); config/env.example (335: the three backup settings, with placeholders only); tests: apps/ops/tests/test_jobs.py, apps/events/tests/test_notify.py, apps/accounts/tests/test_flows.py (two), apps/comms/tests/test_messages.py.
+- **Nature of Contribution**: Code generation, wording, tests. Each of the five new tests fails on the code before and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T05 and T24 locally on the generic club, T34 and T42 on the W3USR club (mail on).
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

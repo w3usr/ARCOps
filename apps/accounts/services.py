@@ -91,8 +91,9 @@ def invitation_text(inv: Invitation, base_url: str) -> str:
     club = setting("club.name", "the club")
     contact = setting("club.contact_email", "")
     link = f"{base_url}/me/invite/{inv.token}/"
+    who = inv.issued_by.full_name if inv.issued_by else "A club officer"  # FR-104 (tracker 311)
     return (
-        f"You are invited to join {club}'s operations site.\n\n"
+        f"{who} invites you to join {club}'s operations site.\n\n"
         f"Open this link to create your account: {link}\n"
         f"The link works once and expires on {when.day(inv.expires_at)}.\n\n"
         f"Questions: {contact}"

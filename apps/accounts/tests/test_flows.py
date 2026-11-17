@@ -563,6 +563,28 @@ def test_an_expired_invitation_reads_expired_with_no_link_and_offers_a_new_one()
     )
 
 
+def test_the_ready_to_send_text_names_who_is_inviting():
+    """FR-104, private tracker 311: who is inviting, to what, the link, its expiry, the contact."""
+    from apps.accounts.services import invitation_text
+
+    off = officer()
+    inv = create_invitation(off, "named@example.org", "student")
+    text = invitation_text(inv, "https://site.example")
+    assert text.startswith("Off Icer invites you to join") and f"/me/invite/{inv.token}/" in text
+
+
+def test_a_dead_invitation_or_verify_link_offers_a_way_to_sign_in():
+    """FR-100, private tracker 316: a dead link says so and gives a route to sign in."""
+    off = officer()
+    inv = create_invitation(off, "used@example.org", "student")
+    inv.state = "revoked"
+    inv.save(update_fields=["state"])
+    page = Client().get(f"/me/invite/{inv.token}/")
+    assert page.status_code == 410 and 'href="/accounts/login/"' in page.content.decode()
+    page = Client().get("/verify/not-a-real-token/")
+    assert 'href="/accounts/login/"' in page.content.decode()
+
+
 def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
     """A warning that sends somebody somewhere carries the way there, and is said once.
 
