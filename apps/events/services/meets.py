@@ -14,6 +14,8 @@ from datetime import date, datetime, time, timedelta
 
 from django.utils import timezone
 
+from apps.ops.when import twelve_hour
+
 WEEKLY, MONTHLY_WEEKDAY, MONTHLY_DATE = "weekly", "monthly_weekday", "monthly_date"
 PATTERNS = [
     (WEEKLY, "Every week"),
@@ -22,12 +24,6 @@ PATTERNS = [
 ]
 DAYS = list(calendar.day_name)  # Monday first, as date.weekday() counts
 WEEKS = [(1, "First"), (2, "Second"), (3, "Third"), (4, "Fourth"), (-1, "Last")]
-
-
-def _clock(t: time) -> str:
-    """8:00 PM: a local time, in the US convention the club reads (#274 leaves local times to the
-    locale; UTC is 24-hour)."""
-    return f"{t.hour % 12 or 12}:{t.minute:02d} {'AM' if t.hour < 12 else 'PM'}"
 
 
 def _ordinal(n: int) -> str:
@@ -78,15 +74,15 @@ def describe(event, now: datetime | None = None) -> str:
         when = f"{week} {DAYS[event.repeat_weekday]} of the month"
     else:
         when = f"The {_ordinal(event.repeat_day)} of every month"
-    hours = _clock(event.meets_at)
+    hours = twelve_hour(event.meets_at)
     if event.meets_until:
-        end = _clock(event.meets_until)
+        end = twelve_hour(event.meets_until)
         same = hours[-2:] == end[-2:]  # 7:00–9:00 PM, but 11:00 AM–1:00 PM
         hours = f"{hours[:-3] if same else hours}–{end}"
     return f"{when}, {hours} {nxt.strftime('%Z')}"
 
 
-_DAY = r"(mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?s?\b"
+_DAY = r"\b(mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?s?\b"
 _WEEK = {"first": 1, "1st": 1, "second": 2, "2nd": 2, "third": 3, "3rd": 3, "fourth": 4, "4th": 4}
 _WEEK |= {"last": -1}
 _FILLER = r"\b(every|each|at|on|of|the|month|monthly|weekly|from|to|until|[ecmp][sd]t|et|ct|mt|pt|utc|z)\b"

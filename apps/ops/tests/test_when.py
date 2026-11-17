@@ -31,6 +31,20 @@ def test_a_plain_date_and_a_local_time():
     assert when.local_span(noon, noon.replace(hour=18), NY) == "Sat, Nov 21, 11:00 AM–1:00 PM EST"
 
 
+def test_a_local_span_across_the_clock_change_names_each_ends_zone():
+    """The clocks go back at 06:00 UTC on 1 Nov 2026: 6:00 AM that morning is EST, not EDT."""
+    night = datetime(2026, 11, 1, 4, 0, tzinfo=UTC)
+    assert (
+        when.local_span(night, night.replace(hour=11), NY)
+        == "Sun, Nov 1, 12:00 AM EDT – 6:00 AM EST"
+    )
+    weekend = datetime(2026, 10, 31, 22, 0, tzinfo=UTC)
+    assert (
+        when.local_span(weekend, datetime(2026, 11, 2, 0, 59, tzinfo=UTC), NY)
+        == "Sat, Oct 31, 6:00 PM EDT – Sun, Nov 1, 7:59 PM EST"
+    )
+
+
 def test_a_utc_box_takes_the_date_and_a_24_hour_time_however_the_browser_is_set():
     from apps.ops.when import Unreadable, parse_utc, typed
 

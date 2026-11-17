@@ -16,6 +16,7 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -215,8 +216,8 @@ def set_seats(user, slot, seats: dict[str, int]) -> None:
         else:
             RoleCapacity.objects.filter(slot=slot, role=key).delete()
     for key, n in seats.items():
-        if n:
-            waitlist.on_place_opened(slot, key)
+        if n:  # after the save: a change undone must not have offered anyone a place
+            transaction.on_commit(lambda key=key: waitlist.on_place_opened(slot, key))
     record(user, "slot.capacities", slot, after=seats)
 
 
@@ -407,8 +408,9 @@ def _bulk_seats(request, event, slots):
             plan.append((s, seats))
     step = request.POST.get("step", "")
     if step == "apply" and chosen:
-        for s, seats in plan:
-            set_seats(request.user, s, seats)
+        with transaction.atomic():  # every slot or none: a retry after a failure must not add twice
+            for s, seats in plan:
+                set_seats(request.user, s, seats)
         n = len(plan)
         messages.success(request, f"Seats changed on {n} slot{'s' if n != 1 else ''}.")
         for r in refused:

@@ -29,15 +29,20 @@ def _client(user):
 # ----------------------------------------------------------------------------------- #253 ---
 
 
-def test_more_seats_offer_the_place_to_the_first_waiting(officer):
+def test_more_seats_offer_the_place_to_the_first_waiting(
+    officer, django_capture_on_commit_callbacks
+):
     now = timezone.now()
     holder, w = _user("h@example.org"), _user("w@example.org")
     ev, (slot, _) = _event(now + timedelta(days=2), captain=officer)
     SignUp.objects.create(slot=slot, user=holder, role="operator")
     entry = waitlist.join(w, slot, "operator")
-    _client(officer).post(
-        f"/events/{ev.pk}/slot/{slot.pk}/seats/", {"cap_operator": "3", "cap_mentor": "1"}
-    )
+    with django_capture_on_commit_callbacks(
+        execute=True
+    ):  # the offer goes once the seats are saved
+        _client(officer).post(
+            f"/events/{ev.pk}/slot/{slot.pk}/seats/", {"cap_operator": "3", "cap_mentor": "1"}
+        )
     entry.refresh_from_db()
     assert entry.state == Waitlist.State.OFFERED
     assert Outbox.objects.filter(user=w, subject__contains="place opened").exists()

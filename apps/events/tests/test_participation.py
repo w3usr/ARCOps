@@ -71,7 +71,7 @@ def test_participation_counts_hours_people_and_first_timers():
     )
     r = participation(e)
     t = r["total"]
-    assert t["slots"] == 3 and t["hours_scheduled"] == 3.0 and t["hours_covered"] == 2.0
+    assert t["slots"] == 3 and t["hours_scheduled"] == 3.0 and t["hours_signed_up"] == 2.0
     assert (
         t["people_scheduled"] == 2 and t["people_checked_in"] == 1
     )  # a's second check-in is a no-show

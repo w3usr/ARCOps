@@ -44,8 +44,9 @@ def participation(event: Event) -> dict:
                 first_timers.add(pk)
 
     def block(sub):
-        covered = [s for s in sub if s.signups.exists()]
-        viable = [s for s in sub if evaluate(s, list(s.signups.all())).status == "viable"]
+        # "Covered" is the roster's word for a slot that can run (private tracker 279, A36)
+        signed_up = [s for s in sub if s.signups.exists()]
+        covered = [s for s in sub if evaluate(s, list(s.signups.all())).status == "viable"]
         checked = {
             su.user_id for s in sub for su in s.signups.all() if su.checked_in_at and not su.no_show
         }
@@ -53,8 +54,8 @@ def participation(event: Event) -> dict:
         return {
             "slots": len(sub),
             "hours_scheduled": _hours(sub),
+            "hours_signed_up": _hours(signed_up),
             "hours_covered": _hours(covered),
-            "hours_viable": _hours(viable),
             "people_scheduled": len(scheduled),
             "people_checked_in": len(checked),
         }

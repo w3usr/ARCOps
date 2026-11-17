@@ -399,8 +399,8 @@ def participation_report(request, pk):
         cols = [
             "slots",
             "hours_scheduled",
+            "hours_signed_up",
             "hours_covered",
-            "hours_viable",
             "people_scheduled",
             "people_checked_in",
         ]

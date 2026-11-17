@@ -77,11 +77,12 @@ def meets_line(event) -> str:
 
 @register.filter
 def next_meets(event) -> str:
-    """ "Tue 24 Nov, 8:00 PM EST": its next meeting, in its own zone; "" with no pattern."""
-    from ..services.meets import _clock, next_meeting
+    """ "Tue, Nov 24, 8:00 PM EST": its next meeting, in its own zone, as every local time
+    reads (apps/ops/when.py); "" with no pattern."""
+    from ..services.meets import next_meeting
 
     at = next_meeting(event)
-    return f"{at:%a %-d %b}, {_clock(at.time())} {at:%Z}" if at else ""
+    return when_.local(at, at.tzinfo) if at else ""
 
 
 @register.filter

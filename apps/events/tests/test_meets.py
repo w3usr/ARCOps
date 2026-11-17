@@ -62,6 +62,7 @@ def test_old_free_text_is_read_where_it_can_be_and_kept_where_it_cannot():
         fields["repeats"] == "weekly" and note == "Thursdays 8pm on 146.52, not during finals week"
     )
     assert parse("every other week-ish") == ({}, "every other week-ish")
+    assert parse("Common-interest net, Tuesdays 8pm")[0]["repeat_weekday"] == 1  # not "comMON"
     assert parse("Tuesdays") == ({}, "Tuesdays")  # no time: nothing is guessed
 
 

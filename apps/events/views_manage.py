@@ -15,6 +15,7 @@ from datetime import timedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -960,21 +961,24 @@ def span_edit(request, pk):
                 if event.start and event.end
                 else None
             )
-            event.start, event.end = start, end
-            event.save(update_fields=["start", "end"])
-            n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(cancelled=True)
-            if event.on_air_ranges.exists():  # the on-air hours stay inside the start and end
-                set_on_air(event, chosen(event))
-            record(
-                request.user,
-                "event.edited",
-                event,
-                before={"start and end": was},
-                after={
-                    "start and end": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC",
-                    "slots canceled": n,
-                },
-            )
+            with (
+                transaction.atomic()
+            ):  # all of it or none: never on-air hours deleted and not rewritten
+                event.start, event.end = start, end
+                event.save(update_fields=["start", "end"])
+                n = Slot.objects.filter(pk__in=[s.pk for s in slots]).update(cancelled=True)
+                if event.on_air_ranges.exists():  # the on-air hours stay inside the start and end
+                    set_on_air(event, chosen(event))
+                record(
+                    request.user,
+                    "event.edited",
+                    event,
+                    before={"start and end": was},
+                    after={
+                        "start and end": f"{start:%Y-%m-%d %H:%M}–{end:%Y-%m-%d %H:%M} UTC",
+                        "slots canceled": n,
+                    },
+                )
             gone = (
                 f" The {n} slot{pluralize(n)} left outside it {'was' if n == 1 else 'were'} canceled."
                 if n

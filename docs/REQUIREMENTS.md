@@ -3161,7 +3161,25 @@ because, as NAF raised, some people know only US time while contests run in UTC.
 switch on each form over a profile setting and over both clocks side by side, starting in UTC.
 *Record:* this addendum.
 
+### A36. FR-86: Covered means one thing, the roster's
+
+**Original (FR-86).** "Participation report per event and per period: hours scheduled, hours
+covered, hours viable, people scheduled and people who checked in (FR-113), first-time
+participants."
+
+**Decision.**
+- On the roster a slot that can run is **Covered** (private tracker 279). The report says the
+  same: **Hours covered** is the hours of slots that can run, which FR-86 called *hours viable*.
+- What FR-86 called *hours covered*, the hours of slots with anyone signed up, is **Hours with
+  someone signed up**.
+- The spreadsheet's columns follow: `hours_signed_up`, then `hours_covered` (slots that can run).
+  A sheet downloaded before 2026-11-17 has `hours_covered` meaning signed up, and `hours_viable`.
+
+**Decided** by SK on 2026-11-17, approving the fixes from that day's code audit, whose finding 7
+was that the report's *Hours covered* counted slots the roster marks as needing someone.
+*Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27) and 2026-11-16 (A28 to A35), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

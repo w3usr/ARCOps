@@ -774,6 +774,29 @@ def test_change_seats_on_ticked_slots_reviews_first_and_refuses_per_slot(world):
     assert _as(mem).post(url, {**change, "step": "apply"}).status_code == 404
 
 
+def test_change_seats_is_every_slot_or_none(world, monkeypatch):
+    """Audit 2026-11-17, finding 3: a change that fails part way leaves no slot changed, so trying
+    it again adds one seat, not two, where it had got to."""
+    c = _as(world["off"])
+    ev = world["ev"]
+    a, b = Slot.objects.filter(position=world["mult"], kind="operating").order_by("start")[:2]
+    seats = lambda s: {x.role: x.capacity for x in s.capacities.all()}  # noqa: E731
+    before = seats(a), seats(b)
+    real, calls = views_slots.set_seats, []
+
+    def fails_on_the_second(user, slot, new):
+        calls.append(slot.pk)
+        real(user, slot, new)
+        if len(calls) == 2:
+            raise RuntimeError("database is locked")
+
+    monkeypatch.setattr(views_slots, "set_seats", fails_on_the_second)
+    change = {"action": "seats", "slots": [a.pk, b.pk], "op_operator": "add", "n_operator": "1"}
+    with pytest.raises(RuntimeError):
+        c.post(f"/events/{ev.pk}/bulk/", {**change, "step": "apply"})
+    assert (seats(a), seats(b)) == before
+
+
 def test_a_roster_mark_and_the_license_letter_say_what_they_mean_on_hover(world):
     """Private tracker 278: each mark carries its words as a tooltip, the letter after a name its
     class in full, and the Key explains the letter."""

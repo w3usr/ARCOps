@@ -72,7 +72,8 @@ def day(d: date | datetime | str | None) -> str:
     return f"{d.day} {d:%b %Y}"
 
 
-def _clock(t: datetime) -> str:
+def twelve_hour(t) -> str:
+    """`4:00 PM`: a datetime's or a time's clock, in the US convention the club reads."""
     return f"{t.hour % 12 or 12}:{t:%M} {'AM' if t.hour < 12 else 'PM'}"
 
 
@@ -80,20 +81,25 @@ def local(t: datetime, zone, year: bool = False) -> str:
     """`Sat, Nov 21, 4:00 PM EST` in `zone` (`Sat, Nov 21, 2026, 4:00 PM EST` with the year)."""
     s = t.astimezone(zone)
     when = f"{s:%a, %b} {s.day}" + (f", {s.year}" if year else "")
-    return f"{when}, {_clock(s)} {s:%Z}"
+    return f"{when}, {twelve_hour(s)} {s:%Z}"
 
 
 def local_span(start: datetime, end: datetime, zone, year: bool = False) -> str:
     """`Sat, Nov 21, 4:00–6:00 PM EST` within a day (one AM or PM where both share it), else
-    `Sat, Nov 21, 4:00 PM – Mon, Nov 23, 9:59 PM EST`."""
+    `Sat, Nov 21, 4:00 PM – Mon, Nov 23, 9:59 PM EST`. Where the clocks change between the two
+    ends, each names its own zone (`Sun, Nov 1, 12:00 AM EDT – 6:00 AM EST`): one name for both
+    put one end an hour off."""
     s, e = start.astimezone(zone), end.astimezone(zone)
     head = f"{s:%a, %b} {s.day}" + (f", {s.year}" if year else "")
+    a, b = twelve_hour(s), twelve_hour(e)
+    changed = s.tzname() != e.tzname()
     if s.date() == e.date():
-        a, b = _clock(s), _clock(e)
+        if changed:
+            return f"{head}, {a} {s:%Z} – {b} {e:%Z}"
         a = a[:-3] if a[-2:] == b[-2:] else a
         return f"{head}, {a}–{b} {s:%Z}"
     tail = f"{e:%a, %b} {e.day}" + (f", {e.year}" if year else "")
-    return f"{head}, {_clock(s)} – {tail}, {_clock(e)} {e:%Z}"
+    return f"{head}, {a}{f' {s:%Z}' if changed else ''} – {tail}, {b} {e:%Z}"
 
 
 # ---------------------------------------------------------------- typed in UTC ---

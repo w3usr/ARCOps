@@ -459,7 +459,7 @@ button:disabled { opacity: .45; pointer-events: none; }
    shows more of itself. Under 40rem the stacked layout below sets its own padding. */
 .table th, .table td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 .table thead th { border-bottom: 2px solid var(--line); font-size: var(--t-small); color: var(--muted); font-weight: 700; }
-.status { font-weight: 700; } .status.viable { color: var(--ok); } .status.at_risk { color: var(--warn); } .status.not_viable { color: var(--bad); }
+.status { font-weight: 700; } .status.viable { color: var(--ok); } .status.not_viable { color: var(--bad); }
 .tag { display: inline-flex; align-items: center; gap: .3rem; font-size: var(--t-small); font-weight: 700; line-height: 1.4; padding: .05rem .45rem; border-radius: var(--r-field); background: var(--tag-neutral); color: var(--muted); white-space: nowrap; }
 /* A badge (#226): a tone and always a word, its word at 4.5:1 or more on its fill in both themes
    (apps/ops/tests/test_badges.py). Which state takes which tone is apps/ops/templatetags/badges.py. */
