@@ -349,6 +349,20 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["effective", "notified", "cut_off", "former"],
     },
     {
+        "key": "account.locked_out",
+        "subject": "Sign-in to your {{ club.short_name }} account is paused",
+        # FR-99, TR-18 (private tracker 288): once per lockout, and what to do if it was not them.
+        "body_html": (
+            "<p>{{ user.display_first }}, someone tried to sign in to your account with the wrong "
+            "password too many times within a few minutes, so signing in is paused for "
+            "{{ minutes }} minutes.</p><p>If it was you, wait and try again, or "
+            '<a href="{{ reset_link }}">reset your password</a>. If it was not you, those '
+            "attempts failed; if you think someone knows your password, reset it now and tell a "
+            "club officer.</p>"
+        ),
+        "variables": ["user.display_first", "minutes", "reset_link"],
+    },
+    {
         "key": "account.closure_requested",
         "subject": "{{ person.full_name }} asked to close their account",
         "body_html": (
@@ -398,6 +412,7 @@ DEFAULT_TEMPLATES: list[dict] = [
 # What each message is, and who gets it, for the templates page. The page listed the keys
 # ("slot.cancelled") and nothing else, which named the code rather than the message.
 TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
+    "account.locked_out": ("Sign-in paused after failed attempts", "the account's owner"),
     "invitation": ("Invitation to join", "the person being invited"),
     "account.verify_member": ("Confirm your address", "a new member"),
     "account.verify_provisional": (

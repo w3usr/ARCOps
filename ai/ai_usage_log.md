@@ -5170,3 +5170,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, tests. The new test fails on the old code, where a Confirm link's token cancelled the sign-up at the cannot address, and passes on the new. Reminders sent before this deploy carry the old token and now open This link is no longer valid, with a way to sign in. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T52 (generic) and T31 (W3USR club, mail on) locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: edb03fd
+
+## [2026-11-17 16:39 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 288 (FR-99, TR-18): a locked account's owner is told, once per lockout; and 289 (TR-17): a session not remembered ends after 12 hours idle.
+- **Sections/Files Affected**: apps/accounts/adapter.py (`pre_authenticate`: when the account's own limit, `10/5m/key`, refuses a sign-in, its owner gets `account.locked_out` once per window, deduplicated by the audit row of the same name; the per-address limit tells nobody; reads allauth's internal rate-limit module, marked as a shortcut); apps/comms/defaults.py (the `account.locked_out` message, category security, and its line on the templates page); apps/accounts/middleware.py (a session that expires with the browser records its last request at most every five minutes and is signed out after 12 hours idle; a remembered one keeps its 14 days); tests: apps/accounts/tests/test_flows.py (two new).
+- **Nature of Contribution**: Code generation, message text, tests. Each new test fails on the code before (no notice; the idle session stayed signed in) and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T21 and T22 locally. Noted, not changed: the rate limits are counted in each gunicorn process's memory (no CACHES setting), so with two workers a limit can take up to twice its count.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

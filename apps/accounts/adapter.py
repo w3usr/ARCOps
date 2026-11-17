@@ -1,11 +1,15 @@
 """allauth adapter: invitation-only signup (FR-1) and the client IP behind a proxy."""
 
+from datetime import timedelta
 from email.utils import formataddr
 
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.core import context
+from django.conf import settings as dj
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.ops.config import setting
 
@@ -83,6 +87,19 @@ class AccountAdapter(DefaultAccountAdapter):
             else stage
             for stage in super().get_login_stages()
         ]
+
+    def pre_authenticate(self, request, **credentials) -> None:
+        """FR-99, TR-18: repeated failed sign-ins lock the account (`ACCOUNT_RATE_LIMITS`), and
+        its owner is told (private tracker 288)."""
+        try:
+            super().pre_authenticate(request, **credentials)
+        except ValidationError:
+            _tell_the_owner(
+                request,
+                self._get_login_attempts_cache_key(request, **credentials),
+                credentials.get("email", ""),
+            )
+            raise
 
     def get_client_ip(self, request) -> str:
         """allauth's rate limiter (TR-18) keys on the client IP and refuses the request when it
@@ -187,3 +204,45 @@ def _guardian_addresses(user) -> list[str]:
         for g in user.guardianships.filter(active=True).select_related("guardian")
         for a in recipient_addresses(g.guardian)
     ]
+
+
+def _tell_the_owner(request, cache_key: str, address: str) -> None:
+    """A lockout notice, once per lockout. Only the account's own limit (`/key`) locks it; the
+    per-address one stops whoever is typing, whichever account they try, and tells nobody."""
+    # shortcut: allauth's internal rate-limit module (pinned 65.19.3); check it on an upgrade.
+    from allauth.core.internal import ratelimit
+
+    from apps.comms.services import send
+    from apps.ops.audit import record
+    from apps.ops.models import AuditLog
+
+    from .models import User
+
+    own = ",".join(
+        r for r in dj.ACCOUNT_RATE_LIMITS["login_failed"].split(",") if r.endswith("/key")
+    )
+    if not own or ratelimit.consume(
+        request, action="login_failed", config={"login_failed": own}, key=cache_key, dry_run=True
+    ):
+        return  # the account's own limit is not what refused
+    user = User.objects.by_address(address).first() if address else None
+    if user is None or not user.has_access:
+        return
+    seconds = ratelimit.parse_rates(own)[0].duration
+    if AuditLog.objects.filter(
+        action="account.locked_out",
+        subject_type="User",
+        subject_id=str(user.pk),
+        at__gte=timezone.now() - timedelta(seconds=seconds),
+    ).exists():
+        return  # told already for this lockout
+    record(None, "account.locked_out", user)
+    send(
+        "account.locked_out",
+        user,
+        "security",
+        {
+            "minutes": round(seconds / 60),
+            "reset_link": dj.SITE_URL + reverse("account_reset_password"),
+        },
+    )

@@ -1,6 +1,7 @@
 """
 Two small gates on every request:
 
+* A session not remembered on this device ends after 12 hours without a request (TR-17).
 * A temporary password (FR-7) works for exactly one sign-in, which must set a new password
   before anything else; the member is sent to the change-password page until they do.
 * An account at access level "none" is signed out and shown a plain explanation (§2.1).
@@ -9,6 +10,8 @@ Two small gates on every request:
 * An account whose access level requires two-step verification (§2.6) is told for as long as the
   club's grace period lasts, and then sent to enroll before anything else.
 """
+
+import time
 
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -22,6 +25,9 @@ ALLOWED_WHILE_TEMPORARY = (
     "/static/",
     "/healthz",
 )
+IDLE = 12 * 3600  # TR-17: a session not remembered, after this long without a request
+SEEN_EVERY = 300  # the last request is written at most this often, not on every page
+
 # Everything the library's own pages need, so somebody being made to enroll can actually do it.
 ALLOWED_WHILE_ENROLLING = ("/accounts/", "/me/two-step/", "/static/", "/healthz")
 
@@ -33,6 +39,10 @@ class AccountGateMiddleware:
     def __call__(self, request):
         user = getattr(request, "user", None)
         if user is not None and user.is_authenticated:
+            if _idle_too_long(request.session):
+                logout(request)
+                messages.info(request, "You were signed out after 12 hours without activity.")
+                return redirect("account_login")
             for signed_out, message in (
                 (
                     not user.has_access,
@@ -91,3 +101,17 @@ def _two_factor_gate(request, user):
         "passkey to carry on.",
     )
     return redirect("mfa_index")
+
+
+def _idle_too_long(session) -> bool:
+    """TR-17 (private tracker 289): "a 12-hour idle timeout otherwise". A session the person did
+    not ask to remember ends with the browser, but on the server it lived the 14 days a
+    remembered one has, which matters on the station PC. It now ends after 12 hours idle."""
+    if not session.get_expire_at_browser_close():
+        return False  # remembered on this device: its 14 days
+    now, seen = time.time(), session.get("seen_at")
+    if seen and now - seen > IDLE:
+        return True
+    if not seen or now - seen > SEEN_EVERY:
+        session["seen_at"] = now
+    return False

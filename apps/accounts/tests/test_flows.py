@@ -223,6 +223,67 @@ def test_a_temporary_password_works_for_exactly_one_sign_in():
     assert first.get("/events/").status_code == 200
 
 
+def test_ten_failed_sign_ins_lock_the_account_and_tell_its_owner_once():
+    """FR-99, TR-18, private tracker 288: the account's own limit (10 in 5 minutes) locks it, even
+    against the right password, and the owner is told once; the per-address limit tells nobody."""
+    from apps.comms.models import Outbox
+
+    owner = User.objects.create_user(
+        "lock@example.org", "pw-Testing-123", groups=["member"], first_name="Lo", last_name="Ck"
+    )
+    c = Client()
+
+    def attempt(n, password="not-the-password-1", login="lock@example.org"):
+        return c.post(  # from many addresses, so the account's limit is the one met
+            "/accounts/login/", {"login": login, "password": password}, HTTP_X_REAL_IP=f"10.0.0.{n}"
+        )
+
+    for n in range(10):
+        attempt(n)
+    told = Outbox.objects.filter(user=owner, category="security")
+    assert not told.exists()
+    assert "Too many failed" in attempt(10, "pw-Testing-123").content.decode()
+    assert "_auth_user_id" not in c.session
+    attempt(11)
+    attempt(12)
+    assert told.count() == 1 and "paused" in told.get().subject
+
+    other = User.objects.create_user(
+        "busy@example.org", "pw-Testing-123", groups=["member"], first_name="Bu", last_name="Sy"
+    )
+    for _ in range(7):  # one address, five a window: it is stopped, and nobody is told
+        c.post(
+            "/accounts/login/",
+            {"login": "busy@example.org", "password": "nope-nope-nope-1"},
+            HTTP_X_REAL_IP="10.9.9.9",
+        )
+    assert not Outbox.objects.filter(user=other, category="security").exists()
+
+
+def test_a_session_not_remembered_ends_after_12_hours_idle_and_a_remembered_one_does_not():
+    """TR-17, private tracker 289: the clock moved 13 hours past the last request signs out a
+    session that was not remembered; a remembered one keeps its 14 days."""
+    import time
+
+    User.objects.create_user(
+        "idle@example.org", "pw-Testing-123", groups=["member"], first_name="I", last_name="D"
+    )
+
+    def signed_in(remember):
+        c = Client()
+        form = {"login": "idle@example.org", "password": "pw-Testing-123"}
+        c.post("/accounts/login/", {**form, **({"remember": "on"} if remember else {})})
+        assert c.get("/").status_code == 200
+        session = c.session
+        session["seen_at"] = time.time() - 13 * 3600  # the clock, moved
+        session.save()
+        return c
+
+    r = signed_in(remember=False).get("/")
+    assert r.status_code == 302 and "/accounts/login/" in r["Location"]
+    assert signed_in(remember=True).get("/").status_code == 200
+
+
 def test_admin_add_user_page_renders_with_custom_forms():
     a = User.objects.create_user(
         "adm@example.org",
