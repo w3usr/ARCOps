@@ -5225,4 +5225,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: tools/a11y/test_roster_rows.py, tools/a11y/test_manage_dialog.py (after signing in, open Home and wait for the `tz` cookie before the page under test).
 - **Nature of Contribution**: Test fix. CI's Chromium run for Asia/Kolkata left the landing page before its script set the cookie, so the roster was drawn in the club's zone (UTC there); the dialog test had the same race and had passed by luck. The application is unchanged: a browser's first page is in the club's zone by design (A38). Verified: both tests and test_on_air in Chromium and WebKit.
 - **Human Review Status**: Pending review
-- **Git Hash**: 
+- **Git Hash**: 1e242c3
