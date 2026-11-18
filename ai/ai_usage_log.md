@@ -5226,3 +5226,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Test fix. CI's Chromium run for Asia/Kolkata left the landing page before its script set the cookie, so the roster was drawn in the club's zone (UTC there); the dialog test had the same race and had passed by luck. The application is unchanged: a browser's first page is in the club's zone by design (A38). Verified: both tests and test_on_air in Chromium and WebKit.
 - **Human Review Status**: Pending review
 - **Git Hash**: 1e242c3
+
+## [2026-11-18 11:56 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI's accessibility job failed again on c75a4c5: a browser in India's zone had its roster drawn in the club's zone. Chromium names the zone Asia/Calcutta, and Ubuntu 26.04 (CI, and the dev server, checked) ships that old name only in tzdata-legacy, which is not installed; the server could not read the cookie's zone.
+- **Sections/Files Affected**: requirements.in, requirements.txt (tzdata 2026.6, released 2026-10-28: Python's zoneinfo falls back to it for a name the system lacks); apps/events/tests/test_roster.py (an Asia/Calcutta cookie reads IST).
+- **Nature of Contribution**: Diagnosis, dependency, test. Verified: with zoneinfo's system path emptied, Asia/Calcutta resolves from the package; app tests all passed.
+- **Human Review Status**: Pending review
+- **Git Hash**: 

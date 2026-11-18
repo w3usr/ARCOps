@@ -167,6 +167,10 @@ def test_one_time_column_in_the_viewers_zone_from_the_browsers_cookie(world):
     c.cookies["tz"] = "America/Los_Angeles"
     body = c.get(f"/events/{ev.pk}/").content.decode()
     assert "Times in <strong>PDT</strong>." in body and ">5:00–6:00 PM<" in body
+    c.cookies["tz"] = (
+        "Asia/Calcutta"  # Chromium's name for it; recent Ubuntu keeps it only in tzdata
+    )
+    assert "Times in <strong>IST</strong>." in c.get(f"/events/{ev.pk}/").content.decode()
     c.cookies["tz"] = "Not/AZone"
     assert "Times in <strong>EDT</strong>." in c.get(f"/events/{ev.pk}/").content.decode()
     assert _as(world["mem"]).get(f"/events/{ev.pk}/tz/?tz=local").status_code == 404

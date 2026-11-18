@@ -12,3 +12,4 @@ cryptography
 argon2-cffi
 weasyprint>=70
 django-tinymce==4.1.0
+tzdata  # every zone name a browser may report, old ones too (Asia/Calcutta), where the system lacks them (A38)
