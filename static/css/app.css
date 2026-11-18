@@ -818,6 +818,7 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 .roster .tone-open .state .word { color: var(--accent); } .roster .tone-ok .state .word { color: var(--ok); } .roster .tone-warn .state .word { color: var(--warn); } .roster .tone-bad .state .word { color: var(--bad); }
 .roster .state small { color: var(--muted); }
 .roster .r-where { font-size: var(--t-small); color: var(--muted); }
+.roster.grid .r-where { display: none; }  /* the column header names it, until the columns stack */
 /* A folded run of open hours (#161): one row across every position, its hours hidden after it
    (the [hidden] rule above, which is !important, outranks .r-row's display: grid). */
 .roster .r-foldcell { grid-column: 2 / -1; } .roster.twozones .r-foldcell { grid-column: 3 / -1; }
@@ -857,7 +858,10 @@ input.num[size="1"], input.num[size="2"] { --num: 3; }
 .preview strong { display: block; font-size: var(--t-lede); }
 
 @media (max-width: 48rem) {
-  .roster.grid .r-head { display: none; }
+  /* Stacked, each cell names its position (FR-95), and the header row stays for a screen
+     reader, hidden as a 1px box rather than taken away (FR-116; private tracker 337). */
+  .roster.grid .r-head { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .roster.grid .r-where { display: block; }
   .roster .r-head, .roster .r-row, .roster.grid .r-row, .roster.list .r-row,
   .roster.grid.twozones .r-row, .roster.list.twozones .r-row { grid-template-columns: 1fr; }
   .roster .r-time { flex-direction: row; gap: .6rem; align-items: baseline; padding-bottom: .25rem; }

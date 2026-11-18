@@ -49,3 +49,32 @@ def test_the_time_sits_on_one_line_and_utc_shows_once(live_server, engine, zone)
             f"UTC leads, the zone beside: {heads}"
         )
         assert all(r["other"] for r in rows), "every row also shows the event's zone"
+
+
+def test_at_phone_width_each_cell_names_its_position_and_the_header_stays(live_server, engine):
+    """Private tracker 337 (FR-95, FR-116): stacked at 390 px, a two-position roster's cells each
+    say which position they are, and the column headers are still there for a screen reader."""
+    from apps.events.models import Event, Position
+    from apps.events.services.slots import generate_slots
+
+    ev = Event.objects.filter(start__isnull=False).first()
+    first = Position.objects.filter(location__event=ev).first()
+    second = Position.objects.create(location=first.location, name="Second op", order=2)
+    generate_slots(ev, [second], minutes=60)
+    with sync_playwright() as p:
+        browser = getattr(p, engine).launch()
+        page = browser.new_page(viewport={"width": 390, "height": 900})
+        sign_in(page, live_server.url, ACCOUNTS["member"])
+        page.goto(f"{live_server.url}/events/{ev.pk}/")
+        cells = page.eval_on_selector_all(
+            ".roster.grid .r-row:not([hidden]):not(.r-fold) .r-cell",
+            "cs => cs.filter(c => c.offsetParent).map(c => c.innerText)",
+        )
+        headers = page.get_by_role("columnheader", name="Second op").count()
+        browser.close()
+
+    assert cells, "the roster is a grid with cells"
+    assert all(first.name in c or "Second op" in c for c in cells), (
+        f"each names its position: {cells[:4]}"
+    )
+    assert headers == 1, "the column header is still in the accessibility tree"

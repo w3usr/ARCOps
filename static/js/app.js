@@ -8,6 +8,8 @@ document.addEventListener("click", (ev) => {
   const el = document.querySelector(btn.dataset.copy);
   if (!el) return;
   navigator.clipboard.writeText(el.value || el.textContent).then(() => {
+    const said = document.getElementById("said");  // a changed label alone is not announced (341)
+    if (said) { said.textContent = ""; setTimeout(() => { said.textContent = "Copied"; }, 50); }
     // A button that is a glyph keeps its glyph: swapping textContent would throw the icon away.
     if (btn.querySelector("svg")) {
       const label = btn.getAttribute("aria-label");

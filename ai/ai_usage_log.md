@@ -5202,3 +5202,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, wording, tests. Each of the five new tests fails on the code before and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T05 and T24 locally on the generic club, T34 and T42 on the W3USR club (mail on).
 - **Human Review Status**: Pending review
 - **Git Hash**: 9d741e0
+
+## [2026-11-17 19:26 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The accessibility tickets, private tracker 337 (a roster cell at phone width loses its position) and 341 (small gaps: two status messages not announced, a group without a legend, two marks told apart by color, My schedule's Confirm after the event's link).
+- **Sections/Files Affected**: templates/events/_roster_cell.html, static/css/app.css (337: a grid cell carries its position as `r-where`, shown only once the columns stack; the header row is hidden as a 1px clipped box with no padding or border, not removed); templates/events/detail.html (341: the bulk bar's count in a polite live region; the Key's !! mark); templates/base.html, static/js/app.js (341: one polite live region, `#said`, through which Copy says Copied); templates/comms/announce.html (341: Category a fieldset with its legend); apps/events/services/roster.py (341: the within-48-hours mark !!); templates/events/my_schedule.html (341: the Actions column second, so Confirm comes before the event's link); tests: tools/a11y/test_roster_rows.py (a phone-width browser test, Chromium and WebKit), apps/events/tests/test_roster.py (Home's and My schedule's Confirm order pinned; the other gaps).
+- **Nature of Contribution**: Code generation, tests. The new tests fail on the code before and pass after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit (the member-picker test timed out once under load and passed alone); 18 scenarios locally, T12 and T17 after their checks were brought to the new header, mark and column order.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

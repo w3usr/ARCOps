@@ -72,7 +72,7 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
   <ul aria-labelledby="roster-key">
     <li><span class="sm sm-open" aria-hidden="true"></span> <span class="what"><span class="tag open">Open</span> anyone eligible can sign up</span></li>
     <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="what"><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</span></li>
-    {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!</span> <span class="what"><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</span></li>{% endif %}
+    {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!!</span> <span class="what"><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</span></li>{% endif %}
     <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="what"><span class="tag ok">Covered</span> it can run</span></li>
     <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="what"><span class="tag">Closed</span> not taking sign-ups</span></li>
     {% if "none" in roster.strip_gaps %}<li><span class="sm sm-none" aria-hidden="true"></span> <span class="what">on the air, but no slot has been made for the hour yet</span></li>{% endif %}
@@ -136,7 +136,7 @@ column's header, and where the event's zone differs it has a column of its own.{
 </div>
 
 {% if roster.selectable %}<div class="bulkbar" id="bulk-bar" role="region" aria-label="Actions for the selected slots">
-  <span class="count"><strong data-count>0</strong> selected</span>
+  <span class="count" aria-live="polite"><strong data-count>0</strong> selected</span>
   {% if roster.published and roles %}
   <label class="sr-only" for="bulk-role">Role</label>
   <select id="bulk-role" name="role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select>

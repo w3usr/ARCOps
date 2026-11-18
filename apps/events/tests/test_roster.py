@@ -535,6 +535,11 @@ def test_home_leads_with_your_next_slot_and_the_one_thing_to_do_about_it(world, 
     assert "<h1>Your next slot</h1>" in body
     assert "In 6\xa0days" in body and "Run at Club station, as Operator" in body
     assert "Confirm you will be there" in body and "Your other slots" in body
+    # The most important action first (FR-116; private tracker 341): Confirm before the roster.
+    assert body.index("Confirm you will be there") < body.index(">Open the roster</a>")
+    sked = c.get("/events/mine/").content.decode()
+    row = sked[sked.index("<tbody>") :]
+    assert row.index(">Confirm</button>") < row.index(f'href="/events/{world["ev"].pk}/"')
     c.post(f"/events/signup/{mine.pk}/confirm/")
     body = c.get("/").content.decode()
     assert "Confirm you will be there" not in body and '<span class="tag">confirmed</span>' in body
@@ -807,3 +812,16 @@ def test_a_roster_mark_and_the_license_letter_say_what_they_mean_on_hover(world)
     assert f'data-tip="{mem.license_letter_says}">{mem.license_letter}</span>' in body
     assert 'data-tip="Confirmed"' in body and "after a name, the license class" in body
     assert mem.license_letter_says == "No license on file"
+
+
+def test_small_accessibility_gaps_are_closed(world):
+    """Private tracker 341 (FR-116; WCAG 4.1.3, 1.3.1, 1.4.1): the bulk bar's count and Copied are
+    spoken; Announce's Category is a group with a legend; the two urgent marks differ in shape."""
+    from apps.events.services.roster import STRIP_MARKS
+
+    page = _as(world["off"]).get(f"/events/{world['ev'].pk}/").content.decode()
+    assert '<span class="count" aria-live="polite"><strong data-count>' in page
+    assert 'id="said" class="sr-only" aria-live="polite"' in page
+    announce = _as(world["off"]).get(f"/events/{world['ev'].pk}/announce/").content.decode()
+    assert '<fieldset class="field checkset"><legend>Category</legend>' in announce
+    assert STRIP_MARKS["problem"] != STRIP_MARKS["needs"]

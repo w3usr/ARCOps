@@ -245,7 +245,7 @@ def _unlabelled(text: str, label: str) -> str:
 # The coverage strip (#161): a mark per time span, its state as a symbol as well as a color (FR-62),
 # most urgent first when positions differ.
 STRIP_MARKS = {
-    "problem": "!",
+    "problem": "!!",  # told apart from needs by its shape, not by color alone (WCAG 1.4.1; 341)
     "needs": "!",
     "open": "",
     "covered": "✓",
