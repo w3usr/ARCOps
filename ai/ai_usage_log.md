@@ -5233,4 +5233,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: requirements.in, requirements.txt (tzdata 2026.6, released 2026-10-28: Python's zoneinfo falls back to it for a name the system lacks); apps/events/tests/test_roster.py (an Asia/Calcutta cookie reads IST).
 - **Nature of Contribution**: Diagnosis, dependency, test. Verified: with zoneinfo's system path emptied, Asia/Calcutta resolves from the package; app tests all passed.
 - **Human Review Status**: Pending review
-- **Git Hash**: 
+- **Git Hash**: 6055b99
