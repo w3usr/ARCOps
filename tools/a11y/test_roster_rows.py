@@ -25,7 +25,9 @@ def test_the_time_sits_on_one_line_in_the_browsers_zone(live_server, engine, zon
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
         page = browser.new_page(viewport={"width": 1280, "height": 900}, timezone_id=zone)
-        sign_in(page, live_server.url, ACCOUNTS["member"])  # the first page sets the cookie
+        sign_in(page, live_server.url, ACCOUNTS["member"])
+        page.goto(f"{live_server.url}/")  # a page's script names the browser's zone in a cookie
+        page.wait_for_function("document.cookie.split('; ').some(c => c.startsWith('tz='))")
         page.goto(f"{live_server.url}/events/{ev.pk}/")
         drawn_in = page.get_attribute("html", "data-tz")
         rows = page.eval_on_selector_all(

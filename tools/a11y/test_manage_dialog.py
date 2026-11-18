@@ -31,6 +31,8 @@ def test_a_form_opens_in_the_dialog_keeps_focus_and_comes_back(live_server, engi
             viewport={"width": 1280, "height": 900}, timezone_id="America/New_York"
         )
         sign_in(page, live_server.url, ACCOUNTS["officer"])
+        page.goto(f"{live_server.url}/")  # a page's script names the browser's zone in a cookie
+        page.wait_for_function("document.cookie.split('; ').some(c => c.startsWith('tz='))")
         page.goto(setup)
         button = page.get_by_role("link", name="Edit")
         button.click()

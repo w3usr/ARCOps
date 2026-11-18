@@ -5218,3 +5218,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, documentation (addendum), tests. SK chose the browser naming its zone to the server over the browser rewriting every time. Testing found and fixed: a roster cell's aria-label would have carried `<time>` markup; a time box came back empty after a form error; a viewer in UTC got the old span format; a first version moved mail's span too, caught by the mail test and reverted. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit, including a New York browser's typed time stored as the right UTC instant and rosters read from Los Angeles and Kolkata; the pages looked at on a demo server from a Los Angeles browser at 1280 and 390 px; the acceptance scenarios on the generic club, brought to A38 in the private repository.
 - **Human Review Status**: Pending review
 - **Git Hash**: 1b7e015
+
+## [2026-11-18 11:43 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI's accessibility job failed on 2bc2d75 (A38): a browser test read the roster before the browser's zone cookie was set.
+- **Sections/Files Affected**: tools/a11y/test_roster_rows.py, tools/a11y/test_manage_dialog.py (after signing in, open Home and wait for the `tz` cookie before the page under test).
+- **Nature of Contribution**: Test fix. CI's Chromium run for Asia/Kolkata left the landing page before its script set the cookie, so the roster was drawn in the club's zone (UTC there); the dialog test had the same race and had passed by luck. The application is unchanged: a browser's first page is in the club's zone by design (A38). Verified: both tests and test_on_air in Chromium and WebKit.
+- **Human Review Status**: Pending review
+- **Git Hash**: 
