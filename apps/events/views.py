@@ -44,7 +44,7 @@ def event_list(request):
             over = e.state == Event.State.COMPLETED or (e.end or now) < now
             (past if over else upcoming).append(e)
     upcoming.sort(key=lambda e: e.start or now)
-    # Each row's date tile in UTC, the roster's axis, and a captain's coverage counts (#238).
+    # Each row's date tile, in the viewer's zone (A38), and a captain's coverage counts (#238).
     from .services.roster import coverage
 
     for e in upcoming + past:
@@ -157,7 +157,9 @@ def sign_up(request, slot_id):
         messages.info(request, "You already hold this slot.")
     else:
         record(request.user, "signup.created", su, after={"role": role})
-        messages.success(request, f"Signed up as {role_label(role)} for {when.utc(slot.start)}.")
+        messages.success(
+            request, f"Signed up as {role_label(role)} for {when.local(slot.start, year=True)}."
+        )
         if request.user.under_18:  # FR-64: the guardian names who accompanies the minor
             messages.info(
                 request,

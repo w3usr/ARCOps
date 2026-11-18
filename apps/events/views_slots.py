@@ -37,7 +37,7 @@ from .models import EligibilityRule, Event, RoleCapacity, SignUp, Slot, Waitlist
 from .services import reshape, waitlist
 from .services.eligibility import can_sign_up
 from .services.notify import assigned_by_captain
-from .services.roster import cell_for, display_zone
+from .services.roster import cell_for
 from .services.viability import checkin_window_open, may_control
 from .views_rules import captained_event, event_rule, shown
 
@@ -315,17 +315,17 @@ def event_bulk(request, pk):
         done, refused = [], []
         for s in slots:
             if s.closed:
-                refused.append(f"{when.utc(s.start, year=False)}: closed")
+                refused.append(f"{when.local(s.start)}: closed")
                 continue
             if not waitlist.seats_open(s, role):
-                refused.append(f"{when.utc(s.start, year=False)}: no {role_label(role)} seat open")
+                refused.append(f"{when.local(s.start)}: no {role_label(role)} seat open")
                 continue
             if s.signups.filter(user=request.user).exists():
-                refused.append(f"{when.utc(s.start, year=False)}: you already hold it")
+                refused.append(f"{when.local(s.start)}: you already hold it")
                 continue
             ok, reason = can_sign_up(request.user, s, role)
             if not ok:
-                refused.append(f"{when.utc(s.start, year=False)}: {reason}")
+                refused.append(f"{when.local(s.start)}: {reason}")
                 continue
             su = SignUp.objects.create(slot=s, user=request.user, role=role, note=note)
             record(request.user, "signup.created", su, after={"role": role, "bulk": True})
@@ -403,7 +403,7 @@ def _bulk_seats(request, event, slots):
         seats = {k: v for k, v in seats.items() if v != now.get(k, 0)}
         why = seats_refused(s, seats)
         if why:
-            refused.append(f"{when.utc(s.start, year=False)}, {s.position.name}: {why}")
+            refused.append(f"{when.local(s.start)}, {s.position.name}: {why}")
         elif seats:
             plan.append((s, seats))
     step = request.POST.get("step", "")
@@ -462,21 +462,15 @@ def signup_no_show(request, signup_id):
 
 
 def _typed_utc(text, data, event):
-    """A time box's text as (a UTC time or None, why not). Read on the event's own clock when the
-    form's switch says local (A35), else UTC (2026-11-21T21:00, 2026-11-21 2100 too; #274). `why`
-    is said only for a local time the clocks skip or repeat; anything else unreadable is None."""
-    from apps.ops.when import Unreadable, in_zone, parse_utc
+    """A time box's text as (a UTC time or None, why not): ISO 8601 with the browser's offset, or
+    without the page's script the viewer's wall clock (A38; when.parse_box). `why` is said only
+    for a time the clocks skip or repeat; anything else unreadable is None."""
+    from apps.ops.when import Unreadable, parse_box
 
     try:
-        t = parse_utc(text)
-    except Unreadable:
-        return None, ""
-    if t and data.get("clock") == "local":
-        try:
-            return in_zone(t, display_zone(event)), ""
-        except Unreadable as exc:
-            return None, str(exc)
-    return t, ""
+        return parse_box(text), ""
+    except Unreadable as exc:
+        return None, str(exc) if "clocks" in str(exc) else ""
 
 
 def next_slot(slot: Slot):
@@ -507,7 +501,9 @@ def slot_retime(request, pk, slot_id):
         if told
         else ""
     )
-    messages.success(request, f"Slot moved to {when.utc_span(slot.start, slot.end)}.{people}")
+    messages.success(
+        request, f"Slot moved to {when.local_span(slot.start, slot.end, year=True)}.{people}"
+    )
     return roster_or_slot(request, slot)
 
 
@@ -531,7 +527,7 @@ def slot_split(request, pk, slot_id):
         if n
         else ""
     )
-    messages.success(request, f"Slot split at {when.utc(at)}.{people}")
+    messages.success(request, f"Slot split at {when.local(at, year=True)}.{people}")
     return roster_or_slot(request, slot)
 
 
@@ -556,6 +552,6 @@ def slot_merge(request, pk, slot_id):
     )
     messages.success(
         request,
-        f"Merged: the slot now runs {when.utc_span(slot.start, slot.end)}.{people}",
+        f"Merged: the slot now runs {when.local_span(slot.start, slot.end, year=True)}.{people}",
     )
     return roster_or_slot(request, slot)

@@ -316,124 +316,67 @@ document.addEventListener("input", (ev) => {
   });
 });
 
-// The UTC clock in the bar (#246, D9): the server draws the minute; this keeps it current. A
-// screen reader is not told each minute: it is not a live region.
+// The viewer's own time zone (functional addendum A38; NAF and SK, 2026-11-18): pages show local
+// time only. The browser names its zone in the `tz` cookie and the server draws every page in it
+// (apps/ops/middleware.py); the page says which zone it was drawn in on <html data-tz>. A time
+// box holds that zone's wall clock and is sent as ISO 8601 with the offset, so the server stores
+// UTC without guessing. A time the clocks skip or repeat is refused before sending, as the
+// server refuses it without JavaScript (apps/ops/when.py in_zone).
 (() => {
-  const t = document.querySelector("[data-utc-clock]");
-  if (!t) return;
-  const tick = () => { const d = new Date(); t.textContent = d.toISOString().slice(11, 16); t.dateTime = d.toISOString(); };
-  tick();
-  setInterval(tick, 15000);
-})();
-
-// UTC or the event's own clock in a time box (A35, SK 2026-11-16): contests run in UTC, and not
-// everyone reads it. Each form with a time box gets a "Times in" switch, starting in UTC or the
-// person's last choice; flipping it converts the boxes, and a line under each gives the same
-// moment in the other clock. The server reads `clock` (apps/ops/forms.py clock()). Without
-// JavaScript there is no switch, and every box is UTC.
-(() => {
-  const KEY = "arcops.clock";
-  const remembered = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
-  const remember = (v) => { try { localStorage.setItem(KEY, v); } catch { /* storage blocked */ } };
+  let browser = "";
+  try { browser = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch { /* no Intl */ }
+  if (/^[A-Za-z0-9_+\-/]{1,64}$/.test(browser) && !document.cookie.split("; ").includes(`tz=${browser}`)) {
+    document.cookie = `tz=${browser}; path=/; max-age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+  }
+  const zone = document.documentElement.dataset.tz || browser || "UTC";
   const pad = (n) => String(n).padStart(2, "0");
   const asUtc = (v) => Date.UTC(+v.slice(0, 4), +v.slice(5, 7) - 1, +v.slice(8, 10), +v.slice(11, 13), +v.slice(14, 16));
-  const wall = (ms, zone) => {  // the wall clock in `zone` at instant `ms`, as a box value
+  const wall = (ms) => {  // the wall clock in `zone` at instant `ms`, as a box value
     const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
       timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
     }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
     return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
   };
-  // The instants whose wall clock in `zone` reads v: none in the hour the clocks go forward, two
-  // in the hour they go back. The server refuses both (when.in_zone), so the line here warns.
-  const instants = (v, zone) => {
-    const guess = asUtc(v), day = 864e5, off = (ms) => asUtc(wall(ms, zone)) - ms;
-    const tries = new Set([off(guess - day), off(guess + day)].map((o) => guess - o));
-    return [...tries].filter((t) => wall(t, zone) === v);
+  // The instants whose wall clock reads v: none in the hour the clocks go forward, two in the
+  // hour they go back.
+  const instants = (v) => {
+    const guess = asUtc(v), day = 864e5, off = (ms) => asUtc(wall(ms)) - ms;
+    return [...new Set([off(guess - day), off(guess + day)].map((o) => guess - o))].filter((t) => wall(t) === v);
   };
-  const instant = (v, mode, zone) => {  // the UTC instant a box value means, or null if none or two
-    if (mode === "utc") return asUtc(v);
-    const found = instants(v, zone);
-    return found.length === 1 ? found[0] : null;
+  const withOffset = (v, ms) => {  // 2026-11-21T16:00-05:00
+    const m = Math.round((asUtc(v) - ms) / 6e4), a = Math.abs(m);
+    return `${v}:00${m < 0 ? "-" : "+"}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
   };
-  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const utcText = (ms) => {  // Sat 21 Nov 2026 21:00 UTC, as the pages write it (A34)
-    const d = new Date(ms);
-    return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+  const valid = (v) => /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(v);
+  const check = (box) => {  // the refusal, said under the box and held as the box's validity
+    const v = box.value.slice(0, 16);
+    const n = valid(v) ? instants(v).length : 1;
+    const why = n === 1 ? "" : n
+      ? "This time happens twice here, as the clocks go back. Choose a time outside that hour."
+      : "This time does not happen here: the clocks go forward that night. Choose a time outside that hour.";
+    let line = document.getElementById(`${box.id}-dst`);
+    if (why && !line && box.id) {
+      line = Object.assign(document.createElement("span"), { className: "helptext", id: `${box.id}-dst` });
+      box.after(line);
+      box.setAttribute("aria-describedby", [box.getAttribute("aria-describedby"), line.id].filter(Boolean).join(" "));
+    }
+    if (line) line.textContent = why;
+    box.setCustomValidity(why);
   };
-  const localText = (ms, zone) => new Intl.DateTimeFormat("en-US", {
-    timeZone: zone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short",
-  }).format(new Date(ms));
-  const zoneName = (zone, style) => {
-    try {
-      return new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: style })
-        .formatToParts(new Date()).find((x) => x.type === "timeZoneName").value;
-    } catch { return zone; }
-  };
-  const valid = (v) => /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(v);
-  let made = 0;
-
-  const wire = (root) => {
-    root.querySelectorAll('input[type="datetime-local"][data-zone]').forEach((first) => {
-      const form = first.form;
-      const zone = first.dataset.zone;
-      if (!form || form.dataset.clock || zone === "UTC") return;
-      const boxes = [...form.querySelectorAll('input[type="datetime-local"][data-zone]')];
-      const short = zoneName(zone, "shortGeneric");
-      const n = ++made;
-      const set = document.createElement("fieldset");
-      set.className = "clock";
-      const legend = document.createElement("legend");
-      legend.textContent = "Times in";
-      set.append(legend);
-      const radios = ["utc", "local"].map((value) => {
-        const row = document.createElement("div");
-        row.className = "check";
-        const r = Object.assign(document.createElement("input"), { type: "radio", name: "clock", value, id: `clock-${value}-${n}` });
-        const l = Object.assign(document.createElement("label"), { htmlFor: r.id });
-        l.textContent = value === "utc" ? "UTC" : `${zoneName(zone, "longGeneric")} (${short})`;
-        row.append(r, l);
-        set.append(row);
-        return r;
-      });
-      (first.closest(".row") || first.closest(".field") || first).before(set);
-      const parts = boxes.map((box) => {
-        const label = form.querySelector(`label[for="${box.id}"]`);
-        const other = Object.assign(document.createElement("span"), { className: "helptext clock-other", id: `${box.id}-other` });
-        box.after(other);
-        box.setAttribute("aria-describedby", [box.getAttribute("aria-describedby"), other.id].filter(Boolean).join(" "));
-        return { box, label, text: label ? label.textContent : "", other };
-      });
-      let mode = boxes.some((b) => b.dataset.clock === "local") ? "local" : "utc";
-      const show = () => {
-        radios.forEach((r) => { r.checked = r.value === mode; });
-        parts.forEach(({ box, label, text, other }) => {
-          if (label) label.textContent = mode === "utc" ? text : text.replace("(UTC)", `(${short})`);
-          const v = box.value.slice(0, 16);
-          if (!valid(v)) { other.textContent = ""; return; }
-          const ms = instant(v, mode, zone);
-          if (ms !== null) { other.textContent = `= ${mode === "utc" ? localText(ms, zone) : utcText(ms)}`; return; }
-          other.textContent = instants(v, zone).length
-            ? "This time happens twice here, as the clocks go back. Enter it in UTC instead."
-            : "This time does not happen here: the clocks go forward that night. Enter it in UTC instead.";
-        });
-      };
-      const switchTo = (next) => {
-        if (next === mode) return show();
-        parts.forEach(({ box }) => {
-          const v = box.value.slice(0, 16);
-          const ms = valid(v) ? instant(v, mode, zone) : null;
-          box.value = ms === null ? "" : wall(ms, next === "utc" ? "UTC" : zone);  // no guessing
-        });
-        mode = next;
-        show();
-      };
-      form.dataset.clock = "on";
-      radios.forEach((r) => r.addEventListener("change", () => { switchTo(r.value); remember(r.value); }));
-      boxes.forEach((b) => b.addEventListener("input", show));
-      if (mode === "utc" && remembered() === "local") switchTo("local"); else show();
+  const BOX = 'input[type="datetime-local"][data-instant]';
+  document.addEventListener("input", (ev) => { if (ev.target.matches?.(BOX)) check(ev.target); });
+  // Capture, so the offset is in place before htmx or the browser reads the form.
+  document.addEventListener("submit", (ev) => {
+    ev.target.querySelectorAll(BOX).forEach((box) => {
+      const name = box.dataset.name || box.name;
+      if (!name) return;
+      box.dataset.name = name;
+      ev.target.querySelector(`input[type="hidden"][data-for="${box.id}"]`)?.remove();
+      const v = box.value.slice(0, 16), found = valid(v) ? instants(v) : [];
+      if (found.length !== 1) { box.name = name; return; }  // empty or refused: sent as typed
+      box.removeAttribute("name");
+      box.after(Object.assign(document.createElement("input"), { type: "hidden", name, value: withOffset(v, found[0]) }));
+      box.nextElementSibling.dataset.for = box.id;
     });
-  };
-  wire(document);
-  document.addEventListener("htmx:afterSettle", (ev) => wire(ev.target));
+  }, true);
 })();

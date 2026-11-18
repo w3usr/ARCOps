@@ -63,7 +63,7 @@ def can_sign_up(user, slot, role: str, now=None, by_captain: bool = False) -> tu
             if upcoming:
                 return (
                     False,
-                    f"{role_label(role)} opens to you on {when.utc(upcoming[0].opens_at)}",
+                    f"{role_label(role)} opens to you on {when.local(upcoming[0].opens_at, year=True)}",
                 )
             return False, f"{role_label(role)} is not open to your membership category"
 

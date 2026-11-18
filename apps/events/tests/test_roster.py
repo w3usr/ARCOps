@@ -3,9 +3,11 @@ status phrased as a need, the slot page and fragment, captain edits on a slot, b
 
 import re
 from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.test import Client
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.credentials.models import LicenseRecord
@@ -64,7 +66,9 @@ def world():
     for s in generate_slots(ev, [run, mult], minutes=60, setup_slots=1):
         RoleCapacity.objects.create(slot=s, role="operator", capacity=1)
         RoleCapacity.objects.create(slot=s, role="observer", capacity=2)
-    return {"off": off, "mem": mem, "ev": ev, "run": run, "mult": mult}
+    # What the middleware does for a page with no `tz` cookie, for build() called directly (A38).
+    with timezone.override(ZoneInfo("America/New_York")):
+        yield {"off": off, "mem": mem, "ev": ev, "run": run, "mult": mult}
 
 
 def _as(u, view="sysadmin"):
@@ -77,14 +81,14 @@ def _as(u, view="sysadmin"):
     return c
 
 
-def test_grid_layout_days_in_utc_with_local_zone_beneath(world):
+def test_grid_layout_days_in_the_viewers_zone(world):
+    """Functional addendum A38: one zone, the viewer's own; no UTC on the page."""
     data = build(world["ev"], world["mem"])
     assert data["layout"] == "grid" and len(data["positions"]) == 2
-    assert data["lead_label"] == "UTC" and data["other_label"] == "EDT"
-    assert data["days"][0].heading == "Friday 25 September"  # 23:00Z setup slot
-    assert data["days"][1].heading == "Saturday 26 September"
-    row = data["days"][1].rows[0]  # 00:00Z Saturday is Friday evening locally
-    assert row.lead_range == "00:00–01:00 UTC" and row.other_range == "Fri 20:00–21:00 EDT"
+    assert data["lead_label"] == "EDT" and data["other_label"] == ""
+    assert [d.heading for d in data["days"]] == ["Friday, September 25"]  # 23:00Z to 04:00Z
+    row = data["days"][0].rows[1]  # 00:00Z Saturday is Friday evening in New York
+    assert row.lead_range == "8:00–9:00 PM EDT" and row.other_range == ""
     assert len(row.cells) == 2 and all(row.cells)
 
 
@@ -96,23 +100,18 @@ def test_the_zone_label_follows_the_event_not_today(world):
     Event.objects.filter(pk=ev.pk).update(start=start, end=start + timedelta(hours=4))
     ev.refresh_from_db()
     data = build(ev, world["mem"], now=datetime(2026, 10, 15, 12, 0, tzinfo=UTC))
-    assert data["lead_label"] == "UTC" and data["other_label"] == "EST"
-    assert data["span"]["other"].endswith("EST")
+    assert data["lead_label"] == "EST" and data["other_label"] == ""
+    assert data["span"]["lead"].endswith("EST") and data["span"]["other"] == ""
 
 
-def test_a_utc_event_shows_each_time_once(world):
-    """A contest shown in UTC repeated every time beneath itself, and offered "Lead with UTC"
-    (found on the contact sheet, 2026-10-23)."""
+def test_an_event_in_utc_still_reads_in_the_viewers_zone(world):
+    """A contest whose own zone is UTC: the page shows the viewer's time, not UTC (A38)."""
     ev = world["ev"]
     ev.display_timezone = "UTC"
     ev.save()
-    data = build(ev, world["mem"])
-    row = data["days"][1].rows[0]  # Friday holds only the 23:00Z setup slot
-    assert row.lead_range == "00:00–01:00 UTC" and row.other_range == ""
-    assert data["span"]["lead"].endswith("UTC") and data["span"]["other"] == ""
-    assert data["lead_label"] == "UTC" and data["other_label"] == ""
+    assert _rows(build(ev, world["mem"]))[1].lead_range == "8:00–9:00 PM EDT"
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
-    assert "Times in <strong>UTC</strong>." in body and "Lead with" not in body
+    assert "Times in <strong>EDT</strong>." in body and "UTC" not in body
 
 
 def test_an_open_cell_reads_its_state_and_its_link_names_the_action(world):
@@ -120,8 +119,8 @@ def test_an_open_cell_reads_its_state_and_its_link_names_the_action(world):
     action and the slot are in the link's accessible name, for a screen reader (FR-62, FR-95)."""
     body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
     assert "<small>sign up</small>" not in body
-    assert 'aria-label="Open: sign up for Run, Sat 26 Sep 00:00 UTC"' in body
-    assert 'aria-label="Open: sign up for Mult, Fri 25 Sep 23:00 UTC"' in body  # the setup slot
+    assert 'aria-label="Open: sign up for Run, Fri, Sep 25, 8:00 PM EDT"' in body
+    assert 'aria-label="Open: sign up for Mult, Fri, Sep 25, 7:00 PM EDT"' in body  # setup
 
 
 def test_know_before_you_go_shows_only_the_sections_written(world):
@@ -155,16 +154,21 @@ def test_status_is_phrased_as_a_need_never_a_verdict(world):
     assert ">Coverage<" in body and "open</span>" in body
 
 
-def test_utc_is_the_axis_and_the_events_zone_a_column_of_its_own(world):
-    """#161 and functional addendum A12: the zone is named once, in the header, and there is no
-    switch to lead with the other one."""
+def test_one_time_column_in_the_viewers_zone_from_the_browsers_cookie(world):
+    """A38: the zone is named once, in the header; the browser's `tz` cookie picks it, the club's
+    zone stands in before it has, and a name the server does not know is ignored."""
     ev = world["ev"]
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
-    assert "Times in <strong>UTC</strong>, then EDT." in body and "Lead with" not in body
-    assert '<div class="r-time" role="columnheader">UTC</div>' in body
-    assert '<div class="r-zone" role="columnheader">EDT</div>' in body
-    row = build(ev, world["mem"])["days"][1].rows[0]  # 00:00Z Saturday, the first operating hour
-    assert (row.lead_hours, row.other_hours) == ("00:00–01:00", "Fri 20:00–21:00")
+    assert "Times in <strong>EDT</strong>." in body and 'data-tz="America/New_York"' in body
+    assert '<div class="r-time" role="columnheader">EDT</div>' in body and "r-zone" not in body
+    row = build(ev, world["mem"])["days"][0].rows[1]  # 00:00Z Saturday, the first operating hour
+    assert (row.lead_hours, row.other_hours) == ("8:00–9:00 PM", "")
+    c = _as(world["mem"])
+    c.cookies["tz"] = "America/Los_Angeles"
+    body = c.get(f"/events/{ev.pk}/").content.decode()
+    assert "Times in <strong>PDT</strong>." in body and ">5:00–6:00 PM<" in body
+    c.cookies["tz"] = "Not/AZone"
+    assert "Times in <strong>EDT</strong>." in c.get(f"/events/{ev.pk}/").content.decode()
     assert _as(world["mem"]).get(f"/events/{ev.pk}/tz/?tz=local").status_code == 404
 
 
@@ -179,8 +183,8 @@ def test_a_row_names_its_zone_where_the_clocks_have_changed(world):
     generate_slots(ev, [world["run"]], minutes=60)
     data = build(ev, world["mem"])
     rows = [r for d in data["days"] for r in d.rows]
-    assert data["other_label"] == "EDT"
-    assert rows[0].other_hours == "Sat 23:00–00:00" and rows[-1].other_hours.endswith(" EST")
+    assert data["lead_label"] == "EDT"
+    assert rows[0].lead_hours == "11:00 PM–midnight" and rows[-1].lead_hours.endswith(" EST")
 
 
 def test_slot_page_and_fragment_and_signup_from_it(world):
@@ -323,7 +327,7 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     # and names the slots it leaves alone, not only how many (acceptance test T14, 2026-10-14):
     # 00:00Z and 02:00Z hold sign-ups, and neither is among the slots that go
     kept = r.content.decode().split("left alone:")[1].split("Remove the people first")[0]
-    assert "Sat 26 Sep 00:00 UTC" in kept and "Sat 26 Sep 02:00 UTC" in kept
+    assert "Fri, Sep 25, 8:00 PM EDT" in kept and "Fri, Sep 25, 10:00 PM EDT" in kept
     assert Slot.objects.filter(pk__in=[s.pk for s in run_slots], cancelled=False).count() == 4
     co.post(
         f"/events/{ev.pk}/bulk/",
@@ -422,7 +426,7 @@ def test_the_captains_red_within_48_hours_says_so_in_words(world):
     assert entry not in _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
 
 
-def test_events_list_and_home_show_both_zones(world, monkeypatch):
+def test_events_list_and_home_show_the_viewers_zone_only(world, monkeypatch):
     """Issue #23 on the private tracker: no bare times anywhere a member reads a schedule."""
     # Home lists only events that have not ended, so read it from a week before this one.
     # Temporary fix: the test passes only on the assumption that the day it runs is
@@ -437,10 +441,10 @@ def test_events_list_and_home_show_both_zones(world, monkeypatch):
     assert (
         "Fri, Sep 25, 2026, 8:00 PM – Sat, Sep 26, 2026, 12:00 AM EDT" in body
     )  # local: en-US (#274)
-    assert "Sat 26 Sep 2026 00:00–04:00 UTC" in body
-    assert "00:00</td>" not in body and "Z<" not in body
-    body = c.get("/").content.decode()  # UTC leads everywhere (functional addendum A12)
-    assert 'class="when1">Sat 26 Sep 2026 00:00–04:00 UTC' in body
+    assert "UTC" not in body and "00:00</td>" not in body and "Z<" not in body
+    body = c.get("/").content.decode()  # the viewer's zone only (functional addendum A38)
+    assert '<time datetime="2026-09-26T00:00:00+00:00">Fri, Sep 25, 2026, 8:00 PM – ' in body
+    assert "UTC" not in body
 
 
 @pytest.mark.django_db
@@ -592,10 +596,10 @@ def test_the_roster_page_hides_a_folded_run_and_opens_it_without_javascript(worl
     )
 
 
-def test_a_run_that_ends_at_midnight_ends_at_24_00(world):
+def test_a_run_that_ends_at_midnight_ends_at_midnight(world):
     fold = _rows(build(world["ev"], world["mem"]))[1].fold
-    assert fold.lead_range == "00:00–04:00 UTC"  # the operating period: 00:00Z to 04:00Z
-    assert fold.other_range == "Fri 20:00–24:00 EDT"  # 04:00Z is midnight in New York's EDT
+    assert fold.lead_range == "8:00 PM–midnight EDT"  # 00:00Z to 04:00Z; 04:00Z is midnight EDT
+    assert fold.other_range == ""
 
 
 # The coverage strip (#161).
@@ -606,7 +610,7 @@ def test_the_strip_marks_every_span_by_its_most_urgent_state_and_links_to_it(wor
     marks = [m for d in data["strip"] for m in d["marks"]]
     assert len(marks) == 5  # the setup hour and four operating hours, across both positions
     assert [m["mark"] for m in marks[1:3]] == ["!", ""]  # needs outranks Mult's open seat
-    assert marks[1]["href"] == f"#r-{first.start:%Y%m%d%H%M}" and marks[1]["time"] == "00:00–01:00"
+    assert marks[1]["href"] == f"#r-{first.start:%Y%m%d%H%M}" and marks[1]["time"] == "8:00–9:00 PM"
     folded = marks[2]["href"]  # 01:00 onward is a run of three open hours, folded
     assert folded.startswith("?open=") and folded.endswith(f"#r-{first.end:%Y%m%d%H%M}")
     filtered = build(world["ev"], world["mem"], filter="problems")

@@ -165,21 +165,21 @@ def test_a_slot_that_has_started_or_has_a_check_in_keeps_its_time(officer, membe
     )
 
 
-def test_a_slot_is_moved_in_the_events_own_clock_when_the_switch_says_local(officer):
-    """A35: the form's Times in switch posts clock=local, and the box is read in the event's zone."""
+def test_a_slot_is_moved_on_the_viewers_clock(officer):
+    """A38: the box is the viewer's clock (the `tz` cookie); the page's script sends it with its
+    offset, and without the script the wall clock is read in that zone."""
     c = _as(officer)
-    ev = _future(c)
-    ev.display_timezone = "America/New_York"  # June: EDT, four hours behind UTC
-    ev.save()
+    ev = _future(c)  # built in UTC, the club's zone here
+    c.cookies["tz"] = "America/New_York"  # June: EDT, four hours behind UTC
     d = _slots(ev)[-1]  # 21:00 UTC
     page = c.get(f"/events/{ev.pk}/slot/{d.pk}/").content.decode()
-    assert 'data-zone="America/New_York"' in page
+    assert "data-instant" in page and 'value="2027-06-26T17:00"' in page and "UTC" not in page
     url = f"/events/{ev.pk}/slot/{d.pk}/retime/"
-    c.post(url, {"start": "2027-06-26T17:15", "minutes": "45", "clock": "local"})
+    c.post(url, {"start": "2027-06-26T17:15", "minutes": "45"})  # no script: EDT's wall clock
     d.refresh_from_db()
-    assert (d.start.hour, d.start.minute) == (21, 15)  # 17:15 EDT is 21:15 UTC
-    r = c.post(url, {"start": "2027-03-14T02:30", "minutes": "60", "clock": "local"}, follow=True)
+    assert (d.start.hour, d.start.minute) == (21, 15)
+    c.post(url, {"start": "2027-06-26T17:30-04:00", "minutes": "30"})  # the script's offset
+    d.refresh_from_db()
+    assert (d.start.hour, d.start.minute) == (21, 30)
+    r = c.post(url, {"start": "2027-03-14T02:30", "minutes": "60"}, follow=True)
     assert "2:30 AM on 14 Mar does not happen" in r.content.decode()  # the clocks go forward
-    c.post(url, {"start": "2027-06-26T21:00", "minutes": "60"})  # no switch: UTC, as without JS
-    d.refresh_from_db()
-    assert (d.start.hour, d.start.minute) == (21, 0)

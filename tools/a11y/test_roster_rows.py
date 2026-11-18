@@ -1,54 +1,54 @@
-"""A roster row is as tall as its content: the time on one line, and a UTC event's time once.
+"""A roster row is as tall as its content: the time on one line, in the browser's own zone.
 
 Found on the contact sheet at 1280 px (2026-10-23): rows about 75 px tall for one line of
-content, "16:00–17:00 UTC" wrapping in the time column, and a UTC event repeating every time
-beneath itself. Measured in a real browser, because the wrap is a layout question.
+content, and "16:00–17:00 UTC" wrapping in the time column. Measured in a real browser, because
+the wrap is a layout question. Since functional addendum A38 (2026-11-18) the page shows the
+browser's zone only, never UTC: the browser names it in a cookie and the server draws in it.
 """
+
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from playwright.sync_api import sync_playwright
 from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 
 
-@pytest.mark.parametrize("zone", ["UTC", "America/New_York"])
-def test_the_time_sits_on_one_line_and_utc_shows_once(live_server, engine, zone):
+@pytest.mark.parametrize(
+    ("zone", "labels"),
+    [("America/Los_Angeles", ("PDT", "PST")), ("Asia/Kolkata", ("IST",))],  # :30 offset too
+)
+def test_the_time_sits_on_one_line_in_the_browsers_zone(live_server, engine, zone, labels):
     from apps.events.models import Event
 
     ev = Event.objects.filter(start__isnull=False).first()
-    Event.objects.filter(pk=ev.pk).update(display_timezone=zone)
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
-        page = browser.new_page(viewport={"width": 1280, "height": 900})
-        sign_in(page, live_server.url, ACCOUNTS["member"])
+        page = browser.new_page(viewport={"width": 1280, "height": 900}, timezone_id=zone)
+        sign_in(page, live_server.url, ACCOUNTS["member"])  # the first page sets the cookie
         page.goto(f"{live_server.url}/events/{ev.pk}/")
-        # UTC leads, and the event's zone is a column of its own (#161, functional addendum A12).
+        drawn_in = page.get_attribute("html", "data-tz")
         rows = page.eval_on_selector_all(
             ".r-row:not([hidden]):not(.r-fold)",
             """rows => rows.map(r => {
                 const lead = r.querySelector('.r-time .lead');
-                const other = r.querySelector('.r-zone');
                 const line = parseFloat(getComputedStyle(lead).lineHeight);
-                return {lead: lead.getBoundingClientRect().height, line,
-                        other: other ? other.textContent.trim() : ''};
+                return {lead: lead.getBoundingClientRect().height, line};
             })""",
         )
-        heads = [
-            page.text_content(f".r-head {c}") if page.query_selector(f".r-head {c}") else ""
-            for c in (".r-time", ".r-zone")
-        ]
-        when = page.text_content("p.when")
+        head = page.text_content(".r-head .r-time") if page.query_selector(".r-head") else ""
+        zones = page.locator(".r-zone").count()
+        roster = page.text_content("main")
         browser.close()
 
+    now = datetime.now(UTC)  # a browser may name a zone by its alias (Asia/Calcutta)
+    assert (
+        now.astimezone(ZoneInfo(drawn_in)).utcoffset() == now.astimezone(ZoneInfo(zone)).utcoffset()
+    ), f"the page is drawn in the browser's zone: {drawn_in}"
     assert rows, "the roster has rows"
-    assert all(r["lead"] <= r["line"] * 1.5 for r in rows), "the lead time is one line"
-    if zone == "UTC":
-        assert all(r["other"] == "" for r in rows), "a UTC event shows each time once"
-        assert when.count("UTC") == 1, f"and its span once: {when!r}"
-    else:
-        assert heads[0] == "UTC" and heads[1] in ("EDT", "EST"), (
-            f"UTC leads, the zone beside: {heads}"
-        )
-        assert all(r["other"] for r in rows), "every row also shows the event's zone"
+    assert all(r["lead"] <= r["line"] * 1.5 for r in rows), "the time is one line"
+    assert zones == 0 and "UTC" not in roster, "one zone, never UTC"
+    assert head in labels or not head, f"the column names the zone: {head!r}"
 
 
 def test_at_phone_width_each_cell_names_its_position_and_the_header_stays(live_server, engine):

@@ -22,8 +22,8 @@ def _event(live_server):
 
 def _fill(page, rng):
     form = page.locator("form", has=page.get_by_role("button", name="Add range"))
-    form.get_by_label("Starts (UTC)").fill(rng[0])
-    form.get_by_label("Ends (UTC)").fill(rng[1])
+    form.get_by_label("Starts").fill(rng[0])
+    form.get_by_label("Ends").fill(rng[1])
     return form
 
 
@@ -31,7 +31,9 @@ def test_a_range_by_keyboard_saves_in_place_and_is_removed(live_server, engine):
     url, rng = _event(live_server)
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
-        page = browser.new_page(viewport={"width": 1280, "height": 900})
+        page = browser.new_page(
+            viewport={"width": 1280, "height": 900}, timezone_id="UTC"
+        )  # typed as UTC
         sign_in(page, live_server.url, ACCOUNTS["officer"])
         page.goto(url)
         air = page.locator("section[aria-labelledby=air]")

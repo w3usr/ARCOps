@@ -88,8 +88,8 @@ every slot's state in words (FR-116), and a strip of forty-eight links ahead of 
 </div>
 </div>
 
-{% comment %}UTC is the axis (#161, functional addendum A12): the zone is named once, in the time
-column's header, and where the event's zone differs it has a column of its own.{% endcomment %}
+{% comment %}One time column, in the viewer's own zone (functional addendum A38, superseding
+A12's UTC axis): the zone is named once, in its header.{% endcomment %}
 <div class="roster {{ roster.layout }}{% if roster.other_label %} twozones{% endif %}{% if not roster.selectable %} noselect{% endif %}" role="table" aria-label="Roster">
   {% if roster.layout == 'grid' %}
   <div class="r-head" role="row">

@@ -89,7 +89,7 @@ def test_saving_the_on_air_hours_from_the_slots_step(officer):
     c.post(url, {"what": "range", "start": "2026-06-28T04:00", "end": "2026-06-28T06:00"})
     assert on_air(ev) == [(T, T + 3 * H), (T + 10 * H, T + 12 * H)]
     body = c.get(step).content.decode()
-    assert "On the air 5 of 24 hours:" in body and "Sat 27 Jun 2026 18:00–21:00 UTC" in body
+    assert "On the air 5 of 24 hours:" in body and "Sat, Jun 27, 2026, 6:00–9:00 PM UTC" in body
     assert "slots fall outside the on-air hours" in body  # _build generated the whole event
     # one that touches a stretch joins it; one past the periods is cut to them
     c.post(url, {"what": "range", "start": "2026-06-27T21:00", "end": "2026-06-27T21:30"})

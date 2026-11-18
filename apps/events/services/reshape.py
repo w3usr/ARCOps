@@ -51,7 +51,7 @@ def misfit(slot: Slot, start, end) -> str:
         .first()
     )
     if clash:
-        return f"{slot.position} already has a slot at {when.utc_span(clash.start, clash.end)}."
+        return f"{slot.position} already has a slot at {when.local_span(clash.start, clash.end, year=True)}."
     return ""
 
 

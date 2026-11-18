@@ -10,41 +10,32 @@ class NoColon:
 
 
 def utc_field(label: str, required: bool = True, help_text: str = ""):
-    """A UTC date and time in the browser's own date and time box (A35; apps/ops/when.py)."""
+    """A date and time in the browser's own box, on the viewer's clock, stored as UTC (A35, A38;
+    apps/ops/when.py parse_box). `data-instant` has the page's script send it with its offset."""
     from django import forms
 
     from . import when
 
     class Field(forms.CharField):
-        takes_utc = True
-        zone = None  # set by clock(): the box was filled in the event's own clock, not UTC
-
         def to_python(self, value):
             try:
-                t = when.parse_utc(value)
-                return when.in_zone(t, self.zone) if t and self.zone else t
+                return when.parse_box(value)
             except when.Unreadable as exc:
                 raise forms.ValidationError(str(exc)) from None
 
         def prepare_value(self, value):
+            if isinstance(value, str) and when.has_offset(value):
+                try:  # sent back after an error: the box takes a wall clock, not an offset
+                    value = when.parse_box(value)
+                except when.Unreadable:
+                    return value
             return when.typed(value) if hasattr(value, "astimezone") else value
 
     return Field(
         label=label,
         required=required,
         help_text=help_text,
-        widget=forms.TextInput(attrs={"type": "datetime-local", "autocomplete": "off"}),
+        widget=forms.TextInput(
+            attrs={"type": "datetime-local", "autocomplete": "off", "data-instant": ""}
+        ),
     )
-
-
-def clock(form, data, zone):
-    """UTC or the event's own clock (A35): the switch app.js adds posts `clock`, and each UTC box
-    carries the zone it converts to. Without JavaScript there is no switch, and boxes are UTC."""
-    local = (data or {}).get("clock") == "local"
-    for field in form.fields.values():
-        if getattr(field, "takes_utc", False):
-            field.zone = zone if local else None
-            field.widget.attrs["data-zone"] = getattr(zone, "key", "UTC")
-            if local:
-                field.widget.attrs["data-clock"] = "local"
-    return form

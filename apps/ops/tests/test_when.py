@@ -76,26 +76,38 @@ def test_a_date_stored_as_text_reads_the_same_and_nothing_else_fails():
     assert when.day("not a date") == "not a date" and when.utc("") == ""
 
 
-def test_a_time_box_reads_the_events_own_clock_only_when_the_form_says_local():
-    """A35: forms.clock() points each UTC box at the event's zone when the switch posts local."""
+def test_a_time_box_reads_the_offset_the_browser_sends_or_the_viewers_clock():
+    """A38: the page's script sends ISO 8601 with the browser's offset, which wins; without the
+    script the box is the wall clock of the zone the page was drawn in, the viewer's."""
     from zoneinfo import ZoneInfo
 
     from django import forms
+    from django.utils import timezone
 
-    from apps.ops.forms import clock, utc_field
+    from apps.ops.forms import utc_field
     from apps.ops.when import typed
 
     class F(forms.Form):
-        start = utc_field("Starts (UTC)")
+        start = utc_field("Starts")
 
-    ny = ZoneInfo("America/New_York")
-    local = clock(F({"start": "2026-11-21T16:00", "clock": "local"}), {"clock": "local"}, ny)
-    assert local.is_valid() and typed(local.cleaned_data["start"]) == "2026-11-21T21:00"  # EST
-    plain = clock(F({"start": "2026-11-21T16:00"}), {}, ny)
-    assert plain.is_valid() and typed(plain.cleaned_data["start"]) == "2026-11-21T16:00"
-    assert 'data-zone="America/New_York"' in str(plain["start"]) and "data-clock" not in str(
-        plain["start"]
-    )
+    with timezone.override(ZoneInfo("America/New_York")):
+        for sent in (
+            "2026-11-21T16:00",
+            "2026-11-21T16:00-05:00",
+            "2026-11-21T13:00:00-08:00",
+            "2026-11-21T21:00Z",
+        ):
+            f = F({"start": sent})
+            assert (
+                f.is_valid() and f.cleaned_data["start"].isoformat() == "2026-11-21T21:00:00+00:00"
+            )
+            assert typed(f.cleaned_data["start"]) == "2026-11-21T16:00"  # shown on EST's clock
+        assert "data-instant" in str(f["start"]) and "UTC" not in str(f["start"])
+        f = F({"start": "2026-11-01T01:30"})
+        assert not f.is_valid() and "happens twice in your time zone" in str(f.errors)
+        assert not F({"start": "2026-11-21T16:00+99:00"}).is_valid()
+        # sent back after an error elsewhere on the form: the box shows the wall clock again
+        assert 'value="2026-11-21T16:00"' in str(F({"start": "2026-11-21T13:00-08:00"})["start"])
 
 
 def test_a_local_time_the_clocks_skip_or_repeat_is_refused_not_guessed():

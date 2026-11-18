@@ -33,3 +33,29 @@ class HtmxRedirectMiddleware:
         page = HttpResponse()
         page["HX-Redirect"] = location
         return page
+
+
+class ViewerZoneMiddleware:
+    """Pages read in the viewer's own time zone (functional addendum A38): the browser names it
+    in the `tz` cookie (static/js/app.js); before it has, or for a name this server does not
+    know, the club's zone. Storage and logic stay UTC; only what a page prints moves."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from zoneinfo import ZoneInfo
+
+        from django.utils import timezone
+
+        from .config import setting
+
+        zone = ZoneInfo("UTC")
+        for name in (request.COOKIES.get("tz", "")[:64], setting("club.timezone", "UTC")):
+            try:
+                zone = ZoneInfo(name)
+                break
+            except Exception:  # noqa: BLE001, S112 - an unknown or malformed name: try the next
+                continue
+        with timezone.override(zone):
+            return self.get_response(request)

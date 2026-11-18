@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.events.models import Captaincy, Event, Slot
+from apps.ops import when
 from apps.ops.models import ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -183,7 +184,7 @@ def test_duplicate_asks_when_the_copy_starts(officer):
     start = ev.start
     assert body.count('commandfor="dup-dlg" command="show-modal"') == 2
     assert (
-        f'name="start" type="datetime-local" autocomplete="off" value="{start:%Y-%m-%dT%H:%M}" data-zone='
+        f'name="start" type="datetime-local" autocomplete="off" value="{start:%Y-%m-%dT%H:%M}" data-instant'
         in body
     )
 
@@ -268,7 +269,10 @@ def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
 
     # Refused, and the reason is beside the field: a clash, and an operating slot outside the
     # on-air hours (A32).
-    assert "already has a slot at Sat 27 Jun 2026 20:00" in add("2026-06-27T20:30").content.decode()
+    assert (
+        "already has a slot at Sat, Jun 27, 2026, 8:00–9:00 PM UTC"
+        in add("2026-06-27T20:30").content.decode()
+    )
     assert "inside the on-air hours" in add("2026-06-29T10:00").content.decode()
     assert Slot.objects.filter(position__location__event=ev).count() == before
 
@@ -497,7 +501,7 @@ def test_a_start_and_end_that_has_ended_is_saved_with_a_warning(officer):
     )
     ev.refresh_from_db()
     assert ev.end == end
-    assert f"This event ended on {end:%a %d %b %Y %H:%M} UTC, before now. Check the year." in (
+    assert f"This event ended on {when.local(end, year=True)}, before now. Check the year." in (
         r.content.decode()
     )
 
@@ -510,7 +514,7 @@ def test_an_event_that_has_ended_is_not_published(officer):
     )
     ev.refresh_from_db()
     end = ev.end
-    said = f"it ended on {end:%a %d %b %Y %H:%M} UTC."
+    said = f"it ended on {when.local(end, year=True)}."
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
     assert f"Not ready to publish: {said}" in body and not _publish_controls(body)
     r = c.post(f"/events/{ev.pk}/publish/", {"from": "manage", "announce": "yes"}, follow=True)

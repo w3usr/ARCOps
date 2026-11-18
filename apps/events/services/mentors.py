@@ -8,7 +8,6 @@ from apps.ops import when
 from apps.ops.config import setting
 
 from ..models import Event, Slot
-from .roster import UTC, _span, display_zone
 
 
 def mentor_role_key() -> str:
@@ -25,7 +24,6 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
     for ev in Event.objects.filter(state=Event.State.PUBLISHED).order_by("id"):
         if not ev.end or ev.end < now:
             continue
-        zone = display_zone(ev)
         slots = (
             Slot.objects.filter(
                 position__location__event=ev,
@@ -49,9 +47,9 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
                     {
                         "slot": s,
                         "open": open_seats,
-                        # UTC leads, the event's zone beside it (functional addendum A12)
-                        "lead": _span(s.start, s.end, UTC),
-                        "other": "" if zone == UTC else when.local_span(s.start, s.end, zone),
+                        # the viewer's own zone only (functional addendum A38)
+                        "lead": when.local_span(s.start, s.end),
+                        "other": "",
                     }
                 )
         if not rows:
@@ -66,8 +64,8 @@ def mentor_needs(*, viewer_is_member: bool) -> list[dict]:
                 if viewer_is_member
                 else f"the {setting('club.short_name', 'club')} station",
                 "preferred_class": ev.min_license_class,
-                "span": _span(ev.start, ev.end, UTC, " – "),
-                "span_other": "" if zone == UTC else _span(ev.start, ev.end, zone, " – "),
+                "span": when.local_span(ev.start, ev.end, year=True),
+                "span_other": "",
             }
         )
     return out

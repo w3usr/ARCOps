@@ -32,7 +32,7 @@ from apps.credentials.services import ladder
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
-from apps.ops.forms import NoColon, clock, utc_field
+from apps.ops.forms import NoColon, utc_field
 from apps.ops.templatetags.richtext import sanitise
 
 from .contest_fields import CONTEST_FIELDS
@@ -49,7 +49,6 @@ from .models import (
 from .services import meets
 from .services.manage import duplicate_event, generate_with_capacities, has_signups
 from .services.reshape import misfit
-from .services.roster import display_zone
 from .services.slots import left_outside, limit_report
 from .services.viability import club_rule
 from .views_rules import captained_event, rules_context
@@ -183,11 +182,11 @@ class EventForm(NoColon, forms.ModelForm):
         import zoneinfo
 
         self.fields["display_timezone"] = forms.ChoiceField(  # a drop-down, never free text
-            label="Local time zone for the roster",
+            label="The event's time zone",
             choices=[("", f"The club's ({setting('club.timezone', 'UTC')})")]
             + [(z, z) for z in sorted(zoneinfo.available_timezones())],
             required=False,
-            help_text="For an event operated from somewhere else; the roster shows it beside UTC.",
+            help_text="For an event operated from somewhere else: mail and a regular meeting's time are given in it, and an hour limit by local day counts its days.",
         )
         self.fields[
             "description_html"
@@ -255,8 +254,8 @@ class KbygForm(NoColon, forms.ModelForm):
 class SpanForm(NoColon, forms.Form):
     """A start and an end in UTC: the event's own (A32), or a range of on-air hours."""
 
-    start = utc_field("Starts (UTC)")
-    end = utc_field("Ends (UTC)", help_text="")
+    start = utc_field("Starts")
+    end = utc_field("Ends", help_text="")
 
     def clean(self):
         d = super().clean()
@@ -496,7 +495,7 @@ class AddSlotForm(NoColon, FieldGroups, SeatFields, forms.Form):
     GROUPS = [("", ["position", "start", "minutes", "kind"]), ("Seats in this slot", ["cap_*"])]
 
     position = forms.ModelChoiceField(queryset=Position.objects.none(), empty_label=None)
-    start = utc_field("Starts (UTC)")
+    start = utc_field("Starts")
     minutes = forms.IntegerField(
         label="Length (minutes)", min_value=15, max_value=720, widget=_num(3)
     )
@@ -660,7 +659,7 @@ def _details(event) -> list[tuple[str, str]]:
         ("Rules link", event.rules_url or "None"),
         ("Preferred license class", event.min_license_class or "Any"),
         (
-            "Local time zone for the roster",
+            "The event's time zone",
             event.display_timezone or f"The club's ({setting('club.timezone', 'UTC')})",
         ),
         (
@@ -681,7 +680,7 @@ def _summary(event, steps, captains) -> list[dict]:
     reads "Not done yet"; publishing stays allowed, as it was."""
     from apps.ops.templatetags.labels import role_label
 
-    span = when.utc_span(event.start, event.end) if event.start and event.end else ""
+    span = when.local_span(event.start, event.end, year=True) if event.start and event.end else ""
     places = "; ".join(
         f"{loc.name}: {', '.join(p.name for p in loc.positions.all())}"
         for loc in event.locations.prefetch_related("positions").order_by("order")
@@ -844,7 +843,7 @@ def not_ready(event, steps) -> str:
         return f"{listed} {'are' if len(names) > 1 else 'is'} not done yet."
     end = event.end
     if not event.display_only and end and end <= timezone.now():
-        return f"it ended on {when.utc(end)}."
+        return f"it ended on {when.local(end, year=True)}."
     return ""
 
 
@@ -943,7 +942,6 @@ def span_edit(request, pk):
     form = SpanForm(
         request.POST or None, initial={"start": typed(event.start), "end": typed(event.end)}
     )
-    clock(form, request.POST, display_zone(event))
     if request.method == "POST" and form.is_valid():
         start, end = form.cleaned_data["start"], form.cleaned_data["end"]
         slots = left_outside(event, start, end)
@@ -988,7 +986,7 @@ def span_edit(request, pk):
             if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
                 messages.warning(
                     request,
-                    f"This event ended on {when.utc(end)}, before now. Check the year.",
+                    f"This event ended on {when.local(end, year=True)}, before now. Check the year.",
                 )
             return done(request, step_url(pk, "span"))
     return form_page(
@@ -1396,7 +1394,7 @@ def _on_air_context(event, **forms_) -> dict:
         return sum((b - a).total_seconds() for a, b in spans) / 3600
 
     def label(a, b):
-        return when.utc_span(a, b)
+        return when.local_span(a, b, year=True)
 
     outside = 0
     if stretches:
@@ -1410,8 +1408,7 @@ def _on_air_context(event, **forms_) -> dict:
         "on_air_hours": hours(stretches) if stretches else hours(span),
         "event_hours": hours(span),
         "slots_outside": outside,
-        "range_form": forms_.get("range_form")
-        or clock(SpanForm(auto_id="onair-%s"), None, display_zone(event)),
+        "range_form": forms_.get("range_form") or SpanForm(auto_id="onair-%s"),
     }
 
 
@@ -1452,7 +1449,7 @@ def on_air_save(request, pk):
             return saved([], " The last stretch is gone, so the whole event is on the air again.")
         return saved(rest)
     if what == "range":
-        form = clock(SpanForm(request.POST, auto_id="onair-%s"), request.POST, display_zone(event))
+        form = SpanForm(request.POST, auto_id="onair-%s")
         if form.is_valid():
             asked = (form.cleaned_data["start"], form.cleaned_data["end"])
             inside = clip([asked], span_of(event))
@@ -1492,7 +1489,6 @@ def slot_add(request, pk):
     (FR-46). Its seats are set as it is made, which is when a captain knows them (FR-49)."""
     event = captained_event(request, pk)
     form = AddSlotForm(request.POST or None, event=event, roles=setting("slot_roles", []) or [])
-    clock(form, request.POST, display_zone(event))
     if request.method != "POST" or not form.is_valid():
         return form_page(
             request,
@@ -1531,7 +1527,7 @@ def slot_add(request, pk):
             'Slot added: <a href="{}">{} {}</a>.',
             reverse("slot_detail", args=[event.pk, slot.pk]),
             d["position"],
-            when.utc_span(d["start"], d["end"]),
+            when.local_span(d["start"], d["end"], year=True),
         ),
     )
     return done(request, step_url(pk, "slots"))
@@ -1607,7 +1603,7 @@ def event_duplicate(request, pk):
         before={"from": event.pk},
         after={"starts": now.isoformat() if now else None},
     )
-    starting = f", starting {when.utc(now)}" if now else ""
+    starting = f", starting {when.local(now, year=True)}" if now else ""
     messages.success(
         request,
         f"Copied as a draft{starting}. Its start and end, on-air hours, slots and openings moved "

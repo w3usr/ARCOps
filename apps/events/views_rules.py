@@ -15,14 +15,13 @@ from apps.credentials.services import ladder
 from apps.ops import when
 from apps.ops.audit import record
 from apps.ops.config import setting
-from apps.ops.forms import NoColon, clock, utc_field
+from apps.ops.forms import NoColon, utc_field
 from apps.ops.templatetags.labels import role_label
 
 from .form_pages import done, form_page, step_url
 from .models import EligibilityRule, Event, Opening, OperatingLimit, Slot
 from .services.eligibility import club_default_rule, same_rule
 from .services.lifecycle import set_state
-from .services.roster import display_zone
 
 
 def captained_event(request, pk) -> Event:
@@ -192,7 +191,7 @@ def slot_eligibility(request, pk, slot_id):
 
 class OpeningForm(NoColon, forms.Form):
     role = forms.ChoiceField(label="Role")
-    opens_at = utc_field("Opens at (UTC)")
+    opens_at = utc_field("Opens at")
     categories = forms.MultipleChoiceField(
         label="To",
         required=False,
@@ -217,7 +216,7 @@ class OpeningForm(NoColon, forms.Form):
 def opening_add(request, pk):
     """FR-54: a (when, audience) pair for a role. Empty categories means everyone."""
     event = captained_event(request, pk)
-    form = clock(OpeningForm(request.POST or None), request.POST, display_zone(event))
+    form = OpeningForm(request.POST or None)
     if request.method != "POST" or not form.is_valid():
         return form_page(
             request,
@@ -245,7 +244,7 @@ def opening_add(request, pk):
     )
     messages.success(
         request,
-        f"{o.role.capitalize()} opens {when.utc(opens)} to {', '.join(o.categories) or 'everyone'}.",
+        f"{o.role.capitalize()} opens {when.local(opens, year=True)} to {', '.join(o.categories) or 'everyone'}.",
     )
     return done(request, step_url(pk, "rules"))
 

@@ -3196,7 +3196,42 @@ was that the report's *Hours covered* counted slots the roster marks as needing 
 **Decided** by SK on 2026-11-17, answering private tracker 332: "under-18 account only up to
 member". *Record:* this addendum.
 
+### A38. §5.9, FR-38, A12, A34 and A35: for now, pages show the viewer's own time, never UTC
+
+**Original (§5.9).** "Displays show UTC and the event's zone together wherever a time is shown,
+because amateur radio runs on UTC and people live in local time." A12 put UTC first on every page
+and made it the roster's axis; A34 gave UTC its one form; A35 made each time box start in UTC
+with a switch to the event's own clock.
+
+**Decision.** A temporary departure, until a better design is chosen:
+- **Every page shows times in the viewer's own time zone only, never UTC**, in the US convention
+  local times already followed (`Sat, Nov 21, 4:00 PM EST`). The zone is the browser's: the page
+  names it in a cookie, and the server draws each page in it. Before the browser has named one
+  (the first page a browser opens) the club's zone stands in. The zone's short name is still
+  printed, so a time is never ambiguous.
+- **The roster has one time column**, the viewer's, named once in its header, with day headings
+  in that zone and rows in 12-hour time (`8:00–9:00 PM`, `11:00 PM–midnight`). A row names its
+  zone only where the clocks have changed during the event.
+- **Time boxes are on the viewer's clock**, with no UTC switch. The page sends each as ISO 8601
+  with the browser's offset (`2026-11-21T16:00-05:00`); without JavaScript the box is read on the
+  clock the page was drawn in. A time the clocks skip or repeat is still refused, not guessed:
+  "Choose a time outside that hour."
+- **The UTC clock at the top of every page is removed.**
+- **Unchanged:** everything is stored and worked out in UTC (TR-14); slot boundaries never move
+  when the clocks do. Mail is unchanged, and so is its copy on My messages; the signed
+  agreement's PDF keeps UTC; and output for machines (CSV, the calendar feed, the audit record)
+  stays ISO 8601 in UTC. An hour limit's *UTC day* or *Local day* (FR-39) is a rule, not a
+  display, and is unchanged.
+
+**Decided** by NAF, who set user convenience above the requirements as written, as SK relayed on
+2026-11-18 ("The priority is the user convenience over reqs - noted by NAF. People using the
+website can be confused"), and by SK the same day: "remove the UTC from the frontend all together
+for now and use local zone only (we will temporarily violate the change until a better [one])
+and the backend side of things will stay in UTC." SK chose the browser naming its zone to the
+server over the browser rewriting each time on the page. *Record:* this addendum and the session
+note of 2026-11-18.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37) and 2026-11-18 (A38), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

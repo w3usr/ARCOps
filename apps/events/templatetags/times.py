@@ -1,8 +1,10 @@
 """
-`{% when start end event %}`: a time or span in UTC with the event's zone beneath (FR-36,
-FR-38); UTC leads everywhere, as on the roster (functional addendum A12). One tag, so Home,
-Events, My schedule, and the roster agree on how a time looks. NAF, 2026-09-14, on seeing a bare "Sat 26 Sep 2026 00:00":
-"this needs time zone indicated. It should be in both utc and local".
+How a time reads on a page. **For now, the viewer's own time only, never UTC** (functional
+addendum A38; NAF and SK, 2026-11-18, superseding A12's UTC first for pages): the filters keep
+their old names so the change is easy to undo, and each prints a `<time>` whose `datetime` is
+ISO 8601 in UTC. The viewer's zone comes from the `tz` cookie (apps/ops/middleware.py).
+`utc_record` keeps UTC for the signed agreement's PDF, a record that must read the same for
+everyone.
 """
 
 from __future__ import annotations
@@ -14,21 +16,37 @@ from django.utils.html import format_html
 
 from apps.ops import when as when_
 
-from ..services.roster import UTC, display_zone
-
 register = template.Library()
+
+
+def _mark(t: datetime, text: str):
+    return format_html('<time datetime="{}">{}</time>', t.astimezone(when_.UTC).isoformat(), text)
+
+
+def _at(t, year: bool):
+    got = when_._instant(t) if t not in (None, "") else None
+    if not isinstance(got, datetime):
+        return when_.day(t)  # a date with no time, or nothing
+    got = got if got.tzinfo else got.replace(tzinfo=when_.UTC)
+    return _mark(got, when_.local(got, year=year))
 
 
 @register.filter
 def utc_time(t):
-    """`Sat 21 Nov 2026 21:00 UTC` (#274)."""
-    return when_.utc(t)
+    """`Sat, Nov 21, 2026, 4:00 PM EST` in the viewer's zone (A38)."""
+    return _at(t, year=True)
 
 
 @register.filter
 def utc_time_short(t):
-    """`Sat 21 Nov 21:00 UTC`, for rows and lists where the event gives the year (#274)."""
-    return when_.utc(t, year=False)
+    """`Sat, Nov 21, 4:00 PM EST`, for rows and lists where the event gives the year (A38)."""
+    return _at(t, year=False)
+
+
+@register.filter
+def utc_record(t):
+    """`Sat 21 Nov 2026 21:00 UTC`, for the agreement PDF only (#274)."""
+    return when_.utc(t)
 
 
 @register.filter
@@ -39,32 +57,18 @@ def plain_day(d):
 
 @register.simple_tag
 def utc_span(start, end, year=True):
-    """`Sat 21 Nov 2026 21:00–23:00 UTC` (#274)."""
-    return when_.utc_span(start, end, year) if start and end else ""
+    """`Sat, Nov 21, 2026, 4:00–6:00 PM EST` in the viewer's zone (A38)."""
+    return _mark(start, when_.local_span(start, end, year=year)) if start and end else ""
 
 
-def _one(start: datetime, end: datetime | None, zone, with_year: bool) -> str:
-    """UTC in the one form (apps/ops/when.py); the event's zone in the US convention beneath."""
-    if zone == UTC:
-        return when_.utc(start, with_year) if end is None else when_.utc_span(start, end, with_year)
-    if end is None:
-        return when_.local(start, zone, with_year)
-    return when_.local_span(start, end, zone, with_year)
-
-
-@register.simple_tag(takes_context=True)
-def when(context, start, end=None, event=None, year=False):
-    """Two lines: the lead zone in normal weight, the other zone beneath in muted small type."""
+@register.simple_tag
+def when(start, end=None, event=None, year=False):
+    """A time or span in the viewer's zone, one line (A38). `event` is no longer read: the
+    viewer's zone, not the event's, is the one shown."""
     if not start:
         return ""
-    local = display_zone(event) if event is not None else UTC
-    if local == UTC:
-        return format_html('<span class="when1">{}</span>', _one(start, end, UTC, year))
-    return format_html(
-        '<span class="when1">{}</span><span class="when2 muted">{}</span>',
-        _one(start, end, UTC, year),
-        _one(start, end, local, year),
-    )
+    text = when_.local(start, year=year) if end is None else when_.local_span(start, end, year=year)
+    return format_html('<span class="when1">{}</span>', _mark(start, text))
 
 
 @register.filter
@@ -83,9 +87,3 @@ def next_meets(event) -> str:
 
     at = next_meeting(event)
     return when_.local(at, at.tzinfo) if at else ""
-
-
-@register.filter
-def zone_name(event):
-    """The event's own zone, `America/New_York`, for a time box's local clock (A35)."""
-    return getattr(display_zone(event), "key", "UTC")

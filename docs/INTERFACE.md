@@ -41,16 +41,22 @@ One form for every date and time, so a reader learns it once (NAF, 2026-11-12; S
 private tracker 274). They are written by `apps/ops/when.py`, and `tools/check_interface.sh`
 refuses a format written by hand.
 
-- **A UTC instant:** `Sat 21 Nov 2026 21:00 UTC`: weekday, day, month as a word, year, a
-  24-hour time, `UTC`. In rows and lists where the event gives the year, `Sat 21 Nov 21:00 UTC`.
-  A span within a day, `Sat 21 Nov 2026 21:00–23:00 UTC`; across days, both ends in full.
+**For now, a page shows the viewer's own time only, never UTC** (functional addendum A38; NAF
+and SK, 2026-11-18). The browser names its zone in the `tz` cookie, and the server draws the page
+in it; the club's zone stands in until it has.
+
+- **An instant on a page:** the US convention in the viewer's zone, `Sat, Nov 21, 4:00 PM EST`,
+  with the year where a row does not give it (`Sat, Nov 21, 2026, 4:00 PM EST`), inside a
+  `<time datetime>` holding ISO 8601 in UTC. The template filters keep their old names
+  (`|utc_time`, `|utc_time_short`, `{% utc_span %}`, `{% when %}`) so A38 is easy to undo.
+- **On the roster:** one time column, named once in its header; rows in 12-hour time,
+  `8:00–9:00 PM`, `11:00 PM–midnight`.
 - **A plain date** that is not an instant (a license's expiry, a join date): `21 Nov 2026`.
-- **A local time** beside UTC (the event's own zone): the US convention, `Sat, Nov 21, 4:00 PM
-  EST`.
-- **For machines** (CSV, the calendar feed, a box's `value=`): ISO 8601, `2026-11-21T21:00Z`.
-- **Typed in UTC:** a date as `2026-11-21` and a 24-hour time as `21:00` or `2100`, whatever the
-  browser's language; never the browser's own date and time box, which follows the computer's
-  locale.
+- **In mail and the agreement PDF:** unchanged by A38; UTC is written `Sat 21 Nov 2026 21:00 UTC`
+  (A34).
+- **For machines** (CSV, the calendar feed, a box's `value=`): ISO 8601.
+- **Typed:** the browser's own date and time box, on the viewer's clock, sent by `app.js` as ISO
+  8601 with the offset; without JavaScript, read on the clock the page was drawn in.
 
 ## Controls
 
@@ -439,9 +445,6 @@ the right and a note at the left. A page without parts (a short form, a message)
 A part with a heading and no actions of its own may stay a **section** (`.section`): since
 phase 5 of the redesign it draws as a panel without a header band, white on the canvas, and as a
 plain part again when it sits inside a panel or a card.
-
-**The time in UTC is always in sight** (D9): a clock at the top of every signed-in page, drawn by
-the server and kept current by a few lines of `app.js`, reading "UTC" so it never passes for local.
 
 **A card is a thing that stands on its own inside a panel or a list**: a message, an
 announcement, an agreement, an event in a list, a result to copy (a new link, a new invitation),

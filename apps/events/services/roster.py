@@ -4,8 +4,9 @@ The roster as the reader sees it (design run of 2026-09-13, second round).
 Everything the template needs is assembled here: slots grouped under day headings in the
 leading zone, each with its hours in that zone and in the other; a grid (time down, one column
 per position) when the event has up to four positions, a list otherwise; and a status phrased
-as what the slot needs from the reader, never as a verdict on it. UTC leads and the event's
-zone (falling back to the club's, FR-36) follows.
+as what the slot needs from the reader, never as a verdict on it. For now one zone only, the
+viewer's own, and never UTC (functional addendum A38, superseding A12's UTC axis); the event's
+zone (falling back to the club's, FR-36) is still what mail is written in.
 
 The viability engine (viability.evaluate) is unchanged; this module only re-words its result.
 Red is reserved for a captain looking at a slot that has people in it, still cannot operate,
@@ -22,6 +23,7 @@ from zoneinfo import ZoneInfo
 from django.utils import timezone
 
 from apps.credentials.services import holds
+from apps.ops import when
 from apps.ops.config import setting
 
 from ..models import Event, Position, SignUp, Slot
@@ -46,8 +48,9 @@ def zone_label(dt: datetime, zone: ZoneInfo) -> str:
 
 
 def _span(start: datetime, end: datetime, z, sep: str = "–") -> str:
-    """A span in one zone: UTC in the one form, the event's zone in the US convention (#274).
-    `sep` is no longer read: each form decides how a span across days reads."""
+    """A span in one zone for mail: UTC in the one form, the event's zone in the US convention
+    (#274). `sep` is no longer read: each form decides how a span across days reads. A page uses
+    when.local_span in the viewer's zone, UTC included (A38)."""
     from apps.ops import when
 
     return when.utc_span(start, end) if z == UTC else when.local_span(start, end, z, year=True)
@@ -176,8 +179,13 @@ class Day:
 
 
 def _hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -> str:
+    """`4:00–5:00 PM EST`, `11:00 PM–midnight EST`: a row's own hours under its day heading, in
+    the US convention every local time follows (A34, A38)."""
+    from apps.ops.when import twelve_hour
+
     s, e = start.astimezone(zone), end.astimezone(zone)
-    text = f"{s:%H:%M}–{e:%H:%M}"  # allowed: a row's own hours, under its day heading
+    a, b = twelve_hour(s), "midnight" if (e.hour, e.minute) == (0, 0) else twelve_hour(e)
+    text = f"{a[:-3] if a[-2:] == b[-2:] else a}–{b}"
     if with_day:
         text = f"{s:%a} {text}"
     return f"{text} {zone_label(start, zone)}"
@@ -224,17 +232,6 @@ def coverage(event: Event, now: datetime | None = None) -> dict:
         counts["total"] += 1
         counts[BUCKET[shown.key]] += 1
     return counts
-
-
-def _run_hours(start: datetime, end: datetime, zone: ZoneInfo, with_day: bool) -> str:
-    """A run's hours, where a run that ends at midnight ends at 24:00: "04:00–00:00" reads as
-    if it went backwards, and a whole free day as "00:00–00:00" reads as no time at all."""
-    text = _hours(start, end, zone, with_day)
-    local = end.astimezone(zone)
-    if (local.hour, local.minute) != (0, 0):
-        return text
-    head, tail = text.rsplit("–", 1)  # tail is "00:00" and the zone's label
-    return f"{head}–24:00{tail[5:]}"
 
 
 def _unlabelled(text: str, label: str) -> str:
@@ -329,8 +326,8 @@ def _fold_runs(day: Day, lead_zone: ZoneInfo, other_zone: ZoneInfo | None, open_
             first, last = run[0], run[-1]
             fold = Fold(
                 id=f"{first.start:%Y%m%d%H%M}",
-                lead_range=_run_hours(first.start, last.end, lead_zone, with_day=False),
-                other_range=_run_hours(first.start, last.end, other_zone, with_day=True)
+                lead_range=_hours(first.start, last.end, lead_zone, with_day=False),
+                other_range=_hours(first.start, last.end, other_zone, with_day=True)
                 if other_zone
                 else "",
                 hours=round((last.end - first.start).total_seconds() / 3600, 2),
@@ -363,12 +360,11 @@ def build(
     open_fold: str = "",
 ) -> dict:
     now = now or timezone.now()
-    local = display_zone(event)
-    lead_zone, other_zone = UTC, local
+    # The viewer's zone only (A38): with the two zones the same, `one_zone` drops the second
+    # column and every second string, as A9 did for an event shown in UTC.
+    lead_zone = other_zone = timezone.get_current_timezone()
     starts, ends = event.start, event.end
     lead_label = zone_label(starts or now, lead_zone)
-    # One of the two zones is UTC, so equal labels mean every time would print twice: a contest
-    # shown in UTC leaves the second zone's strings empty, and the templates skip them.
     one_zone = lead_label == zone_label(starts or now, other_zone)
     is_captain = viewer.can_captain(event)
     published = event.state == Event.State.PUBLISHED
@@ -452,7 +448,7 @@ def build(
     for s in slots:
         lead_start = s.start.astimezone(lead_zone)
         day_key = lead_start.strftime("%Y-%m-%d")
-        day = days.setdefault(day_key, Day(day_key, lead_start.strftime("%A %-d %B")))
+        day = days.setdefault(day_key, Day(day_key, f"{lead_start:%A, %B} {lead_start.day}"))
         span = (s.start, s.end, s.kind) if layout == "grid" else (s.start, s.end, s.kind, s.pk)
         row = rows_by_span.get(span)
         if row is None:
@@ -512,7 +508,7 @@ def build(
         "strip": strip,
         "strip_gaps": gap_states,  # which of the two no-slot marks the Key explains
         "span": {
-            "lead": _span(starts, ends, lead_zone, " – ") if starts and ends else "",
+            "lead": when.local_span(starts, ends, lead_zone, year=True) if starts and ends else "",
             "other": _span(starts, ends, other_zone, " – ")
             if starts and ends and not one_zone
             else "",

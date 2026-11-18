@@ -70,6 +70,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     # Outermost of the app's own, so it sees every redirect, the sign-in gate's included (#139).
     "apps.ops.middleware.HtmxRedirectMiddleware",
+    "apps.ops.middleware.ViewerZoneMiddleware",  # pages in the viewer's own zone (A38)
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -194,7 +195,7 @@ LANGUAGE_CODE = "en-us"
 # The club's own words for strings a dependency words differently (locale/en/LC_MESSAGES/django.po,
 # TR-45): a passkey is a passkey, whatever the sign-in library calls it.
 LOCALE_PATHS = [BASE_DIR / "locale"]
-TIME_ZONE = "UTC"  # storage and logic in UTC (TR-14); display zones come from the event
+TIME_ZONE = "UTC"  # storage and logic in UTC (TR-14); pages print the viewer's zone (A38)
 USE_I18N = True
 USE_TZ = True
 

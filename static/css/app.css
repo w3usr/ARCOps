@@ -115,9 +115,6 @@ html[data-nav="rail"] .shell { grid-template-columns: var(--rail-w) minmax(0, 1f
 .shell > .page { grid-column: 2; min-width: 0; display: flex; flex-direction: column; background: var(--canvas); box-shadow: -1px 0 0 var(--line); }
 .page > main { flex: 1; }
 /* The bar over every signed-in page, holding the UTC clock (#246). */
-.pagebar { display: flex; justify-content: flex-end; padding: .5rem clamp(1rem, 4vw, 3rem) 0; }
-.utc-clock { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .6rem; border: 1px solid var(--line); border-radius: var(--r-button); background: var(--panel); font-size: var(--t-small); font-weight: 700; font-variant-numeric: tabular-nums; }
-@media print { .pagebar { display: none; } }
 .page > .banner { margin: 1rem clamp(1rem, 4vw, 3rem) 0; }
 
 .topbar { display: none; }
@@ -773,9 +770,9 @@ h3 { font-size: var(--t-lede); margin: 1.25rem 0 .5rem; }
 
 .roster { --cols: 1; border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
 .roster .r-head, .roster .r-row { display: grid; grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr)); }
-.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 8rem repeat(auto-fit, minmax(0, 1fr)); }
+.roster.grid .r-head, .roster.grid .r-row { grid-template-columns: 9.5rem repeat(auto-fit, minmax(0, 1fr)); }
 .roster.list .r-row { grid-template-columns: 11rem minmax(0, 1fr); }
-/* UTC is the axis; the event's own zone, where it differs, is a column of its own (#161). */
+/* A second zone's column (#161); unused while pages show the viewer's zone only (A38). */
 .roster.grid.twozones .r-head, .roster.grid.twozones .r-row { grid-template-columns: 8rem 9.5rem repeat(auto-fit, minmax(0, 1fr)); }
 .roster.list.twozones .r-row { grid-template-columns: 11rem 11rem minmax(0, 1fr); }
 .roster .r-zone { padding: .5rem .75rem; font-size: var(--t-small); line-height: 1.25; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -1134,5 +1131,3 @@ a.whoami { text-decoration: none; color: inherit; display: flex; }
 }
 
 /* The "Times in" switch app.js puts on a form with time boxes (A35): two radios on one line. */
-fieldset.clock { border: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); }
-fieldset.clock legend { padding: 0; margin-bottom: var(--s1); }

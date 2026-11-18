@@ -231,7 +231,7 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
     ]
     assert (
         "Field Day, Contest" in dl
-        and "Sat 27 Jun 2026 18:00 – Sun 28 Jun 2026 18:00 UTC" in dl
+        and "Sat, Jun 27, 2026, 6:00 PM – Sun, Jun 28, 2026, 6:00 PM UTC" in dl
         and "Club station: Run, Mult" in dl
     )
     assert "Not done yet" not in dl

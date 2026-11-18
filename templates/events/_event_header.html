@@ -35,7 +35,7 @@ header leaves its own out there.{% endcomment %}
         <h2 id="dup-h">Duplicate this event</h2>
         <p>A draft copy with the same start and end, on-air hours, locations, slot grid, sign-up rules and openings, and nobody signed up.{% if start %} Everything moves with the start you give it.{% endif %}</p>
         <form method="post" action="{% url 'event_duplicate' event.pk %}" class="stack">{% csrf_token %}
-          {% if start %}<div class="field"><label for="dup-start">The copy starts (UTC)</label><input id="dup-start" name="start" type="datetime-local" autocomplete="off" value="{{ start|date:'Y-m-d\TH:i' }}" data-zone="{{ event|zone_name }}" required><span class="helptext">This one starts {{ start|utc_time }}.</span></div>{% endif %}
+          {% if start %}<div class="field"><label for="dup-start">The copy starts</label><input id="dup-start" name="start" type="datetime-local" autocomplete="off" value="{{ start|date:'Y-m-d\TH:i' }}" data-instant required><span class="helptext">This one starts {{ start|utc_time }}.</span></div>{% endif %}
           <div class="confirm-actions"><button type="button" class="secondary" commandfor="dup-dlg" command="close">Close</button> <button type="submit">Make the copy</button></div>
         </form>
       </dialog>

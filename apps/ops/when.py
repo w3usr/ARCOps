@@ -12,6 +12,11 @@
 
 Every page, mail, the PDF and the outbox go through these, and `tools/check_interface.sh` refuses
 a hand-written UTC format anywhere else.
+
+**For now, pages show the viewer's own time only, never UTC** (functional addendum A38; NAF and
+SK, 2026-11-18): the browser names its zone in the `tz` cookie (static/js/app.js), the middleware
+activates it (apps/ops/middleware.py), and `local()` and `local_span()` default to it. Mail, the
+agreement PDF and machine output keep their own zones. Storage and logic stay UTC.
 """
 
 from __future__ import annotations
@@ -19,6 +24,8 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
+
+from django.utils import timezone
 
 UTC = ZoneInfo("UTC")
 
@@ -77,18 +84,20 @@ def twelve_hour(t) -> str:
     return f"{t.hour % 12 or 12}:{t:%M} {'AM' if t.hour < 12 else 'PM'}"
 
 
-def local(t: datetime, zone, year: bool = False) -> str:
-    """`Sat, Nov 21, 4:00 PM EST` in `zone` (`Sat, Nov 21, 2026, 4:00 PM EST` with the year)."""
-    s = t.astimezone(zone)
+def local(t: datetime, zone=None, year: bool = False) -> str:
+    """`Sat, Nov 21, 4:00 PM EST` in `zone`, by default the viewer's (`Sat, Nov 21, 2026, 4:00
+    PM EST` with the year)."""
+    s = t.astimezone(zone or timezone.get_current_timezone())
     when = f"{s:%a, %b} {s.day}" + (f", {s.year}" if year else "")
     return f"{when}, {twelve_hour(s)} {s:%Z}"
 
 
-def local_span(start: datetime, end: datetime, zone, year: bool = False) -> str:
+def local_span(start: datetime, end: datetime, zone=None, year: bool = False) -> str:
     """`Sat, Nov 21, 4:00–6:00 PM EST` within a day (one AM or PM where both share it), else
     `Sat, Nov 21, 4:00 PM – Mon, Nov 23, 9:59 PM EST`. Where the clocks change between the two
     ends, each names its own zone (`Sun, Nov 1, 12:00 AM EDT – 6:00 AM EST`): one name for both
     put one end an hour off."""
+    zone = zone or timezone.get_current_timezone()
     s, e = start.astimezone(zone), end.astimezone(zone)
     head = f"{s:%a, %b} {s.day}" + (f", {s.year}" if year else "")
     a, b = twelve_hour(s), twelve_hour(e)
@@ -144,16 +153,38 @@ def in_zone(t: datetime, zone) -> datetime:
         at = f"{wall.hour % 12 or 12}:{wall:%M} {'AM' if wall.hour < 12 else 'PM'} on {wall.day} {wall:%b}"
         if first.astimezone(UTC).astimezone(zone).replace(tzinfo=None) != wall:
             raise Unreadable(
-                f"{at} does not happen in the event's time zone: the clocks go "
-                "forward that night. Enter it in UTC instead."
+                f"{at} does not happen in your time zone: the clocks go "
+                "forward that night. Choose a time outside that hour."
             )
         raise Unreadable(
-            f"{at} happens twice in the event's time zone, as the clocks go back. "
-            "Enter it in UTC instead."
+            f"{at} happens twice in your time zone, as the clocks go back. "
+            "Choose a time outside that hour."
         )
     return first.astimezone(UTC)
 
 
+_OFFSET = re.compile(r"(?:Z|[+-]\d{2}:?\d{2})\s*$", re.I)
+
+
+def has_offset(text: str) -> bool:
+    """Whether a box's value came with its offset (or Z), as the page's script sends it."""
+    return bool(_OFFSET.search((text or "").strip()))
+
+
+def parse_box(text: str, zone=None) -> datetime | None:
+    """A time box's value as UTC (A38). The page's script sends ISO 8601 with the browser's
+    offset, `2026-11-21T16:00-05:00`; without the script the box holds the wall clock of the zone
+    the page was drawn in, `zone` (by default the viewer's), read as `in_zone` reads it."""
+    if has_offset(text):
+        try:
+            return datetime.fromisoformat(text.strip()).astimezone(UTC)
+        except ValueError:
+            raise Unreadable("That is not a date and time: pick one in the box.") from None
+    t = parse_utc(text)
+    return in_zone(t, zone or timezone.get_current_timezone()) if t else None
+
+
 def typed(t: datetime | None) -> str:
-    """What a UTC box holds: `2026-11-21T21:00`, the value a datetime-local box takes (A35)."""
-    return t.astimezone(UTC).strftime("%Y-%m-%dT%H:%M") if t else ""
+    """What a box holds: `2026-11-21T16:00`, the viewer's wall clock, the value a datetime-local
+    box takes (A35, A38)."""
+    return t.astimezone(timezone.get_current_timezone()).strftime("%Y-%m-%dT%H:%M") if t else ""
