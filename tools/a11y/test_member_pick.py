@@ -32,6 +32,10 @@ def test_typing_part_of_a_name_offers_them_and_signs_them_up(live_server, engine
         page.click(f'a[data-slot="{slot.pk}"]')
         dialog = page.locator("#slot-dialog")
         manage = dialog.locator("summary", has_text="Manage this slot")
+        manage.wait_for(state="attached")  # the dialog's content is in...
+        # ...and wired: htmx adds the box's hx-get listener at settle, after the swap; typed
+        # before it, the search is never sent (private tracker 355, which failed under -n auto).
+        dialog.locator(".htmx-added, .htmx-settling").first.wait_for(state="detached")
         expect(
             dialog.get_by_label("Member", exact=True)
         ).to_be_hidden()  # folded until opened (280)

@@ -5250,3 +5250,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit, bug fix, test. Verified: the new test fails on the old templates (naming the two) and on the old layout (the TypeError), and passes now; comms tests 35 passed; tools/check.sh passed but for the known local failures; T19 locally on the W3USR club passed, its sweep reporting no template with one link and no button.
 - **Human Review Status**: Pending review
 - **Git Hash**: ed705a1
+
+## [2026-11-19 13:06 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The member-picker browser test that timed out under parallel load (private tracker 355): the wait it lacked found and added.
+- **Sections/Files Affected**: tools/a11y/test_member_pick.py (waits for the slot dialog's content, then for htmx to settle it, before typing).
+- **Nature of Contribution**: Diagnosis, test fix. htmx 2.0.11 attaches a swapped element's hx-* listeners at settle, after the swap the dialog opens on; a name typed in between sends no search. The test's to_be_hidden check also passed before the dialog's content existed. Verified: with htmx's settle delay forced to 1.5 s the old test failed every time and the new one passed (Chromium, WebKit); the a11y sweep under -n auto passed; tools/check.sh twice, the picker test passing both times, failing only on the known local items (WeasyPrint's library path, Firefox).
+- **Human Review Status**: Pending review
+- **Git Hash**:
