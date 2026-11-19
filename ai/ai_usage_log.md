@@ -5265,4 +5265,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/ops/views.py (too_many_requests: templates/429.html with status 429); config/urls.py (/too-many-requests/); apps/ops/tests/test_health_and_import.py (the page answers 429 with its heading).
 - **Nature of Contribution**: Code generation, test. Verified: the new test; tools/check.sh quick passed but for the known local WeasyPrint library path.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 12e1d09
