@@ -5273,4 +5273,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: config/settings/prod.py (the key parsed as a Fernet key at start-up, a RuntimeError naming it otherwise); apps/ops/tests/test_prod_settings.py (the settings imported in a fresh process with no key, an empty one, a malformed one, and a valid one).
 - **Nature of Contribution**: Code generation, test. Verified: the test fails on the old settings and passes now; tools/check.sh quick passed but for the known local WeasyPrint library path.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 0d36e10
