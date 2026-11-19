@@ -305,6 +305,23 @@ def test_the_invitation_asks_for_its_link_on_a_line_of_its_own():
     assert "Accept the invitation</span>" in wrap(body)
 
 
+def test_every_mail_whose_one_action_is_a_link_draws_it_as_a_button():
+    """T19 step 1, swept over every default: a lone link in a sentence stays a plain link, so it
+    goes on a line of its own (account.locked_out and license.override_dropped did not)."""
+    from apps.comms.defaults import DEFAULTS_BY_KEY
+    from apps.comms.layout import wrap
+    from apps.comms.views import SAMPLE_CONTEXT
+
+    seed_templates()
+    bare = []
+    for key in DEFAULTS_BY_KEY:
+        _, body = render_message(key, SAMPLE_CONTEXT)  # a loop's one <a> is several links sent
+        if body.count("<a ") == 1 and "padding:11px 20px" not in wrap(body):
+            bare.append(key)
+    assert bare == []
+    assert "padding:11px 20px" not in wrap('<p><a href="">Nowhere</a></p>'), "no button, no crash"
+
+
 @pytest.mark.django_db
 def test_the_in_application_copy_keeps_its_link_as_a_link():
     """The filled block belongs to the mail. On the site the message sits on a page that already

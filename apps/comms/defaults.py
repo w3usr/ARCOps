@@ -358,7 +358,7 @@ DEFAULT_TEMPLATES: list[dict] = [
             "<p>{{ person }} changed callsign from {{ old }} to {{ new }}, so the license override "
             "{{ by }} set for {{ old }} no longer applies: {{ was }}. The FCC's record for "
             "{{ new }} applies now.</p><p>If the override still holds for the new callsign, "
-            '<a href="{{ link }}">enter it again on their profile</a>.</p>'
+            'enter it again on their profile.</p><p><a href="{{ link }}">Open their profile</a></p>'
         ),
         "variables": ["person", "old", "new", "was", "by", "link"],
     },
@@ -369,10 +369,10 @@ DEFAULT_TEMPLATES: list[dict] = [
         "body_html": (
             "<p>{{ user.display_first }}, someone tried to sign in to your account with the wrong "
             "password too many times within a few minutes, so signing in is paused for "
-            "{{ minutes }} minutes.</p><p>If it was you, wait and try again, or "
-            '<a href="{{ reset_link }}">reset your password</a>. If it was not you, those '
-            "attempts failed; if you think someone knows your password, reset it now and tell a "
-            "club officer.</p>"
+            "{{ minutes }} minutes.</p><p>If it was you, wait and try again, or reset your "
+            "password. If it was not you, those attempts failed; if you think someone knows your "
+            'password, reset it now and tell a club officer.</p><p><a href="{{ reset_link }}">'
+            "Reset my password</a></p>"
         ),
         "variables": ["user.display_first", "minutes", "reset_link"],
     },

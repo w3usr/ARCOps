@@ -80,9 +80,10 @@ def _promote_lone_links(html: str) -> str:
     def swap(m: re.Match) -> str:
         href = _HREF.search(m.group(1))
         label = unescape(_TAGS.sub("", m.group(2))).strip()
-        if not href or not label or "<a" in m.group(2).lower():
+        url = href and (href.group(1) or href.group(2))  # href="" left group(2) None: a crash
+        if not url or not label or "<a" in m.group(2).lower():
             return m.group(0)  # two links in the paragraph: two choices, so two links
-        return button(unescape(href.group(1) or href.group(2)), label)
+        return button(unescape(url), label)
 
     return _LONE_LINK.sub(swap, html)
 

@@ -5242,3 +5242,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test. The database cache chosen over the file cache because allauth's lock relies on cache.add being atomic, which the database cache is under SQLite's IMMEDIATE transactions and the file cache is not. Verified: the new test and the lockout test; all 255 accounts tests under the database cache; two separate processes on one migrated database, the second's add refused while the first held the key; tools/check.sh passed but for the known local failures (WeasyPrint's library path, which passes run directly, and Firefox).
 - **Human Review Status**: Pending review
 - **Git Hash**: f3f14e2
+
+## [2026-11-19 12:20 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The two mails T19 found with one link and no button (account.locked_out, license.override_dropped) given their call to action as a button, and a crash in the button rule found on the way.
+- **Sections/Files Affected**: apps/comms/defaults.py (each template's link on a line of its own: Reset my password, Open their profile); apps/comms/layout.py (a lone link with an empty href stays a link instead of raising TypeError, which would have failed that mail's send); apps/comms/views.py (the preview's sample context carries reset_link); apps/comms/tests/test_messages.py (every default rendered with the sample context: one link means a button; the empty href).
+- **Nature of Contribution**: Edit, bug fix, test. Verified: the new test fails on the old templates (naming the two) and on the old layout (the TypeError), and passes now; comms tests 35 passed; tools/check.sh passed but for the known local failures; T19 locally on the W3USR club passed, its sweep reporting no template with one link and no button.
+- **Human Review Status**: Pending review
+- **Git Hash**:

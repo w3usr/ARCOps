@@ -78,6 +78,7 @@ class TemplateForm(forms.ModelForm):
 
 SAMPLE_CONTEXT = {
     "link": "https://example.org/me/invite/abc123/",
+    "reset_link": "https://example.org/accounts/password/reset/",
     "expires": timezone.now() + timezone.timedelta(days=14),
     "days": 7,
     "via": "an example course link",
