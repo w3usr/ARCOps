@@ -5249,4 +5249,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/comms/defaults.py (each template's link on a line of its own: Reset my password, Open their profile); apps/comms/layout.py (a lone link with an empty href stays a link instead of raising TypeError, which would have failed that mail's send); apps/comms/views.py (the preview's sample context carries reset_link); apps/comms/tests/test_messages.py (every default rendered with the sample context: one link means a button; the empty href).
 - **Nature of Contribution**: Edit, bug fix, test. Verified: the new test fails on the old templates (naming the two) and on the old layout (the TypeError), and passes now; comms tests 35 passed; tools/check.sh passed but for the known local failures; T19 locally on the W3USR club passed, its sweep reporting no template with one link and no button.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: ed705a1
