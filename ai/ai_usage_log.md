@@ -5266,3 +5266,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test. Verified: the new test; tools/check.sh quick passed but for the known local WeasyPrint library path.
 - **Human Review Status**: Pending review
 - **Git Hash**: 12e1d09
+
+## [2026-11-19 14:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Production settings refuse to start without a usable FIELD_ENCRYPTION_KEY (TR-19, TR-20; private tracker 296), rather than failing the first time the shared password is saved or shown.
+- **Sections/Files Affected**: config/settings/prod.py (the key parsed as a Fernet key at start-up, a RuntimeError naming it otherwise); apps/ops/tests/test_prod_settings.py (the settings imported in a fresh process with no key, an empty one, a malformed one, and a valid one).
+- **Nature of Contribution**: Code generation, test. Verified: the test fails on the old settings and passes now; tools/check.sh quick passed but for the known local WeasyPrint library path.
+- **Human Review Status**: Pending review
+- **Git Hash**:

@@ -1,15 +1,24 @@
 """
 Production settings. Everything variable comes from the environment file the deploy writes
-(TR-19); the application refuses to start without a SECRET_KEY.
+(TR-19); the application refuses to start without a SECRET_KEY or a usable FIELD_ENCRYPTION_KEY.
 """
 
 import os
+
+from cryptography.fernet import Fernet
 
 from .base import *  # noqa: F403
 
 DEBUG = False
 if not SECRET_KEY:  # noqa: F405
     raise RuntimeError("SECRET_KEY is not set; the deploy's env file is missing (TR-19)")
+# Checked here, not first when the shared password is saved or shown (TR-20).
+try:
+    Fernet(FIELD_ENCRYPTION_KEY)  # noqa: F405
+except ValueError as exc:
+    raise RuntimeError(
+        "FIELD_ENCRYPTION_KEY is missing or not a Fernet key; the deploy's env file holds it (TR-19, TR-20)"
+    ) from exc
 
 ALLOWED_HOSTS = [h for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h]
 CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS]
