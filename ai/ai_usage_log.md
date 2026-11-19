@@ -5289,4 +5289,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/adapter.py (client_ip: X-Real-IP, then X-Forwarded-For, then REMOTE_ADDR, or "" when none; the adapter's get_client_ip keeps its 0.0.0.0 sentinel for allauth's limiter); apps/credentials/views.py (the sign view stores client_ip, or nothing when unknown); apps/credentials/tests/test_phase4.py (a sign POST with REMOTE_ADDR empty and X-Real-IP set records the address).
 - **Nature of Contribution**: Bug fix, test. Verified: the new test fails on the old view (None stored) and passes now; the accounts and credentials tests pass, the signed-PDF test among them with WeasyPrint's library path set.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: a37f42e
