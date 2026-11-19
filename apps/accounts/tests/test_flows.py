@@ -260,6 +260,27 @@ def test_ten_failed_sign_ins_lock_the_account_and_tell_its_owner_once():
     assert not Outbox.objects.filter(user=other, category="security").exists()
 
 
+def test_a_failed_sign_in_is_counted_in_the_database_every_web_process_shares():
+    """FR-99, TR-18, private tracker 354: under the real settings the count is a row in the
+    database, not one web worker's memory, and the row's key does not hold the address."""
+    from django.db import connection
+    from django.test import override_settings
+
+    from config.settings import base
+
+    with override_settings(CACHES=base.CACHES):
+        call_command("createcachetable")  # the test database is made under the test settings
+        Client().post(
+            "/accounts/login/",
+            {"login": "nobody@example.org", "password": "not-the-password-1"},
+            HTTP_X_REAL_IP="10.7.7.7",
+        )
+        with connection.cursor() as cur:
+            cur.execute("SELECT cache_key FROM cache")
+            keys = [k for (k,) in cur.fetchall()]
+    assert keys and not any("10.7.7.7" in k or "allauth" in k for k in keys)
+
+
 def test_a_session_not_remembered_ends_after_12_hours_idle_and_a_remembered_one_does_not():
     """TR-17, private tracker 289: the clock moved 13 hours past the last request signs out a
     session that was not remembered; a remembered one keeps its 14 days."""

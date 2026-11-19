@@ -141,6 +141,30 @@ DATABASES = {
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+def _cache_key(key: str, key_prefix: str, version: int) -> str:
+    """allauth's rate-limit keys carry the client's IP address, which is kept only with a
+    signature (REQUIREMENTS §4.2); keyed with SECRET_KEY, so a backup alone cannot reverse it."""
+    import hashlib
+    import hmac
+
+    from django.conf import settings
+
+    raw = f"{key_prefix}:{version}:{key}".encode()
+    return hmac.new(settings.SECRET_KEY.encode(), raw, hashlib.sha256).hexdigest()
+
+
+# One cache in the database every web worker shares, so a sign-in limit counts across all of
+# them and survives a restart (FR-99, TR-18, private tracker 354). The table is made by a
+# migration (ops 0011). Its `add` is atomic under IMMEDIATE transactions, which allauth's lock needs.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "cache",
+        "KEY_FUNCTION": _cache_key,
+    }
+}
+
 # -------------------------------------------------------------------- auth ---
 AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = [

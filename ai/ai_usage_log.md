@@ -5234,3 +5234,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis, dependency, test. Verified: with zoneinfo's system path emptied, Asia/Calcutta resolves from the package; app tests all passed.
 - **Human Review Status**: Pending review
 - **Git Hash**: 6055b99
+
+## [2026-11-19 12:06 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: One cache the web processes share, so allauth's sign-in limits (FR-99, TR-18) count across both gunicorn workers and survive a restart (private tracker 354).
+- **Sections/Files Affected**: config/settings/base.py (CACHES: Django's database cache; a key function that HMACs each key with SECRET_KEY, so the client's IP address in allauth's rate-limit keys is not stored, REQUIREMENTS §4.2); apps/ops/migrations/0011_cache_table.py (createcachetable from migrate, so a deploy, a laptop and CI get the table with no extra step); config/settings/test.py (tests keep a per-process cache, cleared before each test as before); apps/accounts/tests/test_flows.py (a failed sign-in under the real settings is a row in the database whose key holds no address).
+- **Nature of Contribution**: Code generation, test. The database cache chosen over the file cache because allauth's lock relies on cache.add being atomic, which the database cache is under SQLite's IMMEDIATE transactions and the file cache is not. Verified: the new test and the lockout test; all 255 accounts tests under the database cache; two separate processes on one migrated database, the second's add refused while the first held the key; tools/check.sh passed but for the known local failures (WeasyPrint's library path, which passes run directly, and Firefox).
+- **Human Review Status**: Pending review
+- **Git Hash**:
