@@ -5282,3 +5282,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test. Verified: the four new tests; tools/check.sh quick passed but for the known local WeasyPrint library path; the same lookup run with the development server's Python against the real service refused a well-known breached password and accepted a random one (replies of about 2,075 lines each, padded). From this Mac the call failed its TLS check (the python.org build has no CA certificates installed), which showed the fail-open path.
 - **Human Review Status**: Pending review
 - **Git Hash**: 053b1bf
+
+## [2026-11-19 14:52 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A signature records the signer's IP address on production (FR-22; private tracker 298): behind nginx on a unix socket REMOTE_ADDR is empty, so every signature stored none.
+- **Sections/Files Affected**: apps/accounts/adapter.py (client_ip: X-Real-IP, then X-Forwarded-For, then REMOTE_ADDR, or "" when none; the adapter's get_client_ip keeps its 0.0.0.0 sentinel for allauth's limiter); apps/credentials/views.py (the sign view stores client_ip, or nothing when unknown); apps/credentials/tests/test_phase4.py (a sign POST with REMOTE_ADDR empty and X-Real-IP set records the address).
+- **Nature of Contribution**: Bug fix, test. Verified: the new test fails on the old view (None stored) and passes now; the accounts and credentials tests pass, the signed-PDF test among them with WeasyPrint's library path set.
+- **Human Review Status**: Pending review
+- **Git Hash**:

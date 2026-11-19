@@ -16,6 +16,7 @@ from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
 from apps.accounts import views_addresses
+from apps.accounts.adapter import client_ip
 from apps.accounts.reauth import is_confirmed, spend
 from apps.ops import when
 from apps.ops.audit import record
@@ -144,7 +145,7 @@ def sign(request, template_id):
                 template=t,
                 credential=t.credential,
                 signer_name=request.POST["signer_name"].strip(),
-                signer_ip=request.META.get("REMOTE_ADDR"),
+                signer_ip=client_ip(request) or None,  # REMOTE_ADDR is empty behind nginx
                 content_hash=t.content_hash,
             )
     except IntegrityError:

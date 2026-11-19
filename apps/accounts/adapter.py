@@ -14,6 +14,18 @@ from django.utils import timezone
 from apps.ops.config import setting
 
 
+def client_ip(request) -> str:
+    """The visitor's address, or "" when there is none. gunicorn listens on a unix socket, so
+    REMOTE_ADDR is empty; nginx passes the visitor's address, already restored from Cloudflare's
+    header by the real-IP snippet, in X-Real-IP. Only nginx can reach the socket, so the header
+    is trustworthy here. Used by sign-in's rate limit and a signature's record (FR-22)."""
+    for key in ("HTTP_X_REAL_IP", "HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"):
+        value = request.META.get(key, "")
+        if value:
+            return value.split(",")[0].strip()
+    return ""
+
+
 class AccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request) -> bool:
         # Registration happens through an invitation link (apps.accounts.views.accept_invitation),
@@ -103,14 +115,8 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def get_client_ip(self, request) -> str:
         """allauth's rate limiter (TR-18) keys on the client IP and refuses the request when it
-        cannot find one. gunicorn listens on a unix socket, so REMOTE_ADDR is empty; nginx passes
-        the visitor's address, already restored from Cloudflare's header by the real-IP snippet,
-        in X-Real-IP. Only nginx can reach the socket, so the header is trustworthy here."""
-        for key in ("HTTP_X_REAL_IP", "HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"):
-            value = request.META.get(key, "")
-            if value:
-                return value.split(",")[0].strip()
-        return "0.0.0.0"  # noqa: S104 - a sentinel for "unknown", never a bind address
+        cannot find one, so an unknown address is a sentinel here."""
+        return client_ip(request) or "0.0.0.0"  # noqa: S104 - "unknown", never a bind address
 
     # allauth sends its own mail (password reset, address confirmation) outside the club's
     # composer, so it took Django's default sender "webmaster@localhost" and a "[host] …"

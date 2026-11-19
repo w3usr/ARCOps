@@ -920,6 +920,19 @@ def test_signing_twice_makes_one_signature_one_queue_card_and_one_message():
     assert SignedAgreement.objects.filter(user=member, state="signed").count() == 2
 
 
+def test_a_signature_records_the_address_nginx_passes_on():
+    """FR-22 (private tracker 298): behind nginx on a unix socket REMOTE_ADDR is empty and the
+    visitor's address arrives in X-Real-IP, so a signature on production recorded none."""
+    call_command("club_import")
+    _, _, t_st, _ = _setup()
+    member = _user("mem-ip@example.org", first_name="Mem", last_name="Ip")
+    c = Client(REMOTE_ADDR="")
+    c.force_login(member)
+    form = {"signer_name": member.full_name, "affirm": "on"}
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", form, HTTP_X_REAL_IP="203.0.113.5")
+    assert SignedAgreement.objects.get(user=member, template=t_st).signer_ip == "203.0.113.5"
+
+
 def test_a_declined_agreement_can_be_signed_again():
     """The guard holds only what is waiting. A decline sends the member back to the form
     (T8 step 5), and signing again there must make a new signature."""
