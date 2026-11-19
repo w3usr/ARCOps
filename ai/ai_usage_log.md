@@ -5257,4 +5257,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: tools/a11y/test_member_pick.py (waits for the slot dialog's content, then for htmx to settle it, before typing).
 - **Nature of Contribution**: Diagnosis, test fix. htmx 2.0.11 attaches a swapped element's hx-* listeners at settle, after the swap the dialog opens on; a name typed in between sends no search. The test's to_be_hidden check also passed before the dialog's content existed. Verified: with htmx's settle delay forced to 1.5 s the old test failed every time and the new one passed (Chromium, WebKit); the a11y sweep under -n auto passed; tools/check.sh twice, the picker test passing both times, failing only on the known local items (WeasyPrint's library path, Firefox).
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 97f4cf8
