@@ -183,6 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": "apps.accounts.pwned.PwnedPasswordValidator"},  # TR-15; last, as it asks the network
 ]
 LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "dashboard"

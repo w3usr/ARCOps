@@ -5274,3 +5274,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test. Verified: the test fails on the old settings and passes now; tools/check.sh quick passed but for the known local WeasyPrint library path.
 - **Human Review Status**: Pending review
 - **Git Hash**: 0d36e10
+
+## [2026-11-19 14:28 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The breached-password check TR-15 names (REQUIREMENTS §2.6 Should; private tracker 292): a password found by Have I Been Pwned's range API is refused.
+- **Sections/Files Affected**: apps/accounts/pwned.py (PwnedPasswordValidator: the first five characters of the SHA-1 sent with Add-Padding, padding decoys of count 0 ignored; an unreachable service lets the password through and logs a warning); config/settings/base.py (last in AUTH_PASSWORD_VALIDATORS); config/settings/test.py (left out of the test suite's validators, so no test calls the service); apps/accounts/tests/test_pwned.py (refused, decoy and absent accepted, unreachable accepted and logged, the prefix and header sent, wired into the real validators).
+- **Nature of Contribution**: Code generation, test. Verified: the four new tests; tools/check.sh quick passed but for the known local WeasyPrint library path; the same lookup run with the development server's Python against the real service refused a well-known breached password and accepted a random one (replies of about 2,075 lines each, padded). From this Mac the call failed its TLS check (the python.org build has no CA certificates installed), which showed the fail-open path.
+- **Human Review Status**: Pending review
+- **Git Hash**:
