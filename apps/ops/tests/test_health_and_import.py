@@ -16,6 +16,13 @@ def test_healthz_ok():
     assert r.status_code == 200 and r.json()["db"] == "ok"
 
 
+def test_the_too_many_requests_page_is_the_sites_own_and_says_429():
+    """TR-18: what a rate limit in front of the application shows instead of a bare error."""
+    call_command("club_import")
+    r = Client().get("/too-many-requests/")
+    assert r.status_code == 429 and "<h1>Too many requests</h1>" in r.content.decode()
+
+
 def test_generic_import_is_idempotent_and_versions_by_hash():
     call_command("club_import")
     assert ClubSetting.objects.get(key="club.name").value == "Example Amateur Radio Club"

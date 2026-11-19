@@ -5258,3 +5258,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis, test fix. htmx 2.0.11 attaches a swapped element's hx-* listeners at settle, after the swap the dialog opens on; a name typed in between sends no search. The test's to_be_hidden check also passed before the dialog's content existed. Verified: with htmx's settle delay forced to 1.5 s the old test failed every time and the new one passed (Chromium, WebKit); the a11y sweep under -n auto passed; tools/check.sh twice, the picker test passing both times, failing only on the known local items (WeasyPrint's library path, Firefox).
 - **Human Review Status**: Pending review
 - **Git Hash**: 97f4cf8
+
+## [2026-11-19 13:15 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The application's own page for a web server's rate limit to show (TR-18; private tracker 290, whose limit is configured in the deployment).
+- **Sections/Files Affected**: apps/ops/views.py (too_many_requests: templates/429.html with status 429); config/urls.py (/too-many-requests/); apps/ops/tests/test_health_and_import.py (the page answers 429 with its heading).
+- **Nature of Contribution**: Code generation, test. Verified: the new test; tools/check.sh quick passed but for the known local WeasyPrint library path.
+- **Human Review Status**: Pending review
+- **Git Hash**:

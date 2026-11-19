@@ -9,10 +9,11 @@ from apps.accounts.views import verify_address
 from apps.credentials.views_reports import member_roster
 from apps.ops import views_settings
 from apps.ops.api import api
-from apps.ops.views import branding_file, healthz, manifest, service_worker
+from apps.ops.views import branding_file, healthz, manifest, service_worker, too_many_requests
 
 urlpatterns = [
     path("healthz", healthz, name="healthz"),
+    path("too-many-requests/", too_many_requests, name="too_many_requests"),
     path("manifest.webmanifest", manifest, name="manifest"),
     # The admin signs in through allauth, so its second-factor rules apply there too.
     path(

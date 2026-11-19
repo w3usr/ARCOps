@@ -21,6 +21,12 @@ from .models import JobRun
 from .templatetags.nav import _ICONS
 
 
+def too_many_requests(request):
+    """The application's own Too many requests page, for a web server in front that limits the
+    sign-in and entry pages to point its 429 at (TR-18), so a refusal reads like the site's."""
+    return render(request, "429.html", status=429)
+
+
 def healthz(request):
     """Database reachability, the last ULS sync, and outbox failures in the last day."""
     status = 200
