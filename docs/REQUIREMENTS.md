@@ -3231,7 +3231,35 @@ and the backend side of things will stay in UTC." SK chose the browser naming it
 server over the browser rewriting each time on the page. *Record:* this addendum and the session
 note of 2026-11-18.
 
+### A39. FR-118: what deleting an account clears, and what it keeps
+
+**Original (FR-118).** Deletion "removes name, callsign, emails, phone, preferences,
+browser-notification subscriptions, guardian links, and responsible-adult designations" and
+replaces the person on past rosters with "deleted member", "so counts and hours stay right while
+nothing identifies them". It keeps signed agreements and their PDFs, and the audit log keeps its
+entries "with the deleted account's identifier and the deletion itself recorded". It says nothing
+of the person's messages, invitations, notes on sign-ups, or two-step verification.
+
+**Decision.**
+- **A responsible-adult row** that named the deleted member stays, so the minor's slot reads as it
+  did, but reads "Deleted member" with no email or phone.
+- **Their two-step verification** (authenticator apps, passkeys, recovery codes) is deleted.
+- **Messages sent to them** keep their date, kind and subject, so the outbox's history and counts
+  hold (FR-82), but lose their recipient addresses and their text. **Messages about them sent to
+  others**, such as a captain's notice, are the recipient's and stay.
+- **Invitations** to any of their addresses, or the one they accepted, keep who invited, when and
+  as what, but lose the address.
+- **Their notes to captains** (FR-110) on the sign-ups that stay for counts and hours are cleared.
+- **The deletion's own audit entry** names the account by its identifier and counts what went and
+  what stayed; it does not copy the name, callsign or addresses it removed. Earlier audit entries
+  that mention the person stay as written, because the log is append-only (TR-21).
+- **The confirmation** says all of this, and its count of future sign-ups is the number actually
+  withdrawn: a sign-up kept for attendance in a slot under way is neither counted nor withdrawn.
+
+**Decided** by SK on 2026-11-19, answering private tracker 329 (the outbox, invitations, notes and
+the audit entry each chosen as recommended). *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37) and 2026-11-18 (A38), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38) and 2026-11-19 (A39), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

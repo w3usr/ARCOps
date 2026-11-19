@@ -627,12 +627,11 @@ def deletion_effects(user: User) -> dict:
     """What deleting this account will do, for the confirmation page (FR-118)."""
     from apps.credentials.models import SignedAgreement
     from apps.events.models import SignUp
+    from apps.events.services.notify import withdrawable_signups
 
     now = timezone.now()
     return {
-        "future_signups": SignUp.objects.filter(
-            user=user, slot__end__gte=now, slot__cancelled=False
-        ).count(),
+        "future_signups": len(withdrawable_signups(user)),  # what access_removed will withdraw
         "past_signups": SignUp.objects.filter(user=user, slot__end__lt=now).count(),
         "agreements": SignedAgreement.objects.filter(user=user).count(),
         "wards": user.wards.filter(active=True).count() if hasattr(user, "wards") else 0,
@@ -658,18 +657,44 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
         )
     withdrawn = access_removed(actor, user)  # future sign-ups go, captains told
     ResponsibleAdult.objects.filter(signup__user=user).delete()
-    ResponsibleAdult.objects.filter(member=user).update(member=None)
+    # Where they were someone else's responsible adult, the row stays, so the minor's slot reads
+    # as it did, but nothing in it names them (private tracker 329).
+    ResponsibleAdult.objects.filter(member=user).update(
+        member=None, name="Deleted member", email="", phone=""
+    )
+    # Their authenticator apps, passkeys and recovery codes: secrets of an account that can no
+    # longer sign in (private tracker 329).
+    from allauth.mfa.models import Authenticator
+
+    Authenticator.objects.filter(user=user).delete()
     PushSubscription.objects.filter(user=user).delete()
     NotificationPreference.objects.filter(user=user).delete()
     user.guardianships.all().delete()
     if hasattr(user, "wards"):
         user.wards.all().delete()
     CallsignHistory.objects.filter(user=user).delete()
-    before = {
-        "addresses": [a.address for a in user.addresses.all()],
-        "callsign": user.callsign,
-        "name": user.full_name,
-    }
+    # SK's decisions of 2026-11-19 on private tracker 329 (REQUIREMENTS addendum A39). Mail to
+    # them keeps its date, kind and subject, so the outbox's history holds, but not where it went
+    # or what it said; mail about them to others is the recipients' and stays.
+    from django.db.models import Q
+
+    from apps.comms.models import Outbox
+    from apps.events.models import SignUp
+
+    addresses = [a.address for a in user.addresses.all()]
+    blanked = Outbox.objects.filter(user=user).update(to_addresses=[], body_html="", body_text="")
+    # Invitations to any of their addresses, or the one they accepted, keep who invited and when.
+    sent_to = Q(accepted_by=user)
+    for address in addresses:
+        sent_to |= Q(email__iexact=address)
+    invitations = Invitation.objects.filter(sent_to).update(email="")
+    for address in addresses:
+        Invitation.objects.filter(guardian_email__iexact=address).update(guardian_email="")
+    # Their notes to the captains (FR-110) on the sign-ups that stay for counts and hours.
+    notes = SignUp.objects.filter(user=user).exclude(note="").update(note="", note_at=None)
+    # The deletion's own record names the account by its identifier (the row's subject) and
+    # counts what went; a copy of the name, callsign and addresses would undo the deletion.
+    before = {"addresses": len(addresses), "callsign": bool(user.callsign)}
     user.first_name, user.middle_name, user.last_name, user.preferred_name = (
         "Deleted",
         "",
@@ -708,6 +733,9 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
             "reason": reason,
             "signups_withdrawn": withdrawn,
             "agreements_kept": effects["agreements"],
+            "messages_blanked": blanked,
+            "invitations_blanked": invitations,
+            "notes_cleared": notes,
         },
     )
     return {"withdrawn": withdrawn, **effects}

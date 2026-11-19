@@ -501,17 +501,23 @@ def event_cancelled(actor: User, event: Event, reason: str = "") -> int:
     return len(by_user)
 
 
-def access_removed(actor: User, user: User) -> int:
-    """FR-91: the person's future sign-ups go, and each event's captains are told. A sign-up that
-    stays in the record (SignUp.kept: attendance in a slot under way) is left alone."""
-    now = timezone.now()
-    signups = [
+def withdrawable_signups(user: User) -> list[SignUp]:
+    """The sign-ups removing access takes away: future, in a slot not canceled, and not one that
+    stays in the record (SignUp.kept: attendance in a slot under way). Deletion's confirmation
+    counts the same list, so the number it promises is the number withdrawn (private tracker 329)."""
+    return [
         su
         for su in SignUp.objects.filter(
-            user=user, slot__end__gte=now, slot__cancelled=False
+            user=user, slot__end__gte=timezone.now(), slot__cancelled=False
         ).select_related("slot__position__location__event")
         if not su.kept
     ]
+
+
+def access_removed(actor: User, user: User) -> int:
+    """FR-91: the person's future sign-ups go, and each event's captains are told. A sign-up that
+    stays in the record (SignUp.kept: attendance in a slot under way) is left alone."""
+    signups = withdrawable_signups(user)
     by_event: dict[int, list[SignUp]] = {}
     for su in signups:
         by_event.setdefault(su.slot.event.pk, []).append(su)

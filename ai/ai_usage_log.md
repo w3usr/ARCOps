@@ -5290,3 +5290,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Bug fix, test. Verified: the new test fails on the old view (None stored) and passes now; the accounts and credentials tests pass, the signed-PDF test among them with WeasyPrint's library path set.
 - **Human Review Status**: Pending review
 - **Git Hash**: a37f42e
+
+## [2026-11-19 15:06 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: What deleting an account clears and keeps (FR-118; private tracker 329), with SK's decisions of today recorded as addendum A39.
+- **Sections/Files Affected**: apps/accounts/services.py (delete_account: responsible-adult rows naming them blanked to "Deleted member"; their authenticators deleted; messages to them lose addresses and text but keep date, kind and subject; invitations to their addresses or accepted by them lose the address; their notes on remaining sign-ups cleared; the audit entry counts instead of copying name, callsign and addresses; deletion_effects counts the sign-ups actually withdrawn); apps/events/services/notify.py (withdrawable_signups, shared by access_removed and the count); templates/accounts/member_edit.html (the confirmation says what is cleared and what stays); apps/accounts/tests/test_phase6.py (two new tests; the existing one now pins an audit entry without the name); docs/REQUIREMENTS.md (addendum A39; the body unchanged).
+- **Nature of Contribution**: Code generation, test, documentation. Verified: the count test fails on the old code (2 promised, 1 withdrawn); accounts and events tests 484 passed; tools/check.sh quick passed but for the known local WeasyPrint library path; the interface guard passed; T44 (deleting an account in a browser) passed locally on the W3USR club.
+- **Human Review Status**: Pending review
+- **Git Hash**:

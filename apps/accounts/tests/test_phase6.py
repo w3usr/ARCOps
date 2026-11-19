@@ -165,13 +165,92 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
     assert SignedAgreement.objects.filter(user=m).count() == 1  # kept for retention
     assert Outbox.objects.filter(user=cap).exists()  # captain told
     row = AuditLog.objects.get(action="account.deleted")
-    assert row.before["callsign"] == "AB1CDE" and row.after["reason"] == "asked in writing"
+    assert row.after["reason"] == "asked in writing"
+    # The deletion's record counts what went rather than copying it (SK, 2026-11-19, private
+    # tracker 329): no name, callsign or address in it.
+    assert row.before == {"addresses": 1, "callsign": True}
     # the addresses go, and with them the sign-in library's copies: a deleted account answers to
     # no address, and nothing had to be invented to stand in for one
     from allauth.account.models import EmailAddress
 
-    assert row.before["addresses"] == ["mem@example.org"]
     assert not m.addresses.exists() and not EmailAddress.objects.filter(user=m).exists()
+
+
+def test_deletion_blanks_responsible_adult_rows_drops_authenticators_and_counts_true():
+    """FR-118, private tracker 329: a responsible-adult row naming the deleted member keeps its
+    place but not their details; their authenticators go; the confirmation's count of future
+    sign-ups leaves out one kept for attendance, as the withdrawal does."""
+    from allauth.mfa.models import Authenticator
+
+    from apps.accounts.services import deletion_effects
+    from apps.events.models import ResponsibleAdult
+
+    s = _user("sys@example.org", "sysadmin")
+    cap = _user("cap@example.org", "officer")
+    m = _user("mem@example.org", cell_phone="555")
+    minor = _user("minor@example.org")
+    later, running = _slot(cap, days=5), _slot(cap, days=0)
+    SignUp.objects.create(slot=later, user=m, role="operator")
+    SignUp.objects.create(slot=running, user=m, role="operator", checked_in_at=timezone.now())
+    ra = ResponsibleAdult.objects.create(
+        signup=SignUp.objects.create(slot=later, user=minor, role="operator"),
+        name=m.full_name,
+        email="mem@example.org",
+        phone="555",
+        member=m,
+    )
+    Authenticator.objects.create(user=m, type=Authenticator.Type.TOTP, data={"secret": "x"})
+
+    promised = deletion_effects(m)["future_signups"]
+    done = delete_account(s, m, "asked in writing")
+    assert promised == done["withdrawn"] == 1  # the checked-in one stays, and was never promised
+    ra.refresh_from_db()
+    assert (ra.name, ra.email, ra.phone, ra.member) == ("Deleted member", "", "", None)
+    assert not Authenticator.objects.filter(user=m).exists()
+
+
+def test_deletion_blanks_mail_to_them_invitations_and_notes_but_not_mail_to_others():
+    """SK, 2026-11-19, private tracker 329 (A39): mail to them keeps its date, kind and subject
+    but not where it went or what it said; mail about them to someone else stays; invitations to
+    their address keep who invited and when; their notes on sign-ups that stay are cleared."""
+    s = _user("sys@example.org", "sysadmin")
+    cap = _user("cap@example.org", "officer")
+    m = _user("mem@example.org")
+    past = _slot(cap, days=-5)
+    kept = SignUp.objects.create(slot=past, user=m, role="operator", note="Mem, AB1CDE, room 12")
+    to_them = Outbox.objects.create(
+        user=m,
+        to_addresses=["mem@example.org"],
+        category="account",
+        subject="Welcome",
+        body_html="<p>Hello Mem</p>",
+        body_text="Hello Mem",
+    )
+    to_cap = Outbox.objects.create(
+        user=cap,
+        to_addresses=["cap@example.org"],
+        category="moved",
+        subject="Mem canceled",
+        body_html="<p>Mem canceled</p>",
+    )
+    inv = Invitation.objects.create(
+        email="MEM@example.org",
+        category="student",
+        issued_by=s,
+        accepted_by=m,
+        expires_at=timezone.now() + dt.timedelta(days=7),
+    )
+
+    delete_account(s, m, "asked in writing")
+    to_them.refresh_from_db()
+    to_cap.refresh_from_db()
+    inv.refresh_from_db()
+    kept.refresh_from_db()
+    assert (to_them.to_addresses, to_them.body_html, to_them.body_text) == ([], "", "")
+    assert to_them.subject == "Welcome" and to_them.category == "account"
+    assert to_cap.body_html == "<p>Mem canceled</p>"  # the captain's mail is the captain's
+    assert inv.email == "" and inv.issued_by == s
+    assert (kept.note, kept.note_at) == ("", None)
 
 
 def test_deletion_guards():
