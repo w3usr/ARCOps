@@ -888,7 +888,44 @@ column.
 **Decided by** SK: filed at SK's request on 2026-11-04 from the over-engineering audit (private
 tracker 185) and worked through on 2026-11-12; on production since 2026-11-16.
 
+### A14. The data model: one cache in the database, for the sign-in limits
+
+**Original (TR-18, TR-26).** TR-18 relies on allauth's rate limits (FR-99); TR-26's table of tables
+names no cache, and no setting chose one, so Django kept its default: memory inside each web
+process.
+
+**Decision.** The application's cache is Django's database cache, one table named `cache` in the
+same SQLite file (TR-2), made by migration `ops/0011` so every installation gets it from
+`migrate`. With two web workers each counting on its own, an account could take twice the limit
+before it locked, and a restart forgot every count; one table both workers share fixes both. The
+database cache was chosen over the file cache because allauth's lock depends on adding a key
+being atomic between processes, which SQLite's IMMEDIATE transactions give and files do not. Each
+key is an HMAC under `SECRET_KEY`, because allauth's keys carry the visitor's address and an
+address is kept only with a signature (REQUIREMENTS §4.2). The test suite keeps one cache per
+test process.
+
+**Decided by** SK on 2026-11-19, taking up private tracker 354 ("go ahead with #354") on the
+choice of the database cache set out in the issue; on production the same day.
+
+### A15. TR-15: the breached-password check when the service cannot be reached
+
+**Original (TR-15).** "Django's password validators plus a breached-password check against the
+Have I Been Pwned range API (k-anonymity: five characters of the hash leave the server, the
+password never does)". It says nothing of what happens when the service cannot be reached, or of
+when the check runs.
+
+**Decision.**
+- The check is a password validator after Django's own, so it runs wherever a password is set:
+  joining, a reset, a change, a temporary password replaced. It is not run at sign-in.
+- It asks with padding (`Add-Padding: true`), so the reply's size says nothing about the hash.
+- **If the service cannot be reached, the password is accepted** and the miss logged as a
+  warning: a member is never kept from setting a password by a third party.
+- The test suite leaves it out of the validators, and its own tests fake the network.
+
+**Decided by** SK on 2026-11-19, building private tracker 292 ("yes, build it and try it on dev")
+on the design set out to him, including both choices above; on production the same day.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11) and 2026-11-16 (A12, A13), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13) and 2026-11-19 (A14, A15), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

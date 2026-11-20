@@ -5298,3 +5298,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, test, documentation. Verified: the count test fails on the old code (2 promised, 1 withdrawn); accounts and events tests 484 passed; tools/check.sh quick passed but for the known local WeasyPrint library path; the interface guard passed; T44 (deleting an account in a browser) passed locally on the W3USR club.
 - **Human Review Status**: Pending review
 - **Git Hash**: 1c6c6de
+
+## [2026-11-19 23:02 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconciliation after the 17 to 19 November batch: the technical requirements brought into step with two of the day's changes.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A14: the database cache and its table, which TR-26's table did not name, and why it was chosen; addendum A15: TR-15's breached-password check accepts the password when the service is unreachable and runs where a password is set, not at sign-in; the addendum's attribution line). The body is unchanged.
+- **Nature of Contribution**: Documentation, from the day's dated decisions and the code (apps/accounts/pwned.py, config/settings/base.py, apps/ops/migrations/0011). Verified: the club-neutral guard passes.
+- **Human Review Status**: Pending review
+- **Git Hash**:
