@@ -5305,4 +5305,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A14: the database cache and its table, which TR-26's table did not name, and why it was chosen; addendum A15: TR-15's breached-password check accepts the password when the service is unreachable and runs where a password is set, not at sign-in; the addendum's attribution line). The body is unchanged.
 - **Nature of Contribution**: Documentation, from the day's dated decisions and the code (apps/accounts/pwned.py, config/settings/base.py, apps/ops/migrations/0011). Verified: the club-neutral guard passes.
 - **Human Review Status**: Pending review
-- **Git Hash**:
+- **Git Hash**: 41edbf0
