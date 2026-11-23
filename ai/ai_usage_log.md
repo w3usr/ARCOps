@@ -5385,4 +5385,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/views.py (three bare "# A40" tags; check_in's inline comment made its docstring); apps/events/views_slots.py (two "# A40" tags); apps/events/services/notify.py and waitlist.py (one "# A40" tag each); apps/events/tests/test_checkin_run.py (one comment restating its assert); tools/check.sh (a comment restating the Prettier command).
 - **Nature of Contribution**: Edit (comments only; no behavior changed). Verified: ruff check and format pass; bash -n tools/check.sh passes; the events app's tests pass. Comments that give a reason (a decision, a browser's behavior, a test's choice) were kept, and the CSS and JavaScript comments that only moved with the day's split and formatting were left alone.
 - **Human Review Status**: Pending review
-- **Git Hash**: [filled in after committing]
+- **Git Hash**: 762761c
