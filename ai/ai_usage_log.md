@@ -5321,4 +5321,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: .github/workflows/ci.yml (the accessibility job as a matrix over chromium, firefox and webkit, fail-fast off; each installs only its browser and runs only its share; the Chromium job also takes the tests with no browser fixture).
 - **Nature of Contribution**: Configuration, from the timings of the last four runs on main (the sweep 8 to 10 minutes of a 10 to 11 minute job). Verified: the three -k filters collect 40, 39 and 39 of the 118 sweep tests, each once; the workflow parses as YAML. Not yet run on GitHub.
 - **Human Review Status**: Pending review
-- **Git Hash**: (after commit)
+- **Git Hash**: 99648ec
