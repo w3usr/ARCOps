@@ -26,7 +26,7 @@ depending on delivery.{% endcomment %}
           {% endif %}
         {% endif %}
         {% if address_may_correct and not address_subject_is_self %}
-        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button class="secondary small">Stop it signing them in</button></form>
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="address_unconfirm"><input type="hidden" name="address" value="{{ a.address }}"><button type="submit" class="secondary small">Stop it signing them in</button></form>
         {% endif %}
       {% else %}
         {% if address_subject_is_self %}

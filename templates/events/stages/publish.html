@@ -24,8 +24,8 @@
   <header class="panel-head"><div><h2 id="st">Status</h2><p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p></div>
     <div class="actions">
     <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline actions">{% csrf_token %}
-      {% if event.state == 'published' %}<button name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
-      {% if event.state == 'locked' %}<button name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
+      {% if event.state == 'published' %}<button type="submit" name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
+      {% if event.state == 'locked' %}<button type="submit" name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
     </form>
     {% comment %}Completing cannot be taken back, so it asks first (SK, 2026-11-11).{% endcomment %}
     {% if event.state == 'published' or event.state == 'locked' %}<button type="button" class="secondary" commandfor="complete-dlg" command="show-modal">{% icon 'check' %}Mark completed</button>
@@ -51,7 +51,7 @@
     {% if may_manage_events %}<div class="actions">{% url 'captain_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Appoint captain" icon="user-plus" %}</div>{% endif %}</header>
   <ul class="rows list">
     {% for c in captains %}<li><span class="row-ic">{% icon 'user' 'small' %}</span><span class="grow">{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}</span>
-      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form>{% endif %}</li>{% endfor %}
+      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
 </section>
 

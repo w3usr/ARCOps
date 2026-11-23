@@ -30,7 +30,7 @@ localStorage, where they would keep member names and rosters (technical addendum
 <link rel="stylesheet" href="{% static 'css/roster.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages.css' %}">
 {# The club's color, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
-<style>:root { --brand: {{ club.branding.accent }}; }</style>
+{# djlint:off H025 #}<style>:root { --brand: {{ club.branding.accent }}; }</style>{# djlint:on #}
 {# Restores the remembered sidebar state before first paint, so it never flashes open. #}
 <script src="{% static 'js/nav-state.js' %}"></script>
 {% block extra_head %}{% endblock %}
@@ -124,7 +124,7 @@ localStorage, where they would keep member names and rosters (technical addendum
   the same kind of thing to a reader, and the banner rail made it a wall (NAF, 2026-09-20). It
   stays until it is answered, which is what makes it not a message.{% endcomment %}
   {% if user.is_authenticated and user.pending_uls_name %}<ul class="messages ask"><li class="msg warning">
-    <span class="lvl">Is this you?</span> The FCC records <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which does not exactly match the name on your account. Please answer below &mdash; until you do, the callsign is not counted as your license. If you would like to go by a different name at {{ club.short_name }}, set a preferred name on <a href="{% url 'profile_edit' %}#details">your profile</a>.
+    <span class="lvl">Is this you?</span> The FCC records <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which does not exactly match the name on your account. Please answer below — until you do, the callsign is not counted as your license. If you would like to go by a different name at {{ club.short_name }}, set a preferred name on <a href="{% url 'profile_edit' %}#details">your profile</a>.
     <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
   </li></ul>{% endif %}
   {% comment %}aria-live and no role: role="status" replaced the list's own role, which left each

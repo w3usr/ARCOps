@@ -18,7 +18,7 @@ same hours every day. Every form saves in place (#177). Changing them never touc
   {% if slots_outside %}<p class="msg warning"><span class="lvl">Careful:</span> {{ slots_outside }} slot{{ slots_outside|pluralize }} fall{{ slots_outside|pluralize:"s," }} outside the on-air hours. They stay as they are; cancel them on the roster if they are not wanted.</p>{% endif %}
   </div>
   {% if on_air_stretches %}<ul class="rows list">{% for st in on_air_stretches %}<li><span class="row-ic">{% icon 'clock' 'small' %}</span><span class="grow">{{ st.label }}</span>
-    <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<input type="hidden" name="what" value="remove"><input type="hidden" name="i" value="{{ st.i }}"><button class="ghost danger small">{% icon 'trash' 'small' %}Remove<span class="sr-only"> {{ st.label }}</span></button></form></li>{% endfor %}</ul>{% endif %}
+    <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<input type="hidden" name="what" value="remove"><input type="hidden" name="i" value="{{ st.i }}"><button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Remove<span class="sr-only"> {{ st.label }}</span></button></form></li>{% endfor %}</ul>{% endif %}
   <form method="post" action="{% url 'on_air_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack" aria-labelledby="air-range">{% csrf_token %}<input type="hidden" name="what" value="range">
     <div class="panel-body stack">
     <h3 id="air-range">Add a range to the minute</h3>

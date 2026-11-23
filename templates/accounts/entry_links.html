@@ -24,9 +24,9 @@
 <td data-label="Joined">{{ l.joined_count }}{% if l.cap %} / {{ l.cap }}{% endif %}</td>
 <td data-label="State">{% if l.is_open %}<span class="tag ok">open</span>{% else %}<span class="tag">{{ l.get_state_display|lower }}{% if l.state == 'active' %}, closed{% endif %}</span>{% endif %}</td>
 <td data-label="Actions"><form method="post" action="{% url 'entry_link_action' l.pk %}" class="inline">{% csrf_token %}
-  {% if l.state == 'active' %}<button name="action" value="pause" class="secondary small">Pause</button>{% elif l.state == 'paused' %}<button name="action" value="resume" class="secondary small">Resume</button>{% endif %}
-  {% if l.state != 'revoked' %}<button name="action" value="extend" class="secondary small">Give it 30 more days</button> <button name="action" value="revoke" class="ghost danger small">{% icon 'trash' 'small' %}Revoke</button>{% endif %}
-  {% if l.kind == 'class' %}<button name="action" value="verify_all" class="secondary small">Mark everyone who joined here as verified</button>{% endif %}
+  {% if l.state == 'active' %}<button type="submit" name="action" value="pause" class="secondary small">Pause</button>{% elif l.state == 'paused' %}<button type="submit" name="action" value="resume" class="secondary small">Resume</button>{% endif %}
+  {% if l.state != 'revoked' %}<button type="submit" name="action" value="extend" class="secondary small">Give it 30 more days</button> <button type="submit" name="action" value="revoke" class="ghost danger small">{% icon 'trash' 'small' %}Revoke</button>{% endif %}
+  {% if l.kind == 'class' %}<button type="submit" name="action" value="verify_all" class="secondary small">Mark everyone who joined here as verified</button>{% endif %}
 </form></td>
 </tr>{% empty %}<tr><td colspan="7" class="empty">No entry links yet. An entry link lets people join without an invitation each: make a class link for a course, or a community link for a public event.</td></tr>{% endfor %}
 </tbody></table>

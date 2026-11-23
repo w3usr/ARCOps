@@ -1001,7 +1001,28 @@ at 1,920 and 2,560 px.
 **Decided by** SK on 2026-11-23, from a screenshot on a 2,500 px screen ("the actual body of the
 working UI needs to be centered rather than left-aligned").
 
+### A19. TR-37: scripts formatted by Prettier; templates linted by djLint, not yet formatted
+
+**Original (TR-37).** "`ruff` (lint and format) and `djlint` for templates", run locally and by
+CI. Neither the scripts nor the templates had a formatter or a linter (private tracker 321).
+
+**Decision.**
+- **The hand-written scripts** (`static/js/` and `static/sw.js`) are formatted by Prettier, as
+  the stylesheets are (A16), and checked in `tools/check.sh` and CI; `.prettierignore` leaves the
+  vendored htmx as published.
+- **The templates are linted by djLint** (1.49.10, pinned in `requirements-dev.txt`, settings in
+  `pyproject.toml`) in `tools/check.sh` and CI. Rules H015 (a line break after a heading) and H021
+  (inline styles, which only mail uses) are off; the two places its parser misreads (template tags
+  inside `base.html`'s `<style>`, a `<div>` closed under a condition) are marked where they stand.
+- **djLint's formatter is not run.** On these templates it changed what 33 page views drew: the
+  four wide pages lost their layout when a leading space inside a block was stripped, and a heading
+  in a `<summary>` moved 5 px. Formatting waits until the templates are safe for it and a check
+  covers dialogs, mail and the PDF as well as pages (private tracker 363).
+
+**Decided by** SK on 2026-11-23, asking for Prettier on the scripts and djLint on the templates,
+and, shown what the formatter changed, choosing to lint now and format later.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16 to A18), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16 to A19), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

@@ -32,8 +32,8 @@ small buttons at the row's end; Remove them a red button with a bin (D4).{% endc
         <a href="{% url 'signup_adults' s.pk %}">Edit the designation</a>{% elif s.user == user and not minor_readonly %}<a href="{% url 'signup_adults' s.pk %}">Name or change the adult</a>{% endif %}</details>
       {% elif adults %}<span class="tag">under 18, with an adult</span>{% else %}<span class="tag">under 18</span>{% endif %}
     {% endwith %}{% endif %}
-    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button class="secondary small">{% icon 'check' 'small' %}Check in</button></form>{% endif %}
-    {% if is_captain and s.checked_in_at %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button class="secondary small">{% if s.no_show %}Undo the no-show{% else %}Mark as a no-show{% endif %}</button></form>{% endif %}
+    {% if is_captain and not s.checked_in_at and checkin_open %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'check_in' s.pk %}" class="inline">{% csrf_token %}{% if s.user.under_18 %}{% for a in s.responsible_adults.all %}<label class="check inline"><input type="checkbox" name="adult" value="{{ a.pk }}"{% if forloop.first %} checked{% endif %}> {{ a.name }} present</label>{% endfor %}{% endif %}<button type="submit" class="secondary small">{% icon 'check' 'small' %}Check in</button></form>{% endif %}
+    {% if is_captain and s.checked_in_at %}<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'signup_no_show' s.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary small">{% if s.no_show %}Undo the no-show{% else %}Mark as a no-show{% endif %}</button></form>{% endif %}
     {% if s.no_show %}<span class="tag warn">no-show</span>{% endif %}
   </li>
 {% endfor %}
@@ -78,7 +78,7 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
 {% else %}<p class="muted">Full.</p>{% endif %}
 {% if my_wait %}
 <p>You are on the waitlist for <strong>{{ my_wait.role|role_label }}</strong>{% if my_wait.state == 'offered' %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|utc_time_short }}{% endif %}.</p>
-<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button class="secondary small">Leave the waitlist</button></form>
+<form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary small">Leave the waitlist</button></form>
 {% elif waitable %}
 <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_join' slot.pk %}" class="stack">{% csrf_token %}
   <div class="field"><label for="wait-{{ slot.pk }}">Full for now. Join the waitlist as</label>
@@ -117,7 +117,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     <div><button type="submit" class="secondary">Add</button></div>
   </form>{% endif %}
   <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_toggle' slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="manage" value="1">
-    <button name="what" value="close" class="secondary">{% if slot.closed %}{% icon 'unlock' %}Reopen slot{% else %}{% icon 'lock' %}Close slot{% endif %}</button>
+    <button type="submit" name="what" value="close" class="secondary">{% if slot.closed %}{% icon 'unlock' %}Reopen slot{% else %}{% icon 'lock' %}Close slot{% endif %}</button>
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
   {% comment %}Re-time, split, merge (FR-46, #156; SK, 2026-11-11): with people in the slot too.
@@ -151,7 +151,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
   </section>
   <section class="stack" aria-labelledby="override-h-{{ slot.pk }}"><h3 id="override-h-{{ slot.pk }}">Who may sign up for this slot (override)</h3>
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %}, {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %}, needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %}, no minors{% endif %}
-      <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
+      <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="manage" value="1">
       {% comment %}It starts from the rule the event applies to the role chosen (#277): each role's choice
       carries that rule, the first is drawn filled in, and app.js fills the boxes when the role changes.
@@ -180,7 +180,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
         <label for="cancel-reason-{{ slot.pk }}">Reason <span class="req" aria-hidden="true">*</span></label>
         <input id="cancel-reason-{{ slot.pk }}" name="reason" maxlength="300" placeholder="Station closed for the storm" required>
       </div>{% endif %}
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="slot-cancel-{{ slot.pk }}" command="close">Keep the slot</button> <button class="danger">{% if cell.signups %}Cancel the slot and tell {{ cell.signups|length }}{% else %}Cancel the slot{% endif %}</button></div>
+      <div class="confirm-actions"><button type="button" class="secondary" commandfor="slot-cancel-{{ slot.pk }}" command="close">Keep the slot</button> <button type="submit" class="danger">{% if cell.signups %}Cancel the slot and tell {{ cell.signups|length }}{% else %}Cancel the slot{% endif %}</button></div>
     </form>
   </dialog>
   {% endif %}

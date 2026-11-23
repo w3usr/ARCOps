@@ -11,6 +11,21 @@ ignore = ["S101", "E501", "DJ008", "DJ012"]  # asserts in tests; long data tuple
 "apps/*/tests/*" = ["S", "DJ"]
 "config/settings/*" = ["S105"]
 
+[tool.djlint]
+# Templates (TR-37): linted by djLint in tools/check.sh and CI. Its formatter is not run yet, since
+# on these templates it changes what pages draw (technical addendum A19); the settings below are
+# what it will use when the templates are ready for it.
+profile = "django"
+indent = 2
+max_line_length = 100
+preserve_blank_lines = true
+# A tag's attributes stay on its own line: split one per line, they make a tag hard to find and
+# to read beside the markup around it.
+max_attribute_length = 2000
+# H015 (a line break after a heading) is layout taste; H021 (inline styles) fires only on mail,
+# which needs them.
+ignore = "H015,H021"
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py"]
