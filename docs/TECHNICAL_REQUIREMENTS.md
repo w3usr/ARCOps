@@ -985,7 +985,23 @@ and gap values, 44 of them distinct, beside four little-used tokens `--s1` to `-
 **Decided by** SK on 2026-11-23, choosing the 4 px grid from three measured scales (private tracker
 362), and the time column from the contact sheet.
 
+### A18. TR-5: the content column centered on a wide screen
+
+**Original (TR-5, with A8).** The signed-in column beside the sidebar was capped at 72rem, "a
+measure for reading prose", and stood against the sidebar, so on a wide screen everything sat at
+the left with the rest of the window empty.
+
+**Decision.** The column keeps its 72rem and is centered in the space beside the sidebar; a banner
+over the page (acting for a minor, read-only, viewing as another member) takes the same width and
+lines up with the content under it. A page marked wide (the directory, invitations, approvals)
+still takes the whole width. Nothing changes until the space beside the sidebar is wider than
+72rem, about 1,400 px of window. `tools/a11y/test_wide_layout.py` checks the space either side
+at 1,920 and 2,560 px.
+
+**Decided by** SK on 2026-11-23, from a screenshot on a 2,500 px screen ("the actual body of the
+working UI needs to be centered rather than left-aligned").
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16, A17), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16 to A18), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

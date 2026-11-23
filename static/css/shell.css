@@ -21,8 +21,13 @@ html[data-nav="rail"] .shell {
   flex: 1;
 }
 /* The bar over every signed-in page, holding the UTC clock. */
+/* A banner over the page lines up with the content under it: as wide as the content's column
+   less its side padding, and centered with it. */
 .page > .banner {
-  margin: var(--space-4) clamp(var(--space-4), 4vw, var(--space-9)) 0;
+  margin: var(--space-4) auto 0;
+  width: calc(
+    min(100%, 72rem) - 2 * clamp(var(--space-4), 4vw, var(--space-9))
+  );
 }
 
 .topbar {
@@ -298,6 +303,7 @@ html[data-nav="rail"] #nav-toggle .icon {
     var(--space-9);
   max-width: 72rem;
   width: 100%;
+  margin-inline: auto; /* on a wide screen, in the middle of the space beside the sidebar */
 }
 /* 72rem is a measure for reading prose. A page whose point is a wide table takes the window it
    is given, because the alternative is scrolling a table sideways inside a half-empty screen. */

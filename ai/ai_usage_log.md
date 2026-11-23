@@ -5346,3 +5346,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code, tests, documentation. Verified: the scales measured against all 403 rem spacing values before SK chose; the check flagged exactly the 286 declarations the conversion rewrote, passes after it, and catches an off-scale rem, a raw px and the old token; the contact sheet before and after (354 screenshots, side by side with a changed-pixel mask) went to SK, who found the time column and the touching buttons; the roster test failed by up to 21px on the old column and the buttons test by 0.0px on both Announce pages with the old markup, and both pass now. All 670 application tests, ruff, Prettier, the three guards and the accessibility and layout tests in Chromium and WebKit (96 passed, 1 skipped) pass.
 - **Human Review Status**: Partially reviewed (the contact sheet, by SK)
 - **Git Hash**: cd1e0aa
+
+## [2026-11-23 14:58 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Center the signed-in content on a wide screen instead of standing it against the sidebar (SK, from a screenshot on a 2,500 px screen).
+- **Sections/Files Affected**: static/css/shell.css (.content centered by margin-inline auto, keeping its 72rem; .page > .banner the content's width less its side padding, centered with it); tools/a11y/test_wide_layout.py (new: equal space either side of the column at 1,920 and 2,560 px); docs/TECHNICAL_REQUIREMENTS.md (addendum A18 and its attribution line).
+- **Nature of Contribution**: Code, test, documentation. Verified: the test failed before the change (0 px left, 520 px right at 1,920) and passes in Chromium and WebKit; at 1,920 px an acting banner's edges meet the content's inner edges exactly (556 and 1,612 px); a page marked wide still fills the column (2,312 of 2,312 px at 2,560); a 2,560 px screenshot looked at. All 670 application tests, ruff, Prettier, the guards and the accessibility and layout tests (100 passed, 1 skipped) pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: (after commit)
