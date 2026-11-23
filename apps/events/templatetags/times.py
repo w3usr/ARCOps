@@ -72,6 +72,16 @@ def when(start, end=None, event=None, year=False):
 
 
 @register.filter
+def checkin_label(signup) -> str:
+    """`Check in`, or `Check in, 5:00–7:00 PM (2 slots)` when one tap checks in a run (private
+    tracker 361)."""
+    run = signup.checkin_run()
+    if len(run) == 1:
+        return "Check in"
+    return f"Check in, {when_.clock_span(signup.slot.start, run[-1].slot.end)} ({len(run)} slots)"
+
+
+@register.filter
 def meets_line(event) -> str:
     """When a regular meeting or net meets, as members read it (private tracker 273)."""
     from ..services.meets import describe

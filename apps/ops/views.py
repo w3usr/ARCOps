@@ -13,6 +13,7 @@ from apps.comms.categories import BANNER
 from apps.comms.models import Outbox
 from apps.events.models import Event, SignUp, Slot
 from apps.events.services.roster import coverage
+from apps.events.services.viability import checkin_ready as ready_to_check_in
 from apps.events.services.viability import checkin_window_open
 
 from . import jobs
@@ -98,9 +99,7 @@ def dashboard(request):
             next_action = "check_in"
         elif not next_signup.confirmed_at:
             next_action = "confirm"
-    checkin_ready = [
-        s for s in other_signups if checkin_window_open(s.slot, now) and not s.checked_in_at
-    ]
+    checkin_ready = [s for s in ready_to_check_in(my_signups, now) if s is not next_signup]
     upcoming_events = Event.objects.filter(
         state__in=["published", "locked"], display_only=False
     ).order_by("id")[:10]

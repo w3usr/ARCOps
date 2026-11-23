@@ -263,11 +263,34 @@ class SignUp(models.Model):
 
         if self.slot.event.state in (Event.State.COMPLETED, Event.State.CANCELLED):
             return "The event is over, so this sign-up stays in the record."
-        if self.checked_in_at or self.no_show:
+        # A later slot of a run checked in with one tap (private tracker 361) has not started:
+        # leaving early drops it, as FR-113 says.
+        if self.no_show or (self.checked_in_at and self.slot.start <= timezone.now()):
             return "Attendance is recorded for this sign-up, so it stays in the record."
         if self.slot.end <= timezone.now():
             return "This slot has ended, so the sign-up stays in the record."
         return ""
+
+    def checkin_run(self) -> list[SignUp]:
+        """This sign-up and the same member's later ones in the same event that follow on with
+        no gap, whatever the position: one tap checks them all in (private tracker 361; NAF,
+        2026-11-21). A canceled slot is not there, so it ends the run like any gap."""
+        run = [self]
+        later = (
+            SignUp.objects.filter(
+                user_id=self.user_id,
+                slot__position__location__event=self.slot.position.location.event_id,
+                slot__cancelled=False,
+                slot__start__gte=self.slot.end,
+            )
+            .select_related("slot")
+            .order_by("slot__start")
+        )
+        for su in later:
+            if su.slot.start != run[-1].slot.end:
+                break
+            run.append(su)
+        return run
 
 
 class ResponsibleAdult(models.Model):

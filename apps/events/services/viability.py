@@ -218,6 +218,19 @@ def checkin_window_open(slot, now) -> bool:
     return slot.start - timedelta(minutes=minutes) <= now <= slot.end
 
 
+def checkin_ready(signups, now) -> list:
+    """The sign-ups (in start order) to offer Check in for now: inside the window, not checked in,
+    and not a later slot of a run an earlier one checks in with the same tap (private tracker
+    361)."""
+    ready, covered = [], set()
+    for s in signups:
+        if s.pk in covered or s.checked_in_at or not checkin_window_open(s.slot, now):
+            continue
+        ready.append(s)
+        covered.update(r.pk for r in s.checkin_run())
+    return ready
+
+
 def would_break(slot, without_signup) -> SlotStatus | None:
     """FR-111/FR-56: what the slot would look like if this sign-up left; None if unchanged."""
     remaining = [s for s in slot.signups.select_related("user").all() if s.pk != without_signup.pk]

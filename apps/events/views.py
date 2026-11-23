@@ -21,7 +21,7 @@ from .services.eligibility import can_sign_up
 from .services.notify import drop_empty_sections
 from .services.roster import build as build_roster
 from .services.slots import health
-from .services.viability import checkin_window_open, would_break
+from .services.viability import checkin_ready, checkin_window_open, would_break
 from .views_manage import publish_blocker
 from .views_rules import captained_event
 from .views_slots import _visible, roster_or_slot
@@ -304,36 +304,64 @@ def check_in(request, signup_id):
     if not checkin_window_open(su.slot, now):
         messages.error(request, "Check-in opens 30 minutes before the slot.")
         return back
-    present = []
+    # One tap checks in the run of back-to-back slots (private tracker 361); only the tapped
+    # slot's window counts.
+    run = su.checkin_run()
+    present, left = [], None
     if (
         su.user.under_18
     ):  # FR-113: a guardian or a captain checks a minor in, naming the adult present
         adults = list(su.responsible_adults.all())
         chosen = request.POST.getlist("adult") or ([str(adults[0].pk)] if len(adults) == 1 else [])
-        present = [a for a in adults if str(a.pk) in chosen]
-        if not present:
+        here = [a for a in adults if str(a.pk) in chosen]
+        if not here:
             messages.error(
                 request,
                 f"Say which responsible adult is with {su.user.display_first} before checking them in.",
             )
             return redirect("slot_detail", pk=su.slot.event.pk, slot_id=su.slot.pk)
+
+        def who(a):
+            return ("member", a.member_id) if a.member_id else ("name", a.name.strip().casefold())
+
+        keys = {who(a) for a in here}
+        # A later slot counts only where one of those adults is designated (FR-64); the run
+        # stops at the first that has none, and that slot is checked in on its own.
+        for i, s in enumerate(run):
+            there = [a for a in s.responsible_adults.all() if who(a) in keys] if i else here
+            if not there:
+                run, left = run[:i], s
+                break
+            present += there
         for a in present:
             a.present_at = now
             a.save(update_fields=["present_at"])
-    su.checked_in_at = now
-    su.checked_in_by = getattr(request.user, "acting_guardian", None) or request.user
-    su.save(update_fields=["checked_in_at", "checked_in_by"])
-    record(
-        request.user,
-        "signup.checked_in",
-        su,
-        after={"present": [a.name for a in present]} if present else None,
+    by = getattr(request.user, "acting_guardian", None) or request.user
+    for s in run:
+        if s is su or not s.checked_in_at:  # a later slot already checked in keeps its time
+            s.checked_in_at, s.checked_in_by = now, by
+            s.save(update_fields=["checked_in_at", "checked_in_by"])
+    after = {}
+    if present:
+        after["present"] = sorted({a.name for a in present})
+    if len(run) > 1:
+        after["run"] = [s.pk for s in run]
+    record(request.user, "signup.checked_in", su, after=after or None)
+    done = (
+        f"Checked in for {len(run)} slots, {when.clock_span(su.slot.start, run[-1].slot.end)}."
+        if len(run) > 1
+        else "Checked in."
     )
+    if left:
+        done += (
+            f" The slot from {when.clock_span(left.slot.start, left.slot.end)} has none of those "
+            "adults named, so check in for it on its own."
+        )
     messages.success(
         request,
-        "Checked in. Have a good shift."
+        f"{done} Have a good shift."
         if su.user == request.user
-        else f"Checked in. {su.user.display_first} is here.",
+        else f"{done} {su.user.display_first} is here.",
     )
     return back
 
@@ -361,9 +389,7 @@ def my_schedule(request):
             "feed_url": request.build_absolute_uri(
                 reverse("ical_feed", args=[feed_token(request.user)])
             ),
-            "ready": [
-                s for s in upcoming if checkin_window_open(s.slot, now) and not s.checked_in_at
-            ],
+            "ready": checkin_ready(upcoming, now),
         },
     )
 

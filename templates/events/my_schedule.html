@@ -9,7 +9,7 @@
 {% if minor_readonly %}<p class="muted">Your guardian or a captain checks you in.</p>
 {% else %}<form method="post" action="{% url 'check_in' s.pk %}" class="stack">{% csrf_token %}
 {% if s.user.under_18 %}{% with adults=s.responsible_adults.all %}{% if adults|length > 1 %}<fieldset><legend>Who is with {{ s.user.display_first }}</legend>{% for a in adults %}<div class="check"><input type="checkbox" name="adult" value="{{ a.pk }}" id="ad-{{ s.pk }}-{{ a.pk }}"{% if forloop.first %} checked{% endif %}><label for="ad-{{ s.pk }}-{{ a.pk }}">{{ a.name }}</label></div>{% endfor %}</fieldset>{% elif adults %}<p class="muted">With {{ adults.0.name }}.</p>{% else %}<p class="msg warning"><span class="lvl">Careful:</span> no responsible adult is named yet. <a href="{% url 'signup_adults' s.pk %}">Name one</a> before checking in.</p>{% endif %}{% endwith %}{% endif %}
-<button class="big" type="submit">Check in</button></form>{% endif %}</section>
+<button class="big" type="submit">{{ s|checkin_label }}</button></form>{% endif %}</section>
 {% endfor %}
 {% if upcoming %}
 <table class="table data"><thead><tr><th scope="col">When</th><th scope="col">Actions</th><th scope="col">Event</th><th scope="col">Position</th><th scope="col">Role</th><th scope="col">State</th></tr></thead><tbody>

@@ -3311,7 +3311,42 @@ slot from one about their own.
 a guardian should "actually see it is for [the minor] and not for me") as proposed there, with
 the first line reworded to read true for the minor as well. *Record:* this addendum.
 
+### A42. FR-113: one tap checks in the whole run of back-to-back slots
+
+**Original (FR-113).** "A member checks in when they arrive for a slot … a single large **Check
+in** button for that slot; one tap, no further page, no confirmation dialog." A member holding
+back-to-back slots had to tap again for each one, each only inside its own window, and was
+reported as not checked in 15 minutes into every slot after the first.
+
+**Decision.**
+- **The run** is the sign-up checked in plus the same member's later sign-ups in the same event
+  whose slot starts exactly when the one before it ends, whatever the position. A canceled slot
+  is not in it, and the first gap ends it.
+- **One tap checks in the run.** The button stays one large button, no dialog; when the run is
+  longer than one slot it names the span, *Check in, 5:00–7:00 PM (2 slots)*, and so does the
+  message after it. Each sign-up gets the time of the tap and who checked it in; one audit row
+  (`signup.checked_in`) lists the run. Only the tapped slot's check-in window applies. A later
+  slot already checked in keeps its own time, and the later slots are not offered a button of
+  their own.
+- **No-show notices** stop for the later slots, since they are checked in. The participation
+  report and hours read them as attended, as any check-in.
+- **Accepted consequence.** The later slots are credited (FR-124) and, for a minor, the adult is
+  recorded as present (FR-64) without anyone being there to check again. A member who leaves
+  without cancelling the rest of the run is no longer flagged; a captain's no-show mark is the
+  only correction (SK, 2026-11-23).
+- **Leaving early** stays as FR-113 has it: the member cancels the rest of the run. A sign-up
+  checked in for a slot that has not started can be given up; once its slot starts, the
+  attendance stays in the record (#251).
+- **Captains** checking someone in from a slot check in the run the same way.
+- **A minor's run** records the chosen responsible adults as present on each slot where one of
+  them is designated (FR-64), matched by member or by name. The run stops at the first slot
+  with none of them named; that slot is checked in on its own, and the message says so.
+
+**Decided** by NAF on 2026-11-21 (private tracker 361: "if you check in for a shift, it should
+check you in for all consecutive shifts"), one tap rather than a second *Check in through …*
+button; built by SK on 2026-11-23. *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39) and 2026-11-23 (A40, A41), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39) and 2026-11-23 (A40 to A42), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

@@ -84,6 +84,14 @@ def twelve_hour(t) -> str:
     return f"{t.hour % 12 or 12}:{t:%M} {'AM' if t.hour < 12 else 'PM'}"
 
 
+def clock_span(start: datetime, end: datetime) -> str:
+    """`5:00–7:00 PM`, the clocks alone in the viewer's zone, for a button that sits under the
+    full time (private tracker 361)."""
+    zone = timezone.get_current_timezone()
+    a, b = twelve_hour(start.astimezone(zone)), twelve_hour(end.astimezone(zone))
+    return f"{a[:-3] if a[-2:] == b[-2:] else a}–{b}"
+
+
 def local(t: datetime, zone=None, year: bool = False) -> str:
     """`Sat, Nov 21, 4:00 PM EST` in `zone`, by default the viewer's (`Sat, Nov 21, 2026, 4:00
     PM EST` with the year)."""
