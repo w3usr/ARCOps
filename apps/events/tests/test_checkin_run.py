@@ -44,7 +44,6 @@ def test_one_post_checks_in_a_back_to_back_run_and_the_button_says_so():
         su.refresh_from_db()
         assert su.checked_in_at and su.checked_in_by == mem
     assert AuditLog.objects.get(action="signup.checked_in").after == {"run": [first.pk, second.pk]}
-    # No "not checked in" notice for the second slot, 20 minutes into it.
     assert notify.notify_no_shows(slots[1].start + timedelta(minutes=20)) == 0
 
 

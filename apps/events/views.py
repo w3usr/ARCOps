@@ -158,7 +158,7 @@ def sign_up(request, slot_id):
         messages.info(request, "You already hold this slot.")
     else:
         record(request.user, "signup.created", su, after={"role": role})
-        name_guardians_on_slot(request.user, su)  # A40
+        name_guardians_on_slot(request.user, su)
         messages.success(
             request, f"Signed up as {role_label(role)} for {when.local(slot.start, year=True)}."
         )
@@ -222,7 +222,7 @@ def cancel_signup(request, signup_id):
     else:
         notify.removed_by_captain(request.user, su, reason)  # FR-58
     role = su.role
-    release_guardian(request.user, su)  # A40
+    release_guardian(request.user, su)
     su.delete()
     from .services import waitlist
 
@@ -279,7 +279,7 @@ def cannot_by_token(request, token):
         )
         notify.member_cancelled(su.user, su, broken)
         event_pk, slot, role = su.slot.event.pk, su.slot, su.role
-        release_guardian(su.user, su)  # A40
+        release_guardian(su.user, su)
         su.delete()
         from .services import waitlist
 
@@ -291,6 +291,8 @@ def cannot_by_token(request, token):
 @login_required
 @require_POST
 def check_in(request, signup_id):
+    """FR-113: check the member in for this slot and the rest of its run (SignUp.checkin_run,
+    private tracker 361). Only this slot's window applies; a minor's adult is named as present."""
     su = get_object_or_404(SignUp, pk=signup_id)
     now = timezone.now()
     if su.user != request.user and not request.user.can_captain(su.slot.event):
@@ -304,8 +306,6 @@ def check_in(request, signup_id):
     if not checkin_window_open(su.slot, now):
         messages.error(request, "Check-in opens 30 minutes before the slot.")
         return back
-    # One tap checks in the run of back-to-back slots (private tracker 361); only the tapped
-    # slot's window counts.
     run = su.checkin_run()
     present, left = [], None
     if (

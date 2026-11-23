@@ -5378,3 +5378,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, tests, documentation. Verified: the 5 new tests pass (a two-slot run checked in by one POST with no not-checked-in notice for the second slot, one button on My schedule and Home; a gap or a canceled slot ends the run; another event's adjacent slot is not in it; a captain checks in the run and the member can still leave a later slot; a minor's run records the adult only where named). The full tools/check.sh passed except three Firefox accessibility tests (Firefox does not launch on this machine; CI runs them) and the signed-PDF test, which passes run directly with Homebrew's libraries on the library path. A self-review raised the hours consequence, now recorded in A42, and a missing Home test, now added.
 - **Human Review Status**: Pending review
 - **Git Hash**: c019f24
+
+## [2026-11-23 15:39 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Comments added in the day's commits (SK): those that restate the code or a nearby docstring removed, docstrings kept as the standard.
+- **Sections/Files Affected**: apps/events/views.py (three bare "# A40" tags; check_in's inline comment made its docstring); apps/events/views_slots.py (two "# A40" tags); apps/events/services/notify.py and waitlist.py (one "# A40" tag each); apps/events/tests/test_checkin_run.py (one comment restating its assert); tools/check.sh (a comment restating the Prettier command).
+- **Nature of Contribution**: Edit (comments only; no behavior changed). Verified: ruff check and format pass; bash -n tools/check.sh passes; the events app's tests pass. Comments that give a reason (a decision, a browser's behavior, a test's choice) were kept, and the CSS and JavaScript comments that only moved with the day's split and formatting were left alone.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

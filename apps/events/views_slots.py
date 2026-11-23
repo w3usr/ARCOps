@@ -276,7 +276,7 @@ def slot_assign(request, pk, slot_id):
     )
     if created:
         record(request.user, "signup.assigned", su, after={"role": role, "user": member.pk})
-        name_guardians_on_slot(request.user, su)  # A40
+        name_guardians_on_slot(request.user, su)
         if member != request.user:
             assigned_by_captain(request.user, su)  # FR-58
         messages.success(request, f"{member.short_name} signed up as {role_label(role)}.")
@@ -331,7 +331,7 @@ def event_bulk(request, pk):
                 continue
             su = SignUp.objects.create(slot=s, user=request.user, role=role, note=note)
             record(request.user, "signup.created", su, after={"role": role, "bulk": True})
-            name_guardians_on_slot(request.user, su)  # A40
+            name_guardians_on_slot(request.user, su)
             done.append(s)
         if done:
             messages.success(

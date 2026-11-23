@@ -18,8 +18,6 @@ step() { printf '\n\033[1;35m==> %s\033[0m\n' "$1"; }
 
 step "Lint and format"
 $PY/ruff check . && $PY/ruff format --check . || fail=1
-# The stylesheets' and scripts' one format (Prettier, pinned; Node runs it, nothing is installed
-# in the repo; .prettierignore leaves the vendored files alone).
 npx --yes prettier@3.6.2 --check static/css static/js static/sw.js || fail=1
 # The templates' lint (djLint, pinned in requirements-dev). Its formatter is not run: on these
 # templates it changes what pages draw (technical addendum A19).
