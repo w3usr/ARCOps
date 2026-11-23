@@ -111,13 +111,18 @@ RADII = {f"var(--r-{t})" for t in ("field", "button", "card")} | {"50%"}
 # The one exception, the navigation's pill (#145; SK, 2026-11-11): its entries, and a switch's
 # choices, whose current one is where you are (#271; SK, 2026-11-12).
 PILL, PILL_RULE = "var(--r-pill)", (".navlist a, .navbtn {", ".switch a {")
-for path in [pathlib.Path("static/css/app.css"), *sorted(pathlib.Path("templates").rglob("*.html"))]:
+for path in [*sorted(pathlib.Path("static/css").glob("*.css")), *sorted(pathlib.Path("templates").rglob("*.html"))]:
     if "email" in path.parts or path.name.endswith("_pdf.html"):
-        continue  # mail and PDFs have their own type; neither loads app.css
-    rule = ""  # the selector of the rule a line sits in
+        continue  # mail and PDFs have their own type; neither loads the stylesheets
+    rule = ""  # the selector of the rule a line sits in, all of its lines joined
+    parts = []  # a selector list's lines before the one with "{"
     for n, line in enumerate(path.read_text().splitlines(), 1):
         if "{" in line:
-            rule = line.strip()
+            rule, parts = " ".join([*parts, line.strip()]), []
+        elif line.rstrip().endswith(","):
+            parts.append(line.strip())
+        else:
+            parts = []
         for m in SIZE.finditer(line):
             if m.group(1).strip() not in SIZES:
                 fail.append(f"{path}:{n}: font-size {m.group(1).strip()}; use one of var(--t-small|body|lede|h2|h1)")

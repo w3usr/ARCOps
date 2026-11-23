@@ -1,0 +1,866 @@
+/* The roster: the grid of slots, its cells, marks and key. */
+
+.when {
+  margin: 0 0 0.25rem;
+  font-size: var(--t-lede);
+}
+.lede {
+  font-size: var(--t-lede);
+}
+.banner {
+  --ic: var(--i-info);
+  --tone: var(--accent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border-radius: var(--r-card);
+  background: var(--tag-neutral);
+  border: 0;
+  margin: 1rem 0;
+}
+/* The icon stands where a message's does: beside the sentence, centered on it while its button sits
+   beside it, level with its first line once the button wraps under it on a phone. */
+.banner::before {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+@media (max-width: 40rem) {
+  .banner::before {
+    top: 0.875rem;
+    transform: none;
+  }
+}
+.banner > p:first-of-type {
+  flex: 1 1 20rem;
+} /* the sentence takes the room; a button or a link stays at the end */
+.banner p,
+.banner form {
+  margin: 0;
+}
+/* A banner is a standing fact, a Note; two are Careful: a draft no member can see yet, and viewing
+   as somebody else, which should keep catching your eye. Read-only is a quiet fact about the
+   account. */
+.banner:is(.draft, .impersonating) {
+  --ic: var(--i-warn);
+  --tone: var(--warn);
+  background: var(--tag-warn);
+}
+.banner.readonly {
+  --tone: var(--muted);
+}
+@media (forced-colors: active) {
+  .msg,
+  .banner,
+  .preview {
+    border: 1px solid CanvasText;
+  }
+  .msg::before,
+  .banner::before,
+  .preview::before {
+    background: CanvasText;
+  }
+}
+/* A standing question wears the message strip, because that is what it reads as. Its buttons
+   sit on the same line as its sentence rather than beneath them. */
+.messages.ask {
+  margin-bottom: 0.5rem;
+}
+.messages.ask .inline {
+  display: inline;
+}
+.messages.ask button {
+  padding: 0.2rem 0.6rem;
+  font-size: var(--t-small);
+  margin-left: 0.25rem;
+}
+/* A standing fact, quieter than a banner and never mistaken for something that just happened. */
+.note {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--r-card);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  margin: 1rem 0;
+  color: var(--fg);
+}
+.note p:first-child {
+  margin-top: 0;
+}
+.note p:last-child {
+  margin-bottom: 0;
+}
+.rosterhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+/* The roster in a panel: its header holds the zones, the switch and the Key; the strip on
+   the band; the table edge to edge; the bulk bar as its footer. */
+.roster-panel {
+  margin-top: var(--s3);
+}
+.roster-panel .rosterhead {
+  margin: 0;
+  align-items: center;
+}
+.rosterhead .zones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+}
+.roster-panel .overview {
+  margin: 0;
+  background: var(--panel-head);
+}
+.roster-panel .roster {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+.roster-panel .bulkbar {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 var(--r-card) var(--r-card);
+  background: var(--panel-head);
+}
+/* The slot dialog's people: rows inside the dialog, flush with its edges. */
+.slot-dialog .rows.people {
+  margin: 0.5rem -0.5rem;
+}
+.slot-dialog .rows.people > li {
+  padding: 0.6rem 0.5rem;
+  align-items: flex-start;
+}
+.slot-dialog .rows.people form.inline {
+  margin: 0;
+}
+.fold-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--r-button);
+  color: var(--fg);
+  font-weight: 700;
+  font-size: var(--t-small);
+}
+.r-fold:hover .fold-more {
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+}
+.rosterhead h2,
+.rosterhead p {
+  margin: 0;
+}
+.legend {
+  font-size: var(--t-small);
+  margin: 0.5rem 0 0.75rem;
+}
+/* The coverage strip beside the key: a line a day, a mark per time span with its state as a
+   symbol as well as a color (FR-62). The key then reads one entry a line. */
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+  gap: var(--s3);
+  align-items: start;
+  margin: 0.5rem 0 0.75rem;
+}
+.overview .legend {
+  margin: 0;
+}
+.overview .legend-label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+.overview .legend li + li::before {
+  content: none;
+}
+/* The key in two columns: each symbol centred in the first, the badge and the words in the second,
+   a wrapped line hanging under the words. Every symbol is 1.25rem tall and sits on the middle of
+   the first 1.5rem line, not on the baseline. */
+.overview .legend ul {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.5rem;
+}
+.overview .legend li {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: start;
+  margin: 0;
+  line-height: 1.5rem;
+}
+.overview .legend li > :is(.sm, .mk) {
+  justify-self: center;
+  margin-top: 0.125rem;
+}
+.overview .legend .what {
+  grid-column: 2;
+}
+.overview .legend .mk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1.25rem;
+  margin: 0;
+  line-height: 1;
+}
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.strip-day {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.strip-label {
+  flex: none;
+  width: 3.5rem;
+  font-size: var(--t-small);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.strip-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1.25rem;
+  font-size: var(--t-small);
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-field);
+  background: var(--surface);
+  color: var(--muted);
+}
+.sm-open {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg);
+}
+.sm-covered {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: var(--tag-ok);
+}
+.sm-needs {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: var(--tag-warn);
+}
+.sm-problem {
+  border-color: var(--bad);
+  color: var(--bad);
+  background: var(--tag-bad);
+}
+/* An hour with no slot, told apart by shape as well as tone: on the air with no slot yet is
+   a dashed box; off the air is a hatched cell with no box at all. Neither is a link. */
+.sm-none {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: var(--bg);
+}
+.sm-off {
+  border-color: transparent;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--line) 0 2px,
+    transparent 2px 5px
+  );
+}
+@media (max-width: 48rem) {
+  .overview {
+    grid-template-columns: 1fr;
+  }
+}
+/* Desktop density: rows a little tighter where a pointer is the usual way in. A slot keeps 44 px, a
+   comfortable target; under 48rem the touch layout keeps its own height. */
+@media (min-width: 48rem) {
+  .roster .r-time,
+  .roster .r-zone {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+  .roster .r-cell,
+  .roster .slot-link {
+    min-height: 2.75rem;
+  }
+  .roster .slot-link {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+  .roster .r-cell > input[type="checkbox"] {
+    top: 0.5rem;
+  }
+}
+/* The key is a labelled list: one line on a wide screen, one entry a line on a phone, where the
+   run-on line was hard to read. */
+.legend-label {
+  font-weight: 700;
+  margin-right: 0.35rem;
+}
+.legend ul {
+  display: inline;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.legend li {
+  display: inline;
+}
+.legend li + li::before {
+  content: " · ";
+}
+@media (max-width: 40rem) {
+  .legend-label {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .legend li {
+    display: block;
+    margin: 0.2rem 0;
+  }
+  .legend li + li::before {
+    content: none;
+  }
+}
+/* The Key behind a ? beside Problems only, opening over the page: a native
+   popover. Without popover support the button and Close go, the key stays in place beside the
+   strip as before; with it the strip has the width to itself. */
+.keybtn {
+  margin-left: 0.35rem;
+} /* the Key's ?, an icon-only button */
+.legend:popover-open {
+  margin: auto;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: var(--popover-shadow);
+}
+.legend:popover-open::backdrop {
+  background: var(--scrim-light);
+}
+.keyclose {
+  display: block;
+  margin-top: 0.75rem;
+}
+@supports selector(:popover-open) {
+  .overview {
+    grid-template-columns: 1fr;
+  }
+}
+@supports not selector(:popover-open) {
+  .keybtn,
+  .keyclose {
+    display: none;
+  }
+}
+.msglist {
+  list-style: none;
+  padding-left: 0;
+}
+.health .tag {
+  margin-right: 0.25rem;
+}
+
+.roster {
+  --cols: 1;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.roster .r-head,
+.roster .r-row {
+  display: grid;
+  grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr));
+}
+.roster.grid .r-head,
+.roster.grid .r-row {
+  grid-template-columns: 9.5rem repeat(auto-fit, minmax(0, 1fr));
+}
+.roster.list .r-row {
+  grid-template-columns: 11rem minmax(0, 1fr);
+}
+/* A second zone's column; unused while pages show the viewer's zone only (A38). */
+.roster.grid.twozones .r-head,
+.roster.grid.twozones .r-row {
+  grid-template-columns: 8rem 9.5rem repeat(auto-fit, minmax(0, 1fr));
+}
+.roster.list.twozones .r-row {
+  grid-template-columns: 11rem 11rem minmax(0, 1fr);
+}
+.roster .r-zone {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--t-small);
+  line-height: 1.25;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.roster .r-head .r-zone {
+  padding: 0.5rem 0.75rem;
+}
+.roster .r-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  border-bottom: 2px solid var(--line);
+  font-size: var(--t-small);
+  color: var(--muted);
+  font-weight: 700;
+}
+.roster .r-head > div {
+  padding: 0.5rem 0.75rem;
+}
+.roster .r-pos {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.roster .r-pos .loc {
+  font-weight: 400;
+}
+.roster .r-dayhead {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 0.35rem 0.75rem;
+  font-weight: 700;
+  position: sticky;
+  top: 2.4rem;
+  z-index: 1;
+}
+.roster.list .r-dayhead,
+.roster .r-dayhead {
+  top: 0;
+}
+.roster .daysel {
+  gap: 0.6rem;
+}
+.roster .daysel span {
+  font-weight: 700;
+}
+.roster .r-row {
+  border-top: 1px solid var(--line);
+}
+.roster .r-day .r-row:first-of-type {
+  border-top: 0;
+}
+.roster .r-time {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  line-height: 1.25;
+}
+.roster .r-time .lead {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.roster .r-time .tag {
+  align-self: flex-start;
+  margin-top: 0.2rem;
+}
+.roster .kind-setup,
+.roster .kind-breakdown {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.roster .r-cell {
+  position: relative;
+  border-left: 1px solid var(--line);
+  min-height: 3.4rem;
+  display: flex;
+  flex-direction: column;
+}
+/* The link fills its cell, so its tone line and its target run the row's full height where the
+   time beside it is taller, as on a setup or breakdown row. */
+.roster .r-cell > .slot-link {
+  flex: 1;
+}
+.roster .r-cell.empty {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--line) 50%, transparent) 6px 7px
+  );
+}
+.roster .r-cell > input[type="checkbox"] {
+  position: absolute;
+  left: 0.6rem;
+  top: 0.7rem;
+  z-index: 1;
+}
+.roster .slot-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem 0.5rem 2.3rem;
+  min-height: 3.4rem;
+  color: inherit;
+  text-decoration: none;
+  border-left: 4px solid transparent;
+}
+.roster.noselect .slot-link {
+  padding-left: 0.75rem;
+} /* no tick-box to make room for */
+.roster .tone-open .slot-link {
+  border-left-color: var(--accent);
+}
+.roster .tone-ok .slot-link {
+  border-left-color: var(--ok);
+}
+.roster .tone-warn .slot-link {
+  border-left-color: var(--warn);
+}
+.roster .tone-bad .slot-link {
+  border-left-color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 8%, transparent);
+}
+.roster .tone-muted .slot-link {
+  border-left-color: var(--line);
+  color: var(--muted);
+}
+.roster .r-cell.mine {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.roster .people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.6rem;
+}
+.roster .person {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.roster .person .role {
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+/* A credential, the control operator, or a sign-up's state, as a mark beside the role (FR-65); its
+   word is there for a screen reader, and the key gives it for everyone else. */
+.mk {
+  display: inline-block;
+  margin-left: 0.15rem;
+  padding: 0 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-field);
+  font-size: var(--t-small);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.mk.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.roster .you {
+  font-size: var(--t-small);
+  font-weight: 700;
+  color: var(--accent);
+  align-self: center;
+}
+.roster .state {
+  font-size: var(--t-small);
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.roster .state .word {
+  font-weight: 700;
+}
+.roster .tone-open .state .word {
+  color: var(--accent);
+}
+.roster .tone-ok .state .word {
+  color: var(--ok);
+}
+.roster .tone-warn .state .word {
+  color: var(--warn);
+}
+.roster .tone-bad .state .word {
+  color: var(--bad);
+}
+.roster .state small {
+  color: var(--muted);
+}
+.roster .r-where {
+  font-size: var(--t-small);
+  color: var(--muted);
+}
+.roster.grid .r-where {
+  display: none;
+} /* the column header names it, until the columns stack */
+/* A folded run of open hours: one row across every position, its hours hidden after it (the
+   [hidden] rule above, which is !important, outranks .r-row's display: grid). */
+.roster .r-foldcell {
+  grid-column: 2 / -1;
+}
+.roster.twozones .r-foldcell {
+  grid-column: 3 / -1;
+}
+.roster .fold-link {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 0.6rem;
+}
+
+.bulkbar {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-raised);
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+}
+.bulkbar input,
+.bulkbar select {
+  width: auto;
+  max-width: 18rem;
+}
+html.js .bulkbar:not(.active) {
+  display: none;
+}
+
+.slot-dialog {
+  border: 0;
+  border-radius: var(--r-card);
+  padding: 1.25rem 1.5rem 1.5rem;
+  max-width: min(40rem, 94vw);
+  width: 100%;
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: var(--shadow);
+}
+.slot-dialog::backdrop {
+  background: var(--scrim);
+}
+.slot-dialog .dialog-close {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+}
+.slot-dialog h1,
+.slotpage h1 {
+  font-size: var(--t-h2);
+}
+.slot-dialog h2,
+.slotpage h2 {
+  font-size: var(--t-lede);
+  margin-top: 1.1rem;
+}
+.slot-state {
+  font-weight: 700;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--r-field);
+  display: inline-block;
+}
+.slot-state.tone-open {
+  background: var(--surface);
+  color: var(--accent);
+}
+.slot-state.tone-ok {
+  background: var(--tag-ok);
+}
+.slot-state.tone-warn {
+  background: var(--tag-warn);
+}
+.slot-state.tone-bad {
+  background: var(--tag-bad);
+}
+.slot-state.tone-muted {
+  background: var(--surface);
+  color: var(--muted);
+}
+.slotpage {
+  max-width: 40rem;
+}
+/* One field width on a slot: a row of fields is as wide as one field, its fields sharing it. */
+.slot-dialog .row,
+.slotpage .row {
+  max-width: 28rem;
+}
+.slot-dialog .row > *,
+.slotpage .row > * {
+  flex-basis: 8rem;
+}
+/* Manage's forms: related fields in a group under a quiet heading, not a box in a box;
+   whole numbers in boxes sized to what they hold; and what the generator will make, set apart
+   above the buttons. */
+fieldset.group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+fieldset.group > legend {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+fieldset.group > .row > * {
+  flex: 0 0 auto;
+}
+.slot-dialog fieldset.group > .row {
+  max-width: none;
+} /* a group's few small boxes share a line */
+input.num {
+  width: calc(var(--num, 5) * 1ch + 1.6rem);
+}
+input.num[size="1"],
+input.num[size="2"] {
+  --num: 3;
+}
+/* What the generator will make, drawn as a Note (it had a thick left edge in
+   the club's color): the neutral tint, no border, the info icon beside its first, larger line. */
+.preview {
+  --ic: var(--i-info);
+  --tone: var(--accent);
+  position: relative;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 0;
+  border-radius: var(--r-card);
+  background: var(--tag-neutral);
+}
+.preview::before {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+}
+.preview:empty {
+  display: none;
+}
+.preview strong {
+  display: block;
+  font-size: var(--t-lede);
+}
+
+@media (max-width: 48rem) {
+  /* Stacked, each cell names its position (FR-95), and the header row stays for a screen
+     reader, hidden as a 1px box rather than taken away (FR-116). */
+  .roster.grid .r-head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .roster.grid .r-where {
+    display: block;
+  }
+  .roster .r-head,
+  .roster .r-row,
+  .roster.grid .r-row,
+  .roster.list .r-row,
+  .roster.grid.twozones .r-row,
+  .roster.list.twozones .r-row {
+    grid-template-columns: 1fr;
+  }
+  .roster .r-time {
+    flex-direction: row;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding-bottom: 0.25rem;
+  }
+  .roster .r-cell {
+    border-left: 0;
+    border-top: 1px dashed var(--line);
+  }
+  .roster .r-cell.empty {
+    display: none;
+  }
+  .roster .r-foldcell,
+  .roster.twozones .r-foldcell {
+    grid-column: auto;
+  }
+  .roster .r-zone {
+    padding: 0 0.75rem 0.35rem;
+  }
+  .roster .r-dayhead {
+    top: 0;
+  }
+}
+@media print {
+  .roster .r-row[hidden] {
+    display: grid !important;
+  }
+  .roster .r-fold {
+    display: none;
+  } /* every slot, on paper (FR-65, FR-85) */
+  .sidenav,
+  .topbar,
+  footer.site,
+  .bulkbar,
+  .legend,
+  .zones a,
+  .keybtn,
+  .banner form,
+  .page-head .actions,
+  .crumbs,
+  .roster input[type="checkbox"],
+  .skip {
+    display: none !important;
+  }
+  .shell {
+    display: block;
+  }
+  .content {
+    padding: 0;
+    max-width: none;
+  }
+  .roster {
+    border-color: #999;
+  }
+  .roster .slot-link {
+    padding-left: 0.5rem;
+  }
+  .roster .r-head,
+  .roster .r-dayhead {
+    position: static;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

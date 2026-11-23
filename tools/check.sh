@@ -18,6 +18,8 @@ step() { printf '\n\033[1;35m==> %s\033[0m\n' "$1"; }
 
 step "Lint and format"
 $PY/ruff check . && $PY/ruff format --check . || fail=1
+# The stylesheets' one format (Prettier, pinned; Node runs it, nothing is installed in the repo).
+npx --yes prettier@3.6.2 --check static/css || fail=1
 
 step "Repository guards"
 for g in check_club_neutral check_no_requirement_ids check_interface; do

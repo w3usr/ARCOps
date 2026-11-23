@@ -925,7 +925,41 @@ when the check runs.
 **Decided by** SK on 2026-11-19, building private tracker 292 ("yes, build it and try it on dev")
 on the design set out to him, including both choices above; on production the same day.
 
+### A16. TR-5: the stylesheet as eleven files, one declaration per line
+
+**Original (TR-5, with A8).** "CSS: a small semantic base stylesheet plus project CSS", which A8
+made `app.css`: one hand-written file. By 2026-11-23 it was 1,133 lines, most rules written on one
+line, and nearly a third of it comments recording who decided what and when.
+
+**Decision.**
+- **Eleven files in `static/css/`**, cut at the sections the file already had: `tokens`, `base`,
+  `shell`, `signed-out`, `footer`, `components`, `forms`, `tables`, `manage`, `roster`, `pages`.
+  `templates/base.html` links them in that order, which is the cascade's order, so no rule moved
+  relative to another. Each file opens with a line saying what it holds; `tokens.css` keeps the
+  overview.
+- **Formatted by Prettier** (3.6.2, pinned), one declaration per line. `tools/check.sh` and CI
+  check it through `npx`; nothing is added to the repository's dependencies and nothing is built.
+- **Comments give the reason, not the history:** issue numbers, dates and who decided are left to
+  git and to these addenda. Pointers to requirements and to `docs/INTERFACE.md` stay.
+- **Named in `tokens.css`, where they were numbers:** the stacking levels (`--z-raised`,
+  `--z-sticky`, `--z-overlay`, `--z-drawer`, `--z-skip`), the scrims behind a drawer or dialog
+  (`--scrim`, `--scrim-light`), the Key's shadow (`--popover-shadow`) and one duration
+  (`--motion`). One level moved: a `[data-tip]` hint now stacks with the other tooltips, over the
+  sticky top bar rather than level with it. Spacing has no scale yet: about fifty distinct values,
+  which a scale would snap to a few, moving things by a pixel or two, is separate work.
+- **Not adopted:** SCSS or another preprocessor, since custom properties already carry the design
+  tokens and a compiler would add a build step to every deploy; native CSS nesting, which phones
+  older than Safari 17.2 ignore; and cascade layers, which would let a later file beat a more
+  specific rule in an earlier one and so change what pages draw. Either can be a deliberate change
+  of its own.
+- **Verified unchanged:** the files joined in order are the old stylesheet token for token once
+  comments are set aside, and every element's computed style on every page of the demo, for each
+  role, at 390, 700, 860 and 1280 px in light and dark, and in print and forced colors at 1280 px,
+  matched the old stylesheet's.
+
+**Decided by** SK on 2026-11-23, choosing this over SCSS ("I like what you suggested").
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13) and 2026-11-19 (A14, A15), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

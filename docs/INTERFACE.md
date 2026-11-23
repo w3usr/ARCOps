@@ -62,7 +62,7 @@ in it; the club's zone stands in until it has.
 
 **Everything that does something is a button that looks like one** (SK, 2026-11-06, #221: D2,
 D3, D6). Underlined words read as text, and a reader should never have to scrub the screen to find
-what can be clicked (Nielsen Norman Group). The vocabulary is shadcn/ui's, written into `app.css`
+what can be clicked (Nielsen Norman Group). The vocabulary is shadcn/ui's, written into the stylesheets in `static/css/`
 by hand; the library itself is React and is not used.
 
 | Style | Class | Use |
@@ -402,7 +402,7 @@ One family, served from this site: **Atkinson Hyperlegible Next**, in two weight
   text keeps the proportional figures.
 - **Two weights, no more:** 400 and 700. Labels are 400; headings, names that lead a row, and a
   button's words are 700.
-- **Five sizes, no more** (SK, 2026-10-30), each a token in `app.css`:
+- **Five sizes, no more** (SK, 2026-10-30), each a token in `static/css/tokens.css`:
 
   | Token | Size | For |
   |---|---|---|
@@ -460,7 +460,7 @@ tab. The step bar stays on Manage; it keeps its own state words beside the heade
 
 ## Material 3, in our terms
 
-Material 3 is the design approach, written into `app.css` by hand; none of Google's code is
+Material 3 is the design approach, written into `static/css/` by hand; none of Google's code is
 used (technical addendum A8). Its roles, by our names:
 
 | Material 3 | Here |

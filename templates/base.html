@@ -12,12 +12,23 @@ footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment 
 <link rel="manifest" href="{% url 'manifest' %}">
 {% comment %}htmx reads its settings here, so no inline script is needed under script-src 'self'.
 No eval (no hx-on, no js: values), no scripts in a swapped response, no <style> of its own (the
-indicator rules are in app.css), requests to this site only, and no copies of pages in
+indicator rules are in static/css), requests to this site only, and no copies of pages in
 localStorage, where they would keep member names and rosters (technical addendum A7).{% endcomment %}
 <meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false,"historyCacheSize":0,"selfRequestsOnly":true}'>
 {% if club.branding.favicon %}<link rel="icon" href="{{ club.branding.favicon }}">{% endif %}
 {% if club.branding.apple_touch_icon %}<link rel="apple-touch-icon" href="{{ club.branding.apple_touch_icon }}">{% endif %}
-<link rel="stylesheet" href="{% static 'css/app.css' %}">
+{# In cascade order; each file says on its first line what it holds. #}
+<link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/shell.css' %}">
+<link rel="stylesheet" href="{% static 'css/signed-out.css' %}">
+<link rel="stylesheet" href="{% static 'css/footer.css' %}">
+<link rel="stylesheet" href="{% static 'css/components.css' %}">
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+<link rel="stylesheet" href="{% static 'css/tables.css' %}">
+<link rel="stylesheet" href="{% static 'css/manage.css' %}">
+<link rel="stylesheet" href="{% static 'css/roster.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages.css' %}">
 {# The club's color, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
 <style>:root { --brand: {{ club.branding.accent }}; }</style>
 {# Restores the remembered sidebar state before first paint, so it never flashes open. #}

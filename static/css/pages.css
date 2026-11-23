@@ -1,0 +1,804 @@
+/* Page by page: two-zone times, events, messages, levels, the stepper, confirmations, folds. */
+
+.when1,
+.when2 {
+  display: block;
+  line-height: 1.3;
+}
+/* The face's own figures are proportional, so 11:11Z is narrower than 20:09Z. Every digit the
+   same width where numbers are read down a column or against each other: times and tables. */
+.when,
+.when1,
+.when2,
+td {
+  font-variant-numeric: tabular-nums;
+}
+.when2 {
+  font-size: var(--t-small);
+}
+td .when1,
+th .when1 {
+  font-weight: 700;
+}
+.eventcards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+/* The events list in panels: each event a row with a date tile, not a card of its own. */
+.panel > .eventcards {
+  display: block;
+}
+.panel .eventcard {
+  border: 0;
+  border-radius: 0;
+  padding: 0.85rem 1.25rem;
+  background: none;
+} /* centred like every row */
+.panel .eventcard + .eventcard {
+  border-top: 1px solid var(--line);
+} /* the rows' divider, which border: 0 above had taken away */
+.datetile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  padding: 0.3rem 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-button);
+  background: var(--panel-head);
+  line-height: 1.1;
+  flex: none;
+}
+.datetile .d {
+  font-weight: 700;
+  font-size: var(--t-lede);
+}
+.datetile .m {
+  font-size: var(--t-small);
+  color: var(--muted);
+}
+.covline {
+  margin: 0.4rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.panel.quiet {
+  background: var(--panel-head);
+}
+/* Messages and Announcements: each card a row of one panel, divided, not boxed. */
+.msglist.panel {
+  list-style: none;
+  padding: 0;
+}
+:is(.msglist.panel > li, .msgpanel > details).card {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 0.85rem 1.25rem;
+}
+:is(.msglist.panel > li + li, .msgpanel > details + details).card {
+  border-top: 1px solid var(--line);
+}
+.msglist .unread summary strong {
+  font-weight: 700;
+}
+.panel.quiet .eventcard-title {
+  font-size: var(--t-body);
+}
+.eventcard {
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  padding: 0.85rem 1rem;
+  background: var(--panel);
+}
+.eventcard-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.eventcard-title {
+  font-weight: 700;
+  font-size: var(--t-lede);
+  text-decoration: none;
+} /* a card's title */
+.eventcard-title:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
+.eventcard .when {
+  margin: 0.35rem 0 0;
+  font-size: var(--t-body);
+}
+
+/* FR-108: unread count in the sidebar; FR-82: unread rows in My messages */
+.badge {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.4em;
+  border-radius: var(--r-card);
+  font-size: var(--t-small);
+  font-weight: 700;
+  text-align: center;
+  background: var(--accent);
+  color: var(--accent-fg);
+  margin-left: 0.35em;
+} /* the theme's accent pair: --brand on dark was 1.5:1 */
+/* The dot is for the eye; "/ ''" keeps it from a screen reader, which hears the hidden "Unread:"
+   before the subject instead (FR-62). */
+.msglist .unread summary strong::before {
+  content: "● ";
+  content: "● " / "";
+  color: var(--accent);
+} /* --accent: --brand was 1.5:1 on dark */ /* the first for a browser without the second */
+.table-wrap {
+  overflow-x: auto;
+  position: relative;
+} /* the containing block for what is
+   positioned in a cell (a sort link's screen-reader words), so it scrolls with the table instead
+   of widening the page: Access rosters scrolled sideways on CI's wider fonts. */
+
+/* FR-95: nothing forces a phone to scroll sideways. Long tokens (feed URLs, keys, JSON) wrap. */
+code,
+.copyrow code,
+.kv dd,
+.helptext {
+  overflow-wrap: anywhere;
+}
+/* Not max-width: 100% for all three: after the 28rem cap above, that would undo it and run every
+   text field the full width of the page. */
+textarea {
+  max-width: 100%;
+}
+input:not([type="checkbox"]):not([type="radio"]),
+select {
+  max-width: min(28rem, 100%);
+}
+pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.brand-preview {
+  height: 48px;
+  max-width: 12rem;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-field);
+  padding: 0.2rem;
+}
+
+/* The levels ladder: each one named, described in a line, with what it can do underneath. */
+.levels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.levels > li {
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--line);
+}
+.levels > li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.levels > li:last-child {
+  padding-bottom: 0;
+}
+.levels .check {
+  gap: var(--s1) var(--s2);
+  flex-wrap: wrap;
+}
+/* The level you act at now is where you are: the soft fill and the bold label, it alone. */
+.levels > li.current {
+  background: var(--accent-soft);
+  border-radius: var(--r-card);
+  padding: var(--s2);
+  margin-inline: calc(-1 * var(--s2));
+} /* the fill reaches out; the radio stays in line */
+.levels > li.current label {
+  font-weight: 700;
+  color: var(--accent-soft-fg);
+}
+.levels > li.current + li {
+  border-top: 0;
+}
+.levels .helptext {
+  margin: var(--s1) 0 0 1.7rem;
+}
+.levels details {
+  margin-left: 1.7rem;
+}
+.levels summary {
+  font-size: var(--t-small);
+}
+
+/* One address per block: the address, then what it does in words, then the actions, rather than a
+   row of badges, buttons and links that reads as noise. */
+.addresses-list {
+  list-style: none;
+  padding-left: 0;
+}
+.addresses-list > li {
+  margin: 0;
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--line);
+}
+.addresses-list > li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.addresses-list > li:last-child {
+  padding-bottom: 0;
+}
+.addresses-list .address {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.addresses-list .addr-state {
+  margin: var(--s1) 0 0;
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+.addresses-list .addr-state .needs {
+  color: var(--warn);
+  font-weight: 700;
+}
+.addresses-list .addr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1) var(--s3);
+  margin: var(--s1) 0 0;
+}
+.addresses-list .addr-actions:empty {
+  display: none;
+}
+/* Django renders a multiple-checkbox field as a <ul>; it wants no bullets and no indent. */
+.checkset > ul {
+  list-style: none;
+  margin: var(--s1) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+.checkset > ul li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.checkset > ul label {
+  display: inline;
+  font-weight: 400;
+  margin: 0;
+}
+.checkset > ul input {
+  width: 1.15rem;
+}
+/* Removing something in place: the confirmation is the disclosure, so it needs no second page
+   and still works with JavaScript turned off. */
+/* A sortable column heading. The whole heading is the control, and the arrow shows only on the
+   column in force; aria-sort on the th tells a screen reader the same thing. */
+.sortlink {
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+.sortlink:hover {
+  text-decoration: underline;
+}
+.sortlink.here {
+  color: var(--accent);
+}
+.sortlink .arrow {
+  font-size: var(--t-small);
+}
+/* A phone number broken across two lines reads as two numbers, and it is the one column here
+   somebody copies by eye to dial. */
+.table td[data-label="Phone"],
+.table td[data-label="Callsign"] {
+  white-space: nowrap;
+}
+@media (max-width: 40rem) {
+  .table td[data-label="Phone"] {
+    white-space: normal;
+  }
+}
+
+/* An empty state names what belongs there and how it gets there. Quiet, but not so quiet the
+   reader takes it for a rendering fault. */
+.empty {
+  color: var(--muted);
+}
+td.empty {
+  padding: var(--s3) var(--s2);
+}
+li.empty {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+
+/* The count of who an announcement reaches, with the control that counts again beside it. */
+.note.recipients {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+.note.recipients p {
+  margin: 0;
+  min-width: 0;
+}
+
+/* Setting an event up, as a stepper on the canvas. Round 24px marks joined by a 1px line. The step
+   you are on is the one filled mark, in the club's color, its name bold. Done: a green outline and
+   check. Next: a dark outline and a bold word. To do: a gray outline. Not open yet: dashed. Each
+   keeps its word. */
+.stages {
+  margin: var(--s1) 0 var(--s4);
+}
+.stages ol {
+  list-style: none;
+  display: flex;
+  gap: 0;
+  margin: 0 -0.5rem;
+  padding: 0;
+}
+.stages ol > li {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.stages ol > li:last-child {
+  flex: 0 1 auto;
+}
+.stages ol > li:not(:last-child)::after {
+  content: "";
+  flex: 1 1 1rem;
+  min-width: 1rem;
+  height: 1px;
+  margin: 0 0.25rem;
+  background: var(--line-strong);
+}
+.stages .cell {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: var(--r-button);
+  color: var(--fg);
+  text-decoration: none;
+}
+.stages .mk {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  font-size: var(--t-small);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--muted);
+}
+.stages .txt {
+  min-width: 0;
+}
+.stages .nm {
+  display: block;
+  font-size: var(--t-small);
+  font-weight: 400;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.stages .st {
+  display: block;
+  font-size: var(--t-small);
+  line-height: 1.3;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.stages .done .mk {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.stages .next .mk {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+.stages .next .st {
+  color: var(--fg);
+  font-weight: 700;
+}
+.stages .later .cell {
+  color: var(--muted);
+}
+.stages .later .mk {
+  border-style: dashed;
+}
+.stages .cell[aria-current] .mk {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+.stages .cell[aria-current] .nm {
+  color: var(--fg);
+  font-weight: 700;
+}
+/* The optional steps as Material 3's outlined chips: 32px, 8px corners, a 1px
+   outline at 3:1, 14px at 400. The whole chip is the link, its state inside it. The one you are on:
+   the sidebar's soft fill, the outline kept, the name bold. */
+.stages .opt {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: var(--s2) 0 0;
+  padding: 0;
+  font-size: var(--t-small);
+}
+.stages .opt::before {
+  content: "Optional";
+  content: "Optional" / "";
+  color: var(--muted);
+  margin-right: 0.25rem;
+} /* the list is already named Optional */
+.stages .opt li {
+  flex: none;
+}
+.stages .opt a {
+  display: inline-block;
+  line-height: 1.875rem;
+  padding: 0 1rem; /* 30px and the outline: 32px. Inline-block keeps "Name: state" one run */
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-card);
+  color: var(--fg);
+  font-weight: 400;
+  text-decoration: none;
+}
+.stages .opt a:has(> .icon) {
+  padding-left: 0.5rem;
+}
+.stages .opt a > .icon {
+  margin-right: 0.5rem;
+  vertical-align: -0.2rem;
+  color: var(--ok);
+}
+.stages .opt .st {
+  display: inline;
+  color: var(--muted);
+}
+.stages .opt a[aria-current] {
+  background-color: var(--accent-soft);
+  font-weight: 700;
+}
+.stages .opt a[aria-current] .st {
+  font-weight: 400;
+}
+@media (forced-colors: active) {
+  .tabs a[aria-current]::after {
+    background: Highlight;
+  }
+  .stages .opt a[aria-current] {
+    border-width: 2px;
+    line-height: 1.75rem;
+  }
+}
+/* A phone: the tabs share the width without icons. The steps stay one strip: the step you are on
+   keeps its name and word, the next step its word (and its name on an optional step); the rest are
+   marks, their words read aloud. */
+@media (max-width: 40rem) {
+  .tabs a {
+    flex: 1 1 0;
+    padding: 0 0.5rem;
+  }
+  .tabs a .icon {
+    display: none;
+  }
+  .tabs a[aria-current]::after {
+    left: 0.5rem;
+    right: 0.5rem;
+  }
+  .stages ol {
+    margin-inline: 0;
+  }
+  .stages ol > li:not(:last-child)::after {
+    flex: 1 1 0;
+    min-width: 0.25rem;
+    margin: 0 0.125rem;
+  }
+  .stages .cell {
+    gap: 0.5rem;
+    padding: 0.25rem;
+  }
+  .stages ol > li:not(.next):not(:has([aria-current])) .txt,
+  .stages ol:has([aria-current]) > li.next:not(:has([aria-current])) .nm {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .stages .opt::before {
+    flex-basis: 100%;
+  }
+}
+/* The Publish step's check: what each step holds, its Change link at the end of the row;
+   a required step not done in the warning color and bold, so not by color alone. */
+.dl.summary dd {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--s3);
+}
+.dl.summary dd.missing > span {
+  color: var(--warn);
+  font-weight: 700;
+}
+/* One step, one column: sections one under another, prose at a readable measure. */
+.stage p,
+.stage .helptext {
+  max-width: 34rem;
+} /* about 80 characters of this face */
+/* Limits and the like: short numbers under long labels read better one a line. */
+.stage .stack select {
+  width: auto;
+  min-width: 10rem;
+}
+.stage-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2) var(--s3);
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+/* Everything that cannot be undone, in one place at the foot of the page, marked as such. */
+.card.dangerzone {
+  border-color: var(--bad);
+}
+.card.dangerzone > h2 {
+  color: var(--bad);
+  margin-top: 0;
+}
+/* Each act a row: its name and a line on what it does, and on the right the button that opens
+   its confirmation. A phone puts the button under the words. */
+.dz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s1) var(--s3);
+}
+.dz-row > div {
+  flex: 1 1 18rem;
+}
+.dz-row h3 {
+  margin: 0;
+  font-size: var(--t-body);
+}
+.dz-row p {
+  margin: 0.2rem 0 0;
+}
+.card.dangerzone > :is(.dz-row, dialog) + .dz-row {
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+/* A destructive act's confirmation, in a dialog over the page (docs/INTERFACE.md): what is lost,
+   the reason, and the safe choice before the red one. The button opens it with invoker commands
+   (commandfor), so it needs no script; app.js does the same for a browser older than late 2025. */
+.confirm-dialog {
+  max-width: min(32rem, 94vw);
+}
+dialog.slot-dialog:modal {
+  margin: auto;
+} /* centered, even as a card's last child, whose margin a card zeroes */
+.slot-dialog > h2:first-child {
+  margin-top: 0;
+  padding-right: 2rem;
+}
+/* One header and footer for every confirmation: its question as a header band over a rule,
+   and its choices as a footer band, the safe one first and the primary at the right. The dialog's
+   own padding is 1.25rem 1.5rem 1.5rem; the bands reach its edges. */
+.confirm-dialog > h2:first-child {
+  margin: -1.25rem -1.5rem 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s1);
+  margin-top: var(--s2);
+}
+.confirm-dialog .confirm-actions {
+  margin: var(--s3) -1.5rem -1.5rem;
+  padding: 0.85rem 1.5rem;
+  border-top: 1px solid var(--line);
+  background: var(--panel-head);
+  border-radius: 0 0 var(--r-card) var(--r-card);
+}
+.confirm-dialog {
+  overflow: hidden;
+}
+
+/* Something more to read, folded: one look everywhere. A chevron in the action color that turns
+   as it opens, and what opens set in under a thin rule, so it reads as belonging to its line. */
+details:not(.filter) > summary {
+  list-style: none;
+  cursor: pointer;
+  width: fit-content;
+  font-weight: 700;
+  border-radius: var(--r-field);
+  padding: 0.15rem 0.4rem;
+  margin-left: -0.4rem;
+} /* room for the state layer; the text stays put */
+details:not(.filter) > summary::-webkit-details-marker {
+  display: none;
+}
+details:not(.filter) > summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin: 0 0.6em 0.15em 0.15em;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(-45deg);
+}
+details[open]:not(.filter) > summary::before {
+  transform: rotate(45deg);
+  margin-bottom: 0.3em;
+}
+details:not(.filter, .inline) {
+  margin-block: var(--s2);
+}
+/* Manage this slot: its heading is the summary, on the chevron's line. */
+.manage-slot > summary > h2 {
+  display: inline;
+  margin: 0;
+}
+.manage-slot[open] > summary {
+  margin-bottom: var(--s2);
+}
+details[open]:not(.filter, .card, .msglist details) > :not(summary) {
+  margin-left: 0.35rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--line);
+}
+/* A whole message or announcement folded into its card: the summary is its heading line. */
+details[open]:is(.card, .msglist details) > :not(summary) {
+  margin-left: 1.25rem;
+}
+details:is(.card, .msglist details) > summary {
+  width: auto;
+}
+.msglist details {
+  margin: 0;
+}
+/* Adding an address: the field and its button sit on one line, and stack on a phone. */
+.row-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.row-form label {
+  display: block;
+  font-size: var(--t-small);
+}
+.row-form input {
+  min-width: 16rem;
+}
+
+/* Approve and Decline read as one choice, so they sit on one row; the reason travels with the
+   button it belongs to. They stack on a phone, and Approve stays first either way. */
+.decide-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s1) var(--s3);
+  margin-top: var(--s1);
+}
+
+/* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a
+   phone inside its own wrapper, so the page itself never does (FR-95). */
+.tablewrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.table.grid th[scope="row"] {
+  text-align: left;
+  font-weight: 400;
+}
+.table.grid td.tick {
+  text-align: center;
+}
+.table.grid td.tick input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* The level a session is acting at, under the name in the sidebar. A link, because that is where
+   it is changed (apps/accounts/acting.py). */
+a.whoami {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+}
+.whoami a {
+  color: inherit;
+  text-decoration: none;
+}
+.whoami a:hover {
+  text-decoration: underline;
+}
+/* The level under the name: smaller, and no dimmer than the muted color it already uses.
+   An opacity on top of that took it below 4.5:1 against the sidebar. */
+.whoami .level {
+  display: block;
+  font-size: var(--t-small);
+}
+
+/* Move, split, merge on a slot's page: three small forms, each under its own heading, apart. */
+.reshape {
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+.reshape h3 {
+  margin: 0;
+  font-size: var(--t-body);
+}
+.reshape .helptext {
+  margin: 0;
+}
+
+/* A roster mark says what it means on hover: the words a screen reader
+   already reads from its .sr-only text, shown for the eye. The marks sit inside the slot's link,
+   so they take no focus of their own; the Key and the slot's dialog say the same in words. */
+[data-tip] {
+  position: relative;
+}
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--r-field);
+  background: var(--fg);
+  color: var(--panel);
+  font-size: var(--t-small);
+  font-weight: 400;
+  pointer-events: none;
+  z-index: var(--z-overlay); /* a tooltip, as an icon button's */
+}
+
+/* The "Times in" switch app.js puts on a form with time boxes (A35): two radios on one line. */

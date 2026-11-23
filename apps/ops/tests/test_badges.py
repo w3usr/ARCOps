@@ -1,5 +1,5 @@
 """Badges (#226): every tone's word reads at 4.5:1 on its fill, light and dark, measured from the
-colors app.css draws; and the state-to-tone map gives a class for each state it names."""
+colors the stylesheets draw; and the state-to-tone map gives a class for each state it names."""
 
 import re
 from pathlib import Path
@@ -8,7 +8,7 @@ from apps.events.models import Event
 from apps.ops.config import contrast, mix_oklab
 from apps.ops.templatetags.badges import TONES, tone
 
-CSS = (Path(__file__).resolve().parents[3] / "static" / "css" / "app.css").read_text()
+CSS = (Path(__file__).resolve().parents[3] / "static" / "css" / "tokens.css").read_text()
 LIGHT, DARK = CSS.split("@media (prefers-color-scheme: dark)", 1)
 
 

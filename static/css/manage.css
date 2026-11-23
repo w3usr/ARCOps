@@ -1,0 +1,65 @@
+/* Management pages. */
+
+/* Every page's header with actions: its heading, and its actions at the right, the primary last.
+   1rem below, the same as a heading on its own, so every page starts its content at one height. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+  margin-bottom: 1rem;
+}
+.page-head h1 {
+  margin: 0;
+}
+.table.data tbody th[scope="row"] {
+  font-weight: 400;
+  text-align: left;
+}
+.crumbs {
+  margin: 0 0 0.5rem;
+  font-size: var(--t-small);
+  color: var(--muted);
+}
+.crumbs a {
+  text-decoration: none;
+} /* underlined only under the pointer and on focus */
+.crumbs a:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
+.cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+.cols > .card,
+.cols > .stack > .card {
+  margin: 0;
+}
+.searchrow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+/* The search box grows; a checkbox inside a filter panel is not a search box, so it is not
+   stretched across its row, which would leave the labels ragged down the right edge. */
+.searchrow > input[type="search"] {
+  max-width: 24rem;
+  flex: 1 1 14rem;
+}
+.directory {
+  columns: 14rem;
+  list-style: none;
+  padding: 0;
+}
+.directory li {
+  padding: 0.25rem 0;
+  break-inside: avoid;
+}
+h3 {
+  font-size: var(--t-lede);
+  margin: 1.25rem 0 0.5rem;
+}

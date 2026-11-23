@@ -178,13 +178,13 @@ def _from_oklab(L: float, a: float, b: float) -> str:  # noqa: N803 (L is OKLab'
 
 
 def mix_oklab(color: str, other: str, share: float) -> str:
-    """CSS `color-mix(in oklab, color share, other)`, so the server can measure what app.css draws."""
+    """CSS `color-mix(in oklab, color share, other)`, so the server can measure what the stylesheets draw."""
     one, two = _to_oklab(color), _to_oklab(other)
     return _from_oklab(*(share * x + (1 - share) * y for x, y in zip(one, two, strict=True)))
 
 
-# The roles app.css mixes from the club's color (docs/INTERFACE.md, "Color"): (share of the
-# club's color, what it is mixed with). Keep in step with app.css's :root; test_shell checks.
+# The roles static/css/tokens.css mixes from the club's color (docs/INTERFACE.md, "Color"): (share of the
+# club's color, what it is mixed with). Keep in step with tokens.css's :root; test_shell checks.
 ROLE_MIXES = {
     "--accent-soft": (0.09, "#ffffff"),
     "dark --accent": (0.42, "#ffffff"),

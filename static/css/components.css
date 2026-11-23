@@ -1,0 +1,646 @@
+/* Components: panels, cards, menus, toolbars, switches, data tables, tabs, buttons, badges. */
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+}
+.card.narrow {
+  max-width: 28rem;
+  margin: 2rem auto;
+}
+/* A part of a page: its heading and what is under it, on the page itself, with a rule above
+   the next part. A card is only for a thing that stands on its own, such as a message or an
+   event in a list (docs/INTERFACE.md, "Shape"). */
+/* A section is a panel without a header band: every page's
+   parts stand on the canvas as white boxes, the pages not yet given panel headers included. A
+   section inside a panel or a card is a plain part of it again. */
+.section {
+  margin: 0 0 var(--s3);
+  padding: 1rem 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  min-width: 0;
+}
+:is(.panel, .card, .section) .section {
+  margin: 0;
+  padding: var(--s3) 0 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Panels (docs/INTERFACE.md, "Shape"): one part of a page with a job,
+   white on the canvas. A header names it and holds its actions at the right, with one line
+   under the name if it needs one; a body; sometimes a footer with a note at the left and the
+   save at the right. Markup, so the heading stays a real h2 or h3:
+     <section class="panel" aria-labelledby="x">
+       <header class="panel-head"><div><h2 id="x">Name</h2><p>One line.</p></div>
+         <div class="actions">buttons</div></header>
+       <div class="panel-body">…</div> or <ul class="rows">…</ul>
+       <footer class="panel-foot"><p>A note.</p><button>Save</button></footer>
+     </section> */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  margin: 0 0 var(--s3);
+  min-width: 0;
+}
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+  padding: 1rem 1.25rem;
+}
+.panel-head :is(h2, h3) {
+  font-size: var(--t-lede);
+  margin: 0;
+}
+.panel-head p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: var(--t-small);
+  max-width: 40rem;
+}
+.panel-head + * {
+  border-top: 1px solid var(--line);
+}
+.panel > :is(.panel-body, .rows, form) + :is(.panel-body, .rows, form) {
+  border-top: 1px solid var(--line);
+}
+.panel-body {
+  padding: 1rem 1.25rem;
+}
+.panel-body > :first-child {
+  margin-top: 0;
+}
+.panel-body > :last-child {
+  margin-bottom: 0;
+}
+.panel-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--line);
+  background: var(--panel-head);
+  border-radius: 0 0 var(--r-card) var(--r-card);
+}
+.panel-foot p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+/* A form that holds a panel's body and footer: no gap between them, and one rule, not two, when
+   it opens straight onto its footer (Publish). */
+.panel > form.stack {
+  gap: 0;
+}
+.panel-head + form > .panel-foot:first-child {
+  border-top: 0;
+}
+.panel-foot .check {
+  margin: 0;
+}
+.panel-foot > :last-child {
+  margin-left: auto;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* A list of rows inside a panel, each with its actions at the end; a phone puts them under. */
+ul.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+} /* ul: over .list, which a list of rows may also carry */
+ul.rows > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s1) var(--s2);
+  padding: 0.75rem 1.25rem;
+}
+ul.rows > li {
+  margin: 0;
+}
+ul.rows > li + li {
+  border-top: 1px solid var(--line);
+}
+.rows > li > .grow {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.rows .sub {
+  display: block;
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+ul.rows > li > form.inline {
+  margin-left: auto;
+}
+/* A group of rows under a line of its own inside a panel: a location and its positions. */
+.group + .group {
+  border-top: 1px solid var(--line);
+}
+.group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s1) var(--s2);
+  padding: 0.75rem 1.25rem;
+  background: var(--panel-head);
+}
+.group-head .sub {
+  display: block;
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+.group-head > .grow {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.group .rows > li {
+  padding-left: 2rem;
+}
+.row-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: var(--r-button);
+  background: var(--canvas);
+  color: var(--muted);
+  flex: none;
+}
+
+/* ⋮ menus (technical addendum A10): a popover under its button, a list of links and buttons, the
+   destructive ones last and red. The disclosure pattern, not role="menu", so no arrow keys to
+   learn: Tab moves through it, Escape closes it. <button type="button" class="ghost small
+   icon-only" popovertarget="m-1" aria-label="More actions for Run">{% icon 'more' 'small'
+   %}</button> <div class="menu" id="m-1" popover> <a href="…">{% icon 'copy' 'small'
+   %}Duplicate</a> … </div> */
+.menu {
+  margin: 0.25rem 0 0;
+  padding: 0.3rem;
+  min-width: 12rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: var(--menu-shadow);
+  position-area: block-end span-inline-start;
+  position-try-fallbacks: flip-block, flip-inline;
+}
+.menu form {
+  margin: 0;
+}
+.menu :is(a, button) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 0;
+  border-radius: var(--r-button);
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-weight: 400;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.menu :is(a, button).danger {
+  color: var(--bad);
+  background: none;
+}
+.menu hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 0.3rem 0;
+}
+
+/* A toolbar above a panel's table: search, filters, and the count at the right. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+}
+.toolbar .count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+/* On one line with what it names: a form label's space under it lifted the
+   label off the line, and a select as wide as a form's pushed the button and the count away. */
+.toolbar > label {
+  margin: 0;
+}
+.toolbar > select {
+  width: auto;
+}
+/* A disabled button (Send to 0 on Announce): faded, as Material 3 fades a disabled control, and
+   with no state layer. WCAG 1.4.3 exempts an inactive control from contrast. */
+button:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+/* Where Publish cannot be done yet, the line saying why stands in its place, so
+   it reads as body text rather than as a footer's help. */
+.panel-foot .not-ready {
+  color: var(--fg);
+  font-size: var(--t-body);
+}
+.search {
+  position: relative;
+  flex: 1 1 14rem;
+  max-width: 24rem;
+}
+.search > .icon {
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.search > input {
+  padding-left: 2.2rem;
+  max-width: none;
+}
+/* A switch: two or three choices with counts, links with aria-current, so it is an address
+   and works with JavaScript off ("All slots 50", "Needs someone 2"). */
+.switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+/* A switch's current choice is where you are, drawn as the navigation draws it: the club's soft
+   fill in a pill, the label bold. The others are quiet until pointed at. */
+.switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-size: var(--t-small);
+  font-weight: 400;
+  text-decoration: none;
+}
+.switch a:hover {
+  color: var(--fg);
+}
+.switch a[aria-current] {
+  background: var(--accent-soft);
+  color: var(--accent-soft-fg);
+  font-weight: 700;
+}
+.switch .n {
+  font-weight: 400;
+}
+
+/* A data table in a panel: quiet headings on the band, a divider per row, a tint under
+   the pointer, the row's one link (its name) underlined only under the pointer and on focus, a
+   second line for secondary facts, and the actions at the end. Phones stack it as any .table. */
+.table.data {
+  margin: 0;
+}
+.table.data th,
+.table.data td {
+  padding: 0.65rem 0.75rem;
+  vertical-align: middle;
+}
+.table.data :is(th, td):first-child {
+  padding-left: 1.25rem;
+}
+.table.data :is(th, td):last-child {
+  padding-right: 1.25rem;
+}
+.table.data thead th {
+  background: var(--panel-head);
+  border-bottom: 1px solid var(--line);
+}
+.table.data tbody tr:last-child :is(td, th) {
+  border-bottom: 0;
+} /* th too: a row heading */
+.table.data tbody tr:hover {
+  background: color-mix(in srgb, var(--fg) 3%, transparent);
+}
+.table.data tbody :is(td, th) a:not(.button) {
+  font-weight: 700;
+  text-decoration: none;
+}
+.table.data tbody :is(td, th) a:not(.button):is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
+.table.data .sub {
+  display: block;
+  color: var(--muted);
+  font-size: var(--t-small);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.table.data td.row-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+.section .table.data :is(th, td):first-child {
+  padding-left: 0.5rem;
+} /* the section's own padding is the inset */
+.section .table.data :is(th, td):last-child {
+  padding-right: 0.5rem;
+}
+/* The event's header and tabs: the title and its state badge, a line of facts, a
+   captain's actions at the right, and Roster, Manage and Who took part under it. */
+.event-head {
+  margin-bottom: var(--s3);
+}
+.event-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s2) var(--s3);
+}
+.event-head-main {
+  flex: 1 1 28rem;
+  min-width: 0;
+} /* the actions sit at the right while there is room */
+.event-head-row > .actions {
+  flex: none;
+}
+.title-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+}
+.title-line h1 {
+  margin: 0;
+}
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+.facts:empty {
+  display: none;
+}
+.facts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+/* The line is an inset shadow, painted under the tabs, so the current tab's underline covers it
+   without a -1px margin: in a box that scrolls sideways that margin overflowed it by a pixel and
+   drew a vertical scrollbar. */
+/* Material 3's primary tabs: a 48px row of 14px labels at 400; the tab you are on
+   is bold in the text color, and only its 3px indicator, as wide as its content with rounded top
+   corners, takes the club's color. */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-top: var(--s2);
+  box-shadow: inset 0 -1px var(--line);
+  overflow-x: auto;
+}
+.tabs a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 1rem;
+  border-radius: var(--r-button) var(--r-button) 0 0;
+  color: var(--muted);
+  font-size: var(--t-small);
+  font-weight: 400;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tabs a:hover {
+  color: var(--fg);
+}
+.tabs a[aria-current] {
+  color: var(--fg);
+  font-weight: 700;
+}
+.tabs a[aria-current]::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: var(--r-field) var(--r-field) 0 0;
+}
+.tabs a:focus-visible {
+  outline-offset: -3px;
+}
+.k-icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+}
+.k-icons > li + li {
+  border-top: 0;
+}
+:is(.card, .section) > :nth-child(1 of :not(input[type="hidden"])) {
+  margin-top: 0;
+} /* a form's hidden fields draw nothing */
+:is(.card, .section) > :last-child {
+  margin-bottom: 0;
+} /* the padding is the space under it */
+/* A box's name reads as a panel header's does: 18 px, 17 px down from its edge (INTERFACE.md,
+   Shape). */
+:is(.card, .section) > h2 {
+  font-size: var(--t-lede);
+}
+/* ...and a margin one level down collapses through its parent into that space: a table in its
+   wrapper, the last line of a message, the last paragraph of rich text. */
+:is(.card, .section) > .table-wrap:last-child > .table,
+:is(.card, .section) > details:last-child > :last-child,
+:is(.card, .section) .prose:last-child > :last-child {
+  margin-bottom: 0;
+}
+.list {
+  padding-left: 1.25rem;
+}
+.list li {
+  margin: 0.25rem 0;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0 1rem;
+}
+/* Desktop density: rows a little tighter than a form's, so a list of members or messages
+   shows more of itself. Under 40rem the stacked layout below sets its own padding. */
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.table thead th {
+  border-bottom: 2px solid var(--line);
+  font-size: var(--t-small);
+  color: var(--muted);
+  font-weight: 700;
+}
+.status {
+  font-weight: 700;
+}
+.status.viable {
+  color: var(--ok);
+}
+.status.not_viable {
+  color: var(--bad);
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--t-small);
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 0.05rem 0.45rem;
+  border-radius: var(--r-field);
+  background: var(--tag-neutral);
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* A badge: a tone and always a word, its word at 4.5:1 or more on its fill in both themes
+   (apps/ops/tests/test_badges.py). Which state takes which tone is apps/ops/templatetags/badges.py. */
+.tag.ok {
+  background: var(--tag-ok);
+  color: var(--ok);
+}
+.tag.warn,
+.tag.note {
+  background: var(--tag-warn);
+  color: var(--warn);
+}
+.tag.bad {
+  background: var(--tag-bad);
+  color: var(--bad);
+}
+.tag:is(.info, .open) {
+  background: var(--tag-neutral);
+  color: var(--accent-soft-fg);
+} /* the club's color on the word only: its soft fill means where you are */
+.messages {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+.messages:focus {
+  outline: none;
+}
+/* Messages and banners in Material 3's tonal style (they had a thick left edge and
+   an outline in the level's color): a tint and no border, the level's icon at the start and its
+   word in the level's color, so neither color nor the icon is the only sign. The icon is a mask
+   on ::before, so the thirty-odd inline messages keep their markup. Note is a neutral tint: the
+   club's soft fill means where you are. */
+.msg {
+  --ic: var(--i-info);
+  --tone: var(--accent);
+  position: relative;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 0;
+  border-radius: var(--r-card);
+  margin: 0.5rem 0;
+  background: var(--tag-neutral);
+}
+.msg::before,
+.banner::before,
+.preview::before {
+  content: "";
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--tone);
+  -webkit-mask: var(--ic) center / contain no-repeat;
+  mask: var(--ic) center / contain no-repeat;
+}
+.msg::before {
+  position: absolute;
+  left: 1rem;
+  top: 0.875rem;
+}
+.msg .lvl {
+  font-weight: 700;
+  color: var(--tone);
+}
+/* Four levels, each with a word and a tint. Color never carries the meaning alone (FR-62). */
+.msg.success {
+  --ic: var(--i-ok);
+  --tone: var(--ok);
+  background: var(--tag-ok);
+}
+.msg.error {
+  --ic: var(--i-bad);
+  --tone: var(--bad);
+  background: var(--tag-bad);
+}
+.msg.warning {
+  --ic: var(--i-warn);
+  --tone: var(--warn);
+  background: var(--tag-warn);
+}
+/* Label and value: two columns at desktop, about half the height of the stack, with the
+   label at the regular weight in the muted color; on a phone, the label above its value. */
+.dl dt {
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+.dl dd {
+  margin: 0;
+}
+.dl dd > :first-child {
+  margin-top: 0;
+}
+.dl dd > :last-child {
+  margin-bottom: 0;
+} /* rich text beside its label */
+@media (min-width: 40rem) {
+  .dl {
+    display: grid;
+    grid-template-columns: minmax(9rem, max-content) 1fr;
+    gap: var(--s1) var(--s3);
+  }
+  .dl dt {
+    margin-top: 0;
+  }
+}
+.prose h1,
+.prose h2,
+.prose h3 {
+  margin-top: 1rem;
+}
+.secret code {
+  font-size: var(--t-h2);
+  letter-spacing: 0.05em;
+}

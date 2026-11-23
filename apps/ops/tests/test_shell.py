@@ -79,10 +79,10 @@ def test_an_accent_that_carries_white_but_not_its_own_tint_falls_back(caplog):
 
 
 def test_the_server_measures_the_mixes_the_stylesheet_draws():
-    """app.css's color-mix() roles and ROLE_MIXES are one list, so what is checked is what is drawn."""
+    """tokens.css's color-mix() roles and ROLE_MIXES are one list, so what is checked is what is drawn."""
     from pathlib import Path
 
-    css = (Path(config.__file__).resolve().parents[2] / "static" / "css" / "app.css").read_text()
+    css = (Path(config.__file__).resolve().parents[2] / "static" / "css" / "tokens.css").read_text()
     drawn = {
         (int(pct) / 100, other)
         for pct, other in re.findall(

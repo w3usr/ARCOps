@@ -1,0 +1,405 @@
+/* The signed-in shell: the top bar, the sidebar and its rail, the drawer on a phone. */
+
+.shell {
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  background: var(--panel-head);
+} /* the sidebar's column all the way down, past the sticky sidebar */
+html[data-nav="rail"] .shell {
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+}
+.shell > .page {
+  grid-column: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  box-shadow: -1px 0 0 var(--line);
+}
+.page > main {
+  flex: 1;
+}
+/* The bar over every signed-in page, holding the UTC clock. */
+.page > .banner {
+  margin: 1rem clamp(1rem, 4vw, 3rem) 0;
+}
+
+.topbar {
+  display: none;
+}
+
+.sidenav {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+}
+.sidenav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.25rem 0.75rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.brand img {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+.brand-name {
+  font-weight: 700;
+  font-size: var(--t-lede);
+  letter-spacing: 0.01em;
+}
+.brand-sub {
+  color: var(--muted);
+  font-size: var(--t-small);
+}
+
+/* Material 3's navigation drawer: items 48px high, under M3's 56dp so a long menu fits, 16dp in
+   from the pill's edge, a 24dp icon and a 14px label (400: the face has no 500); the entry for this
+   page sits in a pill of the club's soft color. Our rules still win where they differ: bold for the
+   current entry as well as the pill, so color is not the only sign of it. */
+.navlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.navlist a,
+.navbtn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0 1.5rem 0 1rem;
+  border-radius: var(--r-pill);
+  color: var(--fg);
+  text-decoration: none;
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: 400;
+  background: none;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.navlist a .icon,
+.navbtn .icon,
+.whoami .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--muted);
+}
+.navlist a[aria-current="page"] {
+  background: var(--accent-soft);
+  color: var(--accent-soft-fg);
+  font-weight: 700;
+}
+.navlist a[aria-current="page"] .icon {
+  color: currentColor;
+}
+/* The sidebar is three groups: what any member uses, what an officer adds, what a sysadmin
+   adds. Each later group is introduced by a rule and a small label, so the dividing line is
+   visible; the label names the list for a screen reader through aria-labelledby. */
+.navgroup {
+  margin: 0.75rem 1rem 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--t-small);
+  font-weight: 700;
+  color: var(--muted);
+}
+.sidenav-foot {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.whoami {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  color: var(--muted);
+  font-size: var(--t-small);
+  min-width: 0;
+}
+.whoami span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidenav-foot form {
+  margin: 0;
+}
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--r-button);
+  background: none;
+  border: 0;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 0;
+}
+.only-drawer {
+  display: none;
+}
+
+/* Rail: labels stay in the accessibility tree, hidden visually. */
+html[data-nav="rail"] .sidenav {
+  padding-inline: 0.5rem;
+}
+html[data-nav="rail"] .sidenav-head {
+  justify-content: center;
+  padding-inline: 0;
+}
+html[data-nav="rail"] .brand img {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+html[data-nav="rail"] .brand-text,
+html[data-nav="rail"] .navlist a > span,
+html[data-nav="rail"] .navbtn > span,
+html[data-nav="rail"] .navgroup > span,
+html[data-nav="rail"] .whoami > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+/* Material 3's rail: the icon in a 56 by 32dp pill, the pills 16dp apart. */
+html[data-nav="rail"] .navlist a,
+html[data-nav="rail"] .navbtn {
+  justify-content: center;
+  width: 3.5rem;
+  min-height: 2rem;
+  height: 2rem;
+  margin: 0.5rem auto;
+  padding: 0;
+}
+html[data-nav="rail"] .whoami {
+  justify-content: center;
+  padding-inline: 0;
+}
+html[data-nav="rail"] #nav-toggle .icon {
+  transform: rotate(180deg);
+}
+
+/* A filter that takes a set: a disclosure styled as the drop-down it replaces, holding a
+   checkbox each. No script, and the summary says what is ticked. */
+.filter {
+  position: relative;
+}
+.filter > summary {
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  border-radius: var(--r-button);
+  padding: 0.45rem 2rem 0.45rem 0.7rem;
+  background: var(--panel);
+}
+.filter > summary::-webkit-details-marker {
+  display: none;
+}
+.filter > summary::after {
+  content: "\25be";
+  position: absolute;
+  right: 0.7rem;
+  top: 0.45rem;
+  color: var(--muted);
+}
+.filter[open] > summary {
+  border-color: var(--accent);
+}
+/* A filter button: dashed while it is off, solid once it narrows the list. */
+.filter > summary {
+  border-style: dashed;
+  border-color: var(--line-strong);
+}
+.filter.set > summary {
+  border-style: solid;
+}
+.filter > fieldset {
+  position: absolute;
+  z-index: var(--z-sticky);
+  top: calc(100% + 0.25rem);
+  left: 0;
+  min-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+  padding: 0.5rem 0.7rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
+  margin: 0;
+  /* As wide as its longest label, and every row starting at the same edge: the panel sits in a
+     flex row, and without saying so its rows were ragged down the right. */
+  min-width: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+}
+/* The panel is as wide as its longest label, so the box stays beside the word rather than
+   wrapping above it. */
+.filter .check {
+  margin: 0.2rem 0;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  justify-content: flex-start;
+}
+@media (max-width: 40rem) {
+  /* No room to float a panel over a phone: it opens in the flow and pushes the table down. */
+  .filter > fieldset {
+    position: static;
+    box-shadow: none;
+  }
+}
+
+.content {
+  padding: 1.75rem clamp(1rem, 4vw, 3rem) 3rem;
+  max-width: 72rem;
+  width: 100%;
+}
+/* 72rem is a measure for reading prose. A page whose point is a wide table takes the window it
+   is given, because the alternative is scrolling a table sideways inside a half-empty screen. */
+.content.wide {
+  max-width: none;
+}
+
+/* Under 60rem: a top bar with the menu button; the sidebar becomes an off-canvas drawer. */
+@media (max-width: 60rem) {
+  .shell {
+    display: block;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+  }
+  .topbar .brand img {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .only-desktop {
+    display: none;
+  }
+  html.js .only-drawer {
+    display: inline-flex;
+  }
+  html.js .sidenav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(var(--sidebar-w), 85vw);
+    height: 100svh;
+    transform: translateX(-100%);
+    transition: transform var(--motion) ease;
+    z-index: var(--z-drawer);
+    box-shadow: var(--shadow);
+  }
+  html.js .sidenav.open {
+    transform: none;
+  }
+  html.js .backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    z-index: var(--z-overlay);
+  }
+  html.js .backdrop[hidden] {
+    display: none;
+  }
+  html.no-js .sidenav {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  html.no-js .topbar .iconbtn {
+    display: none;
+  }
+  /* The rail preference is irrelevant in a drawer. */
+  html[data-nav="rail"] .brand-text,
+  html[data-nav="rail"] .navlist a > span,
+  html[data-nav="rail"] .navbtn > span,
+  html[data-nav="rail"] .navgroup > span,
+  html[data-nav="rail"] .whoami > span {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  html[data-nav="rail"] .navlist a,
+  html[data-nav="rail"] .navbtn {
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 3rem;
+    height: auto;
+    margin: 0;
+    padding: 0 1.5rem 0 1rem;
+  }
+  html[data-nav="rail"] .whoami {
+    justify-content: flex-start;
+    padding-inline: 1rem;
+  }
+  html[data-nav="rail"] .brand img {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .content {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidenav {
+    transition: none;
+  }
+}
+body.drawer-open {
+  overflow: hidden;
+}

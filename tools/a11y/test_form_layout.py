@@ -21,7 +21,7 @@ BESIDE = """() => [...document.querySelectorAll('main label[for]:not(.sr-only)')
 })"""
 
 # In a row of fields that are each a label and an input (a row with help or checkboxes stays
-# top-aligned, as app.css says), the inputs on one line share a middle:
+# top-aligned, as forms.css says), the inputs on one line share a middle:
 # an engine draws a select shorter than a text box, so their edges need not meet.
 UNEVEN = """() => [...document.querySelectorAll('main .row:not(:has(.helptext, .check, .errorlist))')].filter(r => r.offsetParent).flatMap(r => {
     const lines = [];  // the fields of one wrapped line overlap each other from top to bottom
