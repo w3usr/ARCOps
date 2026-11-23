@@ -10,7 +10,7 @@ says so and offers the way back (NAF, 2026-09-19: "I don't want a Not Found").{%
 {% if acting_views > 1 %}
 <p>This page is not there, or it is not open at the level you are acting at. You are acting as
   <strong>{{ acting_label }}</strong>.</p>
-<p><a class="button" href="{% url 'dashboard' %}">Go to Home</a> <a class="button secondary" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">Change your level</a></p>
+<p class="actions"><a class="button" href="{% url 'dashboard' %}">Go to Home</a> <a class="button secondary" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">Change your level</a></p>
 {% else %}
 <p>This page is not there, or it is not yours to open. If you were sent here by somebody in the
   club, ask them to check the link.</p>

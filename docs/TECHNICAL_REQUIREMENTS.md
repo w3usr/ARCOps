@@ -959,7 +959,33 @@ line, and nearly a third of it comments recording who decided what and when.
 
 **Decided by** SK on 2026-11-23, choosing this over SCSS ("I like what you suggested").
 
+### A17. TR-5: spacing on a nine-step scale
+
+**Original (A16).** "Spacing has no scale yet": the stylesheets carried 352 literal margin, padding
+and gap values, 44 of them distinct, beside four little-used tokens `--s1` to `--s4`.
+
+**Decision.**
+- **Nine steps on a 4 px grid**, `--space-1` to `--space-9` (4, 8, 12, 16, 20, 24, 32, 40, 48 px),
+  in `static/css/tokens.css`, replacing `--s1` to `--s4`. Every margin, padding and gap takes a
+  step, `0` or `auto`; a negative margin is `calc(-1 * var(--space-N))`. `tools/check_interface.sh`
+  refuses anything else, allowing em, vw and % in a `clamp()`, `env()`, and the coverage strip's
+  2 px hairline.
+- **Each value went to its nearest step**, a tie to the larger, and the two smaller than 2 px went
+  to `0`. Most moved by 1 or 2 px; the largest visible effect is denser tables (cell padding 0.6
+  to 0.5rem). The contact sheet, before and after, every page at 1280 and 390 px, went to SK for review.
+- **The roster's time column** in the grid layout is 11rem, as the list's is: at 9.5rem the
+  widest labels ("12:00 AM–midnight") ran 21 px into the slot beside them, which the contact sheet
+  showed. `tools/a11y/test_roster_rows.py` now measures each label's text against its column.
+- **A row of buttons is `.actions`**, which spaces them both ways when they wrap. Eleven rows were
+  bare `<div>` or `<p>` elements whose buttons met with no gap once they stacked on a phone (Announce's
+  Send and "Give me the addresses instead", which the contact sheet showed); their only gap had been
+  the line box, and buttons 1.6 px shorter closed it. `tools/a11y/test_buttons.py` now checks that
+  no two buttons stacked on a 390 px page come closer than 4 px.
+
+**Decided by** SK on 2026-11-23, choosing the 4 px grid from three measured scales (private tracker
+362), and the time column from the contact sheet.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16, A17), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

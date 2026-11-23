@@ -12,7 +12,7 @@ redirects, as every form here does without JavaScript (apps/events/form_pages.py
 <form method="post" action="{{ request.path }}"{% if partial %} hx-post="{{ request.path }}"{% endif %} class="stack">{% csrf_token %}
   {% include fields_template %}
   {% if actions_template %}{% include actions_template %}{% else %}
-  <div><button type="submit">{{ submit }}</button> {% if partial %}<button type="button" class="secondary" data-close>Cancel</button>{% else %}<a class="button secondary" href="{{ back }}">Cancel</a>{% endif %}</div>
+  <div class="actions"><button type="submit">{{ submit }}</button> {% if partial %}<button type="button" class="secondary" data-close>Cancel</button>{% else %}<a class="button secondary" href="{{ back }}">Cancel</a>{% endif %}</div>
   {% endif %}
 </form>
 {% endblock %}

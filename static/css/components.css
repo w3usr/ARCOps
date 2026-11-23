@@ -4,12 +4,12 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
-  padding: 1rem 1.25rem;
-  margin: 1rem 0;
+  padding: var(--space-4) var(--space-5);
+  margin: var(--space-4) 0;
 }
 .card.narrow {
   max-width: 28rem;
-  margin: 2rem auto;
+  margin: var(--space-7) auto;
 }
 /* A part of a page: its heading and what is under it, on the page itself, with a rule above
    the next part. A card is only for a thing that stands on its own, such as a message or an
@@ -18,8 +18,8 @@
    parts stand on the canvas as white boxes, the pages not yet given panel headers included. A
    section inside a panel or a card is a plain part of it again. */
 .section {
-  margin: 0 0 var(--s3);
-  padding: 1rem 1.25rem;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
@@ -27,7 +27,7 @@
 }
 :is(.panel, .card, .section) .section {
   margin: 0;
-  padding: var(--s3) 0 0;
+  padding: var(--space-5) 0 0;
   background: none;
   border: 0;
   border-radius: 0;
@@ -47,7 +47,7 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
-  margin: 0 0 var(--s3);
+  margin: 0 0 var(--space-5);
   min-width: 0;
 }
 .panel-head {
@@ -55,15 +55,15 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--s2) var(--s3);
-  padding: 1rem 1.25rem;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
 }
 .panel-head :is(h2, h3) {
   font-size: var(--t-lede);
   margin: 0;
 }
 .panel-head p {
-  margin: 0.2rem 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--muted);
   font-size: var(--t-small);
   max-width: 40rem;
@@ -75,7 +75,7 @@
   border-top: 1px solid var(--line);
 }
 .panel-body {
-  padding: 1rem 1.25rem;
+  padding: var(--space-4) var(--space-5);
 }
 .panel-body > :first-child {
   margin-top: 0;
@@ -88,8 +88,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s2) var(--s3);
-  padding: 0.75rem 1.25rem;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-5);
   border-top: 1px solid var(--line);
   background: var(--panel-head);
   border-radius: 0 0 var(--r-card) var(--r-card);
@@ -117,7 +117,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 /* A list of rows inside a panel, each with its actions at the end; a phone puts them under. */
 ul.rows {
@@ -129,8 +129,8 @@ ul.rows > li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s1) var(--s2);
-  padding: 0.75rem 1.25rem;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-5);
 }
 ul.rows > li {
   margin: 0;
@@ -158,8 +158,8 @@ ul.rows > li > form.inline {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s1) var(--s2);
-  padding: 0.75rem 1.25rem;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-5);
   background: var(--panel-head);
 }
 .group-head .sub {
@@ -172,7 +172,7 @@ ul.rows > li > form.inline {
   min-width: 0;
 }
 .group .rows > li {
-  padding-left: 2rem;
+  padding-left: var(--space-7);
 }
 .row-ic {
   display: inline-flex;
@@ -193,8 +193,8 @@ ul.rows > li > form.inline {
    %}</button> <div class="menu" id="m-1" popover> <a href="…">{% icon 'copy' 'small'
    %}Duplicate</a> … </div> */
 .menu {
-  margin: 0.25rem 0 0;
-  padding: 0.3rem;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-1);
   min-width: 12rem;
   border: 1px solid var(--line);
   border-radius: var(--r-card);
@@ -211,9 +211,9 @@ ul.rows > li > form.inline {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.6rem;
+  gap: var(--space-2);
   width: 100%;
-  padding: 0.5rem 0.65rem;
+  padding: var(--space-2) var(--space-3);
   border: 0;
   border-radius: var(--r-button);
   background: none;
@@ -231,7 +231,7 @@ ul.rows > li > form.inline {
 .menu hr {
   border: 0;
   border-top: 1px solid var(--line);
-  margin: 0.3rem 0;
+  margin: var(--space-1) 0;
 }
 
 /* A toolbar above a panel's table: search, filters, and the count at the right. */
@@ -239,8 +239,8 @@ ul.rows > li > form.inline {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
 }
 .toolbar .count {
   margin-left: auto;
@@ -281,7 +281,7 @@ button:disabled {
   pointer-events: none;
 }
 .search > input {
-  padding-left: 2.2rem;
+  padding-left: var(--space-7);
   max-width: none;
 }
 /* A switch: two or three choices with counts, links with aria-current, so it is an address
@@ -289,15 +289,15 @@ button:disabled {
 .switch {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 /* A switch's current choice is where you are, drawn as the navigation draws it: the club's soft
    fill in a pill, the label bold. The others are quiet until pointed at. */
 .switch a {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.8rem;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--r-pill);
   color: var(--muted);
   font-size: var(--t-small);
@@ -324,14 +324,14 @@ button:disabled {
 }
 .table.data th,
 .table.data td {
-  padding: 0.65rem 0.75rem;
+  padding: var(--space-3) var(--space-3);
   vertical-align: middle;
 }
 .table.data :is(th, td):first-child {
-  padding-left: 1.25rem;
+  padding-left: var(--space-5);
 }
 .table.data :is(th, td):last-child {
-  padding-right: 1.25rem;
+  padding-right: var(--space-5);
 }
 .table.data thead th {
   background: var(--panel-head);
@@ -362,22 +362,22 @@ button:disabled {
   white-space: nowrap;
 }
 .section .table.data :is(th, td):first-child {
-  padding-left: 0.5rem;
+  padding-left: var(--space-2);
 } /* the section's own padding is the inset */
 .section .table.data :is(th, td):last-child {
-  padding-right: 0.5rem;
+  padding-right: var(--space-2);
 }
 /* The event's header and tabs: the title and its state badge, a line of facts, a
    captain's actions at the right, and Roster, Manage and Who took part under it. */
 .event-head {
-  margin-bottom: var(--s3);
+  margin-bottom: var(--space-5);
 }
 .event-head-row {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--s2) var(--s3);
+  gap: var(--space-3) var(--space-5);
 }
 .event-head-main {
   flex: 1 1 28rem;
@@ -390,7 +390,7 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem 0.75rem;
+  gap: var(--space-2) var(--space-3);
 }
 .title-line h1 {
   margin: 0;
@@ -398,8 +398,8 @@ button:disabled {
 .facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1.25rem;
-  margin: 0.5rem 0 0;
+  gap: var(--space-1) var(--space-5);
+  margin: var(--space-2) 0 0;
   color: var(--muted);
   font-size: var(--t-small);
 }
@@ -409,7 +409,7 @@ button:disabled {
 .facts > span {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 /* The line is an inset shadow, painted under the tabs, so the current tab's underline covers it
    without a -1px margin: in a box that scrolls sideways that margin overflowed it by a pixel and
@@ -420,7 +420,7 @@ button:disabled {
 .tabs {
   display: flex;
   gap: 0;
-  margin-top: var(--s2);
+  margin-top: var(--space-3);
   box-shadow: inset 0 -1px var(--line);
   overflow-x: auto;
 }
@@ -429,9 +429,9 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   min-height: 3rem;
-  padding: 0 1rem;
+  padding: 0 var(--space-4);
   border-radius: var(--r-button) var(--r-button) 0 0;
   color: var(--muted);
   font-size: var(--t-small);
@@ -485,22 +485,22 @@ button:disabled {
   margin-bottom: 0;
 }
 .list {
-  padding-left: 1.25rem;
+  padding-left: var(--space-5);
 }
 .list li {
-  margin: 0.25rem 0;
+  margin: var(--space-1) 0;
 }
 .table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.5rem 0 1rem;
+  margin: var(--space-2) 0 var(--space-4);
 }
 /* Desktop density: rows a little tighter than a form's, so a list of members or messages
    shows more of itself. Under 40rem the stacked layout below sets its own padding. */
 .table th,
 .table td {
   text-align: left;
-  padding: 0.35rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--line);
   vertical-align: top;
 }
@@ -522,11 +522,11 @@ button:disabled {
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   font-size: var(--t-small);
   font-weight: 700;
   line-height: 1.4;
-  padding: 0.05rem 0.45rem;
+  padding: 0 var(--space-2);
   border-radius: var(--r-field);
   background: var(--tag-neutral);
   color: var(--muted);
@@ -554,7 +554,7 @@ button:disabled {
 .messages {
   list-style: none;
   padding: 0;
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-4);
 }
 .messages:focus {
   outline: none;
@@ -568,10 +568,10 @@ button:disabled {
   --ic: var(--i-info);
   --tone: var(--accent);
   position: relative;
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-9);
   border: 0;
   border-radius: var(--r-card);
-  margin: 0.5rem 0;
+  margin: var(--space-2) 0;
   background: var(--tag-neutral);
 }
 .msg::before,
@@ -614,7 +614,7 @@ button:disabled {
    label at the regular weight in the muted color; on a phone, the label above its value. */
 .dl dt {
   color: var(--muted);
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 }
 .dl dd {
   margin: 0;
@@ -629,7 +629,7 @@ button:disabled {
   .dl {
     display: grid;
     grid-template-columns: minmax(9rem, max-content) 1fr;
-    gap: var(--s1) var(--s3);
+    gap: var(--space-1) var(--space-5);
   }
   .dl dt {
     margin-top: 0;
@@ -638,7 +638,7 @@ button:disabled {
 .prose h1,
 .prose h2,
 .prose h3 {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 .secret code {
   font-size: var(--t-h2);

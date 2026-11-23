@@ -71,12 +71,18 @@
   --r-button: 6px;
   --r-card: 8px;
   --r-pill: 999px; /* the navigation's entries only, as Material 3 draws them */
-  /* Four steps of space and five of type. Pick from these; a page that needs a sixth size
-     usually needs a different structure instead. */
-  --s1: 0.35rem;
-  --s2: 0.75rem;
-  --s3: 1.25rem;
-  --s4: 2rem;
+  /* Nine steps of space on a 4px grid, for every margin, padding and gap (tools/check_interface.sh
+     refuses any other), and five of type. Pick from these; a page that needs another size
+     usually needs a different structure instead. A negative margin is calc(-1 * var(--space-N)). */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-7: 2rem; /* 32px */
+  --space-8: 2.5rem; /* 40px */
+  --space-9: 3rem; /* 48px */
   --t-small: 0.875rem;
   --t-body: 1rem;
   --t-lede: 1.125rem;

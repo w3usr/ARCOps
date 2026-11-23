@@ -7,8 +7,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s2) var(--s3);
-  margin-bottom: 1rem;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-4);
 }
 .page-head h1 {
   margin: 0;
@@ -18,7 +18,7 @@
   text-align: left;
 }
 .crumbs {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   font-size: var(--t-small);
   color: var(--muted);
 }
@@ -31,7 +31,7 @@
 .cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: start;
 }
 .cols > .card,
@@ -40,9 +40,9 @@
 }
 .searchrow {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 /* The search box grows; a checkbox inside a filter panel is not a search box, so it is not
    stretched across its row, which would leave the labels ragged down the right edge. */
@@ -56,10 +56,10 @@
   padding: 0;
 }
 .directory li {
-  padding: 0.25rem 0;
+  padding: var(--space-1) 0;
   break-inside: avoid;
 }
 h3 {
   font-size: var(--t-lede);
-  margin: 1.25rem 0 0.5rem;
+  margin: var(--space-5) 0 var(--space-2);
 }

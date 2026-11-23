@@ -13,7 +13,7 @@
     <input id="reason" name="reason" maxlength="300" required placeholder="Station closed for the storm">
     <span class="helptext">{{ signup.user.display_first }} is told they have been removed, and this is what they are told.</span>
   </div>
-  <div>
+  <div class="actions">
     <a class="button" href="{% url 'event_detail' event.pk %}">Keep them in the slot</a>
     <button type="submit" class="danger">Remove and tell them</button>
   </div>

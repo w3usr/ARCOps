@@ -57,3 +57,38 @@ def test_buttons_are_big_enough_and_their_outlines_read(live_server, engine):
             page.close()
         browser.close()
     assert not found, found
+
+
+STACKED = """() => {
+  const boxes = [...document.querySelectorAll('main a.button, main button:not(.linklike)')]
+    .filter(b => b.offsetParent !== null)
+    .map(b => [b.textContent.trim().replace(/\\s+/g, ' ') || b.getAttribute('aria-label'), b.getBoundingClientRect()]);
+  const bad = [];
+  for (const [n1, a] of boxes) for (const [n2, b] of boxes) {
+    if (a === b || b.top < a.top) continue;
+    const across = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    const gap = b.top - a.bottom;
+    if (across > 1 && gap > -a.height / 2 && gap < 4) bad.push(`${n1} / ${n2}: ${gap.toFixed(1)}px`);
+  }
+  return bad;
+}"""
+
+
+def test_buttons_stacked_on_a_phone_keep_a_gap(live_server, engine):
+    """Buttons that wrap onto a second line on a phone do not touch (SK, the contact sheet of
+    2026-11-23: Send and "Give me the addresses instead" on Announce): a row of them is .actions,
+    which spaces it both ways."""
+    from test_axe import pages_for
+
+    urls = pages_for("officer")
+    with sync_playwright() as p:
+        browser = getattr(p, engine).launch()
+        page = browser.new_page(viewport={"width": 390, "height": 844})
+        sign_in(page, live_server.url, ACCOUNTS["officer"])
+        found = {}
+        for path in urls:
+            page.goto(live_server.url + path)
+            if bad := page.evaluate(STACKED):
+                found[path] = bad
+        browser.close()
+    assert not found, found

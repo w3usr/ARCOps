@@ -1,7 +1,7 @@
 /* The roster: the grid of slots, its cells, marks and key. */
 
 .when {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
   font-size: var(--t-lede);
 }
 .lede {
@@ -14,13 +14,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.6rem 1rem;
+  gap: var(--space-2) var(--space-4);
   flex-wrap: wrap;
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-9);
   border-radius: var(--r-card);
   background: var(--tag-neutral);
   border: 0;
-  margin: 1rem 0;
+  margin: var(--space-4) 0;
 }
 /* The icon stands where a message's does: beside the sentence, centered on it while its button sits
    beside it, level with its first line once the button wraps under it on a phone. */
@@ -69,23 +69,23 @@
 /* A standing question wears the message strip, because that is what it reads as. Its buttons
    sit on the same line as its sentence rather than beneath them. */
 .messages.ask {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 .messages.ask .inline {
   display: inline;
 }
 .messages.ask button {
-  padding: 0.2rem 0.6rem;
+  padding: var(--space-1) var(--space-2);
   font-size: var(--t-small);
-  margin-left: 0.25rem;
+  margin-left: var(--space-1);
 }
 /* A standing fact, quieter than a banner and never mistaken for something that just happened. */
 .note {
-  padding: 0.6rem 0.9rem;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--r-card);
   background: var(--panel);
   border: 1px solid var(--line);
-  margin: 1rem 0;
+  margin: var(--space-4) 0;
   color: var(--fg);
 }
 .note p:first-child {
@@ -98,14 +98,14 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
   flex-wrap: wrap;
-  margin-top: 1.5rem;
+  margin-top: var(--space-6);
 }
 /* The roster in a panel: its header holds the zones, the switch and the Key; the strip on
    the band; the table edge to edge; the bulk bar as its footer. */
 .roster-panel {
-  margin-top: var(--s3);
+  margin-top: var(--space-5);
 }
 .roster-panel .rosterhead {
   margin: 0;
@@ -115,7 +115,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem 0.75rem;
+  gap: var(--space-2) var(--space-3);
 }
 .roster-panel .overview {
   margin: 0;
@@ -135,10 +135,10 @@
 }
 /* The slot dialog's people: rows inside the dialog, flush with its edges. */
 .slot-dialog .rows.people {
-  margin: 0.5rem -0.5rem;
+  margin: var(--space-2) calc(-1 * var(--space-2));
 }
 .slot-dialog .rows.people > li {
-  padding: 0.6rem 0.5rem;
+  padding: var(--space-2) var(--space-2);
   align-items: flex-start;
 }
 .slot-dialog .rows.people form.inline {
@@ -147,8 +147,8 @@
 .fold-more {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.5rem;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--r-button);
   color: var(--fg);
   font-weight: 700;
@@ -163,23 +163,23 @@
 }
 .legend {
   font-size: var(--t-small);
-  margin: 0.5rem 0 0.75rem;
+  margin: var(--space-2) 0 var(--space-3);
 }
 /* The coverage strip beside the key: a line a day, a mark per time span with its state as a
    symbol as well as a color (FR-62). The key then reads one entry a line. */
 .overview {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
-  gap: var(--s3);
+  gap: var(--space-5);
   align-items: start;
-  margin: 0.5rem 0 0.75rem;
+  margin: var(--space-2) 0 var(--space-3);
 }
 .overview .legend {
   margin: 0;
 }
 .overview .legend-label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 }
 .overview .legend li + li::before {
   content: none;
@@ -190,7 +190,7 @@
 .overview .legend ul {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.3rem 0.5rem;
+  gap: var(--space-1) var(--space-2);
 }
 .overview .legend li {
   display: grid;
@@ -202,7 +202,7 @@
 }
 .overview .legend li > :is(.sm, .mk) {
   justify-self: center;
-  margin-top: 0.125rem;
+  margin-top: var(--space-1);
 }
 .overview .legend .what {
   grid-column: 2;
@@ -219,11 +219,11 @@
 .strip {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--space-1);
 }
 .strip-day {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   align-items: center;
 }
 .strip-label {
@@ -298,16 +298,16 @@
 @media (min-width: 48rem) {
   .roster .r-time,
   .roster .r-zone {
-    padding-top: 0.35rem;
-    padding-bottom: 0.35rem;
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
   }
   .roster .r-cell,
   .roster .slot-link {
     min-height: 2.75rem;
   }
   .roster .slot-link {
-    padding-top: 0.35rem;
-    padding-bottom: 0.35rem;
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
   }
   .roster .r-cell > input[type="checkbox"] {
     top: 0.5rem;
@@ -317,7 +317,7 @@
    run-on line was hard to read. */
 .legend-label {
   font-weight: 700;
-  margin-right: 0.35rem;
+  margin-right: var(--space-1);
 }
 .legend ul {
   display: inline;
@@ -334,11 +334,11 @@
 @media (max-width: 40rem) {
   .legend-label {
     display: block;
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--space-1);
   }
   .legend li {
     display: block;
-    margin: 0.2rem 0;
+    margin: var(--space-1) 0;
   }
   .legend li + li::before {
     content: none;
@@ -348,14 +348,14 @@
    popover. Without popover support the button and Close go, the key stays in place beside the
    strip as before; with it the strip has the width to itself. */
 .keybtn {
-  margin-left: 0.35rem;
+  margin-left: var(--space-1);
 } /* the Key's ?, an icon-only button */
 .legend:popover-open {
   margin: auto;
   width: min(24rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  padding: var(--s3);
+  padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   background: var(--panel);
@@ -367,7 +367,7 @@
 }
 .keyclose {
   display: block;
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
 }
 @supports selector(:popover-open) {
   .overview {
@@ -385,7 +385,7 @@
   padding-left: 0;
 }
 .health .tag {
-  margin-right: 0.25rem;
+  margin-right: var(--space-1);
 }
 
 .roster {
@@ -399,9 +399,11 @@
   display: grid;
   grid-template-columns: 11rem repeat(var(--cols), minmax(0, 1fr));
 }
+/* The time column is one width in every row, so it holds the widest label the roster draws
+   ("12:00 AM–midnight"), as the list's does; tools/a11y/test_roster_rows.py measures it. */
 .roster.grid .r-head,
 .roster.grid .r-row {
-  grid-template-columns: 9.5rem repeat(auto-fit, minmax(0, 1fr));
+  grid-template-columns: 11rem repeat(auto-fit, minmax(0, 1fr));
 }
 .roster.list .r-row {
   grid-template-columns: 11rem minmax(0, 1fr);
@@ -409,20 +411,20 @@
 /* A second zone's column; unused while pages show the viewer's zone only (A38). */
 .roster.grid.twozones .r-head,
 .roster.grid.twozones .r-row {
-  grid-template-columns: 8rem 9.5rem repeat(auto-fit, minmax(0, 1fr));
+  grid-template-columns: 8rem 11rem repeat(auto-fit, minmax(0, 1fr));
 }
 .roster.list.twozones .r-row {
   grid-template-columns: 11rem 11rem minmax(0, 1fr);
 }
 .roster .r-zone {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--t-small);
   line-height: 1.25;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .roster .r-head .r-zone {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
 }
 .roster .r-head {
   position: sticky;
@@ -435,7 +437,7 @@
   font-weight: 700;
 }
 .roster .r-head > div {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
 }
 .roster .r-pos {
   display: flex;
@@ -449,7 +451,7 @@
   background: var(--surface);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 0.35rem 0.75rem;
+  padding: var(--space-1) var(--space-3);
   font-weight: 700;
   position: sticky;
   top: 2.4rem;
@@ -460,7 +462,7 @@
   top: 0;
 }
 .roster .daysel {
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 .roster .daysel span {
   font-weight: 700;
@@ -472,10 +474,10 @@
   border-top: 0;
 }
 .roster .r-time {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0;
   line-height: 1.25;
 }
 .roster .r-time .lead {
@@ -485,7 +487,7 @@
 }
 .roster .r-time .tag {
   align-self: flex-start;
-  margin-top: 0.2rem;
+  margin-top: var(--space-1);
 }
 .roster .kind-setup,
 .roster .kind-breakdown {
@@ -519,15 +521,15 @@
 .roster .slot-link {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.5rem 0.75rem 0.5rem 2.3rem;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-8);
   min-height: 3.4rem;
   color: inherit;
   text-decoration: none;
   border-left: 4px solid transparent;
 }
 .roster.noselect .slot-link {
-  padding-left: 0.75rem;
+  padding-left: var(--space-3);
 } /* no tick-box to make room for */
 .roster .tone-open .slot-link {
   border-left-color: var(--accent);
@@ -553,7 +555,7 @@
 .roster .people {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.15rem 0.6rem;
+  gap: var(--space-1) var(--space-2);
 }
 .roster .person {
   display: inline-flex;
@@ -568,8 +570,8 @@
    word is there for a screen reader, and the key gives it for everyone else. */
 .mk {
   display: inline-block;
-  margin-left: 0.15rem;
-  padding: 0 0.2rem;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
   border: 1px solid var(--line);
   border-radius: var(--r-field);
   font-size: var(--t-small);
@@ -591,7 +593,7 @@
 .roster .state {
   font-size: var(--t-small);
   display: flex;
-  gap: 0.4rem;
+  gap: var(--space-2);
   align-items: baseline;
   flex-wrap: wrap;
 }
@@ -633,7 +635,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.2rem 0.6rem;
+  gap: var(--space-1) var(--space-2);
 }
 
 .bulkbar {
@@ -641,11 +643,11 @@
   bottom: 0;
   z-index: var(--z-raised);
   display: flex;
-  gap: 0.6rem;
+  gap: var(--space-2);
   align-items: center;
   flex-wrap: wrap;
-  margin: 1rem 0 0;
-  padding: 0.75rem 1rem;
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
@@ -663,7 +665,7 @@ html.js .bulkbar:not(.active) {
 .slot-dialog {
   border: 0;
   border-radius: var(--r-card);
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: var(--space-5) var(--space-6) var(--space-6);
   max-width: min(40rem, 94vw);
   width: 100%;
   background: var(--panel);
@@ -685,11 +687,11 @@ html.js .bulkbar:not(.active) {
 .slot-dialog h2,
 .slotpage h2 {
   font-size: var(--t-lede);
-  margin-top: 1.1rem;
+  margin-top: var(--space-4);
 }
 .slot-state {
   font-weight: 700;
-  padding: 0.4rem 0.7rem;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--r-field);
   display: inline-block;
 }
@@ -733,7 +735,7 @@ fieldset.group {
 }
 fieldset.group > legend {
   padding: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
   font-weight: 700;
 }
 fieldset.group > .row > * {
@@ -755,7 +757,7 @@ input.num[size="2"] {
   --ic: var(--i-info);
   --tone: var(--accent);
   position: relative;
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-9);
   border: 0;
   border-radius: var(--r-card);
   background: var(--tag-neutral);
@@ -799,9 +801,9 @@ input.num[size="2"] {
   }
   .roster .r-time {
     flex-direction: row;
-    gap: 0.6rem;
+    gap: var(--space-2);
     align-items: baseline;
-    padding-bottom: 0.25rem;
+    padding-bottom: var(--space-1);
   }
   .roster .r-cell {
     border-left: 0;
@@ -815,7 +817,7 @@ input.num[size="2"] {
     grid-column: auto;
   }
   .roster .r-zone {
-    padding: 0 0.75rem 0.35rem;
+    padding: 0 var(--space-3) var(--space-1);
   }
   .roster .r-dayhead {
     top: 0;
@@ -853,7 +855,7 @@ input.num[size="2"] {
     border-color: #999;
   }
   .roster .slot-link {
-    padding-left: 0.5rem;
+    padding-left: var(--space-2);
   }
   .roster .r-head,
   .roster .r-dayhead {

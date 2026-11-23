@@ -32,7 +32,7 @@
     <div class="field">{{ form.body_html.label_tag }}{{ form.body_html }}{{ form.body_html.errors }}<span class="helptext">Plain paragraphs are fine, and simple formatting is kept. An unsubscribe line is added to every copy.</span></div>
   </fieldset>
 
-  <div>
+  <div class="actions">
     <button type="submit" name="action" value="send"{% if not recipients %} disabled{% endif %}>Send to {{ recipients|length }}</button>
     <button type="submit" name="action" value="outside" class="secondary">Give me the addresses instead</button>
   </div>

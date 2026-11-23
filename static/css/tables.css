@@ -24,7 +24,7 @@
      Every line of it at one inset: the panel's, or a section's. */
   .table tr {
     border-bottom: 1px solid var(--line);
-    padding: 0.5rem 0;
+    padding: var(--space-2) 0;
   }
   .table tbody tr:last-child {
     border-bottom: 0;
@@ -32,13 +32,13 @@
   .table td,
   .table th {
     border: 0;
-    padding: 0.25rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
   }
   .table.data :is(th, td):is(*, :first-child, :last-child) {
-    padding: 0.25rem 1.25rem;
+    padding: var(--space-1) var(--space-5);
   }
   .section .table.data :is(th, td):is(*, :first-child, :last-child) {
-    padding: 0.25rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
   }
   /* Stacked, a cell has lost its column heading. data-label puts it back; a table with a
      header row and no data-label is unreadable here, which is what tools/check_interface.sh

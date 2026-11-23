@@ -10,9 +10,9 @@ footer.site {
   color: var(--fg);
   border-top: 1px solid var(--line);
   text-align: center;
-  padding: 1.25rem calc(1rem + env(safe-area-inset-right, 0px))
-    calc(1.35rem + env(safe-area-inset-bottom, 0px))
-    calc(1rem + env(safe-area-inset-left, 0px));
+  padding: var(--space-5) calc(var(--space-4) + env(safe-area-inset-right, 0px))
+    calc(var(--space-5) + env(safe-area-inset-bottom, 0px))
+    calc(var(--space-4) + env(safe-area-inset-left, 0px));
 }
 footer.site p {
   margin: 0;
@@ -32,7 +32,7 @@ footer.site .credit a:hover {
 footer.site .credit {
   font-size: var(--t-small);
   color: var(--muted);
-  margin-top: 0.3rem;
+  margin-top: var(--space-1);
 }
 footer.site .credit a {
   color: inherit;

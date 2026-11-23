@@ -136,6 +136,28 @@ for path in [*sorted(pathlib.Path("static/css").glob("*.css")), *sorted(pathlib.
             if not set(m.group(1).split()) <= RADII | {"0"} | pill:
                 fail.append(f"{path}:{n}: border-radius {m.group(1).strip()}; use var(--r-field|button|card), or 50% for a circle")
 
+# Nine steps of space on a 4px grid (docs/INTERFACE.md, "Shape"; private tracker 362): every
+# margin, padding and gap is a --space token, 0 or auto. em is allowed, being space relative to
+# the text beside it; so are vw and % (a share of the window, as in a clamp()) and env() for a
+# phone's safe areas. A whole declaration is read, since
+# Prettier wraps a long one over two lines.
+SPACING = re.compile(r"(?<![\w-])((?:margin|padding)(?:-[a-z-]+)?|(?:row-|column-)?gap)\s*:\s*([^;{}]+);")
+SPACE_OK = re.compile(r"var\(--space-[1-9]\)|env\([^()]*\)|-?\d*\.?\d+(?:em|vw|vh|svh|%)(?![\w-])|\bauto\b|\bcalc\b|\bclamp\b|\b0\b|-1|[()*+,\s]")
+# The one exception: the 2px between the coverage strip's hour marks, a hairline rather than space.
+SPACE_EXCEPT = {("roster.css", ".strip-marks", "2px")}
+for path in sorted(pathlib.Path("static/css").glob("*.css")):
+    text = re.sub(r"/\*.*?\*/", lambda c: re.sub(r"[^\n]", " ", c.group(0)), path.read_text(), flags=re.S)
+    for m in SPACING.finditer(text):
+        rest = SPACE_OK.sub("", m.group(2)).strip()
+        if not rest:
+            continue
+        n = text.count("\n", 0, m.start()) + 1
+        rule = text[: m.start()].rsplit("}", 1)[-1].split("{", 1)[0].strip()
+        rule = " ".join(rule.split())
+        if (path.name, rule, m.group(2).strip()) in SPACE_EXCEPT:
+            continue
+        fail.append(f"{path}:{n}: {m.group(1)}: {m.group(2).strip()}; use var(--space-1..9), 0 or auto")
+
 # One form for every UTC date and time (#274; apps/ops/when.py): a template or a module writing
 # its own with a clock in it drifts from the rest, as a dozen of them had. ISO 8601 for machines
 # (value=, CSV, the calendar feed, the audit log), a line marked "# machine", and one marked

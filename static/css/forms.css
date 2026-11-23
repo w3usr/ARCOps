@@ -8,12 +8,12 @@ button,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: var(--space-2);
   background: var(--accent);
   color: var(--accent-fg);
   border: 1px solid transparent;
   border-radius: var(--r-button);
-  padding: 0.55rem 1.05rem;
+  padding: var(--space-2) var(--space-4);
   font: inherit;
   font-weight: 700;
   line-height: 1.5;
@@ -44,18 +44,18 @@ button,
   border-color: var(--bad);
 }
 :is(button, .button).small {
-  padding: 0.3rem 0.65rem;
+  padding: var(--space-1) var(--space-3);
   font-size: var(--t-small);
-  gap: 0.35rem;
+  gap: var(--space-1);
 }
 /* An icon alone, only for ⋮ and ?: square, and its aria-label shown under it on hover and focus,
    so the name is never only in a title a phone and the keyboard never show. */
 :is(button, .button).icon-only {
-  padding: 0.55rem;
+  padding: var(--space-2);
   position: relative;
 }
 :is(button, .button).icon-only.small {
-  padding: 0.3rem;
+  padding: var(--space-1);
 }
 :is(button, .button).icon-only[aria-label]:is(:hover, :focus-visible)::after {
   content: attr(aria-label);
@@ -64,7 +64,7 @@ button,
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-overlay);
-  padding: 0.15rem 0.45rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--r-field);
   background: var(--fg);
   color: var(--panel);
@@ -115,11 +115,11 @@ button,
 /* Link-buttons sit in a line of text, so when a row of them wraps on a phone the lines touched
    (Members, Member roster). */
 a.button {
-  margin-block: 0.25rem;
+  margin-block: var(--space-1);
 }
 button.big {
   font-size: var(--t-h2);
-  padding: 1rem 2rem;
+  padding: var(--space-4) var(--space-7);
   width: 100%;
 }
 button.wide,
@@ -131,10 +131,10 @@ button.wide,
 }
 /* Controls on the library's own pages sit next to each other with no wrapper of their own. */
 .libctl {
-  margin: 0.35rem 0.6rem 0.35rem 0;
+  margin: var(--space-1) var(--space-2) var(--space-1) 0;
 }
 .libctl.wide {
-  margin: 1rem 0 0;
+  margin: var(--space-4) 0 0;
   max-width: 28rem;
 } /* stacked under the field, as wide as it */
 .linklike {
@@ -168,7 +168,7 @@ input,
 select,
 textarea {
   font: inherit;
-  padding: 0.55rem 0.7rem;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-field);
   background: var(--panel);
@@ -188,7 +188,7 @@ textarea:focus {
    so the system draws it again. */
 select:not([multiple]) {
   appearance: none;
-  padding-right: 2.2rem;
+  padding-right: var(--space-7);
   background-image: var(--chevron);
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
@@ -216,18 +216,18 @@ input[type="radio"] {
   margin: 0;
 }
 form > div {
-  margin: 0.75rem 0;
+  margin: var(--space-3) 0;
 }
 form label,
 .field label {
   display: block;
   font-weight: 400;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 } /* a label is read, not shouted */
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: var(--space-4);
 }
 .stack > div,
 .stack > fieldset {
@@ -239,7 +239,7 @@ form label,
 .check {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: var(--space-2);
 }
 .check label {
   display: inline;
@@ -252,12 +252,12 @@ form label,
 }
 .check > .helptext {
   flex-basis: 100%;
-  margin-left: 1.7rem;
+  margin-left: var(--space-6);
   margin-top: 0;
 }
 .row {
   display: flex;
-  gap: 1rem;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 .row > * {
@@ -272,12 +272,12 @@ form label,
 /* A field whose whole content is one checkbox sits beside fields that have a label above their
    input. Without this it floats level with the labels instead of level with the inputs. */
 .row > .field > .check:only-child {
-  margin-top: 1.7rem;
+  margin-top: var(--space-6);
 }
 /* The member picker's search box with its Find button beside it. */
 .pick-q {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .pick-q input {
   flex: 1 1 auto;
@@ -295,19 +295,19 @@ form label,
 }
 .field > .check > input {
   flex: none;
-  margin-top: 0.18rem;
+  margin-top: var(--space-1);
 } /* level with the words' first line */
 .field > .check > label {
   min-width: 0;
 }
 /* A row-level action after an item in a list needs air, or "Run Remove" reads as one phrase. */
 .list > li > form.inline {
-  margin-left: 0.5rem;
+  margin-left: var(--space-2);
 }
 fieldset {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
-  padding: 0.75rem 1rem 1rem;
+  padding: var(--space-3) var(--space-4) var(--space-4);
   margin: 0;
   min-width: 0;
 }
@@ -335,7 +335,7 @@ input[type="datetime-local"] {
 }
 legend {
   font-weight: 700;
-  padding: 0 0.35rem;
+  padding: 0 var(--space-1);
 }
 fieldset .helptext {
   margin-top: 0;
@@ -343,12 +343,12 @@ fieldset .helptext {
 .addresses .addr {
   display: grid;
   grid-template-columns: minmax(0, 28rem) auto;
-  gap: 0.5rem 1rem;
+  gap: var(--space-2) var(--space-4);
   align-items: end;
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
 }
 .addresses .addr .check {
-  padding-bottom: 0.6rem;
+  padding-bottom: var(--space-2);
 }
 @media (max-width: 40rem) {
   .addresses .addr {
@@ -361,7 +361,7 @@ fieldset .helptext {
 }
 .copyrow {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
   align-items: center;
 } /* the text on the button's middle */
@@ -378,7 +378,7 @@ fieldset .helptext {
 }
 .copyrow.tight {
   flex-wrap: nowrap;
-  gap: 0.25rem;
+  gap: var(--space-1);
   align-items: center;
 }
 .copyrow.tight .iconbtn {
@@ -395,7 +395,7 @@ fieldset .helptext {
 }
 form.inline {
   display: inline-flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -403,7 +403,7 @@ form.inline {
   display: block;
   color: var(--muted);
   font-size: var(--t-small);
-  margin-top: 0.25rem;
+  margin-top: var(--space-1);
 }
 .req {
   color: var(--bad);
@@ -414,12 +414,12 @@ form.inline {
   font-size: var(--t-small);
 }
 label .req {
-  margin-left: 0.15rem;
+  margin-left: var(--space-1);
 }
 .errorlist {
   color: var(--bad);
-  margin: 0.25rem 0;
-  padding-left: 1rem;
+  margin: var(--space-1) 0;
+  padding-left: var(--space-4);
 }
 /* A field that came back wrong: the message sits with the field, and the field itself is marked. */
 .fielderror {
@@ -427,7 +427,7 @@ label .req {
   color: var(--bad);
   font-weight: 700;
   font-size: var(--t-small);
-  margin-top: 0.25rem;
+  margin-top: var(--space-1);
 }
 .field.haserror > input,
 .field.haserror > select,

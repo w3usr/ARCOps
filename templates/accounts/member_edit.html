@@ -60,7 +60,7 @@ stored in.{% endcomment %}
         <div class="field"><label for="ov-country">Issuing country</label><input id="ov-country" name="override_country" maxlength="60" value="{{ standing.license.override_country }}" placeholder="Canada"><span class="helptext">Only for a license issued outside the United States.</span></div>
       </div>
       <div class="field"><label for="ov-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="ov-reason" name="override_reason" maxlength="500" value="{{ standing.license.override_reason }}" required></div>
-      <div><button type="submit">Save</button> <button type="button" class="secondary" commandfor="lic-set" command="close">Cancel</button>{% if standing.license.has_override %} <button type="submit" name="lift" value="1" class="secondary small">Go back to the FCC value</button>{% endif %}</div>
+      <div class="actions"><button type="submit">Save</button> <button type="button" class="secondary" commandfor="lic-set" command="close">Cancel</button>{% if standing.license.has_override %} <button type="submit" name="lift" value="1" class="secondary small">Go back to the FCC value</button>{% endif %}</div>
     </form>
   </dialog>
   {% endif %}

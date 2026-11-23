@@ -25,7 +25,7 @@ th .when1 {
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 /* The events list in panels: each event a row with a date tile, not a card of its own. */
 .panel > .eventcards {
@@ -34,7 +34,7 @@ th .when1 {
 .panel .eventcard {
   border: 0;
   border-radius: 0;
-  padding: 0.85rem 1.25rem;
+  padding: var(--space-3) var(--space-5);
   background: none;
 } /* centred like every row */
 .panel .eventcard + .eventcard {
@@ -46,7 +46,7 @@ th .when1 {
   align-items: center;
   justify-content: center;
   width: 3rem;
-  padding: 0.3rem 0;
+  padding: var(--space-1) 0;
   border: 1px solid var(--line);
   border-radius: var(--r-button);
   background: var(--panel-head);
@@ -62,10 +62,10 @@ th .when1 {
   color: var(--muted);
 }
 .covline {
-  margin: 0.4rem 0 0;
+  margin: var(--space-2) 0 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: var(--space-1);
 }
 .panel.quiet {
   background: var(--panel-head);
@@ -80,7 +80,7 @@ th .when1 {
   border: 0;
   border-radius: 0;
   background: none;
-  padding: 0.85rem 1.25rem;
+  padding: var(--space-3) var(--space-5);
 }
 :is(.msglist.panel > li + li, .msgpanel > details + details).card {
   border-top: 1px solid var(--line);
@@ -94,13 +94,13 @@ th .when1 {
 .eventcard {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
-  padding: 0.85rem 1rem;
+  padding: var(--space-3) var(--space-4);
   background: var(--panel);
 }
 .eventcard-head {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 .eventcard-title {
@@ -112,7 +112,7 @@ th .when1 {
   text-decoration: underline;
 }
 .eventcard .when {
-  margin: 0.35rem 0 0;
+  margin: var(--space-1) 0 0;
   font-size: var(--t-body);
 }
 
@@ -170,7 +170,7 @@ pre {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--r-field);
-  padding: 0.2rem;
+  padding: var(--space-1);
 }
 
 /* The levels ladder: each one named, described in a line, with what it can do underneath. */
@@ -180,10 +180,10 @@ pre {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s2);
+  gap: var(--space-3);
 }
 .levels > li {
-  padding: var(--s2) 0;
+  padding: var(--space-3) 0;
   border-top: 1px solid var(--line);
 }
 .levels > li:first-child {
@@ -194,15 +194,15 @@ pre {
   padding-bottom: 0;
 }
 .levels .check {
-  gap: var(--s1) var(--s2);
+  gap: var(--space-1) var(--space-3);
   flex-wrap: wrap;
 }
 /* The level you act at now is where you are: the soft fill and the bold label, it alone. */
 .levels > li.current {
   background: var(--accent-soft);
   border-radius: var(--r-card);
-  padding: var(--s2);
-  margin-inline: calc(-1 * var(--s2));
+  padding: var(--space-3);
+  margin-inline: calc(-1 * var(--space-3));
 } /* the fill reaches out; the radio stays in line */
 .levels > li.current label {
   font-weight: 700;
@@ -212,10 +212,10 @@ pre {
   border-top: 0;
 }
 .levels .helptext {
-  margin: var(--s1) 0 0 1.7rem;
+  margin: var(--space-1) 0 0 var(--space-6);
 }
 .levels details {
-  margin-left: 1.7rem;
+  margin-left: var(--space-6);
 }
 .levels summary {
   font-size: var(--t-small);
@@ -229,7 +229,7 @@ pre {
 }
 .addresses-list > li {
   margin: 0;
-  padding: var(--s2) 0;
+  padding: var(--space-3) 0;
   border-top: 1px solid var(--line);
 }
 .addresses-list > li:first-child {
@@ -245,7 +245,7 @@ pre {
   margin: 0;
 }
 .addresses-list .addr-state {
-  margin: var(--s1) 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--muted);
   font-size: var(--t-small);
 }
@@ -256,8 +256,8 @@ pre {
 .addresses-list .addr-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s1) var(--s3);
-  margin: var(--s1) 0 0;
+  gap: var(--space-1) var(--space-5);
+  margin: var(--space-1) 0 0;
 }
 .addresses-list .addr-actions:empty {
   display: none;
@@ -265,16 +265,16 @@ pre {
 /* Django renders a multiple-checkbox field as a <ul>; it wants no bullets and no indent. */
 .checkset > ul {
   list-style: none;
-  margin: var(--s1) 0 0;
+  margin: var(--space-1) 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s1);
+  gap: var(--space-1);
 }
 .checkset > ul li {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: var(--space-2);
 }
 .checkset > ul label {
   display: inline;
@@ -293,7 +293,7 @@ pre {
   text-decoration: none;
   display: inline-flex;
   align-items: baseline;
-  gap: 0.3rem;
+  gap: var(--space-1);
 }
 .sortlink:hover {
   text-decoration: underline;
@@ -322,11 +322,11 @@ pre {
   color: var(--muted);
 }
 td.empty {
-  padding: var(--s3) var(--s2);
+  padding: var(--space-5) var(--space-3);
 }
 li.empty {
   list-style: none;
-  margin-left: -1.25rem;
+  margin-left: calc(-1 * var(--space-5));
 }
 
 /* The count of who an announcement reaches, with the control that counts again beside it. */
@@ -334,7 +334,7 @@ li.empty {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s3);
+  gap: var(--space-5);
   flex-wrap: wrap;
 }
 .note.recipients p {
@@ -347,13 +347,13 @@ li.empty {
    check. Next: a dark outline and a bold word. To do: a gray outline. Not open yet: dashed. Each
    keeps its word. */
 .stages {
-  margin: var(--s1) 0 var(--s4);
+  margin: var(--space-1) 0 var(--space-7);
 }
 .stages ol {
   list-style: none;
   display: flex;
   gap: 0;
-  margin: 0 -0.5rem;
+  margin: 0 calc(-1 * var(--space-2));
   padding: 0;
 }
 .stages ol > li {
@@ -370,7 +370,7 @@ li.empty {
   flex: 1 1 1rem;
   min-width: 1rem;
   height: 1px;
-  margin: 0 0.25rem;
+  margin: 0 var(--space-1);
   background: var(--line-strong);
 }
 .stages .cell {
@@ -378,8 +378,8 @@ li.empty {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-2);
   border-radius: var(--r-button);
   color: var(--fg);
   text-decoration: none;
@@ -450,8 +450,8 @@ li.empty {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  margin: var(--s2) 0 0;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
   padding: 0;
   font-size: var(--t-small);
 }
@@ -459,7 +459,7 @@ li.empty {
   content: "Optional";
   content: "Optional" / "";
   color: var(--muted);
-  margin-right: 0.25rem;
+  margin-right: var(--space-1);
 } /* the list is already named Optional */
 .stages .opt li {
   flex: none;
@@ -467,7 +467,7 @@ li.empty {
 .stages .opt a {
   display: inline-block;
   line-height: 1.875rem;
-  padding: 0 1rem; /* 30px and the outline: 32px. Inline-block keeps "Name: state" one run */
+  padding: 0 var(--space-4); /* 30px and the outline: 32px. Inline-block keeps "Name: state" one run */
   border: 1px solid var(--line-strong);
   border-radius: var(--r-card);
   color: var(--fg);
@@ -475,10 +475,10 @@ li.empty {
   text-decoration: none;
 }
 .stages .opt a:has(> .icon) {
-  padding-left: 0.5rem;
+  padding-left: var(--space-2);
 }
 .stages .opt a > .icon {
-  margin-right: 0.5rem;
+  margin-right: var(--space-2);
   vertical-align: -0.2rem;
   color: var(--ok);
 }
@@ -508,7 +508,7 @@ li.empty {
 @media (max-width: 40rem) {
   .tabs a {
     flex: 1 1 0;
-    padding: 0 0.5rem;
+    padding: 0 var(--space-2);
   }
   .tabs a .icon {
     display: none;
@@ -523,11 +523,11 @@ li.empty {
   .stages ol > li:not(:last-child)::after {
     flex: 1 1 0;
     min-width: 0.25rem;
-    margin: 0 0.125rem;
+    margin: 0 var(--space-1);
   }
   .stages .cell {
-    gap: 0.5rem;
-    padding: 0.25rem;
+    gap: var(--space-2);
+    padding: var(--space-1);
   }
   .stages ol > li:not(.next):not(:has([aria-current])) .txt,
   .stages ol:has([aria-current]) > li.next:not(:has([aria-current])) .nm {
@@ -548,7 +548,7 @@ li.empty {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0 var(--s3);
+  gap: 0 var(--space-5);
 }
 .dl.summary dd.missing > span {
   color: var(--warn);
@@ -568,9 +568,9 @@ li.empty {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s2) var(--s3);
-  margin-top: var(--s4);
-  padding-top: var(--s3);
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--line);
 }
 
@@ -589,7 +589,7 @@ li.empty {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s1) var(--s3);
+  gap: var(--space-1) var(--space-5);
 }
 .dz-row > div {
   flex: 1 1 18rem;
@@ -599,11 +599,11 @@ li.empty {
   font-size: var(--t-body);
 }
 .dz-row p {
-  margin: 0.2rem 0 0;
+  margin: var(--space-1) 0 0;
 }
 .card.dangerzone > :is(.dz-row, dialog) + .dz-row {
-  margin-top: var(--s3);
-  padding-top: var(--s3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--line);
 }
 
@@ -618,26 +618,26 @@ dialog.slot-dialog:modal {
 } /* centered, even as a card's last child, whose margin a card zeroes */
 .slot-dialog > h2:first-child {
   margin-top: 0;
-  padding-right: 2rem;
+  padding-right: var(--space-7);
 }
 /* One header and footer for every confirmation: its question as a header band over a rule,
    and its choices as a footer band, the safe one first and the primary at the right. The dialog's
    own padding is 1.25rem 1.5rem 1.5rem; the bands reach its edges. */
 .confirm-dialog > h2:first-child {
-  margin: -1.25rem -1.5rem 1rem;
-  padding: 1rem 1.5rem;
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-6)) var(--space-4);
+  padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--line);
 }
 .confirm-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: var(--s1);
-  margin-top: var(--s2);
+  gap: var(--space-1);
+  margin-top: var(--space-3);
 }
 .confirm-dialog .confirm-actions {
-  margin: var(--s3) -1.5rem -1.5rem;
-  padding: 0.85rem 1.5rem;
+  margin: var(--space-5) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  padding: var(--space-3) var(--space-6);
   border-top: 1px solid var(--line);
   background: var(--panel-head);
   border-radius: 0 0 var(--r-card) var(--r-card);
@@ -654,8 +654,8 @@ details:not(.filter) > summary {
   width: fit-content;
   font-weight: 700;
   border-radius: var(--r-field);
-  padding: 0.15rem 0.4rem;
-  margin-left: -0.4rem;
+  padding: var(--space-1) var(--space-2);
+  margin-left: calc(-1 * var(--space-2));
 } /* room for the state layer; the text stays put */
 details:not(.filter) > summary::-webkit-details-marker {
   display: none;
@@ -675,7 +675,7 @@ details[open]:not(.filter) > summary::before {
   margin-bottom: 0.3em;
 }
 details:not(.filter, .inline) {
-  margin-block: var(--s2);
+  margin-block: var(--space-3);
 }
 /* Manage this slot: its heading is the summary, on the chevron's line. */
 .manage-slot > summary > h2 {
@@ -683,16 +683,16 @@ details:not(.filter, .inline) {
   margin: 0;
 }
 .manage-slot[open] > summary {
-  margin-bottom: var(--s2);
+  margin-bottom: var(--space-3);
 }
 details[open]:not(.filter, .card, .msglist details) > :not(summary) {
-  margin-left: 0.35rem;
-  padding-left: 0.9rem;
+  margin-left: var(--space-1);
+  padding-left: var(--space-4);
   border-left: 2px solid var(--line);
 }
 /* A whole message or announcement folded into its card: the summary is its heading line. */
 details[open]:is(.card, .msglist details) > :not(summary) {
-  margin-left: 1.25rem;
+  margin-left: var(--space-5);
 }
 details:is(.card, .msglist details) > summary {
   width: auto;
@@ -705,8 +705,8 @@ details:is(.card, .msglist details) > summary {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.5rem;
-  margin-top: 0.6rem;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 .row-form label {
   display: block;
@@ -722,8 +722,8 @@ details:is(.card, .msglist details) > summary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s1) var(--s3);
-  margin-top: var(--s1);
+  gap: var(--space-1) var(--space-5);
+  margin-top: var(--space-1);
 }
 
 /* The access-groups grid: one row per capability, one column per group. It scrolls sideways on a
@@ -767,8 +767,8 @@ a.whoami {
 
 /* Move, split, merge on a slot's page: three small forms, each under its own heading, apart. */
 .reshape {
-  gap: 1.5rem;
-  margin-top: 0.75rem;
+  gap: var(--space-6);
+  margin-top: var(--space-3);
 }
 .reshape h3 {
   margin: 0;
@@ -791,7 +791,7 @@ a.whoami {
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  padding: 0.15rem 0.45rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--r-field);
   background: var(--fg);
   color: var(--panel);

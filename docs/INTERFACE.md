@@ -428,6 +428,20 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 | `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu, a chip (an optional step) |
 | `--r-pill` | full | the navigation's entries (sidebar, rail and drawer, #145) and a switch's choices (#271) |
 
+**Space is nine steps on a 4 px grid** (SK, 2026-11-23, private tracker 362), and every margin,
+padding and gap takes one of them, `0` or `auto`; `tools/check_interface.sh` refuses anything
+else. em (space relative to the text beside it), vw and % in a `clamp()`, and `env()` for a phone's
+safe areas are allowed. The one exception is the 2 px between the coverage strip's hour marks, a
+hairline rather than space.
+
+| Token | Size | | Token | Size |
+|---|---|---|---|---|
+| `--space-1` | 4 px | | `--space-6` | 24 px |
+| `--space-2` | 8 px | | `--space-7` | 32 px |
+| `--space-3` | 12 px | | `--space-8` | 40 px |
+| `--space-4` | 16 px | | `--space-9` | 48 px |
+| `--space-5` | 20 px | | | |
+
 **The navigation is Material 3's** (SK, 2026-11-11, #145): a drawer entry 48 px high (M3 says
 56; SK chose 48 so a long menu fits) with a 24 px icon and a 14 px label, the rail 80 px wide with
 each icon in a 56 by 32 px pill, and the entry for this page in a pill of the club's soft color,

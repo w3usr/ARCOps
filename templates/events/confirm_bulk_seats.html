@@ -15,7 +15,7 @@
   <p>{% if plan %}{{ plan|length }} slot{{ plan|length|pluralize }} change{{ plan|length|pluralize:"s," }}. Everyone signed up keeps their seat, and a seat added is offered to the waitlist.{% else %}No slot changes.{% endif %}</p>
   {% if refused %}<p class="msg warning"><span class="lvl">Careful:</span> {{ refused|length }} slot{{ refused|length|pluralize }} {{ refused|length|pluralize:"is,are" }} left as {{ refused|length|pluralize:"it is,they are" }}, because people hold more seats than {{ refused|length|pluralize:"it,they" }} would have:</p>
   <ul class="list">{% for r in refused %}<li>{{ r }}</li>{% endfor %}</ul>{% endif %}
-  <div>{% if plan %}<button type="submit" name="step" value="apply">Change seats on {{ plan|length }} slot{{ plan|length|pluralize }}</button> {% endif %}<button type="submit" name="step" value="" class="secondary">Change the numbers</button> <a class="button secondary" href="{% url 'event_detail' event.pk %}">Keep them as they are</a></div>
+  <div class="actions">{% if plan %}<button type="submit" name="step" value="apply">Change seats on {{ plan|length }} slot{{ plan|length|pluralize }}</button> {% endif %}<button type="submit" name="step" value="" class="secondary">Change the numbers</button> <a class="button secondary" href="{% url 'event_detail' event.pk %}">Keep them as they are</a></div>
   {% else %}
   <p>For each role, leave its seats as they are, or set, add or remove a number of seats on every slot you ticked.</p>
   {% for r in roles %}
@@ -26,7 +26,7 @@
     </div>
   </fieldset>
   {% endfor %}
-  <div><button type="submit" name="step" value="review">Review the change</button> <a class="button secondary" href="{% url 'event_detail' event.pk %}">Cancel</a></div>
+  <div class="actions"><button type="submit" name="step" value="review">Review the change</button> <a class="button secondary" href="{% url 'event_detail' event.pk %}">Cancel</a></div>
   {% endif %}
 </form>
 {% endblock %}

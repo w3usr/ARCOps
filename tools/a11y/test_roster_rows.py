@@ -80,3 +80,40 @@ def test_at_phone_width_each_cell_names_its_position_and_the_header_stays(live_s
         f"each names its position: {cells[:4]}"
     )
     assert headers == 1, "the column header is still in the accessibility tree"
+
+
+# A member's roster is a grid, an officer's a list.
+@pytest.mark.parametrize("role", ["member", "officer"])
+@pytest.mark.parametrize("width", [1280, 800])  # either side of 60rem, both at desktop density
+@pytest.mark.parametrize("zone", ["UTC", "Asia/Kolkata"])  # :30 offsets make longer labels
+def test_the_time_stays_inside_its_column(live_server, engine, role, width, zone):
+    """The label "11:00 PM–midnight" ran past the time column into the slot's bar at 1280 px (SK, the
+    contact sheet of 2026-11-23): the column is a fixed width, the same in every row, so the
+    widest label the roster draws has to fit it."""
+    from apps.events.models import Event
+
+    ev = Event.objects.filter(start__isnull=False).first()
+    with sync_playwright() as p:
+        browser = getattr(p, engine).launch()
+        page = browser.new_page(viewport={"width": width, "height": 900}, timezone_id=zone)
+        sign_in(page, live_server.url, ACCOUNTS[role])
+        page.goto(f"{live_server.url}/")
+        page.wait_for_function("document.cookie.split('; ').some(c => c.startsWith('tz='))")
+        page.goto(f"{live_server.url}/events/{ev.pk}/")
+        layout = page.get_attribute(".roster", "class")
+        over = page.eval_on_selector_all(
+            ".r-row:not([hidden]) .r-time",
+            """cells => cells.map(c => {
+                const cs = getComputedStyle(c), box = c.getBoundingClientRect();
+                const inner = box.right - parseFloat(cs.paddingRight);
+                const lead = c.querySelector('.lead');
+                if (!lead) return null;
+                // The text itself: the label's own box is stretched to the column, so its edge
+                // always fits while the words run on past it.
+                const text = document.createRange();
+                text.selectNodeContents(lead);
+                return [lead.textContent.trim(), text.getBoundingClientRect().right - inner];
+            }).filter(x => x && x[1] > 0.5)""",
+        )
+        browser.close()
+    assert not over, f"labels past the time column's edge in .{layout} (px): {over}"

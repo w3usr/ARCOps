@@ -22,7 +22,7 @@ html[data-nav="rail"] .shell {
 }
 /* The bar over every signed-in page, holding the UTC clock. */
 .page > .banner {
-  margin: 1rem clamp(1rem, 4vw, 3rem) 0;
+  margin: var(--space-4) clamp(var(--space-4), 4vw, var(--space-9)) 0;
 }
 
 .topbar {
@@ -36,23 +36,23 @@ html[data-nav="rail"] .shell {
   height: 100svh;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
   background: var(--surface);
   border-right: 1px solid var(--line);
-  padding: 1rem 0.75rem;
+  padding: var(--space-4) var(--space-3);
   overflow-y: auto;
 }
 .sidenav-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.25rem 0.25rem 0.75rem;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-1) var(--space-3);
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   color: inherit;
   text-decoration: none;
   min-width: 0;
@@ -95,9 +95,9 @@ html[data-nav="rail"] .shell {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.75rem;
+  gap: var(--space-3);
   min-height: 3rem;
-  padding: 0 1.5rem 0 1rem;
+  padding: 0 var(--space-6) 0 var(--space-4);
   border-radius: var(--r-pill);
   color: var(--fg);
   text-decoration: none;
@@ -129,8 +129,8 @@ html[data-nav="rail"] .shell {
    adds. Each later group is introduced by a rule and a small label, so the dividing line is
    visible; the label names the list for a screen reader through aria-labelledby. */
 .navgroup {
-  margin: 0.75rem 1rem 0.25rem;
-  padding-top: 0.75rem;
+  margin: var(--space-3) var(--space-4) var(--space-1);
+  padding-top: var(--space-3);
   border-top: 1px solid var(--line);
   font-size: var(--t-small);
   font-weight: 700;
@@ -138,19 +138,19 @@ html[data-nav="rail"] .shell {
 }
 .sidenav-foot {
   margin-top: auto;
-  padding-top: 0.75rem;
+  padding-top: var(--space-3);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   border-top: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: var(--space-1);
 }
 .whoami {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   margin: 0;
-  padding: 0.5rem 1rem;
+  padding: var(--space-2) var(--space-4);
   color: var(--muted);
   font-size: var(--t-small);
   min-width: 0;
@@ -182,7 +182,7 @@ html[data-nav="rail"] .shell {
 
 /* Rail: labels stay in the accessibility tree, hidden visually. */
 html[data-nav="rail"] .sidenav {
-  padding-inline: 0.5rem;
+  padding-inline: var(--space-2);
 }
 html[data-nav="rail"] .sidenav-head {
   justify-content: center;
@@ -211,7 +211,7 @@ html[data-nav="rail"] .navbtn {
   width: 3.5rem;
   min-height: 2rem;
   height: 2rem;
-  margin: 0.5rem auto;
+  margin: var(--space-2) auto;
   padding: 0;
 }
 html[data-nav="rail"] .whoami {
@@ -233,7 +233,7 @@ html[data-nav="rail"] #nav-toggle .icon {
   white-space: nowrap;
   border: 1px solid var(--line);
   border-radius: var(--r-button);
-  padding: 0.45rem 2rem 0.45rem 0.7rem;
+  padding: var(--space-2) var(--space-7) var(--space-2) var(--space-3);
   background: var(--panel);
 }
 .filter > summary::-webkit-details-marker {
@@ -266,7 +266,7 @@ html[data-nav="rail"] #nav-toggle .icon {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   background: var(--panel);
-  padding: 0.5rem 0.7rem;
+  padding: var(--space-2) var(--space-3);
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
   margin: 0;
   /* As wide as its longest label, and every row starting at the same edge: the panel sits in a
@@ -280,7 +280,7 @@ html[data-nav="rail"] #nav-toggle .icon {
 /* The panel is as wide as its longest label, so the box stays beside the word rather than
    wrapping above it. */
 .filter .check {
-  margin: 0.2rem 0;
+  margin: var(--space-1) 0;
   flex-wrap: nowrap;
   white-space: nowrap;
   justify-content: flex-start;
@@ -294,7 +294,8 @@ html[data-nav="rail"] #nav-toggle .icon {
 }
 
 .content {
-  padding: 1.75rem clamp(1rem, 4vw, 3rem) 3rem;
+  padding: var(--space-7) clamp(var(--space-4), 4vw, var(--space-9))
+    var(--space-9);
   max-width: 72rem;
   width: 100%;
 }
@@ -312,8 +313,9 @@ html[data-nav="rail"] #nav-toggle .icon {
   .topbar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+    gap: var(--space-2);
+    padding: calc(var(--space-2) + env(safe-area-inset-top, 0px)) var(--space-3)
+      var(--space-2);
     border-bottom: 1px solid var(--line);
     background: var(--surface);
     position: sticky;
@@ -381,18 +383,18 @@ html[data-nav="rail"] #nav-toggle .icon {
     min-height: 3rem;
     height: auto;
     margin: 0;
-    padding: 0 1.5rem 0 1rem;
+    padding: 0 var(--space-6) 0 var(--space-4);
   }
   html[data-nav="rail"] .whoami {
     justify-content: flex-start;
-    padding-inline: 1rem;
+    padding-inline: var(--space-4);
   }
   html[data-nav="rail"] .brand img {
     width: 3.5rem;
     height: 3.5rem;
   }
   .content {
-    padding: 1.25rem 1rem 2.5rem;
+    padding: var(--space-5) var(--space-4) var(--space-8);
   }
 }
 @media (prefers-reduced-motion: reduce) {
