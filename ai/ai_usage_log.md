@@ -5361,4 +5361,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/js/app.js, nav-state.js, push.js, richtext-check.js and static/sw.js (Prettier 3.6.2; 137 lines become 404, no code changed); .prettierignore (new: static/js/vendor/, so htmx stays as published); tools/check.sh and .github/workflows/ci.yml (the Prettier check covers static/js and static/sw.js).
 - **Nature of Contribution**: Formatting, configuration. Verified: every file still parses (node --check); the vendored htmx file is untouched; the accessibility and layout tests, which drive app.js in Chromium and WebKit, pass (100 passed, 1 skipped), as do all 670 application tests. sw.js is the service worker: browsers will install the reformatted one on their next visit; its cache name is unchanged.
 - **Human Review Status**: Pending review
-- **Git Hash**: (after commit)
+- **Git Hash**: e0977ad
