@@ -30,7 +30,20 @@ jobs:
   accessibility:
     # FR-117, TR-36: axe-core over every page of the seeded demo, at desktop and phone width
     # (FR-95). A serious or critical violation fails the build, and a red build is never deployed.
+    # One job per browser, side by side; one failing does not stop the others (SK, 2026-11-23).
+    # The Chromium job also runs the tests that use no browser fixture (the contact sheet).
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - browser: chromium
+            only: "not firefox and not webkit"
+          - browser: firefox
+            only: firefox
+          - browser: webkit
+            only: webkit
+    name: accessibility (${{ matrix.browser }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,9 +51,9 @@ jobs:
           python-version: "3.13"
           cache: pip
       - run: pip install -r requirements-dev.txt
-      - run: playwright install --with-deps chromium firefox webkit
+      - run: playwright install --with-deps ${{ matrix.browser }}
       - name: The club's own words for a dependency's strings (TR-45), so the pages read as deployed
         run: python manage.py compile_locale --settings=config.settings.test
       - name: Accessibility (axe-core) and phone-width check
         # One worker per role: each is mostly waiting on a browser, not computing.
-        run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q -n auto
+        run: pytest tools/a11y -o addopts="" -p no:cacheprovider -q -n auto -k "${{ matrix.only }}"
