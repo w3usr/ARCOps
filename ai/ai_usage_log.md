@@ -5306,3 +5306,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Documentation, from the day's dated decisions and the code (apps/accounts/pwned.py, config/settings/base.py, apps/ops/migrations/0011). Verified: the club-neutral guard passes.
 - **Human Review Status**: Pending review
 - **Git Hash**: 41edbf0
+
+## [2026-11-23 12:17 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A guardian signed up for the same slot as their ward is named the ward's responsible adult automatically, and the designation goes when the guardian leaves (private tracker 358; SK's choices of 2026-11-23).
+- **Sections/Files Affected**: apps/events/services/adults.py (new: name_guardians_on_slot, release_guardian); apps/events/models.py (ResponsibleAdult.automatic); apps/events/migrations/0013 (the field; pairs already on a slot ahead named); apps/events/services/viability.py (an automatic designation counts only while the guardian is on the slot); the sign-up paths in apps/events/views.py, views_slots.py, services/waitlist.py, services/reshape.py (merge names, split keeps the flag) and the withdrawal paths in views.py and services/notify.py; apps/events/tests/test_guardian_on_slot.py (new, 7 tests); docs/REQUIREMENTS.md (addendum A40 and its attribution line; the body unchanged).
+- **Nature of Contribution**: Code generation, tests, documentation. Verified: 3 of the new tests fail against the previous code (the bug, the cancel, the merge); all 669 application tests, ruff, the three guards and the migration check pass; the accessibility sweep in Chromium and WebKit passes (81 passed, 2 skipped).
+- **Human Review Status**: Pending review
+- **Git Hash**: (after commit)

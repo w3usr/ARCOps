@@ -546,6 +546,10 @@ def access_removed(actor: User, user: User) -> int:
                 su,
                 before={"role": su.role, "user": su.user_id, "by": "access removed"},
             )
+    from .adults import release_guardian
+
+    for su in signups:
+        release_guardian(actor, su)  # A40
     SignUp.objects.filter(pk__in=[s.pk for s in signups]).delete()
     from . import waitlist
 

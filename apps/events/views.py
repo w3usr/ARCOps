@@ -16,6 +16,7 @@ from apps.ops.templatetags.labels import role_label
 
 from . import contest_fields
 from .models import Event, RoleCapacity, SignUp, Slot
+from .services.adults import name_guardians_on_slot, release_guardian
 from .services.eligibility import can_sign_up
 from .services.notify import drop_empty_sections
 from .services.roster import build as build_roster
@@ -157,6 +158,7 @@ def sign_up(request, slot_id):
         messages.info(request, "You already hold this slot.")
     else:
         record(request.user, "signup.created", su, after={"role": role})
+        name_guardians_on_slot(request.user, su)  # A40
         messages.success(
             request, f"Signed up as {role_label(role)} for {when.local(slot.start, year=True)}."
         )
@@ -220,6 +222,7 @@ def cancel_signup(request, signup_id):
     else:
         notify.removed_by_captain(request.user, su, reason)  # FR-58
     role = su.role
+    release_guardian(request.user, su)  # A40
     su.delete()
     from .services import waitlist
 
@@ -276,6 +279,7 @@ def cannot_by_token(request, token):
         )
         notify.member_cancelled(su.user, su, broken)
         event_pk, slot, role = su.slot.event.pk, su.slot, su.role
+        release_guardian(su.user, su)  # A40
         su.delete()
         from .services import waitlist
 

@@ -16,6 +16,7 @@ from apps.ops import when
 from apps.ops.audit import record
 
 from ..models import Event, ResponsibleAdult, RoleCapacity, SignUp, Slot, Waitlist
+from .adults import name_guardians_on_slot
 from .notify import slot_link, when_text
 from .slots import SHORTEST, fits_on_air
 
@@ -125,7 +126,12 @@ def split(actor, slot: Slot, at) -> Slot:
         )
         ResponsibleAdult.objects.bulk_create(
             ResponsibleAdult(
-                signup=copy, name=a.name, email=a.email, phone=a.phone, member=a.member
+                signup=copy,
+                name=a.name,
+                email=a.email,
+                phone=a.phone,
+                member=a.member,
+                automatic=a.automatic,
             )
             for a in adults
         )
@@ -172,6 +178,8 @@ def merge(actor, first: Slot, second: Slot) -> int:
             su.slot = first
             su.save(update_fields=["slot"])
             grew.append((su, was[second.pk]))
+    for su in first.signups.all():  # a guardian and their ward may meet in the merged slot (A40)
+        name_guardians_on_slot(actor, su)
     seats = {c.role: c.capacity for c in first.capacities.all()}
     for c in second.capacities.all():
         seats[c.role] = max(seats.get(c.role, 0), c.capacity)

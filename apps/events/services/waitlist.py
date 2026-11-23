@@ -16,6 +16,7 @@ from apps.ops.config import setting
 from apps.ops.templatetags.labels import role_label
 
 from ..models import Event, RoleCapacity, SignUp, Slot, Waitlist
+from .adults import name_guardians_on_slot
 
 
 def offer_hours() -> int:
@@ -124,6 +125,7 @@ def accept(user, entry: Waitlist) -> SignUp | None:
     entry.state = Waitlist.State.ACCEPTED
     entry.save(update_fields=["state"])
     record(user, "signup.created", su, after={"role": entry.role, "waitlist": entry.pk})
+    name_guardians_on_slot(user, su)  # A40
     return su
 
 

@@ -283,6 +283,9 @@ class ResponsibleAdult(models.Model):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     present_at = models.DateTimeField(null=True, blank=True)  # recorded at check-in
+    # Named because a guardian holds a sign-up on the same slot (A40, private tracker 358); it
+    # counts only while they do, and goes when they leave.
+    automatic = models.BooleanField(default=False)
 
     @property
     def contact_email(self) -> str:

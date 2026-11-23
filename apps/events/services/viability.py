@@ -158,9 +158,13 @@ def evaluate(slot, signups=None) -> SlotStatus:
     for label in missing:
         reasons.append(f"nobody with {label}")
 
-    # Minors need their designated responsible adult on the sign-up (FR-64).
+    # Minors need their designated responsible adult on the sign-up (FR-64). A guardian named
+    # automatically counts only while on the slot, so a cancel warns before it happens (A40).
+    here = {s.user_id for s in signups}
     for s in signups:
-        if s.user.under_18 and not s.responsible_adults.exists():
+        if s.user.under_18 and not any(
+            not a.automatic or a.member_id in here for a in s.responsible_adults.all()
+        ):
             ok = False
             reasons.append(f"{s.user.short_name} (under 18) has no responsible adult designated")
 

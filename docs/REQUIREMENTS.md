@@ -3259,7 +3259,36 @@ of the person's messages, invitations, notes on sign-ups, or two-step verificati
 **Decided** by SK on 2026-11-19, answering private tracker 329 (the outbox, invitations, notes and
 the audit entry each chosen as recommended). *Record:* this addendum.
 
+### A40. FR-64: a guardian on the same slot is the minor's responsible adult
+
+**Original (FR-64).** "When a guardian signs a minor up for a slot, they designate one or more
+**responsible adults** … A minor's sign-up with no responsible adult designated makes the slot
+*not viable*." A guardian who signed up for the same slot as their ward was not counted until
+someone named them by hand, so the slot read *Needs a responsible adult* with the guardian in it.
+
+**Decision.**
+- **A guardian on the slot is named automatically.** When a minor and one of their active, adult
+  guardians both hold a sign-up on the same slot, whichever signed up second, the guardian is
+  named the minor's responsible adult for that sign-up, as if the guardian had picked themselves
+  by name. This holds however the sign-up was made: on the slot, several slots at once, a captain
+  signing someone up, a waitlist place taken, or two slots merged. Pairs already signed up for a
+  slot ahead were named when this change was deployed.
+- **It reads as any other designation.** The roster, the slot's *who accompanies* list, check-in
+  and its *present* tick read it as they read an adult named by hand, and the audit log records
+  it as `responsible_adult.named` with *guardian on the slot*.
+- **It goes when the guardian leaves.** When the guardian gives the slot up, is removed by a
+  captain, or loses access, the automatic designation goes with them (`responsible_adult.removed`,
+  *left the slot*), and the slot reads *Needs a responsible adult* again unless someone else is
+  named. The cancel's warning counts it already gone. An adult named by hand stays, as before.
+- An automatic designation still counts if the guardian link ends while both remain on the slot;
+  the captain or guardian edits the designation then, as for any other.
+
+**Decided** by SK on 2026-11-23, answering private tracker 358 (a guardian's report of 2026-11-21,
+signed up for the same slot as their ward and still told a responsible adult was needed): the
+ordinary designation written automatically, rather than counted without one or offered as a
+question at sign-up, and removed when the guardian leaves. *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38) and 2026-11-19 (A39), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39) and 2026-11-23 (A40), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

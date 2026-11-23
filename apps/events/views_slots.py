@@ -35,6 +35,7 @@ from apps.ops.templatetags.labels import role_label
 
 from .models import EligibilityRule, Event, RoleCapacity, SignUp, Slot, Waitlist
 from .services import reshape, waitlist
+from .services.adults import name_guardians_on_slot
 from .services.eligibility import can_sign_up
 from .services.notify import assigned_by_captain
 from .services.roster import cell_for
@@ -275,6 +276,7 @@ def slot_assign(request, pk, slot_id):
     )
     if created:
         record(request.user, "signup.assigned", su, after={"role": role, "user": member.pk})
+        name_guardians_on_slot(request.user, su)  # A40
         if member != request.user:
             assigned_by_captain(request.user, su)  # FR-58
         messages.success(request, f"{member.short_name} signed up as {role_label(role)}.")
@@ -329,6 +331,7 @@ def event_bulk(request, pk):
                 continue
             su = SignUp.objects.create(slot=s, user=request.user, role=role, note=note)
             record(request.user, "signup.created", su, after={"role": role, "bulk": True})
+            name_guardians_on_slot(request.user, su)  # A40
             done.append(s)
         if done:
             messages.success(
