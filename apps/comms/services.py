@@ -54,6 +54,19 @@ def _plain_text(body_html: str) -> str:
     return converter.handle(body_html)
 
 
+def _for_a_minor(user, subject: str, body_html: str) -> tuple[str, str]:
+    """A minor's message goes to their guardians too (FR-70), written to the minor. A guardian
+    who is also a member could not tell it from their own, so the subject and the first line say
+    whose it is (addendum A41; private tracker 359). Here, not in delivery, so the outbox, My
+    messages and the browser push read the same."""
+    first = escape(user.display_first)
+    line = (
+        f"<p>This message is for <strong>{escape(user.full_name)}</strong> (under 18) and goes to "
+        f"{first}'s guardians as well.</p>"
+    )
+    return f"[For {user.short_name}] {subject}", line + body_html
+
+
 def compose(
     user,
     category: str,
@@ -66,6 +79,8 @@ def compose(
     as with an invitation) and deliver it if allowed."""
     if to is None:
         to = recipient_addresses(user) if user else []
+        if user and user.under_18 and user.guardianships.filter(active=True).exists():
+            subject, body_html = _for_a_minor(user, subject, body_html)
     msg = Outbox.objects.create(
         user=user,
         to_addresses=to,

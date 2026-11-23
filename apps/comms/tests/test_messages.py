@@ -390,3 +390,31 @@ def test_the_weekly_digest_calls_itself_weekly():
 
     assert "fortnight" not in DEFAULTS_BY_KEY["digest.weekly"]["subject"]
     assert TEMPLATE_WORDS["digest.weekly"][0] == "The weekly digest"
+
+
+def test_a_minors_message_says_whose_it_is_to_the_guardians():
+    """Private tracker 359: a reminder for a minor reached both guardians with nothing naming the
+    minor. The subject and the first line now do, in the outbox, the push and the email alike; a
+    message to anyone else is unchanged. Made-up names."""
+    from apps.accounts.models import Guardianship
+
+    _on()
+    kid = User.objects.create_user(
+        "", "pw-Testing-123", first_name="Quinn", last_name="Vale", under_18=True
+    )
+    for addr, first in (("robin@example.org", "Robin"), ("sam@example.org", "Sam")):
+        g = User.objects.create_user(addr, "pw-Testing-123", first_name=first, last_name="F")
+        Guardianship.objects.create(minor=kid, guardian=g)
+    msg = compose(kid, "reminder", "Tomorrow: Sweepstakes", "<p>You are signed up.</p>")
+    assert msg.to_addresses == ["robin@example.org", "sam@example.org"]
+    assert msg.subject == "[For Quinn V.] Tomorrow: Sweepstakes"
+    assert "<strong>Quinn Vale</strong> (under 18)" in msg.body_html
+    assert msg.body_html.endswith("<p>You are signed up.</p>")
+    assert "**Quinn Vale** (under 18) and goes to Quinn's guardians" in msg.body_text
+    sent = mail.outbox[-1]
+    assert sent.subject == msg.subject and "Quinn Vale" in sent.body
+
+    adult = compose(_user(), "reminder", "Tomorrow: Sweepstakes", "<p>You are signed up.</p>")
+    assert (
+        adult.subject == "Tomorrow: Sweepstakes" and adult.body_html == "<p>You are signed up.</p>"
+    )

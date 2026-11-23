@@ -5322,3 +5322,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Configuration, from the timings of the last four runs on main (the sweep 8 to 10 minutes of a 10 to 11 minute job). Verified: the three -k filters collect 40, 39 and 39 of the 118 sweep tests, each once; the workflow parses as YAML. Not yet run on GitHub.
 - **Human Review Status**: Pending review
 - **Git Hash**: 99648ec
+
+## [2026-11-23 12:32 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: A minor's message says whose it is, so a guardian who is also a member can tell it from their own (private tracker 359); and, at SK's instruction, the four commits from the previous entry onward rebuilt so that addendum A40's attribution and a test docstring name no member.
+- **Sections/Files Affected**: apps/comms/services.py (compose: for a minor with an active guardian, the subject starts [For <short name>] and a first line names the minor in full, under 18, and that it goes to the guardians; in the outbox, My messages, the push and the email alike); apps/comms/tests/test_messages.py (one test, made-up names); docs/REQUIREMENTS.md (addendum A41 and its attribution line). The rebuild: aaf247c, 742e320, 8ac70c5, 7f58b7b became dbb69dc, c2703b2, 99648ec, f03e2ea, differing only in A40's attribution line, the docstring of apps/events/tests/test_guardian_on_slot.py and the two log hashes; force-pushed to main.
+- **Nature of Contribution**: Code generation, tests, documentation, history edit. Verified: the new test fails against the previous compose(); all 670 application tests, ruff, the three guards and the migration check pass; the plain text reads cleanly (a first wording put a space before a comma after the bold name, so it was reworded). The rebuilt history was compared with the old line by line before the push.
+- **Human Review Status**: Pending review
+- **Git Hash**: (after commit)

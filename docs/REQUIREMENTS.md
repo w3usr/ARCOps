@@ -3288,7 +3288,30 @@ signed up for the same slot as their ward and still told a responsible adult was
 ordinary designation written automatically, rather than counted without one or offered as a
 question at sign-up, and removed when the guardian leaves. *Record:* this addendum.
 
+### A41. FR-70: a minor's message says whose it is
+
+**Original (FR-70).** "Every message to a minor is delivered to the guardian's address(es), with the
+minor's own address included only if one is on file." Every message is written to its member in
+the second person, so a guardian who is also a member could not tell a message about their ward's
+slot from one about their own.
+
+**Decision.**
+- **The subject starts with whose it is:** `[For Quinn V.]` before the usual subject, the
+  minor's name as members see each other (FR-67).
+- **The first line names the minor in full:** *This message is for Quinn Vale (under 18) and goes
+  to Quinn's guardians as well.* It reads true in the guardians' copy and in the minor's
+  own, so it does not say "you receive this as a guardian".
+- **It applies to every message** to a minor who has an active guardian, whatever its template,
+  including one a club edits or adds, and the outbox, My messages and the browser notification
+  carry the same subject and line as the email. The sign-in library's own mail (a password reset,
+  for example) is sent as that library writes it, and its copy under My messages is unchanged.
+- A message to anyone else is unchanged.
+
+**Decided** by SK on 2026-11-23, taking up private tracker 359 (a guardian's report of 2026-11-21:
+a guardian should "actually see it is for [the minor] and not for me") as proposed there, with
+the first line reworded to read true for the minor as well. *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39) and 2026-11-23 (A40), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39) and 2026-11-23 (A40, A41), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
