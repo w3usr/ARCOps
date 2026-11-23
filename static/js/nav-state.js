@@ -6,6 +6,9 @@
   html.classList.remove("no-js");
   html.classList.add("js");
   try {
-    if (localStorage.getItem("arcops.nav") === "rail") html.setAttribute("data-nav", "rail");
-  } catch (e) { /* storage unavailable: full sidebar */ }
+    if (localStorage.getItem("arcops.nav") === "rail")
+      html.setAttribute("data-nav", "rail");
+  } catch (e) {
+    /* storage unavailable: full sidebar */
+  }
 })();

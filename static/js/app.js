@@ -8,16 +8,26 @@ document.addEventListener("click", (ev) => {
   const el = document.querySelector(btn.dataset.copy);
   if (!el) return;
   navigator.clipboard.writeText(el.value || el.textContent).then(() => {
-    const said = document.getElementById("said");  // a changed label alone is not announced (341)
-    if (said) { said.textContent = ""; setTimeout(() => { said.textContent = "Copied"; }, 50); }
+    const said = document.getElementById("said"); // a changed label alone is not announced (341)
+    if (said) {
+      said.textContent = "";
+      setTimeout(() => {
+        said.textContent = "Copied";
+      }, 50);
+    }
     // A button that is a glyph keeps its glyph: swapping textContent would throw the icon away.
     if (btn.querySelector("svg")) {
       const label = btn.getAttribute("aria-label");
       btn.classList.add("copied");
       btn.setAttribute("aria-label", "Copied");
-      setTimeout(() => { btn.classList.remove("copied"); btn.setAttribute("aria-label", label); }, 1500);
+      setTimeout(() => {
+        btn.classList.remove("copied");
+        btn.setAttribute("aria-label", label);
+      }, 1500);
     } else {
-      const old = btn.textContent; btn.textContent = "Copied"; setTimeout(() => (btn.textContent = old), 1500);
+      const old = btn.textContent;
+      btn.textContent = "Copied";
+      setTimeout(() => (btn.textContent = old), 1500);
     }
   });
 });
@@ -34,13 +44,21 @@ document.addEventListener("click", (ev) => {
     const reflect = () => {
       const rail = html.getAttribute("data-nav") === "rail";
       toggle.setAttribute("aria-pressed", String(rail));
-      toggle.setAttribute("aria-label", rail ? "Expand the menu" : "Collapse the menu to icons");
+      toggle.setAttribute(
+        "aria-label",
+        rail ? "Expand the menu" : "Collapse the menu to icons",
+      );
       if (label) label.textContent = rail ? "Expand" : "Collapse";
     };
     toggle.addEventListener("click", () => {
       const rail = html.getAttribute("data-nav") !== "rail";
-      if (rail) html.setAttribute("data-nav", "rail"); else html.removeAttribute("data-nav");
-      try { localStorage.setItem("arcops.nav", rail ? "rail" : "full"); } catch (e) { /* fine */ }
+      if (rail) html.setAttribute("data-nav", "rail");
+      else html.removeAttribute("data-nav");
+      try {
+        localStorage.setItem("arcops.nav", rail ? "rail" : "full");
+      } catch (e) {
+        /* fine */
+      }
       reflect();
     });
     reflect();
@@ -54,12 +72,15 @@ document.addEventListener("click", (ev) => {
     if (backdrop) backdrop.hidden = !on;
     document.body.classList.toggle("drawer-open", on);
     if (open) open.setAttribute("aria-expanded", String(on));
-    if (on) (close || nav.querySelector("a")).focus(); else if (open) open.focus();
+    if (on) (close || nav.querySelector("a")).focus();
+    else if (open) open.focus();
   };
   if (open) open.addEventListener("click", () => setOpen(true));
   if (close) close.addEventListener("click", () => setOpen(false));
   if (backdrop) backdrop.addEventListener("click", () => setOpen(false));
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) setOpen(false); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && nav.classList.contains("open")) setOpen(false);
+  });
 })();
 
 // Progressive disclosure: an element with data-reveal-when="#control" is shown only while that
@@ -69,29 +90,43 @@ document.addEventListener("click", (ev) => {
 // #273); all are synced in page order on any change. The server enforces the rule regardless.
 (() => {
   const reveals = [...document.querySelectorAll("[data-reveal-when]")];
-  const sync = () => reveals.forEach((el) => {
-    const ctl = document.querySelector(el.dataset.revealWhen);
-    if (!ctl) return;
-    const want = el.dataset.revealValue;
-    const on = want === undefined ? ctl.checked : want.split(" ").includes(ctl.value);
-    el.hidden = !on || !!ctl.closest("[hidden]");
-  });
-  if (reveals.length) { document.addEventListener("change", sync); sync(); }
+  const sync = () =>
+    reveals.forEach((el) => {
+      const ctl = document.querySelector(el.dataset.revealWhen);
+      if (!ctl) return;
+      const want = el.dataset.revealValue;
+      const on =
+        want === undefined ? ctl.checked : want.split(" ").includes(ctl.value);
+      el.hidden = !on || !!ctl.closest("[hidden]");
+    });
+  if (reveals.length) {
+    document.addEventListener("change", sync);
+    sync();
+  }
 })();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch(() => {});  // served by Django, never cached (FR-96)
+  navigator.serviceWorker.register("/sw.js").catch(() => {}); // served by Django, never cached (FR-96)
 }
 
 // The slot and Manage dialogs: a link htmx could not fetch opens as its own page, as it does
 // without JavaScript; the backdrop or a [data-close] button closes the dialog, which empties it
 // and gives focus back to what refocus() returns.
 function wireDialog(dlg, opener, refocus) {
-  const fallBack = (ev) => { const a = ev.detail.elt.closest(opener); if (a) window.location = a.href; };
+  const fallBack = (ev) => {
+    const a = ev.detail.elt.closest(opener);
+    if (a) window.location = a.href;
+  };
   document.addEventListener("htmx:responseError", fallBack);
   document.addEventListener("htmx:sendError", fallBack);
-  dlg.addEventListener("click", (ev) => { if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close(); });
-  dlg.addEventListener("close", () => { dlg.querySelector(".dialog-body").innerHTML = ""; const a = refocus(); if (a) a.focus(); });
+  dlg.addEventListener("click", (ev) => {
+    if (ev.target === dlg || ev.target.closest("[data-close]")) dlg.close();
+  });
+  dlg.addEventListener("close", () => {
+    dlg.querySelector(".dialog-body").innerHTML = "";
+    const a = refocus();
+    if (a) a.focus();
+  });
 }
 
 // Roster: a slot opens in a dialog; the checkboxes drive a bulk bar; a day heading's box selects
@@ -105,20 +140,29 @@ function wireDialog(dlg, opener, refocus) {
     let openerSlot = null;
     document.addEventListener("htmx:afterSwap", (ev) => {
       if (ev.detail.target !== body) return;
-      const a = ev.detail.requestConfig.elt.closest("a[data-slot]");  // detail.elt is the target here
+      const a = ev.detail.requestConfig.elt.closest("a[data-slot]"); // detail.elt is the target here
       if (a) openerSlot = a.dataset.slot;
       // The answer carries the slot's roster cell, so the link just pressed has been replaced. Focus
       // its replacement before opening: the dialog hands focus back to it when it closes.
       if (!dlg.open) {
-        const back = openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`);
+        const back =
+          openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`);
         if (back) back.focus();
         dlg.showModal();
       }
       const f = body.querySelector(".messages") || body.querySelector("h1");
-      if (f) { f.setAttribute("tabindex", "-1"); f.focus(); }
+      if (f) {
+        f.setAttribute("tabindex", "-1");
+        f.focus();
+      }
     });
     // Back to the slot's link, found afresh, when an action in the dialog replaced its cell.
-    wireDialog(dlg, "a[data-slot]", () => openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`));
+    wireDialog(
+      dlg,
+      "a[data-slot]",
+      () =>
+        openerSlot && document.querySelector(`a[data-slot="${openerSlot}"]`),
+    );
   }
 
   const bar = document.getElementById("bulk-bar");
@@ -128,18 +172,37 @@ function wireDialog(dlg, opener, refocus) {
     const update = () => {
       const n = [...boxes()].filter((b) => b.checked).length;
       bar.classList.toggle("active", n > 0);
-      const c = bar.querySelector("[data-count]"); if (c) c.textContent = String(n);
+      const c = bar.querySelector("[data-count]");
+      if (c) c.textContent = String(n);
     };
     form.addEventListener("change", (ev) => {
       const t = ev.target;
-      if (t.matches("[data-select-all]")) {  // every slot, for a captain's bulk change (282)
-        form.querySelectorAll('input[name="slots"], [data-select-day]').forEach((b) => { b.checked = t.checked; });
+      if (t.matches("[data-select-all]")) {
+        // every slot, for a captain's bulk change (282)
+        form
+          .querySelectorAll('input[name="slots"], [data-select-day]')
+          .forEach((b) => {
+            b.checked = t.checked;
+          });
       }
       if (t.matches("[data-select-day]")) {
-        form.querySelectorAll(`input[name="slots"][data-day="${t.dataset.selectDay}"]`).forEach((b) => { b.checked = t.checked; });
+        form
+          .querySelectorAll(
+            `input[name="slots"][data-day="${t.dataset.selectDay}"]`,
+          )
+          .forEach((b) => {
+            b.checked = t.checked;
+          });
       }
-      if (t.matches("[data-select-fold]")) {  // a folded run's own box: its hours, one tick (FR-55)
-        form.querySelectorAll(`.r-row[data-fold="${t.dataset.selectFold}"] input[name="slots"]`).forEach((b) => { b.checked = t.checked; });
+      if (t.matches("[data-select-fold]")) {
+        // a folded run's own box: its hours, one tick (FR-55)
+        form
+          .querySelectorAll(
+            `.r-row[data-fold="${t.dataset.selectFold}"] input[name="slots"]`,
+          )
+          .forEach((b) => {
+            b.checked = t.checked;
+          });
       }
       update();
     });
@@ -163,11 +226,15 @@ function wireDialog(dlg, opener, refocus) {
     const a = ev.detail.requestConfig.elt.closest("a[data-dialog]");
     if (a) opener = a;
     if (!dlg.open) dlg.showModal();
-    const f = body.querySelector(".msg.error")
-      || body.querySelector("[aria-invalid=true]")
-      || body.querySelector("input:not([type=hidden]), select, textarea")
-      || body.querySelector("h1");
-    if (f) { if (f.matches(".msg, h1")) f.setAttribute("tabindex", "-1"); f.focus(); }
+    const f =
+      body.querySelector(".msg.error") ||
+      body.querySelector("[aria-invalid=true]") ||
+      body.querySelector("input:not([type=hidden]), select, textarea") ||
+      body.querySelector("h1");
+    if (f) {
+      if (f.matches(".msg, h1")) f.setAttribute("tabindex", "-1");
+      f.focus();
+    }
   });
   wireDialog(dlg, "a[data-dialog]", () => opener);
 })();
@@ -178,16 +245,23 @@ function wireDialog(dlg, opener, refocus) {
 (() => {
   let section = null;
   document.addEventListener("htmx:beforeRequest", (ev) => {
-    const form = ev.detail.elt.closest && ev.detail.elt.closest("form[data-in-place]");
-    if (form) section = form.closest("section")?.getAttribute("aria-labelledby") || "";
+    const form =
+      ev.detail.elt.closest && ev.detail.elt.closest("form[data-in-place]");
+    if (form)
+      section = form.closest("section")?.getAttribute("aria-labelledby") || "";
   });
   document.addEventListener("htmx:afterSettle", () => {
     if (section === null) return;
     const stage = document.getElementById("stage-body");
-    const f = (stage && stage.querySelector(".messages")) || (section && document.getElementById(section))
-      || (stage && stage.querySelector("h2"));
+    const f =
+      (stage && stage.querySelector(".messages")) ||
+      (section && document.getElementById(section)) ||
+      (stage && stage.querySelector("h2"));
     section = null;
-    if (f) { f.setAttribute("tabindex", "-1"); f.focus(); }
+    if (f) {
+      f.setAttribute("tabindex", "-1");
+      f.focus();
+    }
   });
 })();
 
@@ -201,43 +275,65 @@ function wireDialog(dlg, opener, refocus) {
     const b = ev.target.closest("button[commandfor][command=show-modal]");
     if (b) opener = b;
   });
-  document.addEventListener("close", (ev) => {
-    if (!opener || ev.target.id !== opener.getAttribute("commandfor") || !opener.isConnected) return;
-    // Opened from a ⋮ menu (#228): the menu closed when the dialog opened, so go back to its button.
-    const menu = opener.closest("[popover]");
-    const back = menu && !menu.matches(":popover-open") ? document.querySelector(`[popovertarget="${menu.id}"]`) : opener;
-    if (back) back.focus();
-  }, true);  // a dialog's close event does not bubble; catch it on the way down
+  document.addEventListener(
+    "close",
+    (ev) => {
+      if (
+        !opener ||
+        ev.target.id !== opener.getAttribute("commandfor") ||
+        !opener.isConnected
+      )
+        return;
+      // Opened from a ⋮ menu (#228): the menu closed when the dialog opened, so go back to its button.
+      const menu = opener.closest("[popover]");
+      const back =
+        menu && !menu.matches(":popover-open")
+          ? document.querySelector(`[popovertarget="${menu.id}"]`)
+          : opener;
+      if (back) back.focus();
+    },
+    true,
+  ); // a dialog's close event does not bubble; catch it on the way down
 })();
 
 // ⋮ menus (#228, technical addendum A10): the popover opens and closes itself, with Escape and a
 // click outside. This moves focus to its first entry, and places it under its button where CSS
 // anchor positioning has not (a browser before 2026, or one without the popover's implicit anchor).
 (() => {
-  document.addEventListener("toggle", (ev) => {
-    const m = ev.target;
-    if (!(m instanceof HTMLElement) || !m.classList.contains("menu")) return;
-    const b = document.querySelector(`[popovertarget="${m.id}"]`);
-    if (ev.newState === "closed") {
-      // Safari does not focus a button it clicks, so it has nowhere to give focus back to and
-      // drops it on <main>: when focus is in the menu, or nowhere a reader can Tab to (the body,
-      // or a container focusable only by script), it goes back to the ⋮ button.
-      const at = document.activeElement;
-      const nowhere = !at || at === document.body || at.getAttribute("tabindex") === "-1";
-      if (b && (nowhere || m.contains(at))) b.focus();
-      return;
-    }
-    if (b) {
-      m.style.cssText = "";
-      const r = b.getBoundingClientRect(), mr = m.getBoundingClientRect();
-      if (Math.abs(mr.top - r.bottom) > 12 && Math.abs(r.top - mr.bottom) > 12) {
-        m.style.cssText = `position: fixed; inset: auto; margin: 0; top: ${r.bottom + 4}px; ` +
-          `left: ${Math.max(8, Math.min(r.right - mr.width, innerWidth - mr.width - 8))}px`;
+  document.addEventListener(
+    "toggle",
+    (ev) => {
+      const m = ev.target;
+      if (!(m instanceof HTMLElement) || !m.classList.contains("menu")) return;
+      const b = document.querySelector(`[popovertarget="${m.id}"]`);
+      if (ev.newState === "closed") {
+        // Safari does not focus a button it clicks, so it has nowhere to give focus back to and
+        // drops it on <main>: when focus is in the menu, or nowhere a reader can Tab to (the body,
+        // or a container focusable only by script), it goes back to the ⋮ button.
+        const at = document.activeElement;
+        const nowhere =
+          !at || at === document.body || at.getAttribute("tabindex") === "-1";
+        if (b && (nowhere || m.contains(at))) b.focus();
+        return;
       }
-    }
-    const first = m.querySelector("a[href], button:not([disabled])");
-    if (first) first.focus();
-  }, true);  // toggle does not bubble either
+      if (b) {
+        m.style.cssText = "";
+        const r = b.getBoundingClientRect(),
+          mr = m.getBoundingClientRect();
+        if (
+          Math.abs(mr.top - r.bottom) > 12 &&
+          Math.abs(r.top - mr.bottom) > 12
+        ) {
+          m.style.cssText =
+            `position: fixed; inset: auto; margin: 0; top: ${r.bottom + 4}px; ` +
+            `left: ${Math.max(8, Math.min(r.right - mr.width, innerWidth - mr.width - 8))}px`;
+        }
+      }
+      const first = m.querySelector("a[href], button:not([disabled])");
+      if (first) first.focus();
+    },
+    true,
+  ); // toggle does not bubble either
 })();
 if (!("command" in HTMLButtonElement.prototype)) {
   document.addEventListener("click", (ev) => {
@@ -257,7 +353,9 @@ document.addEventListener("click", (ev) => {
   ev.preventDefault();
   const id = link.dataset.openFold;
   const rows = document.querySelectorAll(`.r-row[data-fold="${id}"]`);
-  rows.forEach((r) => { r.hidden = false; });
+  rows.forEach((r) => {
+    r.hidden = false;
+  });
   document.getElementById(`fold-${id}`)?.remove();
   rows[0]?.querySelector(".slot-link")?.focus();
 });
@@ -285,8 +383,10 @@ document.addEventListener("change", (ev) => {
     const f = el.dataset.roleField;
     if (f === "class") el.value = rule.class || "";
     else if (f === "minors") el.checked = !!rule.minors_allowed;
-    else if (f === "cat") el.checked = (rule.categories || []).includes(el.value);
-    else if (f === "cred") el.checked = (rule.credentials || []).includes(el.value);
+    else if (f === "cat")
+      el.checked = (rule.categories || []).includes(el.value);
+    else if (f === "cred")
+      el.checked = (rule.credentials || []).includes(el.value);
   });
 });
 
@@ -324,59 +424,120 @@ document.addEventListener("input", (ev) => {
 // server refuses it without JavaScript (apps/ops/when.py in_zone).
 (() => {
   let browser = "";
-  try { browser = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch { /* no Intl */ }
-  if (/^[A-Za-z0-9_+\-/]{1,64}$/.test(browser) && !document.cookie.split("; ").includes(`tz=${browser}`)) {
+  try {
+    browser = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  } catch {
+    /* no Intl */
+  }
+  if (
+    /^[A-Za-z0-9_+\-/]{1,64}$/.test(browser) &&
+    !document.cookie.split("; ").includes(`tz=${browser}`)
+  ) {
     document.cookie = `tz=${browser}; path=/; max-age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
   }
   const zone = document.documentElement.dataset.tz || browser || "UTC";
   const pad = (n) => String(n).padStart(2, "0");
-  const asUtc = (v) => Date.UTC(+v.slice(0, 4), +v.slice(5, 7) - 1, +v.slice(8, 10), +v.slice(11, 13), +v.slice(14, 16));
-  const wall = (ms) => {  // the wall clock in `zone` at instant `ms`, as a box value
-    const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
-      timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
-    }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+  const asUtc = (v) =>
+    Date.UTC(
+      +v.slice(0, 4),
+      +v.slice(5, 7) - 1,
+      +v.slice(8, 10),
+      +v.slice(11, 13),
+      +v.slice(14, 16),
+    );
+  const wall = (ms) => {
+    // the wall clock in `zone` at instant `ms`, as a box value
+    const p = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: zone,
+        hourCycle: "h23",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+        .formatToParts(new Date(ms))
+        .map((x) => [x.type, x.value]),
+    );
     return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
   };
   // The instants whose wall clock reads v: none in the hour the clocks go forward, two in the
   // hour they go back.
   const instants = (v) => {
-    const guess = asUtc(v), day = 864e5, off = (ms) => asUtc(wall(ms)) - ms;
-    return [...new Set([off(guess - day), off(guess + day)].map((o) => guess - o))].filter((t) => wall(t) === v);
+    const guess = asUtc(v),
+      day = 864e5,
+      off = (ms) => asUtc(wall(ms)) - ms;
+    return [
+      ...new Set([off(guess - day), off(guess + day)].map((o) => guess - o)),
+    ].filter((t) => wall(t) === v);
   };
-  const withOffset = (v, ms) => {  // 2026-11-21T16:00-05:00
-    const m = Math.round((asUtc(v) - ms) / 6e4), a = Math.abs(m);
+  const withOffset = (v, ms) => {
+    // 2026-11-21T16:00-05:00
+    const m = Math.round((asUtc(v) - ms) / 6e4),
+      a = Math.abs(m);
     return `${v}:00${m < 0 ? "-" : "+"}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
   };
   const valid = (v) => /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(v);
-  const check = (box) => {  // the refusal, said under the box and held as the box's validity
+  const check = (box) => {
+    // the refusal, said under the box and held as the box's validity
     const v = box.value.slice(0, 16);
     const n = valid(v) ? instants(v).length : 1;
-    const why = n === 1 ? "" : n
-      ? "This time happens twice here, as the clocks go back. Choose a time outside that hour."
-      : "This time does not happen here: the clocks go forward that night. Choose a time outside that hour.";
+    const why =
+      n === 1
+        ? ""
+        : n
+          ? "This time happens twice here, as the clocks go back. Choose a time outside that hour."
+          : "This time does not happen here: the clocks go forward that night. Choose a time outside that hour.";
     let line = document.getElementById(`${box.id}-dst`);
     if (why && !line && box.id) {
-      line = Object.assign(document.createElement("span"), { className: "helptext", id: `${box.id}-dst` });
+      line = Object.assign(document.createElement("span"), {
+        className: "helptext",
+        id: `${box.id}-dst`,
+      });
       box.after(line);
-      box.setAttribute("aria-describedby", [box.getAttribute("aria-describedby"), line.id].filter(Boolean).join(" "));
+      box.setAttribute(
+        "aria-describedby",
+        [box.getAttribute("aria-describedby"), line.id]
+          .filter(Boolean)
+          .join(" "),
+      );
     }
     if (line) line.textContent = why;
     box.setCustomValidity(why);
   };
   const BOX = 'input[type="datetime-local"][data-instant]';
-  document.addEventListener("input", (ev) => { if (ev.target.matches?.(BOX)) check(ev.target); });
+  document.addEventListener("input", (ev) => {
+    if (ev.target.matches?.(BOX)) check(ev.target);
+  });
   // Capture, so the offset is in place before htmx or the browser reads the form.
-  document.addEventListener("submit", (ev) => {
-    ev.target.querySelectorAll(BOX).forEach((box) => {
-      const name = box.dataset.name || box.name;
-      if (!name) return;
-      box.dataset.name = name;
-      ev.target.querySelector(`input[type="hidden"][data-for="${box.id}"]`)?.remove();
-      const v = box.value.slice(0, 16), found = valid(v) ? instants(v) : [];
-      if (found.length !== 1) { box.name = name; return; }  // empty or refused: sent as typed
-      box.removeAttribute("name");
-      box.after(Object.assign(document.createElement("input"), { type: "hidden", name, value: withOffset(v, found[0]) }));
-      box.nextElementSibling.dataset.for = box.id;
-    });
-  }, true);
+  document.addEventListener(
+    "submit",
+    (ev) => {
+      ev.target.querySelectorAll(BOX).forEach((box) => {
+        const name = box.dataset.name || box.name;
+        if (!name) return;
+        box.dataset.name = name;
+        ev.target
+          .querySelector(`input[type="hidden"][data-for="${box.id}"]`)
+          ?.remove();
+        const v = box.value.slice(0, 16),
+          found = valid(v) ? instants(v) : [];
+        if (found.length !== 1) {
+          box.name = name;
+          return;
+        } // empty or refused: sent as typed
+        box.removeAttribute("name");
+        box.after(
+          Object.assign(document.createElement("input"), {
+            type: "hidden",
+            name,
+            value: withOffset(v, found[0]),
+          }),
+        );
+        box.nextElementSibling.dataset.for = box.id;
+      });
+    },
+    true,
+  );
 })();

@@ -5,12 +5,23 @@
     const body = ed.getBody();
     if (!body) return;
     const hs = body.querySelectorAll("h1,h2,h3,h4");
-    let prev = 0, skipped = false;
-    hs.forEach((h) => { const lvl = +h.tagName[1]; if (prev && lvl > prev + 1) skipped = true; prev = lvl; });
+    let prev = 0,
+      skipped = false;
+    hs.forEach((h) => {
+      const lvl = +h.tagName[1];
+      if (prev && lvl > prev + 1) skipped = true;
+      prev = lvl;
+    });
     const el = ed.getElement();
     let note = el.parentNode.querySelector(".heading-note");
-    if (!note) { note = document.createElement("p"); note.className = "helptext heading-note"; el.parentNode.appendChild(note); }
-    note.textContent = skipped ? "A heading level is skipped (for example Heading 1 straight to Heading 3). Screen readers follow the levels; keep them in order." : "";
+    if (!note) {
+      note = document.createElement("p");
+      note.className = "helptext heading-note";
+      el.parentNode.appendChild(note);
+    }
+    note.textContent = skipped
+      ? "A heading level is skipped (for example Heading 1 straight to Heading 3). Screen readers follow the levels; keep them in order."
+      : "";
   }
   function watch(ed) {
     ed.on("init change keyup SetContent", () => check(ed));
@@ -23,5 +34,6 @@
     window.tinymce.get().forEach(watch);
     window.tinymce.on("AddEditor", (e) => watch(e.editor));
   }
-  if (window.tinymce) arm(); else document.addEventListener("DOMContentLoaded", arm);
+  if (window.tinymce) arm();
+  else document.addEventListener("DOMContentLoaded", arm);
 })();

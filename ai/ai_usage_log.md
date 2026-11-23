@@ -5354,3 +5354,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code, test, documentation. Verified: the test failed before the change (0 px left, 520 px right at 1,920) and passes in Chromium and WebKit; at 1,920 px an acting banner's edges meet the content's inner edges exactly (556 and 1,612 px); a page marked wide still fills the column (2,312 of 2,312 px at 2,560); a 2,560 px screenshot looked at. All 670 application tests, ruff, Prettier, the guards and the accessibility and layout tests (100 passed, 1 skipped) pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: 81077b8
+
+## [2026-11-23 14:47 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The hand-written scripts formatted by Prettier, as the stylesheets are, and checked (SK).
+- **Sections/Files Affected**: static/js/app.js, nav-state.js, push.js, richtext-check.js and static/sw.js (Prettier 3.6.2; 137 lines become 404, no code changed); .prettierignore (new: static/js/vendor/, so htmx stays as published); tools/check.sh and .github/workflows/ci.yml (the Prettier check covers static/js and static/sw.js).
+- **Nature of Contribution**: Formatting, configuration. Verified: every file still parses (node --check); the vendored htmx file is untouched; the accessibility and layout tests, which drive app.js in Chromium and WebKit, pass (100 passed, 1 skipped), as do all 670 application tests. sw.js is the service worker: browsers will install the reformatted one on their next visit; its cache name is unchanged.
+- **Human Review Status**: Pending review
+- **Git Hash**: (after commit)
