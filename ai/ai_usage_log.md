@@ -5457,4 +5457,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/views_slots.py (re-time refuses a start that has already begun); apps/events/services/reshape.py (merging someone who is in both slots keeps a responsible adult named only on the later sign-up, and the audit row counts them); apps/events/tests/test_slot_reshape.py (the two cases, and the refusals that had no test: a started slot, a no-show, a completed or canceled event, each refusing re-time, split and merge).
 - **Nature of Contribution**: Code generation and tests. The tracker's second case (a merge across two touching periods) no longer arises: the on-air hours are stored merged, so touching ranges are one, and `held_only_by` is gone. Verified: the two new tests fail against the old code and the four refusal cases pass on both; the application tests (687) pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 2faa0b1
