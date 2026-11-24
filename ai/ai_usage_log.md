@@ -5465,4 +5465,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/models.py and migration events/0015 (`Event.checkin_opens_minutes_before`, empty follows the club); apps/events/views_manage.py (the details form shows the club's value filled in and tagged Club default, as the reminder does, and stores nothing while it holds it; the Details step lists it); apps/events/services/viability.py (`checkin_opens()`: the event's minutes or the club's, 0 meaning at the start); apps/events/views.py (the refusal names the time check-in opens, or says the slot has ended); apps/events/services/manage.py (a duplicate copies it); apps/ops/views_settings.py (the setting's description: an event may set its own); apps/events/tests/test_defaults_shown.py (new test).
 - **Nature of Contribution**: Code generation and tests. Verified: the new test's refusal assertion fails against the old view; the application tests (688) pass; the migration check passes; scenarios T11 to T14 and T17 pass locally with T17's refusal check updated in the private repository.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 7ab6a9b
