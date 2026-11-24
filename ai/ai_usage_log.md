@@ -5489,4 +5489,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (functional addendum A43, FR-96: signing out takes the offline copies with it; A44, FR-39: on-air time is the station's; the addendum's footer; the body unchanged); apps/accounts/views_members.py (Security reads On for a required account only once a factor is enrolled, so an officer with nothing enrolled reads Off, required, beside the deadline); apps/accounts/tests/test_two_factor.py (Off before the key, On after).
 - **Nature of Contribution**: Draft and code edit. Verified: the changed test fails against the old line; the application tests pass (689); scenario T2 step 7, which found it, now passes locally. The reconciliation note, with the window and every change, is in the private repository.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: aaa16a0
