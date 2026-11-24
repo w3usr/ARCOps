@@ -569,6 +569,30 @@ def test_a_run_of_open_hours_folds_into_one_line_and_setup_stays_itself(world):
     assert all(r.fold is None for r in rows if r.kind != "operating")  # one setup row stays
 
 
+@pytest.mark.parametrize(
+    "hours, minutes, positions, folds",
+    [
+        (1, 20, 2, False),  # three 20-minute rows are one hour, not three
+        (2, 30, 2, False),  # four 30-minute rows are two hours
+        (4, 120, 2, True),  # two 2-hour rows are four hours
+        (4, 60, 5, True),  # five positions: the list layout, a row per slot
+    ],
+)
+def test_open_time_folds_by_three_clock_hours_not_by_rows(world, hours, minutes, positions, folds):
+    """A13: three or more consecutive hours in which every slot is open read as one row."""
+    ev = Event.objects.create(title="Fold", state=Event.State.PUBLISHED, created_by=world["off"])
+    ev.start = datetime(2026, 9, 26, 0, 0, tzinfo=UTC)
+    ev.end = ev.start + timedelta(hours=hours)
+    ev.save(update_fields=["start", "end"])
+    loc = Location.objects.create(event=ev, name="Station")
+    made = [Position.objects.create(location=loc, name=f"P{i}", order=i) for i in range(positions)]
+    for slot in generate_slots(ev, made, minutes=minutes):
+        RoleCapacity.objects.create(slot=slot, role="operator", capacity=1)
+    rows = _rows(build(ev, world["mem"]))
+    assert len(rows) == hours * 60 // minutes * (1 if positions <= 4 else positions)
+    assert all(r.fold for r in rows) if folds else not any(r.fold for r in rows)
+
+
 def test_anybody_in_a_slot_breaks_the_run_and_short_runs_do_not_fold(world):
     second = Slot.objects.filter(position=world["mult"], kind="operating").order_by("start")[1]
     SignUp.objects.create(slot=second, user=world["mem"], role="operator")

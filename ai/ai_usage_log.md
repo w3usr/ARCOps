@@ -5434,3 +5434,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. The tracker said "per person"; FR-39's words and its School Club Roundup example are the station's time, which is what this implements. Verified: the new test fails against the old code and passes; the application tests (677) pass; scenario T11 passes locally with its step 7 updated in the private repository.
 - **Human Review Status**: Pending review
 - **Git Hash**: 5a31e8f
+
+## [2026-11-24 15:37 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 339 (SK): the roster folded open time by rows, not by A13's three hours.
+- **Sections/Files Affected**: apps/events/services/roster.py (`FOLD_MIN` of three hours replaces `FOLD_MIN_ROWS`; a run of open rows folds when it covers three hours of clock time, and in the list layout, a row per slot, the run goes on while each row starts no later than the run so far ends); apps/events/tests/test_roster.py (the tracker's four cases: 20-minute slots over an hour and 30-minute slots over two do not fold; 2-hour slots over four hours and five positions over four hours do).
+- **Nature of Contribution**: Code generation and tests. Verified: the four cases fail against the old code and pass; the application tests (681) pass; scenarios T11, T12, T13, T16, T20, T38 and T40 pass locally (`--club=w3usr`).
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

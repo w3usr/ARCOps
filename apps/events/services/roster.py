@@ -311,19 +311,20 @@ def _strip(slots, cells, by_start, zone, label, filtered: bool, event=None) -> l
 
 
 # Fewer rows than this read faster as themselves than as "3 open hours".
-FOLD_MIN_ROWS = 3
+FOLD_MIN = timedelta(hours=3)
 
 
 def _fold_runs(day: Day, lead_zone: ZoneInfo, other_zone: ZoneInfo | None, open_fold: str):
-    """Folds every run of at least FOLD_MIN_ROWS rows in which each slot is open (nobody in it,
-    not over a limit). A run breaks at an occupied or closed slot, a change of kind (setup,
+    """Folds every run of at least FOLD_MIN of clock time in which each slot, in every position,
+    is open (nobody in it, not over a limit): A13's three hours, however long the slots and
+    however many positions. A run breaks at an occupied or closed slot, a change of kind (setup,
     operating), a gap in time, and the day's end. Whole rows only, so a grid's columns stay
     aligned (FR-51, FR-65)."""
     run: list[Row] = []
 
     def close():
-        if len(run) >= FOLD_MIN_ROWS:
-            first, last = run[0], run[-1]
+        if run and max(r.end for r in run) - run[0].start >= FOLD_MIN:
+            first, last = run[0], max(run, key=lambda r: r.end)
             fold = Fold(
                 id=f"{first.start:%Y%m%d%H%M}",
                 lead_range=_hours(first.start, last.end, lead_zone, with_day=False),
@@ -346,7 +347,9 @@ def _fold_runs(day: Day, lead_zone: ZoneInfo, other_zone: ZoneInfo | None, open_
         if not foldable:
             close()
             continue
-        if run and (row.kind != run[-1].kind or row.start != run[-1].end):
+        # The list layout has a row per slot, several at one time: the run goes on while each
+        # row starts no later than the run so far ends.
+        if run and (row.kind != run[-1].kind or row.start > max(r.end for r in run)):
             close()
         run.append(row)
     close()
