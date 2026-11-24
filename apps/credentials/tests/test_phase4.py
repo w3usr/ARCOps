@@ -13,7 +13,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.comms.models import Outbox
 from apps.credentials.models import AgreementTemplate, CredentialType, SignedAgreement
-from apps.credentials.services import agreement_expiry_run, approve
+from apps.credentials.services import agreement_expiry_run, approve, default_expiry
 from apps.ops.models import AuditLog, ClubSetting
 
 pytestmark = pytest.mark.django_db
@@ -485,6 +485,58 @@ def test_the_approvals_page_carries_the_pdf_the_badge_and_a_way_back_from_a_decl
     c.post(f"/credentials/approvals/{other.pk}/decide/", {"decision": "decline", "reason": "no"})
     other.refresh_from_db()
     assert other.state == SignedAgreement.State.DECLINED and other.decision_reason == ""
+
+
+def test_approving_sets_the_expiry_given_and_an_old_decline_stands():
+    """FR-25: approve, setting an expiration date (the default filled in, tagged Club default);
+    a decline is reversed only while it is recent, thirty days."""
+    call_command("club_import")
+    st, _, t_st, _ = _setup()
+    advisor = _user("adv4@example.org", "advisor", category="faculty")
+    signed = SignedAgreement.objects.create(
+        user=_user("mem4@example.org"),
+        template=t_st,
+        credential=st,
+        signer_name="Mem Ber",
+        state=SignedAgreement.State.SIGNED,
+    )
+    c = Client()
+    c.force_login(advisor)
+    page = c.get("/credentials/approvals/").content.decode()
+    default = default_expiry(timezone.now().date(), st.default_expiry)
+    assert f'name="expires_on" value="{default:%Y-%m-%d}"' in page and "Club default" in page
+    url = f"/credentials/approvals/{signed.pk}/decide/"
+    today = timezone.now().date().isoformat()
+    r = c.post(url, {"decision": "approve", "expires_on": today}, follow=True)
+    assert "a date after today" in r.content.decode()
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.SIGNED
+    c.post(url, {"decision": "approve", "expires_on": "2030-01-01"})
+    signed.refresh_from_db()
+    assert signed.state == SignedAgreement.State.APPROVED
+    assert signed.expires_on == dt.date(2030, 1, 1)
+
+    declined = SignedAgreement.objects.create(
+        user=_user("mem5@example.org"),
+        template=t_st,
+        credential=st,
+        signer_name="Mem Five",
+        state=SignedAgreement.State.DECLINED,
+        approver=advisor,
+        approved_at=timezone.now() - dt.timedelta(days=40),
+    )
+    url = f"/credentials/approvals/{declined.pk}/decide/"
+    reverse = {"decision": "approve", "reversal_reason": "a slip"}
+    r = c.post(url, reverse, follow=True)
+    assert "more than 30 days old, so it stands" in r.content.decode()
+    declined.refresh_from_db()
+    assert declined.state == SignedAgreement.State.DECLINED
+    SignedAgreement.objects.filter(pk=declined.pk).update(
+        approved_at=timezone.now() - dt.timedelta(days=10)
+    )
+    c.post(url, reverse)
+    declined.refresh_from_db()
+    assert declined.state == SignedAgreement.State.APPROVED and declined.expires_on == default
 
 
 def test_the_badge_and_the_declined_list_are_only_for_somebody_who_may_approve():

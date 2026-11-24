@@ -24,7 +24,7 @@ from apps.ops.config import institution_domains, setting
 from apps.ops.tables import chosen, export_url, sorted_columns, summary
 
 from .models import AgreementTemplate, CredentialDecision, CredentialType, SignedAgreement
-from .services import approve, holds, log_decision, reveal_shared_secret
+from .services import approve, default_expiry, holds, log_decision, reveal_shared_secret
 
 # How long a decline can still be turned round from the log. Past it, the member signs again;
 # a decision nobody corrected within a month was a decision rather than a slip.
@@ -235,6 +235,7 @@ def approvals(request):
             "institution_rows": list(a.user.addresses.filter(kind="institution")),
             "needs_institution": credential_needs_institution(a.credential)
             and not institution_address_ok(_institution_address(a.user, proven_only=True)),
+            "expires": _expiry_default(a),
         }
         for a in queue
     ]
@@ -356,6 +357,7 @@ def _decision_log(request) -> dict:
             and d.agreement.state == SignedAgreement.State.DECLINED
             and d.at >= since
         )
+        d.expires = _expiry_default(d.agreement) if d.reversible else None
         d.needs_institution = (
             d.reversible
             and credential_needs_institution(d.agreement.credential)
@@ -380,6 +382,11 @@ def _decision_log(request) -> dict:
         },
         "log_csv_url": export_url(request, report="decisions"),
     }
+
+
+def _expiry_default(a: SignedAgreement) -> dt.date:
+    """FR-25: the expiry an approval today would get, which the Approve box starts from."""
+    return default_expiry(timezone.now().date(), a.credential.default_expiry)
 
 
 @login_required
@@ -431,7 +438,25 @@ def decide(request, pk):
     if was_declined and request.POST.get("decision") != "approve":
         messages.error(request, "That agreement is already declined.")
         return redirect("approvals")
+    if was_declined and a.approved_at < timezone.now() - dt.timedelta(days=DECLINED_WINDOW_DAYS):
+        # FR-25: a decline is reversed while it is recent; after that it stands.
+        messages.error(
+            request,
+            f"That decline is more than {DECLINED_WINDOW_DAYS} days old, so it stands. "
+            "The member signs again to be considered afresh.",
+        )
+        return redirect("approvals")
     if request.POST.get("decision") == "approve":
+        # FR-25: approving sets the expiry; the box holds the default until the approver changes it.
+        expires_on = None
+        if typed := request.POST.get("expires_on", "").strip():
+            try:
+                expires_on = dt.date.fromisoformat(typed)
+            except ValueError:
+                expires_on = dt.date.min
+            if expires_on <= timezone.now().date():
+                messages.error(request, "Not approved: the expiry has to be a date after today.")
+                return redirect("approvals")
         if credential_needs_institution(a.credential):
             # FR-27, tightened. The evidence is a **confirmed** institution address, and
             # approving is not where an address gets confirmed: the standard is confirmation,
@@ -477,7 +502,7 @@ def decide(request, pk):
         else:
             why = ""
         a.decision_reason = ""  # the reason it was declined for no longer describes it
-        approve(request.user, a, note=why)
+        approve(request.user, a, expires_on=expires_on, note=why)
         messages.success(
             request,
             ("Decision reversed. Approved, expires " if was_declined else "Approved; expires ")
