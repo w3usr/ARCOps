@@ -2254,7 +2254,7 @@ impose:
 ## 8. Open questions for the advisor
 
 **All nineteen questions were answered by the advisor on 2026-09-13**, on an answer sheet kept in
-the private repository (`prompts/20260913_open_questions_answers.md`), and the answers are applied
+the private repository (`notes/2026-09-13_naf-open-questions-answers.md`), and the answers are applied
 in the requirements above, quoted where they decide something. The list stays here as the record.
 New questions are appended with the next number; a resolved question is never renumbered.
 
@@ -2299,7 +2299,7 @@ New questions are appended with the next number; a resolved question is never re
 
 ## 9. Source and decision record
 
-**Source.** The dictation is `prompts/20260912_create_ops_site_requirements.md` in the private
+**Source.** The dictation is `notes/2026-09-12_naf-dictation-ops-site-requirements.md` in the private
 `w3usr.org-PRIVATE` repository, written by N. A. Frissell on 2026-09-12. Its substantive
 paragraphs are quoted verbatim in the sections they drive. This draft was prepared the same day
 by the assistant from that file, the three agreement documents, the WA7BNM Contest Calendar
@@ -2400,7 +2400,7 @@ accept, amend, or strike.
   optional. Add the ability to turn on required for certain permission levels. Also allow for
   password less login using passkeys."* (§2.6 rewritten to Must); *"Use healthchecks.io. I
   already use it for hamsci.org"*; origin ports restricted to Cloudflare at go-live.
-- 2026-09-13, NAF, answer sheet (`prompts/20260913_open_questions_answers.md`, private
+- 2026-09-13, NAF, answer sheet (`notes/2026-09-13_naf-open-questions-answers.md`, private
   repository): all nineteen section 8 questions answered. The five that changed the draft:
   Q3 (no application review; completing the form admits, with the inviter told who joined),
   Q6 (minors sign in read-only), Q10 (member directory wanted, FR-13 to Must), Q14 (the

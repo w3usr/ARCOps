@@ -10,9 +10,9 @@ New to this club's repositories? Read [`docs/ONBOARDING.md`](docs/ONBOARDING.md)
 installation is served at `ops.w3usr.org`. The club runs contests and operating events and currently coordinates them by hand; this
 application is intended to carry that work. **Functional requirements are drafted and awaiting
 adoption**: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) holds numbered requirements (FR-1
-onward), all open questions answered, adoption pending. The technology stack is proposed in
-[`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md) (TR-1 onward) and awaits
-the advisor's decisions in its section 10; do not scaffold it before those are recorded.
+onward), all open questions answered, adoption pending. The technology stack is decided in
+[`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md) (TR-1 onward), and the
+application is built on it.
 
 **Project type**: Software build (web application)
 **Project lead**: {{TBD: NAME, CALLSIGN}}
@@ -79,11 +79,11 @@ ARCOps/
 |-- docs/
 |   |-- NAME.md                   <- why it is called ARCOps; the attribution rule
 |   |-- REQUIREMENTS.md           <- functional requirements (draft, FR-numbered)
-|   |-- TECHNICAL_REQUIREMENTS.md <- proposed stack and technical decisions (draft, TR-numbered)
+|   |-- TECHNICAL_REQUIREMENTS.md <- the stack and technical decisions (TR-numbered)
 |   |-- INTERFACE.md              <- how a page reads: words, controls, destructive actions
 |   |-- ONBOARDING.md             <- read this first
 |   `-- ai_policy_agreement/      <- sign before using AI tools
-`-- web/                          <- served at ops.w3usr.org; currently a holding page
+`-- web/                          <- the holding page, the deploy's fallback
 ```
 
 The application was scaffolded on 2026-09-13 on the advisor's instruction ("build and deploy the
@@ -91,8 +91,8 @@ best you can"), against the decided stack in `docs/TECHNICAL_REQUIREMENTS.md`. L
 (settings, urls, generic club defaults), `apps/{ops,accounts,credentials,events,comms}/` each with
 models, services, views, and tests, `templates/`, `static/`.
 
-**Before committing, run `tools/check.sh`**: lint, format, the three repository guards, the
-migration check, the 244 application tests and the accessibility sweep. It is everything CI runs
+**Before committing, run `tools/check.sh`**: lint, format, the four repository guards, the
+migration check, the application tests and the accessibility sweep. It is everything CI runs
 and takes about two minutes, because both suites fan out across cores (`pytest-xdist`) and run at
 the same time as each other. `tools/check.sh quick` skips the browser and takes about twenty
 seconds. While iterating on one page, `pytest tools/a11y -k sysadmin` checks a single role in

@@ -5394,3 +5394,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit (comments only, apart from the two strings). Where a quote carried a rule, the rule is stated; where a public record covers the decision, it is cited (A28, A29, A30, A31, A37, A39, A41, A42 and others). The original text of each of the 762 changes is kept outside this repository. Done in four parallel forks of the session (stopped at SK's word) and finished inline; a fault in the forks' shared scan hid issue numbers followed by ")", which the new guard found and which were then fixed by hand and script. Verified: tools/check.sh passes lint, format, all four guards (no-attributions included), the migration check and the application and accessibility tests, apart from three Firefox tests (Firefox does not launch on this machine; CI runs it) and the signed-PDF test, which needs Homebrew's libraries on the library path.
 - **Human Review Status**: Pending review
 - **Git Hash**: ab3faf5
+
+## [2026-11-24 00:10 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Stale text brought up to date (SK): CLAUDE.md's description of the stack, web/ and check.sh; and, for this change only at SK's word, the requirements' three citations of the private repository's answer sheet and dictation, which moved there.
+- **Sections/Files Affected**: CLAUDE.md (the stack is decided and built on, not awaiting decisions; web/ is the deploy's fallback holding page; check.sh runs four guards; no test count; the tree's TECHNICAL_REQUIREMENTS.md line); docs/REQUIREMENTS.md lines 2257, 2302 and 2403 (the paths of the answer sheet and the dictation in the private repository; nothing else in the body).
+- **Nature of Contribution**: Edit. Verified: every citation of the old paths across both repositories' documents was found and repointed (the AI logs, a record, were left as written).
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]
