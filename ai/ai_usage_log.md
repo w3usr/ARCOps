@@ -5441,4 +5441,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/services/roster.py (`FOLD_MIN` of three hours replaces `FOLD_MIN_ROWS`; a run of open rows folds when it covers three hours of clock time, and in the list layout, a row per slot, the run goes on while each row starts no later than the run so far ends); apps/events/tests/test_roster.py (the tracker's four cases: 20-minute slots over an hour and 30-minute slots over two do not fold; 2-hour slots over four hours and five positions over four hours do).
 - **Nature of Contribution**: Code generation and tests. Verified: the four cases fail against the old code and pass; the application tests (681) pass; scenarios T11, T12, T13, T16, T20, T38 and T40 pass locally (`--club=w3usr`).
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 5039bdb
