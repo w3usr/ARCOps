@@ -5426,3 +5426,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. The tracker's other places for the first bug (the operating period's Remove and edit) no longer count this way or no longer exist. Verified: the two new assertions on counts and the audit row fail against the old code and pass against the new; the privacy test covers a leading H1, a later H1 and none; the Chromium and WebKit sweep passes on every page at the new threshold (Firefox cannot launch on this machine; CI runs it); tools/check.sh quick passes but for the signed-PDF test, which needs Homebrew's libraries.
 - **Human Review Status**: Pending review
 - **Git Hash**: b377a29
+
+## [2026-11-24 15:32 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 300 (SK): FR-39's operating-time limits counted every position's slots separately and ignored the minimum break.
+- **Sections/Files Affected**: apps/events/services/slots.py (`limit_report`: a day's on-air time is the clock time any operating slot covers, positions at once counted once, and a gap shorter than the minimum break counted in; the over-limit slots follow from that); apps/events/tests/test_phase2.py (new test: a 5-minute gap under a 10-minute break, two positions over the same hours, a real break); apps/events/tests/test_manage.py (the end-to-end event's Coverage reads 24 operating hours, not 48: two positions over the same 24 hours).
+- **Nature of Contribution**: Code generation and tests. The tracker said "per person"; FR-39's words and its School Club Roundup example are the station's time, which is what this implements. Verified: the new test fails against the old code and passes; the application tests (677) pass; scenario T11 passes locally with its step 7 updated in the private repository.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

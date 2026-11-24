@@ -228,22 +228,32 @@ def _basis_zone(event):
 
 def limit_report(event) -> dict:
     """FR-39, FR-62: operating hours per day against the per-day limit and in total against the
-    total limit; the slots that push a day or the event over are named. Advisory only."""
+    total limit; the slots that push a day or the event over are named. Advisory only.
+
+    On-air time is the station's: the clock time covered by any operating slot, so positions on
+    the air at once count once, and a gap shorter than the minimum break is not off time."""
     limit = getattr(event, "limit", None)
     zone = _basis_zone(event)
     per_day: dict[str, float] = {}
+    blocks: dict[str, list] = {}  # per day: hours in closed blocks, the open block's start and end
     over_ids: set[int] = set()
     total = 0.0
     day_max = float(limit.max_hours_per_day) if (limit and limit.max_hours_per_day) else None
     total_max = float(limit.max_total_hours) if (limit and limit.max_total_hours) else None
+    min_break = timedelta(minutes=(limit.min_break_minutes or 0) if limit else 0)
     for s in Slot.objects.filter(
         position__location__event=event, kind="operating", cancelled=False
     ).order_by("start", "position_id"):
-        hours = (s.end - s.start).total_seconds() / 3600
         key = s.start.astimezone(zone).strftime("%Y-%m-%d")
+        b = blocks.setdefault(key, [0.0, s.start, s.end])
+        if s.start - b[2] < min_break:  # overlapping, touching, or a gap too short to be a break
+            b[2] = max(b[2], s.end)
+        else:
+            b[0] += (b[2] - b[1]).total_seconds() / 3600
+            b[1], b[2] = s.start, s.end
         before_day = per_day.get(key, 0.0)
-        per_day[key] = before_day + hours
-        total += hours
+        per_day[key] = b[0] + (b[2] - b[1]).total_seconds() / 3600
+        total += per_day[key] - before_day
         if (day_max is not None and per_day[key] > day_max + 1e-9) or (
             total_max is not None and total > total_max + 1e-9
         ):

@@ -223,6 +223,38 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     assert Slot.objects.filter(position=pos, kind="operating").count() == 6
 
 
+def test_on_air_time_is_the_stations_clock_time_with_short_gaps_counted_in():
+    """FR-39: positions on the air at once count once, and a gap shorter than the minimum break
+    is on-air time, not a break."""
+    day = (timezone.now() + timedelta(days=3)).replace(hour=10, minute=0, second=0, microsecond=0)
+    e = Event.objects.create(title="SCR", state=Event.State.PUBLISHED)
+    loc = Location.objects.create(event=e, name="Station")
+    run, mult = (Position.objects.create(location=loc, name=n) for n in ("Run", "Mult"))
+    OperatingLimit.objects.create(
+        event=e, max_hours_per_day=2, day_basis="utc", min_break_minutes=10
+    )
+
+    def slot(pos, start, minutes):
+        return Slot.objects.create(
+            position=pos, start=start, end=start + timedelta(minutes=minutes)
+        )
+
+    slot(run, day, 60)  # 10:00-11:00
+    late = slot(run, day + timedelta(minutes=65), 60)  # 11:05-12:05: a 5-minute gap, not a break
+    report = limit_report(e)
+    assert report["days"][0]["hours"] == 2.1 and report["days"][0]["over"]
+    assert report["over_slot_ids"] == {late.pk}
+    late.delete()
+    slot(run, day + timedelta(hours=1), 60)  # Run 10:00-12:00
+    slot(mult, day, 60), slot(mult, day + timedelta(hours=1), 60)  # Mult the same two hours
+    report = limit_report(e)
+    assert report["days"][0]["hours"] == 2.0 and not report["days"][0]["over"]
+    assert report["total"] == 2.0 and not report["over_slot_ids"]
+    slot(run, day + timedelta(hours=3), 60)  # 13:00-14:00, after a real break
+    report = limit_report(e)
+    assert report["days"][0]["hours"] == 3.0 and report["days"][0]["over"]
+
+
 def test_eligibility_editor_and_openings_with_announcement():
     now = timezone.now()
     cap = _user("cap@example.org", "officer")
