@@ -5481,4 +5481,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: tools/a11y/test_offline_sign_out.py (waits up to ten seconds for the worker; in Firefox, where CI's Playwright never put the page under it, the test skips with that reason; elsewhere a missing worker still fails it; the wait no longer throws where `navigator.serviceWorker` is absent).
 - **Nature of Contribution**: Test fix. Verified: passes in Chromium and WebKit locally; the Firefox path cannot be run on this machine and is CI's to confirm.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: a6e64f8
