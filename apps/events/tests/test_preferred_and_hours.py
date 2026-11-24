@@ -17,7 +17,7 @@ from apps.events.tests.test_viability import (  # noqa: F401 - fixture and helpe
     person,
     slot_for,
 )
-from apps.ops.models import ClubSetting
+from apps.ops.models import AuditLog, ClubSetting
 
 pytestmark = pytest.mark.django_db
 
@@ -98,6 +98,9 @@ def test_hours_credit_check_in_unless_no_show_and_export_csv():
     c.post(f"/events/signup/{su.pk}/no-show/")
     body = c.get("/members/hours/?course=PHYS%20101").content.decode()
     assert "stu" in body and "1" in body
+    assert not AuditLog.objects.filter(action="report.hours_exported").exists()  # a page view
     csv_body = c.get("/members/hours/?course=PHYS%20101&format=csv").content.decode()
     assert "Credited hours" in csv_body and "TOTAL" in csv_body
+    row = AuditLog.objects.get(action="report.hours_exported")  # §4.2: it carries addresses
+    assert row.after == {"course": "PHYS 101", "rows": 1, "contacts": True}
     assert Client().get("/members/hours/").status_code == 302  # login required

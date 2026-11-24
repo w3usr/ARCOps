@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_http_methods
 
 from .config import (
@@ -23,7 +25,7 @@ from .config import (
     setting,
 )
 from .models import ClubSetting
-from .templatetags.richtext import sanitise
+from .templatetags.richtext import richtext, sanitise
 
 GROUPS = [
     (
@@ -524,4 +526,11 @@ def privacy(request):
         setting("privacy_notice_html", "")
         or "<h1>Privacy notice</h1><p>The club has not yet published its notice.</p>"
     )
-    return render(request, "ops/privacy.html", {"notice": html})
+    # FR-116: the page's one H1 is the notice's own opening heading, so it is not said twice, and
+    # the notice's other headings keep their levels under it; any later H1 becomes an H2.
+    title, notice = "Privacy notice", richtext(html)
+    if m := re.match(r"\s*<h1\b[^>]*>(.*?)</h1>", html, re.S | re.I):
+        title = strip_tags(m.group(1)).strip() or title
+        rest = re.sub(r"<(/?)h1(\s|>)", r"<\1h2\2", sanitise(html[m.end() :]), flags=re.I)
+        notice = mark_safe(rest)  # noqa: S308 - sanitised immediately above
+    return render(request, "ops/privacy.html", {"title": title, "notice": notice})

@@ -894,6 +894,12 @@ def hours(request):
                     round(total, 2),
                 ]
             )
+        # §4.2: personal data leaves only by an audited action; this carries addresses.
+        record(
+            request.user,
+            "report.hours_exported",
+            after={"course": label, "rows": len(report["rows"]), "contacts": True},
+        )
         return resp
     return render(
         request, "accounts/hours.html", {"labels": labels, "label": label, "report": report}

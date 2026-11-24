@@ -20,7 +20,7 @@ AXE = (Path(__file__).parent / "axe.min.js").read_text(encoding="utf-8")
 PASSWORD = "demo-password-please-change"  # noqa: S105  (the public demo password of seed_demo)
 PHONE = {"width": 390, "height": 844}
 DESKTOP = {"width": 1280, "height": 900}
-FAIL_ON = {"serious", "critical"}
+FAIL_ON = {"moderate", "serious", "critical"}
 # Rules that do not apply to a server-rendered page checked in a headless browser, or that axe
 # reports for third-party widgets outside our control. Keep this list short and explained.
 DISABLED_RULES = {

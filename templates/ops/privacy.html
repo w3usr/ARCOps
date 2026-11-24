@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% load richtext %}
 {% block title %}Privacy notice · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-  <article class="prose">{{ notice|richtext }}</article>
+  <h1>{{ title }}</h1>
+  <article class="prose">{{ notice }}</article>
 {% endblock %}

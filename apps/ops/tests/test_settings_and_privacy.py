@@ -119,6 +119,21 @@ def test_privacy_notice_is_public_and_linked():
     assert b'href="/privacy/"' in c.get("/").content
 
 
+def test_the_privacy_page_has_one_h1_whatever_the_notice_opens_with():
+    """FR-116: the notice's own opening H1 becomes the page's, so the heading is not said twice;
+    a notice without one gets "Privacy notice"."""
+    notice = "<h1>Our <em>privacy</em></h1><h2>Who</h2><h1>Again</h1><script>x()</script>"
+    set_setting(None, "privacy_notice_html", notice)
+    body = Client().get("/privacy/").content.decode()
+    assert re.findall(r"<h1[^>]*>(.*?)</h1>", body) == ["Our privacy"]
+    assert "<h2>Who</h2>" in body and "<h2>Again</h2>" in body  # under the page's H1, in order
+    assert "<script>x()" not in body
+    set_setting(None, "privacy_notice_html", "<p>Only a paragraph.</p><h1>Later</h1>")
+    body = Client().get("/privacy/").content.decode()
+    assert re.findall(r"<h1[^>]*>(.*?)</h1>", body) == ["Privacy notice"]
+    assert "<h2>Later</h2>" in body
+
+
 def test_a_new_event_starts_with_the_kbyg_outline():
     """FR-77: the outline is there from the start, on the event's own Know before you go step,
     where the editor is."""

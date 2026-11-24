@@ -155,15 +155,18 @@ def test_removing_a_position_asks_first_and_is_refused_with_people_in_it(officer
     c.post(f"/events/{ev.pk}/locations/{loc.pk}/positions/add/", {"name": "Mult"})
     c.post(f"/events/{ev.pk}/slots/generate/", GEN | {"mode": "fill"})
     run, mult = loc.positions.order_by("order")
-    su = SignUp.objects.create(slot=mult.slots.first(), user=member, role="operator")
+    first, second = mult.slots.order_by("start")[:2]
+    SignUp.objects.create(slot=first, user=member, role="operator")
+    SignUp.objects.create(slot=second, user=member, role="operator")  # one person, two sign-ups
     page = c.get(f"/events/{ev.pk}/manage/locations/").content.decode()
     asks = page.split(f'<dialog id="pos-rm-{run.pk}"', 1)[1].split("</dialog>", 1)[0]
     assert "Its 4 slots go with it" in asks and "Remove the position" in asks
     refuses = page.split(f'<dialog id="pos-rm-{mult.pk}"', 1)[1].split("</dialog>", 1)[0]
     assert "1 person is signed up" in refuses and "<form" not in refuses
-    c.post(f"/events/{ev.pk}/positions/{mult.pk}/delete/")
+    r = c.post(f"/events/{ev.pk}/positions/{mult.pk}/delete/", follow=True)
+    assert "Nothing was removed: 1 person is signed" in r.content.decode()
     assert loc.positions.count() == 2  # the server refuses the same
-    su.delete()
+    SignUp.objects.filter(slot__position=mult).delete()
     c.post(f"/events/{ev.pk}/positions/{mult.pk}/delete/")
     assert list(loc.positions.all()) == [run]
     row = (

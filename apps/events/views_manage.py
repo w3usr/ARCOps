@@ -901,7 +901,7 @@ def _step_page(request, event, step, **extra):
                     "positions",
                     queryset=Position.objects.annotate(
                         live_slots=Count("slots", filter=Q(slots__cancelled=False), distinct=True),
-                        people=Count("slots__signups", distinct=True),
+                        people=Count("slots__signups__user", distinct=True),
                     ),
                 )
             ).order_by("order"),
@@ -1167,7 +1167,7 @@ def position_delete(request, pk, position_id):
     event = captained_event(request, pk)
     pos = get_object_or_404(Position, pk=position_id, location__event=event)
     loc = pos.location
-    people = SignUp.objects.filter(slot__position=pos).count()
+    people = SignUp.objects.filter(slot__position=pos).values("user").distinct().count()
     if people:
         messages.error(
             request,
