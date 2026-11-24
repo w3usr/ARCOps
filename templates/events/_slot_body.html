@@ -25,6 +25,7 @@ posts: either may answer with a page asking to confirm.{% endcomment %}
         {% if cell.control_operator and cell.control_operator.pk == s.user.pk %}<span class="tag ok">control operator</span>{% endif %}
         {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}
         {% if is_captain and s.note %}<br><small class="muted">Note: {{ s.note }}</small>{% endif %}
+        {% if sees_contacts and s.user != user %}{% with email=s.user.email %}{% if email or s.user.cell_phone %}<br><small class="contacts">{% if email %}<a href="mailto:{{ email }}">{{ email }}</a>{% endif %}{% if email and s.user.cell_phone %} · {% endif %}{% if s.user.cell_phone %}<a href="tel:{{ s.user.cell_phone }}">{{ s.user.cell_phone|phone }}</a>{% endif %}</small>{% endif %}{% endwith %}{% endif %}
         </span>
         {% if is_captain and s.user != user and not s.kept %}<a class="button ghost danger small" href="{% url 'confirm_remove_signup' s.pk %}">{% icon 'trash' 'small' %}Remove them</a>{% endif %}
         {% if s.user.under_18 %}

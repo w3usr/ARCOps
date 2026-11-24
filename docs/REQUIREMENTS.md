@@ -3376,7 +3376,23 @@ stands.
 
 **Decided** by SK on 2026-11-24, taking up private tracker 300. *Record:* this addendum.
 
+### A45. FR-67, §2.1: a captain sees the contacts of the people on their own event
+
+**Original (§2.1, FR-67).** The matrix's *View participants' phone and email* is held by the
+sysadmin, faculty advisor and officer levels and by a per-event captain (**E**). Nothing in the
+application showed them: a member-level captain saw neither phone nor email, and the
+`view_participant_contacts` capability was declared and consulted nowhere, so ticking it on a level
+changed nothing.
+
+**Decision.** As the matrix says. On a slot's page and dialog, each person's email and phone, as
+links, sit beneath their name for anyone whose level holds `view_participant_contacts` and for a
+captain of that event, at any level; a captain of another event, and every other member, see
+neither. A minor's guardians and responsible adults stay as FR-64 has them.
+
+**Decided** by SK on 2026-11-24, taking up private tracker 333 ("yes captains see the
+participant's contact details"). *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) and 2026-11-24 (A43, A44), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) and 2026-11-24 (A43 to A45), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

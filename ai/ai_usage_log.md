@@ -5490,3 +5490,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Draft and code edit. Verified: the changed test fails against the old line; the application tests pass (689); scenario T2 step 7, which found it, now passes locally. The reconciliation note, with the window and every change, is in the private repository.
 - **Human Review Status**: Pending review
 - **Git Hash**: aaa16a0
+
+## [2026-11-24 16:52 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 333, decided by SK: a captain sees the contacts of the people on their own event, as FR-67 and §2.1's matrix say, governed by the capability that until now did nothing.
+- **Sections/Files Affected**: apps/events/views_slots.py (`sees_contacts`: the level holds view_participant_contacts, or the viewer captains this event); templates/events/_slot_body.html (each person's email and phone, as links, beneath their name, for those viewers); apps/events/tests/test_roster.py (new test: a member-level captain sees them once made captain, an officer through the capability, an ordinary member and another event's captain do not); docs/REQUIREMENTS.md (functional addendum A45; the body unchanged).
+- **Nature of Contribution**: Code generation, a test, and a draft. Verified: the new test fails against the old view and template; the application tests (690) pass; djLint lint and format clean; scenario T26, with a new check in the private repository, passes locally.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

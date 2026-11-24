@@ -853,3 +853,38 @@ def test_small_accessibility_gaps_are_closed(world):
     announce = _as(world["off"]).get(f"/events/{world['ev'].pk}/announce/").content.decode()
     assert '<fieldset class="field checkset"><legend>Category</legend>' in announce
     assert STRIP_MARKS["problem"] != STRIP_MARKS["needs"]
+
+
+def test_a_captain_sees_the_contacts_of_the_people_on_their_own_event(world):
+    """FR-67 and §2.1's matrix (View participants' phone and email: E): a captain of this event,
+    whatever their level, and a level holding view_participant_contacts; nobody else."""
+    from apps.events.models import Captaincy
+
+    mem = world["mem"]
+    mem.cell_phone = "570-555-0167"
+    mem.save(update_fields=["cell_phone"])
+    slot = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
+    SignUp.objects.create(slot=slot, user=mem, role="operator")
+    url = f"/events/{world['ev'].pk}/slot/{slot.pk}/"
+    contact = f'href="mailto:{mem.email}"'
+
+    def sees(user):
+        body = _as(user).get(url).content.decode()
+        return contact in body and 'href="tel:570-555-0167"' in body
+
+    captain = User.objects.create_user(
+        "cap@example.org", "pw-Testing-123", groups=["member"], first_name="Cal"
+    )
+    other = User.objects.create_user(
+        "oth@example.org", "pw-Testing-123", groups=["member"], first_name="Oz"
+    )
+    assert not sees(captain), "a member who is not this event's captain"
+    Captaincy.objects.create(event=world["ev"], user=captain)
+    assert sees(captain), "the event's own captain, at member level"
+    assert sees(world["off"]), "an officer: the level holds the capability"
+    assert not sees(other), "an ordinary member"
+    elsewhere = Event.objects.create(
+        title="Other", state=Event.State.PUBLISHED, created_by=world["off"]
+    )
+    Captaincy.objects.create(event=elsewhere, user=other)
+    assert not sees(other), "a captain of another event"

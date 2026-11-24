@@ -109,6 +109,10 @@ def slot_detail(request, pk, slot_id):
         "row": data["row"],
         "roles": data["roles"],
         "is_captain": is_captain,
+        # FR-67, §2.1: a participant's phone and email, for a level holding the capability and
+        # for this event's own captains.
+        "sees_contacts": request.user.may("view_participant_contacts")
+        or event.captaincies.filter(user=request.user).exists(),
         "checkin_open": checkin_window_open(slot, timezone.now()),
         "published": data["published"],
         "locked": event.state == Event.State.LOCKED,
