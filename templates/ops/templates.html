@@ -2,23 +2,31 @@
 {% load nav %}
 {% block title %}Messages · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Messages</h1>
-<p class="lede">Every message the application sends is written from one of these.</p>
-<p>Open one to change its subject or its text; the values it can use are listed beside it. Your text survives a later import of the shipped set, unless that import is told to reset.</p>
-<div class="table-wrap">
-<table class="table data">
-<thead><tr><th scope="col">Message</th><th scope="col">Who gets it</th><th scope="col">Subject</th><th scope="col">Text</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
-<tbody>
-{% for r in rows %}
-<tr>
-  <th scope="row"><a href="{% url 'message_template_edit' r.template.key %}">{{ r.title }}</a></th>
-  <td data-label="Who gets it">{{ r.audience|capfirst }}</td>
-  <td data-label="Subject">{{ r.template.subject }}</td>
-  <td data-label="Text">{% if r.template.edited %}<span class="tag">yours</span>{% else %}<span class="muted">as shipped</span>{% endif %}</td>
-  <td data-label="Actions" class="row-actions"><a class="button secondary small" href="{% url 'message_template_edit' r.template.key %}">{% icon 'edit' 'small' %}Edit<span class="sr-only"> {{ r.title }}</span></a></td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
+  <h1>Messages</h1>
+  <p class="lede">Every message the application sends is written from one of these.</p>
+  <p>Open one to change its subject or its text; the values it can use are listed beside it. Your text survives a later import of the shipped set, unless that import is told to reset.</p>
+  <div class="table-wrap">
+    <table class="table data">
+      <thead>
+        <tr>
+          <th scope="col">Message</th>
+          <th scope="col">Who gets it</th>
+          <th scope="col">Subject</th>
+          <th scope="col">Text</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <th scope="row"><a href="{% url 'message_template_edit' r.template.key %}">{{ r.title }}</a></th>
+            <td data-label="Who gets it">{{ r.audience|capfirst }}</td>
+            <td data-label="Subject">{{ r.template.subject }}</td>
+            <td data-label="Text">{% if r.template.edited %}<span class="tag">yours</span>{% else %}<span class="muted">as shipped</span>{% endif %}</td>
+            <td data-label="Actions" class="row-actions"><a class="button secondary small" href="{% url 'message_template_edit' r.template.key %}">{% icon 'edit' 'small' %}Edit<span class="sr-only"> {{ r.title }}</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

@@ -20,6 +20,11 @@ def pytest_addoption(parser):
         default=False,
         help="write a screenshot of every page into var/contact-sheet/ for review by eye",
     )
+    parser.addoption(
+        "--page-snapshot",
+        default=None,
+        help="write what every page draws, as JSON, into this directory (test_page_snapshot.py)",
+    )
 
 
 def pytest_configure():

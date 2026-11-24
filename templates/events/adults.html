@@ -2,37 +2,60 @@
 {% load times labels nav %}
 {% block title %}Responsible adults · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<p class="crumbs"><a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{% url 'slot_detail' event.pk slot.pk %}">{{ slot.position }}</a></p>
-<h1>Who accompanies {{ su.user.display_first }}</h1>
-<p>{% when slot.start slot.end event %}, as {{ su.role|role_label }}. A member under 18 is accompanied for the whole slot by a responsible adult their guardian has named. The adult takes no seat and is not counted. Until one is named, the slot shows <em>Needs a responsible adult for {{ su.user.short_name }}</em>.</p>
+  <p class="crumbs"><a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{% url 'slot_detail' event.pk slot.pk %}">{{ slot.position }}</a></p>
+  <h1>Who accompanies {{ su.user.display_first }}</h1>
+  <p>{% when slot.start slot.end event %}, as {{ su.role|role_label }}. A member under 18 is accompanied for the whole slot by a responsible adult their guardian has named. The adult takes no seat and is not counted. Until one is named, the slot shows <em>Needs a responsible adult for {{ su.user.short_name }}</em>.</p>
 
-<section class="section" aria-labelledby="named"><h2 id="named">Named for this slot</h2>
-{% if adults %}<ul class="list">{% for a in adults %}<li><strong>{{ a.name }}</strong>{% if a.phone %}, {{ a.phone|phone }}{% endif %}{% if a.email %}, {{ a.email }}{% endif %}{% if a.member %}, a member{% endif %}{% if a.present_at %} <span class="tag ok">present at check-in</span>{% endif %}
-<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="remove"><input type="hidden" name="adult" value="{{ a.pk }}"><button type="submit" class="secondary small">Remove</button></form></li>{% endfor %}</ul>
+  <section class="section" aria-labelledby="named">
+    <h2 id="named">Named for this slot</h2>
+    {% if adults %}<ul class="list">{% for a in adults %}<li><strong>{{ a.name }}</strong>{% if a.phone %}, {{ a.phone|phone }}{% endif %}{% if a.email %}, {{ a.email }}{% endif %}{% if a.member %}, a member{% endif %}{% if a.present_at %} <span class="tag ok">present at check-in</span>{% endif %}
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="remove"><input type="hidden" name="adult" value="{{ a.pk }}"><button type="submit" class="secondary small">Remove</button></form></li>{% endfor %}</ul>
 {% else %}<p class="msg warning"><span class="lvl">Careful:</span> nobody is named yet. A member under 18 needs a responsible adult named for the slot before they can be checked in.</p>{% endif %}
 </section>
 
 <div class="cols">
-<section class="section" aria-labelledby="fresh"><h2 id="fresh">Name an adult</h2>
-<form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="add">
-  <div class="field"><label for="a-name">Name</label><input id="a-name" name="name" maxlength="120" required></div>
-  <div class="field"><label for="a-phone">Mobile number</label><input id="a-phone" name="phone" maxlength="30" required></div>
-  <div class="field"><label for="a-email">Email (optional)</label><input id="a-email" name="email" type="email" maxlength="254"></div>
-  <div><button type="submit">Add</button></div>
-</form>
+  <section class="section" aria-labelledby="fresh">
+    <h2 id="fresh">Name an adult</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add">
+      <div class="field">
+        <label for="a-name">Name</label><input id="a-name" name="name" maxlength="120" required>
+      </div>
+      <div class="field">
+        <label for="a-phone">Mobile number</label><input id="a-phone" name="phone" maxlength="30" required>
+      </div>
+      <div class="field">
+        <label for="a-email">Email (optional)</label><input id="a-email" name="email" type="email" maxlength="254">
+      </div>
+      <div>
+        <button type="submit">Add</button>
+      </div>
+    </form>
+  </section>
+  <div class="stack">
+  {% if saved %}<section class="section" aria-labelledby="sv"><h2 id="sv">Named before</h2>
+    <form method="post" class="inline">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="pick">
+      <label for="a-saved">Pick</label>
+      <select id="a-saved" name="saved">{% for s in saved %}<option value="{{ s.name }}|{{ s.email }}|{{ s.phone }}|{{ s.member_id|default_if_none:'' }}">{{ s.name }}{% if s.phone %}, {{ s.phone|phone }}{% endif %}</option>{% endfor %}</select>
+      <button type="submit" class="secondary">Add</button>
+    </form>
+  </section>
+{% endif %}
+<section class="section" aria-labelledby="mem">
+  <h2 id="mem">A member, by name</h2>
+  <form method="post" class="stack">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="member">
+    {% url 'signup_adults' su.pk as pick_url %}
+    {% include "_member_pick.html" with pick_id="a-member" label="Member" name="member" url=pick_url q=pick.q found=pick.found more=pick.more %}
+    <div>
+      <button type="submit" class="secondary">Add</button>
+    </div>
+  </form>
 </section>
-<div class="stack">
-{% if saved %}<section class="section" aria-labelledby="sv"><h2 id="sv">Named before</h2>
-<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="pick">
-  <label for="a-saved">Pick</label>
-  <select id="a-saved" name="saved">{% for s in saved %}<option value="{{ s.name }}|{{ s.email }}|{{ s.phone }}|{{ s.member_id|default_if_none:'' }}">{{ s.name }}{% if s.phone %}, {{ s.phone|phone }}{% endif %}</option>{% endfor %}</select>
-  <button type="submit" class="secondary">Add</button>
-</form></section>{% endif %}
-<section class="section" aria-labelledby="mem"><h2 id="mem">A member, by name</h2>
-<form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="member">
-  {% url 'signup_adults' su.pk as pick_url %}{% include "_member_pick.html" with pick_id="a-member" label="Member" name="member" url=pick_url q=pick.q found=pick.found more=pick.more %}
-  <div><button type="submit" class="secondary">Add</button></div>
-</form></section>
 </div>
 </div>
 <p><a href="{% url 'slot_detail' event.pk slot.pk %}">Back to the slot</a></p>

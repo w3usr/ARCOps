@@ -1022,7 +1022,35 @@ CI. Neither the scripts nor the templates had a formatter or a linter (private t
 **Decided by** SK on 2026-11-23, asking for Prettier on the scripts and djLint on the templates,
 and, shown what the formatter changed, choosing to lint now and format later.
 
+### A20. TR-37: templates formatted by djLint, shown to draw the same
+
+**Original (A19).** djLint lints the templates; its formatter is not run, since it changed what
+pages drew.
+
+**Decision.**
+- **The templates are formatted by djLint** (`djlint templates --reformat`), and `djlint
+  templates --check` runs beside the lint in `tools/check.sh` and CI.
+- **A tag stays on one line**: `max_line_length` is 1000, since djLint splits any tag longer than
+  that one attribute per line whatever `max_attribute_length` says.
+- **Whitespace that draws is kept out of the formatter's reach.** `base.html` puts the space
+  before a page's extra class on `<main>` itself, and a page's `main_class` block holds the bare
+  word (`wide`); a `<summary>` holding a heading is fenced with `djlint:off`, since a line break
+  inside it draws as a space before the heading. Two application tests that matched markup down
+  to a newline match it whatever the whitespace.
+- **The proof that nothing drew differently**, kept for the next change of this kind:
+  `tools/a11y/test_page_snapshot.py` records every page each demo role reaches at 390 and 1280 px
+  (the visible text, and every element's computed style and box), and
+  `tools/a11y/compare_snapshots.py` compares two runs. Before and after formatting, 354 page
+  views drew the same; the one page that differed (My schedule at 390 px, by a few elements'
+  style and a 24 px height) differs as much between two runs of the same code. For what the
+  snapshot cannot render (dialogs, confirmation and error states, mail, the agreement's PDF),
+  each template's text was compared before and after: identical but for whitespace and for quote
+  style inside template tags, with every one of the 908 places whitespace was added sorted by
+  what stands either side and the 29 not at a block, table-cell or flex boundary read one by one.
+
+**Decided by** SK on 2026-11-24, taking up private tracker 363.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15) and 2026-11-23 (A16 to A19), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19) and 2026-11-24 (A20), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

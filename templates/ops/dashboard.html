@@ -2,103 +2,113 @@
 {% load times labels nav %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-{% comment %}Home opens on what you do next: the heading says what the page shows. The
-name and callsign stay at the foot of the sidebar, on every page.{% endcomment %}
-<h1>{% if next_signup %}Your next slot{% elif invite %}Pick your hours{% else %}Nothing on the schedule yet{% endif %}</h1>
-{% if next_signup %}{% with s=next_signup %}
-{% comment %}The page's main block: when, how long until then, where, as what, and the one thing
+  {% comment %}Home opens on what you do next: the heading says what the page shows. The
+  name and callsign stay at the foot of the sidebar, on every page.{% endcomment %}
+  <h1>{% if next_signup %}Your next slot{% elif invite %}Pick your hours{% else %}Nothing on the schedule yet{% endif %}</h1>
+  {% if next_signup %}
+    {% with s=next_signup %}
+      {% comment %}The page's main block: when, how long until then, where, as what, and the one thing
 to do about it now, the same actions as My schedule (FR-72, FR-113). It comes straight after the
 heading, and the event's link after the action, so that inside its window Check in is the first
-thing in the page to take the focus (FR-116).{% endcomment %}
-<section class="card next-slot" aria-labelledby="next">
-  <h2 id="next">{{ s.slot.event.title }}</h2>
-  <p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
-  <p><strong>{% if s.slot.start <= now %}On now{% else %}In {{ s.slot.start|timeuntil:now }}{% endif %}</strong>: {{ s.slot.position.name }} at {{ s.slot.position.location.name }}, as {{ s.role|role_label }}{% if s.checked_in_at %} <span class="tag ok">checked in</span>{% elif s.confirmed_at %} <span class="tag">confirmed</span>{% endif %}</p>
-  {% if minor_readonly %}<p class="muted">Your guardian or a captain confirms and checks you in.</p>
-  {% elif next_action == 'check_in' and s.user.under_18 %}<p><a href="{% url 'my_schedule' %}">Check in on My schedule</a>, naming who is with you.</p>
-  {% elif next_action == 'check_in' %}<form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}<button class="big" type="submit">{{ s|checkin_label }}</button></form>
-  {% elif next_action == 'confirm' %}<form method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm you will be there</button></form>{% endif %}
+      thing in the page to take the focus (FR-116).{% endcomment %}
+      <section class="card next-slot" aria-labelledby="next">
+        <h2 id="next">{{ s.slot.event.title }}</h2>
+        <p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
+        <p><strong>{% if s.slot.start <= now %}On now{% else %}In {{ s.slot.start|timeuntil:now }}{% endif %}</strong>: {{ s.slot.position.name }} at {{ s.slot.position.location.name }}, as {{ s.role|role_label }}{% if s.checked_in_at %} <span class="tag ok">checked in</span>{% elif s.confirmed_at %} <span class="tag">confirmed</span>{% endif %}</p>
+      {% if minor_readonly %}<p class="muted">Your guardian or a captain confirms and checks you in.</p>
+    {% elif next_action == "check_in" and s.user.under_18 %}<p><a href="{% url 'my_schedule' %}">Check in on My schedule</a>, naming who is with you.</p>
+    {% elif next_action == "check_in" %}<form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}<button class="big" type="submit">{{ s|checkin_label }}</button></form>
+  {% elif next_action == "confirm" %}<form method="post" action="{% url 'confirm_signup' s.pk %}">{% csrf_token %}<button type="submit">Confirm you will be there</button></form>{% endif %}
   <p><a class="button secondary" href="{% url 'event_detail' s.slot.event.pk %}">{% icon 'table' %}Open the roster</a></p>
-</section>
-{% endwith %}{% elif invite %}{% with e=invite.0 n=invite.1 %}
-<section class="card" aria-labelledby="inv">
-  <h2 id="inv"><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></h2>
-  <p class="when">{% when e.start e.end e year=True %}</p>
-  <p>{{ n }} open slot{{ n|pluralize }}. Tick the hours you can do on the roster and sign up for them together.</p>
-  <p><a class="button" href="{% url 'event_detail' e.pk %}">Open the roster</a></p>
-</section>
-{% endwith %}{% endif %}
+    </section>
+  {% endwith %}
+{% elif invite %}
+  {% with e=invite.0 n=invite.1 %}
+    <section class="card" aria-labelledby="inv">
+      <h2 id="inv"><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a></h2>
+      <p class="when">{% when e.start e.end e year=True %}</p>
+      <p>{{ n }} open slot{{ n|pluralize }}. Tick the hours you can do on the roster and sign up for them together.</p>
+      <p><a class="button" href="{% url 'event_detail' e.pk %}">Open the roster</a></p>
+    </section>
+  {% endwith %}
+{% endif %}
 {% if user.is_provisional %}
-<section class="card" aria-labelledby="pv"><h2 id="pv">Your account is provisional</h2>
-<p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p></section>
+  <section class="card" aria-labelledby="pv">
+    <h2 id="pv">Your account is provisional</h2>
+    <p>A club officer will review it shortly. Until then you can see the events and sign up for slots; names of other members and the agreements appear once you are admitted.</p>
+  </section>
 {% endif %}
 {% if has_notices %}
-{% comment %}The counts the sidebar badges already carry, and no list of subjects: a banner that
+  {% comment %}The counts the sidebar badges already carry, and no list of subjects: a banner that
 recites every notice is longer than the page it sits on, and the reader still has to go and read
-them.{% endcomment %}
-<div class="banner" role="status">
-  <p><strong>{% if approvals_waiting %}{{ approvals_waiting }} agreement{{ approvals_waiting|pluralize }} waiting for your approval{% if unread_count %}, and {{ unread_count }} unread message{{ unread_count|pluralize }}{% endif %}.{% else %}{{ unread_count }} unread message{{ unread_count|pluralize }}.{% endif %}</strong></p>
-  <p>{% if banner_action %}<a href="{{ banner_action.url }}">{{ banner_action.label }}</a> · {% endif %}<a href="{% url 'my_messages' %}">Read them</a></p>
-</div>
+  them.{% endcomment %}
+  <div class="banner" role="status">
+    <p><strong>{% if approvals_waiting %}{{ approvals_waiting }} agreement{{ approvals_waiting|pluralize }} waiting for your approval{% if unread_count %}, and {{ unread_count }} unread message{{ unread_count|pluralize }}{% endif %}.{% else %}{{ unread_count }} unread message{{ unread_count|pluralize }}.{% endif %}</strong></p>
+    <p>{% if banner_action %}<a href="{{ banner_action.url }}">{{ banner_action.label }}</a> · {% endif %}<a href="{% url 'my_messages' %}">Read them</a></p>
+  </div>
 {% endif %}
 {% if perms.ops.view_member_records %}
-{% include "ops/_mail_off.html" %}
+  {% include "ops/_mail_off.html" %}
 {% endif %}
 {% if pending_review %}
-<section class="card" aria-labelledby="rev">
-  <h2 id="rev">Provisional members waiting for review</h2>
-  <ul class="list">{% for p in pending_review %}<li><a href="{% url 'member_detail' p.pk %}">{{ p.full_name }}{% if p.callsign %} {{ p.callsign }} ({{ p.license_letter }}){% endif %}</a>, joined {{ p.date_joined|plain_day }} via {{ p.joined_via.label|default:"a community link" }}</li>{% endfor %}</ul>
-</section>
+  <section class="card" aria-labelledby="rev">
+    <h2 id="rev">Provisional members waiting for review</h2>
+    <ul class="list">{% for p in pending_review %}<li><a href="{% url 'member_detail' p.pk %}">{{ p.full_name }}{% if p.callsign %} {{ p.callsign }} ({{ p.license_letter }}){% endif %}</a>, joined {{ p.date_joined|plain_day }} via {{ p.joined_via.label|default:"a community link" }}</li>{% endfor %}</ul>
+  </section>
 {% endif %}
 
 {% if my_wards %}
-<section class="section" aria-labelledby="wd"><h2 id="wd">Members you act for</h2>
-<ul class="list">{% for w in my_wards %}<li>{{ w.full_name }} <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Act for {{ w.display_first }}</button></form></li>{% endfor %}</ul>
-</section>
+  <section class="section" aria-labelledby="wd">
+    <h2 id="wd">Members you act for</h2>
+    <ul class="list">{% for w in my_wards %}<li>{{ w.full_name }} <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Act for {{ w.display_first }}</button></form></li>{% endfor %}</ul>
+  </section>
 {% endif %}
 {% if checkin_ready %}
-<section class="card" aria-labelledby="ci">
-  <h2 id="ci">You can also check in now</h2>
-  {% for s in checkin_ready %}
-  <form method="post" action="{% url 'check_in' s.pk %}">{% csrf_token %}
-    <p>{{ s.slot.event.title }}</p><p>{{ s.slot.position.name }} at {{ s.slot.position.location.name }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
-    <button class="big" type="submit">{{ s|checkin_label }}</button>
-  </form>
-  {% endfor %}
-</section>
+  <section class="card" aria-labelledby="ci">
+    <h2 id="ci">You can also check in now</h2>
+    {% for s in checkin_ready %}
+      <form method="post" action="{% url 'check_in' s.pk %}">
+        {% csrf_token %}
+        <p>{{ s.slot.event.title }}</p><p>{{ s.slot.position.name }} at {{ s.slot.position.location.name }}</p><p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
+        <button class="big" type="submit">{{ s|checkin_label }}</button>
+      </form>
+    {% endfor %}
+  </section>
 {% endif %}
 
 {% if other_signups %}
-<section class="section" aria-labelledby="mine">
-  <h2 id="mine">Your other slots</h2>
-  <ul class="list">
-    {% for s in other_signups %}
-    <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a><br>{{ s.slot.position.name }} at {{ s.slot.position.location.name }}, as {{ s.role|role_label }}<br>{% when s.slot.start s.slot.end s.slot.event %}
-      {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
-    {% endfor %}
-  </ul>
-  <p><a href="{% url 'my_schedule' %}">My schedule</a></p>
-</section>
+  <section class="section" aria-labelledby="mine">
+    <h2 id="mine">Your other slots</h2>
+    <ul class="list">
+      {% for s in other_signups %}
+        <li><a href="{% url 'event_detail' s.slot.event.pk %}">{{ s.slot.event.title }}</a><br>{{ s.slot.position.name }} at {{ s.slot.position.location.name }}, as {{ s.role|role_label }}<br>{% when s.slot.start s.slot.end s.slot.event %}
+        {% if s.checked_in_at %}<span class="tag ok">checked in</span>{% elif s.confirmed_at %}<span class="tag">confirmed</span>{% endif %}</li>
+      {% endfor %}
+    </ul>
+    <p><a href="{% url 'my_schedule' %}">My schedule</a></p>
+  </section>
 {% endif %}
 
-{% if gaps %}{% with e=gaps.0 c=gaps.1 %}
-{% comment %}A captain or officer: the next event they run, and where it is short.{% endcomment %}
-<section class="section health" aria-labelledby="gp">
-  <h2 id="gp">Gaps in {{ e.title }}</h2>
-  <p class="when">{% when e.start e.end e year=True %}</p>
-  <p>{% if c.needs or c.open %}{{ c.total }} slot{{ c.total|pluralize }}:
-    {% if c.needs %}<span class="tag warn">{{ c.needs }} need someone</span>{% endif %}
-    {% if c.open %}<span class="tag open">{{ c.open }} open</span>{% endif %}
-    {% if c.covered %}<span class="tag ok">{{ c.covered }} covered</span>{% endif %}
-  {% else %}Every slot is covered.{% endif %}</p>
-  <p>{% if c.needs %}<a href="{% url 'event_detail' e.pk %}?filter=problems">See the slots that need someone</a> · {% endif %}<a class="button secondary small" href="{% url 'event_detail' e.pk %}">{% icon 'table' 'small' %}Open the roster</a></p>
-</section>
-{% endwith %}{% endif %}
+{% if gaps %}
+  {% with e=gaps.0 c=gaps.1 %}
+    {% comment %}A captain or officer: the next event they run, and where it is short.{% endcomment %}
+    <section class="section health" aria-labelledby="gp">
+      <h2 id="gp">Gaps in {{ e.title }}</h2>
+      <p class="when">{% when e.start e.end e year=True %}</p>
+      <p>{% if c.needs or c.open %}{{ c.total }} slot{{ c.total|pluralize }}:
+        {% if c.needs %}<span class="tag warn">{{ c.needs }} need someone</span>{% endif %}
+        {% if c.open %}<span class="tag open">{{ c.open }} open</span>{% endif %}
+        {% if c.covered %}<span class="tag ok">{{ c.covered }} covered</span>{% endif %}
+{% else %}Every slot is covered.{% endif %}</p>
+<p>{% if c.needs %}<a href="{% url 'event_detail' e.pk %}?filter=problems">See the slots that need someone</a> · {% endif %}<a class="button secondary small" href="{% url 'event_detail' e.pk %}">{% icon 'table' 'small' %}Open the roster</a></p>
+  </section>
+{% endwith %}
+{% endif %}
 
 <section class="section" aria-labelledby="up">
   <h2 id="up">Upcoming events</h2>
   {% if upcoming %}
-  <ul class="list">{% for e, n in upcoming %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if n %}: {{ n }} open slot{{ n|pluralize }}{% endif %}{% if e.start %}<br>{% when e.start e.end e year=True %}{% endif %}</li>{% endfor %}</ul>
+    <ul class="list">{% for e, n in upcoming %}<li><a href="{% url 'event_detail' e.pk %}">{{ e.title }}</a>{% if n %}: {{ n }} open slot{{ n|pluralize }}{% endif %}{% if e.start %}<br>{% when e.start e.end e year=True %}{% endif %}</li>{% endfor %}</ul>
   {% else %}<p>Nothing published yet.</p>{% endif %}
   <p><a href="{% url 'event_list' %}">See all events</a></p>
 </section>

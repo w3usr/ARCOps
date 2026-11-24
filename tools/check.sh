@@ -19,9 +19,9 @@ step() { printf '\n\033[1;35m==> %s\033[0m\n' "$1"; }
 step "Lint and format"
 $PY/ruff check . && $PY/ruff format --check . || fail=1
 npx --yes prettier@3.6.2 --check static/css static/js static/sw.js || fail=1
-# The templates' lint (djLint, pinned in requirements-dev). Its formatter is not run: on these
-# templates it changes what pages draw (technical addendum A19).
+# The templates' lint and format (djLint, pinned in requirements-dev; technical addendum A20).
 $PY/djlint templates --lint || fail=1
+$PY/djlint templates --check || fail=1
 
 step "Repository guards"
 for g in check_club_neutral check_no_requirement_ids check_interface check_no_attributions; do

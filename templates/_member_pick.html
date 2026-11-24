@@ -5,16 +5,15 @@ is the form's first button, so Enter in the box finds rather than submits.{% end
 <div class="field member-pick">
   <label for="{{ pick_id }}-q">{{ label }}</label>
   <div class="pick-q">
-    <input id="{{ pick_id }}-q" type="search" name="q" value="{{ q }}" autocomplete="off" aria-describedby="{{ pick_id }}-help"
-      hx-get="{{ url }}" hx-trigger="input changed delay:300ms, search" hx-select="#{{ pick_id }}-found" hx-target="#{{ pick_id }}-found" hx-swap="outerHTML"{% if include %} hx-include="{{ include }}"{% endif %}>
+    <input id="{{ pick_id }}-q" type="search" name="q" value="{{ q }}" autocomplete="off" aria-describedby="{{ pick_id }}-help" hx-get="{{ url }}" hx-trigger="input changed delay:300ms, search" hx-select="#{{ pick_id }}-found" hx-target="#{{ pick_id }}-found" hx-swap="outerHTML"{% if include %} hx-include="{{ include }}"{% endif %}>
     <button type="submit" name="find" value="1" class="secondary" formnovalidate>Find</button>
   </div>
   <span class="helptext" id="{{ pick_id }}-help">Any part of a name or callsign.</span>
   <div id="{{ pick_id }}-found" aria-live="polite">
-    {% if found %}<fieldset class="stack"><legend class="sr-only">Who</legend>
-      {% for m in found %}<div class="check"><input type="radio" id="{{ pick_id }}-{{ m.pk }}" name="{{ name }}" value="{{ m.pk }}"{% if found|length == 1 %} checked{% endif %} required><label for="{{ pick_id }}-{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</label></div>{% endfor %}
-    </fieldset>
-    {% if more %}<p class="muted">More match; type more of the name.</p>{% endif %}
-    {% elif q %}<p class="muted">Nobody here matches “{{ q }}”.</p>{% endif %}
-  </div>
+  {% if found %}<fieldset class="stack"><legend class="sr-only">Who</legend>
+    {% for m in found %}<div class="check"><input type="radio" id="{{ pick_id }}-{{ m.pk }}" name="{{ name }}" value="{{ m.pk }}"{% if found|length == 1 %} checked{% endif %} required><label for="{{ pick_id }}-{{ m.pk }}">{{ m.full_name }}{% if m.callsign %} {{ m.callsign }}{% endif %}</label></div>{% endfor %}
+  </fieldset>
+  {% if more %}<p class="muted">More match; type more of the name.</p>{% endif %}
+{% elif q %}<p class="muted">Nobody here matches “{{ q }}”.</p>{% endif %}
+</div>
 </div>

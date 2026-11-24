@@ -1,3 +1,4 @@
 {% comment %}Appoint a captain: the member found by typing.{% endcomment %}
 {{ form.non_field_errors }}{{ form.user.errors }}
-{% url 'captain_add' event.pk as pick_url %}{% include "_member_pick.html" with pick_id="captain" label="Member" name="user" url=pick_url q=pick.q found=pick.found more=pick.more %}
+{% url 'captain_add' event.pk as pick_url %}
+{% include "_member_pick.html" with pick_id="captain" label="Member" name="user" url=pick_url q=pick.q found=pick.found more=pick.more %}

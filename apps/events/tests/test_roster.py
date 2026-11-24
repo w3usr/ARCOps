@@ -617,8 +617,10 @@ def test_the_strip_marks_every_span_by_its_most_urgent_state_and_links_to_it(wor
 
 def test_the_strip_is_for_the_eye_and_the_key_reads_its_marks(world):
     body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
-    strip = body.split('<div class="strip" aria-hidden="true">', 1)[1].split(
-        '</div>\n<div class="legend', 1
+    strip = re.split(
+        r'</div>\s*<div class="legend',
+        body.split('<div class="strip" aria-hidden="true">', 1)[1],
+        maxsplit=1,
     )[0]
     assert strip.count('tabindex="-1"') == strip.count("<a ") == 5
     assert (

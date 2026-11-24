@@ -3,25 +3,25 @@
 {% load richtext %}
 {% block title %}Messages · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Messages</h1>
-<p class="lede">Everything the club has sent you, newest first.</p>
-<p>A message that never reached your inbox is still here. Nothing on this page depends on email arriving.</p>
-{% if page.object_list %}
-{% comment %}Every message a row of one panel, an unread one marked and set in bold.{% endcomment %}
-<ul class="list msglist panel">
-{% for m in page.object_list %}
-<li class="card{% if m.was_unread %} unread{% endif %}">
-  <details{% if forloop.first %} open{% endif %}>
-    <summary>{% if m.was_unread %}<span class="sr-only">Unread: </span>{% endif %}<strong>{{ m.subject }}</strong> <small class="muted">{{ m.created|utc_time }}, {{ m.category|message_category }}</small> <span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% endif %}">{{ m.get_state_display }}</span></summary>
-    <div class="prose">{{ m.body_html|richtext }}</div>
-    {% if m.to_addresses %}<p class="muted"><small>To: {{ m.to_addresses|join:", " }}{% if m.sent_at %}; sent {{ m.sent_at|utc_time }}{% endif %}</small></p>{% endif %}
-  </details>
-</li>
-{% endfor %}
-</ul>
-{% if page.has_other_pages %}<p class="muted">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Newer</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Older</a>{% endif %}</p>{% endif %}
-{% else %}
-<p class="empty">Nothing yet. Reminders, warnings, and notices appear here as well as reaching you by email.</p>
-{% endif %}
-<p class="helptext">Which of these also reach you by email is yours to set, under <a href="{% url 'profile' %}#notifications">Notifications</a> on your profile.</p>
+  <h1>Messages</h1>
+  <p class="lede">Everything the club has sent you, newest first.</p>
+  <p>A message that never reached your inbox is still here. Nothing on this page depends on email arriving.</p>
+  {% if page.object_list %}
+    {% comment %}Every message a row of one panel, an unread one marked and set in bold.{% endcomment %}
+    <ul class="list msglist panel">
+      {% for m in page.object_list %}
+        <li class="card{% if m.was_unread %} unread{% endif %}">
+          <details{% if forloop.first %} open{% endif %}>
+            <summary>{% if m.was_unread %}<span class="sr-only">Unread: </span>{% endif %}<strong>{{ m.subject }}</strong> <small class="muted">{{ m.created|utc_time }}, {{ m.category|message_category }}</small> <span class="tag{% if m.state == 'sent' %} ok{% elif m.state == 'failed' %} bad{% endif %}">{{ m.get_state_display }}</span></summary>
+            <div class="prose">{{ m.body_html|richtext }}</div>
+            {% if m.to_addresses %}<p class="muted"><small>To: {{ m.to_addresses|join:", " }}{% if m.sent_at %}; sent {{ m.sent_at|utc_time }}{% endif %}</small></p>{% endif %}
+          </details>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if page.has_other_pages %}<p class="muted">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Newer</a>{% endif %} Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_next %}<a href="?page={{ page.next_page_number }}">Older</a>{% endif %}</p>{% endif %}
+  {% else %}
+    <p class="empty">Nothing yet. Reminders, warnings, and notices appear here as well as reaching you by email.</p>
+  {% endif %}
+  <p class="helptext">Which of these also reach you by email is yours to set, under <a href="{% url 'profile' %}#notifications">Notifications</a> on your profile.</p>
 {% endblock %}

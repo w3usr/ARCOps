@@ -16,48 +16,48 @@ the onload ids taken from `webauthn_form`, not from `form`. The passkey form pos
 library's own endpoint, which verifies the credential and resumes whatever was interrupted; the
 challenge is in the session, put there by apps.accounts.views_mfa.{% endcomment %}
 {% block reauthenticate_content %}
-    {% url 'account_reauthenticate' as action_url %}
-    {% element form form=form method="post" action=action_url %}
-        {% slot body %}
-            {% csrf_token %}
-            {% element fields form=form %}
-            {% endelement %}
-            {{ redirect_field }}
-        {% endslot %}
-        {% slot actions %}
-            {% element button type="submit" tags="primary,reauthenticate,wide" %}
-                {% trans "Confirm" %}
-            {% endelement %}
-        {% endslot %}
-    {% endelement %}
+  {% url 'account_reauthenticate' as action_url %}
+  {% element form form=form method="post" action=action_url %}
+  {% slot body %}
+  {% csrf_token %}
+  {% element fields form=form %}
+{% endelement %}
+{{ redirect_field }}
+{% endslot %}
+{% slot actions %}
+{% element button type="submit" tags="primary,reauthenticate,wide" %}
+{% trans "Confirm" %}
+{% endelement %}
+{% endslot %}
+{% endelement %}
 
-    {% if has_key %}
-        {% url 'mfa_reauthenticate_webauthn' as webauthn_url %}
-        {% element form form=webauthn_form method="post" action=webauthn_url %}
-            {% slot body %}
-                {% csrf_token %}
-                {% element fields form=webauthn_form %}
-                {% endelement %}
-                {{ redirect_field }}
-            {% endslot %}
-            {% slot actions %}
-                {% element button id="mfa_webauthn_reauthenticate" type="submit" tags="secondary,mfa,login,wide" %}
-                    {% trans "Use a security key" %}
-                {% endelement %}
-            {% endslot %}
-        {% endelement %}
-    {% endif %}
+{% if has_key %}
+  {% url 'mfa_reauthenticate_webauthn' as webauthn_url %}
+  {% element form form=webauthn_form method="post" action=webauthn_url %}
+  {% slot body %}
+  {% csrf_token %}
+  {% element fields form=webauthn_form %}
+{% endelement %}
+{{ redirect_field }}
+{% endslot %}
+{% slot actions %}
+{% element button id="mfa_webauthn_reauthenticate" type="submit" tags="secondary,mfa,login,wide" %}
+{% trans "Use a security key" %}
+{% endelement %}
+{% endslot %}
+{% endelement %}
+{% endif %}
 
-    {% if has_key %}
-        {{ js_data|json_script:"js_data" }}
-        {% include "mfa/webauthn/snippets/scripts.html" %}
-        <script data-allauth-onload="allauth.webauthn.forms.authenticateForm" type="application/json">{
+{% if has_key %}
+  {{ js_data|json_script:"js_data" }}
+  {% include "mfa/webauthn/snippets/scripts.html" %}
+  <script data-allauth-onload="allauth.webauthn.forms.authenticateForm" type="application/json">{
     "ids": {
         "authenticate": "mfa_webauthn_reauthenticate",
         "credential": "{{ webauthn_form.credential.auto_id }}",
         "data": "js_data"
     }
 }
-        </script>
-    {% endif %}
+  </script>
+{% endif %}
 {% endblock %}

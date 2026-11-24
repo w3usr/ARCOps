@@ -252,7 +252,7 @@ def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
         HTTP_HX_REQUEST="true",
     )
     assert (
-        r.content.decode()
+        r.content.decode().strip()
         == "<strong>Every hour already has a slot; nothing would be added.</strong>"
     )
 

@@ -1,15 +1,18 @@
 {% extends "allauth/layouts/base.html" %}
 {% block title %}Join · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Join {{ club.name }}</h1>
-<p>{% if link.kind == 'class' %}This link is for <strong>{{ link.label }}</strong>. Use your {{ link.required_domain }} address; your account is ready as soon as you finish.{% else %}Thank you for offering to mentor with <strong>{{ link.label }}</strong>. When you finish we will send a link to confirm your address; a club officer then reviews your account.{% endif %} Start with your callsign if you have one; your name and license details are filled from the FCC record.</p>
-<form method="post" class="stack">{% csrf_token %}
-  {{ form.non_field_errors }}
-  {% for f in form %}
-    {% if f.field.widget.input_type == 'checkbox' %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
-    {% else %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endif %}
-  {% endfor %}
-  <p class="msg"><span class="lvl">Note:</span> The club holds the details above so it can schedule you and reach you. Other members see only your first name, callsign, and license class. You can ask for your account to be closed at any time; the <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> has the rest.</p>
-  <div><button type="submit">Create my account</button></div>
+  <h1>Join {{ club.name }}</h1>
+  <p>{% if link.kind == "class" %}This link is for <strong>{{ link.label }}</strong>. Use your {{ link.required_domain }} address; your account is ready as soon as you finish.{% else %}Thank you for offering to mentor with <strong>{{ link.label }}</strong>. When you finish we will send a link to confirm your address; a club officer then reviews your account.{% endif %} Start with your callsign if you have one; your name and license details are filled from the FCC record.</p>
+  <form method="post" class="stack">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for f in form %}
+      {% if f.field.widget.input_type == "checkbox" %}<div class="check">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f.errors }}</div>
+{% else %}<div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>{% endif %}
+{% endfor %}
+<p class="msg"><span class="lvl">Note:</span> The club holds the details above so it can schedule you and reach you. Other members see only your first name, callsign, and license class. You can ask for your account to be closed at any time; the <a href="{% url 'privacy' %}" target="_blank" rel="noopener">privacy notice</a> has the rest.</p>
+<div>
+  <button type="submit">Create my account</button>
+</div>
 </form>
 {% endblock %}

@@ -1,30 +1,47 @@
 {% extends "events/stages/_layout.html" %}
 {% load labels nav times %}
 {% block stage %}
-<section class="panel" aria-labelledby="who">
-  <header class="panel-head"><div><h2 id="who">Who may sign up</h2><p>Per role. Each starts from the club's rule, marked Club default, until you change it.</p></div></header>
-  <form method="post" action="{% url 'eligibility_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">{% csrf_token %}
-    <div class="panel-body stack">
-    {% for r in rule_roles %}
-    <fieldset>
-      <legend>{{ r.label }}{% if r.is_default %} <span class="tag">Club default</span>{% endif %}</legend>
-      <div class="row">
-        <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ r.key }}" value="{{ c.key }}" id="cat-{{ r.key }}-{{ c.key }}"{% if c.key in r.rule.categories %} checked{% endif %}><label for="cat-{{ r.key }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: any category.</span></div>
-        <div class="field"><label for="class-{{ r.key }}">Minimum license class</label><select id="class-{{ r.key }}" name="class_{{ r.key }}"><option value=""{% if not r.rule.class %} selected{% endif %}>none</option><option value="any"{% if r.rule.class == 'any' %} selected{% endif %}>Any class</option>{% for l in ladder %}<option value="{{ l }}"{% if r.rule.class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-        <div class="field"><span class="label">Required credentials</span>{% for ct in credential_types %}<div class="check"><input type="checkbox" name="cred_{{ r.key }}" value="{{ ct.key }}" id="cred-{{ r.key }}-{{ ct.key }}"{% if ct.key in r.rule.credentials %} checked{% endif %}><label for="cred-{{ r.key }}-{{ ct.key }}">{{ ct.label }}</label></div>{% endfor %}</div>
-        <div class="field"><div class="check"><input type="checkbox" name="minors_{{ r.key }}" id="minors-{{ r.key }}"{% if r.rule.minors_allowed %} checked{% endif %}><label for="minors-{{ r.key }}">Minors may sign up</label></div></div>
+  <section class="panel" aria-labelledby="who">
+    <header class="panel-head">
+      <div>
+        <h2 id="who">Who may sign up</h2>
+        <p>Per role. Each starts from the club's rule, marked Club default, until you change it.</p>
       </div>
-    </fieldset>
-    {% endfor %}
-    </div>
-    <footer class="panel-foot"><p>A slot can override this from its own page.</p><button type="submit">Save who may sign up</button></footer>
-  </form>
-</section>
+    </header>
+    <form method="post" action="{% url 'eligibility_save' event.pk %}" {% include "events/stages/_in_place.html" %} class="stack">
+      {% csrf_token %}
+      <div class="panel-body stack">
+        {% for r in rule_roles %}
+          <fieldset>
+            <legend>{{ r.label }}{% if r.is_default %} <span class="tag">Club default</span>{% endif %}</legend>
+            <div class="row">
+              <div class="field"><span class="label">Categories</span>{% for c in categories %}<div class="check"><input type="checkbox" name="cat_{{ r.key }}" value="{{ c.key }}" id="cat-{{ r.key }}-{{ c.key }}"{% if c.key in r.rule.categories %} checked{% endif %}><label for="cat-{{ r.key }}-{{ c.key }}">{{ c.label }}</label></div>{% endfor %}<span class="helptext">None ticked: any category.</span></div>
+              <div class="field"><label for="class-{{ r.key }}">Minimum license class</label><select id="class-{{ r.key }}" name="class_{{ r.key }}"><option value=""{% if not r.rule.class %} selected{% endif %}>none</option><option value="any"{% if r.rule.class == 'any' %} selected{% endif %}>Any class</option>{% for l in ladder %}<option value="{{ l }}"{% if r.rule.class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+              <div class="field"><span class="label">Required credentials</span>{% for ct in credential_types %}<div class="check"><input type="checkbox" name="cred_{{ r.key }}" value="{{ ct.key }}" id="cred-{{ r.key }}-{{ ct.key }}"{% if ct.key in r.rule.credentials %} checked{% endif %}><label for="cred-{{ r.key }}-{{ ct.key }}">{{ ct.label }}</label></div>{% endfor %}</div>
+              <div class="field"><div class="check"><input type="checkbox" name="minors_{{ r.key }}" id="minors-{{ r.key }}"{% if r.rule.minors_allowed %} checked{% endif %}><label for="minors-{{ r.key }}">Minors may sign up</label></div></div>
+            </div>
+          </fieldset>
+        {% endfor %}
+      </div>
+      <footer class="panel-foot">
+        <p>A slot can override this from its own page.</p>
+        <button type="submit">Save who may sign up</button>
+      </footer>
+    </form>
+  </section>
 
-<section class="panel" aria-labelledby="opn">
-  <header class="panel-head"><div><h2 id="opn">Openings</h2><p>When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p></div>
-    <div class="actions">{% url 'opening_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Add opening" icon="plus" %}</div></header>
-  {% if openings %}<ul class="rows list">{% for o in openings %}<li><span class="grow"><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|utc_time_short }} to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %}, announced{% if o.announced_at %} ({{ o.announced_at|utc_time_short }}){% else %} when it opens{% endif %}{% endif %}</span>
+  <section class="panel" aria-labelledby="opn">
+    <header class="panel-head">
+      <div>
+        <h2 id="opn">Openings</h2>
+        <p>When each role opens, and to whom. With no opening listed, a role is open to everyone from publication. List several to open a role to students first and everyone later.</p>
+      </div>
+      <div class="actions">
+        {% url 'opening_add' event.pk as u %}
+        {% include "events/_dialog_link.html" with url=u label="Add opening" icon="plus" %}
+      </div>
+    </header>
+    {% if openings %}<ul class="rows list">{% for o in openings %}<li><span class="grow"><strong>{{ o.role|role_label }}</strong> opens {{ o.opens_at|utc_time_short }} to {% if o.categories %}{% for c in o.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}everyone{% endif %}{% if o.announce %}, announced{% if o.announced_at %} ({{ o.announced_at|utc_time_short }}){% else %} when it opens{% endif %}{% endif %}</span>
     <form method="post" action="{% url 'opening_delete' event.pk o.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form></li>{% endfor %}</ul>{% endif %}
 </section>
 {% endblock %}

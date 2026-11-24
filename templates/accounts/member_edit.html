@@ -2,279 +2,392 @@
 {% load labels nav times %}
 {% block title %}Editing {{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-{% comment %}The heading calls people what they are called: the preferred name where they have
+  {% comment %}The heading calls people what they are called: the preferred name where they have
 set one. The name on the record is in Details, in the three fields it is
-stored in.{% endcomment %}
-<p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> › {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
-<div class="page-head"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><div class="actions"><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div></div>
-{% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
-{% if member.verification_deadline and not member.has_confirmed_address %}
-<div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|utc_time }}{% endif %}.</p>
-<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="mark_verified"><button type="submit" class="secondary">Mark address verified</button></form></div>
-{% endif %}
+  stored in.{% endcomment %}
+  <p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> › {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
+  <div class="page-head"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><div class="actions"><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div></div>
+  {% if not member.has_access %}<p class="msg warning"><span class="lvl">Careful:</span> this account has no access. It is in no group, so it can do nothing.</p>{% endif %}
+  {% if member.verification_deadline and not member.has_confirmed_address %}
+    <div class="msg warning"><p><span class="lvl">Careful:</span> their address is not verified{% if member.verification_overdue %}, the deadline has passed, and sign-in is paused{% else %}; the deadline is {{ member.verification_deadline|utc_time }}{% endif %}.</p>
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="mark_verified"><button type="submit" class="secondary">Mark address verified</button></form></div>
+  {% endif %}
 
-{% if member.is_provisional %}
-<section class="card" aria-labelledby="rv">
-  <h2 id="rv">Waiting for review</h2>
-  <p>Joined {{ member.date_joined|plain_day }} through <strong>{{ member.joined_via.label|default:"a community link" }}</strong>{% if member.callsign %}; callsign {{ member.callsign }} ({{ member.license_letter }}){% endif %}. As a member they will see other members' names and may sign the agreements.</p>
-  <div class="row">
-    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="admit"><button type="submit">Admit as member</button></form>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="decline">
-      <div class="field"><label for="dreason">Reason</label><input id="dreason" name="reason"><span class="helptext">Sent to the person.</span></div>
-      <div><button type="submit" class="danger">Decline</button></div></form>
-  </div>
-</section>
-{% endif %}
+  {% if member.is_provisional %}
+    <section class="card" aria-labelledby="rv">
+      <h2 id="rv">Waiting for review</h2>
+      <p>Joined {{ member.date_joined|plain_day }} through <strong>{{ member.joined_via.label|default:"a community link" }}</strong>{% if member.callsign %}; callsign {{ member.callsign }} ({{ member.license_letter }}){% endif %}. As a member they will see other members' names and may sign the agreements.</p>
+      <div class="row">
+        <form method="post">{% csrf_token %}<input type="hidden" name="action" value="admit"><button type="submit">Admit as member</button></form>
+        <form method="post" class="stack">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="decline">
+          <div class="field">
+            <label for="dreason">Reason</label><input id="dreason" name="reason"><span class="helptext">Sent to the person.</span>
+          </div>
+          <div>
+            <button type="submit" class="danger">Decline</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  {% endif %}
 
-{% if temp_password %}
-<section class="card secret" aria-labelledby="tp">
-  <h2 id="tp">Temporary password for {{ member.display_first }}</h2>
-  <p><code id="tpv">{{ temp_password }}</code> <button type="button" class="secondary" data-copy="#tpv">Copy</button></p>
-  <p class="muted">Hand it over in person or by any means you trust. It signs in once and must be replaced at that sign-in; it is not stored and will not be shown again.</p>
-</section>
-{% endif %}
+  {% if temp_password %}
+    <section class="card secret" aria-labelledby="tp">
+      <h2 id="tp">Temporary password for {{ member.display_first }}</h2>
+      <p>
+        <code id="tpv">{{ temp_password }}</code>
+        <button type="button" class="secondary" data-copy="#tpv">Copy</button>
+      </p>
+      <p class="muted">Hand it over in person or by any means you trust. It signs in once and must be replaced at that sign-in; it is not stored and will not be shown again.</p>
+    </section>
+  {% endif %}
 
-<section class="section" id="addresses">{% include "accounts/_addresses.html" %}</section>
+  <section class="section" id="addresses">
+    {% include "accounts/_addresses.html" %}
+  </section>
 
-<section class="section" aria-labelledby="lic">
-  <h2 id="lic">License</h2>
-  {% if standing.license %}
-  <p><strong>{{ standing.license.callsign }}</strong>: {{ standing.license.class_label }}, {{ standing.license.status_label }}{% if standing.license.effective_expiry %}, expires {{ standing.license.effective_expiry }}{% endif %}.</p>
-  {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
-  {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} By {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
-  {% else %}<p class="muted">None on file.</p>{% endif %}
-  <p class="helptext">Every licensed member is refreshed from the FCC's own file overnight, so an upgrade appears here the night after the FCC publishes it.</p>
+  <section class="section" aria-labelledby="lic">
+    <h2 id="lic">License</h2>
+    {% if standing.license %}
+      <p><strong>{{ standing.license.callsign }}</strong>: {{ standing.license.class_label }}, {{ standing.license.status_label }}{% if standing.license.effective_expiry %}, expires {{ standing.license.effective_expiry }}{% endif %}.</p>
+      {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
+      {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} By {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
+{% else %}<p class="muted">None on file.</p>{% endif %}
+<p class="helptext">Every licensed member is refreshed from the FCC's own file overnight, so an upgrade appears here the night after the FCC publishes it.</p>
   {% if member.callsign and perms.ops.override_license %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="license_lookup"><button type="submit" class="secondary">Look this callsign up now</button></form>
   <p class="helptext">For when somebody cannot wait for tonight's import.</p>{% endif %}
-  {% if perms.ops.override_license %}
+{% if perms.ops.override_license %}
   <button type="button" class="secondary" commandfor="lic-set" command="show-modal">Set the license by hand</button>
   <dialog id="lic-set" class="slot-dialog" aria-labelledby="lic-set-h">
     <h2 id="lic-set-h">Set the license by hand</h2>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="license_override">
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="license_override">
       <p class="helptext">Where the FCC table is out of date or wrong, or for a license issued outside the United States. What you set here is shown wherever the license appears, and the nightly import never replaces it. A blank field leaves the FCC value in force.</p>
       <div class="row">
         <div class="field"><label for="ov-class">Class</label><select id="ov-class" name="override_class"><option value="">FCC value</option>{% for l in ladder %}<option value="{{ l }}"{% if standing.license and standing.license.override_class == l %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
         <div class="field"><label for="ov-status">Status</label><select id="ov-status" name="override_status"><option value="">FCC value</option><option value="active"{% if standing.license.override_status == 'active' %} selected{% endif %}>Active</option><option value="expired"{% if standing.license.override_status == 'expired' %} selected{% endif %}>Expired</option><option value="cancelled"{% if standing.license.override_status == 'cancelled' %} selected{% endif %}>Canceled</option></select></div>
-        <div class="field"><label for="ov-expiry">Expires</label><input id="ov-expiry" type="date" autocomplete="off" name="override_expiry" value="{{ standing.license.override_expiry|date:'Y-m-d' }}"><span class="helptext">As 2026-11-21.</span></div>
-        <div class="field"><label for="ov-name">Licensee name</label><input id="ov-name" name="override_name" maxlength="120" value="{{ standing.license.override_name }}"></div>
-        <div class="field"><label for="ov-country">Issuing country</label><input id="ov-country" name="override_country" maxlength="60" value="{{ standing.license.override_country }}" placeholder="Canada"><span class="helptext">Only for a license issued outside the United States.</span></div>
+        <div class="field">
+          <label for="ov-expiry">Expires</label><input id="ov-expiry" type="date" autocomplete="off" name="override_expiry" value="{{ standing.license.override_expiry|date:'Y-m-d' }}"><span class="helptext">As 2026-11-21.</span>
+        </div>
+        <div class="field">
+          <label for="ov-name">Licensee name</label><input id="ov-name" name="override_name" maxlength="120" value="{{ standing.license.override_name }}">
+        </div>
+        <div class="field">
+          <label for="ov-country">Issuing country</label><input id="ov-country" name="override_country" maxlength="60" value="{{ standing.license.override_country }}" placeholder="Canada"><span class="helptext">Only for a license issued outside the United States.</span>
+        </div>
       </div>
-      <div class="field"><label for="ov-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="ov-reason" name="override_reason" maxlength="500" value="{{ standing.license.override_reason }}" required></div>
+      <div class="field">
+        <label for="ov-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="ov-reason" name="override_reason" maxlength="500" value="{{ standing.license.override_reason }}" required>
+      </div>
       <div class="actions"><button type="submit">Save</button> <button type="button" class="secondary" commandfor="lic-set" command="close">Cancel</button>{% if standing.license.has_override %} <button type="submit" name="lift" value="1" class="secondary small">Go back to the FCC value</button>{% endif %}</div>
     </form>
   </dialog>
-  {% endif %}
+{% endif %}
 </section>
 
 <section class="section" aria-labelledby="ag">
   <h2 id="ag">Agreements</h2>
   {% if standing.agreements %}
-  <dl class="dl">
-    {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
-      {% if a.state == 'approved' and can_revoke %}
-      <button type="button" class="ghost danger small" commandfor="rv-dlg-{{ a.pk }}" command="show-modal">{% icon 'trash' 'small' %}Revoke this approval</button>
-      <dialog id="rv-dlg-{{ a.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="rv-h-{{ a.pk }}">
-        <h2 id="rv-h-{{ a.pk }}">Revoke {{ a.template.title }}?</h2>
-        <p>They lose the access this agreement grants, and are told why.</p>
-        <form method="post" action="{% url 'agreement_revoke' a.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="next" value="{% url 'member_edit' member.pk %}">
-          <div class="field"><label for="rv-{{ a.pk }}">Reason <span class="req" aria-hidden="true">*</span></label><input id="rv-{{ a.pk }}" name="reason" required></div>
-          <div class="confirm-actions"><button type="button" class="secondary" commandfor="rv-dlg-{{ a.pk }}" command="close">Keep the approval</button> <button type="submit" class="danger">Revoke</button></div>
-        </form>
-      </dialog>
-      {% endif %}</dd>{% endfor %}
-  </dl>
+    <dl class="dl">
+      {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
+        <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a>
+          {% if a.state == "approved" and can_revoke %}
+            <button type="button" class="ghost danger small" commandfor="rv-dlg-{{ a.pk }}" command="show-modal">{% icon 'trash' 'small' %}Revoke this approval</button>
+            <dialog id="rv-dlg-{{ a.pk }}" class="slot-dialog confirm-dialog" aria-labelledby="rv-h-{{ a.pk }}">
+              <h2 id="rv-h-{{ a.pk }}">Revoke {{ a.template.title }}?</h2>
+              <p>They lose the access this agreement grants, and are told why.</p>
+              <form method="post" action="{% url 'agreement_revoke' a.pk %}" class="stack">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'member_edit' member.pk %}">
+                <div class="field">
+                  <label for="rv-{{ a.pk }}">Reason <span class="req" aria-hidden="true">*</span></label><input id="rv-{{ a.pk }}" name="reason" required>
+                </div>
+                <div class="confirm-actions">
+                  <button type="button" class="secondary" commandfor="rv-dlg-{{ a.pk }}" command="close">Keep the approval</button>
+                  <button type="submit" class="danger">Revoke</button>
+                </div>
+              </form>
+            </dialog>
+          {% endif %}
+        </dd>
+      {% endfor %}
+    </dl>
   {% else %}<p class="muted">None signed.</p>{% endif %}
 </section>
 
 {% if member.under_18 or guardian_links %}
-<section class="section" aria-labelledby="gd">
-  <h2 id="gd">Guardians</h2>
-  {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|plain_day }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button type="submit" class="secondary small">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
-  {% if member.under_18 and perms.ops.edit_member_privileges %}<form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="an address on their account" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
-  {% if member.under_18 and can_convert %}<p><button type="button" class="secondary" commandfor="to-adult" command="show-modal">Convert to an adult account</button></p>
-  <dialog id="to-adult" class="slot-dialog confirm-dialog" aria-labelledby="to-adult-h">
-    <h2 id="to-adult-h">Convert to an adult account?</h2>
-    <p>For when the member or a guardian reports that they have turned 18. This clears the under-18 flag, ends the guardian links (they stay in the history), issues a one-time temporary password for the member to set their own, tells the guardians, and writes an audit row. Nothing happens on its own: no date of birth is stored.</p>
-    <form method="post" class="confirm-actions">{% csrf_token %}<input type="hidden" name="action" value="convert_adult"><button type="button" class="secondary" commandfor="to-adult" command="close">Not now</button> <button type="submit">Convert to adult account</button></form>
-  </dialog>{% endif %}
-</section>
+  <section class="section" aria-labelledby="gd">
+    <h2 id="gd">Guardians</h2>
+    {% if member.under_18 %}<p>This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.</p>{% endif %}
+    <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|plain_day }}</span>{% elif perms.ops.edit_member_privileges %} <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="unlink_guardian"><input type="hidden" name="link" value="{{ g.pk }}"><button type="submit" class="secondary small">Unlink</button></form>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
+    {% if member.under_18 and perms.ops.edit_member_privileges %}<form method="post" class="row-form">{% csrf_token %}<input type="hidden" name="action" value="link_guardian"><label for="ge">Link an existing account as guardian</label> <input id="ge" name="guardian_email" type="email" placeholder="an address on their account" required> <input name="relationship" placeholder="relationship" aria-label="Relationship" maxlength="40"> <button type="submit" class="secondary">Link</button></form>{% endif %}
+    {% if member.under_18 and can_convert %}<p><button type="button" class="secondary" commandfor="to-adult" command="show-modal">Convert to an adult account</button></p>
+      <dialog id="to-adult" class="slot-dialog confirm-dialog" aria-labelledby="to-adult-h">
+        <h2 id="to-adult-h">Convert to an adult account?</h2>
+        <p>For when the member or a guardian reports that they have turned 18. This clears the under-18 flag, ends the guardian links (they stay in the history), issues a one-time temporary password for the member to set their own, tells the guardians, and writes an audit row. Nothing happens on its own: no date of birth is stored.</p>
+        <form method="post" class="confirm-actions">{% csrf_token %}<input type="hidden" name="action" value="convert_adult"><button type="button" class="secondary" commandfor="to-adult" command="close">Not now</button> <button type="submit">Convert to adult account</button></form>
+      </dialog>
+    {% endif %}
+  </section>
 {% endif %}
 
 {% if wards %}
-<section class="section"><h2>Acts for</h2>
-<ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
-</section>
+  <section class="section">
+    <h2>Acts for</h2>
+    <ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
+  </section>
 {% endif %}
 
 {% include "accounts/_account_form.html" with form_heading=manage_heading %}
 
 {% if can_issue_temp or perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
-<section class="section" aria-labelledby="si">
-  <h2 id="si">Signing in</h2>
-  {% if can_issue_temp %}
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
-  <p class="helptext">For a member who cannot get in. Shown once, works once, and replaces their password.</p>
-  {% endif %}
-  {% if perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
-  <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member</button></form>
-  <p class="helptext">Read-only: nothing can be changed from that view, and it is recorded.</p>
-  {% endif %}
-</section>
+  <section class="section" aria-labelledby="si">
+    <h2 id="si">Signing in</h2>
+    {% if can_issue_temp %}
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="temporary_password"><button type="submit" class="secondary">Issue a temporary password</button></form>
+      <p class="helptext">For a member who cannot get in. Shown once, works once, and replaces their password.</p>
+    {% endif %}
+    {% if perms.ops.impersonate_members and not member.deleted_at and not member.is_superuser %}
+      <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="view_as"><button type="submit" formaction="{% url 'impersonate_start' member.pk %}" class="secondary">View the application as this member</button></form>
+      <p class="helptext">Read-only: nothing can be changed from that view, and it is recorded.</p>
+    {% endif %}
+  </section>
 {% endif %}
 
 {% if can_restore %}
-<section class="section" aria-labelledby="mb">
-  <h2 id="mb">In the archive</h2>
-  <p>In the archive since {{ member.archived_at|plain_day }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted, and they are still {{ member.status_label|lower|cut:" · archived" }}.</p>
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Take them out of the archive</button></form>
-  <p class="helptext">The record comes back as it went in. Giving them access again is a separate step.</p>
-</section>
+  <section class="section" aria-labelledby="mb">
+    <h2 id="mb">In the archive</h2>
+    <p>In the archive since {{ member.archived_at|plain_day }}{% if member.archived_reason %}: {{ member.archived_reason }}{% endif %}. Nothing of theirs was deleted, and they are still {{ member.status_label|lower|cut:" · archived" }}.</p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="restore"><button type="submit">Take them out of the archive</button></form>
+    <p class="helptext">The record comes back as it went in. Giving them access again is a separate step.</p>
+  </section>
 {% endif %}
 
 {% comment %}Closing and archiving live here with suspension and deletion: every control that
 takes an account out of service is in one place. Archiving appears
 once the account is already closed or suspended, because it is the second step.{% endcomment %}
 {% if can_close or can_archive or can_set_access and not is_self and not member.is_archived or perms.ops.delete_accounts and not is_self %}
-<section class="card dangerzone" aria-labelledby="dz">
-  <h2 id="dz">Danger zone</h2>
-  {% comment %}Each act is a row: what it is, a line on what it does, and a button that opens its
-  confirmation in a dialog (invoker commands; app.js opens it where a browser predates them).{% endcomment %}
-  {% if can_close %}
-  <div class="dz-row"><div><h3>Close this account</h3><p class="helptext">A departure: access ends, the record stays. An officer can let them back in.</p></div>
-    <button type="button" class="danger-outline" commandfor="dz-shut" command="show-modal">Close account</button></div>
-  <dialog id="dz-shut" class="slot-dialog confirm-dialog" aria-labelledby="dz-shut-h">
-    <h2 id="dz-shut-h">Close this account?</h2>
-    <p>Closing ends access and keeps the record on the members list, reading <strong>Closed</strong>. It is a departure, not a decision about somebody's conduct: that is a suspension. An officer can let them back in.</p>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="shut">
-      <div class="field"><label for="cl-reason">Why they are leaving</label><input id="cl-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept in the audit log.</span></div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-shut" command="close">Keep the account</button> <button type="submit" class="danger">Close the account</button></div>
-    </form>
-  </dialog>
-  {% endif %}
-  {% if can_set_access and not is_self and not member.is_archived %}
-  {% if member.has_access %}
-  <div class="dz-row"><div><h3>Suspend this account</h3><p class="helptext">Sign-in is refused and the reason is kept. Only a faculty advisor can lift it.</p></div>
-    <button type="button" class="danger-outline" commandfor="dz-suspend" command="show-modal">Suspend</button></div>
-  <dialog id="dz-suspend" class="slot-dialog confirm-dialog" aria-labelledby="dz-suspend-h">
-    <h2 id="dz-suspend-h">Suspend this account?</h2>
-    <p>They stay on the books and sign-in is refused: a suspension rather than a departure. The reason is kept on the account, where whoever lifts it will read it. Only a faculty advisor can lift a suspension.</p>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="close">
-      <div class="field"><label for="reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="reason" name="reason" placeholder="pending a decision…" required><span class="helptext">Kept on the account and in the audit log.</span></div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-suspend" command="close">Keep their access</button> <button type="submit" class="danger">Suspend</button></div>
-    </form>
-  </dialog>
-  {% else %}
-  <div class="dz-row"><div>
-  {% if no_access_because %}<p>{{ no_access_because }}</p>{% endif %}
-  {% if can_readmit %}
-  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Let them back in as a member</button></form>
-  <p class="helptext">They come back as a member. A level above that is granted separately, by somebody who holds it.</p>
-  {% elif member.status == 'suspended' %}
-  <p class="msg"><span class="lvl">Note:</span> A suspension is lifted by a faculty advisor.</p>
-  {% endif %}
-  </div></div>
-  {% endif %}
-  {% endif %}
-  {% if can_archive %}
-  <div class="dz-row"><div><h3>Archive this member</h3><p class="helptext">Off the members list and every audience, with everything kept. An advisor can take them out again.</p></div>
-    <button type="button" class="danger-outline" commandfor="dz-archive" command="show-modal">Archive</button></div>
-  <dialog id="dz-archive" class="slot-dialog confirm-dialog" aria-labelledby="dz-archive-h">
-    <h2 id="dz-archive-h">Archive this member?</h2>
-    <p>Archiving keeps everything: they leave the members list and every audience, and their record is read under <a href="{% url 'members' %}?archived=yes">Archived members</a>. An advisor can take them out again. It is offered now because this account is {{ member.status_label|lower }}.</p>
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="archive">
-      <div class="field"><label for="ar-reason">Why they are leaving</label><input id="ar-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept with the record.</span></div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-archive" command="close">Keep them listed</button> <button type="submit" class="danger">Archive</button></div>
-    </form>
-  </dialog>
-  {% endif %}
-  {% if perms.ops.delete_accounts and not is_self %}
-  {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|plain_day }}. The row stays so past rosters keep their shape.</p>
-  {% else %}
-  <div class="dz-row"><div><h3>Delete this account</h3><p class="helptext">Cannot be undone. Personal details go; signed agreements and the audit log stay.</p></div>
-    <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete account</button></div>
-  <dialog id="dz-delete" class="slot-dialog confirm-dialog" aria-labelledby="dz-delete-h">
-    <h2 id="dz-delete-h">Delete this account?</h2>
-    <p>This cannot be undone. Deleting will cancel <strong>{{ deletion.future_signups }}</strong> future sign-up{{ deletion.future_signups|pluralize }} and tell their captains; remove the name, callsign, emails, phone, preferences, browser subscriptions, two-step verification, guardian links, and responsible-adult designations; clear their notes to captains, and the addresses and text of messages sent to them; replace the person on <strong>{{ deletion.past_signups }}</strong> past sign-up{{ deletion.past_signups|pluralize }} with "Deleted member" so the counts stay right; keep <strong>{{ deletion.agreements }}</strong> signed agreement{{ deletion.agreements|pluralize }} and their PDFs, which are kept indefinitely; and keep the last sign-in, messages about them sent to others, and the audit log, whose earlier entries cannot be changed. Archiving instead keeps everything and can be undone.</p>
-    {% if deletion.is_last_sysadmin %}<p class="msg error"><span class="lvl">Problem:</span> this is the last sysadmin account, so it cannot be deleted.</p>{% endif %}
-    {% if deletion.wards %}<p class="msg error"><span class="lvl">Problem:</span> this guardian has {{ deletion.wards }} linked minor{{ deletion.wards|pluralize }}. Convert, re-link, or delete them first.</p>{% endif %}
-    <form method="post" class="stack">{% csrf_token %}<input type="hidden" name="action" value="delete">
-      <div class="field"><label for="del-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="del-reason" name="reason" maxlength="500" required><span class="helptext">Kept in the audit log.</span></div>
-      <div class="check"><input type="checkbox" name="confirm" value="yes" id="del-confirm"><label for="del-confirm">I understand this cannot be undone</label></div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-delete" command="close">Keep the account</button> <button type="submit" class="danger">Delete this account</button></div>
-    </form>
-  </dialog>
-  {% endif %}
-  {% endif %}
+  <section class="card dangerzone" aria-labelledby="dz">
+    <h2 id="dz">Danger zone</h2>
+    {% comment %}Each act is a row: what it is, a line on what it does, and a button that opens its
+    confirmation in a dialog (invoker commands; app.js opens it where a browser predates them).{% endcomment %}
+    {% if can_close %}
+      <div class="dz-row">
+        <div>
+          <h3>Close this account</h3>
+          <p class="helptext">A departure: access ends, the record stays. An officer can let them back in.</p>
+        </div>
+        <button type="button" class="danger-outline" commandfor="dz-shut" command="show-modal">Close account</button>
+      </div>
+      <dialog id="dz-shut" class="slot-dialog confirm-dialog" aria-labelledby="dz-shut-h">
+        <h2 id="dz-shut-h">Close this account?</h2>
+        <p>Closing ends access and keeps the record on the members list, reading <strong>Closed</strong>. It is a departure, not a decision about somebody's conduct: that is a suspension. An officer can let them back in.</p>
+        <form method="post" class="stack">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="shut">
+          <div class="field">
+            <label for="cl-reason">Why they are leaving</label><input id="cl-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept in the audit log.</span>
+          </div>
+          <div class="confirm-actions">
+            <button type="button" class="secondary" commandfor="dz-shut" command="close">Keep the account</button>
+            <button type="submit" class="danger">Close the account</button>
+          </div>
+        </form>
+      </dialog>
+    {% endif %}
+    {% if can_set_access and not is_self and not member.is_archived %}
+      {% if member.has_access %}
+        <div class="dz-row">
+          <div>
+            <h3>Suspend this account</h3>
+            <p class="helptext">Sign-in is refused and the reason is kept. Only a faculty advisor can lift it.</p>
+          </div>
+          <button type="button" class="danger-outline" commandfor="dz-suspend" command="show-modal">Suspend</button>
+        </div>
+        <dialog id="dz-suspend" class="slot-dialog confirm-dialog" aria-labelledby="dz-suspend-h">
+          <h2 id="dz-suspend-h">Suspend this account?</h2>
+          <p>They stay on the books and sign-in is refused: a suspension rather than a departure. The reason is kept on the account, where whoever lifts it will read it. Only a faculty advisor can lift a suspension.</p>
+          <form method="post" class="stack">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="close">
+            <div class="field">
+              <label for="reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="reason" name="reason" placeholder="pending a decision…" required><span class="helptext">Kept on the account and in the audit log.</span>
+            </div>
+            <div class="confirm-actions">
+              <button type="button" class="secondary" commandfor="dz-suspend" command="close">Keep their access</button>
+              <button type="submit" class="danger">Suspend</button>
+            </div>
+          </form>
+        </dialog>
+      {% else %}
+        <div class="dz-row">
+          <div>
+            {% if no_access_because %}<p>{{ no_access_because }}</p>{% endif %}
+            {% if can_readmit %}
+              <form method="post">{% csrf_token %}<input type="hidden" name="action" value="reopen"><button type="submit">Let them back in as a member</button></form>
+              <p class="helptext">They come back as a member. A level above that is granted separately, by somebody who holds it.</p>
+            {% elif member.status == "suspended" %}
+              <p class="msg"><span class="lvl">Note:</span> A suspension is lifted by a faculty advisor.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+    {% if can_archive %}
+      <div class="dz-row">
+        <div>
+          <h3>Archive this member</h3>
+          <p class="helptext">Off the members list and every audience, with everything kept. An advisor can take them out again.</p>
+        </div>
+        <button type="button" class="danger-outline" commandfor="dz-archive" command="show-modal">Archive</button>
+      </div>
+      <dialog id="dz-archive" class="slot-dialog confirm-dialog" aria-labelledby="dz-archive-h">
+        <h2 id="dz-archive-h">Archive this member?</h2>
+        <p>Archiving keeps everything: they leave the members list and every audience, and their record is read under <a href="{% url 'members' %}?archived=yes">Archived members</a>. An advisor can take them out again. It is offered now because this account is {{ member.status_label|lower }}.</p>
+        <form method="post" class="stack">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="archive">
+          <div class="field">
+            <label for="ar-reason">Why they are leaving</label><input id="ar-reason" name="reason" maxlength="200" placeholder="graduated, moved away, lapsed…"><span class="helptext">Kept with the record.</span>
+          </div>
+          <div class="confirm-actions">
+            <button type="button" class="secondary" commandfor="dz-archive" command="close">Keep them listed</button>
+            <button type="submit" class="danger">Archive</button>
+          </div>
+        </form>
+      </dialog>
+    {% endif %}
+    {% if perms.ops.delete_accounts and not is_self %}
+      {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|plain_day }}. The row stays so past rosters keep their shape.</p>
+    {% else %}
+      <div class="dz-row">
+        <div>
+          <h3>Delete this account</h3>
+          <p class="helptext">Cannot be undone. Personal details go; signed agreements and the audit log stay.</p>
+        </div>
+        <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete account</button>
+      </div>
+      <dialog id="dz-delete" class="slot-dialog confirm-dialog" aria-labelledby="dz-delete-h">
+        <h2 id="dz-delete-h">Delete this account?</h2>
+        <p>This cannot be undone. Deleting will cancel <strong>{{ deletion.future_signups }}</strong> future sign-up{{ deletion.future_signups|pluralize }} and tell their captains; remove the name, callsign, emails, phone, preferences, browser subscriptions, two-step verification, guardian links, and responsible-adult designations; clear their notes to captains, and the addresses and text of messages sent to them; replace the person on <strong>{{ deletion.past_signups }}</strong> past sign-up{{ deletion.past_signups|pluralize }} with "Deleted member" so the counts stay right; keep <strong>{{ deletion.agreements }}</strong> signed agreement{{ deletion.agreements|pluralize }} and their PDFs, which are kept indefinitely; and keep the last sign-in, messages about them sent to others, and the audit log, whose earlier entries cannot be changed. Archiving instead keeps everything and can be undone.</p>
+        {% if deletion.is_last_sysadmin %}<p class="msg error"><span class="lvl">Problem:</span> this is the last sysadmin account, so it cannot be deleted.</p>{% endif %}
+        {% if deletion.wards %}<p class="msg error"><span class="lvl">Problem:</span> this guardian has {{ deletion.wards }} linked minor{{ deletion.wards|pluralize }}. Convert, re-link, or delete them first.</p>{% endif %}
+        <form method="post" class="stack">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <div class="field">
+            <label for="del-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="del-reason" name="reason" maxlength="500" required><span class="helptext">Kept in the audit log.</span>
+          </div>
+          <div class="check">
+            <input type="checkbox" name="confirm" value="yes" id="del-confirm"><label for="del-confirm">I understand this cannot be undone</label>
+          </div>
+          <div class="confirm-actions">
+            <button type="button" class="secondary" commandfor="dz-delete" command="close">Keep the account</button>
+            <button type="submit" class="danger">Delete this account</button>
+          </div>
+        </form>
+      </dialog>
+    {% endif %}
+{% endif %}
 </section>
 {% endif %}
 
 {% if is_self %}
-{% comment %}Yours alone: what reaches you, the devices that may show it, and closing your own
-account. An officer editing somebody else does not see these; they are not the club's to set.{% endcomment %}
-{% comment %}Two-step verification is turned on and off here, because it is a control and the
+  {% comment %}Yours alone: what reaches you, the devices that may show it, and closing your own
+  account. An officer editing somebody else does not see these; they are not the club's to set.{% endcomment %}
+  {% comment %}Two-step verification is turned on and off here, because it is a control and the
 page that reads holds none. What it is, and whether the club requires it, is
-said on the profile beside the passkeys.{% endcomment %}
-<section class="section" aria-labelledby="sec" id="security">
-  <h2 id="sec">Two-step verification</h2>
-  <p>{% if security.on %}<strong>On</strong>: after your password, sign-in asks for a code or your passkey.{% else %}<strong>Off</strong>: sign-in asks for your password alone. A passkey still signs you in without one.{% endif %}{% if security.required %} Your access level requires it, so it cannot be turned off.{% endif %}</p>
-  {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> set it up before {{ security.deadline|plain_day }}, after which sign-in will ask you to.</p>{% endif %}
-  {% if not security.required or not security.on %}
-  <form method="post" action="{% url 'two_factor' %}" class="inline">{% csrf_token %}
-    <input type="hidden" name="state" value="{% if security.on %}off{% else %}on{% endif %}">
-    {% if security.on %}<button type="submit" class="danger">Turn it off</button>
-    {% else %}<button type="submit">Turn it on</button>{% endif %}
+  said on the profile beside the passkeys.{% endcomment %}
+  <section class="section" aria-labelledby="sec" id="security">
+    <h2 id="sec">Two-step verification</h2>
+    <p>{% if security.on %}<strong>On</strong>: after your password, sign-in asks for a code or your passkey.{% else %}<strong>Off</strong>: sign-in asks for your password alone. A passkey still signs you in without one.{% endif %}{% if security.required %} Your access level requires it, so it cannot be turned off.{% endif %}</p>
+    {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> set it up before {{ security.deadline|plain_day }}, after which sign-in will ask you to.</p>{% endif %}
+    {% if not security.required or not security.on %}
+      <form method="post" action="{% url 'two_factor' %}" class="inline">
+        {% csrf_token %}
+        <input type="hidden" name="state" value="{% if security.on %}off{% else %}on{% endif %}">
+      {% if security.on %}<button type="submit" class="danger">Turn it off</button>
+{% else %}<button type="submit">Turn it on</button>{% endif %}
   </form>
-  {% endif %}
-  <p class="helptext">{% if security.on %}Turning it off leaves your passkeys and authenticator alone; they simply stop being asked for.{% else %}You need an authenticator app or a passkey to answer with. <a href="{% url 'mfa_index' %}">Add one</a>.{% endif %}</p>
+{% endif %}
+<p class="helptext">{% if security.on %}Turning it off leaves your passkeys and authenticator alone; they simply stop being asked for.{% else %}You need an authenticator app or a passkey to answer with. <a href="{% url 'mfa_index' %}">Add one</a>.{% endif %}</p>
 </section>
 
-<form method="post" action="{% url 'notifications' %}" class="section stack" id="notifications">{% csrf_token %}
-<h2>Notifications</h2>
-<p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>
-<table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
-{% for row in notification_rows %}
-<tr><th scope="row"><label for="pref-{{ row.key }}">{{ row.label }}</label></th>
-<td data-label="Email"><input type="checkbox" name="email" value="{{ row.key }}" id="pref-{{ row.key }}"{% if row.email %} checked{% endif %}></td>
-{% if vapid_public_key %}<td data-label="Browser"><input type="checkbox" name="push" value="{{ row.key }}" id="push-{{ row.key }}" aria-label="Browser notification for {{ row.label|lower }}"{% if row.push %} checked{% endif %}></td>{% endif %}</tr>
-{% endfor %}
-</tbody></table>
-<p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
-<div><button type="submit">Save notification settings</button></div>
+<form method="post" action="{% url 'notifications' %}" class="section stack" id="notifications">
+  {% csrf_token %}
+  <h2>Notifications</h2>
+  <p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose here.</p>
+  <table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
+    {% for row in notification_rows %}
+      <tr>
+        <th scope="row">
+          <label for="pref-{{ row.key }}">{{ row.label }}</label>
+        </th>
+        <td data-label="Email">
+          <input type="checkbox" name="email" value="{{ row.key }}" id="pref-{{ row.key }}"{% if row.email %} checked{% endif %}>
+        </td>
+        {% if vapid_public_key %}
+          <td data-label="Browser">
+            <input type="checkbox" name="push" value="{{ row.key }}" id="push-{{ row.key }}" aria-label="Browser notification for {{ row.label|lower }}"{% if row.push %} checked{% endif %}>
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
+  <div>
+    <button type="submit">Save notification settings</button>
+  </div>
 </form>
 
 {% if vapid_public_key %}
-<section class="section stack" id="browser-notifications">
-<h2>Browser notifications</h2>
-<form method="post" action="{% url 'push_toggle' %}" class="inline">{% csrf_token %}
-  <div class="check"><input type="checkbox" name="push_enabled" id="push_enabled"{% if user.push_enabled %} checked{% endif %}><label for="push_enabled">Show my messages as browser notifications on devices where I have allowed it</label></div>
-  <button type="submit">Save</button>
-</form>
-<p class="helptext">Each device asks once for permission. On iPhone and iPad this works only after adding the site to the home screen. Notifications carry the subject and a link, never the computer password or anyone's contact details.</p>
-<p id="push-status" class="muted" data-push-enabled="{{ user.push_enabled|yesno:'1,0' }}"></p>
-<button type="button" id="push-enable-here" class="secondary" hidden>Allow notifications on this device</button>
-<form method="post" action="{% url 'push_test' %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Send a test notification</button></form>
-<p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
-{% if push_subscriptions %}
-<ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }}, since {{ sub.created|plain_day }}{% if sub.failures %}, {{ sub.failures }} failed{% endif %}
-<form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Forget this device</button></form></li>{% endfor %}</ul>
-{% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
+  <section class="section stack" id="browser-notifications">
+    <h2>Browser notifications</h2>
+    <form method="post" action="{% url 'push_toggle' %}" class="inline">
+      {% csrf_token %}
+      <div class="check"><input type="checkbox" name="push_enabled" id="push_enabled"{% if user.push_enabled %} checked{% endif %}><label for="push_enabled">Show my messages as browser notifications on devices where I have allowed it</label></div>
+      <button type="submit">Save</button>
+    </form>
+    <p class="helptext">Each device asks once for permission. On iPhone and iPad this works only after adding the site to the home screen. Notifications carry the subject and a link, never the computer password or anyone's contact details.</p>
+    <p id="push-status" class="muted" data-push-enabled="{{ user.push_enabled|yesno:'1,0' }}"></p>
+    <button type="button" id="push-enable-here" class="secondary" hidden>Allow notifications on this device</button>
+    <form method="post" action="{% url 'push_test' %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Send a test notification</button></form>
+    <p class="helptext">One notification to every device that has allowed them, so you can see whether they arrive. It is not a club message and nobody else sees it.</p>
+    {% if push_subscriptions %}
+      <ul class="list">{% for sub in push_subscriptions %}<li>{{ sub.device_label }}, since {{ sub.created|plain_day }}{% if sub.failures %}, {{ sub.failures }} failed{% endif %}
+        <form method="post" action="{% url 'push_revoke' sub.pk %}" class="inline">{% csrf_token %}<button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Forget this device</button></form></li>{% endfor %}</ul>
+  {% else %}<p class="muted">No device has allowed notifications yet.</p>{% endif %}
 </section>
 {% endif %}
 
-<section class="card dangerzone"><h2>Closing your account</h2>
-<p>You can ask for your account to be closed at any time; the <a href="{% url 'privacy' %}">privacy notice</a> says what that means.</p>
-<div class="dz-row"><div><h3>Close my account</h3><p class="helptext">Your access ends at once and your record is archived.</p></div>
-  <button type="button" class="danger-outline" commandfor="dz-leave" command="show-modal">Close my account</button></div>
-<dialog id="dz-leave" class="slot-dialog confirm-dialog" aria-labelledby="dz-leave-h">
-  <h2 id="dz-leave-h">Close your account?</h2>
-  <p>Your access ends at once and your record is archived. Your name, callsign, contact details, signed agreements, and what you took part in are kept as the club's record of its members, where the faculty advisor and the people who administer this site can read them. If you would rather it were deleted outright than archived, say so and an administrator can do that.</p>
-  <form method="post" action="{% url 'request_closure' %}" class="stack">{% csrf_token %}
-    <div class="check"><input type="checkbox" name="confirm" value="yes" id="close-confirm"><label for="close-confirm">I want my account closed</label></div>
-    <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-leave" command="close">Keep my account</button> <button type="submit" class="danger">Close my account</button></div>
-  </form>
-</dialog>
+<section class="card dangerzone">
+  <h2>Closing your account</h2>
+  <p>You can ask for your account to be closed at any time; the <a href="{% url 'privacy' %}">privacy notice</a> says what that means.</p>
+  <div class="dz-row">
+    <div>
+      <h3>Close my account</h3>
+      <p class="helptext">Your access ends at once and your record is archived.</p>
+    </div>
+    <button type="button" class="danger-outline" commandfor="dz-leave" command="show-modal">Close my account</button>
+  </div>
+  <dialog id="dz-leave" class="slot-dialog confirm-dialog" aria-labelledby="dz-leave-h">
+    <h2 id="dz-leave-h">Close your account?</h2>
+    <p>Your access ends at once and your record is archived. Your name, callsign, contact details, signed agreements, and what you took part in are kept as the club's record of its members, where the faculty advisor and the people who administer this site can read them. If you would rather it were deleted outright than archived, say so and an administrator can do that.</p>
+    <form method="post" action="{% url 'request_closure' %}" class="stack">
+      {% csrf_token %}
+      <div class="check">
+        <input type="checkbox" name="confirm" value="yes" id="close-confirm"><label for="close-confirm">I want my account closed</label>
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="secondary" commandfor="dz-leave" command="close">Keep my account</button>
+        <button type="submit" class="danger">Close my account</button>
+      </div>
+    </form>
+  </dialog>
 </section>
 {% endif %}
 {% endblock %}

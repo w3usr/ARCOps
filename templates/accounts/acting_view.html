@@ -1,32 +1,38 @@
 {% extends "base.html" %}
 {% block title %}Your level · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<h1>Your level</h1>
-<p class="lede">Your account holds every level below. Your session acts at one of them at a time.</p>
-<p>A lower level is real: what it cannot do is refused, not merely hidden, so this is also how you
-see the application as a member or an officer sees it. Moving up a level asks you to confirm it
-is you, by password or by passkey, unless you did so a moment ago; moving down never does.</p>
+  <h1>Your level</h1>
+  <p class="lede">Your account holds every level below. Your session acts at one of them at a time.</p>
+  <p>
+    A lower level is real: what it cannot do is refused, not merely hidden, so this is also how you
+    see the application as a member or an officer sees it. Moving up a level asks you to confirm it
+    is you, by password or by passkey, unless you did so a moment ago; moving down never does.
+  </p>
 
-<form method="post" class="section stack">{% csrf_token %}
-  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-  <fieldset>
-    <legend>Choose a level</legend>
-    <ul class="levels">
-    {% for view in views %}
-      <li{% if view.current %} class="current"{% endif %}>
-        <div class="check">
-          <input type="radio" id="v-{{ view.key }}" name="view" value="{{ view.key }}"{% if view.current %} checked{% endif %}>
-          <label for="v-{{ view.key }}">{{ view.label }}{% if view.current %}<span class="sr-only"> (where you are now)</span>{% endif %}</label>
-          {% if view.raises %}<span class="tag warn">asks you to confirm</span>{% endif %}
-        </div>
-        <p class="helptext">{{ view.summary }}</p>
-        <details><summary>Everything this level can do</summary>
-          <ul class="list">{% for ability in view.abilities %}<li>{{ ability }}</li>{% empty %}<li class="muted">Sign in, see your own account, and sign up for slots.</li>{% endfor %}</ul>
-        </details>
-      </li>
-    {% endfor %}
-    </ul>
-  </fieldset>
-  <div><button type="submit">Act at this level</button></div>
-</form>
+  <form method="post" class="section stack">
+    {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <fieldset>
+      <legend>Choose a level</legend>
+      <ul class="levels">
+        {% for view in views %}
+          <li{% if view.current %} class="current"{% endif %}>
+            <div class="check">
+              <input type="radio" id="v-{{ view.key }}" name="view" value="{{ view.key }}"{% if view.current %} checked{% endif %}>
+              <label for="v-{{ view.key }}">{{ view.label }}{% if view.current %}<span class="sr-only"> (where you are now)</span>{% endif %}</label>
+              {% if view.raises %}<span class="tag warn">asks you to confirm</span>{% endif %}
+            </div>
+            <p class="helptext">{{ view.summary }}</p>
+            <details>
+              <summary>Everything this level can do</summary>
+              <ul class="list">{% for ability in view.abilities %}<li>{{ ability }}</li>{% empty %}<li class="muted">Sign in, see your own account, and sign up for slots.</li>{% endfor %}</ul>
+            </details>
+          </li>
+        {% endfor %}
+      </ul>
+    </fieldset>
+    <div>
+      <button type="submit">Act at this level</button>
+    </div>
+  </form>
 {% endblock %}

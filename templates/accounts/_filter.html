@@ -10,7 +10,7 @@ attribute simply allows both, which is what it did before.{% endcomment %}
   <fieldset>
     <legend class="sr-only">{{ label }}</legend>
     {% for key, text in choices %}
-    <div class="check"><input type="checkbox" id="f-{{ name }}-{{ key }}" name="{{ name }}" value="{{ key }}"{% if key in ticked %} checked{% endif %}><label for="f-{{ name }}-{{ key }}">{{ text }}</label></div>
+      <div class="check"><input type="checkbox" id="f-{{ name }}-{{ key }}" name="{{ name }}" value="{{ key }}"{% if key in ticked %} checked{% endif %}><label for="f-{{ name }}-{{ key }}">{{ text }}</label></div>
     {% endfor %}
   </fieldset>
 </details>

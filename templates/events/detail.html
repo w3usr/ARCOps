@@ -2,167 +2,181 @@
 {% load richtext dicts labels workspace nav times %}
 {% block title %}{{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-{% event_header event 'roster' %}
-{% if roster.span.lead %}
-<p class="when"><strong>{{ roster.span.lead }}</strong>{% if roster.span.other %}<span class="muted"> · {{ roster.span.other }}</span>{% endif %}</p>
-{% endif %}
-<p class="muted">{{ event.get_type_display|default:event.type|capfirst }}{% if roster.single_location %} at {{ roster.single_location.name }}{% if address %}, {{ address }}{% endif %}{% endif %}{% if event.min_license_class %}; preferred class {{ event.min_license_class }}{% endif %}.{% if event.rules_url %} <a href="{{ event.rules_url }}">Rules</a>{% endif %}</p>
+  {% event_header event 'roster' %}
+  {% if roster.span.lead %}
+    <p class="when"><strong>{{ roster.span.lead }}</strong>{% if roster.span.other %}<span class="muted"> · {{ roster.span.other }}</span>{% endif %}</p>
+  {% endif %}
+  <p class="muted">{{ event.get_type_display|default:event.type|capfirst }}{% if roster.single_location %} at {{ roster.single_location.name }}{% if address %}, {{ address }}{% endif %}{% endif %}{% if event.min_license_class %}; preferred class {{ event.min_license_class }}{% endif %}.{% if event.rules_url %} <a href="{{ event.rules_url }}">Rules</a>{% endif %}</p>
 
-{% if event.state == 'draft' and is_captain %}
-<div class="banner draft">
-  {% comment %}While it cannot be published, the line saying why stands in place of the form
-  (functional addendum A17).{% endcomment %}
-  <p><strong>Draft.</strong> Only officers and captains can see this event. {% if missing %}Not ready to publish: {{ missing }} <a href="{% url 'event_manage' event.pk %}">Finish it on Manage.</a>{% else %}Publish when the grid is ready.{% endif %}</p>
-  {% if not missing %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="announce" value="yes"> Announce to members</label> <button type="submit">Publish</button></form>{% endif %}
-</div>
-{% elif event.state == 'locked' %}
-<div class="banner"><p><strong>Locked.</strong> {% if is_captain %}Members cannot change their sign-ups; you can, from each slot. <a href="{% url 'event_manage' event.pk %}">Unlock on Manage.</a>{% else %}The roster is frozen; to change a sign-up, contact a captain.{% endif %}</p></div>
-{% elif event.state == 'completed' %}
-<div class="banner"><p><strong>Completed.</strong> Kept for the record.</p></div>
-{% elif event.state == 'cancelled' %}
-<div class="banner"><p><strong>Canceled.</strong> Kept for the record.</p></div>
-{% endif %}
-{% if event.display_only %}
-<section class="section"><h2>When</h2><p>{{ event|meets_line|default:"See the club's calendar." }}</p>{% with nxt=event|next_meets %}{% if nxt %}<p>Next: {{ nxt }}</p>{% endif %}{% endwith %}{% if event.meeting_note %}<p>{{ event.meeting_note }}</p>{% endif %}<p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
-{% endif %}
+  {% if event.state == "draft" and is_captain %}
+    <div class="banner draft">
+      {% comment %}While it cannot be published, the line saying why stands in place of the form
+      (functional addendum A17).{% endcomment %}
+      <p><strong>Draft.</strong> Only officers and captains can see this event. {% if missing %}Not ready to publish: {{ missing }} <a href="{% url 'event_manage' event.pk %}">Finish it on Manage.</a>{% else %}Publish when the grid is ready.{% endif %}</p>
+      {% if not missing %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="announce" value="yes"> Announce to members</label> <button type="submit">Publish</button></form>{% endif %}
+    </div>
+  {% elif event.state == "locked" %}
+    <div class="banner"><p><strong>Locked.</strong> {% if is_captain %}Members cannot change their sign-ups; you can, from each slot. <a href="{% url 'event_manage' event.pk %}">Unlock on Manage.</a>{% else %}The roster is frozen; to change a sign-up, contact a captain.{% endif %}</p></div>
+  {% elif event.state == "completed" %}
+    <div class="banner">
+      <p><strong>Completed.</strong> Kept for the record.</p>
+    </div>
+  {% elif event.state == "cancelled" %}
+    <div class="banner">
+      <p><strong>Canceled.</strong> Kept for the record.</p>
+    </div>
+  {% endif %}
+  {% if event.display_only %}
+    <section class="section"><h2>When</h2><p>{{ event|meets_line|default:"See the club's calendar." }}</p>{% with nxt=event|next_meets %}{% if nxt %}<p>Next: {{ nxt }}</p>{% endif %}{% endwith %}{% if event.meeting_note %}<p>{{ event.meeting_note }}</p>{% endif %}<p class="muted">A regular meeting or net: no roster, no sign-up.</p></section>
+  {% endif %}
 
-{% if event.description_html %}<div class="prose">{{ event.description_html|richtext }}</div>{% endif %}
-{% if contest %}<details class="section"><summary>Contest details</summary><dl class="dl">{% for label, value, kind in contest %}<dt>{{ label }}</dt><dd>{% if kind == 'url' %}<a href="{{ value }}">{{ value }}</a>{% elif kind == 'email' %}<a href="mailto:{{ value }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</dd>{% endfor %}</dl></details>{% endif %}
+  {% if event.description_html %}<div class="prose">{{ event.description_html|richtext }}</div>{% endif %}
+  {% if contest %}<details class="section"><summary>Contest details</summary><dl class="dl">{% for label, value, kind in contest %}<dt>{{ label }}</dt><dd>{% if kind == "url" %}<a href="{{ value }}">{{ value }}</a>{% elif kind == "email" %}<a href="mailto:{{ value }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</dd>{% endfor %}</dl></details>{% endif %}
 
-{% if is_captain %}
-<section class="section health" aria-labelledby="h">
-  <h2 id="h">Coverage</h2>
-  <p>{{ roster.counts.total }} slot{{ roster.counts.total|pluralize }}:
-    {% if roster.counts.covered %}<span class="tag ok">{{ roster.counts.covered }} covered</span>{% endif %}
-    {% if roster.counts.needs %}<span class="tag warn">{{ roster.counts.needs }} need someone</span>{% endif %}
-    {% if roster.counts.open %}<span class="tag open">{{ roster.counts.open }} open</span>{% endif %}
-    {% if roster.counts.closed %}<span class="tag">{{ roster.counts.closed }} closed</span>{% endif %}</p>
-  <p>{{ health.scheduled_hours|floatformat:"-1" }} operating hours{% if health.limits.total_limit %} of {{ health.limits.total_limit|floatformat:"-1" }}{% endif %}{% if health.over_total_limit %} <strong>(over the event's limit)</strong>{% endif %}
-    {% for d in health.limits.days %}{% if d.limit %}{% if forloop.first %}<br><small class="muted">Per day: {% endif %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over {{ d.limit|floatformat:"-1" }})</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% if forloop.last %}</small>{% endif %}{% endif %}{% endfor %}
-  </p>
-</section>
-{% elif roster.published %}
-<p class="lede">{% if roster.counts.open %}<strong>{{ roster.counts.open }} open slot{{ roster.counts.open|pluralize }}</strong>{% if roster.counts.covered %}, {{ roster.counts.covered }} covered{% endif %}. Pick your hours below: tick several and sign up for them together, or open one for the details.{% elif roster.counts.total %}Every slot is spoken for. Open one to see who is on it.{% endif %}</p>
-{% endif %}
+  {% if is_captain %}
+    <section class="section health" aria-labelledby="h">
+      <h2 id="h">Coverage</h2>
+      <p>
+        {{ roster.counts.total }} slot{{ roster.counts.total|pluralize }}:
+        {% if roster.counts.covered %}<span class="tag ok">{{ roster.counts.covered }} covered</span>{% endif %}
+        {% if roster.counts.needs %}<span class="tag warn">{{ roster.counts.needs }} need someone</span>{% endif %}
+        {% if roster.counts.open %}<span class="tag open">{{ roster.counts.open }} open</span>{% endif %}
+      {% if roster.counts.closed %}<span class="tag">{{ roster.counts.closed }} closed</span>{% endif %}</p>
+      <p>{{ health.scheduled_hours|floatformat:"-1" }} operating hours{% if health.limits.total_limit %} of {{ health.limits.total_limit|floatformat:"-1" }}{% endif %}{% if health.over_total_limit %} <strong>(over the event's limit)</strong>{% endif %}
+        {% for d in health.limits.days %}{% if d.limit %}{% if forloop.first %}<br><small class="muted">Per day: {% endif %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over {{ d.limit|floatformat:"-1" }})</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% if forloop.last %}</small>{% endif %}{% endif %}{% endfor %}
+      </p>
+    </section>
+  {% elif roster.published %}
+    <p class="lede">{% if roster.counts.open %}<strong>{{ roster.counts.open }} open slot{{ roster.counts.open|pluralize }}</strong>{% if roster.counts.covered %}, {{ roster.counts.covered }} covered{% endif %}. Pick your hours below: tick several and sign up for them together, or open one for the details.{% elif roster.counts.total %}Every slot is spoken for. Open one to see who is on it.{% endif %}</p>
+  {% endif %}
 
-{% if roster.days %}
-<form method="post" action="{% url 'event_bulk' event.pk %}" id="roster-form">{% csrf_token %}
-<section class="panel roster-panel" aria-labelledby="roster-h">
-<div class="panel-head rosterhead">
-  <div><h2 id="roster-h">Roster</h2>{% if is_captain and roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-all aria-label="Select every slot"><span>Select every slot</span></label>{% endif %}</div>
-  {% comment %}Every slot or Problems only as a switch with counts: two links, the same
-  addresses as before, so it works without JavaScript; the Key's ? an icon button.{% endcomment %}
-  <p class="zones muted"><span>Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.</span>
-    <span class="switch" role="group" aria-label="Show"><a href="?"{% if roster.filter != 'problems' %} aria-current="true"{% endif %}>Every slot <span class="n">{{ roster.counts.total }}</span></a><a href="?filter=problems"{% if roster.filter == 'problems' %} aria-current="true"{% endif %}>Problems only <span class="n">{{ roster.counts.attention }}</span></a></span>
-    <button type="button" class="secondary small icon-only keybtn" popovertarget="roster-key-pop" aria-label="Key">{% icon 'help' 'small' %}</button></p>
-</div>
-<div class="panel-body overview">
-{% comment %}The Key opens over the page from the ? beside Problems only: a
+  {% if roster.days %}
+    <form method="post" action="{% url 'event_bulk' event.pk %}" id="roster-form">
+      {% csrf_token %}
+      <section class="panel roster-panel" aria-labelledby="roster-h">
+        <div class="panel-head rosterhead">
+          <div><h2 id="roster-h">Roster</h2>{% if is_captain and roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-all aria-label="Select every slot"><span>Select every slot</span></label>{% endif %}</div>
+          {% comment %}Every slot or Problems only as a switch with counts: two links, the same
+          addresses as before, so it works without JavaScript; the Key's ? an icon button.{% endcomment %}
+          <p class="zones muted"><span>Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.</span>
+            <span class="switch" role="group" aria-label="Show"><a href="?"{% if roster.filter != 'problems' %} aria-current="true"{% endif %}>Every slot <span class="n">{{ roster.counts.total }}</span></a><a href="?filter=problems"{% if roster.filter == 'problems' %} aria-current="true"{% endif %}>Problems only <span class="n">{{ roster.counts.attention }}</span></a></span>
+            <button type="button" class="secondary small icon-only keybtn" popovertarget="roster-key-pop" aria-label="Key">{% icon 'help' 'small' %}</button>
+          </p>
+        </div>
+        <div class="panel-body overview">
+          {% comment %}The Key opens over the page from the ? beside Problems only: a
 native popover, so no script of ours, and Escape or a click outside closes it. A browser without
 popover shows it in place, as before, and hides the button (roster.css). Every cell says its state in
-words, so nothing is lost while it is closed (FR-62).{% endcomment %}
-{% comment %}The coverage strip: the whole event, a line a day, a mark per time span with its
+          words, so nothing is lost while it is closed (FR-62).{% endcomment %}
+          {% comment %}The coverage strip: the whole event, a line a day, a mark per time span with its
 state as a symbol as well as a color (FR-62), each linking to its hour. A shortcut for the eye and
 the pointer, so it is hidden from screen readers and takes no tab stops: the roster below says
-every slot's state in words (FR-116), and a strip of forty-eight links ahead of it would be noise.{% endcomment %}
-<div class="strip" aria-hidden="true">
-  {% for d in roster.strip %}<div class="strip-day"><span class="strip-label">{{ d.label }}</span><span class="strip-marks">{% for m in d.marks %}{% if m.href %}<a class="sm sm-{{ m.state }}" href="{{ m.href }}" tabindex="-1">{{ m.mark }}</a>{% else %}<span class="sm sm-{{ m.state }}"></span>{% endif %}{% endfor %}</span></div>{% endfor %}
-</div>
-<div class="legend muted" id="roster-key-pop" popover><span class="legend-label" id="roster-key">Key</span>
-  <ul aria-labelledby="roster-key">
-    <li><span class="sm sm-open" aria-hidden="true"></span> <span class="what"><span class="tag open">Open</span> anyone eligible can sign up</span></li>
-    <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="what"><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</span></li>
-    {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!!</span> <span class="what"><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</span></li>{% endif %}
-    <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="what"><span class="tag ok">Covered</span> it can run</span></li>
-    <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="what"><span class="tag">Closed</span> not taking sign-ups</span></li>
-    {% if "none" in roster.strip_gaps %}<li><span class="sm sm-none" aria-hidden="true"></span> <span class="what">on the air, but no slot has been made for the hour yet</span></li>{% endif %}
-    {% if "off" in roster.strip_gaps %}<li><span class="sm sm-off" aria-hidden="true"></span> <span class="what">off the air: outside the club's on-air hours</span></li>{% endif %}
-    <li><span class="what"><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</span></li>
-    <li><span class="mk" aria-hidden="true">S</span> <span class="what">station access</span></li>
-    <li><span class="mk" aria-hidden="true">I</span> <span class="what">computer access</span></li>
-    <li><span class="mk" aria-hidden="true">CO</span> <span class="what">control operator</span></li>
-    <li><span class="mk" aria-hidden="true">✓</span> <span class="what">confirmed, <span class="mk ok" aria-hidden="true">in</span> checked in</span></li>
-    <li><span class="mk" aria-hidden="true">(E)</span> <span class="what">after a name, the license class: E Extra, A Advanced, G General, T Technician, N Novice; C a club station; U no license on file</span></li>
-  </ul>
-  <button type="button" class="secondary keyclose" popovertarget="roster-key-pop" popovertargetaction="hide">Close</button>
-</div>
-</div>
+          every slot's state in words (FR-116), and a strip of forty-eight links ahead of it would be noise.{% endcomment %}
+          <div class="strip" aria-hidden="true">
+            {% for d in roster.strip %}<div class="strip-day"><span class="strip-label">{{ d.label }}</span><span class="strip-marks">{% for m in d.marks %}{% if m.href %}<a class="sm sm-{{ m.state }}" href="{{ m.href }}" tabindex="-1">{{ m.mark }}</a>{% else %}<span class="sm sm-{{ m.state }}"></span>{% endif %}{% endfor %}</span></div>{% endfor %}
+          </div>
+          <div class="legend muted" id="roster-key-pop" popover>
+            <span class="legend-label" id="roster-key">Key</span>
+            <ul aria-labelledby="roster-key">
+              <li><span class="sm sm-open" aria-hidden="true"></span> <span class="what"><span class="tag open">Open</span> anyone eligible can sign up</span></li>
+              <li><span class="sm sm-needs" aria-hidden="true">!</span> <span class="what"><span class="tag warn">Needs …</span> someone is in it and it still needs a person with that qualification</span></li>
+              {% if is_captain %}<li><span class="sm sm-problem" aria-hidden="true">!!</span> <span class="what"><span class="tag bad">Needs …</span> within 48 hours: it starts soon and still needs someone</span></li>{% endif %}
+              <li><span class="sm sm-covered" aria-hidden="true">✓</span> <span class="what"><span class="tag ok">Covered</span> it can run</span></li>
+              <li><span class="sm sm-closed" aria-hidden="true">–</span> <span class="what"><span class="tag">Closed</span> not taking sign-ups</span></li>
+              {% if "none" in roster.strip_gaps %}<li><span class="sm sm-none" aria-hidden="true"></span> <span class="what">on the air, but no slot has been made for the hour yet</span></li>{% endif %}
+              {% if "off" in roster.strip_gaps %}<li><span class="sm sm-off" aria-hidden="true"></span> <span class="what">off the air: outside the club's on-air hours</span></li>{% endif %}
+              <li><span class="what"><span class="tag bad">over limit</span> pushes a day or the event past its operating limit</span></li>
+              <li><span class="mk" aria-hidden="true">S</span> <span class="what">station access</span></li>
+              <li><span class="mk" aria-hidden="true">I</span> <span class="what">computer access</span></li>
+              <li><span class="mk" aria-hidden="true">CO</span> <span class="what">control operator</span></li>
+              <li><span class="mk" aria-hidden="true">✓</span> <span class="what">confirmed, <span class="mk ok" aria-hidden="true">in</span> checked in</span></li>
+              <li><span class="mk" aria-hidden="true">(E)</span> <span class="what">after a name, the license class: E Extra, A Advanced, G General, T Technician, N Novice; C a club station; U no license on file</span></li>
+            </ul>
+            <button type="button" class="secondary keyclose" popovertarget="roster-key-pop" popovertargetaction="hide">Close</button>
+          </div>
+        </div>
 
-{% comment %}One time column, in the viewer's own zone (functional addendum A38, superseding
-A12's UTC axis): the zone is named once, in its header.{% endcomment %}
-<div class="roster {{ roster.layout }}{% if roster.other_label %} twozones{% endif %}{% if not roster.selectable %} noselect{% endif %}" role="table" aria-label="Roster">
-  {% if roster.layout == 'grid' %}
-  <div class="r-head" role="row">
-    <div class="r-time" role="columnheader">{{ roster.lead_label }}</div>
-    {% if roster.other_label %}<div class="r-zone" role="columnheader">{{ roster.other_label }}</div>{% endif %}
-    {% for p in roster.positions %}<div class="r-pos" role="columnheader">{% if not roster.single_location %}<span class="loc">{{ p.location.name }}</span>{% endif %}<span>{{ p.name }}</span></div>{% endfor %}
-  </div>
-  {% endif %}
-  {% for day in roster.days %}
-  <div class="r-day" role="rowgroup">
-    <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.columns }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
-    {% for row in day.rows %}
-    {% if row.fold_head and not row.fold.open %}{% with f=row.fold %}
-    {% comment %}A run of open hours, read as one row. Its hours follow, hidden: the link
+        {% comment %}One time column, in the viewer's own zone (functional addendum A38, superseding
+        A12's UTC axis): the zone is named once, in its header.{% endcomment %}
+        <div class="roster {{ roster.layout }}{% if roster.other_label %} twozones{% endif %}{% if not roster.selectable %} noselect{% endif %}" role="table" aria-label="Roster">
+          {% if roster.layout == "grid" %}
+            <div class="r-head" role="row">
+              <div class="r-time" role="columnheader">{{ roster.lead_label }}</div>
+              {% if roster.other_label %}<div class="r-zone" role="columnheader">{{ roster.other_label }}</div>{% endif %}
+              {% for p in roster.positions %}<div class="r-pos" role="columnheader">{% if not roster.single_location %}<span class="loc">{{ p.location.name }}</span>{% endif %}<span>{{ p.name }}</span></div>{% endfor %}
+            </div>
+          {% endif %}
+          {% for day in roster.days %}
+            <div class="r-day" role="rowgroup">
+              <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.columns }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
+              {% for row in day.rows %}
+                {% if row.fold_head and not row.fold.open %}
+                  {% with f=row.fold %}
+                    {% comment %}A run of open hours, read as one row. Its hours follow, hidden: the link
     opens them in place, or without JavaScript reloads the roster with the run open; the box
-    selects them all.{% endcomment %}
-    <div class="r-row r-fold kind-{{ row.kind }}" role="row" id="fold-{{ f.id }}">
-      <div class="r-time" role="rowheader"><span class="lead">{% if roster.layout == 'grid' %}{{ f.lead_hours }}{% else %}{{ f.lead_range }}{% endif %}</span></div>
-      {% if roster.other_label %}<div class="r-zone muted" role="cell">{% if roster.layout == 'grid' %}{{ f.other_hours }}{% else %}{{ f.other_range }}{% endif %}</div>{% endif %}
-      <div class="r-cell r-foldcell tone-open" role="cell"{% if roster.layout == 'grid' %} aria-colspan="{{ roster.positions|length }}"{% endif %}>
-        {% if roster.selectable %}<input type="checkbox" data-select-fold="{{ f.id }}" aria-label="Select the {{ f.slots }} open slot{{ f.slots|pluralize }} from {{ f.lead_range }}">{% endif %}
-        <a class="slot-link fold-link" href="?open={{ f.id }}#fold-{{ f.id }}" data-open-fold="{{ f.id }}">
-          <span class="state"><span class="word">{{ f.hours|floatformat:"-2" }} open hour{{ f.hours|pluralize }}</span>{% if f.slots != f.hours %}<small>{{ f.slots }} slots</small>{% endif %}</span>
-          <span class="fold-more">Show them{% icon 'chevron-down' 'small' %}</span>
-        </a>
-      </div>
-    </div>
-    {% endwith %}{% endif %}
-    <div class="r-row kind-{{ row.kind }}" role="row"{% if row.fold and not row.fold.open %} data-fold="{{ row.fold.id }}" hidden{% elif row.fold_head %} id="fold-{{ row.fold.id }}"{% endif %}>
-      <div class="r-time" role="rowheader"{% if row.anchor %} id="{{ row.anchor }}"{% endif %}>
-        <span class="lead">{% if roster.layout == 'grid' %}{{ row.lead_hours }}{% else %}{{ row.lead_range }}{% endif %}</span>
-        {% if row.kind != 'operating' %}<span class="tag">{{ row.kind }}</span>{% endif %}
-      </div>
-      {% if roster.other_label %}<div class="r-zone muted" role="cell">{% if roster.layout == 'grid' %}{{ row.other_hours }}{% else %}{{ row.other_range }}{% endif %}</div>{% endif %}
-      {% for c in row.cells %}
-      {% if c %}
-      {% include "events/_roster_cell.html" %}
-      {% else %}<div class="r-cell empty" role="cell" aria-label="no slot"></div>{% endif %}
-      {% endfor %}
-    </div>
-    {% endfor %}
-  </div>
-  {% endfor %}
-</div>
+                    selects them all.{% endcomment %}
+                    <div class="r-row r-fold kind-{{ row.kind }}" role="row" id="fold-{{ f.id }}">
+                      <div class="r-time" role="rowheader"><span class="lead">{% if roster.layout == "grid" %}{{ f.lead_hours }}{% else %}{{ f.lead_range }}{% endif %}</span></div>
+                      {% if roster.other_label %}<div class="r-zone muted" role="cell">{% if roster.layout == "grid" %}{{ f.other_hours }}{% else %}{{ f.other_range }}{% endif %}</div>{% endif %}
+                      <div class="r-cell r-foldcell tone-open" role="cell"{% if roster.layout == 'grid' %} aria-colspan="{{ roster.positions|length }}"{% endif %}>
+                        {% if roster.selectable %}<input type="checkbox" data-select-fold="{{ f.id }}" aria-label="Select the {{ f.slots }} open slot{{ f.slots|pluralize }} from {{ f.lead_range }}">{% endif %}
+                        <a class="slot-link fold-link" href="?open={{ f.id }}#fold-{{ f.id }}" data-open-fold="{{ f.id }}">
+                          <span class="state"><span class="word">{{ f.hours|floatformat:"-2" }} open hour{{ f.hours|pluralize }}</span>{% if f.slots != f.hours %}<small>{{ f.slots }} slots</small>{% endif %}</span>
+                          <span class="fold-more">Show them{% icon 'chevron-down' 'small' %}</span>
+                        </a>
+                      </div>
+                    </div>
+                  {% endwith %}
+                {% endif %}
+                <div class="r-row kind-{{ row.kind }}" role="row"{% if row.fold and not row.fold.open %} data-fold="{{ row.fold.id }}" hidden{% elif row.fold_head %} id="fold-{{ row.fold.id }}"{% endif %}>
+                  <div class="r-time" role="rowheader"{% if row.anchor %} id="{{ row.anchor }}"{% endif %}>
+                    <span class="lead">{% if roster.layout == "grid" %}{{ row.lead_hours }}{% else %}{{ row.lead_range }}{% endif %}</span>
+                    {% if row.kind != "operating" %}<span class="tag">{{ row.kind }}</span>{% endif %}
+                  </div>
+                  {% if roster.other_label %}<div class="r-zone muted" role="cell">{% if roster.layout == "grid" %}{{ row.other_hours }}{% else %}{{ row.other_range }}{% endif %}</div>{% endif %}
+                  {% for c in row.cells %}
+                    {% if c %}
+                      {% include "events/_roster_cell.html" %}
+                    {% else %}
+                      <div class="r-cell empty" role="cell" aria-label="no slot"></div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
 
-{% if roster.selectable %}<div class="bulkbar" id="bulk-bar" role="region" aria-label="Actions for the selected slots">
-  <span class="count" aria-live="polite"><strong data-count>0</strong> selected</span>
-  {% if roster.published and roles %}
-  <label class="sr-only" for="bulk-role">Role</label>
-  <select id="bulk-role" name="role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select>
-  <label class="sr-only" for="bulk-note">Note to the captains</label>
-  <input id="bulk-note" name="note" placeholder="Note to the captains (optional)">
-  <button type="submit" name="action" value="signup">Sign up for these</button>
+        {% if roster.selectable %}
+          <div class="bulkbar" id="bulk-bar" role="region" aria-label="Actions for the selected slots">
+            <span class="count" aria-live="polite"><strong data-count>0</strong> selected</span>
+            {% if roster.published and roles %}
+              <label class="sr-only" for="bulk-role">Role</label>
+              <select id="bulk-role" name="role">{% for r in roles %}<option value="{{ r.key }}">{{ r.label }}</option>{% endfor %}</select>
+              <label class="sr-only" for="bulk-note">Note to the captains</label>
+              <input id="bulk-note" name="note" placeholder="Note to the captains (optional)">
+              <button type="submit" name="action" value="signup">Sign up for these</button>
+            {% endif %}
+            {% if is_captain %}
+              <button type="submit" name="action" value="seats" class="secondary">Change seats</button>
+              <button type="submit" name="action" value="close" class="secondary">Close</button>
+              <button type="submit" name="action" value="reopen" class="secondary">Reopen</button>
+              <button type="submit" name="action" value="cancel" class="danger">Cancel slots</button>
+            {% endif %}
+          </div>
+        {% endif %}
+      </section>
+    </form>
+  {% else %}
+    {% if not event.display_only %}<section class="section"><h2>Roster</h2><p>{% if roster.filter == "problems" %}Nothing needs attention. <a href="?">Show every slot.</a>{% else %}No slots yet.{% if is_captain %} <a href="{% url 'event_manage' event.pk %}">Add the location and generate the grid.</a>{% endif %}{% endif %}</p></section>{% endif %}
   {% endif %}
-  {% if is_captain %}
-  <button type="submit" name="action" value="seats" class="secondary">Change seats</button>
-  <button type="submit" name="action" value="close" class="secondary">Close</button>
-  <button type="submit" name="action" value="reopen" class="secondary">Reopen</button>
-  <button type="submit" name="action" value="cancel" class="danger">Cancel slots</button>
-  {% endif %}
-</div>{% endif %}
-</section>
-</form>
-{% else %}
-{% if not event.display_only %}<section class="section"><h2>Roster</h2><p>{% if roster.filter == 'problems' %}Nothing needs attention. <a href="?">Show every slot.</a>{% else %}No slots yet.{% if is_captain %} <a href="{% url 'event_manage' event.pk %}">Add the location and generate the grid.</a>{% endif %}{% endif %}</p></section>{% endif %}
-{% endif %}
 
-{% if places %}<section class="prose" aria-labelledby="where"><h2 id="where">Getting there</h2>{% for p in places %}<h3>{{ p.name }}{% if p.address %}, {{ p.address }}{% endif %}</h3>{{ p.directions|richtext }}{{ p.notes|richtext }}{% endfor %}</section>{% endif %}
+  {% if places %}<section class="prose" aria-labelledby="where"><h2 id="where">Getting there</h2>{% for p in places %}<h3>{{ p.name }}{% if p.address %}, {{ p.address }}{% endif %}</h3>{{ p.directions|richtext }}{{ p.notes|richtext }}{% endfor %}</section>{% endif %}
 
-{% if kbyg %}<section class="prose"><h2>Know before you go</h2>{{ kbyg|richtext }}</section>{% endif %}
+  {% if kbyg %}<section class="prose"><h2>Know before you go</h2>{{ kbyg|richtext }}</section>{% endif %}
 
-<dialog id="slot-dialog" class="slot-dialog" aria-label="Slot">
-  <button type="button" class="iconbtn dialog-close" data-close aria-label="Close">✕</button>
-  <div class="dialog-body" id="slot-dialog-body" hx-target="this" hx-swap="innerHTML" hx-push-url="false"></div>
-</dialog>
+  <dialog id="slot-dialog" class="slot-dialog" aria-label="Slot">
+    <button type="button" class="iconbtn dialog-close" data-close aria-label="Close">✕</button>
+    <div class="dialog-body" id="slot-dialog-body" hx-target="this" hx-swap="innerHTML" hx-push-url="false"></div>
+  </dialog>
 {% endblock %}

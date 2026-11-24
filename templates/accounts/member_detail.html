@@ -2,23 +2,26 @@
 {% load labels times %}
 {% block title %}{{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-{% comment %}A profile, read-only. Nothing on this page changes anything: every control lives on
+  {% comment %}A profile, read-only. Nothing on this page changes anything: every control lives on
 the edit page behind the button, so a page opened to read somebody's callsign cannot alter their
-access on the way past. The officer's view and the member's own profile are the same page.{% endcomment %}
-{% if perms.ops.view_directory %}<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>{% endif %}
-<div class="page-head">
-  <h1>{{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
-  {% if can_edit %}<div class="actions"><a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit {% if is_self %}profile and preferences{% else %}profile{% endif %}</a></div>{% endif %}
-</div>
+  access on the way past. The officer's view and the member's own profile are the same page.{% endcomment %}
+  {% if perms.ops.view_directory %}<p class="crumbs"><a href="{% url 'members' %}">Members</a></p>{% endif %}
+  <div class="page-head">
+    <h1>{{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1>
+    {% if can_edit %}<div class="actions"><a class="button secondary" href="{% url 'member_edit' member.pk %}">Edit {% if is_self %}profile and preferences{% else %}profile{% endif %}</a></div>{% endif %}
+  </div>
 
-{% if is_self and my_wards %}
-<section class="card" aria-labelledby="wards"><h2 id="wards">Members you act for</h2>
-<p>You are the guardian of the members below. <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>
-<ul class="list">{% for w in my_wards %}<li><strong>{{ w.full_name }}</strong>{% if w.callsign %} {{ w.callsign }}{% endif %}: {% if w.email %}signs in read-only with {{ w.email }}{% else %}<span class="tag">no address of their own; everything reaches you</span>{% endif %}
-  <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit">Act for {{ w.display_first }}</button></form>
-  <form method="post" action="{% url 'ward_password' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Set a temporary password</button></form>
-  </li>{% endfor %}</ul>
-</section>
+  {% if is_self and my_wards %}
+    <section class="card" aria-labelledby="wards">
+      <h2 id="wards">Members you act for</h2>
+      <p>You are the guardian of the members below. <strong>Act for</strong> them to sign them up, name the responsible adult for a slot, cancel, check them in, or edit their profile; everything you do while acting is recorded in your name. Every message sent to them reaches you too.</p>
+      <ul class="list">{% for w in my_wards %}<li><strong>{{ w.full_name }}</strong>{% if w.callsign %} {{ w.callsign }}{% endif %}: {% if w.email %}signs in read-only with {{ w.email }}{% else %}<span class="tag">no address of their own; everything reaches you</span>{% endif %}
+        <form method="post" action="{% url 'act_start' w.pk %}" class="inline">{% csrf_token %}<button type="submit">Act for {{ w.display_first }}</button></form>
+        <form method="post" action="{% url 'ward_password' w.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">Set a temporary password</button></form>
+        </li>
+  {% endfor %}
+  </ul>
+  </section>
 {% endif %}
 
 {% if member.deleted_at %}<p class="msg warning"><span class="lvl">Careful:</span> this account was deleted on {{ member.deleted_at|plain_day }}. The row stays so past rosters keep their shape.</p>{% endif %}
@@ -38,78 +41,84 @@ access on the way past. The officer's view and the member's own profile are the 
 <section class="section" aria-labelledby="em">
   <h2 id="em">Email</h2>
   <ul class="list addresses-list">
-  {% for a in addresses %}
-    <li><p class="address">{{ a.address }}{% if a.kind %} <span class="tag">{{ a.kind }}</span>{% endif %}</p>
-    <p class="addr-state">{% if a.confirmed %}Signs {% if is_self %}you{% else %}them{% endif %} in{% else %}<span class="needs">Not confirmed, so it cannot sign {% if is_self %}you{% else %}them{% endif %} in yet</span>{% endif %}. Club mail {% if a.delivery %}on{% else %}off{% endif %}.</p></li>
-  {% empty %}<li class="empty">No address. A member under 18 may hold none: their guardians are written to instead.</li>{% endfor %}
+    {% for a in addresses %}
+      <li><p class="address">{{ a.address }}{% if a.kind %} <span class="tag">{{ a.kind }}</span>{% endif %}</p>
+        <p class="addr-state">{% if a.confirmed %}Signs {% if is_self %}you{% else %}them{% endif %} in{% else %}<span class="needs">Not confirmed, so it cannot sign {% if is_self %}you{% else %}them{% endif %} in yet</span>{% endif %}. Club mail {% if a.delivery %}on{% else %}off{% endif %}.</p></li>
+    {% empty %}<li class="empty">No address. A member under 18 may hold none: their guardians are written to instead.</li>{% endfor %}
   </ul>
 </section>
 
 <section class="section" aria-labelledby="lic">
   <h2 id="lic">License</h2>
   {% if standing.license %}
-  <p><strong>{{ standing.license.callsign }}</strong>: {{ standing.license.class_label }}, {{ standing.license.status_label }}{% if standing.license.effective_expiry %}, expires {{ standing.license.effective_expiry|plain_day }}{% endif %}.</p>
-  {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
-  {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} By {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
+    <p><strong>{{ standing.license.callsign }}</strong>: {{ standing.license.class_label }}, {{ standing.license.status_label }}{% if standing.license.effective_expiry %}, expires {{ standing.license.effective_expiry|plain_day }}{% endif %}.</p>
+    {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
+    {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} By {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
   {% else %}<p class="muted">None on file.</p>{% endif %}
 </section>
 
 <section class="section" aria-labelledby="ag">
   <h2 id="ag">Agreements</h2>
   {% if standing.agreements %}
-  <dl class="dl">
-    {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-    <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
-  </dl>
+    <dl class="dl">
+      {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
+        <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
+    </dl>
   {% else %}<p class="muted">None signed.</p>{% endif %}
 </section>
 
 {% if member.under_18 or guardian_links %}
-<section class="section" aria-labelledby="gd">
-  <h2 id="gd">Guardians</h2>
-  {% if member.under_18 %}<p>{% if is_self %}You are under 18: a guardian acts for you, every message to you goes to every active guardian, and you sign in read-only. A responsible adult named by your guardian accompanies you at every slot.{% else %}This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.{% endif %}</p>{% endif %}
-  <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|plain_day }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
-</section>
+  <section class="section" aria-labelledby="gd">
+    <h2 id="gd">Guardians</h2>
+    {% if member.under_18 %}<p>{% if is_self %}You are under 18: a guardian acts for you, every message to you goes to every active guardian, and you sign in read-only. A responsible adult named by your guardian accompanies you at every slot.{% else %}This member is under 18: a guardian acts for them, every message to them goes to every active guardian, and they sign in read-only. A responsible adult named by the guardian accompanies them at every slot.{% endif %}</p>{% endif %}
+    <ul class="list">{% for g in guardian_links %}<li>{{ g.guardian.full_name }}{% if g.relationship %} ({{ g.relationship }}){% endif %}, {{ g.guardian.email }}{% if g.guardian.cell_phone %}, {{ g.guardian.cell_phone|phone }}{% endif %}{% if not g.active %} <span class="tag">ended {{ g.ended|plain_day }}</span>{% endif %}</li>{% empty %}<li class="empty">No guardian is linked yet. A member under 18 needs one before a guardian can act for them.</li>{% endfor %}</ul>
+  </section>
 {% endif %}
 
 {% if wards and not is_self %}
-<section class="section"><h2>Acts for</h2>
-<ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
-</section>
+  <section class="section">
+    <h2>Acts for</h2>
+    <ul class="list">{% for w in wards %}<li><a href="{% url 'member_detail' w.minor.pk %}">{{ w.minor.full_name }}</a>{% if w.relationship %} ({{ w.relationship }}){% endif %}</li>{% endfor %}</ul>
+  </section>
 {% endif %}
 
 {% if is_self %}
-{% comment %}Yours alone: what reaches you, and the way to your password. Both read here; the
-switches are on the edit page.{% endcomment %}
-<section class="section" id="notifications"><h2>Notifications</h2>
-<p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose.</p>
-<table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
-{% for row in notification_rows %}
-<tr><th scope="row">{{ row.label }}</th>
-<td data-label="Email">{{ row.email|yesno:"on,off" }}</td>
-{% if vapid_public_key %}<td data-label="Browser">{{ row.push|yesno:"on,off" }}</td>{% endif %}</tr>
-{% endfor %}
-</tbody></table>
-<p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
-{% if vapid_public_key %}<p class="helptext">Browser notifications are {{ user.push_enabled|yesno:"on,off" }} for this account, on {{ push_subscriptions|length }} device{{ push_subscriptions|length|pluralize }} that has allowed them.</p>{% endif %}
-</section>
-{% comment %}Three separate things, each with its state in words. A passkey is a way to sign in,
-and two-step verification is asked for rather than inferred from one.{% endcomment %}
-<section class="section"><h2>Security</h2>
-<dl class="dl">
-  <dt>Password</dt>
-  <dd><a href="{% url 'account_change_password' %}">Change password</a></dd>
-  <dt>Passkeys</dt>
-  <dd>{% if security.keys %}{{ security.keys }} on this account.{% else %}None yet.{% endif %} Passkeys sign you in without a password. <a href="{% url 'mfa_index' %}">Manage passkeys</a></dd>
-  <dt>Two-step verification</dt>
-  <dd>
-    {% if security.on %}<strong>On</strong>{% else %}<strong>Off</strong>{% endif %}{% if security.required %}, required for your access level{% endif %}.
-    {% if security.on %}After your password, sign-in asks for a code or your passkey.{% else %}Sign-in asks for your password alone.{% endif %}
-    {% if security.on %}{% if not security.required %}<a href="{% url 'member_edit' member.pk %}#security">Turn it off</a>{% endif %}{% else %}<a href="{% url 'member_edit' member.pk %}#security">Turn it on</a>{% endif %}
-    {% if not security.on and not security.factor %}<span class="helptext">You will be asked to add an authenticator app or a passkey first.</span>{% endif %}
-    {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> your access level requires this. Set it up before {{ security.deadline|plain_day }}, after which sign-in will ask you to.</p>{% endif %}
-  </dd>
-</dl></section>
-{% if minor_readonly %}<p class="msg"><span class="lvl">Note:</span> Your guardian makes changes to this account while acting for you. You can change your own password.</p>{% endif %}
+  {% comment %}Yours alone: what reaches you, and the way to your password. Both read here; the
+  switches are on the edit page.{% endcomment %}
+  <section class="section" id="notifications">
+    <h2>Notifications</h2>
+    <p class="helptext">Which messages also reach you by email. Every message is kept under <a href="{% url 'my_messages' %}">Messages</a> whatever you choose.</p>
+    <table class="table prefs"><thead><tr><th scope="col">Message</th><th scope="col">Email</th>{% if vapid_public_key %}<th scope="col">Browser</th>{% endif %}</tr></thead><tbody>
+      {% for row in notification_rows %}
+        <tr>
+          <th scope="row">{{ row.label }}</th>
+          <td data-label="Email">{{ row.email|yesno:"on,off" }}</td>
+        {% if vapid_public_key %}<td data-label="Browser">{{ row.push|yesno:"on,off" }}</td>{% endif %}</tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="helptext">Always sent, because they change something you rely on or protect your account: {% for label in mandatory_labels %}{{ label|lower }}{% if not forloop.last %}; {% endif %}{% endfor %}.</p>
+    {% if vapid_public_key %}<p class="helptext">Browser notifications are {{ user.push_enabled|yesno:"on,off" }} for this account, on {{ push_subscriptions|length }} device{{ push_subscriptions|length|pluralize }} that has allowed them.</p>{% endif %}
+  </section>
+  {% comment %}Three separate things, each with its state in words. A passkey is a way to sign in,
+  and two-step verification is asked for rather than inferred from one.{% endcomment %}
+  <section class="section">
+    <h2>Security</h2>
+    <dl class="dl">
+      <dt>Password</dt>
+      <dd><a href="{% url 'account_change_password' %}">Change password</a></dd>
+      <dt>Passkeys</dt>
+      <dd>{% if security.keys %}{{ security.keys }} on this account.{% else %}None yet.{% endif %} Passkeys sign you in without a password. <a href="{% url 'mfa_index' %}">Manage passkeys</a></dd>
+      <dt>Two-step verification</dt>
+      <dd>
+        {% if security.on %}<strong>On</strong>{% else %}<strong>Off</strong>{% endif %}{% if security.required %}, required for your access level{% endif %}.
+        {% if security.on %}After your password, sign-in asks for a code or your passkey.{% else %}Sign-in asks for your password alone.{% endif %}
+        {% if security.on %}{% if not security.required %}<a href="{% url 'member_edit' member.pk %}#security">Turn it off</a>{% endif %}{% else %}<a href="{% url 'member_edit' member.pk %}#security">Turn it on</a>{% endif %}
+        {% if not security.on and not security.factor %}<span class="helptext">You will be asked to add an authenticator app or a passkey first.</span>{% endif %}
+        {% if security.deadline %}<p class="msg warning"><span class="lvl">Careful:</span> your access level requires this. Set it up before {{ security.deadline|plain_day }}, after which sign-in will ask you to.</p>{% endif %}
+      </dd>
+    </dl>
+  </section>
+  {% if minor_readonly %}<p class="msg"><span class="lvl">Note:</span> Your guardian makes changes to this account while acting for you. You can change your own password.</p>{% endif %}
 {% endif %}
 {% endblock %}

@@ -10,16 +10,20 @@ must survive, because the passkey pages put their scripts there.
 {% endcomment %}
 {% block title %}{% block head_title %}Account{% endblock %} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block main %}
-<div class="{% if user.is_authenticated %}authed{% else %}auth{% endif %}">
-  {% if not user.is_authenticated %}
-  <aside class="auth-hero">
-    {% if club.branding.logo %}<img class="auth-logo" src="{{ club.branding.logo }}" alt="" width="220" height="220">{% endif %}
-    <p class="auth-callsign">{{ club.callsign|default:club.short_name }}</p>
-    <p class="auth-clubname">{{ club.name }}</p>
-  </aside>
-  {% endif %}
-  <section class="auth-card">
-    {% block content %}{% block body %}{% block content_inner %}{% endblock %}{% endblock %}{% endblock %}
-  </section>
-</div>
+  <div class="{% if user.is_authenticated %}authed{% else %}auth{% endif %}">
+    {% if not user.is_authenticated %}
+      <aside class="auth-hero">
+        {% if club.branding.logo %}<img class="auth-logo" src="{{ club.branding.logo }}" alt="" width="220" height="220">{% endif %}
+        <p class="auth-callsign">{{ club.callsign|default:club.short_name }}</p>
+        <p class="auth-clubname">{{ club.name }}</p>
+      </aside>
+    {% endif %}
+    <section class="auth-card">
+      {% block content %}
+        {% block body %}
+          {% block content_inner %}{% endblock %}
+        {% endblock %}
+      {% endblock %}
+    </section>
+  </div>
 {% endblock %}

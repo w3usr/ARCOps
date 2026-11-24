@@ -2,26 +2,40 @@
 {% load times %}
 {% block title %}Upcoming coverage · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-<p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
-<h1>Upcoming events, at a glance</h1>
-<p class="lede">Every published event in the next {{ weeks }} weeks, and how far its slots are covered.</p>
-<section class="panel" aria-label="Upcoming events">
-<div class="toolbar"><nav class="switch" aria-label="Weeks ahead">{% for w in week_choices %}<a href="?weeks={{ w }}"{% if w == weeks %} aria-current="true"{% endif %}>{{ w }} weeks</a>{% endfor %}</nav></div>
-<div class="table-wrap"><table class="table data">
-<thead><tr><th scope="col">Event</th><th scope="col">When</th><th scope="col">Slots</th><th scope="col">Nobody yet</th><th scope="col">Needs someone</th><th scope="col">Covered</th><th scope="col">Hours</th><th scope="col">Unconfirmed, next 48 h</th></tr></thead>
-<tbody>
-{% for r in rows %}
-<tr>
-  <th scope="row"><a href="{% url 'event_detail' r.event.pk %}">{{ r.event.title }}</a>{% if r.event.state == 'locked' %} <span class="tag">locked</span>{% endif %}</th>
-  <td data-label="When">{% when r.start r.end r.event %}</td>
-  <td data-label="Slots">{{ r.health.counts.total }}</td>
-  <td data-label="Nobody yet">{% if r.health.counts.empty %}<span class="tag open">{{ r.health.counts.empty }}</span>{% else %}0{% endif %}</td>
-  <td data-label="Needs someone">{% if r.health.counts.not_viable %}<span class="tag warn">{{ r.health.counts.not_viable }}</span>{% else %}0{% endif %}</td>
-  <td data-label="Covered">{{ r.health.counts.viable }}</td>
-  <td data-label="Hours">{{ r.health.scheduled_hours|floatformat:"-1" }}{% if r.health.over_total_limit %} <span class="tag bad">over limit</span>{% endif %}</td>
-  <td data-label="Unconfirmed, next 48 h">{% if r.unconfirmed_48h %}<span class="tag warn">{{ r.unconfirmed_48h }}</span>{% else %}0{% endif %}</td>
-</tr>
+  <p class="crumbs"><a href="{% url 'event_list' %}">Events</a></p>
+  <h1>Upcoming events, at a glance</h1>
+  <p class="lede">Every published event in the next {{ weeks }} weeks, and how far its slots are covered.</p>
+  <section class="panel" aria-label="Upcoming events">
+    <div class="toolbar"><nav class="switch" aria-label="Weeks ahead">{% for w in week_choices %}<a href="?weeks={{ w }}"{% if w == weeks %} aria-current="true"{% endif %}>{{ w }} weeks</a>{% endfor %}</nav></div>
+    <div class="table-wrap">
+      <table class="table data">
+        <thead>
+          <tr>
+            <th scope="col">Event</th>
+            <th scope="col">When</th>
+            <th scope="col">Slots</th>
+            <th scope="col">Nobody yet</th>
+            <th scope="col">Needs someone</th>
+            <th scope="col">Covered</th>
+            <th scope="col">Hours</th>
+            <th scope="col">Unconfirmed, next 48 h</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <th scope="row"><a href="{% url 'event_detail' r.event.pk %}">{{ r.event.title }}</a>{% if r.event.state == "locked" %} <span class="tag">locked</span>{% endif %}</th>
+              <td data-label="When">{% when r.start r.end r.event %}</td>
+              <td data-label="Slots">{{ r.health.counts.total }}</td>
+              <td data-label="Nobody yet">{% if r.health.counts.empty %}<span class="tag open">{{ r.health.counts.empty }}</span>{% else %}0{% endif %}</td>
+              <td data-label="Needs someone">{% if r.health.counts.not_viable %}<span class="tag warn">{{ r.health.counts.not_viable }}</span>{% else %}0{% endif %}</td>
+              <td data-label="Covered">{{ r.health.counts.viable }}</td>
+              <td data-label="Hours">{{ r.health.scheduled_hours|floatformat:"-1" }}{% if r.health.over_total_limit %} <span class="tag bad">over limit</span>{% endif %}</td>
+              <td data-label="Unconfirmed, next 48 h">{% if r.unconfirmed_48h %}<span class="tag warn">{{ r.unconfirmed_48h }}</span>{% else %}0{% endif %}</td>
+            </tr>
 {% empty %}<tr><td colspan="8" class="empty">No published event falls in that window. Widen it above, or publish an event from its manage page.</td></tr>{% endfor %}
-</tbody></table></div>
-</section>
+  </tbody>
+  </table>
+  </div>
+  </section>
 {% endblock %}

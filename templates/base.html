@@ -1,16 +1,18 @@
-{% load static nav tz %}<!DOCTYPE html>
-{% get_current_timezone as page_zone %}<html lang="en" class="no-js" data-tz="{{ page_zone.key|default:page_zone }}">
-<head>
-<meta charset="utf-8">
-{% comment %}viewport-fit=cover, with env(safe-area-inset-*) padding in the stylesheet: an
+{% load static nav tz %}
+<!DOCTYPE html>
+{% get_current_timezone as page_zone %}
+<html lang="en" class="no-js" data-tz="{{ page_zone.key|default:page_zone }}">
+  <head>
+    <meta charset="utf-8">
+    {% comment %}viewport-fit=cover, with env(safe-area-inset-*) padding in the stylesheet: an
 installed app has no browser chrome, so the system's own bars sit over the page, and the
-footer's last line would sit under the navigation bar.{% endcomment %}
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{% block title %}{{ club.short_name }} · {{ product.name }}{% endblock %}</title>
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="{{ club.branding.accent }}">
-<link rel="manifest" href="{% url 'manifest' %}">
-{% comment %}htmx reads its settings here, so no inline script is needed under script-src 'self'.
+    footer's last line would sit under the navigation bar.{% endcomment %}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}{{ club.short_name }} · {{ product.name }}{% endblock %}</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="{{ club.branding.accent }}">
+    <link rel="manifest" href="{% url 'manifest' %}">
+    {% comment %}htmx reads its settings here, so no inline script is needed under script-src 'self'.
 No eval (no hx-on, no js: values), no scripts in a swapped response, no <style> of its own (the
 indicator rules are in static/css), requests to this site only, and no copies of pages in
 localStorage, where they would keep member names and rosters (technical addendum A7).{% endcomment %}
@@ -30,7 +32,8 @@ localStorage, where they would keep member names and rosters (technical addendum
 <link rel="stylesheet" href="{% static 'css/roster.css' %}">
 <link rel="stylesheet" href="{% static 'css/pages.css' %}">
 {# The club's color, from club.yaml (TR-40), checked for AA contrast in apps.ops.config. #}
-{# djlint:off H025 #}<style>:root { --brand: {{ club.branding.accent }}; }</style>{# djlint:on #}
+{# djlint:off H025 #}<style>:root { --brand: {{ club.branding.accent }}; }</style>
+{# djlint:on #}
 {# Restores the remembered sidebar state before first paint, so it never flashes open. #}
 <script src="{% static 'js/nav-state.js' %}"></script>
 {% block extra_head %}{% endblock %}
@@ -39,106 +42,122 @@ localStorage, where they would keep member names and rosters (technical addendum
 <a class="skip" href="#main">Skip to content</a>
 {% if user.is_authenticated %}
 <div class="shell">
-  <header class="topbar">
-    <button class="iconbtn" type="button" id="menu-open" aria-controls="sidenav" aria-expanded="false" aria-label="Open menu">{% icon 'menu' %}</button>
-    <a class="brand" href="{% url 'dashboard' %}">
-      {% if club.branding.logo %}<img src="{{ club.branding.logo }}" alt="" width="36" height="36">{% endif %}
-      <span class="brand-name">{{ club.short_name }}</span>
-    </a>
-  </header>
-  <div class="backdrop" id="backdrop" hidden></div>
-  <nav class="sidenav" id="sidenav" aria-label="Main">
-    <div class="sidenav-head">
-      <a class="brand" href="{% url 'dashboard' %}">
-        {% if club.branding.logo %}<img src="{{ club.branding.logo }}" alt="" width="56" height="56">{% endif %}
-        <span class="brand-text"><span class="brand-name">{{ club.short_name }}</span><span class="brand-sub">Operations</span></span>
-      </a>
-      <button class="iconbtn only-drawer" type="button" id="menu-close" aria-label="Close menu">{% icon 'close' %}</button>
-    </div>
-    <ul class="navlist">
-      <li><a href="{% url 'dashboard' %}"{% nav_active 'dashboard' %}>{% icon 'home' %}<span>Home</span></a></li>
-      <li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' 'event_manage' 'event_step' 'participation' %}>{% icon 'calendar' %}<span>Events</span></a></li>
-      <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
-      {% if perms.ops.view_directory %}
-      <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
-      {% comment %}Only for somebody who holds computer access today; without this link the page is
-      reachable from the rotation notice alone.{% endcomment %}
-      {% if may_see_computer_password %}<li><a href="{% url 'computer_password' %}"{% nav_active 'computer_password' %}>{% icon 'key' %}<span>Computer password</span></a></li>{% endif %}
-      <li><a href="{% url 'members' %}"{% if not is_self %}{% nav_active 'members' 'member_detail' 'member_edit' 'hours' %}{% endif %}>{% icon 'users' %}<span>Members</span></a></li>
-      {% endif %}
-      <li><a href="{% url 'my_messages' %}"{% nav_active 'my_messages' %}>{% icon 'mail' %}<span>Messages{% if unread_count %} <span class="badge" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</span></a></li>
-      {% comment %}Your own account is a member page, so Profile and Members resolve to the same
-      view; which of the two is current is decided by whose page it is.{% endcomment %}
-      <li><a href="{% url 'profile' %}"{% if is_self %} aria-current="page"{% endif %}>{% icon 'user' %}<span>Profile</span></a></li>
-    </ul>
-    {% if perms.ops.invite_members or perms.ops.send_announcements %}
-    <p class="navgroup" id="nav-officer"><span>Officer tools</span></p>
-    <ul class="navlist" aria-labelledby="nav-officer">
-      <li><a href="{% url 'invitations' %}"{% nav_active 'invitations' 'entry_links' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
-      <li><a href="{% url 'announcements' %}"{% nav_active 'announcements' 'announce_all' %}>{% icon 'mail' %}<span>Announcements</span></a></li>
-      <li><a href="{% url 'outbox' %}"{% nav_active 'outbox' %}>{% icon 'inbox' %}<span>Outbox</span></a></li>
-    </ul>
-    {% endif %}
-    {% if perms.ops.approve_agreements or perms.ops.view_archive or perms.ops.rotate_shared_secret %}
-    <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
-    <ul class="navlist" aria-labelledby="nav-advisor">
-      {% if perms.ops.approve_agreements %}<li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals{% if approvals_waiting %} <span class="badge" aria-label="{{ approvals_waiting }} waiting for approval">{{ approvals_waiting }}</span>{% endif %}</span></a></li>{% endif %}
-      {% comment %}The way in to setting the station computer password, for the faculty advisor and
-      above: without it only somebody who knew the address could rotate it.{% endcomment %}
-      {% if perms.ops.rotate_shared_secret %}<li><a href="{% url 'password_manage' %}"{% nav_active 'password_manage' %}>{% icon 'key' %}<span>Set the computer password</span></a></li>{% endif %}
-    </ul>
-    {% endif %}
-    {% if perms.ops.edit_club_settings or perms.ops.view_job_status %}
-    <p class="navgroup" id="nav-sysadmin"><span>Sysadmin tools</span></p>
-    <ul class="navlist" aria-labelledby="nav-sysadmin">
-      <li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>
-      <li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Message text</span></a></li>
-      <li><a href="{% url 'settings_page' %}"{% nav_active 'settings_page' %}>{% icon 'settings' %}<span>Settings</span></a></li>
-      {% if perms.ops.manage_groups %}<li><a href="{% url 'groups_page' %}"{% nav_active 'groups_page' %}>{% icon 'users' %}<span>Permission levels</span></a></li>{% endif %}
-      <li><a href="{% url 'admin:index' %}">{% icon 'edit' %}<span>Django Admin</span></a></li>
-    </ul>
-    {% endif %}
-    <div class="sidenav-foot">
-      {% comment %}Your name opens your profile and the level below it opens the level page: two
+<header class="topbar">
+<button class="iconbtn" type="button" id="menu-open" aria-controls="sidenav" aria-expanded="false" aria-label="Open menu">{% icon 'menu' %}</button>
+<a class="brand" href="{% url 'dashboard' %}">
+{% if club.branding.logo %}<img src="{{ club.branding.logo }}" alt="" width="36" height="36">{% endif %}
+<span class="brand-name">{{ club.short_name }}</span>
+</a>
+</header>
+<div class="backdrop" id="backdrop" hidden></div>
+<nav class="sidenav" id="sidenav" aria-label="Main">
+<div class="sidenav-head">
+<a class="brand" href="{% url 'dashboard' %}">
+{% if club.branding.logo %}<img src="{{ club.branding.logo }}" alt="" width="56" height="56">{% endif %}
+<span class="brand-text"><span class="brand-name">{{ club.short_name }}</span><span class="brand-sub">Operations</span></span>
+</a>
+<button class="iconbtn only-drawer" type="button" id="menu-close" aria-label="Close menu">{% icon 'close' %}</button>
+</div>
+<ul class="navlist">
+<li><a href="{% url 'dashboard' %}"{% nav_active 'dashboard' %}>{% icon 'home' %}<span>Home</span></a></li>
+<li><a href="{% url 'event_list' %}"{% nav_active 'event_list' 'event_detail' 'event_publish' 'event_manage' 'event_step' 'participation' %}>{% icon 'calendar' %}<span>Events</span></a></li>
+<li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
+{% if perms.ops.view_directory %}
+<li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
+{% comment %}Only for somebody who holds computer access today; without this link the page is
+reachable from the rotation notice alone.{% endcomment %}
+{% if may_see_computer_password %}<li><a href="{% url 'computer_password' %}"{% nav_active 'computer_password' %}>{% icon 'key' %}<span>Computer password</span></a></li>{% endif %}
+<li><a href="{% url 'members' %}"{% if not is_self %}{% nav_active 'members' 'member_detail' 'member_edit' 'hours' %}{% endif %}>{% icon 'users' %}<span>Members</span></a></li>
+{% endif %}
+<li><a href="{% url 'my_messages' %}"{% nav_active 'my_messages' %}>{% icon 'mail' %}<span>Messages{% if unread_count %} <span class="badge" aria-label="{{ unread_count }} unread">{{ unread_count }}</span>{% endif %}</span></a></li>
+{% comment %}Your own account is a member page, so Profile and Members resolve to the same
+view; which of the two is current is decided by whose page it is.{% endcomment %}
+<li><a href="{% url 'profile' %}"{% if is_self %} aria-current="page"{% endif %}>{% icon 'user' %}<span>Profile</span></a></li>
+</ul>
+{% if perms.ops.invite_members or perms.ops.send_announcements %}
+<p class="navgroup" id="nav-officer"><span>Officer tools</span></p>
+<ul class="navlist" aria-labelledby="nav-officer">
+<li><a href="{% url 'invitations' %}"{% nav_active 'invitations' 'entry_links' %}>{% icon 'user-plus' %}<span>Invite</span></a></li>
+<li><a href="{% url 'announcements' %}"{% nav_active 'announcements' 'announce_all' %}>{% icon 'mail' %}<span>Announcements</span></a></li>
+<li><a href="{% url 'outbox' %}"{% nav_active 'outbox' %}>{% icon 'inbox' %}<span>Outbox</span></a></li>
+</ul>
+{% endif %}
+{% if perms.ops.approve_agreements or perms.ops.view_archive or perms.ops.rotate_shared_secret %}
+<p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
+<ul class="navlist" aria-labelledby="nav-advisor">
+{% if perms.ops.approve_agreements %}<li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals{% if approvals_waiting %} <span class="badge" aria-label="{{ approvals_waiting }} waiting for approval">{{ approvals_waiting }}</span>{% endif %}</span></a></li>{% endif %}
+{% comment %}The way in to setting the station computer password, for the faculty advisor and
+above: without it only somebody who knew the address could rotate it.{% endcomment %}
+{% if perms.ops.rotate_shared_secret %}<li><a href="{% url 'password_manage' %}"{% nav_active 'password_manage' %}>{% icon 'key' %}<span>Set the computer password</span></a></li>{% endif %}
+</ul>
+{% endif %}
+{% if perms.ops.edit_club_settings or perms.ops.view_job_status %}
+<p class="navgroup" id="nav-sysadmin"><span>Sysadmin tools</span></p>
+<ul class="navlist" aria-labelledby="nav-sysadmin">
+<li><a href="{% url 'job_status' %}"{% nav_active 'job_status' %}>{% icon 'activity' %}<span>Status</span></a></li>
+<li><a href="{% url 'message_templates' %}"{% nav_active 'message_templates' 'message_template_edit' %}>{% icon 'file-text' %}<span>Message text</span></a></li>
+<li><a href="{% url 'settings_page' %}"{% nav_active 'settings_page' %}>{% icon 'settings' %}<span>Settings</span></a></li>
+{% if perms.ops.manage_groups %}<li><a href="{% url 'groups_page' %}"{% nav_active 'groups_page' %}>{% icon 'users' %}<span>Permission levels</span></a></li>{% endif %}
+<li><a href="{% url 'admin:index' %}">{% icon 'edit' %}<span>Django Admin</span></a></li>
+</ul>
+{% endif %}
+<div class="sidenav-foot">
+{% comment %}Your name opens your profile and the level below it opens the level page: two
       destinations, so two links: a reader who clicks their own name expects their profile, not
-      the level page.{% endcomment %}
-      <div class="whoami">{% icon 'user' %}<span>
-        <a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
-        {% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% elif acting_label %}<span class="level">{{ acting_label }}</span>{% endif %}
-      </span></div>
-      <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>
-      <button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>
-    </div>
-  </nav>
-  {% comment %}Everything beside the sidebar, footer included, is one column: the footer stays under
-  the page, not under the sidebar.{% endcomment %}
-  <div class="page">
+the level page.{% endcomment %}
+<div class="whoami">
+{% icon 'user' %}<span>
+<a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
+{% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% elif acting_label %}<span class="level">{{ acting_label }}</span>{% endif %}
+</span>
+</div>
+<form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="navbtn" type="submit">{% icon 'log-out' %}<span>Sign out</span></button></form>
+<button class="navbtn only-desktop" type="button" id="nav-toggle" aria-pressed="false" aria-label="Collapse the menu to icons">{% icon 'chevrons-left' %}<span>Collapse</span></button>
+</div>
+</nav>
+{% comment %}Everything beside the sidebar, footer included, is one column: the footer stays under
+the page, not under the sidebar.{% endcomment %}
+<div class="page">
 {% endif %}
 {% if acting_guardian %}<div class="banner acting" role="status"><p><strong>Acting for {{ user.display_first }}</strong> (under 18). Sign-ups, cancellations, check-ins, and profile changes you make now are on their behalf and recorded in your name. You are {{ acting_guardian.display_first }}.</p><form method="post" action="{% url 'act_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop acting for them</button></form></div>{% endif %}
 {% if minor_readonly %}<div class="banner readonly" role="status"><p><strong>Read-only.</strong> A member under 18 sees their schedule, rosters, and messages here; sign-ups, changes, and profile edits are made by a guardian from their own account. You can change your own password.</p></div>{% endif %}
 {% if impersonator %}<div class="banner impersonating" role="status"><p><strong>Viewing as {{ user.full_name }}</strong>. Read-only: nothing can be changed from this view. You are {{ impersonator.short_name }}.</p><form method="post" action="{% url 'impersonate_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop viewing as them</button></form></div>{% endif %}
-<main id="main" tabindex="-1" class="{% if user.is_authenticated %}content{% else %}plain{% endif %}{% block main_class %}{% endblock %}">
-  {# A live region already present at load announces nothing, so app.js focuses it instead. #}
-  {% comment %}A standing question, shaped and placed like a message rather than a banner: it is
+<main id="main" tabindex="-1" class="{% if user.is_authenticated %}content{% else %}plain{% endif %} {% block main_class %}{% endblock %}">
+{# A live region already present at load announces nothing, so app.js focuses it instead. #}
+{% comment %}A standing question, shaped and placed like a message rather than a banner: it is
   the same kind of thing to a reader, and a rail of banners reads as a wall. It stays until
-  it is answered, which is what makes it not a message.{% endcomment %}
-  {% if user.is_authenticated and user.pending_uls_name %}<ul class="messages ask"><li class="msg warning">
-    <span class="lvl">Is this you?</span> The FCC records <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which does not exactly match the name on your account. Please answer below — until you do, the callsign is not counted as your license. If you would like to go by a different name at {{ club.short_name }}, set a preferred name on <a href="{% url 'profile_edit' %}#details">your profile</a>.
-    <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
-  </li></ul>{% endif %}
-  {% comment %}aria-live and no role: role="status" replaced the list's own role, which left each
-  message a list item in no list to a screen reader.{% endcomment %}
-  {% block messages %}{% include "_messages.html" %}{% endblock %}
-  {# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
-  {% block main %}{% block content %}{% endblock %}{% endblock %}
+it is answered, which is what makes it not a message.{% endcomment %}
+{% if user.is_authenticated and user.pending_uls_name %}
+<ul class="messages ask">
+<li class="msg warning">
+<span class="lvl">Is this you?</span> The FCC records <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which does not exactly match the name on your account. Please answer below — until you do, the callsign is not counted as your license. If you would like to go by a different name at {{ club.short_name }}, set a preferred name on <a href="{% url 'profile_edit' %}#details">your profile</a>.
+<form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
+</li>
+</ul>
+{% endif %}
+{% comment %}aria-live and no role: role="status" replaced the list's own role, which left each
+message a list item in no list to a screen reader.{% endcomment %}
+{% block messages %}
+{% include "_messages.html" %}
+{% endblock %}
+{# Layouts that wrap every page (allauth's) override "main"; ordinary pages fill "content". #}
+{% block main %}
+{% block content %}{% endblock %}
+{% endblock %}
 </main>
 {% include "_footer.html" %}
-{% if user.is_authenticated %}</div></div>{% endif %}
+{% if user.is_authenticated %}
+</div>
+</div>
+{% endif %}
 <script src="{% static 'js/vendor/htmx.min.js' %}" defer></script>
 <script src="{% static 'js/app.js' %}" defer></script>
 <script src="{% static 'js/richtext-check.js' %}" defer></script>
-{% if user.is_authenticated and vapid_public_key %}<script src="{% static 'js/push.js' %}" defer data-vapid="{{ vapid_public_key }}" data-subscribe="{% url 'push_subscribe' %}" data-enabled="{{ user.push_enabled|yesno:'1,0' }}" data-csrf="{{ csrf_token }}"></script>{% endif %}
+{% if user.is_authenticated and vapid_public_key %}
+<script src="{% static 'js/push.js' %}" defer data-vapid="{{ vapid_public_key }}" data-subscribe="{% url 'push_subscribe' %}" data-enabled="{{ user.push_enabled|yesno:'1,0' }}" data-csrf="{{ csrf_token }}"></script>
+{% endif %}
 {% block extra_body %}{% endblock %}
-<div id="said" class="sr-only" aria-live="polite"></div>{# what a script says aloud: Copied (FR-116) #}
+<div id="said" class="sr-only" aria-live="polite"></div>
+{# what a script says aloud: Copied (FR-116) #}
 </body>
 </html>

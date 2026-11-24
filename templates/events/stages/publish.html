@@ -1,96 +1,155 @@
 {% extends "events/stages/_layout.html" %}
 {% load nav %}
 {% block stage %}
-{% if event.state == 'draft' %}
-{% comment %}Before publishing, every step in one place, each with a link to change it
-(GOV.UK's Check answers). A required step not done says so; publishing stays allowed.{% endcomment %}
-<section class="panel" aria-labelledby="sum">
-  <header class="panel-head"><div><h2 id="sum">Summary</h2><p>Every step in one place before it goes on the calendar.</p></div></header>
-  <div class="panel-body"><dl class="dl summary">{% for r in summary %}<dt>{{ r.name }}</dt><dd{% if r.missing %} class="missing"{% endif %}><span>{{ r.value }}</span> <a class="button secondary small" href="{% url 'event_step' event.pk r.key %}{% if r.anchor %}#{{ r.anchor }}{% endif %}">Change<span class="sr-only"> {{ r.name|lower }}</span></a></dd>{% endfor %}</dl></div>
-</section>
+  {% if event.state == "draft" %}
+    {% comment %}Before publishing, every step in one place, each with a link to change it
+    (GOV.UK's Check answers). A required step not done says so; publishing stays allowed.{% endcomment %}
+    <section class="panel" aria-labelledby="sum">
+      <header class="panel-head">
+        <div>
+          <h2 id="sum">Summary</h2>
+          <p>Every step in one place before it goes on the calendar.</p>
+        </div>
+      </header>
+      <div class="panel-body"><dl class="dl summary">{% for r in summary %}<dt>{{ r.name }}</dt><dd{% if r.missing %} class="missing"{% endif %}><span>{{ r.value }}</span> <a class="button secondary small" href="{% url 'event_step' event.pk r.key %}{% if r.anchor %}#{{ r.anchor }}{% endif %}">Change<span class="sr-only"> {{ r.name|lower }}</span></a></dd>{% endfor %}</dl></div>
+    </section>
 
-<section class="panel" aria-labelledby="pub">
-  <header class="panel-head"><div><h2 id="pub">Publish</h2><p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p></div></header>
-  <form method="post" action="{% url 'event_publish' event.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="from" value="manage">
-    {% comment %}Publishing waits for the required steps and for an event not yet over
+    <section class="panel" aria-labelledby="pub">
+      <header class="panel-head">
+        <div>
+          <h2 id="pub">Publish</h2>
+          <p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p>
+        </div>
+      </header>
+      <form method="post" action="{% url 'event_publish' event.pk %}" class="stack">
+        {% csrf_token %}
+        <input type="hidden" name="from" value="manage">
+        {% comment %}Publishing waits for the required steps and for an event not yet over
     (functional addendum A17). Until then a line saying why stands in place of the form;
-    each step has its Change link in the Summary above.{% endcomment %}
-    {% if missing %}<footer class="panel-foot"><p class="not-ready">Not ready to publish: {{ missing }}</p></footer>
-    {% else %}<footer class="panel-foot"><div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div><button type="submit">Publish</button></footer>{% endif %}
+        each step has its Change link in the Summary above.{% endcomment %}
+      {% if missing %}<footer class="panel-foot"><p class="not-ready">Not ready to publish: {{ missing }}</p></footer>
+{% else %}<footer class="panel-foot"><div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div><button type="submit">Publish</button></footer>{% endif %}
   </form>
-</section>
+  </section>
 {% else %}
-<section class="panel" aria-labelledby="st">
-  <header class="panel-head"><div><h2 id="st">Status</h2><p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p></div>
-    <div class="actions">
-    <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline actions">{% csrf_token %}
-      {% if event.state == 'published' %}<button type="submit" name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
-      {% if event.state == 'locked' %}<button type="submit" name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
-    </form>
-    {% comment %}Completing cannot be taken back, so it asks first.{% endcomment %}
-    {% if event.state == 'published' or event.state == 'locked' %}<button type="button" class="secondary" commandfor="complete-dlg" command="show-modal">{% icon 'check' %}Mark completed</button>
-    <dialog id="complete-dlg" class="slot-dialog confirm-dialog" aria-labelledby="complete-h">
-      <h2 id="complete-h">Mark this event completed?</h2>
-      <p>It moves to Past, and nobody signs up or changes a sign-up after that. It cannot be undone. An event completes on its own once its last slot has ended.</p>
-      {% with n=event.people_ahead %}{% if n %}<p>{{ n }} {{ n|pluralize:"person holds a slot,people hold slots" }} still to come. They are told the event is over and their slots will not run.</p>{% endif %}{% endwith %}
-      <form method="post" action="{% url 'event_state' event.pk %}" class="confirm-actions">{% csrf_token %}<input type="hidden" name="what" value="complete"><button type="button" class="secondary" commandfor="complete-dlg" command="close">Not yet</button> <button type="submit">Mark completed</button></form>
-    </dialog>{% endif %}
-    {% if event.state == 'published' %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="ghost">{% icon 'history' %}Take it back to draft</button></form>{% endif %}
-    </div></header>
-  <div class="panel-body"><p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p></div>
+  <section class="panel" aria-labelledby="st">
+    <header class="panel-head">
+      <div>
+        <h2 id="st">Status</h2>
+        <p>It is <strong>{{ event.get_state_display|lower }}</strong>.</p>
+      </div>
+      <div class="actions">
+        <form method="post" action="{% url 'event_state' event.pk %}" {% include "events/stages/_in_place.html" %} class="inline actions">
+          {% csrf_token %}
+          {% if event.state == "published" %}<button type="submit" name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
+          {% if event.state == "locked" %}<button type="submit" name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
+        </form>
+        {% comment %}Completing cannot be taken back, so it asks first.{% endcomment %}
+      {% if event.state == "published" or event.state == "locked" %}<button type="button" class="secondary" commandfor="complete-dlg" command="show-modal">{% icon 'check' %}Mark completed</button>
+      <dialog id="complete-dlg" class="slot-dialog confirm-dialog" aria-labelledby="complete-h">
+        <h2 id="complete-h">Mark this event completed?</h2>
+        <p>It moves to Past, and nobody signs up or changes a sign-up after that. It cannot be undone. An event completes on its own once its last slot has ended.</p>
+        {% with n=event.people_ahead %}{% if n %}<p>{{ n }} {{ n|pluralize:"person holds a slot,people hold slots" }} still to come. They are told the event is over and their slots will not run.</p>{% endif %}{% endwith %}
+        <form method="post" action="{% url 'event_state' event.pk %}" class="confirm-actions">{% csrf_token %}<input type="hidden" name="what" value="complete"><button type="button" class="secondary" commandfor="complete-dlg" command="close">Not yet</button> <button type="submit">Mark completed</button></form>
+      </dialog>
+{% endif %}
+{% if event.state == "published" %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="from" value="manage"><button type="submit" class="ghost">{% icon 'history' %}Take it back to draft</button></form>{% endif %}
+</div>
+</header>
+<div class="panel-body">
+  <p class="helptext">Published: members see it and sign up as the openings allow. Locked: members still see it, and changes to sign-ups go through a captain. Completed is set here, or on its own once the last slot has ended.</p>
+</div>
 </section>
 
 <section class="panel" aria-labelledby="ann">
-  <header class="panel-head"><div><h2 id="ann">Announce</h2><p>Everyone signed up, or a subset by day, role, slot status, or confirmation.</p></div>
+  <header class="panel-head">
+    <div>
+      <h2 id="ann">Announce</h2>
+      <p>Everyone signed up, or a subset by day, role, slot status, or confirmation.</p>
+    </div>
     <div class="actions"><a class="button secondary" href="{% url 'event_announce' event.pk %}">{% icon 'megaphone' %}Announce to this event's participants</a></div></header>
 </section>
 {% endif %}
 
 <section class="panel" aria-labelledby="cap">
   <header class="panel-head"><div><h2 id="cap">Captains</h2>{% if may_manage_events %}<p class="helptext">Every officer already has a captain's powers on every event; appoint here to give them to a member for this event only.</p>{% else %}<p class="helptext">An officer appoints and removes captains.</p>{% endif %}</div>
-    {% if may_manage_events %}<div class="actions">{% url 'captain_add' event.pk as u %}{% include "events/_dialog_link.html" with url=u label="Appoint captain" icon="user-plus" %}</div>{% endif %}</header>
+    {% if may_manage_events %}
+      <div class="actions">
+        {% url 'captain_add' event.pk as u %}
+        {% include "events/_dialog_link.html" with url=u label="Appoint captain" icon="user-plus" %}
+      </div>
+    {% endif %}
+  </header>
   <ul class="rows list">
     {% for c in captains %}<li><span class="row-ic">{% icon 'user' 'small' %}</span><span class="grow">{{ c.user.full_name }}{% if c.user.callsign %} {{ c.user.callsign }}{% endif %}</span>
-      {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form>{% endif %}</li>{% endfor %}
+    {% if may_manage_events and c.user != user and captains|length > 1 %}<form method="post" action="{% url 'captain_remove' event.pk c.user.pk %}" {% include "events/stages/_in_place.html" %} class="inline">{% csrf_token %}<button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Remove</button></form>{% endif %}</li>{% endfor %}
   </ul>
 </section>
 
 <section class="panel" aria-labelledby="more">
-  <header class="panel-head"><div><h2 id="more">Another copy</h2><p class="helptext">A draft copy on new dates: the same start and end, on-air hours, locations, slot grid, sign-up rules and openings, all moved with its start, and nobody signed up. For next year's running, or a similar event.</p></div>
+  <header class="panel-head">
+    <div>
+      <h2 id="more">Another copy</h2>
+      <p class="helptext">A draft copy on new dates: the same start and end, on-air hours, locations, slot grid, sign-up rules and openings, all moved with its start, and nobody signed up. For next year's running, or a similar event.</p>
+    </div>
     <div class="actions"><button type="button" class="secondary" commandfor="dup-dlg" command="show-modal">{% icon 'copy' %}Duplicate this event</button></div></header>
 </section>
 
 {% comment %}Only an event still to run can be canceled: not one completed
 or canceled.{% endcomment %}
-{% if event.state == 'cancelled' or event.state == 'completed' %}
+{% if event.state == "cancelled" or event.state == "completed" %}
 {% elif not may_manage_events %}
-<p class="helptext">An officer can cancel this event.</p>
+  <p class="helptext">An officer can cancel this event.</p>
 {% else %}
-<section class="card dangerzone" aria-labelledby="dz">
-  <h2 id="dz">Danger zone</h2>
-  {% if deletable %}
-  <div class="dz-row"><div><h3>Delete this draft</h3><p class="helptext">It was never published, so no member has seen it. Its locations and slots go with it. Cannot be undone.</p></div>
-    <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete draft</button></div>
-  <dialog id="dz-delete" class="slot-dialog confirm-dialog" aria-labelledby="dz-delete-h">
-    <h2 id="dz-delete-h">Delete this draft?</h2>
-    <p>“{{ event.title }}” is deleted with its locations and slots. Nobody is told, because no member has seen it. It cannot be undone.</p>
-    <form method="post" action="{% url 'event_delete' event.pk %}" class="stack">{% csrf_token %}
-      <div class="check"><input type="checkbox" id="dc" name="confirm" value="yes" required><label for="dc">I understand this cannot be undone</label></div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-delete" command="close">Keep the draft</button> <button type="submit" class="danger">Delete the draft</button></div>
-    </form>
-  </dialog>
-  {% endif %}
-  <div class="dz-row"><div><h3>Cancel this event</h3><p class="helptext">Off the calendar, every sign-up withdrawn and everyone told. Cannot be undone.</p></div>
-    <button type="button" class="danger-outline" commandfor="dz-cancel" command="show-modal">Cancel event</button></div>
-  <dialog id="dz-cancel" class="slot-dialog confirm-dialog" aria-labelledby="dz-cancel-h">
-    <h2 id="dz-cancel-h">Cancel this event?</h2>
-    <p>The event comes off the calendar and every sign-up for it is withdrawn. Everyone signed up is told, with your reason. It cannot be undone; the event stays in the record.</p>
-    <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">{% csrf_token %}
-      <div class="field"><label for="cancel-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="cancel-reason" name="reason" maxlength="300" required><span class="helptext">Sent to everyone signed up.</span></div>
-      <div class="check"><input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I understand this cannot be undone</label></div>
-      <div class="confirm-actions"><button type="button" class="secondary" commandfor="dz-cancel" command="close">Keep the event</button> <button type="submit" class="danger">Cancel the event</button></div>
-    </form>
-  </dialog>
-</section>
+  <section class="card dangerzone" aria-labelledby="dz">
+    <h2 id="dz">Danger zone</h2>
+    {% if deletable %}
+      <div class="dz-row">
+        <div>
+          <h3>Delete this draft</h3>
+          <p class="helptext">It was never published, so no member has seen it. Its locations and slots go with it. Cannot be undone.</p>
+        </div>
+        <button type="button" class="danger-outline" commandfor="dz-delete" command="show-modal">Delete draft</button>
+      </div>
+      <dialog id="dz-delete" class="slot-dialog confirm-dialog" aria-labelledby="dz-delete-h">
+        <h2 id="dz-delete-h">Delete this draft?</h2>
+        <p>“{{ event.title }}” is deleted with its locations and slots. Nobody is told, because no member has seen it. It cannot be undone.</p>
+        <form method="post" action="{% url 'event_delete' event.pk %}" class="stack">
+          {% csrf_token %}
+          <div class="check">
+            <input type="checkbox" id="dc" name="confirm" value="yes" required><label for="dc">I understand this cannot be undone</label>
+          </div>
+          <div class="confirm-actions">
+            <button type="button" class="secondary" commandfor="dz-delete" command="close">Keep the draft</button>
+            <button type="submit" class="danger">Delete the draft</button>
+          </div>
+        </form>
+      </dialog>
+    {% endif %}
+    <div class="dz-row">
+      <div>
+        <h3>Cancel this event</h3>
+        <p class="helptext">Off the calendar, every sign-up withdrawn and everyone told. Cannot be undone.</p>
+      </div>
+      <button type="button" class="danger-outline" commandfor="dz-cancel" command="show-modal">Cancel event</button>
+    </div>
+    <dialog id="dz-cancel" class="slot-dialog confirm-dialog" aria-labelledby="dz-cancel-h">
+      <h2 id="dz-cancel-h">Cancel this event?</h2>
+      <p>The event comes off the calendar and every sign-up for it is withdrawn. Everyone signed up is told, with your reason. It cannot be undone; the event stays in the record.</p>
+      <form method="post" action="{% url 'event_cancel' event.pk %}" class="stack">
+        {% csrf_token %}
+        <div class="field">
+          <label for="cancel-reason">Reason <span class="req" aria-hidden="true">*</span></label><input id="cancel-reason" name="reason" maxlength="300" required><span class="helptext">Sent to everyone signed up.</span>
+        </div>
+        <div class="check">
+          <input type="checkbox" id="cc" name="confirm" value="yes"><label for="cc">I understand this cannot be undone</label>
+        </div>
+        <div class="confirm-actions">
+          <button type="button" class="secondary" commandfor="dz-cancel" command="close">Keep the event</button>
+          <button type="submit" class="danger">Cancel the event</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
 {% endif %}
 {% endblock %}
