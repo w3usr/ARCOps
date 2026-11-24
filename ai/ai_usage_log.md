@@ -5458,3 +5458,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. The tracker's second case (a merge across two touching periods) no longer arises: the on-air hours are stored merged, so touching ranges are one, and `held_only_by` is gone. Verified: the two new tests fail against the old code and the four refusal cases pass on both; the application tests (687) pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: 2faa0b1
+
+## [2026-11-24 16:00 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 312 (SK): FR-113's check-in window, "configurable per event", came only from the club setting, and its refusal always said 30 minutes, even after the slot had ended.
+- **Sections/Files Affected**: apps/events/models.py and migration events/0015 (`Event.checkin_opens_minutes_before`, empty follows the club); apps/events/views_manage.py (the details form shows the club's value filled in and tagged Club default, as the reminder does, and stores nothing while it holds it; the Details step lists it); apps/events/services/viability.py (`checkin_opens()`: the event's minutes or the club's, 0 meaning at the start); apps/events/views.py (the refusal names the time check-in opens, or says the slot has ended); apps/events/services/manage.py (a duplicate copies it); apps/ops/views_settings.py (the setting's description: an event may set its own); apps/events/tests/test_defaults_shown.py (new test).
+- **Nature of Contribution**: Code generation and tests. Verified: the new test's refusal assertion fails against the old view; the application tests (688) pass; the migration check passes; scenarios T11 to T14 and T17 pass locally with T17's refusal check updated in the private repository.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

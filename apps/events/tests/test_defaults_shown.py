@@ -3,12 +3,17 @@ Untouched, the event follows the club's default: nothing is stored, and a later
 change to the club setting reaches it. A "Club default" tag stands
 beside a field while it holds the club's value. Written before the code."""
 
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 
 from apps.credentials.models import CredentialType
-from apps.events.models import EligibilityRule
+from apps.events.models import EligibilityRule, Event, SignUp, Slot
 from apps.events.services.eligibility import can_sign_up
+from apps.events.services.viability import checkin_opens
 from apps.events.views_manage import GenerateForm
+from apps.ops import when
 from apps.ops.models import ClubSetting
 
 from .test_manage import _as
@@ -59,6 +64,41 @@ def test_the_reminder_box_shows_the_clubs_default_and_untouched_follows_it(offic
     assert ev.reminder_hours_before == 12
     page = c.get(f"/events/{ev.pk}/details/").content.decode()
     assert _input_value(page, "reminder_hours_before") == "12"
+
+
+def test_the_checkin_window_is_the_events_own_or_the_clubs_and_its_refusal_says_when(
+    officer, member
+):
+    """FR-113: check-in opens a number of minutes before a slot, configurable per event; the
+    refusal says when it opens, or that the slot has ended."""
+    _club("defaults.checkin_opens_minutes_before", 30)
+    c = _as(officer)
+    page = c.get("/events/new/").content.decode()
+    assert _input_value(page, "checkin_opens_minutes_before") == "30"
+    ev = _future(c)
+    ev.refresh_from_db()
+    assert ev.checkin_opens_minutes_before is None  # follows the club
+    details = {"title": ev.title, "type": "contest", "checkin_opens_minutes_before": "30"}
+    c.post(f"/events/{ev.pk}/details/", details)
+    ev.refresh_from_db()
+    assert ev.checkin_opens_minutes_before is None
+    c.post(f"/events/{ev.pk}/details/", details | {"checkin_opens_minutes_before": "0"})
+    ev.refresh_from_db()
+    assert ev.checkin_opens_minutes_before == 0  # the event's own: it opens at the start
+    slot = _live(ev).filter(kind="operating").order_by("start").first()
+    assert checkin_opens(slot) == slot.start
+    Event.objects.filter(pk=ev.pk).update(checkin_opens_minutes_before=90)
+    slot = Slot.objects.get(pk=slot.pk)
+    assert checkin_opens(slot) == slot.start - timedelta(minutes=90)
+    su = SignUp.objects.create(slot=slot, user=member, role="operator")
+    body = _as(member).post(f"/events/signup/{su.pk}/checkin/", follow=True).content.decode()
+    assert f"Check-in for this slot opens {when.local(slot.start - timedelta(minutes=90))}" in body
+    now = timezone.now()
+    Slot.objects.filter(pk=slot.pk).update(
+        start=now - timedelta(hours=3), end=now - timedelta(hours=2)
+    )
+    body = _as(member).post(f"/events/signup/{su.pk}/checkin/", follow=True).content.decode()
+    assert "This slot has ended, so it can no longer be checked in." in body
 
 
 # --------------------------------------------------------- setup and breakdown ---

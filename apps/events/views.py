@@ -21,7 +21,7 @@ from .services.eligibility import can_sign_up
 from .services.notify import drop_empty_sections
 from .services.roster import build as build_roster
 from .services.slots import health
-from .services.viability import checkin_ready, checkin_window_open, would_break
+from .services.viability import checkin_opens, checkin_ready, checkin_window_open, would_break
 from .views_manage import publish_blocker
 from .views_rules import captained_event
 from .views_slots import _visible, roster_or_slot
@@ -304,7 +304,11 @@ def check_in(request, signup_id):
         else redirect("slot_detail", pk=su.slot.event.pk, slot_id=su.slot.pk)
     )
     if not checkin_window_open(su.slot, now):
-        messages.error(request, "Check-in opens 30 minutes before the slot.")
+        if now > su.slot.end:
+            messages.error(request, "This slot has ended, so it can no longer be checked in.")
+        else:
+            opens = when.local(checkin_opens(su.slot))
+            messages.error(request, f"Check-in for this slot opens {opens}.")
         return back
     run = su.checkin_run()
     present, left = [], None

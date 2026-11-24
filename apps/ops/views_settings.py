@@ -203,7 +203,7 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
     ),
     "defaults.checkin_opens_minutes_before": (
         "Check-in opens",
-        "How many minutes before the slot a captain can check people in.",
+        "How many minutes before a slot check-in opens, unless the event sets its own.",
     ),
     "defaults.late_arrival_notice_minutes": (
         "Late arrival noticed after",

@@ -33,6 +33,9 @@ class Event(models.Model):
     reminder_hours_before = models.PositiveSmallIntegerField(
         null=True, blank=True, help_text="Empty follows the club's default."
     )
+    checkin_opens_minutes_before = models.PositiveSmallIntegerField(  # FR-113, per event
+        null=True, blank=True, help_text="Empty follows the club's default."
+    )
     display_only = models.BooleanField(default=False)  # FR-45: on the calendar, no roster
     # When a display-only event meets, in fields (services/meets.py): the
     # pattern, its weekday (0 Monday), which week (1 to 4, -1 the last) or day of the month, and

@@ -80,6 +80,11 @@ class EventForm(NoColon, forms.ModelForm):
         n = self.cleaned_data.get("reminder_hours_before")
         return None if n is None or n == self._reminder_default else n
 
+    def clean_checkin_opens_minutes_before(self):
+        """As the reminder: the club's value is not stored, so the event follows it."""
+        n = self.cleaned_data.get("checkin_opens_minutes_before")
+        return None if n is None or n == self._checkin_default else n
+
     def clean_display_only(self):
         """Display only does not change under an event's slots, nor once it is out of draft: on,
         members would lose sight of their slots; off, a published event would take a roster with its
@@ -140,6 +145,7 @@ class EventForm(NoColon, forms.ModelForm):
             "min_license_class",
             "display_timezone",
             "reminder_hours_before",
+            "checkin_opens_minutes_before",
             "display_only",
             "repeats",
             "repeat_weekday",
@@ -154,6 +160,7 @@ class EventForm(NoColon, forms.ModelForm):
             "rules_url": "Rules link",
             "min_license_class": "Preferred license class",
             "reminder_hours_before": "Reminder, hours before each slot",
+            "checkin_opens_minutes_before": "Check-in opens, minutes before each slot",
             "display_only": "Display only: on the calendar, no roster (a net, a meeting)",
             "meets_at": "Starts, local time",
             "meets_until": "Ends, local time (optional)",
@@ -199,6 +206,13 @@ class EventForm(NoColon, forms.ModelForm):
         f.help_text = "The club's default is set in Settings; a number here is this event's own."
         if self.instance.reminder_hours_before is None:
             self.initial["reminder_hours_before"] = self._reminder_default
+        self._checkin_default = int(setting("defaults.checkin_opens_minutes_before", 30))
+        f = self.fields["checkin_opens_minutes_before"]
+        f.default_tag, f.default_value = "Club default", self._checkin_default
+        f.widget.attrs["data-default"] = str(self._checkin_default)
+        f.help_text = "The club's default is set in Settings; a number here is this event's own."
+        if self.instance.checkin_opens_minutes_before is None:
+            self.initial["checkin_opens_minutes_before"] = self._checkin_default
         # When it meets: asked only of a display-only event, and each part
         # only where the pattern needs it (the page reveals them; clean() checks the same).
         self.fields["repeats"] = forms.ChoiceField(
@@ -665,6 +679,12 @@ def _details(event) -> list[tuple[str, str]]:
             "Reminder, hours before each slot",
             event.reminder_hours_before
             or f"The club's default ({setting('defaults.reminder_hours_before', 24)})",
+        ),
+        (
+            "Check-in opens, minutes before each slot",
+            event.checkin_opens_minutes_before
+            if event.checkin_opens_minutes_before is not None
+            else f"The club's default ({setting('defaults.checkin_opens_minutes_before', 30)})",
         ),
     ]
     if event.display_only:

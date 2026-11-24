@@ -212,10 +212,18 @@ def control_operator(slot, on_air_signups):
     return best
 
 
+def checkin_opens(slot):
+    """FR-113: when check-in opens for `slot`, the event's own minutes before its start, or the
+    club's when the event has none (0 is an event's own: it opens at the start)."""
+    minutes = slot.event.checkin_opens_minutes_before
+    if minutes is None:
+        minutes = int(setting("defaults.checkin_opens_minutes_before", 30))
+    return slot.start - timedelta(minutes=minutes)
+
+
 def checkin_window_open(slot, now) -> bool:
-    """FR-113: from N minutes before the start until the slot ends."""
-    minutes = int(setting("defaults.checkin_opens_minutes_before", 30))
-    return slot.start - timedelta(minutes=minutes) <= now <= slot.end
+    """FR-113: from when check-in opens until the slot ends."""
+    return checkin_opens(slot) <= now <= slot.end
 
 
 def checkin_ready(signups, now) -> list:

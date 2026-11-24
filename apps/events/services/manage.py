@@ -36,6 +36,7 @@ def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Ev
         calendar_ref=source.calendar_ref,
         kbyg_html=source.kbyg_html,
         reminder_hours_before=source.reminder_hours_before,
+        checkin_opens_minutes_before=source.checkin_opens_minutes_before,
         display_only=source.display_only,
         repeats=source.repeats,
         repeat_weekday=source.repeat_weekday,
