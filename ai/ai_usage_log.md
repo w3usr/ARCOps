@@ -5482,3 +5482,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Test fix. Verified: passes in Chromium and WebKit locally; the Firefox path cannot be run on this machine and is CI's to confirm.
 - **Human Review Status**: Pending review
 - **Git Hash**: a6e64f8
+
+## [2026-11-24 16:46 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Reconciliation of the 20 to 24 November window (SK, /reconcile): the requirements' addendum for what is now built and said nowhere, and a defect the new scenario scripts found.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (functional addendum A43, FR-96: signing out takes the offline copies with it; A44, FR-39: on-air time is the station's; the addendum's footer; the body unchanged); apps/accounts/views_members.py (Security reads On for a required account only once a factor is enrolled, so an officer with nothing enrolled reads Off, required, beside the deadline); apps/accounts/tests/test_two_factor.py (Off before the key, On after).
+- **Nature of Contribution**: Draft and code edit. Verified: the changed test fails against the old line; the application tests pass (689); scenario T2 step 7, which found it, now passes locally. The reconciliation note, with the window and every change, is in the private repository.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

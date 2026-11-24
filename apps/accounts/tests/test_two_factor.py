@@ -138,11 +138,16 @@ def test_a_required_account_is_told_before_it_is_stopped():
     body = Client()
     body.force_login(officer)
     page = body.get(f"/members/{officer.pk}/").content.decode()
-    assert "required for your access level" in page
+    assert (
+        "<strong>Off</strong>, required for your access level" in page
+    )  # nothing to answer with yet
+    assert "Sign-in asks for your password alone." in page
     assert f"{when.day} {when:%b %Y}" in page, "the date it stops being optional"  # 21 Nov 2026
 
     _key(officer)
     assert mfa.deadline(officer) is None, "enrolled, so there is nothing to count down to"
+    page = body.get(f"/members/{officer.pk}/").content.decode()
+    assert "<strong>On</strong>, required for your access level" in page  # and sign-in now asks
 
 
 def test_the_sysadmin_flag_counts_where_the_club_names_it():

@@ -75,7 +75,9 @@ def _security(user) -> dict:
     return {
         "keys": Authenticator.objects.filter(user=user, type=Authenticator.Type.WEBAUTHN).count(),
         "factor": mfa.has_factor(user),
-        "on": user.two_factor_enabled or mfa.is_required(user),
+        # A requirement makes it on only once there is something to answer with: until then
+        # sign-in asks for the password alone, and the page says so beside the deadline.
+        "on": user.two_factor_enabled or (mfa.is_required(user) and mfa.has_factor(user)),
         "required": mfa.is_required(user),
         "deadline": mfa.deadline(user),
     }

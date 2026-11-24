@@ -3346,7 +3346,37 @@ reported as not checked in 15 minutes into every slot after the first.
 check you in for all consecutive shifts"), one tap rather than a second *Check in through …*
 button; built by SK on 2026-11-23. *Record:* this addendum.
 
+### A43. FR-96: signing out takes the offline copies with it
+
+**Original (FR-96).** "A service worker that caches the shell and the member's own schedule for
+offline reading." It said nothing of what happens to that copy when the member signs out, and the
+copy outlived the session: on a shared computer, My schedule and My messages, with the member's
+name and callsign, were still readable offline by whoever used the browser next.
+
+**Decision.** A signed-out page asks the service worker to drop the offline pages (My schedule and
+My messages, whatever their query string), and a page reached by a redirect, which is the sign-in
+page, is never kept as a member's own. The shell's static files stay cached; they carry nobody's
+details.
+
+**Decided** by SK on 2026-11-24, taking up private tracker 294. *Record:* this addendum.
+
+### A44. FR-39: on-air time is the station's
+
+**Original (FR-39).** "A maximum number of on-air hours per calendar day … a maximum total for the
+event, and a minimum break length that counts as off time." The limits were counted by adding up
+every operating slot, so two positions on the air at once counted twice, and the minimum break was
+shown and never used.
+
+**Decision.** On-air time is the station's: the clock time any operating slot covers, so positions
+on the air together count once, and a gap shorter than the minimum break is on-air time, not a
+break. A day's hours, the event's total, the Coverage card's operating hours, and the slots
+marked *over limit* (FR-62) all follow from it. The tracker that reported it read the limit as each
+person's; FR-39's words and its School Club Roundup example are the station's, and that reading
+stands.
+
+**Decided** by SK on 2026-11-24, taking up private tracker 300. *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39) and 2026-11-23 (A40 to A42), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) and 2026-11-24 (A43, A44), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>
