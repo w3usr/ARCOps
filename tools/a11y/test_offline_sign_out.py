@@ -6,7 +6,8 @@ computer, the next person must not find them there after the member signs out, o
 
 import time
 
-from playwright.sync_api import Error, sync_playwright
+import pytest
+from playwright.sync_api import Error, TimeoutError, sync_playwright
 from test_axe import ACCOUNTS, sign_in
 
 PAGES = ("/events/mine/", "/me/messages/")
@@ -32,8 +33,16 @@ def test_signing_out_clears_the_offline_pages(live_server, engine):
         page = ctx.new_page()
         sign_in(page, base, ACCOUNTS["member"])
         page.goto(f"{base}/")
-        page.evaluate("() => navigator.serviceWorker.ready")
-        page.wait_for_function("() => !!navigator.serviceWorker.controller")
+        try:
+            page.wait_for_function(
+                "() => !!(navigator.serviceWorker && navigator.serviceWorker.controller)",
+                timeout=10_000,
+            )
+        except TimeoutError:
+            browser.close()
+            if engine == "firefox":  # seen on CI: the page never comes under the worker there
+                pytest.skip("Playwright's Firefox runs no service worker for this page")
+            raise
         for path in PAGES:
             page.goto(f"{base}{path}")
         kept = _cached(page, True)

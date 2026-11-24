@@ -5474,3 +5474,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and a test. Verified: the new test fails against the old view and template; the application tests (689) pass; the Chromium accessibility sweep passes; screenshots of the queue at 1280 and 390 px read well, and Approve and Decline stack at 1280 as they did before; scenarios T08, T22, T29, T33, T40 and T52 pass locally, with T08's dialog-label locator narrowed in the private repository.
 - **Human Review Status**: Pending review
 - **Git Hash**: 4ff7a4a
+
+## [2026-11-24 16:09 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI failed on `1f5da3f`: the new sign-out offline test timed out in Firefox waiting for the service worker to control the page.
+- **Sections/Files Affected**: tools/a11y/test_offline_sign_out.py (waits up to ten seconds for the worker; in Firefox, where CI's Playwright never put the page under it, the test skips with that reason; elsewhere a missing worker still fails it; the wait no longer throws where `navigator.serviceWorker` is absent).
+- **Nature of Contribution**: Test fix. Verified: passes in Chromium and WebKit locally; the Firefox path cannot be run on this machine and is CI's to confirm.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]
