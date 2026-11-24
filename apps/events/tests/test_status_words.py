@@ -1,8 +1,8 @@
 """A slot's state reaches every reader in the roster's words, never as "not viable" (FR-62).
 
-FR-62 replaced *not viable* and *at risk* on the roster on 2026-09-13 "so that a newcomer reads an
-invitation, not a verdict". The pages that warn before a change, the messages, the captains'
-digest and the export still printed the state's name. SK, 2026-10-26: the roster's words
+FR-62 replaced *not viable* and *at risk* on the roster so that a newcomer reads an invitation,
+not a verdict. The pages that warn before a change, the messages, the captains'
+digest and the export still printed the state's name. The roster's words are used
 everywhere, captains included; the names stay in the code and the requirements (FR-73).
 """
 

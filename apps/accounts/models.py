@@ -96,7 +96,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     person *signs in with* is any address they have confirmed, held in `Address` rows. Where club
     mail *goes* is each address's own delivery switch. Those were one field once, which forced a
     fabricated address on a minor with no mailbox and another on a deleted account; identity as a
-    key removes both (the advisor, 2026-09-17).
+    key removes both.
     """
 
     public_id = models.UUIDField(default=uuid4, unique=True, editable=False)
@@ -113,8 +113,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default
     # FR-59: the calendar feed's address. A key on the account rather than a signed string, so
     # the address a member subscribes to stays the same every time they look at it, and so there
-    # is one live credential to replace if it leaks (the advisor, 2026-09-19: "Is this calendar
-    # address supposed to change every time I reload the page?").
+    # is one live credential to replace if it leaks.
     calendar_key = models.CharField(max_length=64, unique=True, default=new_calendar_key)
     # Closure, archiving, and deletion (FR-11, FR-118, FR-125, §4.3). A closed account is No
     # access; an archived one is the club's record of a former member, kept whole and read by the
@@ -141,11 +140,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     legal_hold = models.BooleanField(default=False)  # TR-28: retention never touches this account
     category = models.CharField(max_length=30, blank=True)  # key from club config (FR-8)
     # The offices this member holds, as keys from the club's configured list. A list, because
-    # one person can hold two of them and a club can elect several people to the same one:
-    #
-    # > I am both Faculty Advisor and Club License Trustee. I should be able to be marked and
-    # > listed as both. Some clubs may have a Board of Trustees, where multiple members hold the
-    # > position of Board Member. — NAF, 2026-09-20
+    # one person can hold two of them (a faculty advisor who is also the license trustee) and a
+    # club can elect several people to the same one (a board of trustees).
     club_positions = models.JSONField(default=list, blank=True)
     under_18 = models.BooleanField(default=False)  # a flag, never a date (§2.4)
     student_level = models.CharField(
@@ -168,10 +164,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     verification_deadline = models.DateTimeField(null=True, blank=True)  # class links: seven days
     # Two-step verification, asked for rather than inferred. The sign-in library treats any
     # enrolled key as a second factor; here a passkey is a way to sign in, and the second step
-    # happens because somebody turned it on (§2.6, apps/accounts/mfa.py).
-    #
-    # > We should make enabling 2fa explicit. I also want to make it optional right now. So, a
-    # > user can enable or disable it. — NAF, 2026-09-20
+    # happens because somebody turned it on, and each member may turn it on or off (§2.6,
+    # apps/accounts/mfa.py).
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_enabled_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
@@ -265,7 +259,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # Where this account stands with the club, in the order the directory sorts them. Archiving
     # is a flag beside this rather than a value of it: an archived record keeps everything,
-    # including the status it had when it was put away (the advisor, 2026-09-19).
+    # including the status it had when it was put away.
     STATUSES = [
         ("provisional", "Provisional"),
         ("active", "Active"),
@@ -295,7 +289,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def status_label(self) -> str:
         """Where they stand. Whether the record is archived is a flag beside this, with a
-        column of its own (the advisor, 2026-09-19)."""
+        column of its own."""
         return self.STATUS_LABELS[self.status]
 
     @property
@@ -317,9 +311,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         **The FCC issues an operator class to a person only.** A club, a RACES station, and a
         military recreation station each hold a callsign with the class field empty, so the
         letter comes from the applicant type on the record instead: C a club, R a RACES station,
-        M a military recreation station. The advisor asked for the three letters on 2026-09-19,
-        starting from the club callsign W2FSR reading U: "It's not technically true... that is a
-        Club call sign."
+        M a military recreation station. Otherwise a club callsign such as W2FSR would read U,
+        which is not true of a club station.
 
         An empty class is also what "the FCC has no record of this callsign" looks like, so a
         station letter needs a matched record; everything else is U. A matched record with no
@@ -339,7 +332,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def license_letter_says(self) -> str:
         """What the letter after a name stands for, in words: its tooltip on the roster and its
-        line in the roster's Key (private tracker 278)."""
+        line in the roster's Key."""
         if self.license_class:
             return f"{self.license_class} class"
         stations = {"C": "Club station", "R": "RACES station", "M": "Military recreation station"}
@@ -479,7 +472,7 @@ class Invitation(models.Model):
     token = models.CharField(max_length=64, unique=True, default=secrets.token_urlsafe)
     # A second secret, put only on the link that is **emailed**. The link the issuer copies
     # off the page carries the token alone, so arriving with this one is proof the person
-    # reads the mailbox it was sent to, and arriving without it is not (NAF, 2026-09-20).
+    # reads the mailbox it was sent to, and arriving without it is not.
     mail_token = models.CharField(max_length=64, blank=True, default=secrets.token_urlsafe)
     issued_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="invitations_issued"
@@ -569,8 +562,8 @@ class PushSubscription(models.Model):
 
     @property
     def device_label(self) -> str:
-        """What a person recognises their device by: "Chrome on macOS" (T34: by browser and
-        date). The raw user agent stays stored for diagnosis."""
+        """What a person recognises their device by: "Chrome on macOS", beside its date. The raw
+        user agent stays stored for diagnosis."""
         ua = self.user_agent or ""
         browser = next((name for mark, name in self.BROWSERS if mark in ua), "")
         system = next((name for mark, name in self.SYSTEMS if mark in ua), "")

@@ -13,10 +13,10 @@ PRODUCT_LONG_NAME = "Amateur Radio Club Operations"  # spelled out where the nam
 PRODUCT_URL = "https://github.com/w3usr/ARCOps"
 PRODUCT_AUTHOR = "W3USR"
 # The authoring club's own page, wherever this installation is run: another club's footer
-# credits W3USR and links here, not to their own page (the advisor, 2026-09-19).
+# credits W3USR and links here, not to their own page.
 PRODUCT_AUTHOR_URL = "https://scranton.edu/w3usr"
-# What the member's own page of slots is called: "My schedule" (SK, 2026-11-03; it was "Sked",
-# the radio slang, from 2026-09-13; docs/NAME.md).
+# What the member's own page of slots is called: "My schedule" (it was "Sked", the radio slang;
+# docs/NAME.md).
 SCHEDULE_FEATURE_NAME = "schedule"
 
 

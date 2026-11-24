@@ -1,4 +1,4 @@
-"""The event as a workspace (#232, SK 2026-11-06, D8): one header for the event page, every Manage
+"""The event as a workspace (docs/INTERFACE.md, D8): one header for the event page, every Manage
 step and Who took part. The title with its state badge, a line of facts, a captain's actions at
 the right (Announce, and a ⋮ menu of what the event's state allows), and the three as tabs."""
 

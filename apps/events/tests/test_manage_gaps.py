@@ -1,6 +1,6 @@
-"""Gaps in managing an event, found by reading the flow and closed at SK's word, 2026-11-11:
-a private residence's address (FR-51), editing the start and end (one per event since A32), a slot with no
-seat, completing by one click, removing a position, and deleting a draft never published."""
+"""Gaps in managing an event, found by reading the flow: a private residence's address (FR-51),
+editing the start and end (one per event since A32), a slot with no seat, completing by
+one click, removing a position, and deleting a draft never published."""
 
 from datetime import timedelta
 
@@ -62,7 +62,7 @@ def test_a_private_residence_shows_its_address_only_to_those_signed_up_there(off
 
 
 def test_the_start_and_end_is_edited_and_keeps_or_cancels_its_slots(officer, member):
-    """FR-38 as A32: one start and end per event, edited and never removed (SK, 2026-11-16)."""
+    """FR-38 as A32: one start and end per event, edited and never removed."""
     c = _as(officer)
     ev = _future(c)
     url = f"/events/{ev.pk}/span/"
@@ -77,7 +77,7 @@ def test_the_start_and_end_is_edited_and_keeps_or_cancels_its_slots(officer, mem
     c.post(f"/events/{ev.pk}/slots/generate/", GEN | {"mode": "fill"})
     assert _live(ev).count() == 5
     # shorter, with someone in the hour that would go: refused, nothing changes; one member in
-    # two of those slots is one person (private tracker 352)
+    # two of those slots is one person
     last2 = list(_live(ev).order_by("start"))[-2:]
     for s in last2:
         SignUp.objects.create(slot=s, user=member, role="operator")
@@ -97,7 +97,7 @@ def test_the_start_and_end_is_edited_and_keeps_or_cancels_its_slots(officer, mem
 
 
 def test_an_operating_slot_in_a_split_contests_break_is_refused(officer):
-    """A32 (SK, 2026-11-16): the break is time outside the on-air hours, and an operating slot
+    """A32: the break is time outside the on-air hours, and an operating slot
     has to fit inside them; a setup slot is not held to it."""
     from apps.events.services.slots import set_on_air
 
@@ -207,7 +207,7 @@ def test_a_draft_never_published_is_deleted_and_any_other_event_is_not(officer, 
 
 
 def test_the_start_and_end_are_typed_in_utc_as_contest_rules_write_them(officer):
-    """#274: 2300 with no colon is taken; a US browser's 11/21 form is refused with how to write it."""
+    """2300 with no colon is taken; a US browser's 11/21 form is refused with how to write it."""
     c = _as(officer)
     ev = _future(c)
     url = f"/events/{ev.pk}/span/"

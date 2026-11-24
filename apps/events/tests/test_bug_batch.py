@@ -1,8 +1,7 @@
-"""Bugs from the 2026-11-12 gap analysis, fixed at SK's word ("let's work thru bugs"): seats that
-open without a cancellation reach the waitlist, and a merge keeps a live offer (#253); Display
-only cannot change under an event's slots or once it is out of draft (#254, SK: "Refuse both
-ways"); no "Not checked in" notice for a canceled event (#256); a merge keeps the later slot's own
-rules and closed state, and removing a period clips the on-air hours (#260). Written first."""
+"""Bugs from a gap analysis: seats that open without a cancellation reach the waitlist, and a merge
+keeps a live offer; Display only cannot change under an event's slots or once it is out of draft,
+either way; no "Not checked in" notice for a canceled event; a merge keeps the later slot's own
+rules and closed state, and removing a period clips the on-air hours. Written first."""
 
 from datetime import timedelta
 
@@ -26,7 +25,7 @@ def _client(user):
     return c
 
 
-# ----------------------------------------------------------------------------------- #253 ---
+# -----------------------------------------------------------------------------------------------
 
 
 def test_more_seats_offer_the_place_to_the_first_waiting(
@@ -77,7 +76,7 @@ def test_a_merge_keeps_an_offer_and_its_link(officer):
     assert waitlist.accept(w, entry) is not None
 
 
-# ----------------------------------------------------------------------------------- #254 ---
+# -----------------------------------------------------------------------------------------------
 
 
 def _details(ev, **change):
@@ -126,7 +125,7 @@ def test_a_draft_may_still_change_display_only(officer):
     assert ev.display_only
 
 
-# ----------------------------------------------------------------------------------- #256 ---
+# -----------------------------------------------------------------------------------------------
 
 
 def test_no_not_checked_in_notice_for_a_canceled_event(officer):
@@ -141,7 +140,7 @@ def test_no_not_checked_in_notice_for_a_canceled_event(officer):
     assert not Outbox.objects.filter(subject__startswith="Not checked in").exists()
 
 
-# ----------------------------------------------------------------------------------- #260 ---
+# -----------------------------------------------------------------------------------------------
 
 
 def test_a_merge_keeps_the_later_slots_own_rule_and_closed_state(officer):
@@ -158,7 +157,7 @@ def test_a_merge_keeps_the_later_slots_own_rule_and_closed_state(officer):
 
 
 def test_shortening_the_start_and_end_clips_the_on_air_hours(officer):
-    """#260, as A32 has it: the on-air hours stay inside the event's start and end."""
+    """As A32 has it: the on-air hours stay inside the event's start and end."""
     start = timezone.now().replace(second=0, microsecond=0) + timedelta(days=30)
     ev, _ = _event(start, hours=8, captain=officer, state=Event.State.DRAFT)
     OnAirRange.objects.create(event=ev, start=start, end=start + timedelta(hours=1))
@@ -174,12 +173,12 @@ def test_shortening_the_start_and_end_clips_the_on_air_hours(officer):
     assert list(ev.on_air_ranges.values_list("start", flat=True)) == [start]
 
 
-# ---------------------------------------------------------------------------- #328, #299 ---
+# -----------------------------------------------------------------------------------------------
 
 
 def test_losing_access_leaves_every_waitlist_and_each_place_freed_is_offered(officer):
-    """Private tracker 328 (FR-118, FR-57): a deleted account leaves the waitlists, and an offer
-    passes over anyone without access. 299 (a): a place freed by suspension is offered."""
+    """FR-118, FR-57: a deleted account leaves the waitlists, and an offer passes over anyone
+    without access; a place freed by suspension is offered."""
     from apps.accounts.services import delete_account, suspend
 
     now = timezone.now()
@@ -198,9 +197,9 @@ def test_losing_access_leaves_every_waitlist_and_each_place_freed_is_offered(off
 
 
 def test_one_place_per_person_in_a_slot_and_eligibility_again_at_acceptance(officer):
-    """Private tracker 299 (b) (SK, 2026-11-17: refuse the second wait): holding the slot, a
-    member cannot wait for another role in it; an offer to someone already in the slot or no
-    longer eligible is not marked taken, and passes on. (c): eligibility asked again."""
+    """Holding the slot, a member cannot wait for another role in it; an offer to someone
+    already in the slot or no longer eligible is not marked taken, and passes on; eligibility is
+    asked again at acceptance."""
     from apps.events.models import EligibilityRule
 
     now = timezone.now()

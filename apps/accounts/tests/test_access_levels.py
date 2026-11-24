@@ -1,10 +1,8 @@
 """Capabilities and the groups that hold them.
 
-The advisor's issue 87, 2026-09-17: "We need a 'Faculty Advisor' access level. This is above
-'Club Officer' but below 'Sysadmin'. Faculty Advisors should have the ability to approve access
-agreements. Club officers should not." Then, the same day: "have access be item-by-item, and
-then define configurable access groups... Systemic is superuser." So there is no ladder: a group
-is a set of capabilities, the club decides what is in it, and a sysadmin holds every one.
+A faculty advisor level sits above club officer and below sysadmin, and approves access
+agreements; an officer does not. Access is item by item: there is no ladder, a group is a set of
+capabilities, the club decides what is in it, and a sysadmin holds every one.
 """
 
 import pytest
@@ -90,9 +88,9 @@ def test_the_advisor_contact_line_on_a_reminder_follows_the_capability():
 
 
 def test_nothing_grants_a_capability_from_a_club_position():
-    """The advisor, 2026-09-17: "It seems like we are moving to a model where access is governed
-    by access level, rather than position." A position is a label now. Showing one is fine; this
-    reads the tree to catch a rule branching on one, which is how the old approver flag worked.
+    """Access is governed by access level, not position: a position is a label now. Showing one is
+    fine; this reads the tree to catch a rule branching on one, which is how the old approver flag
+    worked.
     """
     import pathlib
     import re

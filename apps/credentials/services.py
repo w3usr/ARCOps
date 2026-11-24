@@ -188,7 +188,7 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
     lic.callsign = user.callsign
     # FR-16: while the member has not said whether the FCC's name is theirs, the callsign is not
     # counted as their license, so nothing of the FCC record is taken: someone who typed another
-    # licensee's callsign held their class until they answered (T38, 2026-10-21).
+    # licensee's callsign held their class until they answered.
     row = (
         UlsLicense.objects.filter(callsign=user.callsign.upper()).first()
         if user.callsign and not user.pending_uls_name
@@ -222,9 +222,8 @@ def refresh_license_from_local_table(user) -> LicenseRecord:
     else:
         # Nothing on this record describes the callsign the member now holds, so none of it may
         # stay: a member who moved from a Technician callsign to one the FCC has no record of
-        # kept the class, the licensee name and the expiry of the callsign they left (the
-        # collaborator on T10, 2026-09-20: "Switching from KC3ABC to WC1XYZ keeps the name and
-        # Technician category of KC3ABC"). An override was dropped by the callsign change
+        # kept the class, the licensee name and the expiry of the callsign they left. An
+        # override was dropped by the callsign change
         # itself (apply_callsign, FR-102); the nightly sync leaves one alone (FR-15).
         lic.licensee_name = ""
         lic.operator_class = ""
@@ -565,7 +564,7 @@ PDF_RENDER_VERSION = 1
 
 # A list item whose whole content is one paragraph. PDF/UA-1 (7.2-20) lets a list item hold only
 # a label and a body, and WeasyPrint tags the <p> as a third child, so the PDF failed validation
-# wherever the agreement text wraps its items in paragraphs, as a club's own text may (T40, 2026-10-22).
+# wherever the agreement text wraps its items in paragraphs, as a club's own text may.
 _LONE_P_ITEM = re.compile(
     r"(<li\b[^>]*>)\s*<p\b[^>]*>((?:(?!</?p\b).)*?)</p>\s*(</li>)", re.IGNORECASE | re.DOTALL
 )
@@ -590,7 +589,7 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
             "template": agreement.template,
             "club_name": setting("club.name", "the club"),
             "club_short": setting("club.short_name", "the club"),
-            # The document carries its own standing and how it got there (NAF, 2026-09-20).
+            # The document carries its own standing and how it got there.
             "decisions": list(agreement.decisions.order_by("at", "pk")),
             "built_at": timezone.now(),
             # The watermark's colour, as six hex digits: the template writes it into an SVG
@@ -622,8 +621,7 @@ def render_agreement_pdf(agreement: SignedAgreement) -> bytes:
 # --------------------------------------------------------------------- watermark ---
 # The document's standing, drawn across the page, and the club's seal behind it.
 #
-# The advisor asked for it back as vector graphics, with the club's own seal behind it
-# (2026-09-20).
+# Drawn as vector graphics, with the club's own seal behind it.
 #
 # The first attempt used rotated HTML text and the second an SVG <text>; this renderer draws
 # both as text, so "APPROVED" went into the text layer one glyph at a time and threaded itself
@@ -756,8 +754,8 @@ def watermark_background(word: str, color: str) -> str:
 def agreement_pdf_name(agreement: SignedAgreement) -> str:
     """What the file is called when somebody downloads it.
 
-    The advisor's own shape (2026-09-20): surname, first name, callsign, the expiry it carries,
-    and which agreement it is. "agreement-6-v2.pdf" said none of that in a folder of them.
+    Surname, first name, callsign, the expiry it carries, and which agreement it is.
+    "agreement-6-v2.pdf" said none of that in a folder of them.
 
         Nitkowski_Gregory_N2BSA_exp20270901_station_access.pdf
 

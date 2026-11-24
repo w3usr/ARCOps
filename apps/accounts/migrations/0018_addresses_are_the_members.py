@@ -1,10 +1,9 @@
 """Correcting somebody else's addresses is a sysadmin's.
 
-The advisor, 2026-09-19: "They should not be able to stop an email address from signing them in,
-or turn off a users club email... Users can adjust email settings in their own accounts." An
-officer can still add an address and confirm one, which is what a member who has lost a mailbox
-needs; taking one away, or its confirmation, or its club mail, is nobody else's business. An
-officer who needs to shut an account out suspends it (FR-91).
+An officer cannot stop an address signing a member in, or turn off their club mail; a member adjusts
+their own mail settings. An officer can still add an address and confirm one, which is what a member
+who has lost a mailbox needs; taking one away, or its confirmation, or its club mail, is nobody
+else's business. An officer who needs to shut an account out suspends it (FR-91).
 """
 
 from django.db import migrations

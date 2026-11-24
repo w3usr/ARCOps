@@ -31,10 +31,10 @@ class Event(models.Model):
     calendar_ref = models.PositiveIntegerField(null=True, blank=True)  # FR-40
     kbyg_html = models.TextField(blank=True)  # know-before-you-go (FR-77)
     reminder_hours_before = models.PositiveSmallIntegerField(
-        null=True, blank=True, help_text="Empty follows the club's default (#272)."
+        null=True, blank=True, help_text="Empty follows the club's default."
     )
     display_only = models.BooleanField(default=False)  # FR-45: on the calendar, no roster
-    # When a display-only event meets, in fields (private tracker 273; services/meets.py): the
+    # When a display-only event meets, in fields (services/meets.py): the
     # pattern, its weekday (0 Monday), which week (1 to 4, -1 the last) or day of the month, and
     # the time in the event's own zone. The note says what the fields cannot.
     repeats = models.CharField(max_length=16, blank=True)
@@ -69,7 +69,7 @@ class Event(models.Model):
 
     def signups_ahead(self):
         """Sign-ups on slots that have not started yet: what marking the event completed early
-        leaves without a slot to run (#258)."""
+        leaves without a slot to run."""
         from django.utils import timezone
 
         return SignUp.objects.filter(
@@ -87,7 +87,7 @@ class Event(models.Model):
 
 
 class OnAirRange(models.Model):
-    """The club's on-air hours inside the event's start and end (#247, functional addendum A15):
+    """The club's on-air hours inside the event's start and end (functional addendum A15):
     a stretch the club means to be on the air. With no range at all, the club is on the air for
     the whole span; a split contest's break is the time between two ranges (A32). Stored merged,
     in UTC."""
@@ -255,15 +255,15 @@ class SignUp(models.Model):
 
     @property
     def kept(self) -> str:
-        """Why nobody can give this sign-up up, as a sentence; "" when it can go (#251; SK,
-        2026-11-12). Attendance cannot be undone, so once it is recorded, once the slot has ended,
+        """Why nobody can give this sign-up up, as a sentence; "" when it can go.
+        Attendance cannot be undone, so once it is recorded, once the slot has ended,
         or once the event is over, the sign-up stays in the record: hours and participation are
         counted from it (FR-86, FR-113, FR-124)."""
         from django.utils import timezone
 
         if self.slot.event.state in (Event.State.COMPLETED, Event.State.CANCELLED):
             return "The event is over, so this sign-up stays in the record."
-        # A later slot of a run checked in with one tap (private tracker 361) has not started:
+        # A later slot of a run checked in with one tap has not started:
         # leaving early drops it, as FR-113 says.
         if self.no_show or (self.checked_in_at and self.slot.start <= timezone.now()):
             return "Attendance is recorded for this sign-up, so it stays in the record."
@@ -273,8 +273,8 @@ class SignUp(models.Model):
 
     def checkin_run(self) -> list[SignUp]:
         """This sign-up and the same member's later ones in the same event that follow on with
-        no gap, whatever the position: one tap checks them all in (private tracker 361; NAF,
-        2026-11-21). A canceled slot is not there, so it ends the run like any gap."""
+        no gap, whatever the position: one tap checks them all in (A42). A canceled slot is not
+        there, so it ends the run like any gap."""
         run = [self]
         later = (
             SignUp.objects.filter(
@@ -296,7 +296,7 @@ class SignUp(models.Model):
 class ResponsibleAdult(models.Model):
     """The adult accompanying a minor for one sign-up (FR-64). A member named here is a link, not
     a copy: their email and phone stay on their own account, shown only to those who may see them
-    (FR-67; private tracker 327). `email` and `phone` are what the guardian typed for anyone else."""
+    (FR-67). `email` and `phone` are what the guardian typed for anyone else."""
 
     signup = models.ForeignKey(SignUp, on_delete=models.CASCADE, related_name="responsible_adults")
     name = models.CharField(max_length=120)
@@ -306,7 +306,7 @@ class ResponsibleAdult(models.Model):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     present_at = models.DateTimeField(null=True, blank=True)  # recorded at check-in
-    # Named because a guardian holds a sign-up on the same slot (A40, private tracker 358); it
+    # Named because a guardian holds a sign-up on the same slot (A40); it
     # counts only while they do, and goes when they leave.
     automatic = models.BooleanField(default=False)
 

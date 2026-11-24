@@ -88,7 +88,7 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
         and "555-0100" in body
     )
     assert "Ann" in body and "Confirm you will be there" in body and "I cannot make it" in body
-    # A role reaches the reader as the club's label, not its stored key (T31, 2026-10-20)
+    # A role reaches the reader as the club's label, not its stored key
     assert "as <strong>Operator</strong>" in body
     su.refresh_from_db()
     assert su.reminder_sent_at is not None and su.confirmed_at is None
@@ -108,8 +108,8 @@ def test_reminder_goes_once_inside_the_window_with_the_right_content_and_a_worki
 
 
 def test_a_reminder_time_above_72_hours_is_sent_at_that_time():
-    """Private tracker 317 (SK, 2026-11-17: the job looks further): an event set to remind 96
-    hours ahead sends its reminder at 90 hours out, where the job used to look 72 hours only."""
+    """An event set to remind 96 hours ahead sends its reminder at 90 hours out, where the job
+    used to look 72 hours only."""
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
@@ -122,7 +122,7 @@ def test_a_reminder_time_above_72_hours_is_sent_at_that_time():
 
 def test_reminder_escapes_contest_fields_and_names_only_advisors():
     """A captain's contest details reach every participant's mail, so they are escaped; and a
-    sysadmin is not named as a faculty advisor for being a superuser (T31, T42, 2026-10-20)."""
+    sysadmin is not named as a faculty advisor for being a superuser."""
     now = timezone.now()
     _user("adv@example.org", "advisor", first_name="Dee", last_name="Visor")
     User.objects.create_superuser(
@@ -141,9 +141,9 @@ def test_reminder_escapes_contest_fields_and_names_only_advisors():
 
 
 def test_a_reminder_link_does_its_one_thing_for_the_time_it_was_sent_and_not_when_locked():
-    """Private tracker 293 (FR-100): Confirm and I cannot make it each carry their own token, and a
-    slot moved since the reminder asks again, so the old link no longer answers. 297 (FR-44): on a
-    locked roster the cannot link changes nothing and names the captains."""
+    """FR-100: Confirm and I cannot make it each carry their own token, and a slot moved since the
+    reminder asks again, so the old link no longer answers. FR-44: on a locked roster the cannot
+    link changes nothing and names the captains."""
     now = timezone.now()
     cap = _user("cap@example.org", "officer", first_name="Cap", last_name="Tain")
     mem = _user("mem@example.org", first_name="Mo", last_name="Member")
@@ -174,7 +174,7 @@ def test_cannot_make_it_token_cancels_and_tells_the_captains_late(monkeypatch):
     token = notify.confirm_token(su, "cannot")
     c = Client()
     # Signed out, the warning and the order are the signed-in page's: Careful, then the safe
-    # option first (T31 step 3, 2026-10-20).
+    # option first.
     from types import SimpleNamespace
 
     with monkeypatch.context() as m:
@@ -208,7 +208,7 @@ def test_member_cancel_outside_cutoff_is_not_late_and_captain_removal_tells_the_
     su2 = SignUp.objects.create(slot=slots[1], user=mem, role="observer")
     c.force_login(cap)
     # FR-58: a removal with no reason is refused by the server, not only by the form's
-    # `required` (found in acceptance test T14 on 2026-10-14, with the attribute stripped)
+    # `required` attribute (stripped here)
     r = c.post(f"/events/signup/{su2.pk}/cancel/", {"confirmed": "yes", "reason": "  "})
     assert r.url == f"/events/signup/{su2.pk}/remove/" and SignUp.objects.filter(pk=su2.pk).exists()
     assert not _msgs(mem, "moved").exists()
@@ -418,6 +418,6 @@ def test_keep_it_from_the_reminder_says_nothing_changed_without_a_sign_in():
         and "Sign in" not in body.split("<main")[1][:600]
     )
     assert "you are still down as <strong>Operator</strong>" in body
-    assert "Open My schedule" in body  # the page's one name (#163; SK, 2026-11-03)
+    assert "Open My schedule" in body  # the page's one name
     su.refresh_from_db()
     assert su.confirmed_at is None, "keeping a slot is not confirming attendance"

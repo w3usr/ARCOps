@@ -76,15 +76,14 @@ class EventForm(NoColon, forms.ModelForm):
         return sanitise(self.cleaned_data.get("description_html") or "")
 
     def clean_reminder_hours_before(self):
-        """A value equal to the club's is the club's: not stored, so the event follows it (#272;
-        SK, 2026-11-12: "Follow")."""
+        """A value equal to the club's is the club's: not stored, so the event follows it."""
         n = self.cleaned_data.get("reminder_hours_before")
         return None if n is None or n == self._reminder_default else n
 
     def clean_display_only(self):
-        """Display only does not change under an event's slots, nor once it is out of draft (#254;
-        SK, 2026-11-12: "Refuse both ways"): on, members would lose sight of their slots; off, a
-        published event would take a roster with its steps undone (A17)."""
+        """Display only does not change under an event's slots, nor once it is out of draft: on,
+        members would lose sight of their slots; off, a published event would take a roster with its
+        steps undone (A17)."""
         on, event = self.cleaned_data.get("display_only"), self.instance
         if not event.pk or on == event.display_only:
             return on
@@ -103,7 +102,7 @@ class EventForm(NoColon, forms.ModelForm):
     MEETS = ["repeats", "repeat_weekday", "repeat_week", "repeat_day", "meets_at", "meets_until"]
 
     def clean(self):
-        """A display-only event says when it meets in fields (private tracker 273): the pattern and
+        """A display-only event says when it meets in fields: the pattern and
         a time, and what that pattern needs; any other event keeps none of them."""
         d = super().clean()
         if not d.get("display_only"):
@@ -192,7 +191,7 @@ class EventForm(NoColon, forms.ModelForm):
             "description_html"
         ].help_text = "Plain text or simple HTML; shown at the top of the event."
         # The reminder shows the club's default filled in and tagged, not an empty box standing
-        # for it (#272; NAF, 2026-11-12). Left as it is, the event follows the club's value.
+        # for it. Left as it is, the event follows the club's value.
         self._reminder_default = int(setting("defaults.reminder_hours_before", 24))
         f = self.fields["reminder_hours_before"]
         f.default_tag, f.default_value = "Club default", self._reminder_default
@@ -200,7 +199,7 @@ class EventForm(NoColon, forms.ModelForm):
         f.help_text = "The club's default is set in Settings; a number here is this event's own."
         if self.instance.reminder_hours_before is None:
             self.initial["reminder_hours_before"] = self._reminder_default
-        # When it meets (private tracker 273): asked only of a display-only event, and each part
+        # When it meets: asked only of a display-only event, and each part
         # only where the pattern needs it (the page reveals them; clean() checks the same).
         self.fields["repeats"] = forms.ChoiceField(
             label="How often it meets", choices=[("", "Choose…"), *meets.PATTERNS], required=False
@@ -234,7 +233,7 @@ class EventForm(NoColon, forms.ModelForm):
 
 
 class KbygForm(NoColon, forms.ModelForm):
-    """Know before you go, a step of its own (#174): written last, once the location's
+    """Know before you go, a step of its own: written last, once the location's
     arrangements are known, and what participants read before they come."""
 
     def clean_kbyg_html(self):
@@ -291,7 +290,7 @@ class FieldGroups:
 
 class SeatFields:
     """Seats per role (FR-49), starting from each role's configured default. In a group whose
-    legend says what they are, each is named by its role alone (#168)."""
+    legend says what they are, each is named by its role alone."""
 
     def add_seat_fields(self, roles, label="{}"):
         for r in roles:
@@ -307,7 +306,7 @@ class SeatFields:
         d = super().clean()
         seats = [v for k, v in d.items() if k.startswith("cap_")]
         asked = [k for k in self.fields if k.startswith("cap_")]
-        # Every role at 0 makes slots nobody can sign up for (SK, 2026-11-11). Only said once
+        # Every role at 0 makes slots nobody can sign up for. Only said once
         # each count is a number, so it never stands beside "Enter a whole number".
         if asked and len(seats) == len(asked) and not any(seats):
             raise forms.ValidationError(
@@ -338,7 +337,7 @@ class GenerateForm(NoColon, FieldGroups, SeatFields, forms.Form):
         label="Breakdown slots after", min_value=0, max_value=6, initial=1, widget=_num(1)
     )
     # FR-47: "of chosen length and count". They show the slot length and follow it until typed
-    # in (#277; NAF, 2026-11-12): app.js copies it while untouched and marks *_edited once a
+    # in: app.js copies it while untouched and marks *_edited once a
     # captain types; without script, a value still equal to the length shown follows the slot.
     setup_minutes = forms.IntegerField(
         label="Each setup slot (minutes)",
@@ -369,7 +368,7 @@ class GenerateForm(NoColon, FieldGroups, SeatFields, forms.Form):
                 {"data-follows": "minutes", "data-default": str(self._slot_default)}
             )
         self.add_seat_fields(roles)
-        if fill_only:  # filling makes operating slots only (#153), so these would do nothing
+        if fill_only:  # filling makes operating slots only, so these would do nothing
             for name in (
                 "setup_slots",
                 "breakdown_slots",
@@ -381,7 +380,7 @@ class GenerateForm(NoColon, FieldGroups, SeatFields, forms.Form):
                 del self.fields[name]
 
     def clean(self):
-        """A setup or breakdown length nobody typed in follows the slot length (#277): the one
+        """A setup or breakdown length nobody typed in follows the slot length: the one
         shown, unedited, while the slot length changed, is the slot's."""
         data = super().clean()
         for name in ("setup_minutes", "breakdown_minutes"):
@@ -392,7 +391,7 @@ class GenerateForm(NoColon, FieldGroups, SeatFields, forms.Form):
 
 
 class LocationForm(NoColon, FieldGroups, forms.Form):
-    # One under another (SK, 2026-11-11): two tick boxes beside two text boxes read as a jumble.
+    # One under another: two tick boxes beside two text boxes read as a jumble.
     GROUPS = [("", ["name", "address", "position", "is_club_station", "is_private_residence"])]
 
     name = forms.CharField(label="Name", max_length=120)
@@ -431,7 +430,7 @@ class LocationForm(NoColon, FieldGroups, forms.Form):
             help_text="Shown with the directions, and ahead of the event's own in each reminder.",
         )
         # What a slot here needs starts from the club's rule, ticked as it is, and saved as it
-        # is the location keeps following the club's (#277; NAF and SK, 2026-11-12). It replaces
+        # is the location keeps following the club's. It replaces
         # a box for "its own rule": a change to the ticks is its own rule.
         choices = [(t.key, t.label) for t in CredentialType.objects.order_by("label")]
         self._club_needs = {k for k in _rule_keys(club_rule()) if k in dict(choices)}
@@ -456,7 +455,7 @@ class LocationForm(NoColon, FieldGroups, forms.Form):
 
     def rule(self):
         """The location's viability rule as it is stored: None while it is the club's (FR-61),
-        so a later change to the club's rule reaches it (#277)."""
+        so a later change to the club's rule reaches it."""
         if set(self.cleaned_data.get("needs", [])) == self._club_needs:
             return None
         return {
@@ -550,7 +549,7 @@ def kbyg_outline() -> str:
 @login_required
 @require_http_methods(["GET", "POST"])
 def event_create(request):
-    """New event (#173): the Details step of an event not made yet. Saving makes the draft and
+    """New event: the Details step of an event not made yet. Saving makes the draft and
     goes on to its start and end (A32)."""
     if not request.user.may("manage_events"):
         raise Http404
@@ -558,9 +557,9 @@ def event_create(request):
     if request.method == "POST" and form.is_valid():
         event = form.save(commit=False)
         event.created_by = request.user
-        event.kbyg_html = kbyg_outline()  # FR-77: it starts with the outline (#174)
+        event.kbyg_html = kbyg_outline()  # FR-77: it starts with the outline
         event.save()
-        if not event.display_only:  # FR-51: it starts at the club station (private tracker 276)
+        if not event.display_only:  # FR-51: it starts at the club station
             station = Location.objects.create(
                 event=event,
                 name=setting("club.station_location_name") or "Club station",
@@ -583,7 +582,7 @@ def event_create(request):
 
 @login_required
 def event_manage(request, pk, step=None):
-    """Manage, one step at a time (#172). `/manage/` opens on the step to do next."""
+    """Manage, one step at a time. `/manage/` opens on the step to do next."""
     event = captained_event(request, pk)
     if step is None:
         return to_step(pk, _landing(event))
@@ -613,13 +612,13 @@ def _kbyg(request, event):
 @login_required
 @require_http_methods(["GET", "POST"])
 def event_edit(request, pk):
-    """The event's details (#168): read on Setup, edited here. A page, not a dialog: the rich
+    """The event's details: read on Setup, edited here. A page, not a dialog: the rich
     text editor puts its menus on the page body, where a modal dialog would hide them."""
     event = captained_event(request, pk)
     form = EventForm(request.POST or None, instance=event)
     if request.method == "POST" and form.is_valid():
 
-        def plain(v):  # a meeting's time (#273) is not JSON; the audit row keeps it as text
+        def plain(v):  # a meeting's time is not JSON; the audit row keeps it as text
             return v.isoformat() if hasattr(v, "isoformat") else v
 
         before = {f: plain(form.initial.get(f)) for f in form.changed_data}
@@ -640,13 +639,13 @@ def event_edit(request, pk):
         heading="Edit details",
         submit="Save details",
         step="details",
-        fields="events/forms/_one_per_line.html",  # unrelated fields: one a line (#176)
+        fields="events/forms/_one_per_line.html",  # unrelated fields: one a line
         editor=True,
     )
 
 
 def _details(event) -> list[tuple[str, str]]:
-    """Setup's read of the event's details, label and value, in the form's order (#168)."""
+    """Setup's read of the event's details, label and value, in the form's order."""
     from apps.ops.templatetags.richtext import richtext
 
     rows = [
@@ -675,7 +674,7 @@ def _details(event) -> list[tuple[str, str]]:
 
 
 def _summary(event, steps, captains) -> list[dict]:
-    """The Publish step's check of every step while the event is a draft (#175; GOV.UK's Check
+    """The Publish step's check of every step while the event is a draft (GOV.UK's Check
     answers): one row per step, what it holds, and a link to change it. A required step not done
     reads "Not done yet"; publishing stays allowed, as it was."""
     from apps.ops.templatetags.labels import role_label
@@ -728,7 +727,7 @@ def _summary(event, steps, captains) -> list[dict]:
     return rows
 
 
-# Manage as steps under one progress bar (#172, SK 2026-11-03), in place of #167's tabs and the
+# Manage as steps under one progress bar, in place of the tabs and the
 # four-step guide beside them, which had drifted apart. One list, so the bar, the page you land on
 # and each step's foot cannot disagree. Each step is a page of its own, drawn by the server, so it
 # works with JavaScript off and can be linked to. docs/INTERFACE.md, "A page that edits many things".
@@ -742,7 +741,7 @@ STEP_NAMES = {
     "contest": "Contest details",
     "kbyg": "Know before you go",
 }
-# The tabs' addresses before #172: bookmarks and pages left open still land.
+# The tabs' old addresses: bookmarks and pages left open still land.
 OLD_TABS = {"setup": "details", "status": "publish", "periods": "span"}  # periods: until A32
 LIVE = (Event.State.PUBLISHED, Event.State.LOCKED, Event.State.COMPLETED)
 
@@ -752,7 +751,7 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
 
     Each says whether it is done, whether it can be opened yet, and one word of state. A
     display-only event (a net, a meeting) has no roster, so no locations, slots or sign-up rules,
-    and a start and end is optional for it. With no event, it is one being created (#173):
+    and a start and end is optional for it. With no event, it is one being created:
     Details is the step you are on, and nothing else can be opened until it is saved."""
     if event is None:
         new = [
@@ -829,9 +828,9 @@ def stages(event, positions: bool = False, slot_count: int = 0) -> list[dict]:
 
 def not_ready(event, steps) -> str:
     """Why a draft cannot be published yet, as the end of a sentence; "" when it can. Publishing
-    waits for the required steps (SK, 2026-11-10), so nobody sees an event with nothing to sign
+    waits for the required steps, so nobody sees an event with nothing to sign
     up for; and a roster event that has ended is not published, so nobody is told
-    about one that is over (SK, 2026-11-10). The Publish button is greyed with this line, and the
+    about one that is over. The Publish button is greyed with this line, and the
     server refuses the same."""
     names = [
         s["name"]
@@ -868,7 +867,7 @@ def _landing(event) -> str:
 
 
 def _step_page(request, event, step, **extra):
-    """One step of Manage. Its forms are pages of their own (#168), so it binds none."""
+    """One step of Manage. Its forms are pages of their own, so it binds none."""
     positions = (
         Position.objects.filter(location__event=event)
         .select_related("location")
@@ -896,7 +895,7 @@ def _step_page(request, event, step, **extra):
             "back": back,
             "onward": onward if onward and onward["open"] else None,
             "details": _details(event),
-            # each position with its slot count, for the Locations step's rows (#233)
+            # each position with its slot count, for the Locations step's rows
             "locations": event.locations.prefetch_related(
                 Prefetch(
                     "positions",
@@ -908,7 +907,7 @@ def _step_page(request, event, step, **extra):
             ).order_by("order"),
             "positions": positions,
             "captains": captains,
-            # Appointing captains (§2.2) and cancelling the event (SK, 2026-10-15) are officers'.
+            # Appointing captains (§2.2) and cancelling the event are officers'.
             "may_manage_events": request.user.may("manage_events"),
             "deletable": deletable(event),
             # an event members can see keeps a position (position_delete)
@@ -930,10 +929,10 @@ def _step_page(request, event, step, **extra):
 @login_required
 @require_http_methods(["GET", "POST"])
 def span_edit(request, pk):
-    """The event's start and end, set or put right (FR-38 as A32: one per event; SK, 2026-11-16:
+    """The event's start and end, set or put right (FR-38 as A32: one per event,
     edited, never removed). Made longer, every slot stays and Add slots to the empty hours fills
     the new time. Made shorter, the operating slots left outside it are canceled; while anybody is
-    signed up in one, nothing changes (SK, 2026-11-11)."""
+    signed up in one, nothing changes."""
     from .services.slots import chosen, set_on_air
 
     event = captained_event(request, pk)
@@ -983,7 +982,7 @@ def span_edit(request, pk):
                 else ""
             )
             messages.success(request, f"Start and end saved.{gone}")
-            if end <= timezone.now():  # most often a wrong year (SK, 2026-11-10)
+            if end <= timezone.now():  # most often a wrong year
                 messages.warning(
                     request,
                     f"This event ended on {when.local(end, year=True)}, before now. Check the year.",
@@ -1057,7 +1056,7 @@ def location_edit(request, pk, location_id):
         editing=True,
         initial={
             **{f: getattr(loc, f) for f in plain + text},
-            # its own rule, or the club's it follows: what applies, ticked (#277)
+            # its own rule, or the club's it follows: what applies, ticked
             "needs": _rule_keys(
                 loc.viability_rule if loc.viability_rule is not None else club_rule()
             ),
@@ -1161,8 +1160,8 @@ def position_edit(request, pk, position_id):
 @login_required
 @require_POST
 def position_delete(request, pk, position_id):
-    """A position removed with its slots, behind a confirmation that says how many (SK,
-    2026-11-11); never while anybody is signed up in one. The last position of a location takes
+    """A position removed with its slots, behind a confirmation that says how many;
+    never while anybody is signed up in one. The last position of a location takes
     the location with it, since a location is its positions; an event that members can see keeps
     at least one, or its roster would be a page with nothing on it."""
     event = captained_event(request, pk)
@@ -1207,7 +1206,7 @@ def captain_add(request, pk):
     if not request.user.may("manage_events"):
         raise Http404
     event = get_object_or_404(Event, pk=pk)
-    # Find (private tracker 281): with script off it posts, and the page comes back with the matches
+    # Find: with script off it posts, and the page comes back with the matches
     finding = bool(request.POST.get("find"))
     form = CaptainForm(None if finding else (request.POST or None), event=event)
     q = (request.POST if finding else request.GET).get("q", "").strip()
@@ -1251,7 +1250,7 @@ def captain_remove(request, pk, user_id):
 
 
 def _preview(event, positions, form, fill) -> str:
-    """The generator's line before anything is made (#168), for the fields as they stand."""
+    """The generator's line before anything is made, for the fields as they stand."""
     from .services.slots import chosen, describe
 
     if form.is_bound and not form.is_valid():
@@ -1266,7 +1265,7 @@ def _preview(event, positions, form, fill) -> str:
         breakdown_slots=int(d.get("breakdown_slots") or 0),
         fill=fill,
     )
-    if stretches:  # the club's own hours, not the whole event (#247)
+    if stretches:  # the club's own hours, not the whole event
         text = f"{text.rstrip('.')}, in the on-air hours ({stretches} stretch{pluralize(stretches, 'es')})."
     return text
 
@@ -1280,8 +1279,8 @@ def _preview_parts(text: str) -> dict:
 @login_required
 @require_http_methods(["GET", "POST"])
 def slots_generate(request, pk):
-    """The generator (FR-46 to FR-48): a page of its own, opened in Manage's dialog (#168). On an
-    empty roster it builds the grid; once slots exist it adds to the empty hours (#153), and,
+    """The generator (FR-46 to FR-48): a page of its own, opened in Manage's dialog. On an
+    empty roster it builds the grid; once slots exist it adds to the empty hours, and,
     while nobody has signed up, can replace the grid behind its confirmation."""
     event = captained_event(request, pk)
     roles = setting("slot_roles", []) or []
@@ -1323,7 +1322,7 @@ def slots_generate(request, pk):
     if request.method != "POST":
         return page()
     # Adding to the empty hours keeps every slot, seat count and sign-up, so it needs neither a
-    # confirmation nor an empty roster (#153, SK 2026-11-03). Replacing needs both.
+    # confirmation nor an empty roster. Replacing needs both.
     fill = request.POST.get("mode") == "fill"
     if not fill and signups:
         messages.error(request, "Members have signed up; the grid cannot be rebuilt under them.")
@@ -1384,7 +1383,7 @@ def slots_generate(request, pk):
 
 
 def _on_air_context(event, **forms_) -> dict:
-    """What the Slots step needs to show the on-air hours (#247, ranges only since #248): the
+    """What the Slots step needs to show the on-air hours (ranges only): the
     stretches in words, the hours against the whole event, and the slots that fall outside them."""
     from .services.slots import chosen, clip, span_of
 
@@ -1415,9 +1414,9 @@ def _on_air_context(event, **forms_) -> dict:
 @login_required
 @require_POST
 def on_air_save(request, pk):
-    """Save the on-air hours (#247, A15; A16 since #248), each back to the Slots step in place
-    (#177): a range typed to the minute, added to the stretches; one stretch removed; or the
-    whole event again. Slots are never touched."""
+    """Save the on-air hours (A15, A16), each back to the Slots step in place: a range typed to the
+    minute, added to the stretches; one stretch removed; or the whole event again. Slots are never
+    touched."""
     from .services.slots import chosen, clip, set_on_air, span_of
 
     event = captained_event(request, pk)
@@ -1467,7 +1466,7 @@ def on_air_save(request, pk):
 @login_required
 @require_POST
 def slots_preview(request, pk):
-    """The generator's line, again, as its fields change (htmx, #168)."""
+    """The generator's line, again, as its fields change (htmx)."""
     event = captained_event(request, pk)
     positions = list(Position.objects.filter(location__event=event))
     live = Slot.objects.filter(position__location__event=event, cancelled=False).exists()
@@ -1564,7 +1563,7 @@ def slot_toggle(request, slot_id):
                     request,
                     "This slot has people in it. Cancel it from the slot page with a reason, so they are told; or remove the sign-ups first.",
                 )
-        elif request.POST.get("confirmed") == "yes":  # the dialog's button (#257)
+        elif request.POST.get("confirmed") == "yes":  # the dialog's button
             slot.cancelled = True
             slot.save(update_fields=["cancelled"])
             record(request.user, "slot.cancelled", slot)
@@ -1615,8 +1614,7 @@ def event_duplicate(request, pk):
 @login_required
 @require_POST
 def event_cancel(request, pk):
-    # Only an officer cancels an event; a member made captain runs it but cannot call it off
-    # (SK, 2026-10-15).
+    # Only an officer cancels an event; a member made captain runs it but cannot call it off.
     if not request.user.may("manage_events"):
         raise Http404
     event = get_object_or_404(Event, pk=pk)
@@ -1628,7 +1626,7 @@ def event_cancel(request, pk):
 
     # Only an event still to run is canceled: a completed one keeps its record (A22), and a
     # canceled one is not canceled again. One conditional update, so two at once (a stale page,
-    # a double click) cannot both send the notices (#255; SK, 2026-11-12).
+    # a double click) cannot both send the notices.
     live = (Event.State.DRAFT, Event.State.PUBLISHED, Event.State.LOCKED)
     if not Event.objects.filter(pk=event.pk, state__in=live).update(state=Event.State.CANCELLED):
         messages.error(request, "Nothing changed: only an event still to run can be canceled.")
@@ -1651,7 +1649,7 @@ def deletable(event) -> bool:
 @login_required
 @require_POST
 def event_delete(request, pk):
-    """A draft made by mistake, or a copy not wanted, is deleted outright (SK, 2026-11-11): no
+    """A draft made by mistake, or a copy not wanted, is deleted outright: no
     member ever saw it, so there is nobody to tell and nothing for the record to keep but the
     audit log's line. Once an event has been published it is canceled, never deleted. An
     officer's, as canceling is."""

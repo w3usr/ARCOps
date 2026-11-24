@@ -1,10 +1,8 @@
 """Confirming it is you, once per act that needs it.
 
 Two things on this site are guarded by Confirm Access: raising a session to Sysadmin, and
-reading the station computer password. Both are "every time" rather than "once in a while":
-
-> Let's also make elevate to sysadmin an every time operation. We don't want people accidentally
-> logging in as sysadmin. — NAF, 2026-09-20
+reading the station computer password. Both are "every time" rather than "once in a while", so
+nobody acts as sysadmin by accident.
 
 The sign-in library's own test, `did_recently_authenticate`, answers a different question: it is
 true for five minutes after **any** authentication, signing in included, and stays true however

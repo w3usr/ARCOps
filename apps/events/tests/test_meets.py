@@ -1,4 +1,4 @@
-"""When a regular meeting or net meets, in fields (FR-45; private tracker 273, SK 2026-11-16)."""
+"""When a regular meeting or net meets, in fields (FR-45)."""
 
 from datetime import UTC, datetime, time
 

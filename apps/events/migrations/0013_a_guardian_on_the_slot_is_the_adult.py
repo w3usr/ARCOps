@@ -1,5 +1,5 @@
 """A guardian signed up for the same slot as their ward is the ward's responsible adult (addendum
-A40; private tracker 358). The row is marked `automatic` and goes when the guardian leaves. Pairs
+A40). The row is marked `automatic` and goes when the guardian leaves. Pairs
 already on a slot that has not ended are named here, as a new sign-up would name them."""
 
 from django.db import migrations, models

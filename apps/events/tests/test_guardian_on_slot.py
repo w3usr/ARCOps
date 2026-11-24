@@ -1,5 +1,5 @@
 """A guardian signed up for the same slot as their ward is the ward's responsible adult (addendum
-A40; private tracker 358)."""
+A40)."""
 
 from datetime import timedelta
 

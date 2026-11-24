@@ -1,4 +1,4 @@
-"""The migration to one start and end per event (A32, private tracker 275): a split contest's
+"""The migration to one start and end per event (A32): a split contest's
 periods become one span, and its break stays off the air."""
 
 from datetime import UTC, datetime, timedelta
@@ -52,7 +52,7 @@ def test_periods_become_one_span_and_the_breaks_stay_off_the_air():
 
 
 def test_the_old_free_text_is_read_into_fields_and_kept_as_the_note_where_it_cannot_be():
-    """Private tracker 273: migration 0011 reads "When it recurs, in words"."""
+    """Migration 0011 reads "When it recurs, in words"."""
     from datetime import time
 
     to, at = (

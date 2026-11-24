@@ -1,8 +1,7 @@
 """The interface faults that lose somebody's work or act without asking.
 
-The advisor read the live site on 2026-09-17 and found the interface showing the shape of the
-code rather than speaking to the person. A review of every template turned up a dozen faults
-that were not cosmetic at all; these are the tests for them.
+The interface once showed the shape of the code rather than speaking to the person. A review of
+every template turned up a dozen faults that were not cosmetic at all; these are the tests for them.
 """
 
 import re
@@ -74,7 +73,7 @@ def test_a_captain_removing_somebody_says_why_and_asks_first(event):
     been removed and told nothing about why."""
     ev = event["event"]
     slot = Slot.objects.filter(position=event["position"]).first()
-    # A slot still ahead: one that has ended keeps its sign-ups (#251), and the fixture's is past.
+    # A slot still ahead: one that has ended keeps its sign-ups, and the fixture's is past.
     ahead = timezone.now() + timedelta(days=7)
     Slot.objects.filter(pk=slot.pk).update(start=ahead, end=ahead + timedelta(hours=1))
     mem = User.objects.create_user(
@@ -253,7 +252,7 @@ def test_no_page_carries_an_inline_event_handler(event):
 
 @pytest.mark.django_db
 def test_a_refused_page_is_the_clubs_own_page_and_says_what_to_do():
-    """NAF, 2026-09-19, after dropping a level on a sysadmin page: "I don't want a Not Found."
+    """A page refused after dropping a level is the club's own page, not a bare Not Found.
 
     The application answers 404 where a session may not open a page, so that a page nobody may
     see and a page you may not see look alike from outside (§2.1). That is worth keeping; the
@@ -281,8 +280,7 @@ def test_a_refused_page_is_the_clubs_own_page_and_says_what_to_do():
 
 @pytest.mark.django_db
 def test_the_footer_credits_the_authoring_club_with_a_link():
-    """The advisor, 2026-09-19: the authoring club's name in the credit line should link to its
-    own page.
+    """The authoring club's name in the credit line links to its own page.
 
     It is the software's attribution, so it points at the club that wrote it wherever the
     software runs, rather than at the club running this copy.
@@ -298,7 +296,7 @@ def test_the_footer_credits_the_authoring_club_with_a_link():
 
 
 def test_the_coverage_overview_marks_the_window_it_shows(event):
-    """#269: 4, 6 and 12 weeks as a switch with the current one marked, and the table in a panel;
+    """4, 6 and 12 weeks as a switch with the current one marked, and the table in a panel;
     the default window, 6, was not among the two links it had."""
     c = _as(event["officer"])
     current = re.compile(r'<a href="\?weeks=(\d+)" aria-current="true">')

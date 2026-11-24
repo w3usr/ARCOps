@@ -1,5 +1,5 @@
-"""An empty slot is canceled only after the dialog's confirmation (#257); adding a period, a
-location or a position, and closing or reopening one slot, are in the audit log (#259)."""
+"""An empty slot is canceled only after the dialog's confirmation; adding a period, a
+location or a position, and closing or reopening one slot, are in the audit log."""
 
 import pytest
 

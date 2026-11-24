@@ -3,7 +3,7 @@
 {% block title %}Members · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block main_class %} wide{% endblock %}
 {% block content %}
-{% comment %}Members as a table in a panel (#237, SK 2026-11-09). One table for everyone: what a member
+{% comment %}Members as a table in a panel. One table for everyone: what a member
 may see is fewer columns, not a different shape of page, and the officer-only ones are absent
 rather than empty. Sorting and narrowing are plain GET, so both work without JavaScript and both
 survive a bookmark. An officer's row has one link, the name, with the address under it as text

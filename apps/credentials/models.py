@@ -97,9 +97,8 @@ class LicenseRecord(models.Model):
     def licensee(self) -> str:
         """The name on the license, which is not always the name the person uses.
 
-        The advisor, 2026-09-19: "we should print out the license name in the License box." It
-        is what an officer checks a callsign against, and where a member's own name comes from
-        while they hold a callsign (FR-4, FR-8).
+        The License box prints it. It is what an officer checks a callsign against, and where a
+        member's own name comes from while they hold a callsign (FR-4, FR-8).
         """
         return (self.override_name or self.licensee_name or "").strip()
 
@@ -122,7 +121,7 @@ class LicenseRecord(models.Model):
     # `source` is a stored key and never reaches a page as one (TR-44). `fcc_uls_local` is what
     # the import writes; `uls` is the name it had before the local table, kept for rows written
     # then. A key with no words here is a fault in this map, so the line goes rather than the
-    # key: the advisor met "Fcc_uls_local." on his own member page (2026-09-20).
+    # key: a member page once read "Fcc_uls_local.".
     SOURCE_WORDS = {
         "fcc_uls_local": "from the FCC",
         "uls": "from the FCC",
@@ -256,8 +255,7 @@ class SignedAgreement(models.Model):
             # double-click, or a back-and-resubmit, made a second row that was the same act
             # recorded twice. The member never saw it — their own page keeps the latest
             # signature per agreement — but the approver got a second card in the queue and a
-            # second message about it (the advisor, 2026-09-21, having added a member and
-            # signed for them: "I also got 2 separate notifications for one agreement").
+            # second message about it.
             #
             # The view refuses the second submission with a message. This is what holds when
             # the two arrive at once, which is exactly what a double-click sends.
@@ -283,10 +281,8 @@ class CredentialDecision(models.Model):
     decline, so the mistake and its correction leave a single row saying "approved". The audit
     log (FR-92) is the wrong shape for a page — it names its subject by two strings with no key
     and no index — and the wrong readership, being a sysadmin's to read, while the person who
-    works the approvals page is the faculty advisor.
-
-    > I think we need a searchable, filterable, sortable log on this page of what approval
-    > actions have been taken. — NAF, 2026-09-20
+    works the approvals page is the faculty advisor. This is the log of approval actions taken,
+    on that page, searchable, filterable and sortable.
 
     Append-only by use rather than by constraint: nothing in the application updates a row, and
     a decision that was wrong is corrected by making another one.

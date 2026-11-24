@@ -1,11 +1,11 @@
 """A card's first and last lines sit at its padding, with no margin added above or below; so do
-a section's, which shares the rule (#160).
+a section's, which shares the rule.
 
 Found on the contact sheet (2026-10-23): on your profile the Email card had visibly more space
 under its last line than the License card. Measured in a real browser, because the space is a
 margin and the markup does not show it. The space under a card's last line can come from one
-level down, a table or paragraph whose margin collapses through its parent (#148); the space
-above its first line, from a form's hidden field standing before the heading (#149).
+level down, a table or paragraph whose margin collapses through its parent; the space
+above its first line, from a form's hidden field standing before the heading.
 """
 
 import pytest
@@ -16,7 +16,7 @@ from test_axe import ACCOUNTS, sign_in  # the sweep lives beside this file
 # its text and controls, the leaves, so a list item's own padding counts as space too. Text is
 # measured itself, since a paragraph's last line can run on past its last link. What is inside a
 # closed <details> is not drawn, apart from its summary.
-# A panel's body and footer share the rule since the redesign (#227).
+# A panel's body and footer share the rule since the redesign.
 EXTRA = """() => [...document.querySelectorAll('.card, .section, .panel-body, .panel-foot')].filter(c => c.offsetParent).map(c => {
     const cs = getComputedStyle(c), box = c.getBoundingClientRect();
     let top = box.bottom, bottom = box.top;

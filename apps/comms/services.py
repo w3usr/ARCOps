@@ -57,7 +57,7 @@ def _plain_text(body_html: str) -> str:
 def _for_a_minor(user, subject: str, body_html: str) -> tuple[str, str]:
     """A minor's message goes to their guardians too (FR-70), written to the minor. A guardian
     who is also a member could not tell it from their own, so the subject and the first line say
-    whose it is (addendum A41; private tracker 359). Here, not in delivery, so the outbox, My
+    whose it is (addendum A41). Here, not in delivery, so the outbox, My
     messages and the browser push read the same."""
     first = escape(user.display_first)
     line = (
@@ -100,8 +100,7 @@ def _small_print(msg: Outbox | None) -> str:
 
     **Two links, and neither can do the other's job.** *Your notification settings* is one URL,
     the same in every message to every member, behind sign-in: it is where somebody turns a
-    category off and can turn it back on (the advisor, 2026-09-20: "there should be a link to set
-    user email and notification preferences... one link that works for every account"). The
+    category off and can turn it back on, one link that works for every account. The
     **unsubscribe** on bulk mail is a signed link for that one recipient, because a mail client's
     own Unsubscribe button posts to it with no session, and because an opt-out may not "make the
     recipient take any step other than... visiting a single page on an Internet website" (FTC,
@@ -139,8 +138,8 @@ def _date_header() -> str:
     Django writes `-0000`, which RFC 5322 defines as "the time was generated on a system that
     may be in a local time zone other than Universal Time and the date-time contains no
     information about the local time zone". A client is then free to show the time in whatever
-    zone it likes, and some show UTC: the advisor's university mailbox stamped a message four
-    hours later than his Gmail did, for the same message (2026-09-20). A real offset says when
+    zone it likes, and some show UTC: one mailbox stamped a message four hours later than
+    another did, for the same message. A real offset says when
     the club sent it.
     """
     from email.utils import format_datetime

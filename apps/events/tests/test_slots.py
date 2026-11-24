@@ -55,7 +55,7 @@ def test_windows_for_hour_limited_event():
     assert len(slots) == 30
 
 
-# -------------------------------------------- adding to the empty hours (#153, FR-46, FR-48) ---
+# -------------------------------------------- adding to the empty hours (FR-46, FR-48) ---
 
 T0 = timezone.make_aware(dt.datetime(2026, 10, 19, 15, 0), dt.UTC)
 H = dt.timedelta(hours=1)
@@ -100,7 +100,7 @@ def test_a_new_position_gets_the_whole_grid_and_the_old_one_nothing():
 
 
 def test_a_canceled_slot_keeps_its_hour_empty():
-    """SK, 2026-11-03: a cancellation is a decision; the fill does not undo it."""
+    """A cancellation is a decision; the fill does not undo it."""
     ev, pos = make([(T0, T0 + 3 * H)])
     first = generate_slots(ev, [pos], minutes=60)[0]
     Slot.objects.filter(pk=first.pk).update(cancelled=True)
@@ -117,7 +117,7 @@ def test_gaps_are_cut_from_their_own_start_and_slivers_are_skipped():
     assert all(s.kind == "operating" for s in added)
 
 
-# ------------------------------------------- what the generator will make, said first (#168) ---
+# ------------------------------------------- what the generator will make, said first ---
 
 
 def test_the_preview_says_what_generating_will_make():

@@ -83,7 +83,7 @@ class UserAdmin(DjangoUserAdmin):
         # What an account may do is not here: its level and the sysadmin switch change on
         # Edit profile, which writes the audit row (FR-92) and refuses a change that leaves
         # nobody able to decide who may do what, and a capability belongs to a level, not to
-        # one account (§2.1, #158).
+        # one account (§2.1).
         (
             "Account",
             {"fields": ("is_active", "password_is_temporary", "date_joined")},

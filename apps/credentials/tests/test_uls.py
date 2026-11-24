@@ -123,7 +123,7 @@ def test_refresh_updates_members_and_a_uls_name_follows_for_uls_named_members(tm
 
 
 def test_a_callsign_awaiting_is_this_you_is_not_a_license():
-    """T38, 2026-10-21: FR-16's banner says the callsign is not counted until the member answers,
+    """FR-16's banner says the callsign is not counted until the member answers,
     but the FCC record was taken at once: someone who typed another licensee's callsign held
     their class, and the seats it opens, for as long as they left the question unanswered."""
     UlsLicense.objects.create(
@@ -150,7 +150,7 @@ def test_a_callsign_awaiting_is_this_you_is_not_a_license():
 
 def test_the_license_card_waits_for_the_answer_to_is_this_you():
     """FR-16: until the member answers, the callsign counts for nothing, so their License card
-    does not show it either (T38, 2026-10-26). A callsign the FCC has no record of yet is a
+    does not show it either. A callsign the FCC has no record of yet is a
     different thing: FR-4 and FR-102 hold it as unverified, and the card says so."""
     UlsLicense.objects.create(
         callsign="N0ZZZ",
@@ -258,7 +258,7 @@ def test_callsign_change_matches_or_holds_the_uls_name_for_confirmation():
     )
     assert r.status_code == 302 and User.objects.get(pk=u.pk).callsign == "N0AAA"
     # Saving your own callsign whose FCC name is not yours asks "Is this you?" once, not again
-    # in the officer's words about you in the third person (T38 step 3, 2026-10-21).
+    # in the officer's words about you in the third person.
     fields = {
         "first_name": "Ada",
         "last_name": "Other",
@@ -352,7 +352,7 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
     assert AuditLog.objects.filter(action="license.override", subject_id=str(lic.pk)).exists()
     body = c.get(f"/members/{u.pk}/edit/").content.decode()
     assert "Go back to the FCC value" in body
-    # how it was set, then who and why, saying "Set by" once (T38 step 5, 2026-10-21)
+    # how it was set, then who and why, saying "Set by" once
     profile = c.get(f"/members/{u.pk}/").content.decode()
     for page in (body, profile):
         line = f"Set by hand, Canada. By {s.short_name}: Basic with Honours, ISED"
@@ -412,8 +412,8 @@ def test_a_member_whose_callsign_never_had_a_license_record_gets_one():
 def test_the_applicant_type_comes_through_the_import_and_becomes_the_letter(tmp_path):
     """A station holds a callsign with no operator class; EN24 says which kind it is.
 
-    NAF, 2026-09-19, asked for C, R, and M after a club callsign read U. Without the applicant
-    type all three look alike in the file, because the FCC issues an operator class to a person
+    A club callsign read U; it should read C, R, or M. Without the applicant type all three
+    look alike in the file, because the FCC issues an operator class to a person
     only, and there is nothing else in the record to tell them apart.
     """
     hd = [
@@ -444,8 +444,8 @@ def test_the_applicant_type_comes_through_the_import_and_becomes_the_letter(tmp_
 def test_the_middle_initial_comes_through_and_reaches_the_account(tmp_path):
     """FR-4 asks for the licensee's first, middle, and last name.
 
-    KC2NMC is MARY L WEST at the FCC. Without EN10 the L was dropped, and the advisor, testing
-    on 2026-09-19, found the account reading "Mary West" with no way to correct it.
+    KC2NMC is MARY L WEST at the FCC. Without EN10 the L was dropped, and the account read
+    "Mary West" with no way to correct it.
     """
     u = User.objects.create_user(
         "mary@example.org", "pw-Testing-123", first_name="Mary", last_name="West"
@@ -528,10 +528,10 @@ def test_refreshing_the_members_of_a_full_file_stays_under_the_parameter_limit()
 
 @pytest.mark.django_db
 def test_a_callsign_the_fcc_does_not_hold_keeps_nothing_of_the_one_before_it():
-    """T10 step 2: the record describes the callsign on the account, or it describes nothing.
+    """The record describes the callsign on the account, or it describes nothing.
 
-    The collaborator walking T10 on 2026-09-20: "Switching from KC3ABC to WC1XYZ keeps the name
-    and Technician category of KC3ABC." The class, the licensee name and the expiry all stayed,
+    Switching from KC3ABC to WC1XYZ kept the name and Technician class of KC3ABC: the class,
+    the licensee name and the expiry all stayed,
     so the directory went on reading **T** for a callsign the FCC has no record of.
     """
     UlsLicense.objects.create(
@@ -567,9 +567,9 @@ def test_a_callsign_the_fcc_does_not_hold_keeps_nothing_of_the_one_before_it():
 
 @pytest.mark.django_db
 def test_the_license_source_reads_as_words_and_never_as_its_stored_key():
-    """TR-44: what a page shows is words. The advisor met "Fcc_uls_local." on his own member
-    page on 2026-09-20, because the import's key was missing from the map that turns it into
-    a sentence and the raw value fell through."""
+    """TR-44: what a page shows is words. A member page read "Fcc_uls_local." because the
+    import's key was missing from the map that turns it into a sentence and the raw value fell
+    through."""
     UlsLicense.objects.create(
         callsign="N2BSA", operator_class="Extra", status="active", licensee_name="Nitkowski"
     )
@@ -597,8 +597,8 @@ def test_the_license_source_reads_as_words_and_never_as_its_stored_key():
 
 
 def test_a_callsign_change_ends_a_license_override_and_tells_whoever_may_set_one():
-    """FR-102, private tracker 310 (SK, 2026-11-17: drop it, tell sysadmins): the override goes
-    with the old callsign, the audit row keeps what it said, and re-entering it re-confirms it."""
+    """FR-102: the override goes with the old callsign, sysadmins are told, the audit row keeps what
+    it said, and re-entering it re-confirms it."""
     from apps.credentials.services import apply_override
 
     s = User.objects.create_user("s@example.org", "pw-Testing-123", first_name="Sys", last_name="A")

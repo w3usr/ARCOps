@@ -1,4 +1,4 @@
-"""Manage's small forms, each a page of its own that Manage opens in a dialog (#168).
+"""Manage's small forms, each a page of its own that Manage opens in a dialog.
 
 A button on a Manage step is a link to the form's page. With JavaScript, htmx fetches the same URL
 into Manage's dialog instead (`HX-Request`), and the form posts back to it there: a refusal comes

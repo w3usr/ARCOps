@@ -1,8 +1,7 @@
 """Acting at a lower level than you hold.
 
-The advisor, 2026-09-17: "I don't always like being logged in with the superuser view, even
-though my account has superuser capabilities... By default, it is set to the highest level below
-superuser. To get superuser, the user has to explicitly change the view and re-authenticate."
+A session signs in at the highest level below superuser; reaching superuser takes an explicit
+change of view and a fresh authentication.
 """
 
 import time
@@ -64,9 +63,9 @@ def test_a_sysadmin_signs_in_acting_at_the_clubs_everyday_level():
 
 
 def test_raising_the_level_asks_you_to_confirm_and_is_recorded():
-    """NAF, 2026-09-20: "I should be able to use a passkey in addition to a password here." The
-    page no longer holds a password field of its own; it hands the person to the sign-in
-    library's Confirm Access, which offers whatever the account carries.
+    """A passkey confirms as well as a password does. The page no longer holds a password field of
+    its own; it hands the person to the sign-in library's Confirm Access, which offers whatever
+    the account carries.
     """
     user = _sysadmin()
     c = _signed_in(user)
@@ -83,7 +82,7 @@ def test_raising_the_level_asks_you_to_confirm_and_is_recorded():
     assert c.session["acting_view"] == "advisor"
     assert c.get("/ops/settings/").status_code == 404
     refused = AuditLog.objects.filter(action="view.raise_refused").latest("at")
-    # where the session stayed, as view.raised and view.lowered record it (T51, 2026-10-21)
+    # where the session stayed, as view.raised and view.lowered record it
     assert refused.before == {"from": "advisor"} and refused.after == {"to": "sysadmin"}
 
     # and with the password accepted on that page, the level rises
@@ -96,10 +95,7 @@ def test_raising_the_level_asks_you_to_confirm_and_is_recorded():
 
 
 def test_every_raise_is_confirmed_on_its_own():
-    """A confirmation is spent by the raise it was given for.
-
-    > Let's also make elevate to sysadmin an every time operation. We don't want people
-    > accidentally logging in as sysadmin. — NAF, 2026-09-20
+    """A confirmation is spent by the raise it was given for, so nobody is sysadmin by accident.
 
     It used to hold for five minutes, so a second raise in that window went through unasked.
     """
@@ -171,8 +167,7 @@ def test_nobody_may_act_above_themselves():
 
 
 def test_only_a_sysadmin_has_levels_at_all():
-    """NAF, 2026-09-19: "Only people with sysadmin privileges should be able to change their
-    access view, even to something lower."
+    """Only a sysadmin changes their access view, even to something lower.
 
     An officer rehearsing as a member is a way to lose an afternoon wondering why the
     application has stopped working. The feature is there so somebody holding everything can
@@ -278,7 +273,7 @@ def test_a_forgotten_request_to_raise_the_level_does_not_fire_later():
 
 
 def test_next_never_leads_off_the_site():
-    """T51, 2026-10-21: `next` came from the page's address and was followed as given, so a link
+    """`next` came from the page's address and was followed as given, so a link
     could send a sysadmin to another site straight after Confirm Access. Every way out of the
     page now goes back into this site; a path of our own is still followed."""
     evil = "https://evil.example/login"
@@ -297,7 +292,7 @@ def test_next_never_leads_off_the_site():
 
 
 def test_the_level_page_marks_the_current_level_by_fill_not_a_badge():
-    """#271: the level you act at is where you are; a screen reader still hears it in words."""
+    """The level you act at is where you are; a screen reader still hears it in words."""
     body = _signed_in(_sysadmin()).get("/me/level/").content.decode()
     assert body.count('<li class="current">') == 1
     assert '<span class="sr-only"> (where you are now)</span>' in body

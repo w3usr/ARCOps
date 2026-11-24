@@ -1,10 +1,10 @@
 """Confirming your password before adding two-factor or a passkey.
 
-NAF, 2026-09-20: "Trying to add 2fa or a passkey doesn't accept my password." The library
-reauthenticates by rebuilding credentials from its own username field and the primary row of
-its address table; this installation keys accounts on a public identifier and mirrors its own
-confirmed addresses into that table without a primary, so it had nothing to look the account
-up by and called every correct password wrong.
+Adding two-factor or a passkey refused every correct password. The library reauthenticates by
+rebuilding credentials from its own username field and the primary row of its address table; this
+installation keys accounts on a public identifier and mirrors its own confirmed addresses into that
+table without a primary, so it had nothing to look the account up by and called every correct
+password wrong.
 """
 
 import time
@@ -38,7 +38,7 @@ def _member():
 
 def _sign_in_was_a_while_ago(client):
     """Age the session past the window in which the library takes the sign-in as recent enough:
-    the state the advisor was in when he went to add a passkey."""
+    the state a member is in when they go to add a passkey a while after signing in."""
     session = client.session
     session[AUTHENTICATION_METHODS_SESSION_KEY] = [
         {"method": "password", "at": time.time() - 24 * 60 * 60}
@@ -71,8 +71,8 @@ def test_the_wrong_password_is_refused():
 
 
 def test_turning_on_two_factor_asks_once_and_then_proceeds():
-    """The route the advisor walked: an hour after signing in, the activation page asks him to
-    confirm his password, and afterwards it shows him the code to scan."""
+    """An hour after signing in, the activation page asks the member to confirm their password,
+    and afterwards it shows them the code to scan."""
     _, client = _signed_in()
     _sign_in_was_a_while_ago(client)
     r = client.get("/accounts/2fa/totp/activate/")
@@ -95,9 +95,9 @@ def test_adding_a_passkey_asks_the_same_way():
 
 
 def test_the_librarys_own_pages_use_the_sites_controls():
-    """NAF, 2026-09-20, of the recovery codes page: "Should Download Codes Generate New Codes be
-    on 2 separate lines?" They were two bare links with a space between them, which reads as one
-    phrase. Every control the library draws is now one of the site's buttons."""
+    """On the recovery codes page, Download codes and Generate new codes were two bare links with a
+    space between them, which reads as one phrase. Every control the library draws is now one of the
+    site's buttons."""
     _, client = _signed_in()
     client.post("/accounts/reauthenticate/", {"password": PASSWORD})
     body = client.get("/accounts/2fa/recovery-codes/generate/").content.decode()
@@ -106,12 +106,9 @@ def test_the_librarys_own_pages_use_the_sites_controls():
 
 
 def test_confirm_access_offers_the_passkey_on_the_page_that_asks(monkeypatch):
-    """NAF, 2026-09-20: "Why can't I just click Use passkey on the first page, and then it
-    automatically uses the passkey without going through a separate screen?"
-
-    It can. The page carries the library's own passkey form and challenge, so the button raises
-    the browser prompt where the question was asked; the credential still posts to the library's
-    endpoint, which verifies it.
+    """Use passkey on the first page uses the passkey, with no separate screen. The page carries the
+    library's own passkey form and challenge, so the button raises the browser prompt where the
+    question was asked; the credential still posts to the library's endpoint, which verifies it.
     """
     from allauth.mfa.models import Authenticator
     from allauth.mfa.webauthn.internal import auth as webauthn_auth
@@ -143,8 +140,7 @@ def test_confirm_access_without_a_passkey_is_the_page_it_always_was():
 
 def test_the_club_s_own_word_reaches_the_librarys_pages():
     """The catalogue (locale/en/LC_MESSAGES/django.po): a passkey is a passkey wherever it is
-    named, including on pages the library draws (NAF, 2026-09-20: "I do want our UI to always say
-    Passkey instead of Security key")."""
+    named, including on pages the library draws, never a "security key"."""
     from django.utils.translation import gettext
 
     assert gettext("Security Keys") == "Passkeys"
@@ -153,11 +149,8 @@ def test_the_club_s_own_word_reaches_the_librarys_pages():
 
 
 def test_confirm_access_offers_a_password_and_a_passkey_and_no_authenticator_code(monkeypatch):
-    """One screen for confirming it is you, laid out like the sign-in page.
-
-    > TOTP tokens/authenticator app is ONLY used for 2fa. So, it does not show up on any initial
-    > screen. Passwords or passkeys are the first line of entry. I actually like how it looks on
-    > the login screen. — NAF, 2026-09-20
+    """One screen for confirming it is you, laid out like the sign-in page: a password or a
+    passkey, never an authenticator app, which is for the second step only.
 
     An authenticator code proves a second factor at sign-in; it is not a way of saying who you
     are, and offering it here put "Alternative options" under a page that already knows.

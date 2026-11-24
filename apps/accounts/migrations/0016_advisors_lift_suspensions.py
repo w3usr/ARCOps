@@ -1,6 +1,6 @@
 """Only a faculty advisor lets a suspended account back in.
 
-The advisor, 2026-09-19: an officer may suspend, because something can happen at the station on
+An officer may suspend, because something can happen at the station on
 a Tuesday night, and lifting it needs somebody answerable for the station. The capability is new,
 so it is written into the groups that should hold it here; the configuration import leaves an
 existing group alone by design.

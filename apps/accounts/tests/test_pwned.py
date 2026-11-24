@@ -1,4 +1,4 @@
-"""TR-15, REQUIREMENTS §2.6 (private tracker 292): a breached password is refused; the network is
+"""TR-15, REQUIREMENTS §2.6: a breached password is refused; the network is
 faked, so no test ever calls Have I Been Pwned."""
 
 import hashlib

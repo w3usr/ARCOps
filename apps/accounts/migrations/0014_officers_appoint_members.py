@@ -1,7 +1,7 @@
 """Officers and advisors may appoint, within the bound the code enforces.
 
-The advisor, 2026-09-19: *"Faculty advisors should be able to appoint officers, members, and
-below. Officers should be able to appoint members, and below."* The capability itself is old;
+Faculty advisors appoint officers, members and below; officers appoint members and below. The
+capability itself is old;
 what is new is that `apps.ops.groups` bounds it, so holding it lets you grant only a group whose
 capabilities you already hold, on an account below you.
 

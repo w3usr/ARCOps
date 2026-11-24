@@ -48,8 +48,8 @@ def zone_label(dt: datetime, zone: ZoneInfo) -> str:
 
 
 def _span(start: datetime, end: datetime, z, sep: str = "–") -> str:
-    """A span in one zone for mail: UTC in the one form, the event's zone in the US convention
-    (#274). `sep` is no longer read: each form decides how a span across days reads. A page uses
+    """A span in one zone for mail: UTC in the one form, the event's zone in the US convention.
+    `sep` is no longer read: each form decides how a span across days reads. A page uses
     when.local_span in the viewer's zone, UTC included (A38)."""
     from apps.ops import when
 
@@ -94,7 +94,7 @@ def present(
             return Presentation("not_open", "Locked", "ask a captain")
         if not published:
             return Presentation("not_open", "Opens when published")
-        return Presentation("open", "Open")  # the action is in the link's accessible name (#170)
+        return Presentation("open", "Open")  # the action is in the link's accessible name
     needs = needs_from_reasons(status.reasons)
     if status.status == "not_viable":
         soon = slot.start - now <= timedelta(hours=48)
@@ -141,7 +141,7 @@ class Cell:
 
 @dataclass
 class Fold:
-    """A run of rows with every slot in them open, read as one row (#161): "06:00–14:00, 8 open
+    """A run of rows with every slot in them open, read as one row: "06:00–14:00, 8 open
     hours", which opens in place to the hours themselves. Its rows stay on the page, hidden."""
 
     id: str
@@ -165,7 +165,7 @@ class Row:
     fold: Fold | None = None  # the run this row is folded into, if any
     fold_head: bool = False  # the run's first row, where its one line is drawn
     # The grid's own strings: the zone is named once, in the column's header, so a row names it
-    # only where it differs from the header's, after a change of clocks (#161, section 5.9).
+    # only where it differs from the header's, after a change of clocks (section 5.9).
     lead_hours: str = ""
     other_hours: str = ""
     anchor: str = ""  # the first row at its start: where the coverage strip links to
@@ -207,7 +207,7 @@ BUCKET = {
 def coverage(event: Event, now: datetime | None = None) -> dict:
     """The roster's Coverage counts without the roster: how many slots are open, covered, need
     someone, or closed, worded as a member reads the roster. Home shows it for the next event a
-    captain runs (#162)."""
+    captain runs."""
     now = now or timezone.now()
     published = event.state == Event.State.PUBLISHED
     locked = event.state == Event.State.LOCKED
@@ -239,7 +239,7 @@ def _unlabelled(text: str, label: str) -> str:
     return text[: -len(label) - 1] if label and text.endswith(f" {label}") else text
 
 
-# The coverage strip (#161): a mark per time span, its state as a symbol as well as a color (FR-62),
+# The coverage strip: a mark per time span, its state as a symbol as well as a color (FR-62),
 # most urgent first when positions differ.
 STRIP_MARKS = {
     "problem": "!!",  # told apart from needs by its shape, not by color alone (WCAG 1.4.1; 341)
@@ -247,7 +247,7 @@ STRIP_MARKS = {
     "open": "",
     "covered": "✓",
     "closed": "–",
-    "none": "",  # on the air, no slot yet: a dashed box (#247)
+    "none": "",  # on the air, no slot yet: a dashed box
     "off": "",  # off the air: a hatched cell with no box
 }  # open: an empty box
 STRIP_ORDER = list(STRIP_MARKS)
@@ -255,7 +255,7 @@ STRIP_ORDER = list(STRIP_MARKS)
 
 def _gaps(event, slots) -> list[tuple]:
     """(start, end, state) for each hour of the event's span that no slot touches: "off" outside the
-    club's on-air hours, "none" on the air with no slot yet (#247). Without them a strip could
+    club's on-air hours, "none" on the air with no slot yet. Without them a strip could
     not tell an hour the club means to skip from one nobody has made a slot for."""
     from .slots import HOUR, clip, on_air, span_of
 
@@ -277,7 +277,7 @@ def _gaps(event, slots) -> list[tuple]:
 def _strip(slots, cells, by_start, zone, label, filtered: bool, event=None) -> list[dict]:
     """The whole event, a line a day: one mark per time span, linking to its row, or to the row's
     fold, or past the Problems only filter to the full roster. An hour with no slot is a mark
-    that links nowhere: off the air, or on the air with no slot yet (#247)."""
+    that links nowhere: off the air, or on the air with no slot yet."""
     spans: dict[tuple, str] = {}
     for s in slots:
         key = cells[s.pk].shown.key
@@ -437,7 +437,7 @@ def build(
     layout = "grid" if 1 <= len(positions) <= GRID_MAX_POSITIONS else "list"
     pos_index = {p.pk: i for i, p in enumerate(positions)}
     every = list(slots)  # the coverage strip shows the whole event, whatever the filter
-    # FR-65: what needs attention, which Problems only shows and its switch counts (#235)
+    # FR-65: what needs attention, which Problems only shows and its switch counts
     keep = {pk for pk, c in cells.items() if c.shown.key in ("needs", "problem") or c.over_limit}
     counts["attention"] = len(keep)
     if filter == "problems":

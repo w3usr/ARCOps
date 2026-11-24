@@ -1,6 +1,6 @@
-"""A field that has a default shows it filled in, never "blank means the default" (#272, #277;
-NAF, 2026-11-12). Untouched, the event follows the club's default: nothing is stored, and a later
-change to the club setting reaches it (SK, 2026-11-12: "Follow"). A "Club default" tag stands
+"""A field that has a default shows it filled in, never "blank means the default".
+Untouched, the event follows the club's default: nothing is stored, and a later
+change to the club setting reaches it. A "Club default" tag stands
 beside a field while it holds the club's value. Written before the code."""
 
 import pytest
@@ -38,7 +38,7 @@ def _input_value(page, name):
     return tag.split('value="', 1)[1].split('"', 1)[0] if 'value="' in tag else ""
 
 
-# ------------------------------------------------------------------- #272: the reminder ---
+# ---------------------------------------------------------------- the reminder ---
 
 
 def test_the_reminder_box_shows_the_clubs_default_and_untouched_follows_it(officer):
@@ -61,7 +61,7 @@ def test_the_reminder_box_shows_the_clubs_default_and_untouched_follows_it(offic
     assert _input_value(page, "reminder_hours_before") == "12"
 
 
-# ----------------------------------------------------- #277 case 2: setup and breakdown ---
+# --------------------------------------------------------- setup and breakdown ---
 
 
 def test_setup_and_breakdown_lengths_show_the_slot_length_and_follow_it():
@@ -90,7 +90,7 @@ def test_setup_and_breakdown_lengths_show_the_slot_length_and_follow_it():
     assert f.cleaned_data["setup_minutes"] == 45 and f.cleaned_data["breakdown_minutes"] == 30
 
 
-# ------------------------------------------------------- #277 case 3: who may sign up ---
+# ------------------------------------------------------------- who may sign up ---
 
 
 def test_the_sign_up_rules_show_the_rule_actually_applied(officer):
@@ -152,7 +152,7 @@ def test_any_class_with_a_category_keeps_the_license(officer):
     assert not ok and "license" in why
 
 
-# ---------------------------------------------------- #277 case 4: a location's own rule ---
+# ------------------------------------------------------- a location's own rule ---
 
 
 def test_a_locations_needs_start_from_the_clubs_rule_and_untouched_follow_it(officer):
@@ -182,7 +182,7 @@ def test_a_locations_needs_start_from_the_clubs_rule_and_untouched_follow_it(off
     assert loc.viability_rule == {"require_all_of": [{"credential": "site_lead"}]}
 
 
-# ------------------------------------------------- #277 case 5: a slot's own override ---
+# ------------------------------------------------------- a slot's own override ---
 
 
 def test_a_slots_override_starts_from_the_events_rule(officer):

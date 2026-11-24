@@ -5,7 +5,7 @@
 <h1>Outbox</h1>
 <p class="lede">Every message the application composed, and what happened to it.</p>
 {% if email_delivery_on %}<p>Mail is being sent.</p>{% else %}{% include "ops/_mail_off.html" %}{% endif %}
-{% comment %}#241: the Outbox as a table in a panel, each message's state a badge.{% endcomment %}
+{% comment %}The Outbox as a table in a panel, each message's state a badge.{% endcomment %}
 <section class="panel" aria-label="Messages composed">
 <form method="get" class="toolbar searchrow">
   {% include "accounts/_filter.html" with name="state" label="State" choices=states ticked=picked summary=state_summary %}

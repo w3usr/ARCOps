@@ -93,8 +93,7 @@ def test_grid_layout_days_in_the_viewers_zone(world):
 
 
 def test_the_zone_label_follows_the_event_not_today(world):
-    """A 4 November event read on 15 October is headed EST, as its rows are (found in
-    acceptance test T12, 2026-10-14)."""
+    """A 4 November event read on 15 October is headed EST, as its rows are."""
     ev = world["ev"]
     start = datetime(2026, 11, 4, 18, 0, tzinfo=UTC)
     Event.objects.filter(pk=ev.pk).update(start=start, end=start + timedelta(hours=4))
@@ -115,7 +114,7 @@ def test_an_event_in_utc_still_reads_in_the_viewers_zone(world):
 
 
 def test_an_open_cell_reads_its_state_and_its_link_names_the_action(world):
-    """#170: twenty cells read "Open · sign up" on a small event. The cell says Open; the
+    """Twenty cells read "Open · sign up" on a small event. The cell says Open; the
     action and the slot are in the link's accessible name, for a screen reader (FR-62, FR-95)."""
     body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
     assert "<small>sign up</small>" not in body
@@ -124,7 +123,7 @@ def test_an_open_cell_reads_its_state_and_its_link_names_the_action(world):
 
 
 def test_know_before_you_go_shows_only_the_sections_written(world):
-    """#166: an event never edited keeps the outline's six empty headings, which the event page
+    """An event never edited keeps the outline's six empty headings, which the event page
     printed under the roster. It drops them as the reminder does."""
     from apps.events.views_manage import KBYG_OUTLINE
 
@@ -149,8 +148,8 @@ def test_status_is_phrased_as_a_need_never_a_verdict(world):
     assert "open slot" in body  # the member summary, not the captain's card
     assert ">Coverage<" not in body
     body = _as(world["off"]).get(f"/events/{ev.pk}/").content.decode()
-    # NAF, 2026-09-20: ""Upcoming health" sounds too medical." The card is headed with the word
-    # the roster already uses for a slot that has enough people: Covered.
+    # The card is headed with the word the roster already uses for a slot that has enough
+    # people: Covered, rather than a clinical "health".
     assert ">Coverage<" in body and "open</span>" in body
 
 
@@ -206,7 +205,7 @@ def test_slot_page_and_fragment_and_signup_from_it(world):
 
 
 def test_the_roster_dialog_answers_htmx_with_the_slot_and_its_cell(world):
-    """#139: an action in the roster's dialog comes back to the slot there, with the slot's roster
+    """An action in the roster's dialog comes back to the slot there, with the slot's roster
     cell out of band, instead of leaving the roster for the slot's own page. One URL answers both
     ways, so the answer varies on the header."""
     c = _as(world["mem"])
@@ -244,7 +243,7 @@ def test_captain_edits_seats_control_operator_and_assigns(world):
     assert slot.control_operator is None  # the officer is not in the slot
     c.post(f"/events/{ev.pk}/slot/{slot.pk}/control-operator/", {"user": mem.pk})
     slot.refresh_from_db()
-    assert slot.control_operator is None  # in the slot, but unlicensed (FR-63; SK, 2026-10-15)
+    assert slot.control_operator is None  # in the slot, but unlicensed (FR-63)
     LicenseRecord.objects.create(
         user=mem,
         callsign="N0MEM",
@@ -262,8 +261,8 @@ def test_captain_edits_seats_control_operator_and_assigns(world):
 
 
 def test_seats_below_the_people_holding_a_role_are_refused(world):
-    """Found in acceptance test T16 (2026-10-16): Observer 0 with an observer in the slot was
-    saved as "Seats updated." and left them in a role with no seats. SK, 2026-10-16: refuse."""
+    """Observer 0 with an observer in the slot was saved as "Seats updated." and left them in
+    a role with no seats; it is refused."""
     c = _as(world["off"])
     ev, mem = world["ev"], world["mem"]
     slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
@@ -279,8 +278,8 @@ def test_seats_below_the_people_holding_a_role_are_refused(world):
 
 
 def test_sign_someone_up_needs_a_live_slot_and_a_published_or_locked_event(world):
-    """Found in acceptance test T16 (2026-10-16): a crafted request put a member into a canceled
-    slot and mailed them. SK, 2026-10-16: no captain sign-ups while the event is a draft."""
+    """A crafted request put a member into a canceled slot and mailed them. No captain sign-ups
+    while the event is a draft."""
     c = _as(world["off"])
     ev, mem = world["ev"], world["mem"]
     slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
@@ -328,7 +327,7 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
     # Canceling cannot be undone, so it asks first and says what is about to go.
     r = co.post(f"/events/{ev.pk}/bulk/", {"action": "cancel", "slots": [s.pk for s in run_slots]})
     assert r.status_code == 200 and b"cannot be brought back" in r.content
-    # and names the slots it leaves alone, not only how many (acceptance test T14, 2026-10-14):
+    # and names the slots it leaves alone, not only how many:
     # 00:00Z and 02:00Z hold sign-ups, and neither is among the slots that go
     kept = r.content.decode().split("left alone:")[1].split("Remove the people first")[0]
     assert "Fri, Sep 25, 8:00 PM EDT" in kept and "Fri, Sep 25, 10:00 PM EDT" in kept
@@ -349,7 +348,7 @@ def test_bulk_signup_reports_per_slot_and_captain_bulk_close(world):
 
 def test_a_locked_roster_offers_members_nothing_to_tick(world):
     """A locked roster kept its tick-boxes for members, with nothing behind them, and a forced
-    bulk sign-up there was told it opens when published (T37 step 1, 2026-10-19)."""
+    bulk sign-up there was told it opens when published."""
     ev = world["ev"]
     Event.objects.filter(pk=ev.pk).update(state=Event.State.LOCKED)
     body = _as(world["mem"]).get(f"/events/{ev.pk}/").content.decode()
@@ -407,7 +406,7 @@ def test_present_wording():
 
 def test_the_captains_red_within_48_hours_says_so_in_words(world):
     """A captain's red for a slot that still needs someone within 48 hours read, by the key, as
-    "over limit", and only its color set it apart from the amber Needs (T15, 2026-10-19)."""
+    "over limit", and only its color set it apart from the amber Needs."""
 
     class St:
         status, reasons = "not_viable", ["nobody with station access", "nobody with a license"]
@@ -431,7 +430,7 @@ def test_the_captains_red_within_48_hours_says_so_in_words(world):
 
 
 def test_events_list_and_home_show_the_viewers_zone_only(world, monkeypatch):
-    """Issue #23 on the private tracker: no bare times anywhere a member reads a schedule."""
+    """No bare times anywhere a member reads a schedule."""
     # Home lists only events that have not ended, so read it from a week before this one.
     # Temporary fix: the test passes only on the assumption that the day it runs is
     # 2026-09-19. To be revised if a different approach is requested (for example, event
@@ -442,9 +441,7 @@ def test_events_list_and_home_show_the_viewers_zone_only(world, monkeypatch):
     c = _as(world["mem"])
     body = c.get("/events/").content.decode()
     # The operating period runs 00:00Z to 04:00Z on Saturday 26th: Friday evening locally.
-    assert (
-        "Fri, Sep 25, 2026, 8:00 PM – Sat, Sep 26, 2026, 12:00 AM EDT" in body
-    )  # local: en-US (#274)
+    assert "Fri, Sep 25, 2026, 8:00 PM – Sat, Sep 26, 2026, 12:00 AM EDT" in body  # local: en-US
     assert "UTC" not in body and "00:00</td>" not in body and "Z<" not in body
     body = c.get("/").content.decode()  # the viewer's zone only (functional addendum A38)
     assert '<time datetime="2026-09-26T00:00:00+00:00">Fri, Sep 25, 2026, 8:00 PM – ' in body
@@ -453,10 +450,7 @@ def test_events_list_and_home_show_the_viewers_zone_only(world, monkeypatch):
 
 @pytest.mark.django_db
 def test_the_calendar_address_is_the_same_every_time_you_look():
-    """NAF, 2026-09-19: "Is this calendar address supposed to change every time I reload the
-    page? It does, but I feel like it shouldn't."
-
-    It should not: a subscription address that changes on every page load is impossible to tell
+    """A subscription address that changes on every page load is impossible to tell
     apart from one that has leaked, and it left a live credential behind on every view.
     """
     from django.core import signing
@@ -513,7 +507,7 @@ def test_a_member_can_replace_a_calendar_address_that_has_leaked():
     assert AuditLog.objects.filter(action="calendar.address_replaced").exists()
 
 
-# Home opens on what you do next (#162). The clock is a week before the event, as above.
+# Home opens on what you do next. The clock is a week before the event, as above.
 def _home(world, monkeypatch, who):
     monkeypatch.setattr(
         "django.utils.timezone.now", lambda: datetime(2026, 9, 19, 12, 0, tzinfo=UTC)
@@ -528,7 +522,7 @@ def test_home_offers_the_next_events_open_hours_to_somebody_signed_up_for_nothin
     assert "<h1>Pick your hours</h1>" in body
     open_slots = Slot.objects.filter(position__location__event=world["ev"]).count()
     assert f"{open_slots} open slots" in body  # every slot, setup too, as the roster counts
-    assert world["ev"].title in body and ">Open the roster</a>" in body  # T17 step 4
+    assert world["ev"].title in body and ">Open the roster</a>" in body
     assert "Hello," not in body
 
 
@@ -543,7 +537,7 @@ def test_home_leads_with_your_next_slot_and_the_one_thing_to_do_about_it(world, 
     assert "<h1>Your next slot</h1>" in body
     assert "In 6\xa0days" in body and "Run at Club station, as Operator" in body
     assert "Confirm you will be there" in body and "Your other slots" in body
-    # The most important action first (FR-116; private tracker 341): Confirm before the roster.
+    # The most important action first (FR-116): Confirm before the roster.
     assert body.index("Confirm you will be there") < body.index(">Open the roster</a>")
     sked = c.get("/events/mine/").content.decode()
     row = sked[sked.index("<tbody>") :]
@@ -561,7 +555,7 @@ def test_home_shows_a_captain_the_gaps_in_the_next_event_they_run(world, monkeyp
     assert "Gaps in" not in _home(world, monkeypatch, "mem").get("/").content.decode()
 
 
-# Folded runs of open hours (#161).
+# Folded runs of open hours.
 def _rows(data):
     return [r for d in data["days"] for r in d.rows]
 
@@ -606,7 +600,7 @@ def test_a_run_that_ends_at_midnight_ends_at_midnight(world):
     assert fold.other_range == ""
 
 
-# The coverage strip (#161).
+# The coverage strip.
 def test_the_strip_marks_every_span_by_its_most_urgent_state_and_links_to_it(world):
     first = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
     SignUp.objects.create(slot=first, user=world["mem"], role="observer")  # in it, still needs
@@ -634,12 +628,12 @@ def test_the_strip_is_for_the_eye_and_the_key_reads_its_marks(world):
 
 
 def test_the_key_opens_from_a_button_beside_problems_only(world):
-    """#169, SK 2026-11-02: the Key is a native popover behind a ? button named Key, beside
+    """The Key is a native popover behind a ? button named Key, beside
     Problems only; no script of ours. The list inside is still named Key."""
     body = _as(world["mem"]).get(f"/events/{world['ev'].pk}/").content.decode()
     zones = body.split('<p class="zones muted">', 1)[1].split("</p>", 1)[0]
     assert "Problems only" in zones
-    # the ? an icon-only button named Key (#235), still beside Problems only
+    # the ? an icon-only button named Key, still beside Problems only
     assert re.search(
         r'<button type="button" class="[^"]*keybtn" popovertarget="roster-key-pop" aria-label="Key">',
         zones,
@@ -661,7 +655,7 @@ def test_a_canceled_events_slots_leave_home_and_my_sked(world, monkeypatch):
 def test_inside_its_window_check_in_is_the_first_thing_on_home_to_take_the_focus(
     world, monkeypatch
 ):
-    # FR-116: the check-in button, inside its window, is first in the tab order (SK, 2026-10-31).
+    # FR-116: the check-in button, inside its window, is first in the tab order.
     slot = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
     SignUp.objects.create(slot=slot, user=world["mem"], role="operator")
     monkeypatch.setattr("django.utils.timezone.now", lambda: slot.start - timedelta(minutes=10))
@@ -676,7 +670,7 @@ def test_inside_its_window_check_in_is_the_first_thing_on_home_to_take_the_focus
 
 
 def test_mail_leads_with_utc_and_gives_the_events_zone_beside_it(world):
-    # A12, extended to mail (SK, 2026-10-31).
+    # A12, extended to mail.
     from apps.events.services.notify import mail_when, when_text
 
     slot = Slot.objects.filter(position=world["run"], kind="operating").order_by("start").first()
@@ -686,14 +680,14 @@ def test_mail_leads_with_utc_and_gives_the_events_zone_beside_it(world):
     ), text
     ev = world["ev"]
     span = mail_when(ev.start, ev.end, ev, " to ")
-    assert span.index("UTC") < span.index("(") and " – " in span  # across days (#274)
+    assert span.index("UTC") < span.index("(") and " – " in span  # across days
 
 
 def test_sign_someone_up_finds_by_any_part_of_a_name_or_call_and_leaves_out_who_is_in(
     world, monkeypatch
 ):
-    """Private tracker 281: typed, not a drop-down of the membership; the role first (SK,
-    2026-11-16), and nobody already in the slot."""
+    """Typed, not a drop-down of the membership; the role first, and nobody already in the
+    slot."""
     c = _as(world["off"])
     ev, mem = world["ev"], world["mem"]
     slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
@@ -731,7 +725,7 @@ def test_appoint_a_captain_finds_by_name_and_leaves_out_the_captains(world):
 
 
 def test_members_sort_without_regard_to_case(world):
-    """A name stored in capitals no longer comes first (private tracker 281)."""
+    """A name stored in capitals no longer comes first."""
     User.objects.create_user("z@example.org", "pw-Testing-123", first_name="Al", last_name="ABEL")
     User.objects.create_user("a@example.org", "pw-Testing-123", first_name="Bo", last_name="aaron")
     assert [
@@ -742,8 +736,8 @@ def test_members_sort_without_regard_to_case(world):
 
 
 def test_manage_this_slot_is_folded_until_used_and_open_after(world):
-    """Private tracker 280 (NAF, 2026-11-16): the captain's box is a closed disclosure named
-    Manage this slot, and comes back open after an action taken from inside it."""
+    """The captain's box is a closed disclosure named Manage this slot, and comes back open after an
+    action taken from inside it."""
     c = _as(world["off"])
     ev = world["ev"]
     slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
@@ -758,9 +752,9 @@ def test_manage_this_slot_is_folded_until_used_and_open_after(world):
 
 
 def test_change_seats_on_ticked_slots_reviews_first_and_refuses_per_slot(world):
-    """Private tracker 282 (NAF, 2026-11-12; SK, 2026-11-16: set, add or remove N): after sign-
-    ups, nothing changes until the review is confirmed; a slot whose people would outnumber its
-    seats is left alone and named; every other slot changes."""
+    """Set, add or remove N seats per role: after sign-ups, nothing changes until the review is
+    confirmed; a slot whose people would outnumber its seats is left alone and named; every other
+    slot changes."""
     c = _as(world["off"])
     ev, mem = world["ev"], world["mem"]
     a, b = Slot.objects.filter(position=world["mult"], kind="operating").order_by("start")[:2]
@@ -811,7 +805,7 @@ def test_change_seats_is_every_slot_or_none(world, monkeypatch):
 
 
 def test_a_roster_mark_and_the_license_letter_say_what_they_mean_on_hover(world):
-    """Private tracker 278: each mark carries its words as a tooltip, the letter after a name its
+    """Each mark carries its words as a tooltip, the letter after a name its
     class in full, and the Key explains the letter."""
     ev, mem = world["ev"], world["mem"]
     slot = Slot.objects.filter(position=world["mult"], kind="operating").first()
@@ -823,7 +817,7 @@ def test_a_roster_mark_and_the_license_letter_say_what_they_mean_on_hover(world)
 
 
 def test_small_accessibility_gaps_are_closed(world):
-    """Private tracker 341 (FR-116; WCAG 4.1.3, 1.3.1, 1.4.1): the bulk bar's count and Copied are
+    """FR-116 (WCAG 4.1.3, 1.3.1, 1.4.1): the bulk bar's count and Copied are
     spoken; Announce's Category is a group with a legend; the two urgent marks differ in shape."""
     from apps.events.services.roster import STRIP_MARKS
 

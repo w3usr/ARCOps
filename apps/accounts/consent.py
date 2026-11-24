@@ -1,7 +1,6 @@
 """The privacy notice, linked from the box that consents to it.
 
-The advisor, 2026-09-19, looking at the invitation page: *"We need to link to the privacy notice
-if we are going to ask people to agree to it."* Asking somebody to agree to a document without
+Asking somebody to agree to a document without
 giving them the document is not consent, and the link in the page footer does not count: it is
 not part of what they are ticking.
 

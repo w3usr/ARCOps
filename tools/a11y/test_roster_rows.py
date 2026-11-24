@@ -54,7 +54,7 @@ def test_the_time_sits_on_one_line_in_the_browsers_zone(live_server, engine, zon
 
 
 def test_at_phone_width_each_cell_names_its_position_and_the_header_stays(live_server, engine):
-    """Private tracker 337 (FR-95, FR-116): stacked at 390 px, a two-position roster's cells each
+    """FR-95, FR-116: stacked at 390 px, a two-position roster's cells each
     say which position they are, and the column headers are still there for a screen reader."""
     from apps.events.models import Event, Position
     from apps.events.services.slots import generate_slots
@@ -87,9 +87,8 @@ def test_at_phone_width_each_cell_names_its_position_and_the_header_stays(live_s
 @pytest.mark.parametrize("width", [1280, 800])  # either side of 60rem, both at desktop density
 @pytest.mark.parametrize("zone", ["UTC", "Asia/Kolkata"])  # :30 offsets make longer labels
 def test_the_time_stays_inside_its_column(live_server, engine, role, width, zone):
-    """The label "11:00 PM–midnight" ran past the time column into the slot's bar at 1280 px (SK, the
-    contact sheet of 2026-11-23): the column is a fixed width, the same in every row, so the
-    widest label the roster draws has to fit it."""
+    """The time column is a fixed width, the same in every row, so the widest label the roster
+    draws ("11:00 PM–midnight") fits it rather than running into the slot's bar."""
     from apps.events.models import Event
 
     ev = Event.objects.filter(start__isnull=False).first()

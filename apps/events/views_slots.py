@@ -3,7 +3,7 @@ One slot at a time, and many at once.
 
 The slot page (`/events/<pk>/slot/<id>/`) is the full record of a slot and every action on it;
 the roster opens the same content in a dialog through htmx (`HX-Request`), and each action in the
-dialog comes back to it there, with the slot's roster cell for the page behind (#139). Bulk
+dialog comes back to it there, with the slot's roster cell for the page behind. Bulk
 actions come from the roster's checkboxes: a member signs up for several slots in one role with
 one note and gets a per-slot answer; a captain closes, reopens, or cancels several at once.
 Nothing here deletes: a slot with history is canceled, never removed (FR-102).
@@ -49,14 +49,14 @@ def _visible(user, event: Event) -> bool:
 
 def back_to_slot(request, pk, slot_id):
     """The slot again, with Manage this slot still open when the action came from inside it (its
-    forms post manage=1; private tracker 280)."""
+    forms post manage=1)."""
     url = reverse("slot_detail", args=[pk, slot_id])
     return redirect(f"{url}?manage=1" if request.POST.get("manage") else url)
 
 
 def roster_or_slot(request, slot: Slot):
     """Where an action on a slot lands: the roster, or from the roster's dialog (an htmx request)
-    the slot again, so the dialog shows what changed and the roster stays where it was (#139)."""
+    the slot again, so the dialog shows what changed and the roster stays where it was."""
     if request.headers.get("HX-Request"):
         return back_to_slot(request, slot.event.pk, slot.pk)
     return redirect("event_detail", pk=slot.event.pk)
@@ -94,7 +94,7 @@ def slot_detail(request, pk, slot_id):
     ).first()
     slot_rules = list(EligibilityRule.objects.filter(slot=slot)) if is_captain else []
     # The override starts from the rule the event applies to each role, the club's where the
-    # event has none (#277): each role's choice carries it, and the first is drawn filled in.
+    # event has none: each role's choice carries it, and the first is drawn filled in.
     override = []
     if is_captain:
         for r in data["roles"]:
@@ -123,7 +123,7 @@ def slot_detail(request, pk, slot_id):
         )
         if is_captain
         else [],
-        # re-time, split, merge (FR-46, #156): why not, or what follows on to merge with
+        # re-time, split, merge (FR-46): why not, or what follows on to merge with
         "frozen": reshape.frozen(slot) if is_captain else "",
         "next_slot": next_slot(slot) if is_captain else None,
         "slot_minutes": int((slot.end - slot.start).total_seconds() // 60),
@@ -149,7 +149,7 @@ def slot_detail(request, pk, slot_id):
 
 def _assign_pick(request, slot, roles):
     """Sign someone up: the role first, then whoever matches what was typed and may take that
-    role here, leaving out the people already in the slot (private tracker 281; SK, 2026-11-16)."""
+    role here, leaving out the people already in the slot."""
     keys = [r["key"] for r in roles]
     role = request.GET.get("role") if request.GET.get("role") in keys else (keys[0] if keys else "")
     q = request.GET.get("q", "").strip()
@@ -197,7 +197,7 @@ def slot_capacities(request, pk, slot_id):
 
 def seats_refused(slot, seats: dict[str, int]) -> str:
     """Why these seats cannot be set, or "". Fewer seats than people already in the role is
-    refused: they would be left holding seats that no longer exist (SK, 2026-10-16)."""
+    refused: they would be left holding seats that no longer exist."""
     for key, n in seats.items():
         held = slot.signups.filter(role=key).count()
         if n < held:
@@ -210,7 +210,7 @@ def seats_refused(slot, seats: dict[str, int]) -> str:
 
 def set_seats(user, slot, seats: dict[str, int]) -> None:
     """FR-49: the slot's seats per role, for the roles in `seats`; a seat added is a place
-    opened, offered to the waitlist (FR-57, #253). Shared by Save seats and Change seats (282)."""
+    opened, offered to the waitlist (FR-57). Shared by Save seats and Change seats (282)."""
     for key, n in seats.items():
         if n:
             RoleCapacity.objects.update_or_create(slot=slot, role=key, defaults={"capacity": n})
@@ -232,7 +232,7 @@ def slot_control_operator(request, pk, slot_id):
     if uid and su is None:
         messages.error(request, "The control operator must be signed up for the slot.")
         return back_to_slot(request, pk, slot_id)
-    if su and not may_control(slot, su):  # an unlicensed member cannot be one (SK, 2026-10-15)
+    if su and not may_control(slot, su):  # an unlicensed member cannot be one
         messages.error(
             request,
             "The control operator must hold a valid amateur license and be signed up in an "
@@ -253,10 +253,10 @@ def slot_control_operator(request, pk, slot_id):
 def slot_assign(request, pk, slot_id):
     """A captain signs a member up on their behalf; the eligibility rules still apply."""
     event, slot = _captain_slot(request, pk, slot_id)
-    if event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):  # SK, 2026-10-16
+    if event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):
         messages.error(request, "Captains sign people up once the event is published.")
         return back_to_slot(request, pk, slot_id)
-    if request.POST.get("find"):  # with script off: list who matches (private tracker 281)
+    if request.POST.get("find"):  # with script off: list who matches
         return find_redirect(request, reverse("slot_detail", args=[pk, slot_id]), "role", "manage")
     if not request.POST.get("user"):
         messages.error(request, "Type part of a name or callsign, then choose who.")
@@ -381,10 +381,10 @@ SEAT_OPS = [("keep", "Leave as is"), ("set", "Set to"), ("add", "Add"), ("remove
 
 
 def _bulk_seats(request, event, slots):
-    """Change seats on the ticked slots (private tracker 282; NAF, 2026-11-12; SK, 2026-11-16:
-    set, add or remove N per role). Three passes over one page: choose, review what it will do
-    and what it refuses, then apply. A slot that would leave people holding seats that no longer
-    exist is refused on its own, as Save seats refuses it; every other slot is changed."""
+    """Change seats on the ticked slots: set, add or remove N per role. Three passes over one page:
+    choose, review what it will do and what it refuses, then apply. A slot that would leave people
+    holding seats that no longer exist is refused on its own, as Save seats refuses it; every other
+    slot is changed."""
     roles = setting("slot_roles", []) or []
     chosen = {}
     for r in roles:
@@ -461,7 +461,7 @@ def signup_no_show(request, signup_id):
     return redirect("slot_detail", pk=event.pk, slot_id=su.slot_id)
 
 
-# ------------------------------------------------ re-time, split, merge (FR-46, #156) ---
+# ------------------------------------------------ re-time, split, merge (FR-46) ---
 
 
 def _typed_utc(text, data, event):

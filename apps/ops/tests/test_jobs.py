@@ -159,7 +159,7 @@ def test_setting_change_from_the_admin_is_audited():
 
 
 def test_the_nightly_backup_is_watched_only_where_a_recipient_is_set():
-    """Technical addendum A11, private tracker 335: a server that schedules no backup (no
+    """Technical addendum A11: a server that schedules no backup (no
     recipient) does not show it stale forever; one that has a recipient still does."""
     now = timezone.now()
     first = JobRun.objects.create(name="selfcheck", outcome="ok")

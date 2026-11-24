@@ -1,4 +1,4 @@
-"""When a regular meeting or net meets, in fields (FR-45; private tracker 273).
+"""When a regular meeting or net meets, in fields (FR-45).
 
 The free text "When it recurs, in words" becomes the note. Each event's text is read for a pattern
 and a time ("Tuesdays 20:00 ET", "First Monday 7pm", "15th of the month 19:00"); what is read fills

@@ -1,7 +1,7 @@
 """Setting a club position is the faculty advisor's.
 
-The advisor, 2026-09-19: "Only Faculty Advisors and above should be able to set club position."
-An officer still appoints members (§2.3); who holds which office is the advisor's to record.
+Only faculty advisors and above set the club position. An officer still appoints members
+(§2.3); who holds which office is the advisor's to record.
 A club that disagrees ticks it back on the Access groups page.
 """
 

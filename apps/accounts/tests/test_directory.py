@@ -1,9 +1,8 @@
 """The members directory: one table for everyone, sortable, and narrowable.
 
-NAF, 2026-09-19, asked for separate name columns, sorting on every column defaulting to last
-name, a phone column of its own, filters on category, position and access, the access column
-for officers only, no "joined via", and the same table for every access level with the
-redaction unchanged.
+Separate name columns, sorting on every column defaulting to last name, filters on category,
+position and access, the access column for officers only, no "joined via", and the same table
+for every access level with the redaction unchanged.
 """
 
 import re
@@ -65,7 +64,7 @@ def _member_names(body: str) -> list[str]:
 
 def _names(body: str) -> list[str]:
     """The surnames, in the order an officer's table shows them: the last word of each row's
-    Name link (#237, SK 2026-11-09: one Name column, the club's name and the surname)."""
+    Name link: one Name column, the club's name and the surname."""
     rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
     return [
         n.split()[-1]
@@ -140,11 +139,9 @@ def test_a_member_gets_no_category_or_access_filter(directory):
 
 
 def test_an_officer_sees_the_name_the_club_sees_leading_the_row(directory):
-    """So an officer can see what the club sees, without signing in as somebody else (NAF,
-    2026-09-19: "make sure the name column the officers sees is the same one the members see...
-    so the officers can quickly see what is on public view."). Since #237 (SK, 2026-11-09) the
-    officer's one Name column leads with that name, adds the surname, and links to the page;
-    the address is under it as text.
+    """So an officer can see what the club sees, without signing in as somebody else: the name on
+    public view leads the row. The officer's one Name column leads with that name, adds the surname,
+    and links to the page; the address is under it as text.
     """
     body = _as(directory).get("/members/").content.decode()
     head = re.search(r"<thead>(.*?)</thead>", body, re.S).group(1)
@@ -159,8 +156,7 @@ def test_an_officer_sees_the_name_the_club_sees_leading_the_row(directory):
 
 
 def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
-    """NAF, 2026-09-20, testing T7: "Last initials are going to need their own column to sort by
-    last name by default." A member may see an initial and no more of a surname, and a roster is
+    """A member may see an initial and no more of a surname, and a roster is
     read by surname, so the initial is a column and the table opens sorted on it.
     """
     member = User.objects.by_address("zeta@example.org").get()
@@ -176,7 +172,7 @@ def test_a_member_gets_the_redacted_name_and_an_initial_to_sort_by(directory):
 
 
 def test_one_link_per_row_the_name(directory):
-    """D5 (SK, 2026-11-06), #237: the name is the row's one link; its ⋮ menu repeats it with
+    """The name is the row's one link; its ⋮ menu repeats it with
     Edit profile, and nothing else in the row is a link."""
     rows = re.search(
         r"<tbody>(.*?)</tbody>", _as(directory).get("/members/").content.decode(), re.S
@@ -203,7 +199,7 @@ def test_joined_via_is_gone(directory):
 
 
 def test_phone_is_on_the_profile_not_the_directory(directory):
-    """#237 (SK, 2026-11-09): the compact table leaves the phone to the profile."""
+    """The compact table leaves the phone to the profile."""
     body = _as(directory).get("/members/").content.decode()
     assert 'data-label="Phone"' not in body and 'data-label="Email"' not in body
     assert "5550002" not in body
@@ -232,7 +228,7 @@ def test_the_class_is_its_own_column_and_members_see_it(directory):
         assert ">Class<" in head, "the class is on the page for everyone"
         assert '<td data-label="Class">' in body
     # the letter, not the word: the club reads N/T/G/A/E on every roster, and the column is
-    # narrow enough to matter (NAF, 2026-09-19)
+    # narrow enough to matter
     body = _as(directory).get("/members/").content.decode()
     rows = re.search(r"<tbody>(.*?)</tbody>", body, re.S).group(1)
     assert '<td data-label="Class">T</td>' in rows and '<td data-label="Class">E</td>' in rows
@@ -282,7 +278,7 @@ def test_a_phone_number_is_shown_the_way_its_country_writes_it(directory):
     u = User.objects.by_address("zeta@example.org").get()
     u.cell_phone = "9737874506"
     u.save(update_fields=["cell_phone"])
-    body = _as(directory).get(f"/members/{u.pk}/").content.decode()  # on the profile (#237)
+    body = _as(directory).get(f"/members/{u.pk}/").content.decode()  # on the profile
     assert "(973) 787-4506" in body, "formatted for display"
     u.refresh_from_db()
     assert u.cell_phone == "9737874506", "what they typed is what is stored"
@@ -292,8 +288,7 @@ def _station(directory, callsign="W2FSR", licensee_type="B"):
     """W2FSR on the live site: a club callsign, matched at the FCC, with no operator class.
 
     The FCC issues a class to a person only, so a station's record is a callsign, a status, and
-    the applicant type that says what kind of licensee holds it. NAF, 2026-09-19: "It's not
-    technically true... that is a Club call sign."
+    the applicant type that says what kind of licensee holds it; U would not be true of it.
     """
     from apps.credentials.models import LicenseRecord
 
@@ -353,7 +348,7 @@ def test_club_stations_filter_and_sort_apart_from_the_unlicensed(directory):
 
 
 def test_the_three_stations_the_fcc_gives_no_class_get_their_own_letters(directory):
-    """C a club, R a RACES station, M a military recreation station (NAF, 2026-09-19).
+    """C a club, R a RACES station, M a military recreation station.
 
     The FCC issues an operator class to a person, so these three hold a callsign with the class
     field empty; the applicant type on the record (EN24 in its file) is what tells them apart.
@@ -383,13 +378,13 @@ def test_each_station_letter_filters_and_sorts_on_its_own(directory):
 
 
 def test_a_filter_takes_more_than_one_answer(directory):
-    """NAF, 2026-09-19: "Is it possible to have checkboxes in the drop-down so you can select
-    more than one to filter on?" A disclosure of checkboxes, so no JavaScript and no ctrl-click.
+    """A filter takes several answers: a disclosure of checkboxes, so no JavaScript and no
+    ctrl-click.
     """
     _licensed(directory)
     c = _as(directory)
     body = c.get("/members/").content.decode()
-    # one panel open at a time; "set" marks a panel that narrows the list (#229)
+    # one panel open at a time; "set" marks a panel that narrows the list
     assert re.search(r'<details class="filter( set)?" name="members-filter"', body)
     assert 'type="checkbox"' in body
     assert 'name="license" value="Extra"' in body
@@ -409,8 +404,7 @@ def test_the_panel_says_what_is_ticked(directory):
 
 
 def test_the_status_panel_starts_empty_like_every_other_panel(directory):
-    """NAF, 2026-09-20: "I think the convention we are using is that the filter is turned off if
-    everything is unchecked. The status filter seems to be the opposite right now. Fix it."
+    """A filter with nothing ticked is off, the status filter included.
 
     The list is unchanged: every live account, with a deleted row left out until it is asked
     for. What changed is that the page no longer draws four ticks under "Any status".
@@ -428,15 +422,14 @@ def test_the_status_panel_starts_empty_like_every_other_panel(directory):
     body = _as(advisor).get("/members/").content.decode()
     assert 'name="archived" value="no" checked' in body
     assert 'name="archived" value="yes" checked' not in body
-    # One roster: an advisor may ask for the archived rows beside the live ones; since #237 a
-    # badge beside the status tells them apart, not a column of its own.
+    # One roster: an advisor may ask for the archived rows beside the live ones; a badge beside
+    # the status tells them apart, not a column of its own.
     assert "sort=archived" not in body
 
 
 def test_a_member_holds_any_number_of_positions_and_a_position_any_number_of_members(directory):
-    """NAF, 2026-09-20: "I am both Faculty Advisor and Club License Trustee. I should be able to
-    be marked and listed as both. Some clubs may have a Board of Trustees, where multiple members
-    hold the position of Board Member."
+    """One person may be both faculty advisor and club license trustee, marked and listed as
+    both; a club may have a board of trustees, where several members hold the same position.
 
     Both halves: one account carrying two offices, and one office carried by two accounts.
     """
@@ -462,7 +455,7 @@ def test_a_member_holds_any_number_of_positions_and_a_position_any_number_of_mem
     body = _as(directory).get("/members/").content.decode()
     assert "Faculty Advisor<br>Club License Trustee" in body, (
         "one per line like the addresses beside them, in the order the club lists them rather "
-        "than the order they were ticked (the advisor, 2026-09-20)"
+        "than the order they were ticked"
     )
 
     c = _as(directory)
@@ -497,7 +490,7 @@ def test_the_profile_page_reads_every_office_a_member_holds(directory):
 
 
 def test_a_filter_summary_uses_the_word_on_its_own_label(directory):
-    """NAF, 2026-09-20: "It still says Any Access." The panel's label followed the rename and the
+    """The summary said "Any Access" after the rename. The panel's label followed the rename and the
     summary above it did not, because the word it says when nothing is ticked is passed in
     separately.
     """
@@ -508,9 +501,9 @@ def test_a_filter_summary_uses_the_word_on_its_own_label(directory):
 
 
 def test_a_sysadmin_is_on_the_club_s_own_roster(directory):
-    """NAF, 2026-09-20, reading the members page at member level: "why don't I show up on the
-    roster?" Because a sysadmin holds every capability through the account flag rather than
-    through a group, and the member-level list asked the groups alone.
+    """A sysadmin was missing from the members page read at member level, because a sysadmin holds
+    every capability through the account flag rather than through a group, and the member-level list
+    asked the groups alone.
     """
     User.objects.create_user(
         "sys@example.org",
@@ -536,7 +529,7 @@ def test_a_sysadmin_is_on_the_club_s_own_roster(directory):
 
 
 def test_a_filter_is_drawn_set_only_while_it_narrows_the_list(directory):
-    """#266 (2026-11-12): every panel carried `set`, so #229's dashed-while-off never showed."""
+    """Every panel carried `set`, so the dashed-while-off look never showed."""
     c = _as(directory)
     body = c.get("/members/").content.decode()
     assert 'class="filter set"' not in body

@@ -1,8 +1,7 @@
 """Every path into the club links the notice it asks people to agree to.
 
-The advisor, 2026-09-19, on the invitation page: "We need to link to the privacy notice if we are
-going to ask people to agree to it." The footer link does not count: it is not part of what the
-person is ticking.
+A page that asks for agreement to the privacy notice links it. The footer link does not count:
+it is not part of what the person is ticking.
 """
 
 from datetime import timedelta

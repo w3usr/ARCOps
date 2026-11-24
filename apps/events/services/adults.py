@@ -1,5 +1,5 @@
 """A guardian on the same slot as their ward is the ward's responsible adult (FR-64 as amended by
-addendum A40; private tracker 358). The ordinary row is written for them, marked `automatic`, so
+addendum A40). The ordinary row is written for them, marked `automatic`, so
 check-in, the roster and the slot dialog read it as any other; it goes when the guardian leaves."""
 
 from __future__ import annotations

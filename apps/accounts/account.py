@@ -27,10 +27,8 @@ STUDENT_FIELDS = ("student_level", "graduation_semester", "graduation_year")
 NAME_FIELDS = ("first_name", "middle_name", "last_name")
 POSITION_FIELDS = ("club_positions",)
 # Under 18 is not among them: it is set on the invitation (§2.4) and cleared by the conversion
-# at 18 (FR-109), which is a one-way door.
-#
-# > once an account has been converted to adult, it cannot go back to Under 18. Removing this
-# > will avoid us having to debug a workflow to convert an account backwards. — NAF, 2026-09-20
+# at 18 (FR-109), which is a one-way door: an adult account never goes back to under 18, so
+# there is no backward conversion to get wrong.
 PRIVILEGE_FIELDS = ("category", "legal_hold")
 GROUP_FIELDS = ("groups", "is_superuser")  # what the account may do
 
@@ -60,8 +58,8 @@ def editable_fields(actor: User, subject: User) -> list[str]:
             fields += list(NAME_FIELDS)
         if subject.category == "student" or actor.may("edit_member_privileges"):
             fields += list(STUDENT_FIELDS)
-    # Including on your own account: the advisor is both the faculty advisor and the club's
-    # license trustee, and recording offices is the job this capability names (2026-09-20).
+    # Including on your own account: one person may be both faculty advisor and license
+    # trustee, and recording offices is the job this capability names.
     if actor.may("set_club_position"):
         fields += list(POSITION_FIELDS)
     if actor.may("edit_member_privileges"):
@@ -72,10 +70,8 @@ def editable_fields(actor: User, subject: User) -> list[str]:
     from apps.ops.groups import may_set_access
 
     # Only while there is access to change. Once an account is closed or suspended the way back
-    # is the control that says so, which records who let them in (FR-91):
-    #
-    # > Once the account is closed, the Access menu should disappear or be disabled. It should
-    # > only be granted again through "Let them back in as a member". — NAF, 2026-09-20
+    # is the control that says so, "Let them back in as a member", which records who let them in
+    # (FR-91).
     if may_set_access(actor, subject) and subject.pk and subject.has_access:
         fields.append("groups")
     if actor.is_superuser and getattr(actor, "acting_capabilities", None) is None:
@@ -132,20 +128,13 @@ class AccountForm(NoColon, forms.ModelForm):
 
             from apps.ops.groups import assignable_groups, label_of
 
-            # One level at a time, chosen from a list (the advisor, 2026-09-19: "Access should be
-            # a drop-down. You should only be able to pick one."), and only the groups this
-            # person may grant are in it, whatever the page was made to submit.
+            # One level at a time, chosen from a drop-down, and only the groups this person may
+            # grant are in it, whatever the page was made to submit.
             allowed = assignable_groups(actor, self.instance)
-            # **No access is not one of the answers.** Taking access away is closing or
-            # suspending the account, and both of those carry a reason and a name (FR-91):
-            #
-            # > I think there should not be a No Access option through the Access menu. That
-            # > should be set through Close Account or Suspend Account, both of which require
-            # > explanations. — NAF, 2026-09-20, extending to everyone what an officer already
-            # > met on 2026-09-19
-            #
-            # The field is only here while the account has access at all (editable_fields), so
-            # it always holds one of the levels and never an empty answer.
+            # **No access is not one of the answers.** Taking access away is closing or suspending
+            # the account, and both of those carry a reason and a name (FR-91), for every level
+            # alike. The field is only here while the account has access at all (editable_fields),
+            # so it always holds one of the levels and never an empty answer.
             self.fields["groups"] = forms.ModelChoiceField(
                 queryset=Group.objects.filter(pk__in=[g.pk for g in allowed]).order_by("name"),
                 required=True,
@@ -266,8 +255,7 @@ MANAGING_CAPABILITIES = (
 def may_manage(actor: User, subject: User) -> bool:
     """Whether this person has anything to change on that account.
 
-    What decides whether the profile page offers `Edit profile` (NAF, 2026-09-19: "If they have
-    the permission to edit a profile... there should be a button").
+    What decides whether the profile page offers `Edit profile`.
     """
     if bool(editable_fields(actor, subject)):
         return True
@@ -277,14 +265,13 @@ def may_manage(actor: User, subject: User) -> bool:
 def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     """Every account field as a line of text, whoever is reading.
 
-    A profile page shows the account without a form in front of it (NAF, 2026-09-19: a name in
-    the directory opens "a read-only view of their profile page"), and editing is a page of its
+    A profile page shows the account without a form in front of it, as a read-only view a name
+    in the directory opens, and editing is a page of its
     own. Each row carries the field it came from, so `readonly_rows` can take the same list and
     drop what the reader is about to be given an input for.
 
-    The name is three rows, because it is three fields: the advisor asked on 2026-09-19 for
-    "the stored user first, middle, and last names printed read-only in the details box", where
-    a callsign makes them the FCC's and nobody's to type (FR-8).
+    The name is three rows, because it is three fields: the stored first, middle and last names,
+    read-only where a callsign makes them the FCC's and nobody's to type (FR-8).
     """
     from apps.ops.templatetags.labels import category_label, phone, position_labels
 
@@ -300,7 +287,7 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
     add("preferred_name", "Preferred name", subject.preferred_name)
     add("callsign", "Callsign", subject.callsign)
     add("category", "Category", category_label(subject.category))
-    # One office per line, as the addresses above them are (the advisor, 2026-09-20).
+    # One office per line, as the addresses above them are.
     add("club_positions", "Club positions", "\n".join(position_labels(subject.club_positions)))
     add("groups", "Permission level", _groups_line(subject))
     add("cell_phone", "Mobile number", phone(subject.cell_phone))

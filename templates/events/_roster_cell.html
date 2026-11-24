@@ -1,7 +1,7 @@
-{% load dicts labels tz times %}{% comment %}One slot on the roster. A person reads one way (#161): the name as FR-67 gives it, then
+{% load dicts labels tz times %}{% comment %}One slot on the roster. A person reads one way: the name as FR-67 gives it, then
 beneath it the role and its marks, S, I and CO, confirmed or checked in, each a letter with its
 word for a screen reader, as the key explains them. Also sent with the slot's dialog after an action in it, out of band
-(oob), so the roster behind the dialog shows the change (#139). The link opens the slot's page
+(oob), so the roster behind the dialog shows the change. The link opens the slot's page
 without JavaScript and the dialog with it.{% endcomment %}
 <div class="r-cell tone-{{ c.shown.tone }}{% if c.mine %} mine{% endif %}" role="cell" id="slot-{{ c.slot.pk }}"{% if oob %} hx-swap-oob="true"{% endif %}>
   {% if roster.selectable %}<input type="checkbox" name="slots" value="{{ c.slot.pk }}" data-day="{{ day.key }}" aria-label="Select {{ row.lead_range }}{% if roster.layout == 'grid' %} {{ c.slot.position.name }}{% endif %}">{% endif %}

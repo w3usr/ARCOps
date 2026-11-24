@@ -1,7 +1,7 @@
 """TR-21: the audit log is append-only in the database, whatever code or shell reaches it.
 
 The model said so from the start, but no migration made the triggers, so an UPDATE or DELETE
-went through until T22 tried one (2026-10-21).
+went through.
 """
 
 import pytest

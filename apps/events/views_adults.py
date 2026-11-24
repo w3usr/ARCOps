@@ -81,7 +81,7 @@ def adults(request, signup_id):
                 )
                 record(request.user, "responsible_adult.named", su, after={"name": name.strip()})
                 messages.success(request, f"{name.strip()} will accompany {su.user.display_first}.")
-        elif action == "member" and request.POST.get("find"):  # script off (private tracker 281)
+        elif action == "member" and request.POST.get("find"):  # script off
             return find_redirect(request, reverse("signup_adults", args=[su.pk]))
         elif action == "member" and not request.POST.get("member"):
             messages.error(request, "Type part of a name or callsign, then choose who.")
@@ -90,7 +90,7 @@ def adults(request, signup_id):
             if not member.has_access:
                 raise Http404
             # The member, linked: their email and phone are not copied here, where the guardian and
-            # the slot's other members would read them (FR-67; private tracker 327).
+            # the slot's other members would read them (FR-67).
             ResponsibleAdult.objects.create(signup=su, name=member.full_name, member=member)
             record(
                 request.user,

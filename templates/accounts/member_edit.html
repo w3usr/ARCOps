@@ -3,7 +3,7 @@
 {% block title %}Editing {{ member.display_first }} {{ member.last_name }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
 {% comment %}The heading calls people what they are called: the preferred name where they have
-set one (NAF, 2026-09-19). The name on the record is in Details, in the three fields it is
+set one. The name on the record is in Details, in the three fields it is
 stored in.{% endcomment %}
 <p class="crumbs">{% if perms.ops.view_directory %}<a href="{% url 'members' %}">Members</a> › {% endif %}<a href="{% url 'member_detail' member.pk %}">{{ member.display_first }} {{ member.last_name }}</a></p>
 <div class="page-head"><h1>Editing {{ member.display_first }} {{ member.last_name }}{% if member.callsign %} <span class="muted">{{ member.callsign }}</span>{% endif %}</h1><div class="actions"><a class="button secondary" href="{% url 'member_detail' member.pk %}">Done</a></div></div>
@@ -134,7 +134,7 @@ stored in.{% endcomment %}
 {% endif %}
 
 {% comment %}Closing and archiving live here with suspension and deletion: every control that
-takes an account out of service is in one place (the advisor, 2026-09-20). Archiving appears
+takes an account out of service is in one place. Archiving appears
 once the account is already closed or suspended, because it is the second step.{% endcomment %}
 {% if can_close or can_archive or can_set_access and not is_self and not member.is_archived or perms.ops.delete_accounts and not is_self %}
 <section class="card dangerzone" aria-labelledby="dz">
@@ -214,7 +214,7 @@ once the account is already closed or suspended, because it is the second step.{
 {% comment %}Yours alone: what reaches you, the devices that may show it, and closing your own
 account. An officer editing somebody else does not see these; they are not the club's to set.{% endcomment %}
 {% comment %}Two-step verification is turned on and off here, because it is a control and the
-page that reads holds none (NAF, 2026-09-19). What it is, and whether the club requires it, is
+page that reads holds none. What it is, and whether the club requires it, is
 said on the profile beside the passkeys.{% endcomment %}
 <section class="section" aria-labelledby="sec" id="security">
   <h2 id="sec">Two-step verification</h2>

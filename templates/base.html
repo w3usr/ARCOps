@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 {% comment %}viewport-fit=cover, with env(safe-area-inset-*) padding in the stylesheet: an
 installed app has no browser chrome, so the system's own bars sit over the page, and the
-footer's last line was under the navigation bar (NAF, 2026-09-19).{% endcomment %}
+footer's last line would sit under the navigation bar.{% endcomment %}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block title %}{{ club.short_name }} · {{ product.name }}{% endblock %}</title>
 <meta name="color-scheme" content="light dark">
@@ -61,8 +61,8 @@ localStorage, where they would keep member names and rosters (technical addendum
       <li><a href="{% url 'my_schedule' %}"{% nav_active 'my_schedule' %}>{% icon 'clock' %}<span>My {{ product.sked }}</span></a></li>
       {% if perms.ops.view_directory %}
       <li><a href="{% url 'agreements' %}"{% nav_active 'agreements' 'sign_agreement' %}>{% icon 'signature' %}<span>Agreements</span></a></li>
-      {% comment %}Only for somebody who holds computer access today. The page used to be
-      reachable from the rotation notice and nowhere else (NAF, 2026-09-20).{% endcomment %}
+      {% comment %}Only for somebody who holds computer access today; without this link the page is
+      reachable from the rotation notice alone.{% endcomment %}
       {% if may_see_computer_password %}<li><a href="{% url 'computer_password' %}"{% nav_active 'computer_password' %}>{% icon 'key' %}<span>Computer password</span></a></li>{% endif %}
       <li><a href="{% url 'members' %}"{% if not is_self %}{% nav_active 'members' 'member_detail' 'member_edit' 'hours' %}{% endif %}>{% icon 'users' %}<span>Members</span></a></li>
       {% endif %}
@@ -83,9 +83,8 @@ localStorage, where they would keep member names and rosters (technical addendum
     <p class="navgroup" id="nav-advisor"><span>Advisor tools</span></p>
     <ul class="navlist" aria-labelledby="nav-advisor">
       {% if perms.ops.approve_agreements %}<li><a href="{% url 'approvals' %}"{% nav_active 'approvals' 'decide' %}>{% icon 'check-circle' %}<span>Approvals{% if approvals_waiting %} <span class="badge" aria-label="{{ approvals_waiting }} waiting for approval">{{ approvals_waiting }}</span>{% endif %}</span></a></li>{% endif %}
-      {% comment %}The page that sets the station computer password had no way in but a typed
-      URL, so only somebody who knew the address could rotate it (NAF, 2026-09-20: "There needs
-      to be a UI entry point for the faculty advisor and above to rotate this.").{% endcomment %}
+      {% comment %}The way in to setting the station computer password, for the faculty advisor and
+      above: without it only somebody who knew the address could rotate it.{% endcomment %}
       {% if perms.ops.rotate_shared_secret %}<li><a href="{% url 'password_manage' %}"{% nav_active 'password_manage' %}>{% icon 'key' %}<span>Set the computer password</span></a></li>{% endif %}
     </ul>
     {% endif %}
@@ -101,8 +100,8 @@ localStorage, where they would keep member names and rosters (technical addendum
     {% endif %}
     <div class="sidenav-foot">
       {% comment %}Your name opens your profile and the level below it opens the level page: two
-      destinations, so two links. They were one link to the level page, which is not where a
-      reader who clicks their own name expects to arrive (NAF, 2026-09-19).{% endcomment %}
+      destinations, so two links: a reader who clicks their own name expects their profile, not
+      the level page.{% endcomment %}
       <div class="whoami">{% icon 'user' %}<span>
         <a href="{% url 'profile' %}">{{ user.display_first }}{% if user.callsign %} {{ user.callsign }}{% endif %}<span class="sr-only">. Your profile.</span></a>
         {% if acting_views > 1 %}<a class="level" href="{% url 'acting_view' %}?next={{ request.path|urlencode }}">{{ acting_label }}<span class="sr-only">. Change the level you are acting at.</span></a>{% elif acting_label %}<span class="level">{{ acting_label }}</span>{% endif %}
@@ -112,7 +111,7 @@ localStorage, where they would keep member names and rosters (technical addendum
     </div>
   </nav>
   {% comment %}Everything beside the sidebar, footer included, is one column: the footer stays under
-  the page, not under the sidebar (SK, 2026-11-03).{% endcomment %}
+  the page, not under the sidebar.{% endcomment %}
   <div class="page">
 {% endif %}
 {% if acting_guardian %}<div class="banner acting" role="status"><p><strong>Acting for {{ user.display_first }}</strong> (under 18). Sign-ups, cancellations, check-ins, and profile changes you make now are on their behalf and recorded in your name. You are {{ acting_guardian.display_first }}.</p><form method="post" action="{% url 'act_stop' %}">{% csrf_token %}<button type="submit" class="secondary">Stop acting for them</button></form></div>{% endif %}
@@ -121,8 +120,8 @@ localStorage, where they would keep member names and rosters (technical addendum
 <main id="main" tabindex="-1" class="{% if user.is_authenticated %}content{% else %}plain{% endif %}{% block main_class %}{% endblock %}">
   {# A live region already present at load announces nothing, so app.js focuses it instead. #}
   {% comment %}A standing question, shaped and placed like a message rather than a banner: it is
-  the same kind of thing to a reader, and the banner rail made it a wall (NAF, 2026-09-20). It
-  stays until it is answered, which is what makes it not a message.{% endcomment %}
+  the same kind of thing to a reader, and a rail of banners reads as a wall. It stays until
+  it is answered, which is what makes it not a message.{% endcomment %}
   {% if user.is_authenticated and user.pending_uls_name %}<ul class="messages ask"><li class="msg warning">
     <span class="lvl">Is this you?</span> The FCC records <strong>{{ user.pending_uls_name.callsign }}</strong> under the name <strong>{{ user.pending_uls_name.first }} {{ user.pending_uls_name.last }}</strong>, which does not exactly match the name on your account. Please answer below — until you do, the callsign is not counted as your license. If you would like to go by a different name at {{ club.short_name }}, set a preferred name on <a href="{% url 'profile_edit' %}#details">your profile</a>.
     <form method="post" action="{% url 'uls_name_decide' %}" class="inline">{% csrf_token %}<button type="submit" name="decision" value="yes">Yes, that is me</button> <button type="submit" name="decision" value="no" class="secondary">No, not my callsign</button></form>
@@ -140,6 +139,6 @@ localStorage, where they would keep member names and rosters (technical addendum
 <script src="{% static 'js/richtext-check.js' %}" defer></script>
 {% if user.is_authenticated and vapid_public_key %}<script src="{% static 'js/push.js' %}" defer data-vapid="{{ vapid_public_key }}" data-subscribe="{% url 'push_subscribe' %}" data-enabled="{{ user.push_enabled|yesno:'1,0' }}" data-csrf="{{ csrf_token }}"></script>{% endif %}
 {% block extra_body %}{% endblock %}
-<div id="said" class="sr-only" aria-live="polite"></div>{# what a script says aloud: Copied (FR-116; private tracker 341) #}
+<div id="said" class="sr-only" aria-live="polite"></div>{# what a script says aloud: Copied (FR-116) #}
 </body>
 </html>

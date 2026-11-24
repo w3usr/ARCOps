@@ -10,8 +10,8 @@
 
 {% if event.state == 'draft' and is_captain %}
 <div class="banner draft">
-  {% comment %}While it cannot be published, the line saying why stands in place of the form (SK,
-  2026-11-10, functional addendum A17).{% endcomment %}
+  {% comment %}While it cannot be published, the line saying why stands in place of the form
+  (functional addendum A17).{% endcomment %}
   <p><strong>Draft.</strong> Only officers and captains can see this event. {% if missing %}Not ready to publish: {{ missing }} <a href="{% url 'event_manage' event.pk %}">Finish it on Manage.</a>{% else %}Publish when the grid is ready.{% endif %}</p>
   {% if not missing %}<form method="post" action="{% url 'event_publish' event.pk %}" class="inline">{% csrf_token %}<label class="check"><input type="checkbox" name="announce" value="yes"> Announce to members</label> <button type="submit">Publish</button></form>{% endif %}
 </div>
@@ -50,18 +50,18 @@
 <section class="panel roster-panel" aria-labelledby="roster-h">
 <div class="panel-head rosterhead">
   <div><h2 id="roster-h">Roster</h2>{% if is_captain and roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-all aria-label="Select every slot"><span>Select every slot</span></label>{% endif %}</div>
-  {% comment %}Every slot or Problems only as a switch with counts (#235): two links, the same
+  {% comment %}Every slot or Problems only as a switch with counts: two links, the same
   addresses as before, so it works without JavaScript; the Key's ? an icon button.{% endcomment %}
   <p class="zones muted"><span>Times in <strong>{{ roster.lead_label }}</strong>{% if roster.other_label %}, then {{ roster.other_label }}{% endif %}.</span>
     <span class="switch" role="group" aria-label="Show"><a href="?"{% if roster.filter != 'problems' %} aria-current="true"{% endif %}>Every slot <span class="n">{{ roster.counts.total }}</span></a><a href="?filter=problems"{% if roster.filter == 'problems' %} aria-current="true"{% endif %}>Problems only <span class="n">{{ roster.counts.attention }}</span></a></span>
     <button type="button" class="secondary small icon-only keybtn" popovertarget="roster-key-pop" aria-label="Key">{% icon 'help' 'small' %}</button></p>
 </div>
 <div class="panel-body overview">
-{% comment %}The Key opens over the page from the ? beside Problems only (#169, SK 2026-11-02): a
+{% comment %}The Key opens over the page from the ? beside Problems only: a
 native popover, so no script of ours, and Escape or a click outside closes it. A browser without
 popover shows it in place, as before, and hides the button (roster.css). Every cell says its state in
 words, so nothing is lost while it is closed (FR-62).{% endcomment %}
-{% comment %}The coverage strip (#161): the whole event, a line a day, a mark per time span with its
+{% comment %}The coverage strip: the whole event, a line a day, a mark per time span with its
 state as a symbol as well as a color (FR-62), each linking to its hour. A shortcut for the eye and
 the pointer, so it is hidden from screen readers and takes no tab stops: the roster below says
 every slot's state in words (FR-116), and a strip of forty-eight links ahead of it would be noise.{% endcomment %}
@@ -103,7 +103,7 @@ A12's UTC axis): the zone is named once, in its header.{% endcomment %}
     <div class="r-dayhead" role="row"><div role="rowheader" aria-colspan="{{ roster.columns }}">{% if roster.selectable %}<label class="check daysel"><input type="checkbox" data-select-day="{{ day.key }}" aria-label="Select every slot on {{ day.heading }}"><span>{{ day.heading }}</span></label>{% else %}{{ day.heading }}{% endif %}</div></div>
     {% for row in day.rows %}
     {% if row.fold_head and not row.fold.open %}{% with f=row.fold %}
-    {% comment %}A run of open hours, read as one row (#161). Its hours follow, hidden: the link
+    {% comment %}A run of open hours, read as one row. Its hours follow, hidden: the link
     opens them in place, or without JavaScript reloads the roster with the run open; the box
     selects them all.{% endcomment %}
     <div class="r-row r-fold kind-{{ row.kind }}" role="row" id="fold-{{ f.id }}">

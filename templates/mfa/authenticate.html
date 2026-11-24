@@ -3,8 +3,8 @@
 {% load allauth %}
 {% load allauth static %}
 {% comment %}The library's own page leads with an authenticator code whatever the account holds,
-and demotes the security key to "Alternative options". Somebody whose only factor is a key met a
-box they could not fill (NAF, 2026-09-20). This is the same page with the two halves ordered by
+and demotes the security key to "Alternative options", so somebody whose only factor is a key
+meets a box they cannot fill. This is the same page with the two halves ordered by
 what is enrolled, which apps.accounts.views_mfa puts in the context. The JavaScript contract is
 the library's and is kept exactly: the button id, the form id, the js_data script tag and the
 scripts snippet.{% endcomment %}

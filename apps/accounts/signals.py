@@ -24,7 +24,7 @@ def on_password_set(sender, user, **kwargs):
 
 @receiver(user_logged_in)
 def spend_a_temporary_password(sender, request, user, **kwargs):
-    """FR-7: "it works for exactly one sign-in" (private tracker 287). Used once, it signs nobody
+    """FR-7: "it works for exactly one sign-in". Used once, it signs nobody
     in again: this session stays, and can only set the member's own password (the middleware
     sends it there); anyone who saw the password and tries it afterwards is refused."""
     if user.password_is_temporary and user.has_usable_password():

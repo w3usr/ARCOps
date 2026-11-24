@@ -1,4 +1,4 @@
-"""One start and end per event (FR-38 as functional addendum A32; private tracker 275).
+"""One start and end per event (FR-38 as functional addendum A32).
 
 Each event's periods become its start and end, from the first start to the last end. Where there
 were gaps between them (a split contest), the on-air hours keep the gaps off the air: the club's

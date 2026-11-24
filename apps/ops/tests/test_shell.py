@@ -70,7 +70,7 @@ def test_accent_that_fails_aa_contrast_falls_back_to_the_default():
 
 def test_an_accent_that_carries_white_but_not_its_own_tint_falls_back(caplog):
     """#767676 is 4.54:1 under white text, but the active menu entry sets it as text on its
-    own 9% tint, which is lighter than white is dark: about 4.1:1 (#143)."""
+    own 9% tint, which is lighter than white is dark: about 4.1:1."""
     assert config.contrast("#ffffff", "#767676") > 4.5
     _set("branding.accent", "#767676")
     assert config.accent_color() == config.DEFAULT_ACCENT

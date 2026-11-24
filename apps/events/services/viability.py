@@ -26,8 +26,8 @@ class SlotStatus:
 
     @property
     def needs(self) -> str:
-        """What the slot needs, in the roster's words, finishing "the slot …" (FR-62; SK,
-        2026-10-26: every reader, captains included)."""
+        """What the slot needs, in the roster's words, finishing "the slot …", for every
+        reader, captains included (FR-62)."""
         wanted = needs_from_reasons(self.reasons)
         if self.status == "empty" or not wanted:
             return "has nobody in it"
@@ -83,7 +83,7 @@ def rule_for(slot) -> list[dict]:
 
 def club_rule() -> list[dict]:
     """The club's default rule for what an operating slot needs (FR-61): what a location
-    follows until it is given its own, and what its form starts from (#277)."""
+    follows until it is given its own, and what its form starts from."""
     default = setting("viability_rule_default", {}) or {}
     return default.get(
         "require_all_of",
@@ -110,8 +110,8 @@ def _satisfied(rule: list[dict], people, slot) -> tuple[bool, list[str]]:
 
     `people` is (user, on_air) pairs. Only someone on the air carries the license, since an
     observer's puts nobody on the air; station and IT access, and any credential a club adds,
-    are carried by whoever in the slot holds them (FR-122: "Operator, mentor, or observer could
-    carry station and IT access." NAF, 2026-09-15)."""
+    are carried by whoever in the slot holds them (FR-122: any role in the slot may carry
+    station and IT access)."""
     on = slot.start.date()
     missing = []
     for req in rule:
@@ -172,7 +172,7 @@ def evaluate(slot, signups=None) -> SlotStatus:
         return SlotStatus("not_viable", reasons, missing=missing)
 
     # A slot that can run is Covered, whoever it depends on: no "depends on one person" state
-    # (NAF, 2026-11-12, private tracker 279: "Don't worry about backups").
+    # (A28).
     low = below_preferred(slot.event, [u for u, air in people if air], slot.start.date())
     status = SlotStatus("viable", [f"below preferred class ({low})"] if low else [])
     if low:
@@ -184,7 +184,7 @@ def evaluate(slot, signups=None) -> SlotStatus:
 def may_control(slot, signup) -> bool:
     """FR-63: who can be a slot's control operator: someone signed up in one of the club's
     on-air roles who holds a valid amateur license on the slot's date. The captain's choice is
-    held to the same test as the default (SK, 2026-10-15)."""
+    held to the same test as the default."""
     return (
         signup.role in on_air_roles()
         and getattr(signup.user, "license", None) is not None
@@ -220,8 +220,7 @@ def checkin_window_open(slot, now) -> bool:
 
 def checkin_ready(signups, now) -> list:
     """The sign-ups (in start order) to offer Check in for now: inside the window, not checked in,
-    and not a later slot of a run an earlier one checks in with the same tap (private tracker
-    361)."""
+    and not a later slot of a run an earlier one checks in with the same tap (A42)."""
     ready, covered = [], set()
     for s in signups:
         if s.pk in covered or s.checked_in_at or not checkin_window_open(s.slot, now):

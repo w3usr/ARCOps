@@ -134,7 +134,7 @@ def waitlist_join(request, slot_id):
     if not RoleCapacity.objects.filter(slot=slot, role=role).exists():
         messages.error(request, "That role is not in this slot.")
         return redirect("slot_detail", pk=event.pk, slot_id=slot.pk)
-    if slot.signups.filter(user=request.user).exists():  # #299: one place per person in a slot
+    if slot.signups.filter(user=request.user).exists():  # one place per person in a slot
         messages.error(
             request,
             "You already hold a place in this slot. To take another role, change your role "
@@ -177,7 +177,7 @@ def waitlist_accept(request, pk):
             )
             return redirect("slot_detail", pk=slot.event.pk, slot_id=slot.pk)
         messages.error(request, "That offer has lapsed or the place is gone.")
-        # Back to the offer, which says why: a canceled slot's own page answers 404 (#252).
+        # Back to the offer, which says why: a canceled slot's own page answers 404.
         return redirect("waitlist_accept", pk=entry.pk)
     return render(
         request,

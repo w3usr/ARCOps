@@ -5386,3 +5386,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit (comments only; no behavior changed). Verified: ruff check and format pass; bash -n tools/check.sh passes; the events app's tests pass. Comments that give a reason (a decision, a browser's behavior, a test's choice) were kept, and the CSS and JavaScript comments that only moved with the day's split and formatting were left alone.
 - **Human Review Status**: Pending review
 - **Git Hash**: 762761c
+
+## [2026-11-23 22:03 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Comments and docstrings state the rule or purpose as a fact and cite only the public record (SK): names, decision dates, quotes, private tracker numbers, bare issue numbers, design-note labels and test-plan IDs taken out, and a guard so they stay out.
+- **Sections/Files Affected**: comments and docstrings across apps/ (accounts, events, credentials, ops, comms), config/, templates/, static/js/app.js, tools/ (the a11y tests, check_interface.sh) and .github/workflows/ci.yml — 216 files; tools/check_no_attributions.sh (new guard, run by tools/check.sh and CI); apps/events/migrations/0014_reminder_help_text_plain.py (a field's help text loses its issue number). Two strings a person sees changed: the under-18 level error and that help text each lose a private reference.
+- **Nature of Contribution**: Edit (comments only, apart from the two strings). Where a quote carried a rule, the rule is stated; where a public record covers the decision, it is cited (A28, A29, A30, A31, A37, A39, A41, A42 and others). The original text of each of the 762 changes is kept outside this repository. Done in four parallel forks of the session (stopped at SK's word) and finished inline; a fault in the forks' shared scan hid issue numbers followed by ")", which the new guard found and which were then fixed by hand and script. Verified: tools/check.sh passes lint, format, all four guards (no-attributions included), the migration check and the application and accessibility tests, apart from three Firefox tests (Firefox does not launch on this machine; CI runs it) and the signed-PDF test, which needs Homebrew's libraries on the library path.
+- **Human Review Status**: Pending review
+- **Git Hash**: [filled in after committing]

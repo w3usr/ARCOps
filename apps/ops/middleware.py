@@ -5,7 +5,7 @@ right when the redirect leads back to the slot, whose view answers htmx with the
 wrong for any other page: a whole page would land inside the dialog. The roster after a slot is
 canceled, a minor's adults page after signing up, the sign-in page after a session ends: each
 becomes a full page load instead (htmx's HX-Redirect), and the flash messages, not yet shown,
-are shown there (#139).
+are shown there.
 """
 
 from urllib.parse import urlsplit
@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from django.http import HttpResponse
 from django.urls import Resolver404, resolve
 
-STAYS_IN_PLACE = {"slot_detail", "event_step"}  # event_step: a step's own forms (#177)
+STAYS_IN_PLACE = {"slot_detail", "event_step"}  # event_step: a step's own forms
 
 
 class HtmxRedirectMiddleware:

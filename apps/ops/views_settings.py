@@ -157,8 +157,8 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
         "What the station is called",
         'The name members would use for it: "Club station", "The shack".',
     ),
-    # A new event starts with the club station as its location, carrying these (private tracker
-    # 276; SK, 2026-11-16). Changing them later leaves events already made as they are.
+    # A new event starts with the club station as its location, carrying these (A29). Changing
+    # them later leaves events already made as they are.
     "club.station_address": (
         "The station's address",
         "Given to each new event's club station location.",
@@ -319,8 +319,8 @@ SETTING_WORDS: dict[str, tuple[str, str]] = {
 
 
 RICH = ["privacy_notice_html", "club.station_directions_html", "club.station_kbyg_html"]
-# Field kinds beyond text, number, and JSON. A time zone is always a drop-down (NAF,
-# 2026-09-16, after a typo in the free-text field); a color gets the color picker; an image
+# Field kinds beyond text, number, and JSON. A time zone is always a drop-down, since a typo in
+# a free-text field breaks every time shown; a color gets the color picker; an image
 # gets an uploader with a preview, stored under MEDIA_ROOT/branding/ (FR-89).
 KIND_OF = {
     "club.timezone": "tz",

@@ -1,10 +1,8 @@
 """A profile is read, and edited on a page of its own.
 
-NAF, 2026-09-19: "When you click on someone's name, it should take the person to a read-only
-view of their profile page. If they have the permission to edit a profile (such as a member
-looking at their own page, an officer, or a sysadmin), there should be a button to 'Edit
-Profile'. This will allow for potential public views of profiles, as well as make it more
-difficult to accidentally change information."
+A name opens a read-only view of the profile. Whoever may edit it (the member on their own page,
+an officer, a sysadmin) gets an Edit profile button. A read-only page can later be shown
+publicly, and is hard to change by accident.
 """
 
 import pytest
@@ -60,8 +58,7 @@ def test_the_edit_button_is_there_for_whoever_may_edit(pair):
 
 
 def test_your_own_page_is_a_member_page(pair):
-    """NAF, 2026-09-19: "These should be the same thing. i.e. /me/ should redirect to
-    /members/1/ [...] That way there is a more unified codebase and interface." """
+    """Your profile and your member page are one page: /me/ redirects to /members/<pk>/."""
     _, member = pair
     c = _as(member)
     r = c.get("/me/")
@@ -75,7 +72,7 @@ def test_your_own_profile_reads_and_the_edit_page_holds_the_form(pair):
     body = c.get("/me/", follow=True).content.decode()
     assert "Edit profile and preferences" in body
     assert f'href="/members/{member.pk}/edit/"' in body
-    # nothing on it changes anything, preferences included (NAF, 2026-09-19)
+    # nothing on it changes anything, preferences included
     assert "<form" not in body.split("<main", 1)[1]
     assert "N0MEM" in body, "the account is shown, whether or not it is being edited"
     assert 'name="callsign"' not in body
@@ -124,7 +121,7 @@ def test_a_member_cannot_reach_anybody_elses_page(pair):
 
 
 def test_a_name_from_the_fcc_says_so_where_the_fields_would_be(pair):
-    """The advisor, 2026-09-19: "I see no way to edit first, middle, or last name."
+    """Where the first, middle and last name cannot be edited, the page says why.
 
     With a callsign the name is the FCC's (FR-8), and the page never said so: the partial
     looked for a `subject` variable that neither page passed.

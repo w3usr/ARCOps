@@ -106,7 +106,7 @@ def test_expiry_notices_bundle_agreements_and_summarise_to_approvers():
     s = Outbox.objects.get(user=adv, category="agreement")
     assert "1 member(s)" in s.subject and "Mo Member N0MEM" in s.body_html
     # the window, not its last day as if it were everyone's expiry; the link named for where it
-    # goes (T40, 2026-10-21)
+    # goes
     assert s.subject == "1 member(s) with agreements expiring within 30 days"
     assert "expire within the next 30 days" in s.body_html and ">Open Approvals<" in s.body_html
     assert agreement_expiry_run()["notices_30"] == 0  # once
@@ -160,8 +160,8 @@ def test_resign_by_on_a_new_version_expires_old_approvals_and_the_page_says_so()
 
 
 def test_the_access_roster_lists_only_accounts_that_hold_access_now():
-    """Private tracker 330 (FR-31, FR-118; SK, 2026-11-17): a suspended, archived or deleted
-    member's approved agreement is not station access held now, on the page or in the CSV."""
+    """FR-31, FR-118: a suspended, archived or deleted member's approved agreement is not station
+    access held now, on the page or in the CSV."""
     from apps.accounts.services import archive_member, delete_account, suspend
 
     st, it, t_st, t_it = _setup()
@@ -199,7 +199,7 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
         session["acting_view"] = "sysadmin"
         session.save()
     body = c.get("/credentials/access-rosters/").content.decode()
-    # First, Last and Callsign are columns of their own now (issue #92, 2026-09-20).
+    # First, Last and Callsign are columns of their own.
     assert body.count(">Member</a>") == 2 and body.count(">N0MEM<") == 2
     assert "Revoke" in body
     # The credential opens what they signed, for somebody who may read it.
@@ -208,7 +208,7 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
     body = c.get("/credentials/access-rosters/?expiring=30").content.decode()
     assert body.count(">N0MEM<") == 1, "the expiry bucket narrows it"
 
-    # Contact details are on the roster, and the Status panel opens on Active (issue #92).
+    # Contact details are on the roster, and the Status panel opens on Active.
     body = c.get("/credentials/access-rosters/").content.decode()
     assert "Institution email" in body and "Personal email" in body and "Phone" in body
     assert "Days</a>" not in body, "the Days column is gone"
@@ -242,7 +242,7 @@ def test_revoke_tells_the_member_and_access_rosters_filter_and_export():
         and "Computer access" in csv_body
         and AuditLog.objects.filter(action="report.access_rosters_exported").exists()
     )
-    # The download is what is on the screen: it follows the filters (issue #92).
+    # The download is what is on the screen: it follows the filters.
     narrowed = c.get(
         "/credentials/access-rosters/?credential=it_access&format=csv"
     ).content.decode()
@@ -399,10 +399,8 @@ def test_member_roster_filters_graduated_and_audits_contact_export():
 
 
 def test_the_advisor_reaches_the_computer_password_from_the_sidebar(settings):
-    """FR-32: the page that sets the station password had no way in but a typed address.
-
-    > There needs to be a UI entry point for the faculty advisor and above to rotate this.
-    > — NAF, 2026-09-20
+    """FR-32: the page that sets the station password has a way in from the sidebar, for the
+    faculty advisor and above, not only a typed address.
 
     The advisor answers to the University for station access, so the password is theirs, and
     Advisor tools is where it belongs: an officer holds neither the link nor the page.
@@ -418,7 +416,7 @@ def test_the_advisor_reaches_the_computer_password_from_the_sidebar(settings):
     c.force_login(advisor)
     home = c.get("/").content.decode()
     # "Set the computer password" is the advisor's entry; a member's own entry, for reading it,
-    # says "Computer password" and is a different page (2026-09-20).
+    # says "Computer password" and is a different page.
     assert "Set the computer password" in home
     assert "/credentials/computer-password/manage/" in home
     assert c.get("/credentials/computer-password/manage/").status_code == 200
@@ -431,13 +429,8 @@ def test_the_advisor_reaches_the_computer_password_from_the_sidebar(settings):
 
 
 def test_the_approvals_page_carries_the_pdf_the_badge_and_a_way_back_from_a_decline():
-    """Four things the advisor asked for on 2026-09-20, walking the page with one signature on it.
-
-    > Can the Approvals navigation item also get a badge indicating the number of things that
-    > need approval? … I want the Approve and Decline buttons on the same line. There should
-    > also be a link to download the signed PDF. … we need some way to approve after an
-    > accidental decline.
-    """
+    """Approvals: a badge on its navigation item counting what needs approval, Approve and
+    Decline on one line, a link to the signed PDF, and a way to approve after a decline."""
     call_command("club_import")
     st, it, t_st, t_it = _setup()
     advisor = _user("adv3@example.org", "advisor", category="faculty")
@@ -514,12 +507,8 @@ def test_the_badge_and_the_declined_list_are_only_for_somebody_who_may_approve()
 
 
 def test_a_member_who_holds_computer_access_is_shown_the_way_to_the_password(settings):
-    """FR-33: the page had no entry of its own and was reached from the rotation notice alone.
-
-    > what is the UI route for a person who has been granted access to view the station password
-    > for viewing the station password? I want that to be straightforward and simple.
-    > — NAF, 2026-09-20
-    """
+    """FR-33: a member granted computer access has a plain way to the page that shows the
+    station password, not only the link in the rotation notice."""
     from cryptography.fernet import Fernet
 
     settings.FIELD_ENCRYPTION_KEY = Fernet.generate_key().decode()
@@ -549,10 +538,8 @@ def test_a_member_who_holds_computer_access_is_shown_the_way_to_the_password(set
 
 
 def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
-    """FR-25: what has been decided, on the page of the person who decides it.
-
-    > I think we need a searchable, filterable, sortable log on this page of what approval
-    > actions have been taken. — NAF, 2026-09-20
+    """FR-25: what has been decided, on the page of the person who decides it, as a log that
+    can be searched, filtered and sorted.
 
     The agreement row carries only the latest decision, so the pair that matters most — a
     decline and the approval that corrected it — would otherwise read as one approval.
@@ -590,7 +577,7 @@ def test_the_decision_log_keeps_every_act_and_sorts_narrows_and_exports():
     # filter checkbox's value, which is a form value rather than something anybody reads.
     body_rows = body.split("<tbody>")[-1].split("</tbody>")[0]
     assert "approved_after_decline" not in body_rows
-    # Newest first, as the page says, until somebody sorts it otherwise (T8 step 7).
+    # Newest first, as the page says, until somebody sorts it otherwise.
     assert body_rows.index("Approved on reversal") < body_rows.index("Declined")
     assert 'aria-sort="descending"' in body.split("Decisions taken")[1]
 
@@ -633,11 +620,8 @@ def test_the_decision_log_is_only_for_somebody_who_may_approve():
 
 
 def test_station_and_computer_access_need_an_institution_address_from_anyone():
-    """FR-27, widened 2026-09-20.
-
-    The advisor, 2026-09-20, having approved station access for somebody with no institution
-    address and finding that he could: require one first, for the computer agreement as well,
-    so everybody granted real access is at least in the institution's own directory.
+    """FR-27, widened: an institution address is required first, for the computer agreement as
+    well, so everybody granted real access is at least in the institution's own directory.
 
     It was asked of a community member's station access alone, so a student or a faculty member
     holding only a personal address was approved without one, and so was anybody at all for
@@ -695,7 +679,7 @@ def test_station_and_computer_access_need_an_institution_address_from_anyone():
 
 
 def test_a_downloaded_agreement_is_named_after_who_signed_what_and_when():
-    """ "agreement-6-v2.pdf" says nothing in a folder of them (NAF, 2026-09-20)."""
+    """ "agreement-6-v2.pdf" says nothing in a folder of them."""
     from apps.credentials.services import agreement_pdf_name
     from apps.ops.models import ClubSetting
 
@@ -719,7 +703,7 @@ def test_a_downloaded_agreement_is_named_after_who_signed_what_and_when():
 
 
 def test_an_address_that_is_somebody_elses_is_not_evidence_about_this_member():
-    """The advisor, 2026-09-20: approving used an address already confirmed to another member.
+    """Approving must not use an address already confirmed to another member.
 
     Adding it unconfirmed skipped the check that refuses a duplicate, so one person's address
     stood as evidence about another. Typing it at approval is the approver standing behind it,
@@ -812,7 +796,7 @@ def test_an_institution_address_nobody_proved_is_not_enough_to_grant_access():
     """Nobody has stood behind it, so it is not evidence that anybody is in the directory.
 
     Two ways that happens: an address never confirmed at all, and one confirmed only because
-    whoever made the account typed it in (NAF, 2026-09-20).
+    whoever made the account typed it in.
     """
     from apps.accounts import addresses
     from apps.ops.models import ClubSetting
@@ -842,9 +826,9 @@ def test_an_institution_address_nobody_proved_is_not_enough_to_grant_access():
 def test_an_address_vouched_for_at_sign_up_does_not_grant_access_until_it_is_proved():
     """Joining by a link that was copied and passed on proves nothing about the mailbox.
 
-    The advisor, 2026-09-20: joining through an invitation sent to an institution address should
-    count as confirming it, distinguished by a second token carried only on the emailed link
-    rather than on the one anybody can copy and paste.
+    Joining through an invitation sent to an institution address counts as confirming it,
+    distinguished by a second token carried only on the emailed link rather than on the one anybody
+    can copy and paste.
     """
     from apps.accounts import addresses
     from apps.ops.models import ClubSetting
@@ -882,8 +866,8 @@ def test_an_address_vouched_for_at_sign_up_does_not_grant_access_until_it_is_pro
 def test_signing_twice_makes_one_signature_one_queue_card_and_one_message():
     """A double-click on Sign it is one act, not two.
 
-    The advisor, 2026-09-21, having added a member and signed the agreements for them: "I also
-    got 2 separate notifications for one agreement." Nothing guarded the POST, so the second
+    Signing the agreements for a member once sent two notifications for one agreement.
+    Nothing guarded the POST, so the second
     submission made a second row awaiting approval, rendered a second PDF, and told every
     approver again. The member could not see it: their own page keeps the latest signature per
     agreement, so the duplicate showed only in the approver's queue and in their messages.
@@ -921,7 +905,7 @@ def test_signing_twice_makes_one_signature_one_queue_card_and_one_message():
 
 
 def test_a_signature_records_the_address_nginx_passes_on():
-    """FR-22 (private tracker 298): behind nginx on a unix socket REMOTE_ADDR is empty and the
+    """FR-22: behind nginx on a unix socket REMOTE_ADDR is empty and the
     visitor's address arrives in X-Real-IP, so a signature on production recorded none."""
     call_command("club_import")
     _, _, t_st, _ = _setup()
@@ -934,8 +918,8 @@ def test_a_signature_records_the_address_nginx_passes_on():
 
 
 def test_a_declined_agreement_can_be_signed_again():
-    """The guard holds only what is waiting. A decline sends the member back to the form
-    (T8 step 5), and signing again there must make a new signature."""
+    """The guard holds only what is waiting. A decline sends the member back to the form,
+    and signing again there must make a new signature."""
     call_command("club_import")
     st, it, t_st, t_it = _setup()
     member = _user("mem-resign@example.org", first_name="Mem", last_name="Ber")
@@ -965,9 +949,8 @@ def test_a_declined_agreement_can_be_signed_again():
 def test_an_agreement_cannot_be_signed_until_the_institution_address_is_proved():
     """The address is asked for before the signature, not after it (FR-27).
 
-    The advisor, 2026-09-22: require the applicant to confirm their institution account
-    "before they can even sign any of these agreements. That will make the rest of the process
-    more straightforward." Asking only at approval let somebody sign, wait, and then be
+    The applicant confirms their institution account before they can sign any agreement.
+    Asking only at approval let somebody sign, wait, and then be
     told of a thing they could have fixed at the start; and it left the approver a queue of
     signatures none of which could be acted on.
     """
@@ -1016,10 +999,9 @@ def test_an_agreement_cannot_be_signed_until_the_institution_address_is_proved()
 def test_the_home_banner_counts_the_approvals_and_the_messages_and_lists_neither():
     """The banner summarizes; it does not recite.
 
-    The advisor, 2026-09-22, reading "5 unread notices:" followed by every subject in one
-    sentence, with three in the approvals queue and eight unread in Messages: "'5 unread
-    notices' is the wrong number." It counted the five it had room to show. The numbers it
-    carries now are the ones on the two sidebar badges.
+    A banner reading "5 unread notices:" followed by every subject, with three in the approvals
+    queue and eight unread in Messages, gave the wrong number: it counted the five it had room
+    to show. The numbers it carries are the ones on the two sidebar badges.
     """
     from apps.comms.services import compose
 
@@ -1101,8 +1083,8 @@ def test_an_archived_members_signatures_leave_the_queue_and_come_back_with_them(
 
 
 def test_every_way_of_ending_an_account_takes_its_signatures_out_of_the_queue():
-    """Four mechanisms, not one (NAF, 2026-09-23: "there is closing, suspending, archiving, and
-    deleting. Of those, deleting is not reversable").
+    """Four mechanisms, not one: closing, suspending, archiving and deleting; only deleting
+    cannot be reversed.
 
     Closing and suspending leave `is_active` alone and empty the groups instead, so a filter on
     `is_active` catches archiving and deletion and misses half of them. The test is the one the
@@ -1156,7 +1138,7 @@ def test_every_way_of_ending_an_account_takes_its_signatures_out_of_the_queue():
 def test_a_paragraph_alone_in_a_list_item_is_unwrapped_for_the_pdf():
     """PDF/UA-1 7.2-20: a list item holds only a label and a body, and WeasyPrint tags a <p>
     inside an <li> as a third child. Agreement text that wraps every item in a paragraph had every
-    signed PDF failed by veraPDF (T40 step 5, 2026-10-22). Only the PDF's markup changes; the
+    signed PDF failed by veraPDF. Only the PDF's markup changes; the
     stored text and its hash do not."""
     from apps.credentials.services import pdf_list_items
 
@@ -1170,7 +1152,7 @@ def test_a_paragraph_alone_in_a_list_item_is_unwrapped_for_the_pdf():
 def test_one_source_says_which_domain_is_the_institutions():
     """An address's kind followed the student category's domain while the agreement rule read the
     trusted domains, so a club whose two settings differed could never prove an institution
-    address (T22, 2026-10-21). The trusted domains are the one source, the category the fallback."""
+    address. The trusted domains are the one source, the category the fallback."""
     from apps.accounts.addresses import kind_for
     from apps.accounts.models import Address
     from apps.credentials.views import institution_address_ok

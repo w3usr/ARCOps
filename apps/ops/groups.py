@@ -2,7 +2,7 @@
 Permission levels: a named set of capabilities, and who holds one.
 
 **A level is a Django group**, which is why the code, the configuration and the audit log all
-say "group" while every page says "permission level" (§2.1, 2026-09-20): the reader is told what
+say "group" while every page says "permission level" (§2.1): the reader is told what
 the club grants, and the model keeps the framework's own word. Nothing new had to be built to
 hold one, and a sysadmin can make another. The groups a fresh installation starts with come from the club's configuration
 (`access_groups` in club.yaml); after that they are the club's to change, and an import leaves an
@@ -35,8 +35,8 @@ def capabilities_held(user) -> set[str]:
     return full_capabilities(user)
 
 
-# A member under 18 holds at most the Member level: none above it, and never sysadmin (SK,
-# 2026-11-17; private tracker 332). A guardian may reset their ward's password (§2.4), so a ward
+# A member under 18 holds at most the Member level: none above it, and never sysadmin (A37).
+# A guardian may reset their ward's password (§2.4), so a ward
 # above Member would hand that level to whoever the guardian lets in.
 MINOR_LEVELS = frozenset({"provisional", "member"})
 
@@ -50,23 +50,20 @@ def within_minor_levels(user, keys=None) -> bool:
 def assignable_groups(actor, subject=None):
     """The groups this person may put an account into.
 
-    The rule, the advisor's on 2026-09-19: *"Faculty advisors should be able to appoint
-    officers, members, and below. Officers should be able to appoint members, and below."*
+    Faculty advisors appoint officers, members and below; officers appoint members and below.
     Written against capabilities rather than a ladder, because a club may invent a group this
     application has never heard of: **a group is yours to grant when everything it grants is
     something you already hold, and it does not hold everything you do.** A proper subset, so
     nobody appoints their own peer, and nobody appoints above themselves.
 
-    **A peer is appointable only by somebody holding `appoint_peers`** (the advisor, 2026-09-20:
-    "Faculty Advisors need to be able to set Category, Club Position, and Access", up to their
-    own level). Without it the subset stays proper, which is what keeps an officer appointing
-    members and below. Nothing here makes a sysadmin: that is a checkbox of its own, and it
-    stays a sysadmin's.
+    **A peer is appointable only by somebody holding `appoint_peers`**: a faculty advisor sets
+    category, club position and access, up to their own level. Without it the subset stays proper,
+    which is what keeps an officer appointing members and below. Nothing here makes a sysadmin: that
+    is a checkbox of its own, and it stays a sysadmin's.
 
-    Given an account, the list also **only goes up** for somebody who cannot lift a suspension.
-    The advisor, 2026-09-19: "club officers should only be able to promote Provisional to
-    Member. They should never have a reason to demote to provisional... If a club officer needs
-    to deny an account, they need to do so through the suspend mechanism." Taking something away
+    Given an account, the list also **only goes up** for somebody who cannot lift a suspension:
+    an officer promotes Provisional to Member and never demotes; an officer who needs to deny
+    an account suspends it. Taking something away
     is an act with a name, a reason and somebody answerable for lifting it (FR-91), not a
     quieter setting of a drop-down.
     """
@@ -127,9 +124,9 @@ def outranks(actor, subject) -> bool:
 
 
 def may_issue_temporary_password(actor, subject) -> bool:
-    """A temporary password signs in as the account (FR-7; A24, SK, 2026-11-12). Every route that
-    issues one asks this, except the two for a minor's account, a guardian's reset and the
-    conversion at 18, which issue one only while the account is within `MINOR_LEVELS` (332)."""
+    """A temporary password signs in as the account (FR-7; A24). Every route that issues one
+    asks this, except the two for a minor's account, a guardian's reset and the conversion at
+    18, which issue one only while the account is within `MINOR_LEVELS`."""
     return actor.may("issue_temporary_password") and outranks(actor, subject)
 
 
@@ -221,7 +218,7 @@ def set_groups(actor, user, keys: list[str]) -> None:
     from apps.ops.audit import record
 
     if user.under_18 and not within_minor_levels(user, keys):
-        raise ValueError("A member under 18 holds at most the Member level (private tracker 332).")
+        raise ValueError("A member under 18 holds at most the Member level.")
     before = sorted(g.name for g in user.groups.all())
     user.groups.set(Group.objects.filter(name__in=keys))
     after = sorted(g.name for g in user.groups.all())

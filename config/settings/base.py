@@ -68,7 +68,7 @@ TINYMCE_COMPRESSOR = False
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # Outermost of the app's own, so it sees every redirect, the sign-in gate's included (#139).
+    # Outermost of the app's own, so it sees every redirect, the sign-in gate's included.
     "apps.ops.middleware.HtmxRedirectMiddleware",
     "apps.ops.middleware.ViewerZoneMiddleware",  # pages in the viewer's own zone (A38)
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -97,7 +97,7 @@ if CLUB_OVERLAY_DIR and (CLUB_OVERLAY_DIR / "templates").is_dir():
     _template_dirs.insert(0, CLUB_OVERLAY_DIR / "templates")  # overlay wins (TR-41)
 
 # Forms render through TEMPLATES, so templates/django/forms/ can restyle a form's own markup:
-# an error about the whole form is a Problem message, like any other (#261).
+# an error about the whole form is a Problem message, like any other.
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 TEMPLATES = [
@@ -155,7 +155,7 @@ def _cache_key(key: str, key_prefix: str, version: int) -> str:
 
 
 # One cache in the database every web worker shares, so a sign-in limit counts across all of
-# them and survives a restart (FR-99, TR-18, private tracker 354). The table is made by a
+# them and survives a restart (FR-99, TR-18). The table is made by a
 # migration (ops 0011). Its `add` is atomic under IMMEDIATE transactions, which allauth's lock needs.
 CACHES = {
     "default": {

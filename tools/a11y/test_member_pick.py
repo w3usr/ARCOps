@@ -1,4 +1,4 @@
-"""Sign someone up finds the member as the captain types (private tracker 281).
+"""Sign someone up finds the member as the captain types (functional addendum A31).
 
 The slot dialog's picker asks for the slot's own page with what was typed and keeps only the
 matches (templates/_member_pick.html), so this checks the as-you-type path through htmx, in the
@@ -34,7 +34,7 @@ def test_typing_part_of_a_name_offers_them_and_signs_them_up(live_server, engine
         manage = dialog.locator("summary", has_text="Manage this slot")
         manage.wait_for(state="attached")  # the dialog's content is in...
         # ...and wired: htmx adds the box's hx-get listener at settle, after the swap; typed
-        # before it, the search is never sent (private tracker 355, which failed under -n auto).
+        # before it, the search is never sent (which failed under -n auto).
         dialog.locator(".htmx-added, .htmx-settling").first.wait_for(state="detached")
         expect(
             dialog.get_by_label("Member", exact=True)

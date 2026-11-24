@@ -75,7 +75,7 @@ def pages_for(role: str) -> list[str]:
                 "contest",
                 "kbyg",
             )
-        ),  # Manage as steps (#172, #174)
+        ),  # Manage as steps
         *(
             f"/events/{ev.pk}/{f}/"
             for f in (
@@ -89,7 +89,7 @@ def pages_for(role: str) -> list[str]:
                 "openings/add",
                 "details",
             )
-        ),  # forms (#168)
+        ),  # forms
         f"/events/{ev.pk}/announce/",
         "/events/new/",
         "/events/health/",
@@ -226,7 +226,7 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, engine, role):
                 )
                 page.wait_for_load_state("networkidle")
                 # At either width: the officer's directory fit a phone, where tables stack, and
-                # scrolled sideways at 1280px (#157).
+                # scrolled sideways at 1280px.
                 wide = page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1")
                 if wide:
                     failures.append(f"{url} at {viewport['width']}px scrolls sideways (FR-95)")

@@ -1,4 +1,4 @@
-"""Signing up from the roster's slot dialog keeps you on the roster (#139).
+"""Signing up from the roster's slot dialog keeps you on the roster.
 
 Every form in the dialog used to post and redirect to the slot's own page, scrolled to the top,
 away from the roster being worked through. Now the answer comes back into the dialog, the cell

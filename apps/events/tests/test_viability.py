@@ -112,7 +112,7 @@ def test_two_people_split_credentials_is_viable():
 
 
 def test_a_captains_choice_of_control_operator_must_still_qualify():
-    """FR-63 (SK, 2026-10-15): the captain's choice is named only while they are in the slot in
+    """FR-63: the captain's choice is named only while they are in the slot in
     an on-air role with a valid license; otherwise the default rule's choice stands."""
     s = slot_for()
     gen, tech = person("gen", "General", True, True), person("tech", "Technician")
@@ -153,9 +153,8 @@ def test_observer_does_not_count_for_operating_slot():
 
 
 def test_an_observer_carries_station_and_it_access():
-    """FR-122: "Operator, mentor, or observer could carry station and IT access." (NAF,
-    2026-09-15). Found in acceptance test T26 (2026-10-16): an observer holding both still left
-    the slot needing them. The license stays with the people on the air."""
+    """FR-122: any role in the slot may carry station and IT access. An observer holding both
+    had still left the slot needing them. The license stays with the people on the air."""
     s = slot_for()  # preferred class General
     SignUp.objects.create(slot=s, user=person("tech", "Technician"), role="mentor")
     SignUp.objects.create(slot=s, user=person("obs", None, True, True), role="observer")
@@ -165,7 +164,7 @@ def test_an_observer_carries_station_and_it_access():
 
 
 def test_a_slot_that_depends_on_one_person_is_simply_covered():
-    """Private tracker 279 (NAF, 2026-11-12): no "depends on one person" state anywhere."""
+    """No "depends on one person" state anywhere."""
     s = slot_for()
     for name in ("gen1", "gen2"):  # either can go; the observer cannot
         SignUp.objects.create(slot=s, user=person(name, "General"), role="operator")

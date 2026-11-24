@@ -44,7 +44,7 @@ def participation(event: Event) -> dict:
                 first_timers.add(pk)
 
     def block(sub):
-        # "Covered" is the roster's word for a slot that can run (private tracker 279, A36)
+        # "Covered" is the roster's word for a slot that can run (A36)
         signed_up = [s for s in sub if s.signups.exists()]
         covered = [s for s in sub if evaluate(s, list(s.signups.all())).status == "viable"]
         checked = {

@@ -86,8 +86,8 @@ document.addEventListener("click", (ev) => {
 // Progressive disclosure: an element with data-reveal-when="#control" is shown only while that
 // control is ticked (the guardian field on the invitation form), or, with data-reveal-value,
 // while the control holds one of those space-separated values (the student fields on a member's
-// page). A control that is itself hidden hides what it reveals, so they nest (when a net meets,
-// #273); all are synced in page order on any change. The server enforces the rule regardless.
+// page). A control that is itself hidden hides what it reveals, so they nest (when a net meets);
+// all are synced in page order on any change. The server enforces the rule regardless.
 (() => {
   const reveals = [...document.querySelectorAll("[data-reveal-when]")];
   const sync = () =>
@@ -134,7 +134,7 @@ function wireDialog(dlg, opener, refocus) {
 (() => {
   const dlg = document.getElementById("slot-dialog");
   if (dlg && typeof dlg.showModal === "function" && window.htmx) {
-    // htmx fills the dialog, from a slot link and again after each action in it (#139). Focus
+    // htmx fills the dialog, from a slot link and again after each action in it. Focus
     // goes to what just happened, or else to the slot's heading.
     const body = dlg.querySelector(".dialog-body");
     let openerSlot = null;
@@ -210,7 +210,7 @@ function wireDialog(dlg, opener, refocus) {
   }
 })();
 
-// Manage's forms open in a dialog (#168). Each button is a link to the form's own page; htmx
+// Manage's forms open in a dialog. Each button is a link to the form's own page; htmx
 // fetches that page into the dialog instead, and the form posts back to it there. A save answers
 // with HX-Redirect, so the tab reloads with its message; a refusal comes back inside the dialog.
 // Focus goes to the problem, or else the first field, and back to the button on closing.
@@ -239,7 +239,7 @@ function wireDialog(dlg, opener, refocus) {
   wireDialog(dlg, "a[data-dialog]", () => opener);
 })();
 
-// A step's own form saved in place (#177): htmx swaps the step and the bar, and focus would be
+// A step's own form saved in place: htmx swaps the step and the bar, and focus would be
 // left on a button that no longer exists. Note which section the form was in before the request;
 // after the swap, focus the message if there is one, or else that section's heading.
 (() => {
@@ -284,7 +284,7 @@ function wireDialog(dlg, opener, refocus) {
         !opener.isConnected
       )
         return;
-      // Opened from a ⋮ menu (#228): the menu closed when the dialog opened, so go back to its button.
+      // Opened from a ⋮ menu: the menu closed when the dialog opened, so go back to its button.
       const menu = opener.closest("[popover]");
       const back =
         menu && !menu.matches(":popover-open")
@@ -296,7 +296,7 @@ function wireDialog(dlg, opener, refocus) {
   ); // a dialog's close event does not bubble; catch it on the way down
 })();
 
-// ⋮ menus (#228, technical addendum A10): the popover opens and closes itself, with Escape and a
+// ⋮ menus (technical addendum A10): the popover opens and closes itself, with Escape and a
 // click outside. This moves focus to its first entry, and places it under its button where CSS
 // anchor positioning has not (a browser before 2026, or one without the popover's implicit anchor).
 (() => {
@@ -345,7 +345,7 @@ if (!("command" in HTMLButtonElement.prototype)) {
   });
 }
 
-// A folded run of open hours opens in place (#161): its rows are on the page already, hidden.
+// A folded run of open hours opens in place: its rows are on the page already, hidden.
 // Without JavaScript the same link reloads the roster with the run open.
 document.addEventListener("click", (ev) => {
   const link = ev.target.closest("[data-open-fold]");
@@ -376,7 +376,7 @@ document.addEventListener("change", (ev) => {
   sel.form.querySelectorAll("[data-role-field]").forEach((el) => {
     el.name = el.dataset.roleField + "_" + sel.value;
   });
-  // ...and starts from the rule the event applies to that role (#277), carried on its choice.
+  // ...and starts from the rule the event applies to that role, carried on its choice.
   const rule = JSON.parse(sel.selectedOptions[0]?.dataset.rule || "null");
   if (!rule) return;
   sel.form.querySelectorAll("[data-role-field]").forEach((el) => {
@@ -390,7 +390,7 @@ document.addEventListener("change", (ev) => {
   });
 });
 
-// A field showing a default (#272, #277; NAF, 2026-11-12): its tag ("Club default", "Same as a
+// A field showing a default (2026-11-12): its tag ("Club default", "Same as a
 // slot") goes once the value differs from it. A field that follows another (a setup slot's
 // length follows the slot length) copies it until it is typed in, and then says so to the
 // server through its *_edited box, so an untouched one keeps following there too.
@@ -416,7 +416,7 @@ document.addEventListener("input", (ev) => {
   });
 });
 
-// The viewer's own time zone (functional addendum A38; NAF and SK, 2026-11-18): pages show local
+// The viewer's own time zone (functional addendum A38): pages show local
 // time only. The browser names its zone in the `tz` cookie and the server draws every page in it
 // (apps/ops/middleware.py); the page says which zone it was drawn in on <html data-tz>. A time
 // box holds that zone's wall clock and is sent as ISO 8601 with the offset, so the server stores

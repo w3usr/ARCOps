@@ -1,4 +1,4 @@
-"""When a regular meeting or net meets (FR-45; private tracker 273, SK 2026-11-16).
+"""When a regular meeting or net meets (FR-45).
 
 A display-only event says when it meets in fields, not in free text: weekly, monthly on a weekday
 ("first Monday", "last Friday"), or monthly on a date, at a time in the event's own zone. The site

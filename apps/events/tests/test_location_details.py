@@ -1,5 +1,5 @@
-"""A location's own directions, know-before-you-go text and viability rule (FR-51, #249), and
-setup and breakdown slots of their own length (FR-47, #250). SK, 2026-11-11."""
+"""A location's own directions, know-before-you-go text and viability rule (FR-51), and
+setup and breakdown slots of their own length (FR-47)."""
 
 from datetime import timedelta
 
@@ -41,7 +41,7 @@ def test_a_location_is_edited_on_a_page_with_its_directions_notes_and_rule(offic
         "directions_html": "<p>Third floor, <script>x</script>past the lab.</p>",
         "kbyg_html": "<p>Bring boots.</p>",
     }
-    # #277 (SK, 2026-11-12): the needs start ticked as the club's rule; saved as shown, the
+    # The needs start ticked as the club's rule; saved as shown, the
     # location keeps following the club's. Ticks changed are its own rule; none ticked, nothing.
     as_shown = [
         k

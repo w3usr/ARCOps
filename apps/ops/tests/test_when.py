@@ -1,4 +1,4 @@
-"""One form for every date and time (private tracker 274; apps/ops/when.py)."""
+"""One form for every date and time (apps/ops/when.py)."""
 
 from datetime import UTC, date, datetime
 from zoneinfo import ZoneInfo
@@ -70,7 +70,7 @@ def test_a_utc_box_takes_the_date_and_a_24_hour_time_however_the_browser_is_set(
 
 
 def test_a_date_stored_as_text_reads_the_same_and_nothing_else_fails():
-    """The agreement PDF reads dates back from a decision record, as ISO text (found by T40)."""
+    """The agreement PDF reads dates back from a decision record, as ISO text."""
     assert when.day("2027-09-01") == "1 Sep 2027"
     assert when.utc("2026-11-21T21:00:00+00:00") == "Sat 21 Nov 2026 21:00 UTC"
     assert when.day("not a date") == "not a date" and when.utc("") == ""

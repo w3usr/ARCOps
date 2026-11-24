@@ -1,4 +1,4 @@
-"""How a date or time reads, everywhere (private tracker 274; NAF and SK, 2026-11-12 and 2026-11-16).
+"""How a date or time reads, everywhere.
 
 - **A UTC instant:** `Sat 21 Nov 2026 21:00 UTC`: weekday, day, month as a word, year, a 24-hour
   time, `UTC`. In tight places (roster rows, slot lists) the year drops out: `Sat 21 Nov 21:00 UTC`.
@@ -13,8 +13,8 @@
 Every page, mail, the PDF and the outbox go through these, and `tools/check_interface.sh` refuses
 a hand-written UTC format anywhere else.
 
-**For now, pages show the viewer's own time only, never UTC** (functional addendum A38; NAF and
-SK, 2026-11-18): the browser names its zone in the `tz` cookie (static/js/app.js), the middleware
+**For now, pages show the viewer's own time only, never UTC** (functional addendum A38): the
+browser names its zone in the `tz` cookie (static/js/app.js), the middleware
 activates it (apps/ops/middleware.py), and `local()` and `local_span()` default to it. Mail, the
 agreement PDF and machine output keep their own zones. Storage and logic stay UTC.
 """
@@ -86,7 +86,7 @@ def twelve_hour(t) -> str:
 
 def clock_span(start: datetime, end: datetime) -> str:
     """`5:00–7:00 PM`, the clocks alone in the viewer's zone, for a button that sits under the
-    full time (private tracker 361)."""
+    full time (A42)."""
     zone = timezone.get_current_timezone()
     a, b = twelve_hour(start.astimezone(zone)), twelve_hour(end.astimezone(zone))
     return f"{a[:-3] if a[-2:] == b[-2:] else a}–{b}"
@@ -121,7 +121,7 @@ def local_span(start: datetime, end: datetime, zone=None, year: bool = False) ->
 
 # ---------------------------------------------------------------- typed in UTC ---
 
-# The browser's own date and time box (A35, SK 2026-11-16, reversing A34's plain box): it sends
+# The browser's own date and time box (A35, reversing A34's plain box): it sends
 # ISO's "2026-11-21T21:00" whatever it shows. A link or script may still send "2026-11-21 21:00"
 # or "2026-11-21 2100" (as contest rules write it), so those are taken too.
 _TYPED = re.compile(

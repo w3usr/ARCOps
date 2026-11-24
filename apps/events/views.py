@@ -45,7 +45,7 @@ def event_list(request):
             over = e.state == Event.State.COMPLETED or (e.end or now) < now
             (past if over else upcoming).append(e)
     upcoming.sort(key=lambda e: e.start or now)
-    # Each row's date tile, in the viewer's zone (A38), and a captain's coverage counts (#238).
+    # Each row's date tile, in the viewer's zone (A38), and a captain's coverage counts.
     from .services.roster import coverage
 
     for e in upcoming + past:
@@ -105,7 +105,7 @@ def event_detail(request, pk):
         event,
         request.user,
         filter=request.GET.get("filter", ""),
-        open_fold=request.GET.get("open", ""),  # a folded run, opened without JavaScript (#161)
+        open_fold=request.GET.get("open", ""),  # a folded run, opened without JavaScript
     )
     return render(
         request,
@@ -117,13 +117,13 @@ def event_detail(request, pk):
             "is_captain": roster["is_captain"],
             "address": _address(request.user, roster["single_location"], roster["is_captain"]),
             "places": _places(request.user, event, roster["is_captain"]),
-            # the Draft banner's Publish waits for the required steps too (SK, 2026-11-10)
+            # the Draft banner's Publish waits for the required steps too
             "missing": publish_blocker(event)
             if roster["is_captain"] and event.state == Event.State.DRAFT
             else "",
             "roles": roster["roles"],
             # The outline an untouched event starts with is headings only; the reminder drops the
-            # empty ones, and the page drops the same ones (#166).
+            # empty ones, and the page drops the same ones.
             "kbyg": drop_empty_sections(event.kbyg_html),
             "contest": contest_fields.present(event.contest_fields or {}),
         },
@@ -182,7 +182,7 @@ def confirm_remove_signup(request, signup_id):
     su = get_object_or_404(SignUp, pk=signup_id)
     if not request.user.can_captain(su.slot.event):
         raise Http404
-    if su.kept:  # #251: attendance, an ended slot or an event that is over stays in the record
+    if su.kept:  # attendance, an ended slot or an event that is over stays in the record
         messages.error(request, su.kept)
         return redirect("slot_detail", pk=su.slot.event.pk, slot_id=su.slot.pk)
     return render(
@@ -199,7 +199,7 @@ def cancel_signup(request, signup_id):
     slot = su.slot
     if su.user != request.user and not request.user.can_captain(slot.event):
         raise Http404
-    if su.kept:  # #251, for a captain as well: attendance cannot be undone
+    if su.kept:  # for a captain as well: attendance cannot be undone
         messages.error(request, su.kept)
         return redirect("event_detail", pk=slot.event.pk)
     if slot.event.state == Event.State.LOCKED and not request.user.can_captain(slot.event):
@@ -260,10 +260,10 @@ def cannot_by_token(request, token):
         # Keep it: say so here, signed out as well as in; My schedule would ask for a sign-in.
         # Nothing is recorded, and keeping a slot is not confirming attendance.
         return render(request, "events/token_confirmed.html", {"signup": su, "kept": True})
-    if su.kept:  # #251: an event completed early still sends links for slots ahead
+    if su.kept:  # an event completed early still sends links for slots ahead
         return render(request, "events/token_kept.html", {"why": su.kept}, status=409)
     event = su.slot.event
-    if event.state == Event.State.LOCKED:  # FR-44, as the signed-in cancel (private tracker 297)
+    if event.state == Event.State.LOCKED:  # FR-44, as the signed-in cancel
         captains = ", ".join(c.user.short_name for c in event.captaincies.select_related("user"))
         why = "The roster is locked, so a late change goes through a captain" + (
             f": {captains}." if captains else "."
@@ -292,7 +292,7 @@ def cannot_by_token(request, token):
 @require_POST
 def check_in(request, signup_id):
     """FR-113: check the member in for this slot and the rest of its run (SignUp.checkin_run,
-    private tracker 361). Only this slot's window applies; a minor's adult is named as present."""
+    A42). Only this slot's window applies; a minor's adult is named as present."""
     su = get_object_or_404(SignUp, pk=signup_id)
     now = timezone.now()
     if su.user != request.user and not request.user.can_captain(su.slot.event):
@@ -436,7 +436,7 @@ def publish(request, pk):
         messages.error(
             request, "A published event with sign-ups can only be canceled, not unpublished."
         )
-    # The Publish step of Manage posts here too (#172), and goes back to it.
+    # The Publish step of Manage posts here too, and goes back to it.
     if request.POST.get("from") == "manage":
         return redirect("event_step", pk=pk, step="publish")
     return redirect("event_detail", pk=pk)

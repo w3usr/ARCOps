@@ -1,5 +1,4 @@
-"""A password that has appeared in a known data breach is refused (TR-15; REQUIREMENTS §2.6;
-private tracker 292).
+"""A password that has appeared in a known data breach is refused (TR-15; REQUIREMENTS §2.6).
 
 Have I Been Pwned's range API: only the first five characters of the password's SHA-1 leave the
 server, and the answer is every breached hash starting with them, padded with decoys (count 0) so

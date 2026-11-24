@@ -88,8 +88,8 @@ def user_from_token(token: str) -> tuple[User, str] | None:
 
 def return_token(user: User, link: EntryLink) -> str:
     """The link that brings a former member back through `link`, sent to their own mail: the
-    join form alone never does it, since anyone can type an address (FR-120, FR-125; SK,
-    2026-11-12). Signed, nothing stored; good for a week, and spent once the account is back."""
+    join form alone never does it, since anyone can type an address (FR-120, FR-125). Signed,
+    nothing stored; good for a week, and spent once the account is back."""
     return signing.dumps({"u": user.pk, "l": link.pk}, salt=RETURN_SALT)
 
 

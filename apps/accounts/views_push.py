@@ -66,7 +66,7 @@ def push_toggle(request):
 def push_test(request):
     """Send this account a notification now, to see whether they arrive.
 
-    The advisor, 2026-09-19: "Include a button to test notifications." Browser notifications
+    A button sends a test notification. Browser notifications
     depend on a permission granted per device, a service worker, and a push service that may be
     asleep; the only honest way to know they work is to send one.
     """

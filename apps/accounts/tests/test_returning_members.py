@@ -1,9 +1,7 @@
 """A member who left and comes back gets their record, not a new one.
 
-NAF, 2026-09-19: "We need some mechanism that if an archived member decides to come back (and
-is eligible to do so, i.e. not suspended), when an officer or someone else sends them an invite
-or that person tries to join, it searches the closed and archived membership to bring that
-account back, rather than creating a completely new account."
+A former member who is eligible to come back (not suspended), invited or joining, is found
+among the closed and archived accounts and brought back, not created anew.
 """
 
 import pytest
@@ -153,7 +151,7 @@ def _link(officer, kind):
 
 @pytest.mark.parametrize("kind", [EntryLink.Kind.CLASS, EntryLink.Kind.COMMUNITY])
 def test_a_link_never_brings_an_account_back_without_its_mailbox(people, kind):
-    """FR-120, FR-125 (SK, 2026-11-12): a join form with a former member's address and a new
+    """FR-120, FR-125: a join form with a former member's address and a new
     password used to bring the account back and sign the browser in, with no proof that whoever
     typed it held the mailbox. Now the form changes nothing and says what it says for any
     address; the account's own mail gets a link to come back."""

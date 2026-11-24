@@ -22,7 +22,7 @@ def _supersede_open_invitations(
 
     Nobody should hold two live links to the same account. Without this, pressing "Create
     invitation" twice left both working, so revoking one withdrew nothing, and the person was
-    sent the invitation twice (the advisor found six of them on 2026-09-19). "Make a new link"
+    sent the invitation twice. "Make a new link"
     has always replaced the old one; this is the same rule reached from the other button.
     """
     open_ones = Invitation.objects.filter(state=Invitation.State.CREATED)
@@ -117,7 +117,7 @@ def set_access(actor: User, user: User, groups: list[str], reason: str) -> None:
 
     This was `set_access_level`, a move up or down one ladder. The ladder is gone: a group is a
     named set of capabilities the club defines, and an account in no group can do nothing, which
-    is what losing access means (the advisor's decision, 2026-09-17).
+    is what losing access means.
     """
     from apps.ops.groups import set_groups
 
@@ -126,7 +126,7 @@ def set_access(actor: User, user: User, groups: list[str], reason: str) -> None:
     if user.has_access and (user.closure_requested_at or user.suspended_at):
         # An account somebody can use is not closed and not suspended, whichever way the access
         # was given back. Without this the two could disagree, and an account reading Closed
-        # was in the announcement audience (found by the advisor, 2026-09-19).
+        # was in the announcement audience.
         user.closure_requested_at = None
         user.closed_by = None
         user.suspended_at = None
@@ -168,9 +168,8 @@ def returning_account(address: str):
     """The account this address already belongs to, if the person is coming back.
 
     A member who left is **archived, not deleted** (FR-125), so inviting them again should find
-    the record they had rather than start an empty one. The advisor, 2026-09-19: "if an archived
-    member decides to come back... it searches the closed and archived membership to bring that
-    account back, rather than creating a completely new account."
+    the record they had rather than start an empty one: a returning member is found among the
+    closed and archived accounts and brought back, not created anew.
 
     Returns (account, why-not): an account that may be brought back, or None and a sentence
     saying why this address cannot be invited. A **suspended** account is not a returning
@@ -298,10 +297,9 @@ def _completion_notices(inv: Invitation, user: User) -> None:
 
 
 def _drop_license_override(user: User, previous: str, new_callsign: str) -> None:
-    """FR-102: a sysadmin's override "survives a callsign change only if the sysadmin re-confirms
-    it" (private tracker 310; SK, 2026-11-17: drop it and tell them). It goes with the old
-    callsign, the audit row keeps what it said, and whoever may set one is told; entering it
-    again is the re-confirmation."""
+    """FR-102: a sysadmin's override survives a callsign change only if the sysadmin re-confirms
+    it. It goes with the old callsign, the audit row keeps what it said, and whoever may set one
+    is told; entering it again is the re-confirmation."""
     from django.conf import settings as dj
     from django.urls import reverse
 
@@ -480,9 +478,8 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
     """Put a former member into the archive: their record is kept whole and indefinitely, and it
     is read by a faculty advisor or a sysadmin.
 
-    This is what the club does instead of deleting people. The advisor, 2026-09-17: "I don't
-    really like the automatic deletion. Instead, can we have a method to archive members? Only
-    faculty advisors and above can view the archive." Nothing is erased here: the name, callsign,
+    This is what the club does instead of deleting people automatically, and only faculty
+    advisors and above can view the archive. Nothing is erased here: the name, callsign,
     addresses, participation, and signed agreements all stay. What changes is that the account
     stops signing in, leaves the directory and every audience, and is read in one place.
     """
@@ -493,8 +490,7 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
             "a guardian is archived once every linked minor has been converted, re-linked, or archived"
         )
     # An archived account is never one somebody can still use, so archiving one that still has
-    # access closes it in the same act (the advisor, 2026-09-19: "Faculty Advisors and above
-    # should be able to Close and archive accounts without suspending").
+    # access closes it in the same act, without a suspension.
     if user.has_access:
         close_account(actor, user, reason or "archived")
         user.refresh_from_db()
@@ -512,7 +508,7 @@ def archive_member(actor: User, user: User, reason: str = "") -> None:
 def restore_member(actor: User, user: User) -> None:
     """Take a record out of the archive, and **leave its status alone**.
 
-    Archiving and closing are two dimensions now (the advisor, 2026-09-19): the archive is
+    Archiving and closing are two dimensions: the archive is
     where a record is put away, and the status is where the person stands with the club. So an
     account comes out of the archive exactly as it went in, Closed or Suspended, and somebody
     gives it access back as a separate, deliberate act. Nothing was lost while it was away.
@@ -530,8 +526,8 @@ def restore_member(actor: User, user: User) -> None:
 def close_account(actor: User, user: User, reason: str = "") -> None:
     """Close somebody's account for them: they have left, without anybody being suspended.
 
-    The advisor, 2026-09-19: "Faculty Advisors and above should be able to Close and archive
-    accounts without suspending." A closure is a departure, a suspension is a decision about
+    Faculty advisors and above close and archive accounts without suspending them. A closure is
+    a departure, a suspension is a decision about
     somebody's conduct, and the two should not have to be confused to file a graduating member.
     """
     user.closure_requested_at = timezone.now()
@@ -555,8 +551,8 @@ def suspend(actor: User, user: User, reason: str) -> None:
     """Take an account's access away, with a reason (FR-91).
 
     An officer may do this to an account below them, because something can happen at the station
-    on a Tuesday night; only a faculty advisor lifts it (§2.3, the advisor's rule of
-    2026-09-19). The reason is kept on the account, not only in the audit log, because the
+    on a Tuesday night; only a faculty advisor lifts it (§2.3). The reason is kept on the
+    account, not only in the audit log, because the
     person deciding whether to let them back in needs to read it.
     """
     user.suspended_at = timezone.now()
@@ -658,12 +654,12 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
     withdrawn = access_removed(actor, user)  # future sign-ups go, captains told
     ResponsibleAdult.objects.filter(signup__user=user).delete()
     # Where they were someone else's responsible adult, the row stays, so the minor's slot reads
-    # as it did, but nothing in it names them (private tracker 329).
+    # as it did, but nothing in it names them (A39).
     ResponsibleAdult.objects.filter(member=user).update(
         member=None, name="Deleted member", email="", phone=""
     )
     # Their authenticator apps, passkeys and recovery codes: secrets of an account that can no
-    # longer sign in (private tracker 329).
+    # longer sign in (A39).
     from allauth.mfa.models import Authenticator
 
     Authenticator.objects.filter(user=user).delete()
@@ -673,7 +669,7 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
     if hasattr(user, "wards"):
         user.wards.all().delete()
     CallsignHistory.objects.filter(user=user).delete()
-    # SK's decisions of 2026-11-19 on private tracker 329 (REQUIREMENTS addendum A39). Mail to
+    # Functional addendum A39. Mail to
     # them keeps its date, kind and subject, so the outbox's history holds, but not where it went
     # or what it said; mail about them to others is the recipients' and stays.
     from django.db.models import Q
@@ -716,9 +712,8 @@ def delete_account(actor: User, user: User, reason: str) -> dict:
     user.push_enabled = False
     user.groups.clear()
     user.is_active = False
-    # `last_login` stays. It is the one fact about the person kept on purpose: the advisor,
-    # 2026-09-19, "last_login may still be good for audit or investigation purposes." Without
-    # it there is no way to answer when a deleted account was last used.
+    # `last_login` stays. It is the one fact about the person kept on purpose, for audit and
+    # investigation: without it there is no way to answer when a deleted account was last used.
     user.deleted_at = timezone.now()
     user.set_unusable_password()
     user.save()

@@ -125,7 +125,7 @@ def test_the_joined_notice_names_the_callsign_and_the_fcc_s_name_for_it():
 
 def test_a_signed_in_visitor_is_asked_to_sign_out_before_accepting_an_invitation():
     """An officer opening an invitation link from their own session saw the form inside it, and
-    submitting it signed the browser into the new account, replacing theirs (SK, 2026-10-22)."""
+    submitting it signed the browser into the new account, replacing theirs."""
     off = officer()
     adult = create_invitation(off, "new.adult@example.org", "student")
     minor = create_invitation(
@@ -201,7 +201,7 @@ def test_temporary_password_forces_change_and_expires():
 
 
 def test_a_temporary_password_works_for_exactly_one_sign_in():
-    """FR-7, private tracker 287: the first sign-in spends it; that session sets the member's own
+    """FR-7: the first sign-in spends it; that session sets the member's own
     password with no old one asked; a second sign-in with the temporary password is refused."""
     o = officer()
     u = User.objects.create_user(
@@ -224,7 +224,7 @@ def test_a_temporary_password_works_for_exactly_one_sign_in():
 
 
 def test_ten_failed_sign_ins_lock_the_account_and_tell_its_owner_once():
-    """FR-99, TR-18, private tracker 288: the account's own limit (10 in 5 minutes) locks it, even
+    """FR-99, TR-18: the account's own limit (10 in 5 minutes) locks it, even
     against the right password, and the owner is told once; the per-address limit tells nobody."""
     from apps.comms.models import Outbox
 
@@ -261,7 +261,7 @@ def test_ten_failed_sign_ins_lock_the_account_and_tell_its_owner_once():
 
 
 def test_a_failed_sign_in_is_counted_in_the_database_every_web_process_shares():
-    """FR-99, TR-18, private tracker 354: under the real settings the count is a row in the
+    """FR-99, TR-18: under the real settings the count is a row in the
     database, not one web worker's memory, and the row's key does not hold the address."""
     from django.db import connection
     from django.test import override_settings
@@ -282,7 +282,7 @@ def test_a_failed_sign_in_is_counted_in_the_database_every_web_process_shares():
 
 
 def test_a_session_not_remembered_ends_after_12_hours_idle_and_a_remembered_one_does_not():
-    """TR-17, private tracker 289: the clock moved 13 hours past the last request signs out a
+    """TR-17: the clock moved 13 hours past the last request signs out a
     session that was not remembered; a remembered one keeps its 14 days."""
     import time
 
@@ -325,7 +325,7 @@ def test_admin_add_user_page_renders_with_custom_forms():
     change = c.get(f"/admin/accounts/user/{a.pk}/change/")
     assert change.status_code == 200
     # What an account may do changes on Edit profile, which audits it (FR-92), and not here
-    # (#158): no level, no capability given to the account alone, no sysadmin switch.
+    # no level, no capability given to the account alone, no sysadmin switch.
     for field in ("groups", "user_permissions", "is_superuser"):
         assert f'name="{field}"' not in change.content.decode()
     assert 'name="groups"' not in add.content.decode()
@@ -428,7 +428,7 @@ def test_password_reset_mail_comes_from_the_club_with_its_own_subject(settings):
     html = [c for c, t in m.alternatives if t == "text/html"][0]
     assert "Reset my password</span></font></a>" in html and "/accounts/password/reset/key/" in html
     assert "EXAMPLE Operations</td>" in html and 'bgcolor="#' in html and "<table" in html
-    # Like every message the club sends (#102): a Date that says the club's offset rather than
+    # Like every message the club sends: a Date that says the club's offset rather than
     # Django's -0000, and the link to the notification settings under it (FR-81)
     set_setting(None, "club.timezone", "America/New_York")
     Client().post("/accounts/password/reset/", {"email": "who@example.org"})
@@ -538,8 +538,8 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
     """The link was shown once, on the card, and nowhere else.
 
     An officer who closed that card could only get another by pressing **Make a new link**,
-    which withdrew the invitation already sent and emailed a second one. The advisor accepted
-    the proposal to show it on every open row (issue #4, 2026-09-20).
+    which withdrew the invitation already sent and emailed a second one. Every open row shows it
+    now.
     """
     off = officer()
     inv = create_invitation(off, "keeps@example.org", "student")
@@ -556,7 +556,7 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
 
 
 def test_an_expired_invitation_reads_expired_with_no_link_and_offers_a_new_one():
-    """FR-3, private tracker 304: past its expiry a row reads Expired, shows no link, and offers
+    """FR-3: past its expiry a row reads Expired, shows no link, and offers
     Make a new link only; every row says whether it was emailed."""
     off = officer()
     inv = create_invitation(off, "late@example.org", "student")
@@ -585,7 +585,7 @@ def test_an_expired_invitation_reads_expired_with_no_link_and_offers_a_new_one()
 
 
 def test_the_ready_to_send_text_names_who_is_inviting():
-    """FR-104, private tracker 311: who is inviting, to what, the link, its expiry, the contact."""
+    """FR-104: who is inviting, to what, the link, its expiry, the contact."""
     from apps.accounts.services import invitation_text
 
     off = officer()
@@ -595,7 +595,7 @@ def test_the_ready_to_send_text_names_who_is_inviting():
 
 
 def test_a_dead_invitation_or_verify_link_offers_a_way_to_sign_in():
-    """FR-100, private tracker 316: a dead link says so and gives a route to sign in."""
+    """FR-100: a dead link says so and gives a route to sign in."""
     off = officer()
     inv = create_invitation(off, "used@example.org", "student")
     inv.state = "revoked"
@@ -607,12 +607,8 @@ def test_a_dead_invitation_or_verify_link_offers_a_way_to_sign_in():
 
 
 def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
-    """A warning that sends somebody somewhere carries the way there, and is said once.
-
-    The advisor, 2026-09-20: the wording should be better, "and if you are going to tell someone
-    to go somewhere to do something, provide them a link right in the warning." And on
-    2026-09-22, meeting the standing question and a flash message saying the same thing above
-    the same page: "We should only have one warning here, not 2 redundant ones."
+    """A warning that sends somebody somewhere carries a link there, and is said once: never a
+    standing question and a flash message saying the same thing on one page.
     """
     from apps.credentials.models import UlsLicense
 
@@ -640,8 +636,7 @@ def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
     )
     body = r.content.decode()
     # One warning about one fact. The standing question used to be repeated as a flash message
-    # on the way in, so the first page a new member ever saw carried two of them (NAF,
-    # 2026-09-22: "We should only have one warning here, not 2 redundant ones").
+    # on the way in, so the first page a new member ever saw carried two of them.
     assert body.count("does not exactly match the name on your account") == 1
     assert "not counted as your license" in body, "it says what the callsign does until answered"
     assert 'href="/me/edit/#details"' in body and "your profile" in body
@@ -687,10 +682,8 @@ def test_no_password_field_anywhere_trims_what_was_typed():
 
 
 def test_the_emailed_invitation_link_proves_the_mailbox_and_the_copied_one_does_not():
-    """The link on the page can be copied and passed on; the one in the mail cannot.
-
-    > Maybe put an extra token on the invitation that actually gets sent, as opposed to the
-    > invitation link that someone can copy and paste. — NAF, 2026-09-20
+    """The link on the page can be copied and passed on; the one in the mail carries an extra
+    token, so only it proves the mailbox.
     """
     from apps.accounts import addresses
 
@@ -733,7 +726,7 @@ def test_the_emailed_invitation_link_proves_the_mailbox_and_the_copied_one_does_
 
 
 def test_an_error_about_the_whole_form_is_a_problem_message():
-    """#261: a wrong password is the whole form's error, drawn as the messages are; an error
+    """A wrong password is the whole form's error, drawn as the messages are; an error
     under one field stays a plain list."""
     User.objects.create_user("someone@example.org", "pw-Testing-123", groups=["member"])
     body = (

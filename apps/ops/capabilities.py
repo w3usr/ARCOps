@@ -1,9 +1,8 @@
 """
 What a person may do, one item at a time.
 
-The advisor, 2026-09-17: *"I am thinking the correct way to do this is actually have access be
-item-by-item, and then define configurable access groups (member, officer, faculty advisor,
-etc). Systemic is superuser."*
+Access is granted item by item, and configurable access groups (member, officer, faculty
+advisor, and so on) bundle the items; the system level is the superuser.
 
 So this module holds the list of capabilities, and nothing else decides who has one. A group is
 a named set of them, seeded from the club's configuration and editable afterwards, which is what

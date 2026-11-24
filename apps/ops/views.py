@@ -89,7 +89,7 @@ def dashboard(request):
         )
         .order_by("slot__start")[:10]
     )
-    # Home opens on what you do next (#162): your next slot, with the one thing to do about it
+    # Home opens on what you do next: your next slot, with the one thing to do about it
     # now, and the rest after it.
     my_signups = list(my_signups)
     next_signup, other_signups = (my_signups[0], my_signups[1:]) if my_signups else (None, [])
@@ -131,22 +131,19 @@ def dashboard(request):
         from apps.accounts.entry import pending_review
 
         pending = list(pending_review()[:20])
-    # FR-108: unread messages that would otherwise have been a warning email. What the banner
-    # needs from them is whether there are any and what they are about — not the messages
-    # themselves. It used to show the first five and count that slice, so a reader with eight
-    # unread was told there were five, and the sentence then listed every subject in a row
-    # (the advisor, 2026-09-22: "'5 unread notices' is the wrong number … should just correctly
-    # summarize the number of messages/approvals that need review, and should not list all of
-    # them in a single sentence"). It reports the counts the sidebar badges carry instead, so
+    # FR-108: unread messages that would otherwise have been a warning email. What the banner needs
+    # from them is whether there are any and what they are about — not the messages themselves. It
+    # used to show the first five and count that slice, so a reader with eight unread was told there
+    # were five, and the sentence then listed every subject in a row. It summarizes the number that
+    # need review without listing them, and reports the counts the sidebar badges carry instead, so
     # the reader is never given a third number to reconcile.
     unread_notices = Outbox.objects.filter(
         user=request.user, read_at__isnull=True, category__in=BANNER
     )
     notice_categories = set(unread_notices.values_list("category", flat=True).distinct())
-    # A notice that something needs doing should offer the page where it is done, rather than
-    # the list of notices (NAF, 2026-09-20: "It would be better to link to me to the Approvals
-    # page than to the Messages page"). Only where every unread notice points the same way; a
-    # mixed handful goes to Messages, which is the one place that holds them all.
+    # A notice that something needs doing should offer the page where it is done, rather than the
+    # list of notices: Approvals, not Messages. Only where every unread notice points the same way;
+    # a mixed handful goes to Messages, which is the one place that holds them all.
     banner_action = None
     if request.user.may("approve_agreements") and notice_categories == {"agreement"}:
         from apps.credentials.models import SignedAgreement
@@ -237,8 +234,8 @@ def manifest(request):
         icons.append(_icon_entry(url, "any"))
     # A phone that installs the site puts the icon under its own mask. An icon that does not
     # say it can be masked is treated as artwork of unknown shape: the launcher shrinks it and
-    # sets it on a white tile, which is where the margin around the club's logo came from (the
-    # advisor, 2026-09-20). A maskable icon is drawn to the edge, so the club supplies one with
+    # sets it on a white tile, which is where the margin around the club's logo came from. A
+    # maskable icon is drawn to the edge, so the club supplies one with
     # its mark inside the safe area and the rest filled.
     masked = b.get("maskable_icon")
     if masked:
@@ -297,7 +294,7 @@ def branding_file(request, name):
 
 @login_required
 def components(request):
-    """The workspace redesign's kit (#231), every part with its one-line contract and example
+    """The workspace redesign's kit, every part with its one-line contract and example
     data: what a page written next semester is built from. Sysadmins only."""
     if not request.user.may("view_job_status"):
         from django.http import Http404

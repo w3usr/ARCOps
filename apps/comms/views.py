@@ -26,7 +26,7 @@ def my_messages(request):
     for m in page.object_list:
         m.was_unread = m.pk in unread_ids
     # A sysadmin viewing as the member reads nothing on their behalf: the view is read-only, and
-    # the impersonation guard stops only POSTs (T43, 2026-10-21).
+    # the impersonation guard stops only POSTs.
     if unread_ids and not getattr(request, "impersonator", None):
         Outbox.objects.filter(pk__in=unread_ids).update(read_at=timezone.now())
     return render(request, "comms/my_messages.html", {"page": page})

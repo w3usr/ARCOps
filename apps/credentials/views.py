@@ -31,8 +31,8 @@ from .services import approve, holds, log_decision, reveal_shared_secret
 DECLINED_WINDOW_DAYS = 30
 
 # The record of what has been decided, under the queue. Every column sorts and every column
-# narrows, in the words the members directory uses (NAF, 2026-09-20: "I think we need a
-# searchable, filterable, sortable log on this page of what approval actions have been taken").
+# narrows, in the words the members directory uses: a log of the approval actions taken that
+# can be searched, filtered and sorted (FR-25).
 DECISION_COLUMNS = [
     {"key": "at", "label": "When"},
     {"key": "member", "label": "Member"},
@@ -107,9 +107,8 @@ def sign(request, template_id):
     t = get_object_or_404(AgreementTemplate, pk=template_id, is_current=True)
     if request.user.category not in (t.audience or []):
         raise Http404
-    # The address comes first, not last (FR-27, the advisor 2026-09-22: require the applicant
-    # to confirm their institution account "before they can even sign any of these agreements.
-    # That will make the rest of the process more straightforward").
+    # The address comes first, not last (FR-27): the applicant confirms their institution
+    # account before they can sign any agreement.
     #
     # It used to be asked only at approval, which let somebody sign, wait, and then be told the
     # thing they could have fixed first. Asking here means a signature in the queue is one an
@@ -184,10 +183,9 @@ def sign(request, template_id):
 # and computer access both open a real door, and an address at the institution's own domain is
 # the evidence that somebody has been through the institution's own checks.
 #
-# The advisor, 2026-09-20, having approved station access for somebody holding no institution
-# address and finding that he could: the workflow should require one first, for the computer
-# agreement as well as the station one, so that everybody granted real access has been through
-# the institution's own checks or is at least in its directory.
+# The workflow requires one first, for the computer agreement as well as the station one, so
+# that everybody granted real access has been through the institution's own checks or is at
+# least in its directory.
 #
 # It was asked of a community member's station access alone (FR-27), which let everybody else
 # through: a student or a faculty member with only a personal address was approved without one.
@@ -216,8 +214,8 @@ def institution_address_ok(address: str) -> bool:
 
 @login_required
 def approvals(request):
-    # A capability of the level, not of a club position: "Faculty Advisors should have the
-    # ability to approve access agreements. Club officers should not." (the advisor, 2026-09-17)
+    # A capability of the level, not of a club position: faculty advisors approve access
+    # agreements; club officers do not.
     if not request.user.may("approve_agreements"):
         raise Http404
     # Only signatures somebody could act on. An account is ended four ways -- closed, suspended,
@@ -435,9 +433,9 @@ def decide(request, pk):
         return redirect("approvals")
     if request.POST.get("decision") == "approve":
         if credential_needs_institution(a.credential):
-            # FR-27, tightened 2026-09-20. The evidence is a **confirmed** institution address,
-            # and approving is not where an address gets confirmed: the advisor asked for the
-            # standard to be confirmation, with a manual confirmation as the override. That
+            # FR-27, tightened. The evidence is a **confirmed** institution address, and
+            # approving is not where an address gets confirmed: the standard is confirmation,
+            # with a manual confirmation as the override. That
             # override is "Confirm it myself", an officer's waiver that needs no mail (FR-126), on
             # the member's own page and on this row of the queue. Typing an address here used to
             # stand in for it, which meant one person's address could be evidence about
@@ -467,7 +465,7 @@ def decide(request, pk):
         if was_declined:
             # Reversing a decline says why, so the record tells a mis-click from a change of
             # mind. Both are legitimate; only one of them is an error, and a log that cannot
-            # tell them apart is the thing that made the reversal feel unsafe (NAF, 2026-09-20).
+            # tell them apart is the thing that made the reversal feel unsafe.
             why = (request.POST.get("reversal_reason") or "").strip()
             if not why:
                 messages.error(
@@ -516,9 +514,8 @@ def computer_password(request):
     """FR-33: the shared password, behind Confirm Access, asked for every single time.
 
     This page used to ask for the account's own password in a box of its own, which took a
-    password and nothing else while the rest of the site had moved on to passkeys (NAF,
-    2026-09-20: "the new one for looking up the station password only accepts a password, no
-    passkey"). It is the same Confirm Access the level step-up uses now, so there is one screen
+    password and nothing else while the rest of the site had moved on to passkeys. It is the
+    same Confirm Access the level step-up uses now, so there is one screen
     and one implementation; `apps.accounts.reauth` is what makes the proof good for this one
     view and no more, so a reload asks again.
     """
@@ -541,7 +538,7 @@ def computer_password(request):
 # What counts as evidence that the institution knows this person: they opened a link sent to
 # that mailbox, or somebody with the standing to say so confirmed it by hand. An address an
 # officer merely typed onto an invitation is not, because the person may have arrived by a link
-# that was copied and passed on (NAF, 2026-09-20).
+# that was copied and passed on.
 PROVEN = ("mailbox", "officer")
 
 

@@ -1,13 +1,8 @@
 """Two-step verification: who is asked for a second factor, and when.
 
 The sign-in library asks for one whenever an account holds **any** enrolled authenticator, which
-counts a passkey as a second factor. Here a passkey is a way to sign in:
-
-> I created a passkey, but did not enroll an authenticator app. So, I did not actually enable
-> 2fa. — NAF, 2026-09-20
-
-> We should make enabling 2fa explicit. I also want to make it optional right now. So, a user can
-> enable or disable it. There should be a sysop option to make 2fa mandatory. — NAF, 2026-09-20
+counts a passkey as a second factor. Here a passkey is a way to sign in, and two-step
+verification is explicit: each member turns it on or off, and the club can make it mandatory.
 
 So the second step happens when the person asked for it, or when the club requires it of their
 access group (§2.6, TR-16). The switch is on the account; the requirement is a club setting, a

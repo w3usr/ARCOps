@@ -52,7 +52,7 @@ class AccountAdapter(DefaultAccountAdapter):
         The account's key is its public identifier, and sign-in addresses are our own rows
         mirrored into the library's table with no primary among them, so the library handed
         Django a password and nothing to look the account up by. Every correct password came
-        back "Incorrect password." (the advisor, 2026-09-20). The account's own key is the
+        back as "Incorrect password." The account's own key is the
         credential Django's model backend understands.
         """
         credentials = {"username": str(user.get_username()), "password": password}
@@ -65,10 +65,8 @@ class AccountAdapter(DefaultAccountAdapter):
         An authenticator code is a **second** factor for signing in, not a way of saying who you
         are, and the library offers it here only because its list treats every enrolled method
         as interchangeable. That put "Alternative options: Use authenticator app or code" under
-        a page that has already established who you are.
-
-        > TOTP tokens/authenticator app is ONLY used for 2fa. So, it does not show up on any
-        > initial screen. Passwords or passkeys are the first line of entry. — NAF, 2026-09-20
+        a page that has already established who you are. An authenticator app is used only for
+        the second step, and never on a first screen: a password or a passkey comes first.
 
         Nobody is shut out by it: every account has a password.
 
@@ -102,7 +100,7 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def pre_authenticate(self, request, **credentials) -> None:
         """FR-99, TR-18: repeated failed sign-ins lock the account (`ACCOUNT_RATE_LIMITS`), and
-        its owner is told (private tracker 288)."""
+        its owner is told."""
         try:
             super().pre_authenticate(request, **credentials)
         except ValidationError:
@@ -137,7 +135,7 @@ class AccountAdapter(DefaultAccountAdapter):
     def render_mail(self, template_prefix, email, context, headers=None):
         """The club's names for the templates, a table-drawn button for the reset link, and the
         site's one mail layout around the HTML part (apps.comms.layout), with the Date header and
-        the small print every other message gets in deliver() (#102)."""
+        the small print every other message gets in deliver()."""
         from apps.comms.layout import button, wrap
         from apps.comms.services import _date_header, _plain_text, _small_print
 
@@ -159,7 +157,7 @@ class AccountAdapter(DefaultAccountAdapter):
             if mimetype == "text/html":
                 html = wrap(content, footer_html=small_print)
                 alts[i] = type(alt)(html, mimetype) if hasattr(alt, "content") else (html, mimetype)
-        # The club's own path, which this mail does not take (#286): a minor is never written to
+        # The club's own path, which this mail does not take: a minor is never written to
         # without the guardians (FR-70), and a reply goes to the club (FR-69).
         msg.to = sorted({*msg.to, *_guardian_addresses(context.get("user"))})
         if setting("club.contact_email", ""):
@@ -169,7 +167,7 @@ class AccountAdapter(DefaultAccountAdapter):
     def send_mail(self, template_prefix, email, context_):
         """Send as the library does, then file a copy in the person's messages (FR-82). The copy
         leaves the link out: officers read the outbox, and a reset link there would open the
-        account (#286). Mail to an address with no account is filed nowhere."""
+        account. Mail to an address with no account is filed nowhere."""
         from django.contrib.sites.shortcuts import get_current_site
         from django.utils import timezone
         from django.utils.html import escape

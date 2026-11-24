@@ -1,4 +1,4 @@
-"""Choosing one member by typing part of a name or callsign (private tracker 281).
+"""Choosing one member by typing part of a name or callsign.
 
 A drop-down of the whole membership does not last as the club grows, so a form that asks for a
 member carries `templates/_member_pick.html`: a search box, and the few people who match as

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-head"><h1>Announcements</h1><div class="actions"><a class="button" href="{% url 'announce_all' %}">{% icon 'megaphone' %}Announce to every member</a></div></div>
 <p class="lede">Every announcement sent from the system or recorded as sent outside it, with who sent it, to whom, and the text. To announce to an event's participants, use <strong>Announce</strong> on that event's Manage page.</p>
-{% comment %}#241: every announcement a row of one panel, folded until it is read.{% endcomment %}
+{% comment %}Every announcement a row of one panel, folded until it is read.{% endcomment %}
 <div class="panel msgpanel">
 {% for a in announcements %}
 <details class="card">

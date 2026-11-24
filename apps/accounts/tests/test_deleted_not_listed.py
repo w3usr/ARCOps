@@ -1,7 +1,7 @@
 """A deleted account keeps its row, and keeps out of the lists of people.
 
-NAF, 2026-09-19, having deleted a test account: "now I see a remnant Deleted member." The row
-survives on purpose, so a past roster still adds up, but the directory is who the club has now.
+The row of a deleted account survives on purpose, so a past roster still adds up, but the directory
+is who the club has now.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -100,8 +100,7 @@ def test_deletion_clears_the_notification_switch_and_keeps_the_last_sign_in():
     """What the retained row may and may not hold.
 
     The subscriptions go with the account, so the switch that governed them is a leftover
-    preference. `last_login` stays on purpose: NAF, 2026-09-19, "last_login may still be good
-    for audit or investigation purposes."
+    preference. `last_login` stays on purpose, for audit and investigation.
     """
     sysadmin = _sysadmin()
     gone = User.objects.create_user(

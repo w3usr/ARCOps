@@ -30,7 +30,7 @@ from .models import Announcement
 from .services import compose
 
 UNSUB_SALT = "announcement-unsubscribe"
-# "thin" (depends on one person) went with private tracker 279; a draft saved with it means covered.
+# "thin" (depends on one person) went with A28; a draft saved with it means covered.
 STATUS_FILTERS = {"open": "empty", "needs": "not_viable", "thin": "viable", "covered": "viable"}
 
 
@@ -63,7 +63,7 @@ def resolve_audience(event: Event | None, filters: dict) -> list[User]:
     cats = [c for c in filters.get("categories", []) if c]
     if event is None:
         # Active members only: an account that is closed, suspended, archived or deleted is not
-        # somebody the club is writing to (the advisor, 2026-09-19).
+        # somebody the club is writing to.
         qs = people_who_may("view_directory").filter(
             archived_at__isnull=True,
             deleted_at__isnull=True,

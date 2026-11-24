@@ -1,4 +1,4 @@
-"""TR-19, TR-20 (private tracker 296): production refuses to start without its two keys, rather
+"""TR-19, TR-20: production refuses to start without its two keys, rather
 than failing the first time the shared password is saved or shown."""
 
 import os

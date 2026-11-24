@@ -64,9 +64,7 @@ def button(href: str, label: str) -> str:
 # it is drawn as a button. A link inside a sentence, and a paragraph offering two of them, stay
 # as links: a message has at most one thing it is asking for, as a page has one solid button
 # per form (docs/INTERFACE.md). The rule reads the shape of the message rather than a marker,
-# so it survives a sysadmin editing the template, where the sanitiser keeps only the href
-# (NAF, 2026-09-20: "Can we make the Join and Confirm Email emails a bit more attractive like
-# the Reset my password button/email?").
+# so it survives a sysadmin editing the template, where the sanitiser keeps only the href.
 _LONE_LINK = re.compile(
     r"<p\b[^>]*>\s*<a\b(?![^>]*\bstyle=)([^>]*)>(.*?)</a>\s*</p>", re.IGNORECASE | re.DOTALL
 )

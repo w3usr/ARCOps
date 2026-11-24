@@ -1,5 +1,5 @@
 """On a wide screen the page's content stands in the middle of the space beside the sidebar,
-not against it (SK, 2026-11-23, from a 2,500 px screen): the column keeps its 72rem measure
+not against it: the column keeps its 72rem measure
 and the space left over goes to both sides. A page marked wide still takes the whole width."""
 
 import pytest

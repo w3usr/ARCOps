@@ -1,14 +1,13 @@
 """
 The access ladder becomes groups of capabilities.
 
-The advisor, 2026-09-17: "I am thinking the correct way to do this is actually have access be
-item-by-item, and then define configurable access groups (member, officer, faculty advisor,
-etc). Systemic is superuser."
+Access is item by item, in configurable access groups (member, officer, faculty advisor, and so
+on), and the system-wide level is superuser.
 
 Each of the four levels below sysadmin becomes the group of the same name, holding the
 capabilities that level used to imply, and every account joins the group its level named. A sysadmin becomes a Django
 superuser, which is the same thing as a sysadmin and holds every capability without naming any of
-them (the advisor, 2026-09-17: "I mean sysadmin and superuser to mean the same thing").
+them.
 `access_level` stays for now and is dropped once nothing reads it.
 
 The groups are the club's afterwards: a sysadmin edits them, and may make others. What this

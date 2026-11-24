@@ -150,7 +150,7 @@ def test_unsubscribe_link_and_one_click_turn_off_announcements_only():
     assert r.status_code == 200 and b"Stop these emails" in r.content
     assert b"general announcements from officers" in r.content, "it names what it stops"
     # The page carries the token in its form address, and a token is time-stamped, so about one in
-    # a hundred contains "Mo" by chance (CI, 2026-11-10); the name is what must not be there.
+    # a hundred contains "Mo" by chance; the name is what must not be there.
     shown = r.content.replace(token.encode(), b"")
     assert b"Mo" not in shown, "but not whose account it is: the link travels (2026-09-20)"
     r = cl.post(f"/unsubscribe/{token}/", {"List-Unsubscribe": "One-Click"})
@@ -235,9 +235,8 @@ def test_the_reminder_leaves_out_the_outline_s_empty_sections():
 
 
 def test_every_message_carries_one_shared_link_to_the_member_s_own_settings(settings):
-    """NAF, 2026-09-20: "For all emails, there should be a link to set user email and notification
-    preferences... one link that works for every account, so you don't need to send individual
-    links in the footers of the email."
+    """Every email carries a link to the member's email and notification settings: one link
+    that works for every account, not an individual link in each footer.
     """
     from django.core import mail
 
@@ -333,8 +332,8 @@ def test_a_token_from_before_the_category_was_named_still_means_announcements():
 
 
 def test_turning_email_off_from_a_message_is_audited_as_from_the_settings_page():
-    """One fact, one action name, whichever door the member came through (T29 step 2,
-    2026-10-20): the unsubscribe link wrote preference.email."""
+    """One fact, one action name, whichever door the member came through: the unsubscribe link
+    wrote preference.email."""
     from apps.ops.models import AuditLog
 
     u = User.objects.create_user("unsub@example.org", "pw-Testing-123")

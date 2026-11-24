@@ -1,9 +1,8 @@
 """Confirm Access is laid out like the sign-in page: Confirm, and the passkey under it.
 
-Found running T51 step 3 (2026-10-21): with a passkey on the account, Use a passkey sat on
-Confirm's row, to its right, where the sign-in page stacks its passkey button full width under
-Sign in. Measured in a real browser, because the library's forms are `display: contents` and
-the markup alone cannot say where the buttons land.
+With a passkey on the account, Use a passkey must not sit on Confirm's row, to its right: the
+sign-in page stacks its passkey button full width under Sign in. Measured in a real browser, because
+the library's forms are `display: contents` and the markup alone cannot say where the buttons land.
 """
 
 from playwright.sync_api import sync_playwright

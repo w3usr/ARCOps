@@ -64,8 +64,8 @@ def contact_line(u: User) -> str:
 
 
 def mail_when(start: datetime, end: datetime, event: Event, sep: str = "–") -> str:
-    """UTC first and the event's zone beside it, as on the pages (functional addendum A12; mail
-    too since SK, 2026-10-31). `sep` " to " is for a span of days."""
+    """UTC first and the event's zone beside it, as on the pages (functional addendum A12, for
+    mail as well). `sep` " to " is for a span of days."""
     utc = _span(start, end, UTC, sep)
     local = display_zone(event)
     return utc if local == UTC else f"{utc} ({_span(start, end, local, sep)})"
@@ -91,7 +91,7 @@ def _when(slot: Slot) -> list[int]:
 
 def confirm_token(su: SignUp, action: str = "confirm") -> str:
     """A reminder's link (FR-100): bound to one action, `confirm` or `cannot`, and to the slot's
-    time when it was sent (private tracker 293)."""
+    time when it was sent."""
     return signing.dumps(
         {"s": su.pk, "u": su.user_id, "a": action, "w": _when(su.slot)}, salt=CONFIRM_SALT
     )
@@ -129,7 +129,7 @@ def send_reminders(now: datetime | None = None) -> dict:
     from django.db.models import Max
 
     now = now or timezone.now()
-    # As far ahead as any event asks, not a fixed 72 hours (private tracker 317, SK 2026-11-17);
+    # As far ahead as any event asks, not a fixed 72 hours;
     # each sign-up below is still sent at its own event's time.
     longest = max(
         int(setting("defaults.reminder_hours_before", 24)),
@@ -283,8 +283,8 @@ def send_warnings(now: datetime | None = None) -> dict:
         if recent:
             continue
         short = status.status == "not_viable"
-        # What the slot needs, in the roster's words, for everyone who reads it (FR-62; SK,
-        # 2026-10-26); the captains' line adds who has not confirmed.
+        # What the slot needs, in the roster's words, for everyone who reads it (FR-62);
+        # the captains' line adds who has not confirmed.
         needs = status.needs if short else ""
         reasons = []
         if unconfirmed:
@@ -351,7 +351,7 @@ def notify_no_shows(now: datetime | None = None) -> int:
         checked_in_at__isnull=True,
         no_show_notified_at__isnull=True,
         slot__cancelled=False,
-        # Only an event still running: not one canceled since (#256), as reminders and warnings.
+        # Only an event still running: not one canceled since, as reminders and warnings.
         slot__position__location__event__state__in=[Event.State.PUBLISHED, Event.State.LOCKED],
         slot__start__lte=now - timedelta(minutes=minutes),
         slot__end__gt=now,
@@ -504,7 +504,7 @@ def event_cancelled(actor: User, event: Event, reason: str = "") -> int:
 def withdrawable_signups(user: User) -> list[SignUp]:
     """The sign-ups removing access takes away: future, in a slot not canceled, and not one that
     stays in the record (SignUp.kept: attendance in a slot under way). Deletion's confirmation
-    counts the same list, so the number it promises is the number withdrawn (private tracker 329)."""
+    counts the same list, so the number it promises is the number withdrawn."""
     return [
         su
         for su in SignUp.objects.filter(
@@ -553,8 +553,8 @@ def access_removed(actor: User, user: User) -> int:
     SignUp.objects.filter(pk__in=[s.pk for s in signups]).delete()
     from . import waitlist
 
-    waitlist.access_removed(actor, user)  # off every waitlist (#328)
-    for su in signups:  # each place freed is offered, as a cancellation's is (#299)
+    waitlist.access_removed(actor, user)  # off every waitlist
+    for su in signups:  # each place freed is offered, as a cancellation's is
         waitlist.on_place_opened(su.slot, su.role)
     return len(signups)
 

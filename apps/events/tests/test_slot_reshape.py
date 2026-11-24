@@ -1,5 +1,5 @@
-"""Re-time, split or merge a slot that has people in it (FR-46, #156), as SK decided on
-2026-11-11: re-timed, the people stay, are told and confirm again; split, they are in both
+"""Re-time, split or merge a slot that has people in it (FR-46):
+re-timed, the people stay, are told and confirm again; split, they are in both
 halves; merged, back-to-back slots only; none of it once a slot has started or has a check-in."""
 
 from datetime import timedelta

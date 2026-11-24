@@ -1,8 +1,7 @@
 """The filter panels: every row starting at the same edge, box beside word.
 
-NAF, 2026-09-19, on the members list: "Can we get all of these boxes and lists left-justified
-like a normal, sane UI?" Measured in a real browser, because this is a layout question and the
-markup alone cannot answer it.
+Boxes and lists are left-justified, as a reader expects. Measured in a real browser, because
+this is a layout question and the markup alone cannot answer it.
 """
 
 from playwright.sync_api import sync_playwright

@@ -1,8 +1,8 @@
 {% load nav badges times %}
-{% comment %}One header for the event (#232, D8): the event page, every Manage step and Who took part
+{% comment %}One header for the event: the event page, every Manage step and Who took part
 draw it the same. The h1 keeps each page's words for a screen reader and the scripts ("Manage:
 <title>"), with the prefix not shown. It is swapped with a step's in-place saves, so the badge
-follows a Lock (#177).{% endcomment %}
+follows a Lock.{% endcomment %}
 {% comment %}On the Roster tab the date line under the header (p.when) gives the dates in both zones, so the
 header leaves its own out there.{% endcomment %}
 <header class="event-head" id="event-head">
@@ -30,7 +30,7 @@ header leaves its own out there.{% endcomment %}
         {% endif %}
       </div>
       {% comment %}FR-42: the copy on new dates. One dialog for the page, opened from the menu
-      above and from the Publish step; every date moves with the start typed here (SK, 2026-11-10).{% endcomment %}
+      above and from the Publish step; every date moves with the start typed here.{% endcomment %}
       <dialog id="dup-dlg" class="slot-dialog confirm-dialog" aria-labelledby="dup-h">
         <h2 id="dup-h">Duplicate this event</h2>
         <p>A draft copy with the same start and end, on-air hours, locations, slot grid, sign-up rules and openings, and nobody signed up.{% if start %} Everything moves with the start you give it.{% endif %}</p>

@@ -1,4 +1,4 @@
-"""The database cache's table (private tracker 354), made here so a deploy, a laptop and CI all
+"""The database cache's table (FR-99, TR-18), made here so a deploy, a laptop and CI all
 get it from `migrate`. `createcachetable` is idempotent and does nothing for a cache that is not
 in the database, as under the test settings."""
 

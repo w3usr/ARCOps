@@ -1,10 +1,9 @@
 """
 Acting at a lower level than you hold.
 
-The advisor, 2026-09-17: *"I don't always like being logged in with the superuser view, even
-though my account has superuser capabilities. I want it so that supervisors can change the view
-level of their account view easily... By default, it is set to the highest level below superuser.
-To get superuser, the user has to explicitly change the view and re-authenticate."*
+Holding superuser capabilities is not the same as wanting to use them all the time. A session
+signs in at the highest level below superuser; reaching superuser takes an explicit change of
+view and a fresh authentication.
 
 So a session carries a **view**: a group whose capabilities are the ones that count for this
 session, chosen from the groups whose capabilities this account actually holds. A sysadmin signs
@@ -63,8 +62,7 @@ def available_views(user) -> list[dict]:
     the sysadmin view. Nobody can pick a view above themselves, because a view is only offered
     when its capabilities are a subset of what the account holds.
 
-    **Only a sysadmin has views at all.** The advisor, 2026-09-19: "Only people with sysadmin
-    privileges should be able to change their access view, even to something lower." An officer
+    **Only a sysadmin has views at all**, even to move to something lower. An officer
     dropping to Member is a rehearsal nobody asked for, and it leaves them wondering why the
     application has stopped working; the feature exists so that somebody who holds everything
     can put the dangerous half of it away (§2.1)."""
@@ -198,9 +196,7 @@ def context(request):
     """What the sidebar says under somebody's name, on every page.
 
     Everybody is told where they stand, because it explains what they can and cannot see; only
-    a sysadmin's is a link, because only a sysadmin has levels to move between (the advisor,
-    2026-09-19: "the Permission level can be listed under everyone's name... But, only sysadmins
-    will have that text linked and have the ability to switch roles").
+    a sysadmin's is a link, because only a sysadmin has levels to move between.
     """
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated or getattr(request, "impersonator", None):

@@ -1,7 +1,6 @@
 """The rich-text editor says so when a heading level is skipped (FR-115).
 
-Found by the acceptance walk of T45 on 2026-10-19: the note never appeared on any page. The
-editors are started by django-tinymce's script, which runs before static/js/richtext-check.js,
+The editors are started by django-tinymce's script, which runs before static/js/richtext-check.js,
 so the check's listener for newly added editors heard none of them. Measured in a real browser,
 because only the order the scripts run in shows the fault.
 """

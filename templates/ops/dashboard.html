@@ -2,15 +2,14 @@
 {% load times labels nav %}
 {% block title %}Home · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block content %}
-{% comment %}Home opens on what you do next (#162, SK): the heading says what the page shows.
-It replaces "Hello, <name> <callsign>" (the advisor, 2026-09-19, "It should say Hello, Kay
-N3KN"); the name and callsign stay at the foot of the sidebar, on every page.{% endcomment %}
+{% comment %}Home opens on what you do next: the heading says what the page shows. The
+name and callsign stay at the foot of the sidebar, on every page.{% endcomment %}
 <h1>{% if next_signup %}Your next slot{% elif invite %}Pick your hours{% else %}Nothing on the schedule yet{% endif %}</h1>
 {% if next_signup %}{% with s=next_signup %}
 {% comment %}The page's main block: when, how long until then, where, as what, and the one thing
 to do about it now, the same actions as My schedule (FR-72, FR-113). It comes straight after the
 heading, and the event's link after the action, so that inside its window Check in is the first
-thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
+thing in the page to take the focus (FR-116).{% endcomment %}
 <section class="card next-slot" aria-labelledby="next">
   <h2 id="next">{{ s.slot.event.title }}</h2>
   <p class="when">{% when s.slot.start s.slot.end s.slot.event %}</p>
@@ -36,7 +35,7 @@ thing in the page to take the focus (FR-116; SK, 2026-10-31).{% endcomment %}
 {% if has_notices %}
 {% comment %}The counts the sidebar badges already carry, and no list of subjects: a banner that
 recites every notice is longer than the page it sits on, and the reader still has to go and read
-them (NAF, 2026-09-22).{% endcomment %}
+them.{% endcomment %}
 <div class="banner" role="status">
   <p><strong>{% if approvals_waiting %}{{ approvals_waiting }} agreement{{ approvals_waiting|pluralize }} waiting for your approval{% if unread_count %}, and {{ unread_count }} unread message{{ unread_count|pluralize }}{% endif %}.{% else %}{{ unread_count }} unread message{{ unread_count|pluralize }}.{% endif %}</strong></p>
   <p>{% if banner_action %}<a href="{{ banner_action.url }}">{{ banner_action.label }}</a> · {% endif %}<a href="{% url 'my_messages' %}">Read them</a></p>

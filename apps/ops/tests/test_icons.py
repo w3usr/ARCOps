@@ -1,4 +1,4 @@
-"""Every icon a template names is drawn (#224): `{% icon %}` falls back to an empty square, which
+"""Every icon a template names is drawn: `{% icon %}` falls back to an empty square, which
 no test of a page would notice."""
 
 import re

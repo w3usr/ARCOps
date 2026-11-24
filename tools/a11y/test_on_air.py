@@ -1,4 +1,4 @@
-"""On-air hours (#247; ranges only since #248, SK 2026-11-06): a range typed to the minute and
+"""On-air hours, as ranges: a range typed to the minute and
 added by keyboard, saved in place, then removed; and the same without JavaScript."""
 
 from datetime import timedelta
@@ -38,7 +38,7 @@ def test_a_range_by_keyboard_saves_in_place_and_is_removed(live_server, engine):
         page.goto(url)
         air = page.locator("section[aria-labelledby=air]")
         expect(air).to_contain_text("On the air for the whole event")
-        expect(air.locator("table, input[name=hour]")).to_have_count(0)  # no grid (#248)
+        expect(air.locator("table, input[name=hour]")).to_have_count(0)  # no grid
         form = _fill(page, rng)
         before = page.evaluate("history.length")
         form.get_by_role("button", name="Add range").focus()

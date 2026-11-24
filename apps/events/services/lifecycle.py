@@ -35,7 +35,7 @@ def set_state(actor, event: Event, what: str) -> str:
         event.completed_at = timezone.now()
         event.save(update_fields=["state", "completed_at"])
         # The people with slots still to come are told their slots will not run; otherwise they
-        # find out by turning up (#258; SK, 2026-11-12). Reminders stop with the state.
+        # find out by turning up. Reminders stop with the state.
         by_user: dict[int, list] = {}
         for su in event.signups_ahead().select_related("user"):
             by_user.setdefault(su.user_id, []).append(su)
@@ -105,7 +105,7 @@ def announce_openings(now: datetime | None = None) -> int:
         if o.event.state not in (Event.State.PUBLISHED, Event.State.LOCKED):
             continue
         # Claimed before anyone is told, in one conditional update, so a second run at the same
-        # moment (the timer and a manage.py call) finds it taken and sends nothing (#165).
+        # moment (the timer and a manage.py call) finds it taken and sends nothing.
         # ponytail: at most once; a run that dies mid-send leaves the rest untold, not told twice.
         if not Opening.objects.filter(pk=o.pk, announced_at__isnull=True).update(announced_at=now):
             continue

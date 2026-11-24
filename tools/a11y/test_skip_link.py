@@ -1,9 +1,8 @@
 """Skip to content moves focus into the page, not only the scroll position (WCAG 2.4.1).
 
-Found by SK on 2026-10-22 with VoiceOver in Firefox: after Skip to content, VoiceOver read the
-sidebar again. `<main>` could not take focus, so following the link scrolled the page and left
-focus, which VoiceOver follows, where it was. Measured in a real browser, because only a browser
-decides where focus goes.
+With VoiceOver in Firefox, `<main>` that cannot take focus makes Skip to content scroll the page
+and leave focus, which VoiceOver follows, where it was, so the sidebar is read again. Measured
+in a real browser, because only a browser decides where focus goes.
 """
 
 from playwright.sync_api import sync_playwright

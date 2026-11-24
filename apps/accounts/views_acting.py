@@ -2,9 +2,6 @@
 
 Raising the level asks the person to prove who they are, and that proof is the sign-in
 library's, not ours: it accepts a password **or a passkey**, whichever the account carries.
-
-> I should be able to use a passkey in addition to a password here. — NAF, 2026-09-20
-
 So the page holds no password field. Choosing a level that can do more sends the person to
 Confirm Access, which offers whatever they have enrolled, and brings them back here to finish
 the change. Someone who confirmed a moment ago is not asked twice, which is the same window
@@ -40,7 +37,7 @@ PENDING_MAX = 300
 
 def _safe_next(request, value: str) -> str:
     """`next` only ever leads back into this site. It arrives in the page's address, so without
-    this a link could send a sysadmin elsewhere straight after Confirm Access (T51, 2026-10-21)."""
+    this a link could send a sysadmin elsewhere straight after Confirm Access."""
     if value and url_has_allowed_host_and_scheme(
         value, allowed_hosts={request.get_host()}, require_https=request.is_secure()
     ):
@@ -72,8 +69,7 @@ def acting_view(request):
             record(user, "view.raise_refused", user, before={"from": now}, after={"to": wanted})
             messages.error(request, "That was not confirmed, so the level is unchanged.")
             return redirect("acting_view")
-        # Spent on this raise, so the next one asks again (NAF, 2026-09-20: "We don't want
-        # people accidentally logging in as sysadmin").
+        # Spent on this raise, so the next one asks again and nobody is sysadmin by accident.
         spend(request)
         return _raise_to(request, views, now, wanted, pending.get("next") or "")
 

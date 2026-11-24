@@ -1,7 +1,6 @@
 """Who may appoint whom.
 
-NAF, 2026-09-19: "Faculty advisors should be able to appoint officers, members, and below.
-Officers should be able to appoint members, and below."
+Faculty advisors appoint officers, members and below; officers appoint members and below.
 
 Written against capabilities rather than a ladder, so a club that invents a group gets the same
 rule: a group is yours to grant when everything it grants is something you already hold and it
@@ -53,7 +52,7 @@ def _names(groups):
 
 
 def test_each_level_appoints_the_levels_below_it(club_people):
-    # The advisor holds appoint_peers, so their own level is on the list as well (2026-09-20).
+    # The advisor holds appoint_peers, so their own level is on the list as well.
     assert _names(assignable_groups(club_people["advisor"])) == [
         "advisor",
         "member",
@@ -66,9 +65,9 @@ def test_each_level_appoints_the_levels_below_it(club_people):
 
 
 def test_a_peer_is_appointed_only_by_somebody_who_holds_that_capability(club_people):
-    """NAF, 2026-09-20: "Faculty Advisors need to be able to set Category, Club Position, and
-    Access", up to their own level. The advisor group holds `appoint_peers`; the officer group
-    does not, so the rule an officer meets is the one he set on 2026-09-19.
+    """Faculty advisors set category, club position and access, up to their own level. The
+    advisor group holds `appoint_peers`; the officer group does not, so an officer appoints
+    members and below only.
     """
     advisor, officer = club_people["advisor"], club_people["officer"]
     other_advisor = _user("adv2@example.org", ["advisor"])
@@ -178,7 +177,7 @@ def test_a_sysadmin_is_made_by_a_sysadmin(club_people):
 
 
 def test_the_four_statuses_and_the_archive_flag_beside_them(club_people):
-    """NAF, 2026-09-19: Provisional, Active, Closed and Suspended are where somebody stands with
+    """Provisional, Active, Closed and Suspended are where somebody stands with
     the club; archiving is a flag beside that, and the record keeps the status it went in with.
     """
     from apps.accounts.services import archive_member, readmit, request_closure, suspend
@@ -209,7 +208,7 @@ def test_the_four_statuses_and_the_archive_flag_beside_them(club_people):
 
 
 def test_an_officer_suspends_but_only_an_advisor_lifts_it(club_people):
-    """ "Officer can suspend but only advisor can lift" — NAF, 2026-09-19."""
+    """An officer can suspend, but only an advisor can lift it."""
     officer, member = club_people["officer"], club_people["member"]
     _as(officer).post(f"/members/{member.pk}/edit/", {"action": "close", "reason": "pending"})
     member.refresh_from_db()
@@ -259,12 +258,11 @@ def test_the_status_column_is_an_officers_and_sorts_down_the_list(club_people):
 
 
 def test_access_is_one_choice_from_a_list(club_people):
-    """NAF, 2026-09-19: "Access should be a drop-down. You should only be able to pick one." """
+    """Access is a drop-down: one level is picked."""
     advisor, member = club_people["advisor"], club_people["member"]
     body = _as(advisor).get(f"/members/{member.pk}/edit/").content.decode()
     assert '<select name="groups"' in body and 'type="checkbox" name="groups"' not in body
-    # NAF, 2026-09-20: "there should not be a No Access option through the Access menu. That
-    # should be set through Close Account or Suspend Account, both of which require explanations."
+    # No access is set by closing or suspending the account, both of which take a reason.
     assert "No access" not in body.split("Danger zone")[0], "not for an advisor either now"
 
     _as(advisor).post(
@@ -287,9 +285,8 @@ def test_the_card_over_somebody_elses_fields_is_called_manage(club_people):
 
 
 def test_an_officer_promotes_and_never_demotes(club_people):
-    """NAF, 2026-09-19: "club officers should only be able to promote Provisional to Member.
-    They should never have a reason to demote to provisional... If a club officer needs to deny
-    an account, they need to do so through the suspend mechanism."
+    """An officer only promotes Provisional to Member, never demotes to Provisional; an officer
+    who needs to deny an account suspends it.
     """
     officer = club_people["officer"]
     provisional = _user("prov@example.org", ["provisional"])
@@ -338,8 +335,8 @@ def test_an_officer_promotes_and_never_demotes(club_people):
 
 
 def test_a_closed_account_has_no_access_menu_at_all(club_people):
-    """NAF, 2026-09-20: "Once the account is closed, the Access menu should disappear or be
-    disabled. It should only be granted again through 'Let them back in as a member'."
+    """A closed account has no Access menu: access is given again only through "Let them back in
+    as a member".
 
     So the field is on the form only while there is access to change, and the rest of the page
     still works: correcting a name on a closed record is not a readmission.
@@ -369,7 +366,7 @@ def test_an_account_given_access_back_is_no_longer_closed(club_people):
     """Status and access cannot disagree.
 
     An account closed and then given a level again read **Closed** while being perfectly
-    usable, and was in the announcement audience (found by the advisor, 2026-09-19).
+    usable, and was in the announcement audience.
     """
     from apps.accounts.services import request_closure, set_access
 
@@ -384,7 +381,7 @@ def test_an_account_given_access_back_is_no_longer_closed(club_people):
 
 
 def test_an_announcement_reaches_active_members_only(club_people):
-    """NAF, 2026-09-19: "Announcements should only go to active members." """
+    """Announcements go to active members only."""
     from apps.accounts.services import request_closure, suspend
     from apps.comms.announce import resolve_audience
 

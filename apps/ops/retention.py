@@ -28,9 +28,8 @@ def apply(now=None) -> dict:
     counts = {}
 
     # A former member's record is kept whole, and read in the archive (FR-125). It used to be
-    # stripped of its contact details two years after the account lost access. The advisor,
-    # 2026-09-17: "I don't really like the automatic deletion. Instead, can we have a method to
-    # archive members?" So nothing here touches a member's profile any more.
+    # stripped of its contact details two years after the account lost access; archiving
+    # replaced that automatic deletion, so nothing here touches a member's profile.
 
     # Guardian records: contact details go once the minor is converted or closed; the link stays.
     n = 0

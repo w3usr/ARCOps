@@ -31,9 +31,8 @@ from .services import (
 def profile(request):
     """Your own account, which is a member page like everyone else's.
 
-    The advisor, 2026-09-19, on his own profile page and his member page: "These should be the
-    same thing... /me/ should redirect to /members/<his own number>/ ... That way there is a
-    more unified codebase and interface." `/me/` stays as the name the menu, the messages, and
+    Your profile and your member page are one page, so there is one codebase and one interface
+    for both. `/me/` stays as the name the menu, the messages, and
     any bookmark use, and sends you to your own page; a fragment on it survives the redirect.
     """
     return redirect("member_detail", pk=request.user.pk)
@@ -49,7 +48,7 @@ def profile_edit(request):
 @require_http_methods(["POST"])
 def two_factor(request):
     """Turn two-step verification on or off, which is a deliberate act rather than a side effect
-    of enrolling a key (§2.6, the advisor 2026-09-20). Turning it on needs something that can
+    of enrolling a key (§2.6). Turning it on needs something that can
     answer the second step; turning it off is refused where the club requires it."""
     from . import mfa
 
@@ -298,7 +297,7 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
 
 def guardian_category() -> str:
     """A guardian is any adult with an account; guardianship is a relationship, not a membership
-    category (the advisor, 2026-09-17). A parent who joins only to manage a minor's account is a
+    category. A parent who joins only to manage a minor's account is a
     community member where the club has that category, and uncategorised where it does not; an
     officer can set it to whatever is right."""
     keys = {c["key"] for c in (setting("member_categories", []) or [])}
@@ -419,7 +418,7 @@ def accept_invitation(request, token):
                     inv,
                     d["password1"],
                     # Arriving by the emailed link proves they read that mailbox; arriving by
-                    # the copied one proves the officer believed the address (NAF, 2026-09-20).
+                    # the copied one proves the officer believed the address.
                     proof=(
                         Address.Proof.MAILBOX
                         if request.GET.get("m") and request.GET.get("m") == inv.mail_token
@@ -447,8 +446,7 @@ def accept_invitation(request, token):
             # A name the FCC spells differently raises the standing "Is this you?" question,
             # which carries the two answers and stays until one is given. Saying the same
             # thing again here as a flash message put two warnings about one fact on the
-            # first page a new member ever sees (NAF, 2026-09-22: "We should only have one
-            # warning here, not 2 redundant ones"), and INTERFACE.md already says a standing
+            # first page a new member ever sees, and INTERFACE.md already says a standing
             # fact is a banner rather than a message, and to say nothing the page says.
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             messages.success(request, "Welcome. Your account is ready.")

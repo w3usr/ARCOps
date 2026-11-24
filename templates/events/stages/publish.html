@@ -2,7 +2,7 @@
 {% load nav %}
 {% block stage %}
 {% if event.state == 'draft' %}
-{% comment %}#175: before publishing, every step in one place, each with a link to change it
+{% comment %}Before publishing, every step in one place, each with a link to change it
 (GOV.UK's Check answers). A required step not done says so; publishing stays allowed.{% endcomment %}
 <section class="panel" aria-labelledby="sum">
   <header class="panel-head"><div><h2 id="sum">Summary</h2><p>Every step in one place before it goes on the calendar.</p></div></header>
@@ -12,8 +12,8 @@
 <section class="panel" aria-labelledby="pub">
   <header class="panel-head"><div><h2 id="pub">Publish</h2><p>While it is a draft, only officers and captains can see this event. Publishing puts it on the calendar, and members sign up as the openings allow.</p></div></header>
   <form method="post" action="{% url 'event_publish' event.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="from" value="manage">
-    {% comment %}Publishing waits for the required steps and for an event not yet over (SK,
-    2026-11-10, functional addendum A17). Until then a line saying why stands in place of the form;
+    {% comment %}Publishing waits for the required steps and for an event not yet over
+    (functional addendum A17). Until then a line saying why stands in place of the form;
     each step has its Change link in the Summary above.{% endcomment %}
     {% if missing %}<footer class="panel-foot"><p class="not-ready">Not ready to publish: {{ missing }}</p></footer>
     {% else %}<footer class="panel-foot"><div class="check"><input type="checkbox" id="pub-announce" name="announce" value="yes"><label for="pub-announce">Announce to members</label></div><button type="submit">Publish</button></footer>{% endif %}
@@ -27,7 +27,7 @@
       {% if event.state == 'published' %}<button type="submit" name="what" value="lock" class="secondary">{% icon 'lock' %}Lock the roster</button>{% endif %}
       {% if event.state == 'locked' %}<button type="submit" name="what" value="unlock" class="secondary">{% icon 'unlock' %}Unlock</button>{% endif %}
     </form>
-    {% comment %}Completing cannot be taken back, so it asks first (SK, 2026-11-11).{% endcomment %}
+    {% comment %}Completing cannot be taken back, so it asks first.{% endcomment %}
     {% if event.state == 'published' or event.state == 'locked' %}<button type="button" class="secondary" commandfor="complete-dlg" command="show-modal">{% icon 'check' %}Mark completed</button>
     <dialog id="complete-dlg" class="slot-dialog confirm-dialog" aria-labelledby="complete-h">
       <h2 id="complete-h">Mark this event completed?</h2>
@@ -60,7 +60,7 @@
     <div class="actions"><button type="button" class="secondary" commandfor="dup-dlg" command="show-modal">{% icon 'copy' %}Duplicate this event</button></div></header>
 </section>
 
-{% comment %}Only an event still to run can be canceled (#255; SK, 2026-11-12): not one completed
+{% comment %}Only an event still to run can be canceled (2026-11-12): not one completed
 or canceled.{% endcomment %}
 {% if event.state == 'cancelled' or event.state == 'completed' %}
 {% elif not may_manage_events %}

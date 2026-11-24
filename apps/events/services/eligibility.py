@@ -17,7 +17,7 @@ def club_default_rule(role: str) -> dict:
     """The club's rule for `role` where an event sets none (FR-122), in the shape an event's own
     rule takes: a role marked requires_license needs a valid license of any class, which a rule
     states as the license among its required credentials. The rules form starts from this, and
-    a rule saved equal to it is not stored, so the event follows the club (#277; SK, 2026-11-12)."""
+    a rule saved equal to it is not stored, so the event follows the club."""
     cfg = next((r for r in (setting("slot_roles", []) or []) if r.get("key") == role), {}) or {}
     return {
         "categories": [],

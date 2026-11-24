@@ -1,7 +1,6 @@
 """Signing in says nothing; the page already does.
 
-NAF, 2026-09-19, on "Done: Successfully signed in as Kay Craigie (N3KN).": "We don't need a
-notification saying you successfully signed in."
+No "Successfully signed in" notification: the page already says who you are.
 """
 
 import pytest
@@ -37,7 +36,7 @@ def test_signing_in_adds_no_message():
     )
     body = r.content.decode()
     assert r.status_code == 200
-    # Home no longer greets (#162); the sidebar says who you are, callsign and all (FR-67).
+    # Home no longer greets; the sidebar says who you are, callsign and all (FR-67).
     assert "Kay N3KN" in body, "the page says who you are, callsign and all (FR-67)"
     assert "Successfully signed in" not in body
     assert 'class="messages"' not in body, "no message bar at all on a plain sign-in"

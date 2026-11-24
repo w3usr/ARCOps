@@ -1,9 +1,7 @@
 """The archive of former members (FR-125).
 
-The advisor, 2026-09-17: "I don't really like the automatic deletion. Instead, can we have a
-method to archive members? Only faculty advisors and above can view the archive."
-
-Two things changed on 2026-09-19. An account is closed or suspended **before** it is archived,
+Former members are archived rather than deleted automatically, and only faculty advisors and
+above can view the archive. An account is closed or suspended **before** it is archived,
 so that every account somebody could still use stays on the members list; and the archive is a
 filter on that list rather than a page of its own, with the status it went in with kept intact,
 so taking a record out of the archive and letting the person back in are two acts.
@@ -55,9 +53,9 @@ def _closed(member):
 def test_archiving_an_open_account_closes_it_in_the_same_act():
     """An archived account is never one somebody can still use.
 
-    The advisor, 2026-09-19: "Faculty Advisors and above should be able to Close and archive
-    accounts without suspending." A departure is not a decision about somebody's conduct, so
-    filing a graduating member takes one action and no suspension.
+    Faculty advisors and above close and archive accounts without suspending them. A departure is
+    not a decision about somebody's conduct, so filing a graduating member takes one action and no
+    suspension.
     """
     advisor = _user("adv@example.org", "advisor")
     member = _user("mem@example.org")
@@ -136,10 +134,10 @@ def test_only_a_faculty_advisor_or_above_reads_the_archive():
     archive_member(advisor, archived, "graduated")
     assert b"N0GON" not in _as(officer).get("/members/?archived=yes").content
     # one roster, so no second menu entry: the archived rows are a filter and a column on the
-    # members list, and only a reader who may see one gets either (NAF, 2026-09-19)
+    # members list, and only a reader who may see one gets either
     assert b"Archived members" not in _as(advisor).get("/").content
     body = _as(advisor).get("/members/").content.decode()
-    # the filter; an archived row carries a badge beside its status, not a column (#237)
+    # the filter; an archived row carries a badge beside its status, not a column
     assert 'name="archived"' in body, "the filter"
     officer_body = _as(officer).get("/members/").content.decode()
     assert "sort=archived" not in officer_body and 'name="archived"' not in officer_body
@@ -166,7 +164,7 @@ def test_opening_the_archive_is_recorded():
 
 
 def test_taking_a_record_out_of_the_archive_leaves_its_status_alone():
-    """Two dimensions, two acts (the advisor, 2026-09-19): the record comes back Closed, and
+    """Two dimensions, two acts: the record comes back Closed, and
     somebody lets the person in afterwards."""
     advisor = _user("adv@example.org", "advisor")
     member = _closed(_user("mem@example.org"))
@@ -228,11 +226,9 @@ def test_restoring_returns_the_record_untouched():
 
 
 def test_taking_an_account_out_of_service_is_all_in_one_place():
-    """NAF, 2026-09-20: "Account closing should also be under the Danger Zone" and "The option to
-    Archive should only appear for accounts that are already Closed or Suspended."
-
-    So the Danger zone holds closing, suspension, archiving and deletion, and archiving is the
-    second step: an active account offers no way to skip straight to it.
+    """Closing is under the Danger zone, and Archive appears only for an account already Closed or
+    Suspended. So the Danger zone holds closing, suspension, archiving and deletion, and archiving
+    is the second step: an active account offers no way to skip straight to it.
     """
     from django.core.management import call_command
 

@@ -1,6 +1,6 @@
 """
 How a time reads on a page. **For now, the viewer's own time only, never UTC** (functional
-addendum A38; NAF and SK, 2026-11-18, superseding A12's UTC first for pages): the filters keep
+addendum A38, superseding A12's UTC first for pages): the filters keep
 their old names so the change is easy to undo, and each prints a `<time>` whose `datetime` is
 ISO 8601 in UTC. The viewer's zone comes from the `tz` cookie (apps/ops/middleware.py).
 `utc_record` keeps UTC for the signed agreement's PDF, a record that must read the same for
@@ -45,13 +45,13 @@ def utc_time_short(t):
 
 @register.filter
 def utc_record(t):
-    """`Sat 21 Nov 2026 21:00 UTC`, for the agreement PDF only (#274)."""
+    """`Sat 21 Nov 2026 21:00 UTC`, for the agreement PDF only."""
     return when_.utc(t)
 
 
 @register.filter
 def plain_day(d):
-    """`21 Nov 2026`: a plain date, or an instant's UTC date (#274)."""
+    """`21 Nov 2026`: a plain date, or an instant's UTC date."""
     return when_.day(d)
 
 
@@ -83,7 +83,7 @@ def checkin_label(signup) -> str:
 
 @register.filter
 def meets_line(event) -> str:
-    """When a regular meeting or net meets, as members read it (private tracker 273)."""
+    """When a regular meeting or net meets, as members read it."""
     from ..services.meets import describe
 
     return describe(event)

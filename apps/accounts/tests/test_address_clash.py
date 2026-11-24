@@ -1,8 +1,7 @@
 """An address that already belongs to somebody, met on the way in.
 
-The advisor completed an invitation, created a second one to the same address, and tried it
-three times on 2026-09-19. Each attempt answered Server Error (500) and left an account behind
-with no address on it: three "Kay Craigie" rows, each in the member group, none able to sign in.
+A second invitation to an address already taken used to answer Server Error (500) on each try
+and leave an account behind with no address on it, in the member group and unable to sign in.
 """
 
 from datetime import timedelta

@@ -52,7 +52,7 @@ class LimitForm(NoColon, forms.ModelForm):
             "max_total_hours": "Maximum on-air hours for the event",
             "min_break_minutes": "Shortest break that counts as off time (minutes)",
         }
-        # Sized to what they hold, one a line (#176); a decimal keypad for the hours.
+        # Sized to what they hold, one a line; a decimal keypad for the hours.
         widgets = {
             "max_hours_per_day": forms.TextInput(
                 attrs={"inputmode": "decimal", "class": "num", "size": 4}
@@ -99,7 +99,7 @@ def limits_save(request, pk):
 
 def _rule_from_post(post, role: str) -> dict:
     """A rule as the form gives it. "Any class" is a valid license of any class: the license
-    among the required credentials, which is how the club's default states it (#277)."""
+    among the required credentials, which is how the club's default states it."""
     cls = post.get(f"class_{role}", "") or ""
     creds = [c for c in post.getlist(f"cred_{role}") if c and c != "amateur_license"]
     if cls == "any":
@@ -140,7 +140,7 @@ def shown(rule: dict) -> dict:
 @require_POST
 def eligibility_save(request, pk):
     """FR-53: the event-level rule per role. A rule saved equal to the club's (FR-122), as the
-    form shows it until changed, is not stored: the event follows the club (#277)."""
+    form shows it until changed, is not stored: the event follows the club."""
     event = captained_event(request, pk)
     roles = [r["key"] for r in (setting("slot_roles", []) or [])]
     changed = {}
@@ -173,7 +173,7 @@ def slot_eligibility(request, pk, slot_id):
     role = request.POST.get("role", "")
     d = _rule_from_post(request.POST, role)
     if request.POST.get("clear") or same_rule(d, event_rule(event, role)):
-        # cleared, or saved as the event's own rule, which the form starts from (#277): none
+        # cleared, or saved as the event's own rule, which the form starts from: none
         EligibilityRule.objects.filter(slot=slot, role=role).delete()
         messages.success(
             request, f"Override for {role_label(role)} removed; the event's rule applies."
@@ -264,7 +264,7 @@ def rules_context(event) -> dict:
     rules = {r.role: r for r in EligibilityRule.objects.filter(event=event, slot__isnull=True)}
     return {
         # Each role's form starts from the rule it applies, the club's where the event has none,
-        # tagged so (#277; NAF, 2026-11-12).
+        # tagged so.
         "rule_roles": [
             {
                 "key": r["key"],

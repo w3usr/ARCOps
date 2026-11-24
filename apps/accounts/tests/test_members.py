@@ -57,7 +57,7 @@ def _as(user, view="sysadmin"):
 
 
 def test_a_member_finds_others_only_by_what_they_see_of_them(people):
-    """Private tracker 334 (FR-67): a member sees "Ann O." and "Bob", so a search for the surname
+    """FR-67: a member sees "Ann O." and "Bob", so a search for the surname
     or for the first name behind a preferred one finds nobody for them; an officer finds both."""
     User.objects.create_user(
         "rob@uni.example",
@@ -80,7 +80,7 @@ def test_a_member_finds_others_only_by_what_they_see_of_them(people):
 
 
 def test_members_see_short_names_and_officers_see_everything(people):
-    """Everyone gets the same table; a member gets fewer columns in it (NAF, 2026-09-19).
+    """Everyone gets the same table; a member gets fewer columns in it.
 
     What a member may see is unchanged from when this was a list of cards: a first name and a
     last initial, or a callsign, and no addresses (FR-67).
@@ -100,7 +100,7 @@ def test_members_see_short_names_and_officers_see_everything(people):
 
     addresses.add(people["mem"], "mo@uni.example", confirmed=True)
     body = _as(people["off"]).get("/members/").content.decode()
-    # one Name link, the club's name and the surname (#237, SK 2026-11-09)
+    # one Name link, the club's name and the surname
     assert '<th scope="row" data-label="Name"><a' in body and ">Mo Member</a>" in body
     # every address an officer may write to, not one of them chosen for them
     assert "mem@home.example" in body and "mo@uni.example" in body
@@ -136,9 +136,8 @@ def test_nobody_changes_their_own_access(people):
     """Your own access is yours to change only if you hold everything anyway.
 
     An account that holds "decide which groups an account is in" through a group could once
-    lock everyone out in a single save of its own page; under the rule the advisor set on
-    2026-09-19 it cannot edit its own groups at all, because an account is never a proper
-    subset of itself.
+    lock everyone out in a single save of its own page; now it cannot edit its own groups at
+    all, because an account is never a proper subset of itself.
     """
     from django.contrib.auth.models import Permission
 
@@ -190,7 +189,7 @@ def test_nobody_changes_their_own_access(people):
 def test_officer_says_who_is_a_member_but_not_who_holds_an_office(people):
     c, mem = _as(people["off"]), people["mem"]
     body = c.get(f"/members/{mem.pk}/edit/").content.decode()
-    assert 'name="club_positions"' not in body, "the position is the advisor's (2026-09-19)"
+    assert 'name="club_positions"' not in body, "the position is the advisor's"
     assert 'name="groups"' in body and "Club Officer" not in body  # members and below (§2.3)
     assert 'name="is_superuser"' not in body
     assert "temporary password" not in body.lower()
@@ -244,9 +243,8 @@ def test_temporary_password_shown_once_and_access_removed_and_restored(people):
 def test_a_second_invitation_withdraws_the_first(people):
     """Nobody holds two live links to the same account.
 
-    The advisor pressed Create invitation three more times while testing on 2026-09-19 and
-    ended with four working links and six invitation emails in one inbox; revoking any one of
-    them withdrew nothing.
+    Pressing Create invitation again used to leave several working links and several emails in
+    one inbox; revoking any one of them withdrew nothing.
     """
     c = _as(people["off"])
     for _ in range(3):
@@ -347,7 +345,7 @@ def test_invitation_reissue_and_acceptance_places_the_sign_in_address(people):
 
 
 def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
-    """The advisor, 2026-09-17: sysadmins edit every field. Addresses have their own controls, so
+    """A sysadmin edits every field. Addresses have their own controls, so
     the form holds the rest of the account."""
     from apps.ops.models import AuditLog
 
@@ -388,8 +386,8 @@ def test_sysadmin_edits_every_field_and_the_change_is_audited(people):
 def test_a_sysadmin_looks_a_callsign_up_in_the_fcc_table(people):
     """A button that re-reads the local FCC table for a member's callsign.
 
-    It was any officer's until the advisor narrowed it on 2026-09-19: the nightly import
-    refreshes every licensed member anyway, so forcing one is the sysadmin's.
+    It is the sysadmin's, not any officer's: the nightly import refreshes every licensed member
+    anyway.
     """
     from apps.credentials.models import LicenseRecord, UlsLicense
     from apps.ops.models import AuditLog
@@ -454,7 +452,7 @@ def test_student_fields_are_cleared_when_the_category_is_not_student(people):
 
 
 def test_only_a_sysadmin_forces_a_callsign_lookup(people):
-    """NAF, 2026-09-19: "only sysadmins should be able to force a call-sign relook up."
+    """Only a sysadmin forces a callsign lookup.
 
     The nightly import refreshes every licensed member, so the button is for impatience rather
     than for correctness, and it is the sysadmin's.
@@ -473,7 +471,7 @@ def test_only_a_sysadmin_forces_a_callsign_lookup(people):
 
 def test_a_level_changed_on_the_member_page_is_audited_as_groups_changed(people):
     """The plan and FR-92 name the record of an account's groups changing: a level chosen on the
-    member's page wrote member.edited instead (T50 step 6, 2026-10-21)."""
+    member's page wrote member.edited instead."""
     from django.contrib.auth.models import Group
 
     from apps.ops.models import AuditLog
@@ -520,7 +518,7 @@ def test_whoever_may_confirm_an_address_finds_who_still_needs_one_proved(people)
 
 
 def _advisor_who_may_issue(email="adv@uni.example"):
-    """An advisor whose level carries the one-time password (a club's choice; SK, 2026-11-12)."""
+    """An advisor whose level carries the one-time password (a club's choice)."""
     from django.contrib.auth.models import Permission
 
     from apps.ops.capabilities import APP_LABEL

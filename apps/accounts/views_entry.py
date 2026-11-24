@@ -253,7 +253,7 @@ def join_form(request, token):
                 # A member who left, coming back (FR-125): their record is brought back, never
                 # duplicated, but only from their own mailbox. The form proves nothing, since
                 # anyone can type an address: it used to bring the account back and sign the
-                # browser in with the password typed here (SK, 2026-11-12). It now sends the
+                # browser in with the password typed here. It now sends the
                 # account a link, changes nothing, and answers as for any address (FR-120).
                 from apps.comms.services import send
 
@@ -311,7 +311,7 @@ def join_form(request, token):
 
 def return_through(request, token):
     """A former member coming back through a join link, from the link mailed to their own
-    address (FR-120, FR-125; SK, 2026-11-12): they choose a password here, and the record they
+    address (FR-120, FR-125): they choose a password here, and the record they
     had is brought back with the link's own rules. A spent, altered or old link changes nothing."""
     from django.contrib.auth.forms import SetPasswordForm
 

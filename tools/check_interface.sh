@@ -78,8 +78,8 @@ for path in sorted(pathlib.Path("static/css").rglob("*.css")) + sorted(
         if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
-# A choice's label reaches the page through get_<field>_display, which no template spells out:
-# "Cancelled" showed as an event's tag that way until acceptance test T18 (2026-10-16).
+# A choice's label reaches the page through get_<field>_display, which no template
+# spells out, so the models' labels are read too.
 LABEL = re.compile(r'^\s*[A-Z_]+\s*=\s*"[^"]*",\s*"([^"]*)"')
 for path in sorted(pathlib.Path("apps").glob("*/models.py")):
     for n, line in enumerate(path.read_text().splitlines(), 1):
@@ -88,8 +88,8 @@ for path in sorted(pathlib.Path("apps").glob("*/models.py")):
         if hit:
             fail.append(f"{path}:{n}: {hit.group(0)!r}; the house spelling is American")
 
-# A field with a default shows it filled in, never help text saying a blank box means it (#277;
-# NAF, 2026-11-12). Templates and the application's Python, not tests or old migrations.
+# A field with a default shows it filled in, never help text saying a blank box means it.
+# Templates and the application's Python, not tests or old migrations.
 BLANK_MEANS = re.compile(r"Left blank|Blank uses|Nothing set means", re.I)
 for path in sorted(pathlib.Path("templates").rglob("*.html")) + sorted(pathlib.Path("apps").rglob("*.py")):
     if "tests" in path.parts or "migrations" in path.parts:
@@ -100,7 +100,7 @@ for path in sorted(pathlib.Path("templates").rglob("*.html")) + sorted(pathlib.P
             fail.append(f"{path}:{n}: {hit.group(0)!r}; show the default filled in instead")
 
 # Five sizes of type and two weights (docs/INTERFACE.md, "Type"). A sixth size crept in one
-# rule at a time until the stylesheet had seventeen (#160).
+# rule at a time until the stylesheet had seventeen.
 SIZE = re.compile(r"font-size:\s*([^;}]+)")
 WEIGHT = re.compile(r"font-weight:\s*([^;}]+)")
 SIZES = {f"var(--t-{t})" for t in ("small", "body", "lede", "h2", "h1")} | {"inherit"}
@@ -108,8 +108,8 @@ WEIGHTS = {"400", "700", "inherit"}
 # Three corners by hierarchy (docs/INTERFACE.md, "Shape"), and a circle.
 RADIUS = re.compile(r"border-radius:\s*([^;}]+)")
 RADII = {f"var(--r-{t})" for t in ("field", "button", "card")} | {"50%"}
-# The one exception, the navigation's pill (#145; SK, 2026-11-11): its entries, and a switch's
-# choices, whose current one is where you are (#271; SK, 2026-11-12).
+# The one exception, the navigation's pill (2026-11-11): its entries, and a switch's
+# choices, whose current one is where you are (2026-11-12).
 PILL, PILL_RULE = "var(--r-pill)", (".navlist a, .navbtn {", ".switch a {")
 for path in [*sorted(pathlib.Path("static/css").glob("*.css")), *sorted(pathlib.Path("templates").rglob("*.html"))]:
     if "email" in path.parts or path.name.endswith("_pdf.html"):
@@ -131,12 +131,12 @@ for path in [*sorted(pathlib.Path("static/css").glob("*.css")), *sorted(pathlib.
                 fail.append(f"{path}:{n}: font-weight {m.group(1).strip()}; the face has 400 and 700")
         for m in RADIUS.finditer(line):
             # One corner token, or a list of the same tokens and 0: a panel's footer rounds only
-            # its foot (#227), and a part set flush inside a panel is square (#235).
+  # its foot, and a part set flush inside a panel is square.
             pill = {PILL} if rule.startswith(PILL_RULE) else set()
             if not set(m.group(1).split()) <= RADII | {"0"} | pill:
                 fail.append(f"{path}:{n}: border-radius {m.group(1).strip()}; use var(--r-field|button|card), or 50% for a circle")
 
-# Nine steps of space on a 4px grid (docs/INTERFACE.md, "Shape"; private tracker 362): every
+# Nine steps of space on a 4px grid (docs/INTERFACE.md, "Shape"): every
 # margin, padding and gap is a --space token, 0 or auto. em is allowed, being space relative to
 # the text beside it; so are vw and % (a share of the window, as in a clamp()) and env() for a
 # phone's safe areas. A whole declaration is read, since

@@ -63,7 +63,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "variables": ["club.short_name"],
     },
     {
-        # FR-120, FR-125 (SK, 2026-11-12): a former member's address on a join form brings the
+        # FR-120, FR-125: a former member's address on a join form brings the
         # account back only from its own mailbox.
         "key": "account.returning",
         "subject": "Come back to {{ club.short_name }}",
@@ -236,7 +236,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     },
     {
         "key": "digest.weekly",
-        # Sent weekly, about the next two weeks (private tracker 318).
+        # Sent weekly, about the next two weeks.
         "subject": "{{ club.short_name }}, the next two weeks: {{ events|length }} event(s), {{ open_slots }} open slot(s)",
         "body_html": (
             "<p>Hello {{ user.display_first }}.</p>"
@@ -333,7 +333,7 @@ DEFAULT_TEMPLATES: list[dict] = [
         "key": "password.rotated",
         "subject": "The {{ club.short_name }} station computer password has changed",
         # The sentence names the page and carries the link, rather than pointing vaguely at "the
-        # application" (NAF, 2026-09-20). "Confirming it is you" replaces "re-entering your own
+        # application". "Confirming it is you" replaces "re-entering your own
         # password", which stopped being the whole truth when Confirm Access took passkeys too.
         "body_html": '<p>{{ user.display_first }}, a new password for the shared station computer account is in effect from {{ effective|date:\'j F Y\' }}. View it on the <a href="{{ link }}">computer password page</a> after confirming it is you; it is never sent by email.</p><p><a href="{{ link }}">View the password</a></p>',
         "variables": ["user.display_first", "effective", "link"],
@@ -352,7 +352,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "license.override_dropped",
         "subject": "{{ person }}'s license override ended with a callsign change",
-        # FR-102 (private tracker 310): it survives only if re-confirmed, and entering it again is
+        # FR-102: it survives only if re-confirmed, and entering it again is
         # how a sysadmin does that.
         "body_html": (
             "<p>{{ person }} changed callsign from {{ old }} to {{ new }}, so the license override "
@@ -365,7 +365,7 @@ DEFAULT_TEMPLATES: list[dict] = [
     {
         "key": "account.locked_out",
         "subject": "Sign-in to your {{ club.short_name }} account is paused",
-        # FR-99, TR-18 (private tracker 288): once per lockout, and what to do if it was not them.
+        # FR-99, TR-18: once per lockout, and what to do if it was not them.
         "body_html": (
             "<p>{{ user.display_first }}, someone tried to sign in to your account with the wrong "
             "password too many times within a few minutes, so signing in is paused for "

@@ -43,8 +43,8 @@ class ConfirmAccessView(ReauthenticateView):
     """Confirm Access, with the passkey on the page that asks rather than behind a link.
 
     The library gives each way of confirming its own view and links between them, so a member
-    with a passkey met two Confirm Access pages in a row (the advisor, 2026-09-20: "Why can't I
-    just click Use passkey on the first page?"). This is the library's own password view with
+    with a passkey met two Confirm Access pages in a row instead of choosing the passkey on the
+    first. This is the library's own password view with
     the other half's form and challenge added, exactly as its sign-in second step already does
     for itself.
 

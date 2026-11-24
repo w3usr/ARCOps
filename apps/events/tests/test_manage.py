@@ -37,7 +37,7 @@ def _build(c):
     )
     ev = Event.objects.get(title="Field Day")
     ev.locations.all().delete()  # its club station by default (276): these tests add their own
-    # The first period is added on Operating periods like any other (#173).
+    # The first period is added on Operating periods like any other.
     c.post(f"/events/{ev.pk}/span/", {"start": "2026-06-27T18:00", "end": "2026-06-28T18:00"})
     c.post(
         f"/events/{ev.pk}/locations/add/",
@@ -90,8 +90,8 @@ def test_members_are_kept_out_and_captains_let_in(officer):
 
 
 def test_only_an_officer_appoints_or_removes_captains(officer):
-    """§2.2: a member made captain runs the event but cannot change who else does
-    (found in acceptance test T11, 2026-10-14)."""
+    """§2.2: a member made captain runs the event but cannot change who else
+    does."""
     c = _as(officer)
     ev = _build(c)
     mem, other = (
@@ -108,7 +108,7 @@ def test_only_an_officer_appoints_or_removes_captains(officer):
     assert cm.post(f"/events/{ev.pk}/captains/add/", {"user": other.pk}).status_code == 404
     assert cm.post(f"/events/{ev.pk}/captains/{officer.pk}/remove/").status_code == 404
     assert set(ev.captaincies.values_list("user", flat=True)) == {officer.pk, mem.pk}
-    # Nor can they cancel the event: only an officer can (SK, 2026-10-15).
+    # Nor can they cancel the event: only an officer can.
     assert "Cancel this event" not in body and "An officer can cancel this event." in body
     r = cm.post(f"/events/{ev.pk}/cancel/", {"confirm": "yes", "reason": "Rained out"})
     ev.refresh_from_db()
@@ -131,7 +131,7 @@ def test_the_event_form_says_preferred_license_class(officer):
 def test_duplicate_moves_everything_to_the_new_start(officer):
     """FR-42: the officer supplies the new start and the copy shifts with it: start and end, on-air
     hours, slots and openings by the same amount; it carries the eligibility rules, event-wide
-    and per slot, and every field (SK, 2026-11-10)."""
+    and per slot, and every field."""
     from datetime import timedelta
 
     from apps.events.models import EligibilityRule, OnAirRange, Opening
@@ -296,20 +296,20 @@ def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
 
 
 def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
-    """Found in acceptance test T18 (2026-10-16): the Events list tagged an upcoming canceled
+    """Found in acceptance testing: the Events list tagged an upcoming canceled
     event "Cancelled", from the state's label, beside a "Canceled." banner."""
     ev = Event.objects.create(title="Sprint", state=Event.State.CANCELLED, created_by=officer)
     start = timezone.now() + timedelta(days=10)
     ev.start, ev.end = start, start + timedelta(hours=4)
     ev.save(update_fields=["start", "end"])
     body = _as(officer).get("/events/").content.decode()
-    # a badge in the canceled tone since #238; the word is what the house spells
+    # a badge in the canceled tone; the word is what the house spells
     assert '<span class="tag bad">Canceled</span>' in body and "Cancelled" not in body
 
 
 def test_the_events_list_works_out_coverage_only_for_live_events(officer, monkeypatch):
     """Dev, 2026-11-09: hundreds of canceled test events each had their coverage worked out slot by
-    slot on every visit to the Events list. Only a published or locked event has any (#238)."""
+    slot on every visit to the Events list. Only a published or locked event has any."""
     from apps.events.services import roster
 
     asked = []
@@ -347,7 +347,7 @@ def _fill(c, ev, **extra):
 
 
 def test_after_sign_ups_a_longer_event_gets_slots_and_nothing_else_moves(officer):
-    """#153, SK 2026-11-03: the generator adds to the empty hours without replacing the grid."""
+    """The generator adds to the empty hours without replacing the grid."""
     from apps.events.models import SignUp
     from apps.ops.models import AuditLog
 
@@ -393,7 +393,7 @@ def _operating(ev):
 
 def test_regenerate_counts_only_the_slots_on_the_roster(officer):
     """A canceled slot is not on the roster, so Replace the whole grid? does not count it, though
-    Regenerate clears it too (found by T18, 2026-11-10)."""
+    Regenerate clears it too."""
     c = _as(officer)
     ev = _build(c)
     _operating(ev).filter(pk=_operating(ev).first().pk).update(cancelled=True)
@@ -411,8 +411,8 @@ def test_regenerate_counts_only_the_slots_on_the_roster(officer):
     assert "the 51 slots on the roster now" in body  # 52 made, 1 canceled
 
 
-# Publishing waits for the required steps (SK, 2026-11-10, reversing #175's "publishing stays
-# allowed"): an event with only a title had gone on every member's calendar, announceable to all.
+# Publishing waits for the required steps: an event with only a title had gone on every member's
+# calendar, announceable to all.
 def _bare(c, **extra):
     c.post(
         "/events/new/",
@@ -448,8 +448,8 @@ def _publish_controls(page: str) -> bool:
 
 
 def test_a_line_stands_in_place_of_publish_while_steps_are_missing(officer):
-    """SK, 2026-11-10, after trying the greyed button on a phone: "instead of the greyed out
-    publish button there should be a line"."""
+    """In place of a greyed Publish button, a line says what is missing: a greyed button
+    explains nothing on a phone."""
     c = _as(officer)
     ev = _bare(c)
     body = c.get(f"/events/{ev.pk}/manage/publish/").content.decode()
@@ -486,7 +486,7 @@ def test_an_event_with_no_slots_never_says_every_slot_is_spoken_for(officer):
     assert "No slots yet." in body and "Every slot is spoken for" not in body
 
 
-# Dates in the past (SK, 2026-11-10): a period that has already ended is allowed, with a warning
+# Dates in the past: a period that has already ended is allowed, with a warning
 # that names it, since a wrong year is the likely cause; an event whose every period has ended is
 # not published, so nobody is told about an event that is over.
 def test_a_start_and_end_that_has_ended_is_saved_with_a_warning(officer):
@@ -524,7 +524,7 @@ def test_an_event_that_has_ended_is_not_published(officer):
 
 def test_a_completed_event_is_under_past_even_before_its_dates_end(officer):
     """FR-44: completed by a captain, or once its last slot has ended, whichever comes first; a
-    member then finds it under Past, not Upcoming (found by T37, 2026-11-10)."""
+    member then finds it under Past, not Upcoming."""
     c = _as(officer)
     ev = _build(c)
     soon = timezone.now() + timedelta(days=3)
@@ -542,8 +542,8 @@ def test_a_completed_event_is_under_past_even_before_its_dates_end(officer):
 
 
 def test_a_new_event_starts_at_the_club_station_and_a_net_has_no_location(officer):
-    """FR-51 and private tracker 276 (SK, 2026-11-16): the club station, named and described
-    from Settings, with one position; a display-only event gets none."""
+    """FR-51: the club station, named and described from Settings, with one position; a
+    display-only event gets none."""
     for key, value in {
         "club.station_location_name": "The shack",
         "club.station_address": "Room 596",

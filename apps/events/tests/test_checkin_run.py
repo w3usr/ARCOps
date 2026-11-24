@@ -1,5 +1,4 @@
-"""Private tracker 361 (NAF, 2026-11-21): one tap checks a member in for the whole run of
-back-to-back slots."""
+"""A42: one tap checks a member in for the whole run of back-to-back slots."""
 
 from datetime import timedelta
 

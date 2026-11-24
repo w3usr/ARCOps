@@ -25,6 +25,8 @@ jobs:
         run: bash tools/check_no_requirement_ids.sh
       - name: Interface house rules (docs/INTERFACE.md)
         run: bash tools/check_interface.sh
+      - name: Comments cite the public record, not people
+        run: bash tools/check_no_attributions.sh
       - name: The club's own words for a dependency's strings (TR-45), as tools/check.sh and the deploy build them
         run: python manage.py compile_locale --settings=config.settings.test
       - name: Tests
@@ -34,7 +36,7 @@ jobs:
   accessibility:
     # FR-117, TR-36: axe-core over every page of the seeded demo, at desktop and phone width
     # (FR-95). A serious or critical violation fails the build, and a red build is never deployed.
-    # One job per browser, side by side; one failing does not stop the others (SK, 2026-11-23).
+    # One job per browser, side by side; one failing does not stop the others.
     # The Chromium job also runs the tests that use no browser fixture (the contact sheet).
     runs-on: ubuntu-latest
     strategy:

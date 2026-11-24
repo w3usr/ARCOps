@@ -1,6 +1,6 @@
-"""On-air hours (#247, SK 2026-11-05; functional addendum A15): the operating periods are the
+"""On-air hours (functional addendum A15): the operating periods are the
 contest's span, and the club chooses the hours it means to be on the air inside them, as ranges
-typed to the minute (#248, SK 2026-11-06; A16). The generator and the fill use those hours;
+typed to the minute (A16). The generator and the fill use those hours;
 changing them never touches a slot."""
 
 from datetime import UTC, datetime, timedelta
@@ -81,7 +81,7 @@ def test_saving_the_on_air_hours_from_the_slots_step(officer):
     url, step = f"/events/{ev.pk}/on-air/", f"/events/{ev.pk}/manage/slots/"
     body = c.get(step).content.decode()
     assert "On the air for the whole event: 24 hours." in body
-    assert 'name="hour"' not in body and 'name="daily"' not in body  # no grid, no daily (#248)
+    assert 'name="hour"' not in body and 'name="daily"' not in body  # no grid, no daily
     # the first range replaces the whole event; the next is added to it
     r = c.post(url, {"what": "range", "start": "2026-06-27T18:00", "end": "2026-06-27T21:00"})
     assert r.status_code == 302 and r["Location"] == step
@@ -103,7 +103,7 @@ def test_saving_the_on_air_hours_from_the_slots_step(officer):
     assert on_air(ev)[0][0] == T + 10 * H
     c.post(url, {"what": "whole"})
     assert on_air(ev) == [(T, T + 24 * H)]
-    # the grid's ticked hours and the same hours every day are gone (#248)
+    # the grid's ticked hours and the same hours every day are gone
     assert c.post(url, {"what": "hours", "hour": [T.isoformat()]}).status_code == 404
     assert c.post(url, {"what": "daily", "daily": "20:00-22:00"}).status_code == 404
 
@@ -130,7 +130,7 @@ def test_a_member_who_is_not_a_captain_may_not_set_them(officer):
 
 
 def test_the_strip_tells_off_the_air_from_no_slot_yet(officer):
-    """#247: an hour of the periods with no slot is marked, off the air or on the air with no
+    """An hour of the periods with no slot is marked, off the air or on the air with no
     slot yet, by shape as well as tone; the Key explains only the marks that are there."""
     import re
 

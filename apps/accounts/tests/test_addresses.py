@@ -1,9 +1,6 @@
 """A member's addresses: which of them sign them in, how one is proved, and what keeps an
 account reachable.
 
-The advisor, 2026-09-17: "Either one can sign-in, so there should not be a separate 'sign-in'
-email. The user should not be allowed to delete their last email. They can change an email to a
-different verified email. To keep accounts 'unique', they should each be given a unique key/id."
 So an account is its `public_id`; every confirmed address signs its owner in; an unconfirmed one
 receives club mail and signs nobody in; and the last address stays.
 """
@@ -147,7 +144,7 @@ def test_an_address_confirmed_on_one_account_cannot_be_claimed_by_another():
 
 
 def test_an_address_another_account_confirmed_is_refused_as_it_is_added():
-    """T7 step 4: refused at once, so no link meant for this account reaches the other's mailbox."""
+    """Refused at once, so no link meant for this account reaches the other's mailbox."""
     owner = _member("owner@example.edu")
     addresses.mark_confirmed(owner, "owner@example.edu")
     other = _member("other@example.edu")
@@ -231,8 +228,8 @@ def test_only_a_sysadmin_takes_a_confirmation_away_and_never_the_last_one():
 
 
 def test_an_officer_adds_and_confirms_but_does_not_take_away():
-    """NAF, 2026-09-19: "They should not be able to stop an email address from signing them in,
-    or turn off a users club email... Users can adjust email settings in their own accounts."
+    """An officer cannot stop an address signing a member in, or turn off their club mail; a
+    member adjusts their own mail settings.
 
     An officer who needs to shut an account out suspends it, where the act is named and reasoned.
     """
@@ -269,7 +266,7 @@ def test_an_officer_adds_and_confirms_but_does_not_take_away():
 
 @pytest.mark.parametrize("level", ["officer", "advisor"])
 def test_nobody_adds_or_confirms_an_address_on_an_account_at_or_above_their_level(level):
-    """#326: a confirmed address receives the password reset, so adding and confirming one on a
+    """A confirmed address receives the password reset, so adding and confirming one on a
     sysadmin's or a peer's account was a way into it. The same bound as A24's temporary
     password: only accounts strictly below the actor's level."""
     actor = _member(f"{level}@example.edu", groups=[level])

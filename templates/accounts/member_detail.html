@@ -94,7 +94,7 @@ switches are on the edit page.{% endcomment %}
 {% if vapid_public_key %}<p class="helptext">Browser notifications are {{ user.push_enabled|yesno:"on,off" }} for this account, on {{ push_subscriptions|length }} device{{ push_subscriptions|length|pluralize }} that has allowed them.</p>{% endif %}
 </section>
 {% comment %}Three separate things, each with its state in words. A passkey is a way to sign in,
-and two-step verification is asked for rather than inferred from one (NAF, 2026-09-20).{% endcomment %}
+and two-step verification is asked for rather than inferred from one.{% endcomment %}
 <section class="section"><h2>Security</h2>
 <dl class="dl">
   <dt>Password</dt>

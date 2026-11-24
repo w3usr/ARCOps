@@ -1,7 +1,7 @@
 {% load dicts labels nav times %}
 {% comment %}One slot: the same content on its own page and inside the roster's dialog. In the dialog
 (partial), its forms go through htmx and come back here, with the flash messages above and the
-slot's roster cell for the page behind (#139). I cannot make it and Change role stay ordinary
+slot's roster cell for the page behind. I cannot make it and Change role stay ordinary
 posts: either may answer with a page asking to confirm.{% endcomment %}
 {% if partial %}{% include "_messages.html" with in_dialog=True %}{% endif %}
 <h1 class="slot-title">{{ row.lead_range }}{% if row.other_range %} <small class="muted">{{ row.other_range }}</small>{% endif %}</h1>
@@ -14,7 +14,7 @@ posts: either may answer with a page asking to confirm.{% endcomment %}
 {% if cell.signups and not perms.ops.view_directory %}
 <p>{{ cell.class_counts }} ({{ cell.signups|length }} signed up{% if cell.mine %}, including you as {{ cell.mine.role|role_label }}{% endif %}). Names appear once a club officer has admitted you as a member.</p>
 {% elif cell.signups %}
-{% comment %}Each person a row (#236): their name, role and marks, and a captain's acts on them as
+{% comment %}Each person a row: their name, role and marks, and a captain's acts on them as
 small buttons at the row's end; Remove them a red button with a bin (D4).{% endcomment %}
 <ul class="rows list people">
 {% for s in cell.signups %}
@@ -48,7 +48,7 @@ small buttons at the row's end; Remove them a red button with a bin (D4).{% endc
 {% elif locked %}<p class="muted">The roster is locked; to change or give up this slot, contact a captain.</p>
 {% else %}
 <div class="stack">
-{% comment %}#251 (SK, 2026-11-12): a sign-up with attendance, on an ended slot or an event that is
+{% comment %}A sign-up with attendance, on an ended slot or an event that is
 over stays in the record, so there is nothing to give up.{% endcomment %}
 {% if cell.mine.kept %}<p class="muted">{{ cell.mine.kept }}</p>{% else %}<form method="post" action="{% url 'cancel_signup' cell.mine.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary">I cannot make it</button></form>{% endif %}
 {% if switch_roles %}
@@ -91,7 +91,7 @@ over stays in the record, so there is nothing to give up.{% endcomment %}
 {% elif not published %}<p class="muted">Sign-ups open when the event is published.</p>{% endif %}
 
 {% if is_captain %}
-{% comment %}Manage this slot (NAF, 2026-11-16, private tracker 280): folded away until a captain opens
+{% comment %}Manage this slot: folded away until a captain opens
 it, and open again after anything done from inside it (each form posts manage=1, and the slot comes
 back with ?manage=1). A disclosure holding forms is allowed here because it is inside a dialog
 (docs/INTERFACE.md, "Something more to read").{% endcomment %}
@@ -120,7 +120,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     <button type="submit" name="what" value="close" class="secondary">{% if slot.closed %}{% icon 'unlock' %}Reopen slot{% else %}{% icon 'lock' %}Close slot{% endif %}</button>
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
-  {% comment %}Re-time, split, merge (FR-46, #156; SK, 2026-11-11): with people in the slot too.
+  {% comment %}Re-time, split, merge (FR-46, 2026-11-11): with people in the slot too.
   Moved, they are told and confirm again; split, they are in both parts; merged, with the slot
   that follows on. Not once it has started or has a check-in.{% endcomment %}
   <section class="stack" aria-labelledby="reshape-h-{{ slot.pk }}"><h3 id="reshape-h-{{ slot.pk }}">Change the time, split or merge</h3>
@@ -153,7 +153,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     {% if slot_rules %}<ul class="list">{% for r in slot_rules %}<li><strong>{{ r.role|role_label }}</strong>: {% if r.categories %}{% for c in r.categories %}{{ c|category_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}any category{% endif %}{% if r.min_license_class %}, {{ r.min_license_class }}+{% endif %}{% if r.required_credentials %}, needs {% for c in r.required_credentials %}{{ c|credential_label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if not r.minors_allowed %}, no minors{% endif %}
       <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="manage" value="1"><input type="hidden" name="role" value="{{ r.role }}"><input type="hidden" name="clear" value="1"><button type="submit" class="ghost danger small">{% icon 'trash' 'small' %}Clear this override</button></form></li>{% endfor %}</ul>{% endif %}
     <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'slot_eligibility' event.pk slot.pk %}" class="stack">{% csrf_token %}<input type="hidden" name="manage" value="1">
-      {% comment %}It starts from the rule the event applies to the role chosen (#277): each role's choice
+      {% comment %}It starts from the rule the event applies to the role chosen: each role's choice
       carries that rule, the first is drawn filled in, and app.js fills the boxes when the role changes.
       Saved unchanged, nothing is stored.{% endcomment %}
       {% with first=override.0.rule %}

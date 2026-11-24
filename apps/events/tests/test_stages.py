@@ -1,4 +1,4 @@
-"""Manage as steps under one progress bar (#172, SK 2026-11-03): Details, Event start and end,
+"""Manage as steps under one progress bar: Details, Event start and end,
 Locations, Slots and Publish, then the optional Sign-up rules and Contest details, each a page of
 its own drawn by the server, so a step can be linked to and works without JavaScript."""
 
@@ -150,7 +150,7 @@ def test_a_save_returns_to_its_step(officer):
 
 
 def test_a_new_event_is_the_details_step_and_goes_on_to_its_start_and_end(officer):
-    """#173: no start and end on the create form; creating lands on Event start and end (A32)."""
+    """No start and end on the create form; creating lands on Event start and end (A32)."""
     c = _as(officer)
     body = c.get("/events/new/").content.decode()
     bar = _bar(body)
@@ -172,7 +172,7 @@ def test_duplicating_lands_on_its_start_and_end(officer):
 
 
 def test_know_before_you_go_is_its_own_step(officer):
-    """#174: the outline from the start, saved sanitized, outline only until a section is written;
+    """The outline from the start, saved sanitized, outline only until a section is written;
     not on Details, and not for a display-only event."""
     c = _as(officer)
     ev = _build(c)
@@ -200,7 +200,7 @@ def test_know_before_you_go_is_its_own_step(officer):
 
 
 def test_a_drafts_publish_step_checks_every_step_first(officer):
-    """#175: a row per step, each linking to its step; a required step not done says so, and
+    """A row per step, each linking to its step; a required step not done says so, and
     publishing stays allowed. Once published, no check."""
     c = _as(officer)
     ev = _build(c)
@@ -238,7 +238,7 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
     Slot.objects.filter(position__location__event=ev).delete()
     dl = c.get(url).content.decode().split('<dl class="dl summary">', 1)[1]
     assert '<dt>Slots</dt><dd class="missing"><span>Not done yet</span>' in dl
-    page = c.get(url).content.decode()  # A17 (SK, 2026-11-10): a line in place of Publish
+    page = c.get(url).content.decode()  # A17: a line in place of Publish
     assert (
         "Not ready to publish: Slots is not done yet." in page and ">Publish</button>" not in page
     )
@@ -247,7 +247,7 @@ def test_a_drafts_publish_step_checks_every_step_first(officer):
 
 
 def test_a_steps_own_forms_save_in_place(officer):
-    """#177: the listed forms carry the in-place attributes; an htmx save is a redirect htmx
+    """The listed forms carry the in-place attributes; an htmx save is a redirect htmx
     follows to the step (not an HX-Redirect), and the step's messages come inside the swap."""
     c = _as(officer)
     ev = _build(c)
@@ -255,7 +255,7 @@ def test_a_steps_own_forms_save_in_place(officer):
     marked = {
         "span": 0,  # its one form is a dialog
         "locations": 2,  # Remove on each position
-        "slots": 2,  # Add range (#247, ranges only since #248), Save limits
+        "slots": 2,  # Add range, Save limits
         "rules": 1,  # Save who may sign up (no opening yet)
         "contest": 1,
         "publish": 0,  # a draft: Publish is a page change; Remove on a lone captain is not offered

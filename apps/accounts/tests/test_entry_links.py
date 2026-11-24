@@ -1,5 +1,5 @@
 """Entry links (FR-119, FR-120), the Provisional level and its review (FR-121), the mentor-needs
-page (FR-123). Test plan T23 to T25."""
+page (FR-123)."""
 
 import re
 from datetime import UTC, datetime, timedelta

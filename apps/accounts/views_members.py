@@ -52,12 +52,9 @@ from .services import (
 # The classes the ladder does not hold: a station the FCC gives no operator class, and no
 # license at all. The key narrows the directory; the letter is what the Class column shows.
 #
-# Only "No license" is offered as a filter. The club, RACES and military-recreation keys still
-# narrow the list for anyone who asks for them, and the Class column still shows C, R and M:
-#
-# > Aside from testing, I can't think of any non-individuals having member accounts. So, to
-# > clean up the UI, let's remove Club, RACES, and Mil Rec from the filter list. Leave all the
-# > other functionality in place. — NAF, 2026-09-20
+# Only "No license" is offered as a filter, since a station holding a member account is a test
+# case. The club, RACES and military-recreation keys still narrow the list for anyone who asks
+# for them, and the Class column still shows C, R and M.
 STATION_CHOICES = (("none", "No license"),)
 STATION_FILTERS = {"club": "C", "races": "R", "military": "M", "none": "U"}
 
@@ -105,13 +102,12 @@ def _standing(user) -> dict:
 # it rather than by the key stored behind it ("Community Member", not "community").
 DIRECTORY_COLUMNS = [
     # A member reads the redacted name, and the surname as an initial in a column of its own,
-    # because a roster is read by surname (NAF, 2026-09-19; the advisor, 2026-09-20, testing T7:
-    # "Last initials are going to need their own column to sort by last name by default.").
+    # because a roster is read by surname, and the list sorts by it by default.
     {"key": "name", "label": "Name", "show": "member"},
     {"key": "last", "label": "Last", "show": "member"},
     # An officer reads one Name column: the name the club calls them and their surname, linking
-    # to the profile, with the address under it, sorted by surname (SK, 2026-11-09, #237: the
-    # compact table; email and phone as text, one link per row). Preferred, Email, Phone and the
+    # to the profile, with the address under it, sorted by surname: a compact table, email and
+    # phone as text, one link per row. Preferred, Email, Phone and the
     # Archived column went: the preferred name is in the name, the address under it, the phone
     # on the profile, and an archived record carries a badge beside its status.
     {"key": "fullname", "label": "Name", "show": "full"},
@@ -222,14 +218,14 @@ def members(request):
         raise Http404  # FR-121: a Provisional member sees no directory
     q = request.GET.get("q", "").strip()
     # The directory is everyone the club has: active, provisional, closed and suspended alike,
-    # because an account somebody could still use should never be off the list (the advisor,
-    # 2026-09-19). Two things are put away rather than listed. An **archived** record is asked
+    # because an account somebody could still use should never be off the list. Two things are
+    # put away rather than listed. An **archived** record is asked
     # for by name and read by whoever may read the archive (FR-125); a **deleted** row survives
     # only so past rosters keep their shape, holds no name or address, and is a sysadmin's.
     may_see_archive = request.user.may("view_archive")
     may_see_deleted = request.user.may("delete_accounts")
     # Every filter takes a set: "show me the officers and the advisors" is a question somebody
-    # asks (the advisor, 2026-09-19), and a drop-down that holds one answer cannot take it.
+    # asks, and a drop-down that holds one answer cannot take it.
     # Nothing ticked means no narrowing at all, so an old single-value link still works.
     statuses = set(request.GET.getlist("status")) if full else set()
     statuses &= {k for k, _ in User.STATUSES}
@@ -356,16 +352,10 @@ def members(request):
     license_choices = [(c, c) for c in (setting("license_ladder", []) or [])]
     license_choices += list(STATION_CHOICES)
     # Nothing is ticked until somebody ticks it, as in every other panel: an empty filter is a
-    # filter that is off, and a page that draws four ticked boxes under the words "Any status"
-    # says two different things at once.
-    #
-    # > I think the convention we are using is that the filter is turned off if everything is
-    # > unchecked. The status filter seems to be the opposite right now. Fix it. — NAF,
-    # > 2026-09-20, superseding "everything checked except archived" (2026-09-19), which asked
-    # > for the same list and drew it the other way round.
-    #
-    # The list this leaves is the same one: a deleted row is left out until Deleted is ticked,
-    # because it holds no name and survives only so past rosters keep their shape.
+    # filter that is off, and a page that draws four ticked boxes under the words "Any status" says
+    # two different things at once. The list this leaves is the same one: a deleted row is left out
+    # until Deleted is ticked, because it holds no name and survives only so past rosters keep their
+    # shape.
     status_ticked = statuses
     status_choices = [(k, label) for k, label in User.STATUSES if k != "deleted"]
     if may_see_deleted:
@@ -380,7 +370,7 @@ def members(request):
         "accounts/members.html",
         {
             "members": rows,
-            # Whose profile this reader may edit, for each row's ⋮ menu (#237).
+            # Whose profile this reader may edit, for each row's ⋮ menu.
             "editable": {m.pk for m in rows if full and may_manage(request.user, m)},
             "q": q,
             "full": full,
@@ -391,7 +381,7 @@ def members(request):
             "dir": "desc" if descending else "asc",
             "chosen": chosen,
             # What each panel's summary says, so a narrowed table says so without being opened:
-            # "" while a filter narrows nothing, so it is not drawn as set (#266).
+            # "" while a filter narrows nothing, so it is not drawn as set.
             "summaries": {
                 "category": summary(
                     sorted(cats.items(), key=lambda kv: kv[1]), chosen["category"], "category"
@@ -446,8 +436,8 @@ def archive(request):
     """The archive is a filter on the members list now, not a page of its own.
 
     It held the same rows with fewer columns, which meant two places to keep in step and two
-    places to look. The advisor, 2026-09-19: "Fold in and drop the page." The URL stays, because
-    it is in the menu, in old links, and in the test plan.
+    places to look. The URL stays, because it is in the menu, in old links, and in the test
+    plan.
     """
     if not request.user.may("view_archive"):
         raise Http404
@@ -479,9 +469,8 @@ def _preferences(user) -> dict:
 def _member_or_404(request, pk):
     """The account this page is about, for a reader entitled to see it.
 
-    Your own account is one of these pages: `/me/` redirects here (NAF, 2026-09-19, "These
-    should be the same thing"), so a member who may read nobody else's record may always read
-    their own.
+    Your own account is one of these pages: `/me/` redirects here, so a member who may read
+    nobody else's record may always read their own.
     """
     member = get_object_or_404(User, pk=pk)
     if member == request.user:
@@ -497,11 +486,10 @@ def _member_or_404(request, pk):
 def member_detail(request, pk):
     """A member's profile, read-only.
 
-    Nothing here changes anything. NAF, 2026-09-19: a name in the directory should open "a
-    read-only view of their profile page", with an Edit profile button for the people entitled
-    to change it, because it "will allow for potential public views of profiles, as well as
-    make it more difficult to accidentally change information". Every form that was on this
-    page is now on `member_edit`.
+    Nothing here changes anything. A name in the directory opens this read-only view, with an
+    Edit profile button for the people entitled to change it, so a profile can later be shown
+    publicly and is hard to change by accident. Every form that was on this page is now on
+    `member_edit`.
     """
     member = _member_or_404(request, pk)
     actor = request.user
@@ -551,8 +539,8 @@ def _may_readmit(actor, member) -> bool:
     """Who may let an account back in.
 
     A member who closed their own account is readmitted by an officer; one somebody suspended
-    needs a faculty advisor, because letting them back in overturns another officer's decision
-    (the advisor, 2026-09-19: "officer can suspend but only advisor can lift").
+    needs a faculty advisor, because letting them back in overturns another officer's decision:
+    an officer can suspend, only an advisor can lift it.
     """
     if not may_set_access(actor, member):
         return False
@@ -598,7 +586,7 @@ def member_edit(request, pk):
                     result = save_account(form, actor)
                     call = result["callsign"]
                     # Your own pending callsign is asked about by the standing "Is this you?"
-                    # question; one warning about one fact (NAF, 2026-09-22).
+                    # question; one warning about one fact.
                     if call and call["state"] == "pending" and member != actor:
                         messages.warning(
                             request,
@@ -627,9 +615,9 @@ def member_edit(request, pk):
             return redirect("member_edit", pk=member.pk)
         elif action == "license_lookup" and actor.may("override_license"):
             # FR-14: the nightly import refreshes every licensed member, so a lookup by hand is
-            # for when somebody cannot wait for it. The advisor, 2026-09-19: "only sysadmins
-            # should be able to force a call-sign relook up." The capability that governs the
-            # license record is the one that governs forcing its refresh.
+            # for when somebody cannot wait for it, and only a sysadmin forces one. The
+            # capability that governs the license record is the one that governs forcing its
+            # refresh.
             if not member.callsign:
                 messages.error(request, "This member has no callsign to look up.")
             else:
@@ -810,7 +798,7 @@ def member_edit(request, pk):
             "manage_heading": "Details" if member == actor else "Manage",
             "addresses": addresses.state(member),
             "address_subject_is_self": member == actor,
-            # Which address controls this reader has on this account (#326); the page draws
+            # Which address controls this reader has on this account; the page draws
             # nothing the POST would refuse.
             "address_may_edit": views_addresses.may_edit(actor, member),
             "address_may_correct": views_addresses.may_correct(actor, member),
@@ -826,9 +814,8 @@ def member_edit(request, pk):
             "can_set_access": may_set_access(actor, member),
             "can_issue_temp": may_issue_temporary_password(actor, member),
             "can_readmit": _may_readmit(actor, member),
-            # Archiving is the second step, offered once the account is out of service: "The
-            # option to Archive should only appear for accounts that are already Closed or
-            # Suspended." (the advisor, 2026-09-20).
+            # Archiving is the second step, offered only for an account already Closed or
+            # Suspended.
             "can_archive": (
                 actor.may("archive_members")
                 and member != actor

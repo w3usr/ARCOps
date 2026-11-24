@@ -23,12 +23,12 @@ def generate_slots(
 ):
     """Fill each stretch of on-air hours with slots of `minutes`, aligned to its start, with a
     final short slot if its length is not a multiple. `windows`, when given, is a list of
-    (start, end) datetimes to fill; otherwise the event's on-air hours (#247), which are its whole
+    (start, end) datetimes to fill; otherwise the event's on-air hours, which are its whole
     start and end unless the club has chosen otherwise.
     Setup slots go before the first stretch and breakdown slots after the last (FR-47).
-    With `fill` (#153, FR-48), only the hours no slot has yet, and no setup or breakdown: every
+    With `fill` (FR-48), only the hours no slot has yet, and no setup or breakdown: every
     existing slot, its seats and its sign-ups stay as they are, so this runs after people have
-    signed up. Setup and breakdown are left to Add a slot (SK, 2026-11-03)."""
+    signed up. Setup and breakdown are left to Add a slot."""
     return [
         Slot.objects.create(position=pos, start=a, end=b, kind=kind)
         for pos, a, b, kind in plan_slots(
@@ -57,8 +57,8 @@ def plan_slots(
     breakdown_minutes=None,
 ):
     """(position, start, end, kind) for each slot the generator would make, without making any:
-    what generating and filling create, and what the preview counts (#168), from one place.
-    With `fill`, only the hours no slot covers, and no setup or breakdown (#153). Setup and
+    what generating and filling create, and what the preview counts, from one place.
+    With `fill`, only the hours no slot covers, and no setup or breakdown. Setup and
     breakdown slots are of their own length (FR-47), an operating slot's when none is given."""
     step = timedelta(minutes=minutes)
     before = timedelta(minutes=setup_minutes or minutes)
@@ -78,7 +78,7 @@ def plan_slots(
 
 
 def describe(event, positions, minutes=60, setup_slots=0, breakdown_slots=0, fill=False) -> str:
-    """The line the generator shows before anything is made (#168): how many slots, per position
+    """The line the generator shows before anything is made: how many slots, per position
     and across positions; or, filling, how many go into the empty hours. ponytail: per position
     as the first position has it, which is every position's count when generating."""
     planned = list(plan_slots(event, positions, minutes, setup_slots, breakdown_slots, fill=fill))
@@ -115,7 +115,7 @@ SHORTEST = timedelta(minutes=15)  # the generator form's minimum slot length
 
 def empty_hours(position, spans) -> list[tuple]:
     """The parts of `spans` that no slot of `position` covers. A canceled slot still covers its
-    time: a cancellation is a decision a bulk fill should not undo (SK, 2026-11-03). Pieces
+    time: a cancellation is a decision a bulk fill should not undo. Pieces
     shorter than SHORTEST are left out, so a grid of other lengths does not leave slivers."""
     taken = sorted(position.slots.values_list("start", "end"))
     out = []
@@ -132,7 +132,7 @@ def empty_hours(position, spans) -> list[tuple]:
     return out
 
 
-# ------------------------------------------------------------- on-air hours (#247, A15) ---
+# ------------------------------------------------------------- on-air hours (A15) ---
 
 HOUR = timedelta(hours=1)
 
@@ -183,7 +183,7 @@ def on_air(event) -> list[tuple]:
 
 
 def fits_on_air(event, start, end) -> bool:
-    """An operating slot has to fit inside the on-air hours (SK, 2026-11-16, A32)."""
+    """An operating slot has to fit inside the on-air hours (A32)."""
     return any(a <= start and end <= b for a, b in on_air(event))
 
 

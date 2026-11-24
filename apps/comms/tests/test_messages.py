@@ -90,7 +90,7 @@ def test_my_messages_lists_marks_read_and_the_badge_and_banner_follow():
     banner = home.split("My next slots")[0]
     # The banner counts and names nothing. It used to recite every subject and count only the
     # five it showed, so eight unread read as "5 unread notices" followed by a paragraph of
-    # them (NAF, 2026-09-22). The number it carries is the one on the Messages badge.
+    # them. The number it carries is the one on the Messages badge.
     assert "2 unread message" in banner
     assert "Slot at risk" not in banner and "Your slot" not in banner
     body = c.get("/me/messages/").content.decode()
@@ -108,7 +108,7 @@ def test_notification_form_writes_preferences_and_profile_shows_them():
         session = c.session  # a sysadmin signs in acting lower
         session["acting_view"] = "sysadmin"
         session.save()
-    # the profile says what reaches you; the switches are on the edit page (NAF, 2026-09-19)
+    # the profile says what reaches you; the switches are on the edit page
     body = c.get("/me/", follow=True).content.decode()
     assert "Notifications" in body and "always sent" in body.lower()
     assert 'name="email" value="reminder"' not in body
@@ -247,8 +247,8 @@ def test_delivered_html_carries_the_site_layout_and_styled_links(settings):
 
 
 def test_a_join_notice_names_the_person_the_way_the_club_does():
-    """NAF, 2026-09-19: "Include the person's call sign in join emails", with the subject line
-    naming the person and their callsign. An officer reading it should know who it is about."""
+    """A join email carries the person's callsign, with the subject line naming the person and
+    their callsign. An officer reading it should know who it is about."""
     from apps.accounts.services import create_invitation
     from apps.comms.models import Outbox
 
@@ -266,8 +266,8 @@ def test_a_join_notice_names_the_person_the_way_the_club_does():
 
 
 def test_the_one_thing_a_message_asks_for_is_drawn_as_a_button():
-    """NAF, 2026-09-20: "Can we make the Join and Confirm Email emails a bit more attractive
-    like the Reset my password button/email?"
+    """The Join and Confirm Email messages draw their action as a button, as the password reset
+    does.
 
     The password reset built its button in code; the club's own messages hold their link in an
     editable template, where the sanitiser keeps only the href, so no marker would survive an
@@ -306,7 +306,7 @@ def test_the_invitation_asks_for_its_link_on_a_line_of_its_own():
 
 
 def test_every_mail_whose_one_action_is_a_link_draws_it_as_a_button():
-    """T19 step 1, swept over every default: a lone link in a sentence stays a plain link, so it
+    """Swept over every default: a lone link in a sentence stays a plain link, so it
     goes on a line of its own (account.locked_out and license.override_dropped did not)."""
     from apps.comms.defaults import DEFAULTS_BY_KEY
     from apps.comms.layout import wrap
@@ -341,8 +341,8 @@ def test_the_in_application_copy_keeps_its_link_as_a_link():
 
 @pytest.mark.django_db
 def test_the_date_header_carries_the_clubs_own_zone(settings):
-    """The advisor, 2026-09-20: the same message was stamped four hours apart in two of his
-    mailboxes, one showing UTC and one showing local time.
+    """The same message was stamped four hours apart in two mailboxes, one showing UTC and one
+    showing local time.
 
     Django writes `-0000`, which RFC 5322 reads as "no information about the local time zone",
     and a client is then free to show what it likes. The club's own offset says when it sent.
@@ -365,7 +365,7 @@ def test_the_date_header_carries_the_clubs_own_zone(settings):
 
 
 def test_an_unread_message_is_said_in_words_as_well_as_its_dot():
-    """The dot marks it for the eye (SK, 2026-11-10: "keep the dot"); a screen reader hears
+    """The dot marks it for the eye; a screen reader hears
     "Unread", and not the dot, since shape alone never carries meaning (FR-62)."""
     u = _user()
     compose(u, "warning", "Slot at risk", "<p>Needs a licensee</p>")
@@ -385,7 +385,7 @@ def test_every_message_is_named_on_the_message_text_page():
 
 
 def test_the_weekly_digest_calls_itself_weekly():
-    """Private tracker 318: it is sent weekly, about the next two weeks."""
+    """It is sent weekly, about the next two weeks."""
     from apps.comms.defaults import DEFAULTS_BY_KEY, TEMPLATE_WORDS
 
     assert "fortnight" not in DEFAULTS_BY_KEY["digest.weekly"]["subject"]
@@ -393,7 +393,7 @@ def test_the_weekly_digest_calls_itself_weekly():
 
 
 def test_a_minors_message_says_whose_it_is_to_the_guardians():
-    """Private tracker 359: a reminder for a minor reached both guardians with nothing naming the
+    """A41: a reminder for a minor reached both guardians with nothing naming the
     minor. The subject and the first line now do, in the outbox, the push and the email alike; a
     message to anyone else is unchanged. Made-up names."""
     from apps.accounts.models import Guardianship

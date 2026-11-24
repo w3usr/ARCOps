@@ -26,7 +26,7 @@ def offer_hours() -> int:
 def seats_open(slot: Slot, role: str) -> bool:
     """A place in `role` that can be taken now: the slot is live, its event published or locked,
     and the role has a seat free. Offering and accepting both ask this, so an offer on a slot or
-    an event canceled since cannot be made or taken (#252; SK, 2026-11-12). A slot a captain has
+    an event canceled since cannot be made or taken. A slot a captain has
     closed takes nobody either, as joining its waitlist is refused."""
     if slot.cancelled or slot.closed:
         return False
@@ -58,7 +58,7 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
     now = now or timezone.now()
     if not seats_open(slot, role):
         return None
-    # The first in line who can still use it: an account without access is passed over (#328).
+    # The first in line who can still use it: an account without access is passed over.
     entry = next(
         (
             e
@@ -72,7 +72,7 @@ def offer_next(slot: Slot, role: str, now: datetime | None = None) -> Waitlist |
     if entry is None:
         return None
     # One conditional update makes the offer: the entry still pending and no offer already out
-    # for this place. A cancellation and the expiry job at the same moment (#165) then cannot
+    # for this place. A cancellation and the expiry job at the same moment then cannot
     # offer one place twice, or to two people: whichever writes second changes nothing.
     # SQLite runs one statement at a time, which is the lock.
     out = Waitlist.objects.filter(slot=slot, role=role, state=Waitlist.State.OFFERED)
@@ -114,7 +114,7 @@ def accept(user, entry: Waitlist) -> SignUp | None:
         return None
     holds = entry.slot.signups.filter(user=user).exists()
     if holds or not can_sign_up(user, entry.slot, entry.role)[0]:
-        # Already in the slot in another role, or no longer eligible (#299): the offer passes
+        # Already in the slot in another role, or no longer eligible: the offer passes
         # on rather than being marked taken while the seat stays empty.
         entry.state = Waitlist.State.WITHDRAWN
         entry.save(update_fields=["state"])
@@ -160,7 +160,7 @@ def on_place_opened(slot: Slot, role: str) -> None:
 
 
 def access_removed(actor, user) -> None:
-    """FR-118, FR-57 (private tracker 328, 299): an account losing access leaves every waitlist,
+    """FR-118, FR-57: an account losing access leaves every waitlist,
     and an offer it held passes on to the next in line."""
     now = timezone.now()
     for entry in Waitlist.objects.filter(

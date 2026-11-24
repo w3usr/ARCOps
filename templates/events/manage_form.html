@@ -2,7 +2,7 @@
 {% block title %}{{ heading }} · {{ event.title }} · {{ club.short_name }} · {{ product.name }}{% endblock %}
 {% block extra_head %}{% if editor %}{% include "ops/_editor.html" %}{% endif %}{% endblock %}
 {% block content %}
-{% comment %}One of Manage's forms (#168), on its own page or, through htmx, inside Manage's dialog.
+{% comment %}One of Manage's forms, on its own page or, through htmx, inside Manage's dialog.
 In the dialog the form posts with htmx and a refusal comes back there; on the page it posts and
 redirects, as every form here does without JavaScript (apps/events/form_pages.py).{% endcomment %}
 {% if not partial %}<p class="crumbs"><a href="{% url 'event_list' %}">Events</a> › <a href="{% url 'event_detail' event.pk %}">{{ event.title }}</a> › <a href="{{ back }}">Manage</a></p>{% endif %}

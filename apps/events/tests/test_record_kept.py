@@ -1,7 +1,7 @@
-"""The record of an event that ran is kept (SK, 2026-11-12): a sign-up with attendance, or on a
-slot that has ended, or on an event that is over, is not deleted by "I cannot make it" (#251);
-a waitlist offer on a canceled slot or event cannot be taken (#252); an event that is over is not
-canceled, and a canceled one is not canceled twice (#255). Tests written before the code."""
+"""The record of an event that ran is kept: a sign-up with attendance, or on a
+slot that has ended, or on an event that is over, is not deleted by "I cannot make it";
+a waitlist offer on a canceled slot or event cannot be taken; an event that is over is not
+canceled, and a canceled one is not canceled twice. Tests written before the code."""
 
 from datetime import timedelta
 
@@ -25,7 +25,7 @@ def _client(user):
     return c
 
 
-# ----------------------------------------------------------------------------------- #251 ---
+# ----------------------------------------------------------------------- attendance stays ---
 
 
 def test_a_checked_in_sign_up_on_a_completed_event_is_not_cancelled(officer):
@@ -93,7 +93,7 @@ def test_a_member_still_leaves_a_future_slot_on_a_published_event():
     assert not SignUp.objects.filter(pk=su.pk).exists()
 
 
-# ----------------------------------------------------------------------------------- #252 ---
+# -------------------------------------------------------------- offers on a canceled slot ---
 
 
 def _offered(officer):
@@ -146,7 +146,7 @@ def test_a_canceled_slot_offers_its_place_to_nobody(officer):
     assert entry.state == Waitlist.State.PENDING
 
 
-# ----------------------------------------------------------------------------------- #255 ---
+# ---------------------------------------------------------------- canceling an event once ---
 
 
 def test_a_completed_event_is_not_canceled(officer):
@@ -214,11 +214,11 @@ def test_removing_access_keeps_a_sign_up_with_attendance(officer):
     assert not SignUp.objects.filter(pk=gone.pk).exists()
 
 
-# ----------------------------------------------------------------------------------- #258 ---
+# ----------------------------------------------------------------------- completing early ---
 
 
 def test_completing_early_tells_each_person_with_a_slot_still_to_come_once(officer):
-    """SK, 2026-11-12: they are told their slots will not run, and the dialog says so first."""
+    """They are told their slots will not run, and the dialog says so first."""
     now = timezone.now()
     ev, (first, second) = _event(now + timedelta(days=2), captain=officer)
     mem, other = _user("ahead1@example.org"), _user("ahead2@example.org")

@@ -83,7 +83,7 @@ def test_participation_counts_hours_people_and_first_timers():
     c = Client()
     c.force_login(cap)
     body = c.get(f"/events/{e.pk}/participation/").content.decode()
-    # the heading reads "Who took part: Past Sprint", the prefix for a screen reader only (#232)
+    # the heading reads "Who took part: Past Sprint", the prefix for a screen reader only
     assert '<span class="sr-only">Who took part: </span>Past Sprint</h1>' in body
     assert "first time" in body
     assert "<strong>3</strong>" in body and ".0<" not in body  # hours as whole numbers

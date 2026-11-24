@@ -181,13 +181,13 @@ def test_windows_and_limits_mark_over_limit_slots_and_show_on_health():
     c.force_login(cap)
     body = c.get(f"/events/{e.pk}/").content.decode()
     assert "over limit" in body and "Per day:" in body and "Export the roster" in body
-    # Hours read as whole numbers wherever they are shown, as Coverage does (T35, 2026-10-19)
+    # Hours read as whole numbers wherever they are shown, as Coverage does
     manage = c.get(f"/events/{e.pk}/manage/slots/").content.decode()
     health = c.get("/events/health/").content.decode()
     for page in (body, manage, health):
         assert ".0 h" not in page and ".0<" not in page and " of 10.0" not in page
     assert " 7 h" in body and " 7 h" in manage and "total 14 h of 10" in manage
-    # a range a day is set as the on-air hours (#247, #248), the generator fills them, and the
+    # a range a day is set as the on-air hours, the generator fills them, and the
     # limits form saves
     r = c.post(
         f"/events/{e.pk}/limits/",
@@ -251,7 +251,7 @@ def test_eligibility_editor_and_openings_with_announcement():
 
     assert can_sign_up(stu, slots[0], "operator")[0]
     ok, reason = can_sign_up(com, slots[0], "operator")
-    # A role and a category reach the reader as their labels (T36 step 1, 2026-10-19)
+    # A role and a category reach the reader as their labels
     assert not ok and reason == "Operator is limited to: Student"
     ok, reason = can_sign_up(com, slots[0], "mentor")
     assert not ok and reason == "Mentor needs a General or higher license"
@@ -320,7 +320,7 @@ def test_waitlist_offer_accept_and_lapse():
         first.state == "offered"
         and Outbox.objects.filter(user=b, subject__contains="place opened").exists()
     )
-    # "A observer place opened" read the stored key, with the wrong article (T36, 2026-10-15)
+    # "A observer place opened" read the stored key, with the wrong article
     offer = Outbox.objects.get(user=b, subject__contains="place opened")
     assert offer.subject.startswith("A place opened as Observer:")
     assert "a place as Observer in" in offer.body_html
@@ -336,7 +336,7 @@ def test_waitlist_offer_accept_and_lapse():
 
 
 def test_two_runs_at_once_announce_an_opening_once(monkeypatch):
-    """#165: dev's timer and a manage.py call ran openings_announce in the same second, and each
+    """A timer and a manage.py call ran openings_announce in the same second, and each
     member was told twice. Here the second run starts while the first is still sending."""
     now = timezone.now()
     stu = _user("stu@example.org")
@@ -389,7 +389,7 @@ def _racing(monkeypatch, other):
 
 
 def test_a_cancellation_and_the_expiry_job_at_once_offer_a_place_once(monkeypatch):
-    """#165: offer_next runs from a request (a cancellation) and from the expiry job; two at the
+    """offer_next runs from a request (a cancellation) and from the expiry job; two at the
     same moment offered the first in line the place twice."""
     now = timezone.now()
     b, d = _user("b@example.org"), _user("d@example.org")
@@ -403,7 +403,7 @@ def test_a_cancellation_and_the_expiry_job_at_once_offer_a_place_once(monkeypatc
 
 
 def test_two_expiry_runs_at_once_lapse_each_offer_once(monkeypatch):
-    """#165: two runs of the expiry job holding the same list of lapsed offers. The second runs
+    """two runs of the expiry job holding the same list of lapsed offers. The second runs
     inside the first, after the first has read the list."""
     now = timezone.now()
     lapsed, nxt = {}, {}
@@ -442,7 +442,7 @@ def test_csv_filter_badges_feed_and_overview():
     assert "Mo Member" in csv_body and "N0MEM" in csv_body and csv_body.count("\n") >= 3
     full = c.get(f"/events/{e.pk}/").content.decode()
     problems = c.get(f"/events/{e.pk}/?filter=problems").content.decode()
-    # the switch (#235): Every slot links back, Problems only is the page you are on
+    # the switch: Every slot links back, Problems only is the page you are on
     assert (
         '<a href="?">Every slot' in problems
         and 'aria-current="true">Problems only' in problems

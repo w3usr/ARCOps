@@ -61,7 +61,7 @@ def password_manage(request):
 
 # Who holds access, one row per approved agreement. Every column sorts and every column
 # narrows, in the words the members directory uses, because a reader who has learned one table
-# has learned this one (the advisor, 2026-09-20, issue #92).
+# has learned this one.
 ROSTER_COLUMNS = [
     {"key": "credential", "label": "Credential"},
     {"key": "first", "label": "First"},
@@ -118,7 +118,7 @@ def access_rosters(request):
         SignedAgreement.objects.filter(
             state__in=[SignedAgreement.State.APPROVED, SignedAgreement.State.EXPIRED],
             # Who holds access now (FR-31): an account closed, suspended, archived or deleted
-            # holds none, whatever its agreement says (FR-118; private tracker 330, SK 2026-11-17)
+            # holds none, whatever its agreement says (FR-118)
             user__in=User.objects.with_access(),
         )
         .select_related("user", "credential", "approver", "template")

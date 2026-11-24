@@ -24,7 +24,7 @@ npx --yes prettier@3.6.2 --check static/css static/js static/sw.js || fail=1
 $PY/djlint templates --lint || fail=1
 
 step "Repository guards"
-for g in check_club_neutral check_no_requirement_ids check_interface; do
+for g in check_club_neutral check_no_requirement_ids check_interface check_no_attributions; do
     bash "tools/$g.sh" || fail=1
 done
 

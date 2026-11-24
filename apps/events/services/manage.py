@@ -21,7 +21,7 @@ def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Ev
     locations and positions, the slot structure with its capacities, the eligibility rules and
     the openings; no sign-ups, no captains but the person copying, and it starts as a draft under
     a marked title. Every date moves by `shift`, the officer's new start less the old one, so the
-    copy keeps its shape on the new dates (SK, 2026-11-10)."""
+    copy keeps its shape on the new dates."""
     copy = Event.objects.create(
         type=source.type,
         title=f"{source.title} (copy)",
@@ -47,7 +47,7 @@ def duplicate_event(source: Event, actor, shift: timedelta = timedelta(0)) -> Ev
         duplicated_from=source,
         created_by=actor,
     )
-    for r in source.on_air_ranges.all():  # the club's on-air hours go with the span (#247)
+    for r in source.on_air_ranges.all():  # the club's on-air hours go with the span
         OnAirRange.objects.create(event=copy, start=r.start + shift, end=r.end + shift)
     for o in source.openings.all():  # announced again on the new dates, so not yet announced
         Opening.objects.create(
@@ -108,7 +108,7 @@ def generate_with_capacities(
     breakdown_minutes: int | None = None,
 ) -> list[Slot]:
     """Slots for the positions given, then a capacity row per role with a non-zero count. With
-    `fill`, only the empty hours get slots and setup and breakdown are not made (#153)."""
+    `fill`, only the empty hours get slots and setup and breakdown are not made."""
     created = generate_slots(
         event,
         positions,

@@ -70,7 +70,7 @@ def test_settings_page_edits_are_stored_and_audited():
 
 def test_a_refused_time_zone_is_not_called_the_saved_value():
     """A typed zone that is refused was also described as "the saved value", though nothing was
-    saved (T43 step 1, 2026-10-21)."""
+    saved."""
     c, _ = _as("sysadmin")
     body = c.post("/ops/settings/", {"club.timezone": "Mars/Olympus_Mons"}).content.decode()
     assert "Nothing was saved" in body and "is not a known time zone" in body
@@ -120,8 +120,8 @@ def test_privacy_notice_is_public_and_linked():
 
 
 def test_a_new_event_starts_with_the_kbyg_outline():
-    """FR-77: the outline is there from the start, on the event's own Know before you go step
-    (#174), where the editor is."""
+    """FR-77: the outline is there from the start, on the event's own Know before you go step,
+    where the editor is."""
     c, _ = _as("officer")
     r = c.post("/events/new/", {"title": "Outline", "type": "contest"})
     pk = int(r["Location"].split("/")[2])
@@ -191,8 +191,8 @@ def test_event_form_offers_the_display_zone_as_a_drop_down():
 
 
 def test_the_shipped_privacy_notice_says_where_the_data_is_held(settings):
-    """FR-101 and T44: what is collected, who sees it, where it is held, how to close an account.
-    The example ARCOps ships had no "where" (T44 step 1, generic club, 2026-10-21)."""
+    """FR-101: what is collected, who sees it, where it is held, how to close an account.
+    The example ARCOps ships had no "where"."""
     from apps.ops.config import load_yaml
 
     settings.CLUB_OVERLAY_DIR = None  # the shipped defaults, not an installation's overlay
@@ -203,7 +203,7 @@ def test_the_shipped_privacy_notice_says_where_the_data_is_held(settings):
 
 
 def test_the_stations_directions_are_rich_text_and_cleaned():
-    """Private tracker 276: the club station's directions are edited in Settings like the privacy
+    """A29: the club station's directions are edited in Settings like the privacy
     notice, and what is saved is cleaned the same way."""
     c, _ = _as("sysadmin")
     body = c.get("/ops/settings/").content.decode()

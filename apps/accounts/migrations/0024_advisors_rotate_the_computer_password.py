@@ -1,10 +1,8 @@
 """The station computer password is the faculty advisor's to rotate.
 
 The page that sets it was a sysadmin's alone and had no way in but a typed address, so nobody
-who did not already know the URL could rotate it at all.
-
-    There needs to be a UI entry point for the faculty advisor and above to rotate this.
-    — NAF, 2026-09-20
+who did not already know the URL could rotate it at all. A faculty advisor and above now have
+a way in.
 
 The advisor answers to the University for station access, which is the same standing that makes
 them the approver of the agreement the password goes with, so the capability moves to them and

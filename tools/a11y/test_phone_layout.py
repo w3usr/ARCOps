@@ -1,6 +1,6 @@
-"""What SK found on a phone on 2026-10-22, before the beta: buttons that wrap without a gap,
-a bullet beside each message, the roster key run together on one line, and the join pages laid
-out unlike sign-in. Measured in a real browser in each engine, because each is a layout question.
+"""Phone layout: buttons that wrap keep a gap, no bullet beside each message, the roster key one
+entry a line, and the join pages laid out like sign-in. Measured in a real browser in each
+engine, because each is a layout question.
 """
 
 from datetime import timedelta
@@ -63,7 +63,7 @@ def test_the_roster_key_is_labelled_and_one_entry_a_line_on_a_phone(live_server,
         sign_in(page, live_server.url, ACCOUNTS["member"])
         page.goto(f"{live_server.url}/events/{event.pk}/")
         closed = page.locator(".legend").is_visible()
-        page.get_by_role("button", name="Key", exact=True).click()  # #169: it opens over the page
+        page.get_by_role("button", name="Key", exact=True).click()  # it opens over the page
         label = page.locator(".legend .legend-label").inner_text().strip()
         tops = page.evaluate(
             "() => [...document.querySelectorAll('.legend li')].map(li => li.getBoundingClientRect().top)"
@@ -71,7 +71,7 @@ def test_the_roster_key_is_labelled_and_one_entry_a_line_on_a_phone(live_server,
         page.keyboard.press("Escape")
         shut = not page.locator(".legend").is_visible()
         browser.close()
-    assert not closed and shut, "the key starts closed and Escape closes it (#169)"
+    assert not closed and shut, "the key starts closed and Escape closes it"
     assert label == "Key", "the key says what it is, for everyone (#132's finding)"
     assert len(tops) >= 4 and len(set(round(t) for t in tops)) == len(tops), (
         "each entry on its own line"

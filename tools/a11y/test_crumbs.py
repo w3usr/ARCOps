@@ -1,4 +1,4 @@
-"""Breadcrumb links are not underlined until pointed at or focused (D5, #265): the event page's
+"""Breadcrumb links are not underlined until pointed at or focused: the event page's
 "Events" crumb sat underlined right above tabs that carry none. Measured in a browser, because
 only a browser computes the style a rule finally gives."""
 

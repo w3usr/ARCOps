@@ -1,7 +1,7 @@
 """The page where a club decides what its groups may do.
 
-The advisor, 2026-09-17: "define configurable access groups (member, officer, faculty advisor,
-etc)... This would allow sysadmins to define new access levels on their own."
+Access groups (member, officer, faculty advisor, and so on) are configurable, so a sysadmin can
+define new access levels on their own.
 """
 
 import pytest

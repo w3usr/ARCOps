@@ -38,10 +38,8 @@ def pytest_configure():
 
 
 # Every check runs in the three engines people actually use: Chromium (Chrome, Edge), Firefox,
-# and WebKit (Safari). A page can pass in one and fail in another: Skip to content moved focus
-# in none of them until <main> could take it, and SK found that with VoiceOver in Firefox
-# (2026-10-22: "everyone uses different browsers, and it's important that it works across all
-# of them"). `playwright install chromium firefox webkit` once.
+# and WebKit (Safari). A page can pass in one and fail in another, and it has to work in all
+# of them. `playwright install chromium firefox webkit` once.
 ENGINES = ("chromium", "firefox", "webkit")
 
 

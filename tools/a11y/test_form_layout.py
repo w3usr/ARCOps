@@ -1,4 +1,4 @@
-"""A label sits above its field, and the inputs of a row of fields line up (#140, #141).
+"""A label sits above its field, and the inputs of a row of fields line up.
 
 Found on the contact sheet: on Manage event a label that wrapped to two lines pushed its input a
 line below the rest of the row, and the slot page put some labels beside their fields and others
@@ -38,7 +38,7 @@ UNEVEN = """() => [...document.querySelectorAll('main .row:not(:has(.helptext, .
 
 
 # A tick box's label starts on the box's line, and wraps its own words when the field is narrow;
-# it never drops whole under the box (SK, 2026-11-11, "This is the club station" in a dialog).
+# it never drops whole under the box.
 UNDER = """() => [...document.querySelectorAll('main input[type=checkbox], main input[type=radio]')].filter(b => b.offsetParent).flatMap(b => {
     const l = [...b.labels].find(l => l.offsetParent && !l.classList.contains('sr-only'));
     return l && l.getBoundingClientRect().top >= b.getBoundingClientRect().bottom ? [l.textContent.trim()] : [];
@@ -46,7 +46,7 @@ UNDER = """() => [...document.querySelectorAll('main input[type=checkbox], main 
 
 
 # A tick box's words wrap only when its field already has the whole row: beside other fields, the
-# field takes the width its words need on one line (SK, 2026-11-11, "This is the club / station").
+# field takes the width its words need on one line.
 SQUEEZED = """() => [...document.querySelectorAll('main .row > .field > .check > label')].filter(l => l.offsetParent).flatMap(l => {
     const f = l.closest('.field').getBoundingClientRect(), row = l.closest('.row').getBoundingClientRect();
     const wrapped = l.getBoundingClientRect().height > 1.6 * parseFloat(getComputedStyle(l).lineHeight);
@@ -72,8 +72,8 @@ def test_labels_above_fields_and_rows_level(live_server, engine):
     tabs = [
         f"/events/{ev.pk}/manage/{t}/"
         for t in ("details", "span", "locations", "slots", "publish", "rules", "contest", "kbyg")
-    ]  # Manage in tabs (#167)
-    forms = [  # each form's own page (#168)
+    ]  # Manage in tabs
+    forms = [  # each form's own page
         f"/events/{ev.pk}/{f}/"
         for f in (
             "span",

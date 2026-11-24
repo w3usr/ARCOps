@@ -35,7 +35,7 @@ def may_edit(actor: User, subject: User) -> bool:
     """A member holds their own addresses; an officer can add one and confirm one, because
     somebody has to be able to help a member who has lost the mailbox they signed up with. A
     confirmed address receives the password reset, so only on an account below the officer's own
-    level: on a peer's or a sysadmin's it was a way into that account (#326)."""
+    level: on a peer's or a sysadmin's it was a way into that account."""
     return actor.pk == subject.pk or (
         actor.may("manage_member_addresses") and outranks(actor, subject)
     )
@@ -45,14 +45,13 @@ def may_correct(actor: User, subject: User) -> bool:
     """Whether this person may take an address, its confirmation, or its club mail off somebody
     else's account.
 
-    An officer may not: the advisor, 2026-09-19, "They should not be able to stop an email
-    address from signing them in, or turn off a users club email... Users can adjust email
-    settings in their own accounts." An officer who needs to shut an account out suspends it,
+    An officer may not stop an address signing a member in, or turn off their club mail; a
+    member adjusts their own mail settings. An officer who needs to shut an account out suspends it,
     where the act is named, reasoned and lifted by somebody answerable for it (FR-91).
     """
     return actor.pk == subject.pk or (
         actor.may("correct_member_addresses") and outranks(actor, subject)
-    )  # taking a sysadmin's address off could shut them out (#326)
+    )  # taking a sysadmin's address off could shut them out
 
 
 def handle(request, subject: User) -> bool:
@@ -112,8 +111,7 @@ def handle(request, subject: User) -> bool:
         if row is None:
             messages.error(request, "That address is not on the account.")
         elif row.delivery and len([a for a in addresses.on_file(subject) if a.delivery]) == 1:
-            # A warning, not a problem: nothing went wrong, the switch stays as it is (T52 step 6;
-            # SK, 2026-11-02).
+            # A warning, not a problem: nothing went wrong, the switch stays as it is.
             messages.warning(
                 request,
                 "Club mail has to reach at least one address. Turn another one on first.",

@@ -1,8 +1,7 @@
 """One account form, two pages, and the permission table it derives its fields from.
 
-The advisor, 2026-09-17: "there should be a single user entry UI, just with different levels of
-permission. Right now there are clearly two different ones." These cases pin the table so the
-two pages cannot drift apart again.
+There is one account form, with different fields by permission. These cases pin the table so
+the two pages cannot drift apart again.
 """
 
 import pytest
@@ -45,16 +44,16 @@ def test_a_member_with_a_name_from_the_fcc_does_not_type_their_name():
 
 
 def test_an_officer_says_who_is_a_member_and_nothing_else():
-    """An officer holds the bounded form of "decide which groups an account is in" (§2.3, the
-    advisor's rule of 2026-09-19). Who holds which office is the advisor's to record, from the
-    same day: "Only Faculty Advisors and above should be able to set club position."
+    """An officer holds the bounded form of "decide which groups an account is in" (§2.3). Who
+    holds which office is the advisor's to record: only faculty advisors and above set the club
+    position.
     """
     off, m = _user("off@example.org", "officer"), _user("mem@example.org")
     assert editable_fields(off, m) == ["groups"]
     other = _user("off2@example.org", "officer")
     assert editable_fields(off, other) == [], "a peer is not theirs to change at all"
-    # The advisor holds more since 2026-09-20: "Faculty Advisors need to be able to set
-    # Category, Club Position, and Access." Still not the sysadmin checkbox.
+    # A faculty advisor also sets category, club position and access; still not the sysadmin
+    # checkbox.
     advisor = _user("adv@example.org", "advisor")
     theirs = editable_fields(advisor, m)
     for allowed in ("category", "club_positions", "groups", "first_name", "student_level"):
@@ -166,8 +165,8 @@ def test_a_callsign_typed_on_the_member_page_goes_through_the_fcc_lookup():
 
 
 def test_a_field_is_shown_once_as_an_input_or_as_text_but_never_both():
-    """The advisor, 2026-09-17: "I don't like the UI where the information is duplicated with a
-    read-only view and an edit view." The read-only rows are the complement of the form."""
+    """No information is duplicated between a read-only view and an edit view: the read-only rows
+    are the complement of the form."""
     from apps.accounts.account import editable_fields, readonly_rows
 
     sys_user = _user("sys@example.org", "sysadmin")

@@ -90,7 +90,7 @@ def test_sysadmin_views_as_member_read_only_and_audited():
 
 
 def test_viewing_as_a_member_reads_none_of_their_messages():
-    """T43, 2026-10-21: opening Messages while viewing as a member marked theirs read, though
+    """Opening Messages while viewing as a member marked theirs read, though
     the banner says nothing can be changed. Only the member's own visit does."""
     s = _user("sys@example.org", "sysadmin")
     m = _user("mem@example.org")
@@ -166,8 +166,8 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
     assert Outbox.objects.filter(user=cap).exists()  # captain told
     row = AuditLog.objects.get(action="account.deleted")
     assert row.after["reason"] == "asked in writing"
-    # The deletion's record counts what went rather than copying it (SK, 2026-11-19, private
-    # tracker 329): no name, callsign or address in it.
+    # The deletion's record counts what went rather than copying it (A39): no name, callsign or
+    # address in it.
     assert row.before == {"addresses": 1, "callsign": True}
     # the addresses go, and with them the sign-in library's copies: a deleted account answers to
     # no address, and nothing had to be invented to stand in for one
@@ -177,7 +177,7 @@ def test_delete_account_anonymises_withdraws_and_keeps_shape():
 
 
 def test_deletion_blanks_responsible_adult_rows_drops_authenticators_and_counts_true():
-    """FR-118, private tracker 329: a responsible-adult row naming the deleted member keeps its
+    """FR-118, A39: a responsible-adult row naming the deleted member keeps its
     place but not their details; their authenticators go; the confirmation's count of future
     sign-ups leaves out one kept for attendance, as the withdrawal does."""
     from allauth.mfa.models import Authenticator
@@ -210,7 +210,7 @@ def test_deletion_blanks_responsible_adult_rows_drops_authenticators_and_counts_
 
 
 def test_deletion_blanks_mail_to_them_invitations_and_notes_but_not_mail_to_others():
-    """SK, 2026-11-19, private tracker 329 (A39): mail to them keeps its date, kind and subject
+    """A39: mail to them keeps its date, kind and subject
     but not where it went or what it said; mail about them to someone else stays; invitations to
     their address keep who invited and when; their notes on sign-ups that stay are cleared."""
     s = _user("sys@example.org", "sysadmin")
@@ -260,9 +260,8 @@ def test_deletion_guards():
 
 
 def test_retention_keeps_member_records_and_agreements_and_sweeps_only_the_rest():
-    """The advisor, 2026-09-17: "I don't really like the automatic deletion. Instead, can we have
-    a method to archive members?" So a former member's profile and their signed agreements are
-    kept; what still ages out is what is not a member's record."""
+    """Former members are archived, not deleted automatically: a former member's profile and their
+    signed agreements are kept; what still ages out is what is not a member's record."""
     now = timezone.now()
     old = _user("old@example.org", "none", cell_phone="555")
     # written 800 days ago: the log refuses an UPDATE (TR-21), so the clock is moved instead

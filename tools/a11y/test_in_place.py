@@ -1,4 +1,4 @@
-"""A step's own forms save in place (#177): the step and the bar swap, focus lands on the message,
+"""A step's own forms save in place: the step and the bar swap, focus lands on the message,
 the address and the history stay as they were, and a dialog still opens after the swap."""
 
 import pytest

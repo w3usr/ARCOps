@@ -103,9 +103,9 @@ def test_the_manifest_declares_each_icon_at_its_real_size():
 
 @pytest.mark.django_db
 def test_an_installed_icon_is_offered_for_the_phones_own_mask():
-    """NAF, 2026-09-20, of the club seal on his home screen: "Can we have less whitespace on the
-    app icon?" A launcher shrinks an icon of unknown shape onto a white tile. One declared
-    maskable is drawn to the edge and cropped to the launcher's shape instead."""
+    """The app icon on a home screen carries less white space: a launcher shrinks an icon of unknown
+    shape onto a white tile. One declared maskable is drawn to the edge and cropped to the
+    launcher's shape instead."""
     import json
 
     from django.core.management import call_command
@@ -143,9 +143,8 @@ def test_a_club_overlay_is_laid_over_the_shipped_defaults(tmp_path, settings):
 
 def test_a_re_sign_date_lives_beside_the_agreement_and_survives_the_deploy_order(tmp_path):
     """FR-30. The deploy imports first, writing the new version with no re-sign date; a later
-    `club_import --resign-by` found the file unchanged and did nothing, silently (T40 step 4,
-    2026-10-21). The date now lives in club.yaml beside the agreement, and the option works on an
-    unchanged file too. SK, 2026-10-26."""
+    `club_import --resign-by` found the file unchanged and did nothing, silently. The date now
+    lives in club.yaml beside the agreement, and the option works on an unchanged file too."""
     import io
 
     (tmp_path / "agreements").mkdir()

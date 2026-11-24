@@ -116,8 +116,8 @@ UA = {
 
 
 def test_a_device_is_listed_by_browser_and_system():
-    """T34: each device "by browser and date". The user agent cut to 60 characters stopped
-    before the browser's name on a Mac, so every device read the same (T34 step 1, 2026-10-20)."""
+    """Each device is listed by browser and date. The user agent cut to 60 characters stopped
+    before the browser's name on a Mac, so every device read the same."""
     for want, ua in UA.items():
         assert PushSubscription(user_agent=ua).device_label == want, ua
     assert PushSubscription(user_agent="").device_label == "a browser"

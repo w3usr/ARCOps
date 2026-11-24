@@ -1,5 +1,5 @@
-"""The redesign's kit on its own page (#231): the ⋮ menu (#228) by mouse and keyboard, and a data
-table's one link per row (#230), in each engine."""
+"""The redesign's kit on its own page: the ⋮ menu by mouse and keyboard, and a data
+table's one link per row, in each engine."""
 
 from playwright.sync_api import expect, sync_playwright
 from test_axe import ACCOUNTS, audit, sign_in  # the sweep lives beside this file

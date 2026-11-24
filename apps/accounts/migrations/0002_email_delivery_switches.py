@@ -1,5 +1,5 @@
 # Two delivery switches of equal standing replace the "primary only / both addresses"
-# preference (FR-70; NAF, 2026-09-13: "Neither should be considered primary"). Members who had
+# preference (FR-70: neither is primary). Members who had
 # chosen "both" keep both addresses on; members on "primary only" received mail at their sign-in
 # address alone, which is what both switches off still gives them (services.recipient_addresses
 # falls back to the sign-in address).

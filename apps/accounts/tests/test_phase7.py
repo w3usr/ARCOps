@@ -113,8 +113,7 @@ def test_guardian_completes_a_minors_invitation_creating_both_accounts():
 
 def test_a_guardian_who_clears_the_members_email_leaves_them_none():
     """The form fills in the invitation's address; a guardian who clears it means the member has
-    none, as the field's "(optional)" says. The invitation's address was used all the same
-    (found reading the code for T46, 2026-10-21; reproduced 2026-10-26)."""
+    none, as the field's "(optional)" says. The invitation's address was used all the same."""
     officer = _user("off@example.org", "officer")
     inv = create_invitation(
         officer, "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"
@@ -122,7 +121,7 @@ def test_a_guardian_who_clears_the_members_email_leaves_them_none():
     c = Client()
     page = c.get(f"/me/invite/{inv.token}/").content.decode()
     assert 'value="kid@example.org"' in page  # filled in from the invitation
-    # what the guardian reads about leaving it blank is what happens (T5, 2026-10-19)
+    # what the guardian reads about leaving it blank is what happens
     assert "they cannot sign in until an address of their own is added" in page
     assert "made from yours" not in page and "with the address above" not in page
     r = c.post(
@@ -262,7 +261,7 @@ def test_roster_shows_adults_to_slot_mates_and_guardians_to_captains():
 
 
 def test_a_member_named_as_the_adult_is_a_link_and_only_captains_read_their_details():
-    """Private tracker 327 (FR-67): a guardian who names a member, by the picker or from the saved
+    """FR-67: a guardian who names a member, by the picker or from the saved
     list, stores no copy of their email or phone; the guardian and the slot's other members read the
     name only, and the captains read the member's own details."""
     officer, guardian, minor = _family()
@@ -293,7 +292,7 @@ def test_a_member_named_as_the_adult_is_a_link_and_only_captains_read_their_deta
 
 
 def test_the_roster_says_with_an_adult_only_once_one_is_named():
-    """T47, 2026-10-21: members outside the slot read "under 18, with an adult" while nobody had
+    """Members outside the slot read "under 18, with an adult" while nobody had
     been named, beside the slot's own "Needs a responsible adult"."""
     officer, guardian, minor = _family()
     other = _user("other@example.org")
@@ -354,8 +353,8 @@ def test_conversion_at_18_by_an_approver():
 
 
 def test_a_member_under_18_holds_at_most_the_member_level():
-    """Private tracker 332 (SK, 2026-11-17: an under-18 account only up to Member). Nobody may give
-    one a higher level; and for one that holds a higher level from before, neither the guardian's
+    """An under-18 account holds at most the Member level (A37). Nobody may give one a higher
+    level; and for one that holds a higher level from before, neither the guardian's
     password reset nor a conversion by someone who does not outrank them issues a password."""
     import pytest
     from django.contrib.auth.models import Group
@@ -397,7 +396,7 @@ def test_sysadmin_links_and_unlinks_guardians():
 
 
 def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
-    """The advisor's rule that an account keeps at least one address is about an account someone
+    """The rule that an account keeps at least one address is about an account someone
     signs in to. A minor need hold none: their guardians are written to and act for them, and the
     guardian puts an address on the account from the minor's own profile once there is one."""
     officer = _user("off@example.org", "officer")
@@ -459,10 +458,8 @@ def test_a_minor_may_hold_no_address_and_the_guardian_gives_them_one_later():
 
 
 def test_a_minor_with_no_address_of_their_own_holds_none_and_cannot_sign_in():
-    """NAF, 2026-09-20, reading the invite page: "How can a minor sign in with a guardian email?
-    That doesn't make sense. The guardians email will take them to the guardian account."
-
-    Right, and nothing does that: the made-up address derived from a guardian's went with
+    """A minor never signs in with a guardian's address, which leads to the guardian's account.
+    The made-up address derived from a guardian's went with
     migration 0009. A minor invited without one holds no address, so nothing signs them in, and
     the guardian acts for them (FR-10, FR-70). Only the help text still described the old way.
     """
@@ -501,7 +498,7 @@ def test_a_minor_with_no_address_of_their_own_holds_none_and_cannot_sign_in():
 
 
 def test_a_minor_s_password_reset_reaches_the_guardian_and_is_filed_without_its_link(settings):
-    """#286: the sign-in library's mail went around the club's own path, so a reset asked for a
+    """The sign-in library's mail went around the club's own path, so a reset asked for a
     minor's address reached the minor alone (FR-70), with no Reply-To (FR-69) and no copy in My
     messages (FR-82). The copy leaves the link out: officers can read the outbox."""
     from django.core import mail

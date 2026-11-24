@@ -1,7 +1,7 @@
 """What a faculty advisor may set on an account.
 
-The advisor, 2026-09-20: *"Faculty Advisors need to be able to set Category, Club Position, and
-Access"*, with the ladder reaching their own level. So the advisor group gains two capabilities:
+A faculty advisor sets category, club position and access, with the ladder reaching their own
+level. So the advisor group gains two capabilities:
 
 * `edit_member_privileges`, which is the category, the names, and the student fields;
 * `appoint_peers`, which lets the access list include a group as capable as their own, so an

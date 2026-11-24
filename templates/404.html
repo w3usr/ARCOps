@@ -4,7 +4,7 @@
 {% comment %}The application refuses a page the session may not open by answering 404 rather than
 403, so that a page nobody may see and a page you may not see look the same from outside (§2.1).
 The cost is that the commonest reason for landing here is your own level, which is why this page
-says so and offers the way back (NAF, 2026-09-19: "I don't want a Not Found").{% endcomment %}
+says so and offers the way back rather than a bare Not Found.{% endcomment %}
 <h1>Page not found</h1>
 {% if user.is_authenticated %}
 {% if acting_views > 1 %}

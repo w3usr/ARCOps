@@ -1,4 +1,4 @@
-"""Manage's forms open in a dialog (#168), and work as pages without JavaScript.
+"""Manage's forms open in a dialog, and work as pages without JavaScript.
 
 Focus goes into the dialog on opening, to the problem when a form is refused, and back to the
 button on closing; a save lands on the step with its message. With JavaScript off the button is a
@@ -60,7 +60,7 @@ def test_a_form_opens_in_the_dialog_keeps_focus_and_comes_back(live_server, engi
         page.wait_for_url(setup)
         expect(page.locator("#messages")).to_contain_text("Start and end saved.")
         span = page.locator("section[aria-labelledby=span]")
-        expect(span).to_contain_text(f"{later:%b} {later.day}, {later.year}")  # Dec 9 (#274)
+        expect(span).to_contain_text(f"{later:%b} {later.day}, {later.year}")  # Dec 9
         expect(span).not_to_contain_text("UTC")
         browser.close()
     # typed on New York's clock, sent with its offset, stored as UTC

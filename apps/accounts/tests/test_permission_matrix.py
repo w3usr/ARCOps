@@ -179,7 +179,7 @@ def _pages(world):
         ),
         # officer tools
         # Somebody else's page is an officer's to read. Your own is always yours, whoever you
-        # are, because /me/ is now that page (NAF, 2026-09-19).
+        # are, because /me/ is now that page.
         ("member page", f"/members/{officer_pk}/", {"anonymous": AWAY, **officer_up}),
         ("own page", f"/members/{mem}/", {"anonymous": AWAY, **officer_up, "member": OK}),
         ("invitations", "/me/invitations/", {"anonymous": AWAY, **officer_up}),
@@ -207,7 +207,7 @@ def _pages(world):
             },
         ),
         # The advisor answers to the University for station access, so the password is theirs to
-        # rotate and Advisor tools carries the way in (NAF, 2026-09-20). It was a sysadmin's
+        # rotate and Advisor tools carries the way in. It was a sysadmin's
         # alone, and reachable only by typing the address.
         (
             "rotate the computer password",

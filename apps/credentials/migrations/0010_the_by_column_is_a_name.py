@@ -2,8 +2,8 @@
 
 The seeded rows carried it inside `actor_label`, which is the column that answers "who decided
 this". It is a fact about how the row was recorded rather than about who decided, so it moves to
-a flag of its own and is said quietly beside the date instead (NAF, 2026-09-20: "We don't need
-'(from the record as it stood)' in the 'By' column").
+a flag of its own and is said quietly beside the date instead, not as "(from the record as it
+stood)" in the By column.
 """
 
 from django.db import migrations

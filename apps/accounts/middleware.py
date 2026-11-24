@@ -104,7 +104,7 @@ def _two_factor_gate(request, user):
 
 
 def _idle_too_long(session) -> bool:
-    """TR-17 (private tracker 289): "a 12-hour idle timeout otherwise". A session the person did
+    """TR-17: "a 12-hour idle timeout otherwise". A session the person did
     not ask to remember ends with the browser, but on the server it lived the 14 days a
     remembered one has, which matters on the station PC. It now ends after 12 hours idle."""
     if not session.get_expire_at_browser_close():

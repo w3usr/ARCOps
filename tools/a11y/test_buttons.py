@@ -1,4 +1,4 @@
-"""Buttons that look like buttons (#225, D2 and D3): every button in the page content is at least
+"""Buttons that look like buttons: every button in the page content is at least
 24 px each way (WCAG 2.5.8), and a neutral outline reads at 3:1 against what it stands on
 (WCAG 1.4.11), measured in a real browser in each engine on the pages that carry the most."""
 
@@ -75,8 +75,7 @@ STACKED = """() => {
 
 
 def test_buttons_stacked_on_a_phone_keep_a_gap(live_server, engine):
-    """Buttons that wrap onto a second line on a phone do not touch (SK, the contact sheet of
-    2026-11-23: Send and "Give me the addresses instead" on Announce): a row of them is .actions,
+    """Buttons that wrap onto a second line on a phone do not touch: a row of them is .actions,
     which spaces it both ways."""
     from test_axe import pages_for
 

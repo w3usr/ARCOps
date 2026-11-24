@@ -1,7 +1,7 @@
 """TR-21: the audit log is append-only in the database itself, not only in the admin.
 
 The model has said so since it was written, but no migration ever made the triggers, so an
-UPDATE or DELETE went through (T22, 2026-10-21). One change stays allowed: clearing `actor_id`,
+UPDATE or DELETE went through. One change stays allowed: clearing `actor_id`,
 which is what deleting an account in the Django admin does to its rows (on_delete=SET_NULL);
 `actor_label` keeps who it was.
 """

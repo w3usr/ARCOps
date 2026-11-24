@@ -6,7 +6,7 @@
 <h1>Member roster</h1>
 <p class="lede">Every account with access: license, credentials and their expiry, student level and graduation, last sign-in. Contact details are not on this page; they are a separate, audited export.</p>
 <p class="actions">{% if graduated %}<a class="button secondary" href="?">All members</a>{% else %}<a class="button secondary" href="?graduated=1">Students past their graduation</a>{% endif %} <a class="button secondary" href="?format=csv{% if graduated %}&graduated=1{% endif %}">{% icon 'download' %}Download CSV</a> <a class="button secondary" href="?format=csv&contacts=1{% if graduated %}&graduated=1{% endif %}">{% icon 'download' %}Download CSV with contact details</a></p>
-{% comment %}#240: the report in a panel.{% endcomment %}
+{% comment %}The report in a panel.{% endcomment %}
 <section class="panel" aria-label="Member roster">
 <div class="table-wrap"><table class="table data">
 <thead><tr><th scope="col">Name</th><th scope="col">Callsign</th><th scope="col">Class</th><th scope="col">License expires</th><th scope="col">Category</th><th scope="col">Positions</th><th scope="col">Student</th><th scope="col">Permission level</th><th scope="col">Credentials</th><th scope="col">Last sign-in</th></tr></thead>

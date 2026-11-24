@@ -1,12 +1,8 @@
 """Two-step verification is asked for, not inferred from a key.
 
-NAF, 2026-09-20, after adding a passkey and being stopped at the next sign-in by a prompt for an
-authenticator code he had never enrolled:
-
-> I created a passkey, but did not enroll an authenticator app. So, I did not actually enable 2fa.
-
-> We should make enabling 2fa explicit. I also want to make it optional right now. So, a user can
-> enable or disable it. There should be a sysop option to make 2fa mandatory.
+Adding a passkey used to stop the next sign-in at a prompt for an authenticator code never
+enrolled. Two-step verification is explicit and optional per member, and a club can make it
+mandatory.
 
 The sign-in library asks for a second factor whenever an account holds any enrolled
 authenticator. Here the second step happens because the member turned it on, or because the club
@@ -56,7 +52,7 @@ def _sign_in(address="mem@example.org"):
 
 
 def test_a_key_on_its_own_does_not_ask_for_a_second_step():
-    """The fault the advisor found: adding a key turned on something he never asked for."""
+    """Adding a key used to turn on a second step nobody asked for."""
     _key(_member())
     client, response = _sign_in()
     assert response.status_code == 302 and SECOND_STEP not in response["Location"]
@@ -105,7 +101,7 @@ def test_turning_it_off_leaves_the_keys_alone():
 
 
 def test_a_club_can_require_it_of_an_access_group():
-    """NAF, 2026-09-13 and again 2026-09-20: required for certain permission levels."""
+    """A club can require it for certain permission levels."""
     from apps.accounts import mfa
 
     officer = _member("off@example.org", groups=["officer"])
@@ -143,9 +139,7 @@ def test_a_required_account_is_told_before_it_is_stopped():
     body.force_login(officer)
     page = body.get(f"/members/{officer.pk}/").content.decode()
     assert "required for your access level" in page
-    assert f"{when.day} {when:%b %Y}" in page, (
-        "the date it stops being optional"
-    )  # 21 Nov 2026 (#274)
+    assert f"{when.day} {when:%b %Y}" in page, "the date it stops being optional"  # 21 Nov 2026
 
     _key(officer)
     assert mfa.deadline(officer) is None, "enrolled, so there is nothing to count down to"
@@ -179,8 +173,8 @@ def test_the_second_step_asks_for_the_code_when_that_is_what_is_enrolled():
 
 
 def test_the_second_step_leads_with_the_key_when_that_is_what_is_enrolled(monkeypatch):
-    """The advisor's case: a key and no authenticator app. The library's own page led with a code
-    box he could not fill; this one leads with the key and offers the recovery codes second.
+    """A key and no authenticator app: the library's own page led with a code box that could not
+    be filled; this one leads with the key and offers the recovery codes second.
     """
     from allauth.mfa.webauthn.internal import auth as webauthn_auth
 

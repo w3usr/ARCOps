@@ -1,5 +1,5 @@
 """A member named as a minor's responsible adult kept a copy of their email and phone on the row,
-which the guardian's page and the slot's other members read (private tracker 327). The row keeps
+which the guardian's page and the slot's other members read (FR-67). The row keeps
 the link; the copy goes, and the member's own account still holds both."""
 
 from django.db import migrations

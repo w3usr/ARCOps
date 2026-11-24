@@ -1,4 +1,4 @@
-"""Which tone a state's badge takes (#226), in one place: `{{ event.state|tone:"event" }}` gives the
+"""Which tone a state's badge takes, in one place: `{{ event.state|tone:"event" }}` gives the
 class to put beside `tag`. The word is always the state's own label; the tone only repeats it.
 A slot's tone is the roster's (`services/roster.py`, `Presentation.tone`), which this does not
 duplicate."""

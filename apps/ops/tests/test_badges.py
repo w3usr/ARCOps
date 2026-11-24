@@ -1,4 +1,4 @@
-"""Badges (#226): every tone's word reads at 4.5:1 on its fill, light and dark, measured from the
+"""Badges: every tone's word reads at 4.5:1 on its fill, light and dark, measured from the
 colors the stylesheets draw; and the state-to-tone map gives a class for each state it names."""
 
 import re
@@ -31,7 +31,7 @@ def test_every_tone_reads_on_its_fill_in_both_themes():
         "ok": ("--ok", "--tag-ok"),
         "warn": ("--warn", "--tag-warn"),
         "bad": ("--bad", "--tag-bad"),
-        "info": ("--accent-soft-fg", "--tag-neutral"),  # #263: the word in the club's color only
+        "info": ("--accent-soft-fg", "--tag-neutral"),  # the word in the club's color only
     }
     low = {
         (scheme, name): round(contrast(_value(block, fg), _value(block, bg)), 2)

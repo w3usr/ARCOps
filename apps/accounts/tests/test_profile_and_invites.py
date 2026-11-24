@@ -43,7 +43,7 @@ def test_profile_shows_every_address_once_with_its_standing_and_a_way_to_add_one
     c.force_login(u)
     body = c.get("/me/", follow=True).content.decode()
     assert ">Email</h2>" in body  # a plain noun, not a sentence
-    # the profile reads; nothing on it changes anything (NAF, 2026-09-19)
+    # the profile reads; nothing on it changes anything
     assert "address_delivery" not in body and "address_add" not in body
     assert "Not confirmed, so it cannot sign you in yet" in body
     edit = c.get("/me/edit/", follow=True).content.decode()

@@ -215,7 +215,7 @@ def accent_color() -> str:
     """The club's accent (branding.accent) if it is a six-digit hex color and every pair it
     makes reads at AA (4.5:1, FR-116): white on it (buttons, the sign-in panel), it as text
     on white and on its own tint (links, the active menu entry), and the colors dark mode mixes
-    from it (#143). Otherwise the application's default."""
+    from it. Otherwise the application's default."""
     value = setting("branding.accent")
     if not value or not _HEX.match(str(value)):
         return DEFAULT_ACCENT
@@ -266,8 +266,8 @@ def branding() -> dict[str, str | None]:
 
 def institution_domains() -> list[str]:
     """The domains that count as the institution's own: the one source for an address's kind,
-    the agreement rule, and the field's label (T22, 2026-10-21, found them reading different
-    settings). The trusted domains first; older configurations carried it on a member category."""
+    the agreement rule, and the field's label, which once read different settings. The
+    trusted domains first; older configurations carried it on a member category."""
     domains = [
         str(d).strip().lower().lstrip("@") for d in (setting("trusted_email_domains", []) or [])
     ]

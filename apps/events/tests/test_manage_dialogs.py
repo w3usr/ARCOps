@@ -1,6 +1,6 @@
-"""Manage's small forms open in a dialog (#168, SK 2026-11-02): each a page of its own, which htmx
+"""Manage's small forms open in a dialog: each a page of its own, which htmx
 fetches into the dialog; a refusal comes back there with what was typed, a save sends the page
-behind to its step (#172). The event's details are read on Details and edited on a page."""
+behind to its step. The event's details are read on Details and edited on a page."""
 
 import re
 
@@ -127,7 +127,7 @@ def test_the_details_are_read_on_setup_and_edited_on_their_page(officer):
 
 def test_a_location_and_a_position_are_edited_after_they_are_added(officer):
     """FR-51: a typo in a location's name or address, or a position's name, is put right on
-    Locations, not in the admin (SK, 2026-11-11). Each change is in the audit log."""
+    Locations, not in the admin. Each change is in the audit log."""
     from apps.ops.models import AuditLog
 
     c = _as(officer)
@@ -205,7 +205,7 @@ def test_replacing_from_the_dialog_asks_there_and_never_loses_the_grid_to_bad_ho
         'hx-post="/events/' in body
         and "Keep the grid" in body.split("Replace the grid</button>")[0]
     )
-    # Hours outside every period are refused where they are chosen, the on-air hours (#247),
+    # Hours outside every period are refused where they are chosen, the on-air hours,
     # so the generator cannot be asked for them; nothing is deleted before the confirmation.
     assert Slot.objects.filter(position__location__event=ev).count() == before
     r = c.post(f"/events/{ev.pk}/slots/generate/", form | {"confirmed": "yes"}, **HX)
@@ -227,7 +227,7 @@ def test_a_member_captain_cannot_open_the_captain_form(officer):
 
 
 def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
-    """NN/g and GOV.UK, 2026-11-03 (SK): related fields grouped under a legend, one under another;
+    """As NN/g and GOV.UK advise: related fields grouped under a legend, one under another;
     whole numbers in small boxes with the numeric keypad and no spinner; the hours optional."""
     from apps.events.models import SignUp
 
@@ -239,7 +239,7 @@ def test_the_generator_groups_its_fields_and_sizes_its_numbers(officer):
     seats = page.split("<legend>Seats in each slot</legend>", 1)[1].split("</fieldset>", 1)[0]
     assert re.findall(r"<label[^>]*>([^<]+)</label>", seats) == ["Operator", "Mentor"]
     assert 'type="number"' not in page and page.count('inputmode="numeric"') == 7
-    assert "Hours to operate each day" not in page  # a range a day in the on-air hours (#248)
+    assert "Hours to operate each day" not in page  # a range a day in the on-air hours
     assert "Setup slots before" in page  # nobody has signed up: Regenerate slots may use it
     s = Slot.objects.filter(position__location__event=ev, kind="operating").first()
     SignUp.objects.create(slot=s, user=officer, role="operator")
