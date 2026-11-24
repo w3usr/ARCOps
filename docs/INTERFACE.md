@@ -386,7 +386,11 @@ be the one a design system ships as its default still looks like itself.
   on every unread row is noisy and the dot is the familiar convention. A screen reader is told in
   words either way"). The dot is drawn by CSS and kept from a screen reader, which hears a hidden
   "Unread:" before the subject.
-- **One panel is the club's color**: the sign-in page's, the page that introduces the club.
+- **The sign-in page is one card in the middle of the page**, the club's mark at its head and
+  the callsign in the club's color: the page that introduces the club. It was a half-page panel
+  in the club's color beside the form until SK, 2026-11-24: a centered form reads more plainly,
+  and on a phone the panel pushed the fields below the first screen. Joining and accepting an
+  invitation use the same card.
 
 ## Type
 
@@ -409,8 +413,8 @@ One family, served from this site: **Atkinson Hyperlegible Next**, in two weight
   | `--t-small` | 14 px | tags, badges, help, errors, legends, table headers, a roster's second lines |
   | `--t-body` | 16 px | everything read as text |
   | `--t-lede` | 18 px | `h3`, a page's opening line, an event's time, a card's title, the name of every box: a panel's, a section's, a card's (SK, 2026-11-17) |
-  | `--t-h2` | 20 px | an `h2` on the page itself (an event's long text), the slot dialog's heading, a password shown to be copied |
-  | `--t-h1` | 30 px | `h1`, the sign-in page's callsign |
+  | `--t-h2` | 20 px | an `h2` on the page itself (an event's long text), the slot dialog's heading, a password shown to be copied, the sign-in page's callsign |
+  | `--t-h1` | 30 px | `h1` |
 
   Something that seems to need a sixth size usually needs a different structure instead.
   Nothing is set in capitals to look like a label: a group in the sidebar is named in small

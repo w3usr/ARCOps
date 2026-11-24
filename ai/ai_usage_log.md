@@ -5498,3 +5498,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, a test, and a draft. Verified: the new test fails against the old view and template; the application tests (690) pass; djLint lint and format clean; scenario T26, with a new check in the private repository, passes locally.
 - **Human Review Status**: Pending review
 - **Git Hash**: a29010b
+
+## [2026-11-24 17:30 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: SK found the signed-out pages' half-page club panel beside a right-hand form counterintuitive and asked for a centered form. Practitioner guidance (web.dev's sign-in form article among it) favors a centered card for a page whose only job is signing in; on a phone the panel stacked above the form and pushed the fields below the first screen.
+- **Sections/Files Affected**: templates/allauth/layouts/base.html (the panel becomes a header inside the card: logo, callsign, club name); static/css/signed-out.css (one card centered on the canvas, auto margins so a long join form scrolls rather than losing its top; the sticky panel and the half-and-half grid gone; signed-in account pages unchanged); apps/ops/tests/test_shell.py (asserts the card's header and no panel); docs/INTERFACE.md (Color: the one club-colored panel replaced by this decision, SK 2026-11-24; Type: the callsign moves from the h1 size to the h2 size).
+- **Nature of Contribution**: Research summary, code edit and doc edit. Verified: screenshots of sign-in at 1280 and 390 px and in the dark theme read well; the application tests in test_shell and test_phase4 pass; the accessibility sweep passes in Chromium and WebKit (102 passed, 8 skipped), the join-pages layout test among it; djLint and check_interface clean. Firefox does not launch on this machine and is CI's to confirm. The join and invitation forms were not looked at by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**: pending

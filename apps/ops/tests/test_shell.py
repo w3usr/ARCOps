@@ -17,9 +17,9 @@ def _set(key, value):
     ClubSetting.objects.update_or_create(key=key, defaults={"value": value})
 
 
-def test_sign_in_page_is_the_split_layout_without_signup_or_contact_noise(client: Client):
+def test_sign_in_page_is_the_centered_card_without_signup_or_contact_noise(client: Client):
     body = client.get("/accounts/login/").content.decode()
-    assert 'class="auth"' in body and "auth-hero" in body
+    assert 'class="auth"' in body and "auth-head" in body and "auth-hero" not in body
     assert "invitation from a club officer" not in body
     assert "Times are shown" not in body
     assert "mailto:" not in body  # the footer names the club and links its page, nothing else

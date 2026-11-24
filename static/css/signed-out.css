@@ -1,4 +1,4 @@
-/* Signed-out pages: the club's panel beside the form. */
+/* Signed-out pages: one card in the middle, the club's mark at its head. */
 
 .plain {
   flex: 1;
@@ -22,66 +22,65 @@
   margin-top: var(--space-7);
 }
 
+/* One card in the middle of the page. Auto margins rather than centered alignment, so a long
+   form (joining) grows down and scrolls instead of losing its top above the viewport. */
 .auth {
   flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8) var(--space-4);
+  background: var(--canvas);
 }
-.auth-hero {
-  background: var(--brand);
-  color: var(--brand-fg);
+.auth-card {
+  margin: auto;
+  width: 100%;
+  max-width: 26rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-6);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+}
+.auth-head {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding: var(--space-9) var(--space-7);
   gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 .auth-logo {
-  width: clamp(9rem, 40%, 14rem);
+  width: 5rem;
   height: auto;
   background: #ffffff;
+  border: 1px solid var(--line);
   border-radius: 50%;
-  padding: var(--space-4);
-  box-shadow: var(--shadow);
-  margin-bottom: var(--space-6);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 .auth-callsign {
   margin: 0;
-  font-size: var(--t-h1);
+  font-size: var(--t-h2);
   font-weight: 700;
   letter-spacing: 0.06em;
-  line-height: 1.1;
+  color: var(--accent);
 }
 .auth-clubname {
   margin: 0;
-  font-size: var(--t-lede);
-  opacity: 0.92;
-  max-width: 22ch;
+  font-size: var(--t-small);
+  color: var(--muted);
 }
-.auth-card {
-  display: grid;
-  align-content: center;
-  justify-content: center;
-  grid-template-columns: minmax(0, 22rem);
-  gap: var(--space-4);
-  padding: var(--space-9) var(--space-6);
+.auth .auth-card h1 {
+  text-align: center;
 }
 .auth-card h1 {
   margin-bottom: var(--space-1);
 }
 .auth-card form {
   display: contents;
-}
-/* A long form (joining) scrolls past the panel; the panel stays in view, its mark centered. */
-@media (min-width: 48.0625rem) {
-  .auth-hero {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    align-self: start;
-  }
 }
 .auth-card .stack {
   display: flex;
@@ -98,24 +97,18 @@
 }
 .authed .auth-card {
   display: block;
+  margin: 0;
+  max-width: none;
   padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
 }
 @media (max-width: 48rem) {
   .auth {
-    grid-template-columns: 1fr;
-  }
-  .auth-hero {
-    padding: var(--space-7) var(--space-5) var(--space-7);
-  }
-  .auth-logo {
-    width: 7.5rem;
-    padding: var(--space-3);
-    margin-bottom: var(--space-4);
-  }
-  .auth-callsign {
-    font-size: var(--t-h1);
+    padding: var(--space-5) var(--space-4);
   }
   .auth-card {
-    padding: var(--space-7) var(--space-5) var(--space-8);
+    padding: var(--space-6) var(--space-5);
   }
 }
