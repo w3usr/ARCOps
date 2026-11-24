@@ -5497,4 +5497,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/views_slots.py (`sees_contacts`: the level holds view_participant_contacts, or the viewer captains this event); templates/events/_slot_body.html (each person's email and phone, as links, beneath their name, for those viewers); apps/events/tests/test_roster.py (new test: a member-level captain sees them once made captain, an officer through the capability, an ordinary member and another event's captain do not); docs/REQUIREMENTS.md (functional addendum A45; the body unchanged).
 - **Nature of Contribution**: Code generation, a test, and a draft. Verified: the new test fails against the old view and template; the application tests (690) pass; djLint lint and format clean; scenario T26, with a new check in the private repository, passes locally.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: a29010b
