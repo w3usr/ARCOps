@@ -5473,4 +5473,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/credentials/views.py (the queue's rows and reversible declines carry the default expiry; `decide` takes `expires_on`, refuses a date of today or earlier, and refuses to reverse a decline older than `DECLINED_WINDOW_DAYS`); templates/credentials/_expiry_field.html (new: Access expires, filled in with the default and tagged Club default through the existing data-default script); templates/credentials/approvals.html (the field in the Approve form and in the reversal dialog); apps/credentials/tests/test_phase4.py (new test).
 - **Nature of Contribution**: Code generation and a test. Verified: the new test fails against the old view and template; the application tests (689) pass; the Chromium accessibility sweep passes; screenshots of the queue at 1280 and 390 px read well, and Approve and Decline stack at 1280 as they did before; scenarios T08, T22, T29, T33, T40 and T52 pass locally, with T08's dialog-label locator narrowed in the private repository.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 4ff7a4a
