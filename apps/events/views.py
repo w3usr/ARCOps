@@ -41,7 +41,7 @@ def event_list(request):
             regular.append(e)  # FR-45: on the calendar, no roster
         else:
             # FR-44: completed by a captain or once its last slot ended, whichever came first;
-            # either way it is over, though its dates may run on (2026-11-10).
+            # either way it is over, though its dates may run on.
             over = e.state == Event.State.COMPLETED or (e.end or now) < now
             (past if over else upcoming).append(e)
     upcoming.sort(key=lambda e: e.start or now)
@@ -51,7 +51,7 @@ def event_list(request):
     for e in upcoming + past:
         e.tile = e.start
     # Coverage is worked out slot by slot, so only for an event members sign up to: never for a
-    # draft or a canceled one, which an officer may have hundreds of (dev, 2026-11-09).
+    # draft or a canceled one, which an officer may have hundreds of (dev).
     for e in upcoming:
         e.captain = request.user.can_captain(e)
         live = e.state in (Event.State.PUBLISHED, Event.State.LOCKED)

@@ -14,7 +14,7 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 # Material Symbols Outlined, weight 400, optical size 24 (Google, Apache-2.0; see NOTICE), one
-# path each on the set's own 960-unit grid, drawn in the text color (2026-11-11). Each
+# path each on the set's own 960-unit grid, drawn in the text color. Each
 # line names the symbol it is. Decorative: the label beside them carries the meaning, so they
 # are aria-hidden. A new icon is copied from the same set, the 24 px outlined SVG's one path.
 _ICONS = {

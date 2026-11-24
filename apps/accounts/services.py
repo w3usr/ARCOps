@@ -219,7 +219,7 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     """FR-5: completing the form admits the person as a Member with the invitation's category.
 
     An address that already belongs to a closed or archived account brings that account back
-    instead of starting a new one (FR-125, 2026-09-19).
+    instead of starting a new one (FR-125).
     """
     # The invitation's address unless the form gave one: a guardian who clears the member's
     # field means they have none (§2.4), which is not the same as a form that never asked.
@@ -586,7 +586,7 @@ def readmit(actor: User, user: User) -> None:
 def _someone_else_can_administer(user: User) -> bool:
     """Whether anybody but this account can still run the site.
 
-    Two things have to survive, and they stopped being the same thing on 2026-09-19, when
+    Two things have to survive, and they stopped being the same thing when
     officers and advisors gained a **bounded** form of "decide which groups an account is in"
     (§2.3): it appoints members and officers, and it cannot make a sysadmin, reach the club's
     settings, or open the Django admin. So the last sysadmin is still the last sysadmin even in

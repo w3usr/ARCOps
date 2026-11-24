@@ -112,8 +112,7 @@ class AccountForm(NoColon, forms.ModelForm):
             )
         if "club_positions" in self.fields:
             # Any number of them, and each one held by any number of people: one member is both
-            # the faculty advisor and the license trustee, and a board has several members (the
-            # advisor, 2026-09-20). Ticked boxes rather than a list to pick from, so holding two
+            # the faculty advisor and the license trustee, and a board has several members. Ticked boxes rather than a list to pick from, so holding two
             # takes one gesture each.
             positions = setting("club_positions", []) or []
             self.fields["club_positions"] = forms.MultipleChoiceField(

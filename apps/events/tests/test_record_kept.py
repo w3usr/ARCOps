@@ -172,7 +172,7 @@ def test_a_canceled_event_is_not_canceled_twice(officer):
     assert Outbox.objects.filter(user=mem, subject__startswith="Event canceled").count() == 1
 
 
-# --------------------------------------------------------- compliance review, 2026-11-12 ---
+# --------------------------------------------------------------------- compliance review ---
 
 
 def test_a_slot_under_way_with_attendance_is_not_canceled(officer):

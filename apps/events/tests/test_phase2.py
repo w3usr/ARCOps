@@ -125,7 +125,7 @@ def test_publish_with_announcement_reaches_members():
     c.force_login(cap)
     c.post(f"/events/{e.pk}/publish/", {"announce": "yes"})
     assert Event.objects.get(pk=e.pk).state == Event.State.PUBLISHED
-    # Its own category since 2026-09-20: turning off an officer's announcements no longer turns
+    # Its own category: turning off an officer's announcements no longer turns
     # off the club's calendar with them.
     assert Outbox.objects.filter(
         user=mem, category="event_published", subject__contains="Sprint"
@@ -146,7 +146,7 @@ def test_role_change_warns_when_it_breaks_the_slot_and_tells_captains_inside_cut
     assert "Change role to" in body
     r = c.post(f"/events/signup/{su.pk}/role/", {"role": "observer"})
     assert r.status_code == 200 and b"Change your role?" in r.content  # the only licensee
-    # what the slot would need, in the roster's words, not its state's name (2026-10-26)
+    # what the slot would need, in the roster's words, not its state's name
     assert b"the slot needs someone with" in r.content and b"not viable" not in r.content
     su.refresh_from_db()
     assert su.role == "operator"

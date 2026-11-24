@@ -325,7 +325,7 @@ def test_an_officer_promotes_and_never_demotes(club_people):
     assert member.in_group("member") and not member.in_group("provisional")
 
     # and an advisor cannot empty the field either: a form with no level is refused rather than
-    # taken as "no access", which is what closing and suspending are for (2026-09-20).
+    # taken as "no access", which is what closing and suspending are for.
     _as(club_people["advisor"]).post(
         f"/members/{member.pk}/edit/",
         {"action": "save", "first_name": member.first_name, "last_name": member.last_name},

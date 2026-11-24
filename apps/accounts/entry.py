@@ -144,7 +144,7 @@ def returned_through(link: EntryLink, user: User) -> None:
     """A member who left came back through this link.
 
     They come back as a member whatever kind of link it was: an officer admitted them once
-    already, and the link is only the door they walked through (FR-125, 2026-09-19). Their old
+    already, and the link is only the door they walked through (FR-125). Their old
     address is confirmed on the account, so there is nothing to verify either.
     """
     user.joined_via = link

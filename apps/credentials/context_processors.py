@@ -17,7 +17,7 @@ def approvals_waiting(request):
         return {}
     # The same filter the page applies, or the badge promises work the queue does not show. An
     # account ended any of the four ways -- closed, suspended, archived, deleted -- keeps its
-    # signatures on the record, but they are nobody's to approve (2026-09-23).
+    # signatures on the record, but they are nobody's to approve.
     from apps.accounts.models import User
 
     return {

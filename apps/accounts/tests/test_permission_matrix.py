@@ -197,7 +197,7 @@ def _pages(world):
         # advisor tools
         ("approvals", "/credentials/approvals/", {"anonymous": AWAY, **advisor_up}),
         # The archive is the members list narrowed to it; the old URL forwards there for
-        # whoever may read it, and is not there at all for anybody else (2026-09-19).
+        # whoever may read it, and is not there at all for anybody else.
         (
             "archive",
             "/members/archive/",
@@ -243,7 +243,7 @@ def test_an_account_with_no_access_and_an_archived_one_reach_nothing(world):
     archived = _user("gone@example.org", "member")
     from apps.accounts.services import archive_member, request_closure
 
-    request_closure(archived)  # closed before archived (2026-09-19)
+    request_closure(archived)  # closed before archived
     archive_member(world["people"]["advisor"], _user_by_pk(archived), "graduated")
     for person in (closed, archived):
         c = Client()

@@ -1,5 +1,5 @@
 """
-The roster as the reader sees it (design run of 2026-09-13, second round).
+The roster as the reader sees it.
 
 Everything the template needs is assembled here: slots grouped under day headings in the
 leading zone, each with its hours in that zone and in the other; a grid (time down, one column

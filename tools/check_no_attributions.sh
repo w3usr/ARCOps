@@ -3,7 +3,7 @@
 # records (FR-n, TR-n, an addendum's A-n, docs/INTERFACE.md). Who decided, when, and in what
 # words belongs to the decision record, not to the code: a club that installs ARCOps reads the
 # rule, and the record keeps the reasoning. This refuses the forms an attribution takes: initials
-# or a role with a date, a private tracker's number, a bare issue number, a test-plan scenario.
+# or a role with a date, a dated note, a private tracker's number, a bare issue number, a test-plan scenario.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 python3 - <<'PY'
@@ -11,6 +11,9 @@ import pathlib, re, sys
 
 RULES = [
     ("an attribution", re.compile(r"\b(?:[A-Z]{2,4}|[Tt]he advisor)(?:'s)?,? (?:on )?20\d\d-\d\d-\d\d")),
+    ("a dated note", re.compile(
+        r"\([^()]*\b20\d\d-\d\d-\d\d\)"
+        r"|\b(?:[Ss]ince|[Uu]ntil|[Bb]efore|[Ff]ound|[Oo]bserved|[Rr]eported|amended) 20\d\d-\d\d-\d\d")),
     ("a private tracker", re.compile(r"[Pp]rivate tracker")),
     ("an issue number", re.compile(r"(?<![\w&#'\"])#\d{2,4}\b(?![;'\"])")),
     ("a test-plan scenario", re.compile(r"\bT[1-9]\d{0,2}(?= step|,|:| to T\d|\))")),

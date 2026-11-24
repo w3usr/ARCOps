@@ -299,7 +299,7 @@ def agreement_pdf(request, pk):
         raise Http404
     # The stored file states a standing, so it is rebuilt when a decision is newer than it.
     # Rebuilding here rather than on every decision keeps the nightly expiry job from rendering
-    # a document per lapsed agreement, and still hands nobody a stale one (2026-09-20).
+    # a document per lapsed agreement, and still hands nobody a stale one.
     latest = a.decisions.order_by("-at").first()
     stale = (latest and (a.pdf_built_at is None or latest.at > a.pdf_built_at)) or (
         a.pdf_render_version < PDF_RENDER_VERSION

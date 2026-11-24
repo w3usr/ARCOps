@@ -390,7 +390,7 @@ document.addEventListener("change", (ev) => {
   });
 });
 
-// A field showing a default (2026-11-12): its tag ("Club default", "Same as a
+// A field showing a default: its tag ("Club default", "Same as a
 // slot") goes once the value differs from it. A field that follows another (a setup slot's
 // length follows the slot length) copies it until it is typed in, and then says so to the
 // server through its *_edited box, so an untouched one keeps following there too.

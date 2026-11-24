@@ -2,7 +2,7 @@
 #
 # The sign-in library calls a WebAuthn credential a "security key", which since 2023 has meant
 # the hardware rather than the credential; what a member enrolls here is a **passkey**, and the
-# advisor asked for that word everywhere (2026-09-20). This catalogue is the supported way to
+# advisor asked for that word everywhere. This catalogue is the supported way to
 # say so without forking the library's templates: one file to delete when the library catches
 # up, rather than six templates to carry.
 #

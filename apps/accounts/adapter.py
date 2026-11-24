@@ -74,7 +74,7 @@ class AccountAdapter(DefaultAccountAdapter):
         (`apps.accounts.views_mfa.ConfirmAccessView`). The library's own webauthn view refuses
         any path that is not an advertised method, so dropping it here let the browser raise its
         prompt and then bounced the credential back to the password page without checking it,
-        reported as "Passkey authentication is not working here" (2026-09-20). What this list
+        reported as "Passkey authentication is not working here". What this list
         means to the library is *which pages may confirm*; what a page shows is the template's
         business.
         """

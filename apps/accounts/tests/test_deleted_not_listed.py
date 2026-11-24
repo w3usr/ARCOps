@@ -66,7 +66,7 @@ def test_an_archived_account_is_out_of_the_directory_too():
     )
     from apps.accounts.services import request_closure
 
-    request_closure(left)  # closed or suspended before archived (2026-09-19)
+    request_closure(left)  # closed or suspended before archived
     archive_member(sysadmin, User.objects.get(pk=left.pk), "graduated")
     assert "Former" not in _as(sysadmin).get("/members/").content.decode()
     assert "Former" in _as(sysadmin).get("/members/?archived=yes").content.decode()

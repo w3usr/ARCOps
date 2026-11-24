@@ -23,7 +23,7 @@ class Event(models.Model):
     # event; a split contest's break is time outside the on-air hours). Empty until set.
     start = models.DateTimeField(null=True, blank=True)
     end = models.DateTimeField(null=True, blank=True)
-    min_license_class = models.CharField(  # the *preferred* class since 2026-09-15 (FR-36, FR-61)
+    min_license_class = models.CharField(  # the *preferred* class (FR-36, FR-61)
         max_length=20, blank=True, verbose_name="preferred license class"
     )
     rules_url = models.URLField(blank=True)

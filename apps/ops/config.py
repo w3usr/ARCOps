@@ -56,7 +56,7 @@ def load_yaml(directory: Path | None = None) -> dict[str, Any]:
 
     It is an overlay rather than a replacement, so a setting added to the application reaches an
     installation that has its own club.yaml. Without this, `security.two_factor_required_groups`
-    was invisible on the club's own server on the day it was added (2026-09-20).
+    was invisible on the club's own server on the day it was added.
     """
     directory = directory or config_dir()
     overlay = _read(directory)

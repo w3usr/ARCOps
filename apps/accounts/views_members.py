@@ -231,8 +231,7 @@ def members(request):
     statuses &= {k for k, _ in User.STATUSES}
     if not may_see_deleted:
         statuses.discard("deleted")
-    # The archive is a **flag**, not a status, so it has a column and a filter of its own (the
-    # advisor, 2026-09-19). Unasked, the list is the live one: an archived record is put away,
+    # The archive is a **flag**, not a status, so it has a column and a filter of its own. Unasked, the list is the live one: an archived record is put away,
     # and a deleted row survives only so past rosters keep their shape (FR-125, FR-118).
     archived = set(request.GET.getlist("archived")) if full and may_see_archive else set()
     archived &= {"yes", "no"}
@@ -251,8 +250,7 @@ def members(request):
         if full
         # Who a member sees: everybody the club counts as one, which is everybody who may read
         # the directory. A sysadmin holds every capability through the account flag rather than
-        # through a group, so asking the groups alone left them off the club's own roster (the
-        # advisor, 2026-09-20: "why don't I show up on the roster?").
+        # through a group, so asking the groups alone left them off the club's own roster.
         else current.filter(
             Q(groups__permissions__codename="view_directory") | Q(is_superuser=True)
         )
@@ -404,7 +402,7 @@ def members(request):
             "archived_ticked": archived_ticked,
             "may_see_archive": may_see_archive,
             # What the status panel shows ticked: what was asked for, and nothing when
-            # nothing was (2026-09-20). The query reads an empty set as no narrowing.
+            # nothing was. The query reads an empty set as no narrowing.
             "status_ticked": status_ticked,
             "position_choices": sorted(positions.items(), key=lambda kv: kv[1]),
             "access_choices": access_choices,

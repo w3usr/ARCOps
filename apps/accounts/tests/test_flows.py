@@ -372,7 +372,7 @@ def test_every_page_has_one_h1_and_labelled_inputs():
 def test_real_login_post_works_behind_a_proxy_with_empty_remote_addr():
     """Production runs gunicorn on a unix socket: REMOTE_ADDR is empty and the visitor's address
     arrives in X-Real-IP from nginx. allauth's rate limiter must still find an IP (it raised
-    PermissionDenied on the first live sign-in attempt, 2026-09-13)."""
+    PermissionDenied on the first live sign-in attempt)."""
     User.objects.create_user(
         "real@example.org",
         "a-long-password-123",
@@ -400,8 +400,7 @@ def test_real_login_post_works_behind_a_proxy_with_empty_remote_addr():
 
 
 def test_password_reset_mail_comes_from_the_club_with_its_own_subject(settings):
-    """allauth's own mail used Django's default sender and a "[host] …" subject (seen live on
-    2026-09-16); it now carries the club's sender and wording."""
+    """allauth's own mail used Django's default sender and a "[host] …" subject (seen live); it now carries the club's sender and wording."""
     from django.core import mail
 
     from apps.ops.config import set_setting
@@ -487,7 +486,7 @@ def test_password_reset_follows_the_addresses_that_sign_you_in(settings):
 def test_a_password_keeps_the_spaces_it_was_typed_with():
     """A password is a secret, not a name, so nothing trims it.
 
-    Reported 2026-09-20: "passwords exactly 12 characters long are not working, like
+    Reported: "passwords exactly 12 characters long are not working, like
     'testme123456'. They are being required to be 13 characters or longer, even though it says
     the minimum is 12." Django's CharField strips by default, so a trailing space made twelve
     characters into eleven, refused with Django's own "at least 12 characters", and the value
@@ -546,7 +545,7 @@ def test_an_open_invitation_keeps_its_link_on_the_list():
     c = Client()
     c.force_login(off)
     body = c.get("/me/invitations/").content.decode()
-    # The control is a glyph beside the link, so its name is for a screen reader (2026-09-20).
+    # The control is a glyph beside the link, so its name is for a screen reader.
     assert f"/me/invite/{inv.token}/" in body and "Copy the link for" in body
 
     # A revoked one has no live link to show.
@@ -641,7 +640,7 @@ def test_a_name_that_does_not_match_the_fcc_says_what_to_do_and_links_there():
     assert "not counted as your license" in body, "it says what the callsign does until answered"
     assert 'href="/me/edit/#details"' in body and "your profile" in body
     # The question follows them until it is answered, rather than waiting on the profile page:
-    # a callsign that counts for nothing is too consequential to hide there (2026-09-20).
+    # a callsign that counts for nothing is too consequential to hide there.
     for page in ("/", "/events/", "/me/"):
         assert "Is this you?" in c.get(page, follow=True).content.decode(), page
     c.post("/me/uls-name/", {"decision": "yes"})
@@ -655,7 +654,7 @@ def test_no_password_field_anywhere_trims_what_was_typed():
     password typed with a trailing space was shortened before it was validated, refused as too
     short, and stored as something other than what was typed. Every password field in the
     project is either built by `password_field` or says `strip=False` itself, so writing one the
-    ordinary way cannot bring it back (2026-09-20).
+    ordinary way cannot bring it back.
 
     Read from the source rather than by importing every module: importing the world to make an
     assertion leaves the world imported, and other tests have to live in it.

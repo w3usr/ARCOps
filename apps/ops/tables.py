@@ -81,7 +81,7 @@ def export_url(request, **extra: str) -> str:
     """The same query string with `format=csv` on it, so a download is what is on screen.
 
     Hand-built export links quietly ignored every filter but the one somebody remembered to put
-    in the template (found on the access rosters, 2026-09-20).
+    in the template (found on the access rosters).
     """
     params = request.GET.copy()
     params.pop("page", None)

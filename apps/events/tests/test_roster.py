@@ -1,4 +1,4 @@
-"""The rebuilt roster (2026-09-13, second design round): day groups in two zones, grid or list,
+"""The rebuilt roster: day groups in two zones, grid or list,
 status phrased as a need, the slot page and fragment, captain edits on a slot, bulk actions."""
 
 import re
@@ -782,7 +782,7 @@ def test_change_seats_on_ticked_slots_reviews_first_and_refuses_per_slot(world):
 
 
 def test_change_seats_is_every_slot_or_none(world, monkeypatch):
-    """Audit 2026-11-17, finding 3: a change that fails part way leaves no slot changed, so trying
+    """A change that fails part way leaves no slot changed, so trying
     it again adds one seat, not two, where it had got to."""
     c = _as(world["off"])
     ev = world["ev"]

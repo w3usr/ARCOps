@@ -1,8 +1,8 @@
 """A roster row is as tall as its content: the time on one line, in the browser's own zone.
 
-Found on the contact sheet at 1280 px (2026-10-23): rows about 75 px tall for one line of
+Found on the contact sheet at 1280 px: rows about 75 px tall for one line of
 content, and "16:00–17:00 UTC" wrapping in the time column. Measured in a real browser, because
-the wrap is a layout question. Since functional addendum A38 (2026-11-18) the page shows the
+the wrap is a layout question. Since functional addendum A38 the page shows the
 browser's zone only, never UTC: the browser names it in a cookie and the server draws in it.
 """
 

@@ -120,7 +120,7 @@ back with ?manage=1). A disclosure holding forms is allowed here because it is i
     <button type="submit" name="what" value="close" class="secondary">{% if slot.closed %}{% icon 'unlock' %}Reopen slot{% else %}{% icon 'lock' %}Close slot{% endif %}</button>
   </form>
   {% if waiting_count %}<p class="muted">{{ waiting_count }} on the waitlist for this slot.</p>{% endif %}
-  {% comment %}Re-time, split, merge (FR-46, 2026-11-11): with people in the slot too.
+  {% comment %}Re-time, split, merge (FR-46): with people in the slot too.
   Moved, they are told and confirm again; split, they are in both parts; merged, with the slot
   that follows on. Not once it has started or has a check-in.{% endcomment %}
   <section class="stack" aria-labelledby="reshape-h-{{ slot.pk }}"><h3 id="reshape-h-{{ slot.pk }}">Change the time, split or merge</h3>

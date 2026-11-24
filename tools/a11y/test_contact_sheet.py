@@ -1,7 +1,7 @@
 """A picture of every page, so the interface can be reviewed by eye in one pass.
 
 The axe sweep beside this file says whether a page is usable. It cannot say whether a page
-reads well, and that is what the 2026-09-17 interface review was about. This writes one
+reads well, and that is what the interface review was about. This writes one
 screenshot per page per width into a gitignored directory and an index.html that lays them out
 side by side.
 

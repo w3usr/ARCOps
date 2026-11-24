@@ -229,7 +229,7 @@ class Command(BaseCommand):
             gone.save()
             from apps.accounts.services import archive_member, request_closure
 
-            # Closed first: an account somebody can still use is never archived (2026-09-19).
+            # Closed first: an account somebody can still use is never archived.
             request_closure(gone)
             archive_member(users["Ada"], User.objects.get(pk=gone.pk), "graduated in May")
 

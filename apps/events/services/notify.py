@@ -39,11 +39,11 @@ def captains_of(event: Event) -> list[User]:
 
 
 def advisors() -> list[User]:
-    """The faculty advisors, for the "who to call" line in a slot reminder. This read the club
-    position until 2026-09-17, when approving access became an access level; the position no
+    """The faculty advisors, for the "who to call" line in a slot reminder. This once read the club
+    position, before approving access became an access level; the position no
     longer says anything about what a person may do, so it cannot say who is on call either.
     A sysadmin holds every capability by being a superuser, which does not make them an advisor,
-    so they are named only when an access level gives them approval (2026-10-20)."""
+    so they are named only when an access level gives them approval."""
     return list(people_who_may("approve_agreements", superusers=False))
 
 
@@ -163,7 +163,7 @@ def _contest_kbyg(event: Event) -> str:
     f = event.contest_fields or {}
     bits = []
     # format_html escapes each value: they are typed by a captain and reach every participant's
-    # mail through the template's |safe (2026-10-20).
+    # mail through the template's |safe.
     if f.get("exchange"):
         bits.append(format_html("<p><strong>Exchange:</strong> {}</p>", f["exchange"]))
     if f.get("mode") or f.get("bands"):

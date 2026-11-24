@@ -38,7 +38,7 @@ def test_the_filter_rows_line_up_on_the_left(live_server, engine):
         lefts = {round(r["box"]) for r in rows}
         assert len(lefts) == 1, f"every checkbox starts at the same edge, got {sorted(lefts)}"
         # A checkbox stretched by a flex rule is what pushed the labels into a ragged right
-        # edge; its own width is the thing to watch (2026-09-19).
+        # edge; its own width is the thing to watch.
         assert all(r["wide"] < 30 for r in rows), "a checkbox is a checkbox, not a stretched box"
         starts = {round(r["label"]) for r in rows}
         assert len(starts) == 1, f"and every label starts at the same edge, got {sorted(starts)}"

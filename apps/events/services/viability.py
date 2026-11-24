@@ -117,7 +117,7 @@ def _satisfied(rule: list[dict], people, slot) -> tuple[bool, list[str]]:
     for req in rule:
         key = req["credential"]
         carriers = [u for u, on_air in people if on_air or key != "amateur_license"]
-        # The event's class is *preferred* (FR-61, 2026-09-15): any class satisfies the requirement;
+        # The event's class is *preferred* (FR-61): any class satisfies the requirement;
         # evaluate() adds a warning when nobody in the slot reaches the preferred class.
         if not any(holds(p, key, on, None) for p in carriers):
             # The reader sees the club's own word for the credential, not its key. This one

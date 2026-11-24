@@ -185,7 +185,7 @@ def test_one_link_per_row_the_name(directory):
 
 def test_a_members_sort_falls_back_to_a_column_they_have(directory):
     """A column a member does not have is not theirs to sort by; asking for it lands on the one
-    the table opens with, which is the surname initial (2026-09-20)."""
+    the table opens with, which is the surname initial."""
     member = User.objects.by_address("zeta@example.org").get()
     body = _as(member).get("/members/?sort=email").content.decode()
     assert 'aria-sort="ascending"' in body
@@ -336,7 +336,7 @@ def test_club_stations_filter_and_sort_apart_from_the_unlicensed(directory):
     _club_station(directory)
     c = _as(directory)
     body = c.get("/members/").content.decode()
-    assert ">Club station<" not in body, "no entry of its own in the class filter (2026-09-20)"
+    assert ">Club station<" not in body, "no entry of its own in the class filter"
     assert _names(c.get("/members/?license=club").content.decode()) == ["Zephyr"]
     assert _names(c.get("/members/?license=none").content.decode()) == [], "a club holds a license"
     # Technician, Extra, then the club station, which sits below the ladder it is not on
@@ -366,7 +366,7 @@ def test_each_station_letter_filters_and_sorts_on_its_own(directory):
     c = _as(directory)
     body = c.get("/members/").content.decode()
     for word in ("Club station", "RACES station", "Military recreation"):
-        assert f">{word}<" not in body, "the filter list holds people, not stations (2026-09-20)"
+        assert f">{word}<" not in body, "the filter list holds people, not stations"
     assert _names(c.get("/members/?license=races").content.decode()) == ["Zephyr"]
     assert _names(c.get("/members/?license=club").content.decode()) == []
     # Technician, Extra, then the RACES station, which sits below the ladder it is not on

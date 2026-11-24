@@ -65,7 +65,7 @@ def test_opening_gates_by_category_and_time():
     ok, reason = can_sign_up(user("com", category="community"), slot, "operator")
     assert not ok and "opens to you on" in reason
     # No openings are defined for mentor, so the openings gate passes; the club's role default
-    # (FR-122, 2026-09-15) then asks for a license, which this person lacks.
+    # (FR-122) then asks for a license, which this person lacks.
     ok, reason = can_sign_up(user("com2", category="community"), slot, "mentor")
     assert not ok and "license" in reason
 

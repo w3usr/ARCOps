@@ -98,7 +98,7 @@ def test_audience_filters_count_and_send_with_reply_to_and_unsubscribe():
         m.reply_to == ["cap@example.org", "club@example.org"] for m in msgs
     )
     # The stored copy carries the message and who sent it to whom; the unsubscribe line belongs
-    # to the mail, where it can be acted on without signing in (2026-09-20).
+    # to the mail, where it can be acted on without signing in.
     assert "Sent by Cap Tain" in msgs.first().body_html
     assert "<p>Please bring a headset.</p>" in msgs.first().body_html
     assert "unsubscribe" not in msgs.first().body_html
@@ -152,7 +152,7 @@ def test_unsubscribe_link_and_one_click_turn_off_announcements_only():
     # The page carries the token in its form address, and a token is time-stamped, so about one in
     # a hundred contains "Mo" by chance; the name is what must not be there.
     shown = r.content.replace(token.encode(), b"")
-    assert b"Mo" not in shown, "but not whose account it is: the link travels (2026-09-20)"
+    assert b"Mo" not in shown, "but not whose account it is: the link travels"
     r = cl.post(f"/unsubscribe/{token}/", {"List-Unsubscribe": "One-Click"})
     assert r.status_code == 200 and r.content == b"unsubscribed"
     assert NotificationPreference.objects.get(user=m, category="announcement").email is False
@@ -260,8 +260,8 @@ def test_every_message_carries_one_shared_link_to_the_member_s_own_settings(sett
 
 @pytest.mark.django_db
 def test_bulk_mail_carries_an_unsubscribe_and_the_club_s_address(settings):
-    """The digest and the openings blast are list mail by any receiver's definition; until
-    2026-09-20 neither carried an unsubscribe of any kind."""
+    """The digest and the openings blast are list mail by any receiver's definition; at first
+    neither carried an unsubscribe of any kind."""
     from django.core import mail
 
     from apps.comms.services import compose

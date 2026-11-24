@@ -37,7 +37,7 @@ class ResetPasswordForm(allauth_forms.ResetPasswordForm):
         if self.users:
             # The key view checks the link with the library's email-aware generator; the mail
             # must be made with the same one, or every link reads "Bad Token" (found live,
-            # 2026-09-16, after this form first shipped with Django's generator here).
+            # after this form first shipped with Django's generator here).
             token_generator = kwargs.get("token_generator", default_token_generator)
             flows.password_reset.request_password_reset(request, email, self.users, token_generator)
         return email
@@ -49,8 +49,8 @@ def password_field(label: str, *, first: bool = False) -> forms.CharField:
     `strip=False` is the point. Django's CharField strips by default, which is right for a name
     and wrong for a secret: a password typed with a trailing space was silently shortened before
     it was validated, so twelve characters were refused as eleven with Django's own "must contain
-    at least 12 characters", and the value that reached set_password was not the one typed
-    (reported 2026-09-20). Django's own SetPasswordForm and allauth's PasswordField both set it.
+    at least 12 characters", and the value that reached set_password was not the one typed.
+    Django's own SetPasswordForm and allauth's PasswordField both set it.
     """
     return forms.CharField(
         widget=forms.PasswordInput,

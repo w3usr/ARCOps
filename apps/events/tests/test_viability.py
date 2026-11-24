@@ -137,7 +137,7 @@ def test_a_captains_choice_of_control_operator_must_still_qualify():
 
 
 def test_technician_below_preferred_is_viable_with_a_warning():
-    # FR-61 as amended 2026-09-15: any class makes the slot viable; below the event's preferred
+    # FR-61 as amended: any class makes the slot viable; below the event's preferred
     # class is a warning.
     s = slot_for("General")
     SignUp.objects.create(slot=s, user=person("tec", "Technician", True, True), role="operator")

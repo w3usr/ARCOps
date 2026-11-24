@@ -78,7 +78,7 @@ def test_service_worker_is_served_at_the_root_uncached(client):
 def test_the_manifest_declares_each_icon_at_its_real_size():
     """A browser decides whether a site can be installed, and which icon to put on the home
     screen, from the sizes a manifest declares. "any" means scalable, which a PNG is not, so the
-    club's 512px logo was being passed over for the smaller one (2026-09-19)."""
+    club's 512px logo was being passed over for the smaller one."""
     import json
 
     from django.core.management import call_command
@@ -121,7 +121,7 @@ def test_an_installed_icon_is_offered_for_the_phones_own_mask():
 @pytest.mark.django_db
 def test_a_club_overlay_is_laid_over_the_shipped_defaults(tmp_path, settings):
     """TR-41 calls it an overlay, and it had been a replacement: a setting added to the
-    application never reached an installation with its own club.yaml. Found on 2026-09-20, when
+    application never reached an installation with its own club.yaml. Found when
     the two-step verification settings were invisible on the club's own server.
     """
     from apps.ops.config import load_yaml

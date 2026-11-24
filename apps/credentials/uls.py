@@ -80,7 +80,7 @@ def download(url: str, dest: Path) -> Path:
     if not url.startswith("https://data.fcc.gov/"):
         raise ValueError(f"refusing to fetch {url!r}: only the FCC's server is expected here")
     # The FCC's front end answers 403 to a GET without an Accept header and an explicit
-    # Accept-Encoding (urllib sends neither by default); observed 2026-09-15.
+    # Accept-Encoding (urllib sends neither by default).
     req = urllib.request.Request(  # noqa: S310
         url,
         headers={
@@ -125,7 +125,7 @@ def _flush_create(rows: list[UlsStaging]) -> None:
 def _flush_update(rows: list[UlsStaging], fields: list[str]) -> None:
     """Fill `fields` on the rows staged from HD.dat, by upsert (INSERT ... ON CONFLICT DO
     UPDATE). bulk_update writes a CASE per row and was nine tenths of a weekly import, which ran
-    past the job's 30 minutes (2026-10-20). A record with no HD row is inserted without a
+    past the job's 30 minutes. A record with no HD row is inserted without a
     callsign; stage() removes those, as bulk_update would never have written them."""
     if rows:
         UlsStaging.objects.bulk_create(
@@ -228,7 +228,7 @@ def _staged_slices(size: int = 5000):
     write on a connection whose own read statement is still stepping, and this database opens
     its transactions in IMMEDIATE mode, so streaming the staging table with `.iterator()` and
     writing inside that loop raised *database is locked* thirty-three minutes into the weekly
-    import (2026-09-19). No other process was involved: the import was blocking itself, which
+    import. No other process was involved: the import was blocking itself, which
     is why the busy timeout could not help and why the smaller daily files never showed it.
 
     The walk is by key rather than by offset, so it stays honest however large the table is.
@@ -344,7 +344,7 @@ def refresh_members(callsigns: set[str] | None = None) -> int:
 
     Driven by the member's callsign rather than by the license rows, so an account whose
     callsign was set outside the profile form, the first sysadmin or an import, is given a
-    license on the next run instead of reading "none on file" for ever (found 2026-09-17).
+    license on the next run instead of reading "none on file" for ever.
     """
     from apps.accounts.models import User
 
@@ -353,7 +353,7 @@ def refresh_members(callsigns: set[str] | None = None) -> int:
     qs = User.objects.exclude(callsign="")
     if callsigns is not None:
         # Matched here rather than as callsign IN (...): a full file touches more callsigns than
-        # SQLite's 32,766 parameters, and members are few (2026-10-20).
+        # SQLite's 32,766 parameters, and members are few.
         wanted = {c.upper() for c in callsigns}
         qs = [user for user in qs if user.callsign in wanted]
     n = 0

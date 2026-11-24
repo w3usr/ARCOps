@@ -43,7 +43,7 @@ class UserManager(BaseUserManager):
         groups = extra.pop("groups", None)  # the access groups this account starts in
         # All of it or none of it. Adding the address can be refused (another account has
         # already confirmed it), and without this the account row was already saved by then:
-        # three accounts with no address at all survived three refused attempts on 2026-09-19,
+        # three accounts with no address at all survived three refused attempts,
         # each in a group, each in the directory, none able to sign in.
         with transaction.atomic(using=self._db):
             user = self.model(**extra)
@@ -120,13 +120,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     # faculty advisor and the sysadmins; a deleted one is anonymised in place so past rosters and
     # counts stay right.
     # When the account was closed, and by whom when it was not the member themselves: a faculty
-    # advisor closes the account of somebody who has left without suspending them first (the
-    # advisor, 2026-09-19). Null `closed_by` with a date means they asked for it (FR-11).
+    # advisor closes the account of somebody who has left without suspending them first. Null `closed_by` with a date means they asked for it (FR-11).
     closure_requested_at = models.DateTimeField(null=True, blank=True)
     closed_by = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
-    # Suspension is an officer's act and a faculty advisor's to lift (§2.3, 2026-09-19). It is a
+    # Suspension is an officer's act and a faculty advisor's to lift (§2.3). It is a
     # fact on the account rather than an inference from an empty group list, because the two
     # ways of losing access lead back in through different doors.
     suspended_at = models.DateTimeField(null=True, blank=True)
@@ -412,7 +411,7 @@ class Address(models.Model):
         somebody deciding by hand that it is theirs, which is the override (FR-126).
 
         Access to the station and the computer asks for the first or the last: a credential is
-        evidence that the institution knows this person (FR-27, 2026-09-20).
+        evidence that the institution knows this person (FR-27).
         """
 
         MAILBOX = "mailbox", "Opened a link sent to it"

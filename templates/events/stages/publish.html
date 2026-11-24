@@ -60,7 +60,7 @@
     <div class="actions"><button type="button" class="secondary" commandfor="dup-dlg" command="show-modal">{% icon 'copy' %}Duplicate this event</button></div></header>
 </section>
 
-{% comment %}Only an event still to run can be canceled (2026-11-12): not one completed
+{% comment %}Only an event still to run can be canceled: not one completed
 or canceled.{% endcomment %}
 {% if event.state == 'cancelled' or event.state == 'completed' %}
 {% elif not may_manage_events %}

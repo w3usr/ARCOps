@@ -37,7 +37,7 @@ STATUS_FILTERS = {"open": "empty", "needs": "not_viable", "thin": "viable", "cov
 def unsubscribe_token(user, category: str = "announcement") -> str:
     """The signed link in a bulk message. It names the category as well as the account, because
     bulk mail is four kinds now and "stop these" has to mean the kind in front of the reader
-    rather than announcements whatever they were reading (2026-09-20)."""
+    rather than announcements whatever they were reading."""
     return signing.dumps({"u": user.pk, "c": category}, salt=UNSUB_SALT)
 
 

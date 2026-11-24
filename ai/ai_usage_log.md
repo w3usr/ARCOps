@@ -5402,3 +5402,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit. Verified: every citation of the old paths across both repositories' documents was found and repointed (the AI logs, a record, were left as written).
 - **Human Review Status**: Pending review
 - **Git Hash**: 9f90e6c
+
+## [2026-11-24 14:35 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The dates left in comments and docstrings after 2026-11-23's sweep taken out now rather than file by file (SK), and the guard taught to refuse them.
+- **Sections/Files Affected**: comments, docstrings and three assertion messages across apps/ (accounts, comms, credentials, events, ops), templates/, static/js/app.js and richtext-check.js, tools/a11y/, tools/check_interface.sh, .github/workflows/ci.yml, locale/en/LC_MESSAGES/django.po and templates/account/messages/logged_in.txt; tools/check_no_attributions.sh (a "dated note" rule: a date inside parentheses, or after since, until, before, found, observed, reported or amended). Kept: migration headers, example and test values, the frozen clock in test_roster.py and the date contest_fields.py's fields were checked against the WA7BNM calendar.
+- **Nature of Contribution**: Edit (comments only; no behavior changes). A pattern pass for parenthesised dates, then 33 rewordings by hand where the date was part of the sentence; three parentheticals naming the advisor went with their dates. Verified: the guard passes and flags 83 of the original lines; ruff, the four guards and the migration check pass; the application tests pass (675) run directly with Homebrew's libraries on the path. The accessibility sweep was not run (comments only).
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

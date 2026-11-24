@@ -187,7 +187,7 @@ def test_the_passkey_endpoint_is_not_bounced_back_to_the_password_page(monkeypat
 
     Taking the passkey out of the adapter's list to keep it off the page took it out of that
     check too, so the browser raised its prompt and the credential came back to a view that
-    redirected instead of verifying: "Passkey authentication is not working here." (2026-09-20).
+    redirected instead of verifying: "Passkey authentication is not working here.".
     The list says which pages may confirm; what a page draws is the template's business.
     """
     from allauth.mfa.models import Authenticator

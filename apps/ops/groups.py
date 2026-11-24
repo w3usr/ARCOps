@@ -232,7 +232,7 @@ def people_who_may(codename: str, *, superusers: bool = True):
     Used where the application has to write to whoever is responsible for something, which is a
     question about capability rather than about rank. superusers=False leaves out those who hold
     it only by being a superuser, where the answer names people to members (the reminder's
-    faculty advisors, 2026-10-20).
+    faculty advisors).
     """
     from apps.accounts.models import User
 

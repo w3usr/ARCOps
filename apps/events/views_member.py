@@ -245,7 +245,7 @@ def ical_feed(request, token):
     user = User.objects.filter(calendar_key=token, is_active=True).first()
     if user is None:
         # The addresses handed out before the key existed were signed strings; they keep working,
-        # so a calendar somebody subscribed last week does not quietly stop (2026-09-19).
+        # so a calendar somebody subscribed last week does not quietly stop.
         try:
             data = signing.loads(token, salt=FEED_SALT)
         except signing.BadSignature as exc:

@@ -53,7 +53,7 @@ survive a bookmark. An officer's row has one link, the name, with the address un
     <span class="sub">{% for a in m.addresses.all %}{{ a.address }}{% if not forloop.last %}, {% endif %}{% empty %}no address{% endfor %}</span></th>
   {% else %}
   {% comment %}The name the club calls this person, and the surname as an initial in its own
-  column, so the roster sorts by surname (2026-09-20). A member's entry is not a link.{% endcomment %}
+  column, so the roster sorts by surname. A member's entry is not a link.{% endcomment %}
   <th scope="row">{{ m.display_first }}</th>
   <td data-label="Last">{% if m.last_name %}{{ m.last_name|slice:":1" }}.{% else %}—{% endif %}</td>
   {% endif %}

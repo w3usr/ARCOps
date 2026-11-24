@@ -41,7 +41,7 @@ for path in sorted(pathlib.Path("templates").rglob("*.html")):
     text = COMMENTS.sub("", raw)
 
     # A page stacks on a phone; a document rendered to paper does not, and a data-label in one
-    # would be noise nobody ever sees (the signed agreement's record of decisions, 2026-09-20).
+    # would be noise nobody ever sees (the signed agreement's record of decisions).
     prints_only = path.name.endswith("_pdf.html")
 
     for table in TABLE.finditer(text):
@@ -108,8 +108,8 @@ WEIGHTS = {"400", "700", "inherit"}
 # Three corners by hierarchy (docs/INTERFACE.md, "Shape"), and a circle.
 RADIUS = re.compile(r"border-radius:\s*([^;}]+)")
 RADII = {f"var(--r-{t})" for t in ("field", "button", "card")} | {"50%"}
-# The one exception, the navigation's pill (2026-11-11): its entries, and a switch's
-# choices, whose current one is where you are (2026-11-12).
+# The one exception, the navigation's pill: its entries, and a switch's
+# choices, whose current one is where you are.
 PILL, PILL_RULE = "var(--r-pill)", (".navlist a, .navbtn {", ".switch a {")
 for path in [*sorted(pathlib.Path("static/css").glob("*.css")), *sorted(pathlib.Path("templates").rglob("*.html"))]:
     if "email" in path.parts or path.name.endswith("_pdf.html"):

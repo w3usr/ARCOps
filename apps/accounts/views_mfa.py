@@ -2,8 +2,7 @@
 
 The library's page leads with an authenticator code and demotes the security key to "Alternative
 options", whatever the person enrolled: it builds the code form unconditionally and the layout is
-fixed in the template. Somebody whose only factor is a key met a box they could not fill (the
-advisor, 2026-09-20).
+fixed in the template. Somebody whose only factor is a key met a box they could not fill.
 
 The view is the library's, with two facts added so the page can lead with what is there. The
 code box also accepts a recovery code, which is what it is for an account with no authenticator

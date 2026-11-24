@@ -280,7 +280,7 @@ def test_a_steps_own_forms_save_in_place(officer):
 
 def test_the_sidebar_marks_events_on_every_tab_of_the_workspace(officer):
     """On Manage, its steps and Who took part the sidebar's Events entry is the current one, as on
-    the event page itself; before 2026-11-11 no entry was marked there."""
+    the event page itself."""
     c = _as(officer)
     ev = _build(c)
     for url in (

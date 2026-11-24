@@ -382,7 +382,7 @@ def test_sysadmin_override_shows_as_such_and_survives_refresh(tmp_path):
 def test_a_member_whose_callsign_never_had_a_license_record_gets_one():
     """The first sysadmin's callsign is set at bootstrap, outside the profile form, so no license
     record exists for it; the sync used to iterate the records and never reach them, leaving the
-    account reading "none on file" for ever (found on the live site, 2026-09-17)."""
+    account reading "none on file" for ever (found on the live site)."""
     from apps.credentials.models import LicenseRecord
     from apps.credentials.uls import refresh_members
 
@@ -472,7 +472,7 @@ def test_the_import_writes_while_walking_a_table_larger_than_one_slice():
     Nothing may hold a read cursor open across those writes: SQLite refuses a write on a
     connection whose own read statement is still stepping, and this database opens its
     transactions in IMMEDIATE mode. Streaming the table with `.iterator()` raised *database is
-    locked* thirty-three minutes into the weekly import on 2026-09-19, with no other process
+    locked* thirty-three minutes into the weekly import, with no other process
     involved. This walks more rows than one slice and more than one write batch.
     """
     from apps.credentials.uls import apply_staging
@@ -502,7 +502,7 @@ def test_the_import_writes_while_walking_a_table_larger_than_one_slice():
 
 
 def test_class_and_name_records_without_a_header_record_are_not_imported(tmp_path):
-    """AM and EN are staged by upsert (2026-10-20), which inserts a record that has no HD row
+    """AM and EN are staged by upsert, which inserts a record that has no HD row
     where bulk_update skipped it; those are removed before the winners are chosen."""
     hd = [("100", "N0AAA", "A", "01/15/2020", "01/15/2030")]
     am = [("100", "N0AAA", "E"), ("900", "N0ZZZ", "G")]
@@ -518,7 +518,7 @@ def test_class_and_name_records_without_a_header_record_are_not_imported(tmp_pat
 
 def test_refreshing_the_members_of_a_full_file_stays_under_the_parameter_limit():
     """A full file passed with --file touches more callsigns than SQLite's 32,766 parameters;
-    the refresh matched them in one IN (...) and failed at the end of the import (2026-10-20)."""
+    the refresh matched them in one IN (...) and failed at the end of the import."""
     from apps.credentials.uls import refresh_members
 
     User.objects.create_user("m@example.org", "pw-Testing-123", callsign="N0AAA")

@@ -30,7 +30,7 @@
   function arm() {
     if (!window.tinymce) return;
     // django-tinymce starts the editors before this script runs, so the ones already on the page
-    // are taken up here; AddEditor catches any added later (2026-10-19).
+    // are taken up here; AddEditor catches any added later.
     window.tinymce.get().forEach(watch);
     window.tinymce.on("AddEditor", (e) => watch(e.editor));
   }

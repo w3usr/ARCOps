@@ -1,4 +1,4 @@
-"""The application shell and the sign-in page (design run of 2026-09-13)."""
+"""The application shell and the sign-in page."""
 
 import re
 

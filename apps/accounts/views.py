@@ -152,7 +152,7 @@ class InviteForm(NoColon, forms.Form):
                 self.add_error("email", "An adult's invitation needs their email address.")
         # An address that already signs somebody in cannot be invited; one that belongs to a
         # member who left can, and the invitation brings their record back rather than starting
-        # an empty one (FR-125, 2026-09-19).
+        # an empty one (FR-125).
         from .services import returning_account
 
         address = (data.get("email") or "").strip()

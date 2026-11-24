@@ -1032,7 +1032,7 @@ def test_the_home_banner_counts_the_approvals_and_the_messages_and_lists_neither
 def test_an_archived_members_signatures_leave_the_queue_and_come_back_with_them():
     """Nobody is left holding a card they can neither approve nor clear.
 
-    Found on the live site, 2026-09-23, after a deploy: two agreements sat awaiting approval for
+    Found on the live site after a deploy: two agreements sat awaiting approval for
     an account that had since been archived. It could not sign in, held no groups and had no
     address, so the FR-27 check refused approval and nothing else would clear it either.
 

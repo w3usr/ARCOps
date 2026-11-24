@@ -1,7 +1,7 @@
 """A card's first and last lines sit at its padding, with no margin added above or below; so do
 a section's, which shares the rule.
 
-Found on the contact sheet (2026-10-23): on your profile the Email card had visibly more space
+Found on the contact sheet: on your profile the Email card had visibly more space
 under its last line than the License card. Measured in a real browser, because the space is a
 margin and the markup does not show it. The space under a card's last line can come from one
 level down, a table or paragraph whose margin collapses through its parent; the space

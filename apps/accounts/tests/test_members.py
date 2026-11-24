@@ -92,7 +92,7 @@ def test_members_see_short_names_and_officers_see_everything(people):
     assert "@" not in rows  # no addresses for members (FR-67)
     for withheld in ("Category", "Permission level", "Email", "Phone", "First", "Preferred"):
         assert f'data-label="{withheld}"' not in rows, f"{withheld} is an officer's column"
-    # Last is a column at every level since 2026-09-20, holding the initial for a member so the
+    # Last is a column at every level, holding the initial for a member so the
     # roster sorts by surname; the surname itself is still an officer's.
     assert 'data-label="Last">O.' in rows and "Officer" not in rows
 
@@ -200,7 +200,7 @@ def test_officer_says_who_is_a_member_but_not_who_holds_an_office(people):
     advisor = User.objects.create_user(
         "adv@example.org", "pw-Testing-123", groups=["advisor"], first_name="Ada", last_name="Visor"
     )
-    # An advisor's form now carries the names and the category too (2026-09-20), and a form
+    # An advisor's form now carries the names and the category too, and a form
     # posted without them would fail validation rather than save the position.
     _as(advisor).post(
         f"/members/{mem.pk}/edit/",

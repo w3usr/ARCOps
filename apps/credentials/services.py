@@ -88,7 +88,7 @@ def log_decision(agreement, action: str, actor=None, note: str = "", expires_on=
     Called from the five places a decision is made: approving, approving after a decline,
     declining, revoking, and the two ways an approval ends by itself. The actor is frozen into a
     label the way the audit log freezes it, so a decision outlives the account that made it and
-    a job reads as "system" (FR-25, 2026-09-20).
+    a job reads as "system" (FR-25).
     """
     from .models import CredentialDecision
 
@@ -387,7 +387,7 @@ def agreement_expiry_run(now=None) -> dict:
             )
             a.save(update_fields=["state", "decision_reason"])
             # This path wrote nothing anywhere until now: not the audit log, not the record the
-            # approver reads. An approval that ended is a decision like any other (2026-09-20).
+            # approver reads. An approval that ended is a decision like any other.
             log_decision(a, CredentialDecision.Action.SUPERSEDED, None, note=a.decision_reason)
             superseded += 1
     expired_now = expire_due(now)
@@ -747,7 +747,7 @@ def watermark_background(word: str, color: str) -> str:
 
     encoded = _b64.b64encode(svg.encode("utf-8")).decode("ascii")
     # No quotes around it: base64 needs none, and a template's autoescaping turned them into
-    # &#x27; so the renderer went looking for a file of that name (2026-09-20).
+    # &#x27; so the renderer went looking for a file of that name.
     return f"url(data:image/svg+xml;base64,{encoded})"
 
 

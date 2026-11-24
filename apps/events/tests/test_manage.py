@@ -247,7 +247,7 @@ def test_grid_is_fixed_once_someone_has_signed_up(officer):
 
 def test_a_slot_is_added_by_hand_after_sign_ups_with_its_own_seats(officer):
     """FR-46: slots added by hand afterwards, people or no people; FR-49: their seats set as they
-    are made. Beta users, 2026-10-26: "add a way to add more slots after generating"."""
+    are made. Beta users: "add a way to add more slots after generating"."""
     from apps.events.models import SignUp
     from apps.ops.models import AuditLog
 
@@ -308,7 +308,7 @@ def test_a_canceled_upcoming_event_is_tagged_in_the_house_spelling(officer):
 
 
 def test_the_events_list_works_out_coverage_only_for_live_events(officer, monkeypatch):
-    """Dev, 2026-11-09: hundreds of canceled test events each had their coverage worked out slot by
+    """On dev, hundreds of canceled test events each had their coverage worked out slot by
     slot on every visit to the Events list. Only a published or locked event has any."""
     from apps.events.services import roster
 
