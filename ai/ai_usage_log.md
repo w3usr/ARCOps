@@ -5449,4 +5449,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/sw.js (a "signed-out" message deletes the offline pages, query strings included; a redirected response, which is the sign-in page, is not kept as the member's page); static/js/app.js (a signed-out page, `<main class="plain">`, sends the message); tools/a11y/test_offline_sign_out.py (new: signed in, both pages are cached; after Sign out both are gone, and offline neither shows the member's callsign).
 - **Nature of Contribution**: Code generation and a browser test. A first version of the test waited with async predicates that Playwright did not await, so it passed vacuously on its waits; replaced with a loop that awaits the cache check. Verified: the test fails against the old scripts ("signing out removes both": [True, True]) and passes against the new in Chromium and WebKit (Firefox cannot launch on this machine; CI runs it); tools/check.sh quick passes but for the signed-PDF test, which needs Homebrew's libraries.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: a52328e
