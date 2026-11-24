@@ -47,7 +47,8 @@ self.addEventListener("fetch", (e) => {
       fetch(e.request)
         // Clone now: once the page has read the body, a later clone throws and nothing is kept.
         .then((res) => {
-          if (res.ok) {
+          // Redirected is signed out: the sign-in page is no copy of the member's own page.
+          if (res.ok && !res.redirected) {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(e.request, copy));
           }
@@ -56,6 +57,20 @@ self.addEventListener("fetch", (e) => {
         .catch(() => caches.match(e.request)),
     );
   }
+});
+// §5.7: a signed-out page asks for the member's offline pages to go, so a shared machine (the
+// station's computer) does not keep them after sign-out.
+self.addEventListener("message", (e) => {
+  if (e.data !== "signed-out") return;
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) =>
+        Promise.all(
+          OFFLINE_PAGES.map((p) => c.delete(p, { ignoreSearch: true })),
+        ),
+      ),
+  );
 });
 self.addEventListener("push", (e) => {
   // The title carries the club's short name (set server-side); the fallback is this origin, so a

@@ -107,6 +107,12 @@ document.addEventListener("click", (ev) => {
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {}); // served by Django, never cached (FR-96)
+  // Signed out (base.html marks <main> "plain"): the offline copies of the member's own pages go.
+  if (document.querySelector("main.plain")) {
+    navigator.serviceWorker.ready.then(
+      (r) => r.active && r.active.postMessage("signed-out"),
+    );
+  }
 }
 
 // The slot and Manage dialogs: a link htmx could not fetch opens as its own page, as it does
