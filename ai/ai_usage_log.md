@@ -5433,4 +5433,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/events/services/slots.py (`limit_report`: a day's on-air time is the clock time any operating slot covers, positions at once counted once, and a gap shorter than the minimum break counted in; the over-limit slots follow from that); apps/events/tests/test_phase2.py (new test: a 5-minute gap under a 10-minute break, two positions over the same hours, a real break); apps/events/tests/test_manage.py (the end-to-end event's Coverage reads 24 operating hours, not 48: two positions over the same 24 hours).
 - **Nature of Contribution**: Code generation and tests. The tracker said "per person"; FR-39's words and its School Club Roundup example are the station's time, which is what this implements. Verified: the new test fails against the old code and passes; the application tests (677) pass; scenario T11 passes locally with its step 7 updated in the private repository.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 5a31e8f
