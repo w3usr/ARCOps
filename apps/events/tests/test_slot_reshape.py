@@ -2,13 +2,13 @@
 re-timed, the people stay, are told and confirm again; split, they are in both
 halves; merged, back-to-back slots only; none of it once a slot has started or has a check-in."""
 
-from datetime import timedelta
+from datetime import UTC, timedelta
 
 import pytest
 from django.utils import timezone
 
 from apps.comms.models import Outbox
-from apps.events.models import RoleCapacity, SignUp, Waitlist
+from apps.events.models import ResponsibleAdult, RoleCapacity, SignUp, Waitlist
 from apps.ops.models import AuditLog
 
 from .test_manage import _as
@@ -163,6 +163,83 @@ def test_a_slot_that_has_started_or_has_a_check_in_keeps_its_time(officer, membe
         .status_code
         == 404
     )
+
+
+def _under_way(ev):
+    """Move the event so its first slot started 30 minutes ago and the second starts in 30."""
+    from apps.events.models import Event
+
+    slots = list(_live(ev).order_by("start"))
+    shift = slots[0].start - (timezone.now() - timedelta(minutes=30))
+    for slot in _live(ev):
+        slot.start, slot.end = slot.start - shift, slot.end - shift
+        slot.save(update_fields=["start", "end"])
+    Event.objects.filter(pk=ev.pk).update(start=ev.start - shift, end=ev.end - shift)
+    return [s for s in _live(ev).filter(kind="operating").order_by("start")]
+
+
+def _typed(at):
+    return timezone.localtime(at, UTC).strftime("%Y-%m-%dT%H:%M")
+
+
+def test_a_slot_is_not_moved_to_a_time_that_has_begun(officer, member):
+    """A23: nothing changes once a slot has started, and re-timing is no way to start one."""
+    c = _as(officer)
+    ev = _future(c)
+    a, b, *_ = _under_way(ev)
+    a.cancelled = True  # room before b, inside the on-air hours
+    a.save(update_fields=["cancelled"])
+    SignUp.objects.create(slot=b, user=member, role="operator")
+    was = b.start
+    r = c.post(
+        f"/events/{ev.pk}/slot/{b.pk}/retime/",
+        {"start": _typed(timezone.now() - timedelta(minutes=10)), "minutes": "45"},
+        follow=True,
+    )
+    assert "a time that has already begun" in r.content.decode()
+    b.refresh_from_db()
+    assert b.start == was and not _told(member).exists()
+
+
+@pytest.mark.parametrize("why", ["started", "no-show", "completed", "cancelled"])
+def test_every_reason_a_slot_keeps_its_time_refuses_all_three(officer, member, why):
+    """A23: a slot that has started, holds a no-show, or belongs to an event that is over keeps
+    its time: re-time, split and merge are all refused."""
+    c = _as(officer)
+    ev = _future(c)
+    a, b, *_ = _under_way(ev) if why == "started" else _slots(ev)
+    su = SignUp.objects.create(slot=a, user=member, role="operator")
+    if why == "no-show":
+        su.no_show = True
+        su.save(update_fields=["no_show"])
+    else:
+        ev.state = why
+        ev.save(update_fields=["state"])
+    for what, data in (
+        ("retime", {"start": _typed(a.start + timedelta(minutes=15)), "minutes": "45"}),
+        ("split", {"at": _typed(a.start + timedelta(minutes=30))}),
+        ("merge", {"with": b.pk}),
+    ):
+        r = c.post(f"/events/{ev.pk}/slot/{a.pk}/{what}/", data, follow=True)
+        assert "keeps its time" in r.content.decode(), what
+    a.refresh_from_db()
+    b.refresh_from_db()
+    assert a.end - a.start == timedelta(hours=1) and not b.cancelled
+
+
+def test_a_merge_keeps_a_minors_adult_named_only_on_the_later_slot(officer, member):
+    """FR-64: someone in both slots keeps the responsible adult named on either."""
+    c = _as(officer)
+    ev = _future(c)
+    a, b, *_ = _slots(ev)
+    SignUp.objects.create(slot=a, user=member, role="operator")
+    later = SignUp.objects.create(slot=b, user=member, role="operator")
+    ResponsibleAdult.objects.create(signup=later, name="Pat Parent", email="pat@example.org")
+    c.post(f"/events/{ev.pk}/slot/{a.pk}/merge/", {"with": b.pk})
+    kept = SignUp.objects.get(slot=a, user=member)
+    assert [x.name for x in kept.responsible_adults.all()] == ["Pat Parent"]
+    row = AuditLog.objects.get(action="slot.merged", subject_id=str(a.pk))
+    assert row.after["adults kept from the later slot"] == 1
 
 
 def test_a_slot_is_moved_on_the_viewers_clock(officer):

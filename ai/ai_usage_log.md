@@ -5450,3 +5450,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and a browser test. A first version of the test waited with async predicates that Playwright did not await, so it passed vacuously on its waits; replaced with a loop that awaits the cache check. Verified: the test fails against the old scripts ("signing out removes both": [True, True]) and passes against the new in Chromium and WebKit (Firefox cannot launch on this machine; CI runs it); tools/check.sh quick passes but for the signed-PDF test, which needs Homebrew's libraries.
 - **Human Review Status**: Pending review
 - **Git Hash**: a52328e
+
+## [2026-11-24 15:43 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Private tracker 331 (SK): edge cases in re-time, split and merge (A23).
+- **Sections/Files Affected**: apps/events/views_slots.py (re-time refuses a start that has already begun); apps/events/services/reshape.py (merging someone who is in both slots keeps a responsible adult named only on the later sign-up, and the audit row counts them); apps/events/tests/test_slot_reshape.py (the two cases, and the refusals that had no test: a started slot, a no-show, a completed or canceled event, each refusing re-time, split and merge).
+- **Nature of Contribution**: Code generation and tests. The tracker's second case (a merge across two touching periods) no longer arises: the on-air hours are stored merged, so touching ranges are one, and `held_only_by` is gone. Verified: the two new tests fail against the old code and the four refusal cases pass on both; the application tests (687) pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

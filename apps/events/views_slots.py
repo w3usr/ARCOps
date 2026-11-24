@@ -495,6 +495,8 @@ def slot_retime(request, pk, slot_id):
     if not why:
         end = start + timedelta(minutes=int(minutes))
         why = reshape.misfit(slot, start, end)
+    if not why and start <= timezone.now():  # moved there, it would have started (A23)
+        why = "It cannot be moved to a time that has already begun."
     if why:
         messages.error(request, f"The slot was not moved. {why}")
         return roster_or_slot(request, slot)

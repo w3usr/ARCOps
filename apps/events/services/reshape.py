@@ -167,12 +167,20 @@ def merge(actor, first: Slot, second: Slot) -> int:
     theirs = list(second.signups.select_related("user"))
     in_both = {su.user_id for su in theirs} & set(mine)
     grew = [(su, was[first.pk]) for uid, su in mine.items() if uid not in in_both]
+    adults_kept = 0
     for su in theirs:
         held = mine.get(su.user_id)
         if held:  # in both: the hours they hold are the same as before
             if held.confirmed_at and not su.confirmed_at:
                 held.confirmed_at = None
                 held.save(update_fields=["confirmed_at"])
+            # A minor's responsible adult named only on the later slot stays theirs (FR-64).
+            named = {(a.member_id, a.name) for a in held.responsible_adults.all()}
+            for a in su.responsible_adults.all():
+                if (a.member_id, a.name) not in named:
+                    a.signup = held
+                    a.save(update_fields=["signup"])
+                    adults_kept += 1
             su.delete()
         else:
             su.slot = first
@@ -233,6 +241,7 @@ def merge(actor, first: Slot, second: Slot) -> int:
             "people told": told,
             "rules dropped": dropped,
             "in both": len(in_both),
+            "adults kept from the later slot": adults_kept,
         },
     )
     return told
