@@ -5514,3 +5514,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Draft. Verified: the figures against the job's own memory reports on the development server (the weekly import at 576 MB unlimited, and at 400 MB with 218 MB in swap and 14 minutes under the limit) and against the measurements already recorded privately for production; no host name, address or server path in the entry.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8769fa2
+
+## [2026-11-25 11:44 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: SK found two quirks on the signed-out card: the page read white, grey, white (the band above, the canvas round the card, the footer), and a message such as "You have signed out." took a band of its own above the card, pushing the card down so the page scrolled.
+- **Sections/Files Affected**: static/css/signed-out.css (the canvas is the whole page's when the card is on it, footer included; the message list has no margin of its own inside the card); templates/allauth/layouts/base.html (signed out, the messages render inside the card under the club's mark, not above it; signed in, where they were); apps/ops/tests/test_shell.py (new test: after signing out there is one message list and it is inside the card).
+- **Nature of Contribution**: Code edit and a test. Verified: the new test fails against the old template and passes with the new one; signed out and redirected to sign-in at 1280 and 390 px in Chromium, screenshotted and read: one background color under the card and the footer, the message inside the card, the card's whole form on the first screen at 1280×800; the accessibility sweep passes in Chromium and WebKit (102 passed, 8 skipped); `tools/check.sh quick` passes but for the WeasyPrint PDF test, which passes when run with the Homebrew library path this Mac needs. Firefox does not launch here and is CI's to confirm; the dark theme was not looked at by eye.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

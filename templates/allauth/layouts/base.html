@@ -10,6 +10,10 @@ the shell. allauth's default layout also prints a
 must survive, because the passkey pages put their scripts there.
 {% endcomment %}
 {% block title %}{% block head_title %}Account{% endblock %} · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{# Signed out, a message ("You have signed out.") sits inside the card, not in a band of its own above it. #}
+{% block messages %}
+  {% if user.is_authenticated %}{{ block.super }}{% endif %}
+{% endblock %}
 {% block main %}
   <div class="{% if user.is_authenticated %}authed{% else %}auth{% endif %}">
     <section class="auth-card">
@@ -19,6 +23,7 @@ must survive, because the passkey pages put their scripts there.
           <p class="auth-callsign">{{ club.callsign|default:club.short_name }}</p>
           <p class="auth-clubname">{{ club.name }}</p>
         </header>
+        {% include "_messages.html" %}
       {% endif %}
       {% block content %}
         {% block body %}

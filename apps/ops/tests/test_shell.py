@@ -32,6 +32,17 @@ def test_sign_in_page_is_the_centered_card_without_signup_or_contact_noise(clien
     ]
 
 
+def test_signing_out_says_so_inside_the_card_not_in_a_band_above_it():
+    u = User.objects.create_user("m@example.org", "pw-Testing-123", first_name="Mo", last_name="M")
+    u.groups.set(Group.objects.filter(name="member"))
+    c = Client()
+    c.force_login(u)
+    body = c.post("/accounts/logout/", follow=True).content.decode()
+    card = body[body.index('class="auth-card"') :]
+    assert body.count('class="messages"') == 1
+    assert "You have signed out." in card
+
+
 def test_footer_links_the_club_page_and_credits_the_product(client: Client):
     _set("club.public_page", "https://example.edu/radio")
     _set("club.callsign", "N0CLB")

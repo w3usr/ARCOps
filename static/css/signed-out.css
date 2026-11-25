@@ -23,13 +23,16 @@
 }
 
 /* One card in the middle of the page. Auto margins rather than centered alignment, so a long
-   form (joining) grows down and scrolls instead of losing its top above the viewport. */
+   form (joining) grows down and scrolls instead of losing its top above the viewport. The canvas
+   is the whole page's, footer included, so the card stands on one color. */
+body:has(.auth) {
+  background: var(--canvas);
+}
 .auth {
   flex: 1;
   display: flex;
   flex-direction: column;
   padding: var(--space-8) var(--space-4);
-  background: var(--canvas);
 }
 .auth-card {
   margin: auto;
@@ -78,6 +81,9 @@
 }
 .auth-card h1 {
   margin-bottom: var(--space-1);
+}
+.auth-card .messages {
+  margin: 0;
 }
 .auth-card form {
   display: contents;
