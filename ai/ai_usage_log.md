@@ -639,7 +639,7 @@ carries the actual running model ID.
 
 ## [2026-09-14 18:47 UTC]
 - **Tool**: Claude (Anthropic), claude-fable-5-1
-- **Session Purpose**: First finding of the acceptance walk-through (private tracker #23): times
+- **Session Purpose**: First finding of the acceptance walk-through: times
   on Events, Home, and My Sked were UTC-only with no zone, and the Events table lost its headings
   on a phone. One `{% when %}` tag now renders every span in the event's zone with UTC beneath,
   following the member's roster preference; the Events list is cards.
@@ -1360,8 +1360,8 @@ carries the actual running model ID.
 
 ## [2026-09-17 11:20 UTC]
 - **Tool**: Claude (Anthropic), claude-opus-5
-- **Session Purpose**: The Faculty advisor access level the advisor asked for (issue 87 of the
-  private repository), between Club officer and Sysadmin. Approving a signed access agreement,
+- **Session Purpose**: The Faculty advisor access level the advisor asked for, between Club officer
+  and Sysadmin. Approving a signed access agreement,
   and converting a minor's account at 18, move from a flag on the club position to this level:
   an elected officer cannot approve access to the station, whatever post they hold. The ladder
   now has a rank, so "this level and above" is one comparison rather than a list of levels that
@@ -2735,7 +2735,7 @@ carries the actual running model ID.
   apps/credentials/views_reports.py (`access_rosters`),
   templates/credentials/access_rosters.html, apps/credentials/tests/test_phase4.py.
 - **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
-  five points on issue #92.
+  five points on an issue.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 386 tests and the
   accessibility sweep pass.
 - **Git Hash**: ea138d6
@@ -2748,7 +2748,7 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/adapter.py (`get_reauthentication_methods`),
   apps/accounts/tests/test_reauthenticate.py (one new regression test).
 - **Nature of Contribution**: Diagnosis and fix by the assistant, from the advisor's report on
-  issue #9; the test was checked against the broken version before being kept.
+  an issue; the test was checked against the broken version before being kept.
 - **Human Review Status**: Pending the advisor's re-test; WebAuthn itself cannot be exercised
   from a test. Lint, the four guards, 387 tests and the accessibility sweep pass.
 - **Git Hash**: 6fb9192
@@ -2765,7 +2765,7 @@ carries the actual running model ID.
   CSV), apps/credentials/views_reports.py and templates/credentials/access_rosters.html,
   templates/credentials/approvals.html, docs/REQUIREMENTS.md (FR-128), tests.
 - **Nature of Contribution**: Code generation, a data migration and tests by the assistant, from
-  the advisor's instructions on issues #92 and the approved plan.
+  the advisor's instructions on an issue and the approved plan.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 389 tests and the
   accessibility sweep pass.
 - **Git Hash**: 2f5dff2
@@ -2803,7 +2803,7 @@ carries the actual running model ID.
   on, and stop promising a password prompt that now takes a passkey too.
 - **Sections/Files Affected**: templates/credentials/password_manage.html,
   apps/comms/defaults.py (`password.rotated`).
-- **Nature of Contribution**: Wording fix by the assistant, from the advisor's note on issue #76.
+- **Nature of Contribution**: Wording fix by the assistant, from the advisor's note on an issue.
 - **Human Review Status**: Pending the advisor's look.
 - **Git Hash**: 9bdff55
 
@@ -2832,7 +2832,7 @@ carries the actual running model ID.
   templates/accounts/member_detail.html (the warning), static/css/app.css, config/club.example.yaml,
   club.yaml in the private repo, tests.
 - **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
-  points on issues #8, #92 and #93.
+  points on three issues.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 391 tests and the
   accessibility sweep pass; the PDF was rendered and its text extracted to check the watermark
   stays out of the text layer.
@@ -2849,7 +2849,7 @@ carries the actual running model ID.
   `agreement_pdf_name`, the watermark's size), apps/credentials/views_reports.py,
   apps/credentials/views.py, templates/credentials/approvals.html and agreement_pdf.html, tests.
 - **Nature of Contribution**: Code generation and tests by the assistant, from the advisor's
-  three notes on issue #8.
+  three notes on an issue.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
   accessibility sweep pass; a document was rendered and its text extracted again.
 - **Git Hash**: ddc3c67
@@ -2860,7 +2860,7 @@ carries the actual running model ID.
   they answer it, rather than sitting on a profile they may never open.
 - **Sections/Files Affected**: templates/base.html, templates/accounts/member_detail.html
   (its duplicate removed), apps/accounts/tests/test_flows.py.
-- **Nature of Contribution**: Change by the assistant, from the advisor's point on issue #93.
+- **Nature of Contribution**: Change by the assistant, from the advisor's point on an issue.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 392 tests and the
   accessibility sweep pass.
 - **Git Hash**: dcc9430
@@ -2872,7 +2872,7 @@ carries the actual running model ID.
 - **Sections/Files Affected**: templates/base.html, static/css/app.css,
   apps/accounts/tests/test_flows.py.
 - **Nature of Contribution**: Wording, styling and a test by the assistant, from the advisor's
-  points on issue #93; the test was checked against a deliberately broken form first.
+  points on an issue; the test was checked against a deliberately broken form first.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 132b4fb
@@ -2883,7 +2883,7 @@ carries the actual running model ID.
   stops being printed in the decision tables.
 - **Sections/Files Affected**: apps/credentials/services.py (`agreement_pdf_name`),
   templates/credentials/approvals.html, templates/credentials/agreement_pdf.html, tests.
-- **Nature of Contribution**: Change by the assistant, from the advisor's two notes on issue #8.
+- **Nature of Contribution**: Change by the assistant, from the advisor's two notes on an issue.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 3046deb
@@ -2894,7 +2894,7 @@ carries the actual running model ID.
   rather than a block: the first attempt fixed the wrong half of the advisor's note.
 - **Sections/Files Affected**: templates/base.html, static/css/app.css.
 - **Nature of Contribution**: Styling and wording by the assistant, from the advisor's note on
-  issue #93.
+  an issue.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 25461c9
@@ -2904,7 +2904,7 @@ carries the actual running model ID.
 - **Session Purpose**: The callsign question moves out of the banner rail and into the content as
   a message strip, the shape and place the advisor pointed at.
 - **Sections/Files Affected**: templates/base.html, static/css/app.css.
-- **Nature of Contribution**: Styling by the assistant, from the advisor's note on issue #93.
+- **Nature of Contribution**: Styling by the assistant, from the advisor's note on an issue.
 - **Human Review Status**: Pending the advisor's look. Lint, the four guards, 393 tests and the
   accessibility sweep pass.
 - **Git Hash**: 8d504fc
@@ -3986,7 +3986,7 @@ carries the actual running model ID.
 
 ## [2026-10-28 10:29 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #148 and #149: a card's first and last lines sit at its padding,
+- **Session Purpose**: A card's first and last lines sit at its padding,
   with no margin from a form's hidden fields above the heading, or from a table or paragraph one
   level down whose margin collapsed through its parent (a message, Decisions taken, Scheduled
   jobs, the template preview).
@@ -4009,7 +4009,7 @@ carries the actual running model ID.
 
 ## [2026-10-28 10:52 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #140 and #141: on the slot page, labels above their fields, one
+- **Session Purpose**: On the slot page, labels above their fields, one
   field width, a gap between forms and the captain controls in one card headed Captain; on
   Manage event and elsewhere, a row's inputs kept level when a label wraps.
 - **Sections/Files Affected**: static/css/app.css (a row of label-and-input fields aligns on the
@@ -4033,7 +4033,7 @@ carries the actual running model ID.
 
 ## [2026-10-28 11:06 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #157: Members scrolled sideways at desktop width. Long
+- **Session Purpose**: Members scrolled sideways at desktop width. Long
   addresses wrap in the Email column, and the sweep's sideways check runs at desktop width too
   (SK, 2026-10-28).
 - **Sections/Files Affected**: apps/ops/templatetags/labels.py (breakable_address: an address
@@ -4050,7 +4050,7 @@ carries the actual running model ID.
 
 ## [2026-10-28 11:18 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #158: the Django admin's account page changed an account's
+- **Session Purpose**: The Django admin's account page changed an account's
   level, gave it single capabilities, and made it a sysadmin, all without the club's audit row
   or Edit profile's guard. Those fields are dropped from the admin, so they change only on Edit
   profile and Permission levels (SK, 2026-10-28).
@@ -4067,7 +4067,7 @@ carries the actual running model ID.
 
 ## [2026-10-28 11:21 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #102: mail the sign-in library sends (password reset, address
+- **Session Purpose**: Mail the sign-in library sends (password reset, address
   confirmation) had a -0000 Date and no link to the notification settings. It now gets the Date
   header and the small print every message from deliver() carries.
 - **Sections/Files Affected**: apps/accounts/adapter.py (render_mail sets the Date header from
@@ -4084,7 +4084,7 @@ carries the actual running model ID.
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: WebKit drew every single-line select as its own 23px button beside a 44px
   text box, ignoring the page's height, border and background (found 2026-10-28 while fixing
-  #141). Selects are now drawn by the page, with its own arrow.
+  the slot page's labels). Selects are now drawn by the page, with its own arrow.
 - **Sections/Files Affected**: static/css/app.css (select:not([multiple]) with appearance none
   and a chevron in --muted, as a --chevron token per theme; forced colors give the system's
   select back); tools/a11y/test_form_layout.py (a select is as tall as a text box).
@@ -4098,8 +4098,8 @@ carries the actual running model ID.
 
 ## [2026-10-28 11:53 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #137: ship htmx 2.0.11 under the existing security policy,
-  configured from a meta tag, ahead of its first use in #139.
+- **Session Purpose**: Ship htmx 2.0.11 under the existing security policy,
+  configured from a meta tag, ahead of its first use in an issue.
 - **Sections/Files Affected**: static/js/vendor/htmx.min.js (new: the npm package's file,
   integrity hash checked, unmodified); templates/base.html (htmx-config meta, script tag);
   static/css/app.css (indicator rules); static/sw.js (in the shell, ops-shell-v6); NOTICE (htmx,
@@ -4116,7 +4116,7 @@ carries the actual running model ID.
 
 ## [2026-10-28 12:24 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Close out #139: acting in the roster's slot dialog took you to the slot's
+- **Session Purpose**: Acting in the roster's slot dialog took you to the slot's
   own page. Now the dialog is filled by htmx, each action comes back into it, and the roster
   cell behind it updates.
 - **Sections/Files Affected**: apps/events/views_slots.py (slot_detail answers HX-Request with
@@ -4132,7 +4132,7 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and edit, with tests; one fix found by T20 (focus
   back on the slot's link after Escape, since the answer replaces the cell). After: application
   tests pass apart from the PDF test; the dialog test passes in Chromium and WebKit; the sweep
-  passes; scenarios T11 to T16, T20, T26 and T36 on the generic club match the code before #139,
+  passes; scenarios T11 to T16, T20, T26 and T36 on the generic club match the code before an issue,
   with the one date check in T12 failing either way.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8f86ee0
@@ -4140,7 +4140,7 @@ carries the actual running model ID.
 ## [2026-10-28 12:49 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: CI failed on 43b1f91 and 5796eb5: at 1280px, on CI's fonts, Members, the
-  archive and Access rosters scrolled sideways (#157's new desktop check). A sort link's
+  archive and Access rosters scrolled sideways (the issue's new desktop check). A sort link's
   screen-reader words, positioned absolutely, were placed against the page rather than the
   table's scroll box, and widened the page.
 - **Sections/Files Affected**: static/css/app.css (.table-wrap is the containing block).
@@ -4185,7 +4185,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 13:51 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #160's typeface check, then adopting the result at SK's choice: Atkinson
+- **Session Purpose**: Typeface check, then adopting the result at SK's choice: Atkinson
   Hyperlegible Next, Regular and Bold, self-hosted, with tabular figures on times and tables.
 - **Sections/Files Affected**: static/fonts/ (AtkinsonHyperlegibleNext-Regular.woff2,
   AtkinsonHyperlegibleNext-Bold.woff2, OFL.txt; new); static/css/app.css (@font-face, the font
@@ -4201,7 +4201,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 14:00 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #160's type scale at SK's choice: five sizes (14/16/18/20/30 px) and two
+- **Session Purpose**: Type scale at SK's choice: five sizes (14/16/18/20/30 px) and two
   weights, every rule mapped onto them, kept by a guard; the smallest text up to small and the
   sidebar's group labels out of capitals.
 - **Sections/Files Affected**: static/css/app.css (the --t-* values; 41 font-size and 28
@@ -4217,7 +4217,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 14:14 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #160's color at SK's choices: one neutral surface, the club's tint only
+- **Session Purpose**: Color at SK's choices: one neutral surface, the club's tint only
   on what can be acted on, and the club's color as a panel only on the sign-in page.
 - **Sections/Files Affected**: static/css/app.css (--card and --side become one --surface,
   #f4f4f6 light and #181b20 dark; the info message, acting banner, Open tag, open slot state
@@ -4232,15 +4232,15 @@ carries the actual running model ID.
 
 ## [2026-10-30 14:25 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #160's shape: corners by hierarchy, and a card only for a thing that
+- **Session Purpose**: Shape: corners by hierarchy, and a card only for a thing that
   stands on its own; every other part of a page a section under a rule.
 - **Sections/Files Affected**: static/css/app.css (--radius replaced by --r-field 4px,
   --r-button 6px, --r-card 8px across 22 rules, the pill tag-button squared; .section, sharing
   the card's first- and last-line rules); 42 sections in 20 templates moved from .card to
   .section (Manage, the event page, single-form pages, Settings, Status and others; the
-  profile pages are left for #146); tools/check_interface.sh (refuses any other radius);
+  profile pages are left for an issue); tools/check_interface.sh (refuses any other radius);
   tools/a11y/test_card_spacing.py (measures sections too); docs/INTERFACE.md ("Shape").
-- **Nature of Contribution**: Code, a classification of the 81 cards by #160's rule (kept:
+- **Nature of Contribution**: Code, a classification of the 81 cards by the issue's rule (kept:
   list items, highlighted results and notices, the Captain card, the Danger zone, the message
   preview), a guard, docs. Verified: the guard fails a 999px radius; application tests pass;
   the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs
@@ -4250,7 +4250,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 15:05 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #143 as amended by #160: the club color's primary roles mixed in oklab,
+- **Session Purpose**: The club color, as the redesign's color rules amended it: its primary roles mixed in oklab,
   the AA check extended to every pair they make, the TR-5 addendum, and Material 3 mapped onto
   this stylesheet's terms.
 - **Sections/Files Affected**: static/css/app.css (the three role mixes from srgb to oklab);
@@ -4269,7 +4269,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 15:08 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: What #144 left after #160: labels at the regular weight, and Material 3's
+- **Session Purpose**: What the label work left after the redesign's type and color: labels at the regular weight, and Material 3's
   state layers in CSS.
 - **Sections/Files Affected**: static/css/app.css (one state-layer rule for buttons, menu entries,
   icon buttons, the filter toggle, roster slot links and tag-buttons, replacing seven per-control
@@ -4284,7 +4284,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 15:17 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #146 without the roster's density (which goes with #161): label/value
+- **Session Purpose**: Without the roster's density (which goes with an issue): label/value
   details, the profile as sections, and desktop density for tables.
 - **Sections/Files Affected**: static/css/app.css (.dl a two-column grid from 40rem with labels at
   the regular weight in the muted color; .table rows .35rem instead of .55rem);
@@ -4298,7 +4298,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 15:30 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #162: Home opens on what you do next, for a member, a captain, and
+- **Session Purpose**: Home opens on what you do next, for a member, a captain, and
   somebody signed up for nothing; the greeting goes.
 - **Sections/Files Affected**: apps/ops/views.py (the next slot and its one action, the other
   slots, open slots per upcoming event in one query, an invitation when you hold none, the next
@@ -4316,17 +4316,17 @@ carries the actual running model ID.
 
 ## [2026-10-30 15:43 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #163: middle-dot strings become what they are, and My Sked is one name.
-  (The all-caps menu label went with #160's scale.)
+- **Session Purpose**: Middle-dot strings become what they are, and My Sked is one name.
+  (The all-caps menu label went with the issue's scale.)
 - **Sections/Files Affected**: 18 templates (accounts: _addresses, invitations, member_detail,
   member_edit, mentors; comms: announcements, my_messages; credentials: agreements, approvals;
   events: _slot_body, adults, confirm_bulk_cancel, confirm_remove, detail, manage, my_schedule;
   ops: dashboard, status); apps/comms/tests/test_push.py and apps/events/tests/test_roster.py
   (the new wording).
-- **Nature of Contribution**: Editing, by #163's rule: a dot stays only between items of one
+- **Nature of Contribution**: Editing, by the issue's rule: a dot stays only between items of one
   kind in a short run (links, counts, an event's two zones, the footer, the signed PDF); jammed
   pairs became sentences, commas or separate lines, and a slot's place reads "Run at Club
-  station". Left for #161: the sidebar's name and callsign, the roster cells and its key.
+  station". Left for an issue: the sidebar's name and callsign, the roster cells and its key.
   Verified: tools/check.sh shows only the four known local failures; scenario scripts T06, T08,
   T11 to T13, T34, T38 and T46 pass locally after following the wording; contact sheet compared.
 - **Human Review Status**: Pending review
@@ -4334,7 +4334,7 @@ carries the actual running model ID.
 
 ## [2026-10-30 16:12 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #161 stages 1 and 2: runs of open hours on the roster fold into one row,
+- **Session Purpose**: Stages 1 and 2: runs of open hours on the roster fold into one row,
   after checking the design against FR-51, FR-55, FR-62, FR-65, FR-85, FR-95, FR-116 and TR-4.
 - **Sections/Files Affected**: apps/events/services/roster.py (Fold; _fold_runs: three or more
   whole rows, every slot open, breaking at an occupied slot, a change of kind, a gap or the
@@ -4354,7 +4354,7 @@ carries the actual running model ID.
 
 ## [2026-10-31 10:46 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #161 stage 3: UTC as the roster's axis, and UTC first on every page (SK's
+- **Session Purpose**: Stage 3: UTC as the roster's axis, and UTC first on every page (SK's
   choice, recorded as functional addendum A12).
 - **Sections/Files Affected**: apps/events/services/roster.py (UTC leads by default; rows and
   folds carry unlabelled strings for the grid, a row naming its zone only after a change of
@@ -4374,7 +4374,7 @@ carries the actual running model ID.
 
 ## [2026-10-31 10:59 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #161 stage 4: the coverage strip above the roster, and the key as a list
+- **Session Purpose**: Stage 4: the coverage strip above the roster, and the key as a list
   beside it.
 - **Sections/Files Affected**: apps/events/services/roster.py (_strip: a line a day, a mark per
   time span, the most urgent state across positions, linking to the hour or through its fold, the
@@ -4384,7 +4384,7 @@ carries the actual running model ID.
 - **Nature of Contribution**: Design and code. Each state is a symbol as well as a color (FR-62):
   an empty box open, ! needs, ✓ covered, – closed; "○" read as the letter O in the club's
   typeface, so open is an empty box. The strip is aria-hidden with its links out of the tab order,
-  where #161 had asked for a word per mark for screen readers: the roster below says every slot's
+  where an issue had asked for a word per mark for screen readers: the roster below says every slot's
   state in words (FR-116), and forty-eight links ahead of it would be noise. Verified:
   tools/check.sh shows only the four known local failures; the accessibility sweep passes in
   Chromium and WebKit; contact sheets at desktop and phone width looked at.
@@ -4393,7 +4393,7 @@ carries the actual running model ID.
 
 ## [2026-10-31 11:09 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #161 stage 5: a person on the roster reads one way, the role with marks
+- **Session Purpose**: Stage 5: a person on the roster reads one way, the role with marks
   rather than a string of middle dots; the sidebar's name likewise.
 - **Sections/Files Affected**: apps/events/services/roster.py (a badge is a mark and its word);
   templates/events/_roster_cell.html (the role, then S, I and CO, confirmed or checked in, each a
@@ -4409,8 +4409,8 @@ carries the actual running model ID.
 
 ## [2026-10-31 11:17 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #161 stage 6: the roster's desktop density, which #146 left to #161, and
-  the done-also-means checks for the whole of #161.
+- **Session Purpose**: Stage 6: the roster's desktop density, which the label work left to the roster's, and
+  the done-also-means checks for the whole of an issue.
 - **Sections/Files Affected**: static/css/app.css (from 48rem, roster rows a little tighter; a slot
   keeps 2.75rem).
 - **Nature of Contribution**: Code and verification. The accessibility sweep passes in Chromium
@@ -4424,12 +4424,12 @@ carries the actual running model ID.
 ## [2026-10-31 11:27 EDT]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: /reconcile after the UI polish milestone (ARCOps c7fb55e..515be10):
-  bring the requirements and interface rules into step with #160, #143, #144, #146, #162, #163
-  and #161.
+  bring the requirements and interface rules into step with the seven interface issues of
+  the redesign.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (functional addendum A13: FR-65 and FR-95,
   folded runs, the coverage strip, the marks); docs/INTERFACE.md (the feedback rule's example no
   longer names a greeting Home dropped); templates/events/token_confirmed.html and
-  apps/events/tests/test_notify.py (Open My Sked, the page's one name since #163).
+  apps/events/tests/test_notify.py (Open My Sked, the page's one name since an issue).
 - **Nature of Contribution**: Analysis and edit. A13 quotes only SK's own words; the issue's text,
   drafted by Claude, is not quoted as his. The link's old name was a defect, fixed rather than
   written into the plan. Verified: the guards pass; test_notify passes.
@@ -4462,7 +4462,7 @@ carries the actual running model ID.
 
 ## [2026-11-02 08:54 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #164: pages kept for offline reading (FR-96) loaded without styles, because the service worker pre-cached unhashed static names the servers never serve.
+- **Session Purpose**: Pages kept for offline reading (FR-96) loaded without styles, because the service worker pre-cached unhashed static names the servers never serve.
 - **Sections/Files Affected**: static/sw.js (no pre-cached shell; static files with a manifest hash in their name are cached as they are fetched; unhashed names go to the network; cache version v6 to v7).
 - **Nature of Contribution**: Analysis and code. Verified: the hash pattern matches every static name a server page and its stylesheet ask for (fonts included) and none of the unhashed ones; node --check passes; ruff, the guards and the application tests pass (the PDF test with the Homebrew library path). The offline behavior itself is checked on the development server before this reaches main.
 - **Human Review Status**: Pending review
@@ -4494,7 +4494,7 @@ carries the actual running model ID.
 
 ## [2026-11-02 21:42 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Two Declutter issues SK picked: Know before you go without the outline's empty headings on the event page (w3usr/w3usr.org-PRIVATE#166), and roster cells reading their state only (#170).
+- **Session Purpose**: Two Declutter issues SK picked: Know before you go without the outline's empty headings on the event page, and roster cells reading their state only.
 - **Sections/Files Affected**: apps/events/views.py and templates/events/detail.html (the event page shows notify.drop_empty_sections of the text, the reminder's own function, and the section only when something is left); apps/events/services/roster.py and templates/events/_roster_cell.html (an open cell reads Open; its link is named "Open: sign up for <position>, <Ddd HH:MM> UTC"); apps/events/tests/test_roster.py (a test for each).
 - **Nature of Contribution**: Code and tests. Verified: lint, format and the guards pass; application tests 484 passed; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word: it would not launch on this Mac, "Could not find profile folder"); acceptance T11 to T14 pass locally against it (private repo, testing/runs/2026-11-02_214145-w3usr).
 - **Human Review Status**: Pending review
@@ -4502,7 +4502,7 @@ carries the actual running model ID.
 
 ## [2026-11-02 21:51 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: w3usr/w3usr.org-PRIVATE#165: an opening announced twice when two runs of openings_announce overlapped; the waitlist's offer and expiry share the pattern.
+- **Session Purpose**: An opening announced twice when two runs of openings_announce overlapped; the waitlist's offer and expiry share the pattern.
 - **Sections/Files Affected**: apps/events/services/lifecycle.py (announce_openings claims an opening in one conditional update before telling anyone); apps/events/services/waitlist.py (offer_next makes the offer in one conditional update, the entry still pending and no offer already out; expire_offers claims each lapse the same way); apps/events/tests/test_phase2.py (three tests, each running the second caller inside the first between its read and its write).
 - **Nature of Contribution**: Code and tests. Conditional updates rather than select_for_update, which SQLite (the servers' database) ignores. Verified: each new test fails on the old code and passes on the new; application tests 487 passed; lint, format and the guards pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T36 passes locally, 10 of 10 (private repo, testing/runs/2026-11-02_214849-w3usr).
 - **Human Review Status**: Pending review
@@ -4510,7 +4510,7 @@ carries the actual running model ID.
 
 ## [2026-11-03 10:07 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: w3usr/w3usr.org-PRIVATE#171: the captains' digest subject still said "at risk", which technical addendum A10 says no reader sees (SK, 2026-11-03).
+- **Session Purpose**: The captains' digest subject still said "at risk", which technical addendum A10 says no reader sees (SK, 2026-11-03).
 - **Sections/Files Affected**: apps/comms/defaults.py (warning.captains subject "N slot(s) need attention in the next N hours"; its Settings label "Slots that need attention"); apps/events/tests/test_status_words.py (the digest's subject is checked as well as its body); apps/events/tests/test_notify.py (the new subject).
 - **Nature of Contribution**: Code and tests. An unedited template is refreshed by the next deploy (seed_templates); an edited one keeps its wording. Verified: the subject check fails on the old default and passes on the new; tools/check.sh quick passes but for the PDF test, which passes run directly with pytest (macOS's /bin/bash drops DYLD_*); lint and format pass; acceptance T32 passes locally, 9 of 9 (private repo, testing/runs/2026-11-03_100541-w3usr).
 - **Human Review Status**: Pending review
@@ -4518,7 +4518,7 @@ carries the actual running model ID.
 
 ## [2026-11-03 11:32 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: w3usr/w3usr.org-PRIVATE#153: the slot generator adds slots to the empty hours of an existing grid, after sign-ups too, instead of only replacing the whole grid (SK, 2026-11-03).
+- **Session Purpose**: The slot generator adds slots to the empty hours of an existing grid, after sign-ups too, instead of only replacing the whole grid (SK, 2026-11-03).
 - **Sections/Files Affected**: apps/events/services/slots.py (empty_hours and fill_empty_hours; the cutting shared with generate_slots); apps/events/services/manage.py (generate_with_capacities takes fill); apps/events/views_manage.py (mode=fill: no sign-up refusal, no confirmation, nothing deleted; its messages; the audit row records the mode; the windows field's label shortened, the rest a help line); templates/events/manage.html (Generate slots on an empty grid; then Add slots to the empty hours, and Regenerate slots as a red link-style button only before sign-ups); apps/events/tests/test_slots.py (six tests), apps/events/tests/test_manage.py (two); docs/REQUIREMENTS.md (addendum A14, and the addendum's trailer).
 - **Nature of Contribution**: Code, tests, and a requirements addendum entry, from SK's decisions (option 2 of the report; a canceled slot's hour is not refilled; operating slots only; no confirmation). Verified: each new test failed before the code existed; application tests 495 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word; it found the windows label wrapping and the row uneven, fixed by the shorter label); acceptance T11, T12, T13, T14, T18, T35 and T52 pass locally (private repo, testing/runs/2026-11-03_112645-w3usr and 113006-w3usr).
 - **Human Review Status**: Pending review
@@ -4526,7 +4526,7 @@ carries the actual running model ID.
 
 ## [2026-11-03 12:20 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: w3usr/w3usr.org-PRIVATE#169: the roster's Key moves behind a ? button beside Problems only and opens over the page (SK, 2026-11-02).
+- **Session Purpose**: The roster's Key moves behind a ? button beside Problems only and opens over the page (SK, 2026-11-02).
 - **Sections/Files Affected**: templates/events/detail.html (a ? button named Key with popovertarget; the Key's div a native popover with a Close button; the list still named Key); static/css/app.css (the button, the open Key as a card over a dimmed page, the strip the full width; without popover support the button and Close are hidden and the Key stays in place; the button hidden in print); apps/events/tests/test_roster.py (a test for the button and the popover); tools/a11y/test_phone_layout.py (the Key opened before its lines are measured; closed at first and by Escape).
 - **Nature of Contribution**: Code and tests. No script: the browser's popover. Verified: the new test failed before the change; application tests 496 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); acceptance T11 to T15 and T20 pass locally (private repo, testing/runs/2026-11-03_121808-w3usr), the open Key judged by eye from T12's screenshot.
 - **Human Review Status**: Pending review
@@ -4534,7 +4534,7 @@ carries the actual running model ID.
 
 ## [2026-11-03 13:31 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: w3usr/w3usr.org-PRIVATE#167: Manage split into tabs (Setup, Slots, Sign-up rules, Contest, Status), each a page of its own (SK, 2026-11-02).
+- **Session Purpose**: Manage split into tabs (Setup, Slots, Sign-up rules, Contest, Status), each a page of its own (SK, 2026-11-02).
 - **Sections/Files Affected**: apps/events/urls.py (/events/<n>/manage/<tab>/); apps/events/views_manage.py (TABS, to_tab, the view takes a tab and /manage/ opens on the step to do next or Setup, the steps carry their tab, every save returns to its tab, a refused form renders on its own); apps/events/views_rules.py (its saves return to their tabs); templates/events/manage.html (a tab bar of links with aria-current under the four-step guide, the sections grouped by tab, the steps linking to their tabs, the tab in the page title); static/css/app.css (the tab bar); docs/INTERFACE.md (a page that edits more than a few things is split into tabs that are links); apps/events/tests/test_manage_tabs.py (new: five tests), apps/events/tests/conftest.py (the shared officer fixture, moved from test_manage.py); test_manage.py, test_phase2.py, test_announce.py, test_interface.py, test_permission_matrix.py (open the tab they read); tools/a11y/test_axe.py and test_form_layout.py (every tab).
 - **Nature of Contribution**: Code, tests and an interface rule. Verified: the new tests pass and the old ones fail on their old URLs; application tests 501 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 48 passed, 1 skipped (Firefox skipped at SK's word); contact sheets before and after, compared by eye (Manage at 1280 px from one 5,557 px page to five of 1,051 to 2,167 px; the tabs wrap at 390 px); every acceptance script run locally on the W3USR overlay, 45 passed, the 3 failing for reasons that predate this change (private repo, testing/runs/2026-11-03_132007-w3usr).
 - **Human Review Status**: Pending review
@@ -4542,7 +4542,7 @@ carries the actual running model ID.
 
 ## [2026-11-03 14:31 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: w3usr/w3usr.org-PRIVATE#168: Manage's small forms open in a dialog, each with a page of its own; the generator says what it will make before making it; the event's details are read on Setup and edited on a page (SK, 2026-11-02 and 2026-11-03).
+- **Session Purpose**: Manage's small forms open in a dialog, each with a page of its own; the generator says what it will make before making it; the event's details are read on Setup and edited on a page (SK, 2026-11-02 and 2026-11-03).
 - **Sections/Files Affected**: apps/events/form_pages.py (new: form_page, done, tab_url); apps/events/views_manage.py (LocationForm, PositionForm, CaptainForm; period, location, position, captain, single-slot and generator views answer GET with their page and POST through form_page and done; event_edit, the details' own page; _details, Setup's read; slots_preview; Manage binds no forms); apps/events/views_rules.py (OpeningForm with its role, date and categories; opening_add a page); apps/events/services/slots.py (plan_slots, the one plan generate_slots, fill_empty_hours and describe follow; describe, the generator's line); apps/events/urls.py; templates/events/manage.html (buttons that open the dialog, the dialog, the details as label and value), manage_form.html, _dialog_base.html, _dialog_link.html, forms/_fields.html, forms/generate.html, forms/generate_actions.html, confirm_regenerate.html (in the dialog too); static/js/app.js (the dialog: open on settle, focus, back to the button, fall back to the page); static/css/app.css (rich text beside its label); docs/INTERFACE.md (a small form opens in a dialog; read, then edit); apps/events/tests/test_manage_dialogs.py (new, eight tests), test_slots.py (the line), test_manage_tabs.py; tools/a11y/test_manage_dialog.py (new: focus, the live line, JavaScript off), test_axe.py and test_form_layout.py (the forms' pages).
 - **Nature of Contribution**: Code, tests and interface rules, from SK's decisions (Edit details a page rather than a dialog, since the rich text editor's menus would sit behind a modal; the line in general terms). Found and fixed: replacing the grid with daily hours outside every period deleted the grid before finding nothing to build; it is now refused first. Verified: the new tests fail before the code; application tests 510 passed; lint and format pass; the accessibility sweep in Chromium and WebKit 54 passed, 1 skipped (Firefox skipped at SK's word); contact sheets before and after, compared by eye (Setup at 1280 px from 2,167 to 1,221 px, Slots 1,580 to 1,021, Sign-up rules 1,613 to 1,466; the reminder's empty value and a description's top margin fixed from it); acceptance scripts locally, 45 passed in the full run and the reruns of T11 to T14, T18 and T52 all passing (private repo, testing/runs/2026-11-03_140915-w3usr and later).
 - **Human Review Status**: Pending review
@@ -4582,7 +4582,7 @@ carries the actual running model ID.
 
 ## [2026-11-04 10:22 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Manage as steps under one progress bar (w3usr/w3usr.org-PRIVATE#172; SK, 2026-11-03, with the captains on Publish confirmed by SK on 2026-11-04), in place of the tabs and the four-step guide.
+- **Session Purpose**: Manage as steps under one progress bar (SK, 2026-11-03, with the captains on Publish confirmed by SK on 2026-11-04), in place of the tabs and the four-step guide.
 - **Sections/Files Affected**: apps/events/views_manage.py (stages(), _landing() and _step_page() replace TABS, setup_steps(), _first_tab() and _manage_page(); event_manage serves /manage/<step>/ and redirects setup and status with 301; every form returns to its step), apps/events/form_pages.py (step_url), apps/events/views_rules.py and apps/events/views.py (redirects to steps; publish returns to the Publish step when posted from it), apps/events/urls.py (event_step), templates/events/stages/ (new: _layout.html with the bar and the foot, one template per step; the sections moved unchanged from manage.html, which is removed; the state tag beside the title gone; Take it back to draft also on Publish), templates/events/confirm_regenerate.html, static/css/app.css (.stages and .stage-foot from the issue's mock; .steps and .tabs removed), docs/INTERFACE.md ("A page that edits many things"), apps/events/tests/test_stages.py (new; replaces test_manage_tabs.py), addresses in test_manage.py, test_manage_dialogs.py, test_permission_matrix.py, test_interface.py and tools/a11y (test_axe, test_form_layout, test_manage_dialog, test_confirm_dialog).
 - **Nature of Contribution**: Code, tests and docs, from the issue's recommended steps and CSS. Verified: application tests pass (the PDF test needs DYLD_FALLBACK_LIBRARY_PATH on this Mac and passes with it); lint, format and the three guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch on this machine; CI runs it); the contact sheet's Manage steps at 1280 and 390 px compared by eye with the tabs' shots; acceptance T11, T12, T13, T18, T26, T31, T35, T36, T37, T41, T42, T45 and T52 pass locally against the change (private repo, testing/runs of 2026-11-04).
 - **Human Review Status**: Pending review
@@ -4590,15 +4590,15 @@ carries the actual running model ID.
 
 ## [2026-11-04 18:35 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The rest of the Setup steps milestone (w3usr/w3usr.org-PRIVATE#173 to #177; decided by SK 2026-11-03, the open points confirmed 2026-11-04): a new event as the Details step, Know before you go as its own step, the Publish step's check, one field a line where it reads better, and a step's own forms saved in place with htmx.
+- **Session Purpose**: The rest of the Setup steps milestone (decided by SK 2026-11-03, the open points confirmed 2026-11-04): a new event as the Details step, Know before you go as its own step, the Publish step's check, one field a line where it reads better, and a step's own forms saved in place with htmx.
 - **Sections/Files Affected**: apps/events/views_manage.py (stages() for an event not made yet and the kbyg step; event_create renders the Details step, drops PeriodForm, lands on Operating periods with "Draft created."; Duplicate lands there too; EventForm drops kbyg_html and KbygForm holds it; _kbyg() saves the step; _details() loses its Know before you go row; _summary() for the Publish step's check; Edit details one field a line), apps/events/views_rules.py (LimitForm's boxes sized), apps/ops/middleware.py (event_step stays in place), templates/events/stages/ (new.html, kbyg.html and _in_place.html new; the layout copes with no event, gives the bar an id and carries the messages inside the step; publish.html's Summary; slots.html and contest.html one field a line; the in-place attributes on eight forms), templates/events/form.html removed, templates/events/forms/_one_per_line.html (new), templates/base.html (a messages block), static/css/app.css (.dl.summary; .stage select), static/js/app.js (focus after an in-place save), docs/INTERFACE.md ("In place, with htmx"), apps/events/tests/test_stages.py and tools/a11y/test_in_place.py (new tests), test_manage.py, test_phase2.py, test_settings_and_privacy.py, test_interface.py, tools/a11y/test_axe.py and test_form_layout.py.
-- **Nature of Contribution**: Code, tests and docs, from the issues' recommended steps. One departure from #177's suggested test: after an in-place save, focus goes to the message (the issue's step 4 rule), not the section's heading, because every save brings a message. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep, the dialog tests and the new in-place tests pass in Chromium and WebKit, the in-place test also with JavaScript off (Firefox does not launch on this machine; CI runs it); the contact sheet's New event, Slots and Know before you go at 1280 and 390 px looked at by eye (the label's colon fixed); acceptance T11, T12, T13, T18, T26, T31, T35, T36, T37, T41, T42, T45 and T52 pass locally against the change (private repo, testing/runs of 2026-11-04). A draft's Publish step (#175) is covered by the application tests, not by the contact sheet, whose demo event is published.
+- **Nature of Contribution**: Code, tests and docs, from the issues' recommended steps. One departure from the issue's suggested test: after an in-place save, focus goes to the message (the issue's step 4 rule), not the section's heading, because every save brings a message. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep, the dialog tests and the new in-place tests pass in Chromium and WebKit, the in-place test also with JavaScript off (Firefox does not launch on this machine; CI runs it); the contact sheet's New event, Slots and Know before you go at 1280 and 390 px looked at by eye (the label's colon fixed); acceptance T11, T12, T13, T18, T26, T31, T35, T36, T37, T41, T42, T45 and T52 pass locally against the change (private repo, testing/runs of 2026-11-04). A draft's Publish step is covered by the application tests, not by the contact sheet, whose demo event is published.
 - **Human Review Status**: Pending review
 - **Git Hash**: 9e6becf
 
 ## [2026-11-05 20:25 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: On-air hours (w3usr/w3usr.org-PRIVATE#247; SK, 2026-11-05): the operating periods are the contest's span, and the club chooses, and the event remembers, the hours it means to be on the air inside them; the generator and the fill use them.
+- **Session Purpose**: On-air hours (SK, 2026-11-05): the operating periods are the contest's span, and the club chooses, and the event remembers, the hours it means to be on the air inside them; the generator and the fill use them.
 - **Sections/Files Affected**: apps/events/models.py and migration 0008 (OnAirRange); apps/events/services/slots.py (merge, clip, periods_of, chosen, on_air, set_on_air, hour_grid, from_ticks; plan_slots and fill_empty_hours default to the on-air hours); apps/events/services/manage.py (Duplicate copies them); apps/events/views_manage.py (GenerateForm loses its daily hours; DailyHoursForm; on_air_save for the grid, a typed range, the same hours every day, Remove and Use the whole event; the Slots step's context; the generator's line names the on-air hours); apps/events/urls.py; templates/events/stages/slots.html (the On-air hours section); static/css/app.css (the grid); static/js/app.js (drag to paint, All and None per day); tools/check_interface.sh (a table marked data-scrolls does not stack); docs/REQUIREMENTS.md (functional addendum A15 only; the body is not edited); apps/events/tests/test_on_air.py and tools/a11y/test_on_air.py (new); test_manage_dialogs.py, test_phase2.py and test_stages.py for the moved daily hours.
 - **Nature of Contribution**: Code, tests and docs, from the issue as SK decided it in two rounds of questions. Not done as the issue first said: the coverage strip does not mark off-air hours, because it draws marks only for slots, so an hour with no slot already shows nothing whether on the air or not. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep and the grid's browser tests (drag, All and None, saved in place, and without JavaScript) pass in Chromium and WebKit (Firefox does not launch on this machine; CI runs it); the Slots step at 1280 and 390 px looked at in the contact sheet; acceptance T11 (new step 10), T12, T13, T18, T31, T35, T36, T37, T41, T42, T45 and T52 pass locally.
 - **Human Review Status**: Pending review
@@ -4606,7 +4606,7 @@ carries the actual running model ID.
 
 ## [2026-11-05 20:31 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The rest of #247 (SK, 2026-11-05: "do the part you didnt do"): the coverage strip tells an hour off the air from an hour on the air with no slot yet.
+- **Session Purpose**: The rest of an issue (SK, 2026-11-05: "do the part you didnt do"): the coverage strip tells an hour off the air from an hour on the air with no slot yet.
 - **Sections/Files Affected**: apps/events/services/roster.py (_gaps; _strip marks every hour of the periods that no slot touches, off or none, as cells that link nowhere; build returns which the Key needs); templates/events/detail.html (the marks as spans; two Key lines, shown only when present); static/css/app.css (.sm-none dashed, .sm-off hatched without a box); apps/events/tests/test_on_air.py (a test).
 - **Nature of Contribution**: Code and a test. Verified: application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); acceptance T11 (step 10 checks the strip), T12, T13, T15 and T20 pass locally; the strip looked at in T11's screenshot.
 - **Human Review Status**: Pending review
@@ -4614,7 +4614,7 @@ carries the actual running model ID.
 
 ## [2026-11-06 14:20 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: On-air hours as typed ranges only (w3usr/w3usr.org-PRIVATE#248; SK, 2026-11-06, at the advisor's request): the hour grid and the same hours every day go; a range typed to the minute is the one way to choose the on-air hours.
+- **Session Purpose**: On-air hours as typed ranges only (SK, 2026-11-06, at the advisor's request): the hour grid and the same hours every day go; a range typed to the minute is the one way to choose the on-air hours.
 - **Sections/Files Affected**: apps/events/services/slots.py (from_ticks and windows_from_daily deleted; hour_grid kept as the coverage strip's source); apps/events/views_manage.py (_daily, DailyHoursForm and on_air_save's grid and daily branches deleted; the Slots step's context); templates/events/stages/slots.html (the grid and daily forms deleted; the range form under the stretches with a line on how ranges add up); static/js/app.js (the grid's drag and All or None deleted); static/css/app.css (the grid's rules and button.small deleted); tools/check_interface.sh (the data-scrolls exemption, used only by the grid, deleted); docs/REQUIREMENTS.md (functional addendum A16 only; the body and A15 are not edited); apps/events/tests/test_on_air.py, tools/a11y/test_on_air.py, test_phase2.py, test_stages.py, test_manage_dialogs.py.
 - **Nature of Contribution**: Research (what the grid and the shortcut reached: the strip depends on hour_grid, so it stays), code removal, tests and docs. Verified: 529 application tests pass; lint, format and the guards pass; the accessibility sweep (66 passed) and the new range browser tests, by keyboard in place and without JavaScript, pass in Chromium and WebKit (Firefox does not launch on this machine; CI runs it); the Slots step at 1280 and 390 px looked at in the contact sheet; acceptance T11 (step 10 with ranges), T12, T35 and T52 pass locally (private repo, testing/runs of 2026-11-06).
 - **Human Review Status**: Pending review
@@ -4622,15 +4622,15 @@ carries the actual running model ID.
 
 ## [2026-11-06 15:05 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, the rules first (w3usr/w3usr.org-PRIVATE#222): docs/INTERFACE.md rewritten to SK's decisions D1 to D8 of 2026-11-06 (#221), and technical addendum A10 for the ⋮ menus.
+- **Session Purpose**: Workspace redesign, the rules first: docs/INTERFACE.md rewritten to SK's decisions D1 to D8 of 2026-11-06, and technical addendum A10 for the ⋮ menus.
 - **Sections/Files Affected**: docs/INTERFACE.md (Controls: buttons that look like buttons, the variants, sizes, icons, restyle don't rename; new Menus and Links sections; Destructive actions tier 2 as a red ghost button with a bin; Color: the club's color on the one primary, three neutral surfaces, state badges; Shape: panels on the canvas, cards inside them, the event as a workspace; the step foot's buttons; Material 3's roles); docs/TECHNICAL_REQUIREMENTS.md (addendum A10 only; the body is not edited).
 - **Nature of Contribution**: Docs, from the plan and SK's decisions; the Popover API's and CSS anchor positioning's Baseline dates read on MDN. Departure: D6's tooltip on an icon-only button is drawn by CSS from its aria-label, not a title attribute, which tools/check_interface.sh refuses and a phone never shows. The guard needs no change yet (it enforces nothing about .linklike). Verified: the three repository guards pass.
-- **Human Review Status**: Pending review (SK reads the diff, #222)
+- **Human Review Status**: Pending review (SK reads the diff)
 - **Git Hash**: 6576a8a
 
 ## [2026-11-06 15:40 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign kit, first two parts (w3usr/w3usr.org-PRIVATE#223, #224): the surface tokens and the canvas (D1), and the icons the buttons and menus need (D6).
+- **Session Purpose**: Workspace redesign kit, first two parts: the surface tokens and the canvas (D1), and the icons the buttons and menus need (D6).
 - **Sections/Files Affected**: static/css/app.css (--canvas, --panel, --panel-head, --line-strong, --tag-info, --tag-neutral, --menu-shadow, light and dark; --surface becomes the header band; the signed-in column on the canvas and the sidebar's column in the band to the foot of the page; cards, messages, notes, banners, previews, fields, filters and dialogs on the panel's white; fields outlined in --line-strong at 3:1; .icon.small); apps/ops/config.py (the club color checked on the canvas, light and dark); apps/ops/tests/test_shell.py; apps/ops/templatetags/nav.py (twenty-one icons drawn on the sidebar's grid; an optional small size); apps/ops/tests/test_icons.py (new); tools/a11y/test_on_air.py (formatting only, missed in 9ed6e2a).
 - **Nature of Contribution**: Code and tests. --tag-info reuses --accent-soft rather than a new mix, so the server's contrast check already covers it; --line-strong chosen by measurement (3.41:1 on white, 3.07:1 on the canvas; dark 3.52:1). The icons are drawn here, not taken from a set, so NOTICE is unchanged; all looked at, at 20 and 16 px. Verified: 531 application tests pass; lint, format and the three guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event page and a Manage step at 1280 px).
 - **Human Review Status**: Pending review
@@ -4638,15 +4638,15 @@ carries the actual running model ID.
 
 ## [2026-11-06 16:20 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign kit, buttons (w3usr/w3usr.org-PRIVATE#225; D2, D3, D4, D6).
+- **Session Purpose**: Workspace redesign kit, buttons (D2, D3, D4, D6).
 - **Sections/Files Affected**: static/css/app.css (one button rule laying out an icon and a word; secondary neutral; ghost, ghost danger, danger, danger-outline; small; icon-only with its aria-label drawn under it on hover and focus; the club-colored outline rules removed; .navbtn and .linklike keep their own layout); docs/INTERFACE.md (`.icon-only`, since `.icon` is the SVG's class); tools/a11y/test_buttons.py (new: every button 24 px or more each way, every neutral and red outline 3:1 on its ground, light and dark).
-- **Nature of Contribution**: Code and a test. Departures from the issue: no `templates/components/button.html`, because a button is one line of markup and a partial would only wrap it in parameters (the kit page, #231, shows the markup); no `title` on an icon-only button, which tools/check_interface.sh refuses, its name drawn by CSS instead; the allauth button override needed no change, as it already maps onto secondary and danger. Found and fixed on the contact sheet: the sidebar's Sign out and Collapse centered by the new rule. Verified: 531 application tests pass; lint, format and the three guards pass; the accessibility sweep including the new test passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Publish step, profile, sidebar).
+- **Nature of Contribution**: Code and a test. Departures from the issue: no `templates/components/button.html`, because a button is one line of markup and a partial would only wrap it in parameters (the kit page, an issue, shows the markup); no `title` on an icon-only button, which tools/check_interface.sh refuses, its name drawn by CSS instead; the allauth button override needed no change, as it already maps onto secondary and danger. Found and fixed on the contact sheet: the sidebar's Sign out and Collapse centered by the new rule. Verified: 531 application tests pass; lint, format and the three guards pass; the accessibility sweep including the new test passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Publish step, profile, sidebar).
 - **Human Review Status**: Pending review
 - **Git Hash**: 45da207
 
 ## [2026-11-06 16:50 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign kit, badges (w3usr/w3usr.org-PRIVATE#226): one badge style, a tone and always a word.
+- **Session Purpose**: Workspace redesign kit, badges: one badge style, a tone and always a word.
 - **Sections/Files Affected**: static/css/app.css (.tag as a filled badge in five tones, neutral, ok, warn, bad and info, with .note and .open kept as aliases); apps/ops/templatetags/badges.py (new: which state of an event, a member or an agreement takes which tone, and a `tone` filter; a slot's stays the roster's Presentation.tone); apps/ops/tests/test_badges.py (new: each tone's word on its fill at 4.5:1 or more, light and dark, read from app.css; every event state mapped).
 - **Nature of Contribution**: Code and tests. Departure from the issue: a filter instead of `templates/components/badge.html`, since a badge is one span and the pages that show states adopt the filter as they are restyled. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event's coverage counts, the roster, Members).
 - **Human Review Status**: Pending review
@@ -4654,15 +4654,15 @@ carries the actual running model ID.
 
 ## [2026-11-06 17:05 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign kit, panels (w3usr/w3usr.org-PRIVATE#227, D1).
+- **Session Purpose**: Workspace redesign kit, panels (D1).
 - **Sections/Files Affected**: static/css/app.css (.panel, .panel-head, .panel-body, .panel-foot, .actions and .rows, with the markup in a comment); tools/check_interface.sh (a border-radius may list the corner tokens and 0, so a panel's footer rounds only its foot).
-- **Nature of Contribution**: Code. Departure from the issue: no `templates/components/panel_head.html`, since an include cannot take the header's actions as a block and the header is three lines of markup; the markup is written in app.css and shown on the kit page (#231). Verified: the three guards pass; the styles are first drawn and looked at on the kit page and the Locations pilot.
+- **Nature of Contribution**: Code. Departure from the issue: no `templates/components/panel_head.html`, since an include cannot take the header's actions as a block and the header is three lines of markup; the markup is written in app.css and shown on the kit page. Verified: the three guards pass; the styles are first drawn and looked at on the kit page and the Locations pilot.
 - **Human Review Status**: Pending review
 - **Git Hash**: 767407a
 
 ## [2026-11-06 18:10 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign kit, the rest (w3usr/w3usr.org-PRIVATE#228 to #231): ⋮ menus with the Popover API (D7), the toolbar, filter buttons and the switch, data tables with one link per row (D5), and the kit as a page for sysadmins.
+- **Session Purpose**: Workspace redesign kit, the rest: ⋮ menus with the Popover API (D7), the toolbar, filter buttons and the switch, data tables with one link per row (D5), and the kit as a page for sysadmins.
 - **Sections/Files Affected**: static/css/app.css (.menu, placed by CSS anchor positioning with a flip; .filter dashed until it narrows; .toolbar, .search, .count, .switch; table.data, its row actions unlabeled on a phone; the kit page's icon grid); static/js/app.js (a menu focuses its first entry, is placed by hand where anchoring has not, and gives focus back to its button on closing, Safari included; a dialog opened from a menu gives focus back to the menu's button); templates/accounts/_filter.html (a `set` class once a filter narrows); apps/ops/views.py and urls.py (`/ops/components/`, sysadmins only); templates/ops/components.html (new); docs/INTERFACE.md (the kit page); tools/a11y/test_kit.py (new: the menu by mouse and keyboard, its placement, Escape and an outside click, axe with it open, focus back from a dialog; one link per data-table row); tools/a11y/test_axe.py (the kit page in the sweep); apps/accounts/tests/test_permission_matrix.py (the kit page's gate); apps/accounts/tests/test_directory.py (a filter's class may now carry `set`).
 - **Nature of Contribution**: Code and tests. Departures from the issues: no partials for the menu, toolbar, filter button or switch, each being a few lines of markup written in app.css and shown on the kit page; the filter summaries keep their words ("Any status", "Not archived"), which the plan and the scripts read, so only their look changed; the kit page shows the scheme the browser is in, not light and dark side by side, which would mean a second copy of the dark tokens (the sweep's button and badge tests measure both). Found by the tests and fixed: the menu flips above a button near the foot of the window (the test now allows it); WebKit, as Safari, drops focus on <main> when a menu closes, so the script puts it back on the ⋮ button; WebKit does not Tab to links, so the keyboard test checks the first entry's focus instead. One sweep page (officer, Chromium) failed once under parallel load and passed alone and on the full rerun. Verified: 533 application tests pass; lint, format and the three guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the kit page looked at in the contact sheet at 1280 and 390 px.
 - **Human Review Status**: Pending review
@@ -4670,15 +4670,15 @@ carries the actual running model ID.
 
 ## [2026-11-06 19:20 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, phase 2's first two issues (w3usr/w3usr.org-PRIVATE#232, #233): the event as a workspace, one header with tabs (D8), and the Locations step in panels as the pilot for SK's look.
+- **Session Purpose**: Workspace redesign, phase 2's first two issues: the event as a workspace, one header with tabs (D8), and the Locations step in panels as the pilot for SK's look.
 - **Sections/Files Affected**: apps/events/templatetags/workspace.py and templates/events/_event_header.html (new: the title with its state badge, a line of facts with icons, Announce and a ⋮ menu of what the state allows, and Roster, Manage and Who took part as tabs; the h1 keeps "Manage:" and "Who took part:" for a screen reader and the scripts, not shown); templates/events/detail.html, stages/_layout.html, participation.html (the header; the Coverage section's Export the roster, Who took part and Take it back to draft move to the menu and the tab); templates/events/stages/_in_place.html (the header swaps with a step's in-place saves, so a Lock shows in its badge); templates/events/stages/locations.html (a panel: Add location in its header, each location a group with Add position, each position a row with its slot count and a red Remove with a bin); templates/events/_dialog_link.html (an optional icon and small size); apps/events/views_manage.py (each position's live slot count); static/css/app.css (header, facts, tabs; the step bar in a panel, optional steps as chips; groups and row icons; ul.rows over .list); apps/events/tests/test_participation.py and test_manage_dialogs.py (the heading's hidden prefix; a small dialog link).
 - **Nature of Contribution**: Code and tests. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); before-and-after screenshots of the Locations step at 1280 and 390 px, light and dark, looked at, the header's actions found below the title and moved to the right; acceptance T11, T12, T13, T14, T18, T26, T35, T37, T41 and T52 pass locally (private repo, testing/runs/2026-11-06_155556-w3usr). T22 breaks locally in the slot dialog's "I cannot make it", as it did on 2026-11-03 and 2026-11-04 before the redesign; it passed on dev.
-- **Human Review Status**: Pending review (SK's verdict on the pilot, #233)
+- **Human Review Status**: Pending review (SK's verdict on the pilot)
 - **Git Hash**: bb8dac5
 
 ## [2026-11-06 20:05 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, every Manage step in panels (w3usr/w3usr.org-PRIVATE#234), after SK approved the Locations pilot on 2026-11-06.
+- **Session Purpose**: Workspace redesign, every Manage step in panels, after SK approved the Locations pilot on 2026-11-06.
 - **Sections/Files Affected**: templates/events/stages/details.html, periods.html, slots.html (On-air hours, Slots and Operating limits as panels; the stretches as rows; Add range and Save limits in panel footers; Use the whole event in the header), publish.html (Summary, Publish, Status with Lock, Unlock, Mark completed and Take it back to draft in its header, Announce, Captains as rows, Another copy; the Change links as small buttons), rules.html, contest.html, kbyg.html, new.html; static/css/app.css (a panel's form without gaps, one rule between a panel's parts); apps/events/tests/test_manage_dialogs.py (the Edit details link carries an icon).
 - **Nature of Contribution**: Code and a test. Every section keeps its id, its words, its forms and their in-place saves; Remove on periods, positions, captains, openings and stretches is a red button with a bin. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Slots, Publish, Sign-up rules at 1280 px); acceptance T11, T12, T13, T14, T18, T26, T35, T36, T37, T41, T42, T45 and T52 pass locally (private repo, testing/runs of 2026-11-06).
 - **Human Review Status**: Pending review
@@ -4686,7 +4686,7 @@ carries the actual running model ID.
 
 ## [2026-11-06 20:45 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, phase 3 (w3usr/w3usr.org-PRIVATE#235, #236): the roster in a panel with a switch, and the slot dialog's people as rows.
+- **Session Purpose**: Workspace redesign, phase 3: the roster in a panel with a switch, and the slot dialog's people as rows.
 - **Sections/Files Affected**: templates/events/detail.html (the roster as a panel: its header holds the zones, Every slot and Problems only as a switch with counts, and the Key as an icon button; the strip on the band; the bulk bar as the footer; Show them with a chevron); apps/events/services/roster.py (the count of what needs attention, which Problems only shows); templates/events/_slot_body.html (each person a row; Remove them as a red button with a bin; Check in, no-show and Leave the waitlist as small buttons; Close, Reopen and Cancel slot with icons); static/css/app.css (roster panel, switch in the zones line, Show them, the dialog's rows; .keybtn now only spacing); tools/check_interface.sh (a square corner, 0, is allowed for a part set flush inside a panel); apps/events/tests/test_phase2.py and test_roster.py (the switch and the Key's new markup).
 - **Nature of Contribution**: Code and tests. The switch keeps the words the scripts read ("Problems only" in the zones line) and the same addresses; "Show every slot" became the switch's "Every slot". Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (the event page, a slot); acceptance T11 to T20, T35, T36, T37, T41 and T52 pass locally (private repo, testing/runs of 2026-11-06).
 - **Human Review Status**: Pending review
@@ -4694,15 +4694,15 @@ carries the actual running model ID.
 
 ## [2026-11-09 12:10 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, phase 4's first two (w3usr/w3usr.org-PRIVATE#237, #238): Members as a table in a panel, and the Events list in panels.
+- **Session Purpose**: Workspace redesign, phase 4's first two: Members as a table in a panel, and the Events list in panels.
 - **Sections/Files Affected**: apps/accounts/views_members.py (the directory's columns: a member keeps Name and the surname initial; an officer gets one Name column, the club's name and the surname, sorted by surname, then Callsign, Class, Category, Positions, Status, Permission level; which rows the reader may edit); templates/accounts/members.html (a page header with Rosters and reports as a menu and Invite as the primary; a toolbar; one link per row with the address under it as text; status and archived as badges; a ⋮ per row with View and Edit profile); apps/events/views.py (each event's date tile in UTC and a captain's coverage counts); templates/events/list.html (Upcoming, Regular meetings and nets, and a quieter Past as panels; date tiles; state and coverage badges; Manage per event); static/css/app.css (page header, data-table names in row headers, date tiles, quiet panel, card titles without an underline); apps/accounts/tests/test_directory.py, test_members.py, test_archive.py and apps/events/tests/test_manage.py (the compact columns, one link per row, the phone on the profile, the canceled badge).
-- **Nature of Contribution**: Code and tests, to SK's decisions of 2026-11-09 on #237 (compact columns keeping Positions; email and phone as text). Kept as decided before: a member's table (Name, the surname initial, sorted by it; NAF and the advisor, 2026-09-19 and 2026-09-20); the officer's Name column still leads with the name members see. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Members, Events); acceptance T06, T07, T08, T11, T12, T13, T18, T37, T46, T52 and T53 pass locally (private repo, testing/runs of 2026-11-09).
+- **Nature of Contribution**: Code and tests, to SK's decisions of 2026-11-09 on an issue (compact columns keeping Positions; email and phone as text). Kept as decided before: a member's table (Name, the surname initial, sorted by it; NAF and the advisor, 2026-09-19 and 2026-09-20); the officer's Name column still leads with the name members see. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Members, Events); acceptance T06, T07, T08, T11, T12, T13, T18, T37, T46, T52 and T53 pass locally (private repo, testing/runs of 2026-11-09).
 - **Human Review Status**: Pending review
 - **Git Hash**: fb87dd7
 
 ## [2026-11-09 12:35 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, the rest of phase 4 (w3usr/w3usr.org-PRIVATE#239, #240, #241): Approvals and Agreements, the three reports, Messages, Announcements and the Outbox in panels.
+- **Session Purpose**: Workspace redesign, the rest of phase 4: Approvals and Agreements, the three reports, Messages, Announcements and the Outbox in panels.
 - **Sections/Files Affected**: templates/credentials/approvals.html (a page header with Access rosters; the queue and the decisions log as panels with quiet tables; Approve a small primary, Decline a red button opening its confirmation; Download CSV in the log's header; Reverse this decision a small button, one act per row so no menu); templates/credentials/agreements.html (each agreement a panel with its state as a badge and Sign it in its footer); templates/credentials/access_rosters.html, templates/accounts/roster.html, templates/accounts/hours.html (the reports in panels with toolbars; downloads with icons; Revoke a red button); templates/ops/outbox.html, templates/comms/my_messages.html, templates/comms/announcements.html (one panel each, rows not boxes; Announce as the primary); static/css/app.css (message and announcement rows); tools/a11y/test_card_spacing.py (a panel's body and footer are measured as cards are).
 - **Nature of Contribution**: Code and a test. Every control keeps its name, every section its id. Not done as the issues said: Reverse this decision is not in a ⋮ menu, because a row with one act has none (docs/INTERFACE.md); an unread message keeps its dot and bold rather than a new badge word, which the scenario scripts would read. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep passes in Chromium and WebKit after the spacing test learned panels (Firefox does not launch here; CI runs it); the contact sheet looked at (Approvals, Agreements); acceptance T06, T07, T08, T17, T25, T29, T38, T42, T46 and T52 pass locally, T19 and T43 skipped as dev-only (private repo, testing/runs/2026-11-09_120659-w3usr).
 - **Human Review Status**: Pending review
@@ -4710,7 +4710,7 @@ carries the actual running model ID.
 
 ## [2026-11-09 13:05 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Workspace redesign, phase 5 (w3usr/w3usr.org-PRIVATE#242 to #246): Home and My schedule, the profile and Edit profile, one header and footer for every confirmation, the sysadmin pages, and the UTC clock (D9).
+- **Session Purpose**: Workspace redesign, phase 5: Home and My schedule, the profile and Edit profile, one header and footer for every confirmation, the sysadmin pages, and the UTC clock (D9).
 - **Sections/Files Affected**: static/css/app.css (a `.section` draws as a panel without a header band on the canvas, plain inside a panel or card; a confirmation's question as a header band and its choices as a footer band; data tables inset inside sections; the page bar and its UTC clock); templates/base.html (the page bar with the clock, drawn in UTC by the server); static/js/app.js (the clock kept current); every remaining `.linklike` action (addresses, Edit profile, invitations, entry links, permission levels, message text, adults, My schedule's feed, the generator's Regenerate, approvals' address confirm) as a small outlined button, the destructive ones as red ghost buttons with a bin (D2, D4); every remaining `table.table` as a data table; templates/ops/dashboard.html (Open the roster as a button); templates/ops/templates.html (an Edit button per message); templates/ops/components.html (the kit's dialog with the confirmation footer); docs/INTERFACE.md (sections as panels; the UTC clock).
 - **Nature of Contribution**: Code and docs. A confirmation keeps its words and buttons; no close button was added to each, Escape and the safe choice close it as before. Verified: 533 application tests pass; lint, format and the guards pass; the accessibility sweep, 72 tests, passes in Chromium and WebKit (Firefox does not launch here; CI runs it); the contact sheet looked at (Home, Edit profile, the clock at 1280 and 390 px) and a confirmation screenshotted; 26 acceptance scenarios pass locally after three script fixes (private repo, testing/runs of 2026-11-09).
 - **Human Review Status**: Pending review
@@ -4720,7 +4720,7 @@ carries the actual running model ID.
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: The Events list was slow enough on dev to threaten the site (SK, 2026-11-09): find why and fix it.
 - **Sections/Files Affected**: apps/events/views.py (the list works out coverage only for a published or locked event); apps/events/tests/test_manage.py (a test that a canceled or draft event's coverage is never worked out).
-- **Nature of Contribution**: Diagnosis and a fix. Cause: #238 (bb8dac5's phase, 6e0ef1c's commit) gave every upcoming event a captain may manage its coverage counts, worked out slot by slot, and an upcoming event includes a canceled one whose dates are ahead; on dev an officer had 377 canceled acceptance-test events. Verified: 534 application tests pass; lint and format pass.
+- **Nature of Contribution**: Diagnosis and a fix. Cause: an issue (bb8dac5's phase, 6e0ef1c's commit) gave every upcoming event a captain may manage its coverage counts, worked out slot by slot, and an upcoming event includes a canceled one whose dates are ahead; on dev an officer had 377 canceled acceptance-test events. Verified: 534 application tests pass; lint and format pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: 3d1a108
 
@@ -4736,7 +4736,7 @@ carries the actual running model ID.
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Two more alignment fixes SK found (2026-11-10): the Events list's rows not centred (an undated event's title above its Manage button's middle), and the Outbox's filter bar (the State label off the select's middle, the select stretched, the count pushed to a line of its own).
 - **Sections/Files Affected**: static/css/app.css (.panel .eventcard no longer overrides the rows' centring with flex-start; a toolbar's label loses the form label's bottom margin and its select takes its own width); templates/events/list.html (the date line written only for an event with a start, Upcoming and Past).
-- **Nature of Contribution**: Diagnosis and code. Causes: #238 set the event rows to align-items: flex-start, against every other row's centre, and an undated event wrote an empty date line; in a toolbar, form label's .25rem bottom margin lifted the label, and select's width: 100% (to 28rem) stretched it. Verified on scratch pages with the real stylesheet in Chromium and WebKit, desktop and phone, measured before and after: an undated event's title 7px above the button's middle before, centred after, and a full row's tile, text and button on one centre; the Outbox's label, select, button and count on one line and one centre at 1280px, the select 240px instead of 448px; the members search box centred on its button (2px off before); no sideways scroll on a phone. apps/ops and apps/events tests pass.
+- **Nature of Contribution**: Diagnosis and code. Causes: an issue set the event rows to align-items: flex-start, against every other row's centre, and an undated event wrote an empty date line; in a toolbar, form label's .25rem bottom margin lifted the label, and select's width: 100% (to 28rem) stretched it. Verified on scratch pages with the real stylesheet in Chromium and WebKit, desktop and phone, measured before and after: an undated event's title 7px above the button's middle before, centred after, and a full row's tile, text and button on one centre; the Outbox's label, select, button and count on one line and one centre at 1280px, the select 240px instead of 448px; the members search box centred on its button (2px off before); no sideways scroll on a phone. apps/ops and apps/events tests pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: f5c8152
 
@@ -4838,7 +4838,7 @@ carries the actual running model ID.
 
 ## [2026-11-11 15:15 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: #145, navigation in the Material 3 style with Material Symbols icons, at SK's word ("for 145, i want material 3 style", 2026-11-11); the pill for the navigation only, SK's choice the same day over #160's corner rule.
+- **Session Purpose**: Navigation in the Material 3 style with Material Symbols icons, at SK's word ("for 145, i want material 3 style", 2026-11-11); the pill for the navigation only, SK's choice the same day over the issue's corner rule.
 - **Sections/Files Affected**: apps/ops/templatetags/nav.py (the icon table: 44 Material Symbols Outlined paths, 24 px, weight 400, in place of hand-drawn line icons; the tag draws them filled); apps/ops/templatetags/MATERIAL_SYMBOLS_LICENSE (new, Apache-2.0); NOTICE; static/css/app.css (drawer entries 56 px with 24 px icons and 14 px labels, the rail 80 px with 56 by 32 px pills, the --r-pill token); tools/check_interface.sh (the pill allowed on the navigation's entries alone); docs/INTERFACE.md (Icons, Shape, where our rules win).
 - **Nature of Contribution**: Code generation and edit. The icon paths were copied unmodified from github.com/google/material-design-icons. Verified: 564 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped; Firefox does not launch on this machine, CI runs it); ruff and the repository guards pass, and the guard was seen to refuse the pill elsewhere; contact sheets before and after (361 shots each) and the rail, drawer and hover compared by eye.
 - **Human Review Status**: Pending review
@@ -4846,7 +4846,7 @@ carries the actual running model ID.
 
 ## [2026-11-11 15:26 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The navigation's entries 48 px high in place of Material 3's 56, at SK's word ("make it 48px", 2026-11-11), after trying #145 on dev.
+- **Session Purpose**: The navigation's entries 48 px high in place of Material 3's 56, at SK's word ("make it 48px", 2026-11-11), after trying an issue on dev.
 - **Sections/Files Affected**: static/css/app.css (the drawer entry's height, and in the drawer under 60rem); docs/INTERFACE.md (Shape).
 - **Nature of Contribution**: Edit. Verified: the interface guard passes; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped).
 - **Human Review Status**: Pending review
@@ -4878,7 +4878,7 @@ carries the actual running model ID.
 
 ## [2026-11-12 12:11 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Three gaps found by the 2026-11-12 analysis, at SK's word ("go ahead with 251, 252 and 255"): a sign-up with attendance, on an ended slot or an event that is over, is no longer deleted by I cannot make it or a captain's removal; a waitlist offer on a canceled slot or event can no longer be made or taken; an event that is over is no longer canceled, nor a canceled one twice.
+- **Session Purpose**: Three gaps found by the 2026-11-12 analysis, at SK's word: a sign-up with attendance, on an ended slot or an event that is over, is no longer deleted by I cannot make it or a captain's removal; a waitlist offer on a canceled slot or event can no longer be made or taken; an event that is over is no longer canceled, nor a canceled one twice.
 - **Sections/Files Affected**: apps/events/models.py (SignUp.kept); apps/events/views.py (cancel_signup, confirm_remove_signup, cannot_by_token); templates/events/token_kept.html (new), _slot_body.html, my_schedule.html; apps/events/services/waitlist.py (seats_open refuses a canceled slot or an event not published or locked); apps/events/views_member.py and templates/events/waitlist_accept.html (a refused offer comes back to the offer page, which says why); apps/events/views_manage.py (event_cancel as one conditional update); templates/events/stages/publish.html (no Danger zone on an event that is over); apps/events/tests/test_record_kept.py (new, 11 tests, written first and seen to fail for the right reason); apps/ops/tests/test_interface.py (its slot moved into the future: the fixture's had ended).
 - **Nature of Contribution**: Code generation, test first. Verified: 575 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the interface guard and the migration check pass; scenario scripts T11 to T18, T36 and T37 run locally (W3USR) with one failure, T18 step 2's count of people, which failed the same way on 2026-11-11 before this change (local ordering with T14).
 - **Human Review Status**: Pending review
@@ -4894,7 +4894,7 @@ carries the actual running model ID.
 
 ## [2026-11-12 18:44 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Fields with a default show it filled in (NAF's tickets of 2026-11-12, private tracker 272 and 277), at SK's word ("whatever it says in the ticket, we need to do it"), on SK's choices that day: untouched fields follow the club's default ("Follow"), a "Club default" tag, and setup and breakdown lengths that follow the slot length live.
+- **Session Purpose**: Fields with a default show it filled in (NAF's tickets of 2026-11-12), at SK's word ("whatever it says in the ticket, we need to do it"), on SK's choices that day: untouched fields follow the club's default ("Follow"), a "Club default" tag, and setup and breakdown lengths that follow the slot length live.
 - **Sections/Files Affected**: apps/events/views_manage.py (EventForm's reminder; GenerateForm's setup and breakdown lengths with their *_edited flags; LocationForm's needs, without the own-rule box); apps/events/views_rules.py (rules parsed with "Any class", saved equal to the club's or the event's as nothing, every role starting from the rule that applies); apps/events/views_slots.py and templates/events/_slot_body.html (the slot override starts from the event's rule per role, with credentials and "Any class"); apps/events/services/eligibility.py (club_default_rule, same_rule); apps/events/services/viability.py (club_rule); apps/events/models.py and migration 0009 (help text only); templates/events/forms/_field.html and _fields.html (the tag, in the label; hidden fields in grouped forms); templates/events/stages/rules.html; static/js/app.js; tools/check_interface.sh (rejects blank-means-default help text); docs/INTERFACE.md (Forms); apps/events/tests/test_defaults_shown.py (new, 8 tests, written first) and test_location_details.py.
 - **Nature of Contribution**: Code generation, test first. Also found and fixed on the way: the rules form could not say "a license of any class", so saving any rule for Mentor dropped the club's license requirement; and the slot override had no credentials boxes, so saving one dropped the event's. Verified: 593 application tests pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped); ruff, the guards and the migration check pass; the forms and their script exercised in a browser.
 - **Human Review Status**: Pending review
@@ -4926,7 +4926,7 @@ carries the actual running model ID.
 
 ## [2026-11-12 21:08 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Six of the open event and interface items from the 2026-11-12 gap analysis (private tracker 257, 259, 261, 265, 268, 270), at SK's word ("let's work on other tickets"): canceling an empty slot asks first; adding a period, location or position, and closing or reopening one slot, are audited; an error about a whole form is a Problem message; breadcrumbs are underlined only under the pointer and on focus; the stepper's done mark is the check icon and a table's last row has no stray line; fold-out headings take the same hover and focus as every other control.
+- **Session Purpose**: Six of the open event and interface items from the 2026-11-12 gap analysis, at SK's word ("let's work on other tickets"): canceling an empty slot asks first; adding a period, location or position, and closing or reopening one slot, are audited; an error about a whole form is a Problem message; breadcrumbs are underlined only under the pointer and on focus; the stepper's done mark is the check icon and a table's last row has no stray line; fold-out headings take the same hover and focus as every other control.
 - **Sections/Files Affected**: apps/events/views_manage.py; templates/events/_slot_body.html; templates/events/stages/_layout.html; templates/ops/template_edit.html (the crumb no longer repeats the heading, which axe flagged once crumbs lost their underline); static/css/app.css; config/settings/base.py (FORM_RENDERER, django.forms); templates/django/forms/errors/list/ul.html (new); apps/events/tests/test_slot_cancel_and_audit.py (new); apps/accounts/tests/test_flows.py; tools/a11y/test_crumbs.py (new, seen to fail without the rule); apps/events/tests/test_manage.py, test_record_kept.py, test_defaults_shown.py (a cancel now confirms; the override form sliced by its fold-out).
 - **Nature of Contribution**: Code generation. Verified: 607 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (72 passed, 1 skipped) with the new crumb test; Firefox does not launch on this Mac (CI runs it). The slot page and the new dialog were screenshotted and looked at.
 - **Human Review Status**: Pending review
@@ -4934,7 +4934,7 @@ carries the actual running model ID.
 
 ## [2026-11-12 21:30 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Five interface items from the 2026-11-12 gap analysis (private tracker 262, 263, 264, 269, 271), with SK's choices of 2026-11-12: highlighted cards made neutral; Info and Open badges on the neutral tint with the word in the club's color; the white .note boxes drawn as Careful or Note messages; a switch's current choice drawn as the navigation's pill; the level page marks the current level by its fill; the coverage overview's weeks as a switch, its table in a panel.
+- **Session Purpose**: Five interface items from the 2026-11-12 gap analysis, with SK's choices of 2026-11-12: highlighted cards made neutral; Info and Open badges on the neutral tint with the word in the club's color; the white .note boxes drawn as Careful or Note messages; a switch's current choice drawn as the navigation's pill; the level page marks the current level by its fill; the coverage overview's weeks as a switch, its table in a panel.
 - **Sections/Files Affected**: static/css/app.css; docs/INTERFACE.md (the badge line; Shape: the pill on a switch's choices); tools/check_interface.sh (the pill allowed on `.switch a`); apps/events/views_member.py (the week choices); templates: ops/dashboard.html, events/my_schedule.html, events/health_overview.html, credentials/password.html, accounts/acting_view.html, accept_invitation.html, accept_invitation_guardian.html, entry_links.html, invitations.html, join.html, member_detail.html, member_edit.html; tests: apps/ops/tests/test_badges.py (the info pair), apps/ops/tests/test_interface.py (the coverage overview), apps/accounts/tests/test_acting_view.py (the level page).
 - **Nature of Contribution**: Code generation. Verified: 609 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped); the badge's contrast measured in a browser at 5.5:1 or more in both themes with the default navy and a dark purple; each changed page screenshotted light and dark and looked at.
 - **Human Review Status**: Pending review
@@ -4942,7 +4942,7 @@ carries the actual running model ID.
 
 ## [2026-11-12 22:14 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 258, SK's decision of 2026-11-12: marking an event completed early tells each person with a slot still to come that their slots will not run (a new message, `event.completed_early`, in the mandatory cancellation category), and the confirmation dialog says how many first.
+- **Session Purpose**: SK's decision of 2026-11-12: marking an event completed early tells each person with a slot still to come that their slots will not run (a new message, `event.completed_early`, in the mandatory cancellation category), and the confirmation dialog says how many first.
 - **Sections/Files Affected**: apps/events/models.py (Event.signups_ahead, people_ahead); apps/events/services/lifecycle.py (set_state); apps/comms/defaults.py (the message and its description); templates/events/stages/publish.html (the dialog); apps/events/tests/test_record_kept.py (one test).
 - **Nature of Contribution**: Code generation. Verified: 610 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped).
 - **Human Review Status**: Pending review
@@ -4950,7 +4950,7 @@ carries the actual running model ID.
 
 ## [2026-11-12 22:58 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Two findings of the 2026-11-12 compliance audit, at SK's word (private tracker 326, 286), and the decisions behind them and private tracker 258 in the functional addendum (A25 to A27): adding or confirming an address on another account is bounded to accounts below the actor's level (A24's bound, now one `outranks()`); mail from the sign-in library reaches a minor's guardians, carries the club Reply-To, and is filed in My messages without its link.
+- **Session Purpose**: Two findings of the 2026-11-12 compliance audit, at SK's word, and the decisions behind them and a third in the functional addendum (A25 to A27): adding or confirming an address on another account is bounded to accounts below the actor's level (A24's bound, now one `outranks()`); mail from the sign-in library reaches a minor's guardians, carries the club Reply-To, and is filed in My messages without its link.
 - **Sections/Files Affected**: apps/ops/groups.py (outranks; may_issue_temporary_password uses it); apps/accounts/views_addresses.py (may_edit, may_correct); apps/accounts/views_members.py (the two flags for the page); templates/accounts/_addresses.html (draws only what the reader may use); apps/accounts/adapter.py (render_mail: guardians and Reply-To; send_mail: the filed copy); docs/REQUIREMENTS.md (addendum A25, A26, A27); apps/accounts/tests/test_addresses.py and test_phase7.py (one test each, both seen to fail on the old code).
 - **Nature of Contribution**: Code generation and documentation. Verified: 613 application tests pass; ruff and the guards pass; the accessibility sweep passes in Chromium and WebKit (74 passed, 1 skipped) after the address change; check.sh's one failure is the PDF test without the Homebrew library path, which passes with it.
 - **Human Review Status**: Pending review
@@ -4958,7 +4958,7 @@ carries the actual running model ID.
 
 ## [2026-11-15 22:02 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5; four subagents on claude-opus-5-5, each in its own git worktree, one area each
-- **Session Purpose**: Work through the over-engineering tickets at SK's word ("let's work thru these tickets"): private tracker 178 to 216, 218 to 220, and 344 to 350. SK's decisions on 2026-11-15: the publish and openings announcements go to people_who_may("view_directory") (219); seats_open replaces the hand check only in the bulk sign-up (215); 217 (Pillow) is not done.
+- **Session Purpose**: Work through the over-engineering tickets at SK's word ("let's work thru these tickets"), about fifty of them. SK's decisions on 2026-11-15: the publish and openings announcements go to people_who_may("view_directory"); seats_open replaces the hand check only in the bulk sign-up; the Pillow item is not done.
 - **Sections/Files Affected**: 72 files under apps/, config/, static/ and tools/, 50 commits (from 54ff8c0, one per ticket; the range is listed in the hash field). New: apps/ops/forms.py (NoColon); apps/comms/migrations/0004 (drops Outbox.channel and two states never set). Deleted: apps/events/services/calendar.py and its test; apps/accounts/management/. Net 1,189 lines out, 474 in.
 - **Nature of Contribution**: Code generation (refactoring). The behaviour changes are only the ones the tickets state:
   - A two-level account gets one announcement, not two, and superusers are now included (new test, seen to fail on the old code).
@@ -4973,7 +4973,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 12:21 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Fix the app tests' random failures under xdist (private tracker 351), at SK's word.
+- **Session Purpose**: Fix the app tests' random failures under xdist, at SK's word.
 - **Sections/Files Affected**: conftest.py (an autouse fixture that clears the cache before each test, so allauth's rate-limit counters do not carry from one test to the next in a worker).
 - **Nature of Contribution**: Code generation. Verified: ruff passes; `pytest apps -n auto` passed five runs in a row (609 passed each); the a11y sysadmin role passes in Chromium and WebKit with the fixture in place.
 - **Human Review Status**: Pending review
@@ -4981,7 +4981,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 12:45 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Build two of NAF's tickets at SK's word ("let's work through NAF tickets"): the member picker (private tracker 281; SK, 2026-11-16: the role first) and Manage this slot (280).
+- **Session Purpose**: Build two of NAF's tickets at SK's word ("let's work through NAF tickets"): the member picker (SK, 2026-11-16: the role first) and Manage this slot.
 - **Sections/Files Affected**: New: apps/accounts/pick.py, templates/_member_pick.html, templates/events/forms/_captain_pick.html, tools/a11y/test_member_pick.py, apps/accounts/migrations/0027 (the user ordering ignores case). Changed: apps/events/views_slots.py, views_manage.py, views_adults.py, views_rules.py; templates/events/_slot_body.html, adults.html; static/css/app.css; apps/accounts/models.py, apps/comms/announce.py, apps/credentials/views_reports.py (case-insensitive ordering); docs/INTERFACE.md (the heading and the disclosure exceptions); apps/events/tests/test_roster.py.
 - **Nature of Contribution**: Code generation. Sign someone up, Appoint a captain and a responsible adult choose a member by typing part of a name or callsign; the page answers ?q= itself, so Find (script off) and as-you-type (htmx) share one server path. The slot's captain box is a closed disclosure, Manage this slot, open again after an action from inside it, with its two inner folds flattened. Verified: ruff, the three guards and the migration check pass; app tests 613 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the new browser test passes in both and was looked at in screenshots at desktop and phone width. The scenario suite has not yet been run on this change.
 - **Human Review Status**: Pending review
@@ -4989,7 +4989,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 12:47 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Build NAF's ticket on the "depends on one person" state (private tracker 279; NAF, 2026-11-12: remove it everywhere, the warning emails included).
+- **Session Purpose**: Build NAF's ticket on the "depends on one person" state (NAF, 2026-11-12: remove it everywhere, the warning emails included).
 - **Sections/Files Affected**: apps/events/services/viability.py (evaluate no longer produces at_risk; would_break and the reasons follow), roster.py, notify.py, slots.py, participation.py; apps/events/views_member.py; apps/comms/announce.py and views_announce.py (the filter choice goes; a saved "thin" means covered); templates/events/health_overview.html; tests in apps/events/tests (test_viability, test_roster, test_status_words).
 - **Nature of Contribution**: Code generation (removal). A slot that can run is Covered with no note; no warning email, role-change confirmation, announce filter or count for depending on one person; "below preferred class" kept (FR-61). The setting defaults.at_risk_horizon_hours keeps its key: it is still the warnings' horizon and its words on Settings already read "short of people". Verified: ruff, the guards, app tests 613 passed.
 - **Human Review Status**: Pending review
@@ -4997,7 +4997,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 12:54 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Build NAF's ticket on the club station as a new event's location (private tracker 276; SK, 2026-11-16: created with the event, with the station's address, directions and notes as club settings).
+- **Session Purpose**: Build NAF's ticket on the club station as a new event's location (SK, 2026-11-16: created with the event, with the station's address, directions and notes as club settings).
 - **Sections/Files Affected**: apps/events/views_manage.py (event_create makes the club station location and a position, Station, for every event that is not display-only); apps/ops/views_settings.py and templates/ops/settings.html (club.station_address, club.station_directions_html, club.station_kbyg_html; a rich-text kind for Settings); config/club.example.yaml; tests: test_manage.py (new test; two helpers clear the default location so the tests that add their own keep their meaning), test_manage_gaps.py, apps/ops/tests/test_settings_and_privacy.py (new test).
 - **Nature of Contribution**: Code generation. Verified: ruff, the guards and the migration check pass; app tests 615 passed; the sysadmin a11y sweep passes in Chromium and WebKit with the Settings page's three editors.
 - **Human Review Status**: Pending review
@@ -5005,15 +5005,15 @@ carries the actual running model ID.
 
 ## [2026-11-16 13:13 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Build NAF's tickets on changing seats across many slots (private tracker 282; SK, 2026-11-16: set, add or remove N) and on the roster marks saying what they mean (278); record SK's and NAF's decisions of 2026-11-12 and 2026-11-16 as functional addendum A28 to A31.
-- **Sections/Files Affected**: apps/events/views_slots.py (seats_refused and set_seats shared by Save seats and the new Change seats bulk action); templates/events/confirm_bulk_seats.html (new: choose, review, apply); templates/events/detail.html (Change seats in the bulk bar, Select every slot for captains, the Key's line on the license letter); static/js/app.js (Select every slot); templates/events/_roster_cell.html, static/css/app.css, apps/accounts/models.py (license_letter_says; a hover tooltip on each mark and on the letter); docs/REQUIREMENTS.md (A28 to A31: 279, 276, 282, 281); tests in apps/events/tests/test_roster.py and apps/accounts/tests/test_entry_links.py.
+- **Session Purpose**: Build NAF's tickets on changing seats across many slots (SK, 2026-11-16: set, add or remove N) and on the roster marks saying what they mean; record SK's and NAF's decisions of 2026-11-12 and 2026-11-16 as functional addendum A28 to A31.
+- **Sections/Files Affected**: apps/events/views_slots.py (seats_refused and set_seats shared by Save seats and the new Change seats bulk action); templates/events/confirm_bulk_seats.html (new: choose, review, apply); templates/events/detail.html (Change seats in the bulk bar, Select every slot for captains, the Key's line on the license letter); static/js/app.js (Select every slot); templates/events/_roster_cell.html, static/css/app.css, apps/accounts/models.py (license_letter_says; a hover tooltip on each mark and on the letter); docs/REQUIREMENTS.md (A28 to A31); tests in apps/events/tests/test_roster.py and apps/accounts/tests/test_entry_links.py.
 - **Nature of Contribution**: Code generation and documentation. The tooltip shows on hover only: the marks sit inside the slot's link and take no focus of their own; keyboard and touch users have the Key and the slot's dialog. Verified: ruff and the guards pass; app tests 617 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the roster, the tooltip and the review page looked at in screenshots, where a wrap of the lettered name was found and fixed.
 - **Human Review Status**: Pending review
 - **Git Hash**: 7afd51f
 
 ## [2026-11-16 13:24 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Record SK's decision on private tracker 275 (2026-11-16: one start and end per event; a split contest's break as on-air hours) as functional addendum A32. The build waits on a findings report to SK.
+- **Session Purpose**: Record SK's decision (2026-11-16: one start and end per event; a split contest's break as on-air hours) as functional addendum A32. The build waits on a findings report to SK.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (A32; the addendum's footer).
 - **Nature of Contribution**: Documentation (decision record, drafted from SK's message).
 - **Human Review Status**: Pending review
@@ -5021,15 +5021,15 @@ carries the actual running model ID.
 
 ## [2026-11-16 13:54 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Build private tracker 275 as SK decided on 2026-11-16: one start and end per event, as two fields on Event (OperatingPeriod deleted); a split contest's break as time outside the on-air hours; the start and end edited, never removed; an operating slot has to fit inside the on-air hours. No page says "operating period".
+- **Session Purpose**: As SK decided on 2026-11-16: one start and end per event, as two fields on Event (OperatingPeriod deleted); a split contest's break as time outside the on-air hours; the start and end edited, never removed; an operating slot has to fit inside the on-air hours. No page says "operating period".
 - **Sections/Files Affected**: apps/events/models.py, migrations/0010_one_start_and_end_per_event.py (merges each event's periods, keeps breaks off the air); services/slots.py (span_of, left_outside on the event, fits_on_air, on-air helpers), reshape.py, manage.py (duplicate), participation.py (a row per stretch of on-air hours), roster.py, notify.py, lifecycle.py, mentors.py; views_manage.py (span_edit and SpanForm replace period_add, period_edit, period_delete and the overlap check; the step "span", the old "periods" address redirects), views.py, views_member.py, views_slots.py, urls.py, admin.py, templatetags/workspace.py; apps/ops/api.py, views.py, seed_demo.py; templates (events/stages/span.html, renamed from periods.html, and the stages, header, participation, dashboard and list pages); docs: REQUIREMENTS.md (A32 completed), TECHNICAL_REQUIREMENTS.md (A12), INTERFACE.md; tests across apps/events, apps/accounts, apps/comms, apps/ops and tools/a11y, and a new migration test.
-- **Nature of Contribution**: Code generation, data migration, documentation. The edit refusal counts people, not sign-ups (the part of private tracker 352 still on this path). Verified: ruff, the guards and the migration check pass; app tests 615 passed, including the migration test (a split contest, own hours running into a gap, touching periods, none); the a11y sweep 76 passed, 1 skipped (Chromium and WebKit). Dev and production hold no event with more than one period (read-only checks).
+- **Nature of Contribution**: Code generation, data migration, documentation. The edit refusal counts people, not sign-ups (the part of an issue still on this path). Verified: ruff, the guards and the migration check pass; app tests 615 passed, including the migration test (a split contest, own hours running into a gap, touching periods, none); the a11y sweep 76 passed, 1 skipped (Chromium and WebKit). Dev and production hold no event with more than one period (read-only checks).
 - **Human Review Status**: Pending review
 - **Git Hash**: 27ee4d4
 
 ## [2026-11-16 14:43 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Build NAF's ticket on when a regular meeting or net meets (private tracker 273; SK, 2026-11-16: weekly, monthly on a weekday, monthly on a date; an optional note; the old text read where it can be; the next date shown). Record it as functional addendum A33.
+- **Session Purpose**: Build NAF's ticket on when a regular meeting or net meets (SK, 2026-11-16: weekly, monthly on a weekday, monthly on a date; an optional note; the old text read where it can be; the next date shown). Record it as functional addendum A33.
 - **Sections/Files Affected**: apps/events/services/meets.py (new: the line, the next meeting, the parser for old text); apps/events/models.py and migrations/0011 (fields; recurrence_text renamed meeting_note and read into the fields); views_manage.py (EventForm's fields, reveal and checks; the details summary; times kept as text in the audit row); services/manage.py (duplicate carries them); templatetags/times.py (meets_line, next_meets); templates/events/forms/_field.html (data-reveal attributes), list.html, detail.html; static/js/app.js (reveals nest and take several values); docs/REQUIREMENTS.md (A33); tests: test_meets.py (new), test_migration_one_span.py, test_manage.py, test_phase2.py, test_bug_batch.py.
 - **Nature of Contribution**: Code generation, data migration, documentation. A real bug found on the way: saving the details wrote a time into the audit row's JSON and failed; fixed. Verified: ruff, the guards, the migration check; app tests 621 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the form looked at in a browser, where the fields stay hidden until Display only is ticked and hide again when it is unticked.
 - **Human Review Status**: Pending review
@@ -5037,7 +5037,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 14:53 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: NAF's ticket on dates and times (private tracker 274), first half: one form for every date and time shown (SK, 2026-11-16: the year dropped in rows and lists; plain dates as 21 Nov 2026; ISO kept for machines). The UTC entry boxes follow in the next commit.
+- **Session Purpose**: NAF's ticket on dates and times, first half: one form for every date and time shown (SK, 2026-11-16: the year dropped in rows and lists; plain dates as 21 Nov 2026; ISO kept for machines). The UTC entry boxes follow in the next commit.
 - **Sections/Files Affected**: apps/ops/when.py (new: utc, utc_span, day, local, local_span); apps/events/templatetags/times.py (the when tag through it; filters utc_time, utc_time_short, plain_day; tag utc_span); services/roster.py (_span), notify mail through it; 21 templates (accounts, comms, credentials including the agreement PDF, events, ops); Python messages and mail in apps/accounts, apps/credentials, apps/events (views, views_manage, views_rules, views_slots, services eligibility, mentors, reshape); Slot.__str__; tools/check_interface.sh (refuses a hand-written UTC format); docs/INTERFACE.md (Dates and times); tests updated for the wording, and apps/ops/tests/test_when.py (new).
 - **Nature of Contribution**: Code generation and documentation. One wording change beyond the format: a slot clash now reads "already has a slot at <span>" (it said "from … to …"). CSV, the calendar feed, the audit log's values and value= attributes keep ISO 8601. Verified: ruff, the guards (the new rule included), app tests 624 passed.
 - **Human Review Status**: Pending review
@@ -5045,7 +5045,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 15:00 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 274, second half: UTC typed as numbers whatever the browser's locale (SK, 2026-11-16: 2100 accepted); record 274 as functional addendum A34.
+- **Session Purpose**: Second half: UTC typed as numbers whatever the browser's locale (SK, 2026-11-16: 2100 accepted); record 274 as functional addendum A34.
 - **Sections/Files Affected**: apps/ops/when.py (parse_utc, typed, HELP), apps/ops/forms.py (utc_field: a plain text box); apps/events/views_manage.py (SpanForm, which the on-air range form shares, and AddSlotForm; span_edit), views_rules.py (OpeningForm), views_slots.py (_typed_utc for re-time, split and duplicate); templates/events/_slot_body.html, _event_header.html (text boxes with their help); plain dates typed as 2026-11-21: apps/accounts/views_entry.py, templates/accounts/member_edit.html, templates/credentials/password_manage.html; docs/REQUIREMENTS.md (A34); tests: apps/ops/tests/test_when.py, test_manage_gaps.py (through the form), test_manage.py, test_slot_reshape.py, tools/a11y/test_manage_dialog.py.
 - **Nature of Contribution**: Code generation and documentation. The boxes take 2026-11-21 21:00, 2026-11-21 2100 and ISO's 2026-11-21T21:00, and refuse anything else with how to write it (a US browser's 11/21/2026 09:00 PM included). Verified: ruff and the guards; app tests 626 passed; the a11y sweep 76 passed, 1 skipped (Chromium and WebKit); the dialog looked at in a browser set to en-US, where the boxes stay 24-hour.
 - **Human Review Status**: Pending review
@@ -5053,7 +5053,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 15:16 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Fix two faults the scenario suite found in private tracker 274's first half.
+- **Session Purpose**: Fix two faults the scenario suite found in the first half of the dates-and-times work.
 - **Sections/Files Affected**: apps/ops/when.py (an ISO date stored as text is read as a date, and anything else shown as it is); apps/ops/tests/test_when.py; templates/accounts/member_detail.html, member_edit.html, templates/credentials/agreements.html, password_manage.html (dates printed with no filter now read 21 Nov 2026).
 - **Nature of Contribution**: Bug fix. The signed agreement's PDF answered 500 right after an approval: the approval keeps the typed expiry as text on the record it renders, which Django's own date filter had silently printed as nothing and the new filter refused (scenario T40). Four places printed a date with no filter at all, in Django's "Sept. 1, 2027" (scenario T08). Verified: app tests 627 passed; the guards.
 - **Human Review Status**: Pending review
@@ -5062,7 +5062,7 @@ carries the actual running model ID.
 ## [2026-11-16 16:52 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Review the interface for inconsistency across pages, then fix the two findings SK chose: a license expiry still printed in Django's US format, and the Outbox's one-off state filter.
-- **Sections/Files Affected**: templates/accounts/member_detail.html (license expiry through plain_day, missed by private tracker 274); apps/comms/views.py, templates/ops/outbox.html (the state filter is now the shared filter panel with a Search button, as on Members and Approvals; it holds a set, and paging keeps it); apps/comms/tests/test_messages.py (two states at once).
+- **Sections/Files Affected**: templates/accounts/member_detail.html (license expiry through plain_day, missed by the dates-and-times work); apps/comms/views.py, templates/ops/outbox.html (the state filter is now the shared filter panel with a Search button, as on Members and Approvals; it holds a set, and paging keeps it); apps/comms/tests/test_messages.py (two states at once).
 - **Nature of Contribution**: Review and bug fix. The review walked a dozen pages of the seeded demo at desktop and phone width; its other findings (page headers, notices, card headings) are not acted on here. Verified: ruff and format; app tests 627 passed; the a11y sweep for the officer role passed in Chromium and WebKit (Firefox not run locally); Outbox looked at in a browser with no filter, two states ticked, and at phone width; the profile reads "expires 4 May 2029".
 - **Human Review Status**: Pending review
 - **Git Hash**: 60fb11a
@@ -5077,7 +5077,7 @@ carries the actual running model ID.
 
 ## [2026-11-16 17:58 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 353: Message text listed the slot-changed message by its key, "slot: changed", with no Who gets it.
+- **Session Purpose**: Message text listed the slot-changed message by its key, "slot: changed", with no Who gets it.
 - **Sections/Files Affected**: apps/comms/defaults.py (`TEMPLATE_WORDS` gains `slot.changed`: "A slot's time was changed", everybody in the slot); apps/comms/tests/test_messages.py (every message in `DEFAULTS` has an entry in `TEMPLATE_WORDS`).
 - **Nature of Contribution**: Bug fix and test. Verified: the new test fails without the entry and passes with it, so slot.changed was the only one missing; ruff and format; app tests passed; scenario T29 against a local server, 20 pass, 0 fail (its script fix is in the private repository).
 - **Human Review Status**: Pending review
@@ -5094,7 +5094,7 @@ carries the actual running model ID.
 ## [2026-11-16 18:50 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: Reconcile the requirements with the 12 to 16 November window (fbcaae8..242faf9), from the private repository's /reconcile.
-- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A13: `Outbox` has no channel, and its two never-written states are gone, after private tracker 185; the footer's date list).
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (addendum A13: `Outbox` has no channel, and its two never-written states are gone, after an issue; the footer's date list).
 - **Nature of Contribution**: Analysis and documentation (addendum). Every behaviour change in the window was checked for its functional addendum (A24 to A35, all present); the one requirement left untrue was the technical data-model table's `Outbox` channel. The body is not edited. Verified: the club-neutral and requirement-ID guards.
 - **Human Review Status**: Pending review
 - **Git Hash**: bc265c8
@@ -5149,7 +5149,7 @@ carries the actual running model ID.
 
 ## [2026-11-17 15:47 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 327 and 334 (FR-67): a member's email and phone, and a surname or a first name kept behind a preferred one, no longer reach members through the responsible-adult page or the directory's search. SK chose the shape for 327 on 2026-11-17: the picker keeps offering any adult member by name; their details stay with captains and officers.
+- **Session Purpose**: FR-67: A member's email and phone, and a surname or a first name kept behind a preferred one, no longer reach members through the responsible-adult page or the directory's search. SK chose the shape for 327 on 2026-11-17: the picker keeps offering any adult member by name; their details stay with captains and officers.
 - **Sections/Files Affected**: apps/events/models.py (`ResponsibleAdult.contact_email` and `contact_phone`: a named member's own details); apps/events/views_adults.py (naming a member, by the picker or from the saved list, links them and copies nothing); apps/events/migrations/0012_a_named_member_is_a_link_not_a_copy.py (clears the copies already stored on rows that link a member); templates/events/_slot_body.html (captains read the contact details; others the phone a guardian typed, never a member's); apps/accounts/views_members.py (a member's search matches the preferred name, the first name where there is none, and the callsign; the surname, the first name and the addresses are an officer's search); tests: apps/accounts/tests/test_phase7.py, test_members.py.
 - **Nature of Contribution**: Code generation, a data migration, tests. Each new test fails against the code before it and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit (one member-picker timing failure under load, passing alone twice; that test covers the slot dialog, untouched here); scenarios T07, T11, T22, T23, T24, T38, T44, T47 and T53 locally.
 - **Human Review Status**: Pending review
@@ -5157,7 +5157,7 @@ carries the actual running model ID.
 
 ## [2026-11-17 16:00 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 287 (FR-7): a temporary password works for exactly one sign-in.
+- **Session Purpose**: FR-7: A temporary password works for exactly one sign-in.
 - **Sections/Files Affected**: apps/accounts/signals.py (at the sign-in that uses it, the temporary password is made unusable and the session keeps its auth hash, so that session can only set the member's own password; audit row `password.temporary_spent`; the flag also clears on allauth's `password_set`); apps/accounts/middleware.py (the forced step is Set Password, `/accounts/password/set/`, which asks for no current password); tests: apps/accounts/tests/test_flows.py (new: one sign-in, a second refused, the session sets a password and goes on), test_profile_and_invites.py and apps/ops/tests/test_bootstrap_sysadmin.py (the forced step's new address).
 - **Nature of Contribution**: Code generation, tests. The new test fails on the old signals at the second sign-in ("assert not True") and passes on the new. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T07, T22, T46 and T48 locally.
 - **Human Review Status**: Pending review
@@ -5165,7 +5165,7 @@ carries the actual running model ID.
 
 ## [2026-11-17 16:16 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 293 (FR-100) and 297 (FR-44): a reminder's links each do their own thing, only for the time the reminder was sent; on a locked roster the I cannot make it link changes nothing.
+- **Session Purpose**: FR-100 and FR-44: a reminder's links each do their own thing, only for the time the reminder was sent; on a locked roster the I cannot make it link changes nothing.
 - **Sections/Files Affected**: apps/events/services/notify.py (`confirm_token(su, action)` carries `confirm` or `cannot` and the slot's start and end; `signup_from_token(token, action)` refuses another action's token and one for a slot moved, split or merged since); apps/events/views.py (`cannot_by_token` reads a `cannot` token, and on a locked event shows Nothing changed naming the captains, as the signed-in cancel refuses); templates/events/token_kept.html (says why, and the club's address); templates/events/token_invalid.html (a moved slot and the other link among the reasons); tests: apps/events/tests/test_notify.py (new), test_record_kept.py and test_status_words.py (the cannot token).
 - **Nature of Contribution**: Code generation, tests. The new test fails on the old code, where a Confirm link's token cancelled the sign-up at the cannot address, and passes on the new. Reminders sent before this deploy carry the old token and now open This link is no longer valid, with a way to sign in. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T52 (generic) and T31 (W3USR club, mail on) locally.
 - **Human Review Status**: Pending review
@@ -5173,7 +5173,7 @@ carries the actual running model ID.
 
 ## [2026-11-17 16:39 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 288 (FR-99, TR-18): a locked account's owner is told, once per lockout; and 289 (TR-17): a session not remembered ends after 12 hours idle.
+- **Session Purpose**: FR-99, TR-18: a locked account's owner is told, once per lockout; and TR-17: a session not remembered ends after 12 hours idle.
 - **Sections/Files Affected**: apps/accounts/adapter.py (`pre_authenticate`: when the account's own limit, `10/5m/key`, refuses a sign-in, its owner gets `account.locked_out` once per window, deduplicated by the audit row of the same name; the per-address limit tells nobody; reads allauth's internal rate-limit module, marked as a shortcut); apps/comms/defaults.py (the `account.locked_out` message, category security, and its line on the templates page); apps/accounts/middleware.py (a session that expires with the browser records its last request at most every five minutes and is signed out after 12 hours idle; a remembered one keeps its 14 days); tests: apps/accounts/tests/test_flows.py (two new).
 - **Nature of Contribution**: Code generation, message text, tests. Each new test fails on the code before (no notice; the idle session stayed signed in) and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T21 and T22 locally. Noted, not changed: the rate limits are counted in each gunicorn process's memory (no CACHES setting), so with two workers a limit can take up to twice its count.
 - **Human Review Status**: Pending review
@@ -5181,7 +5181,7 @@ carries the actual running model ID.
 
 ## [2026-11-17 17:25 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 332, with SK's decision of 2026-11-17 ("under-18 account only up to member"): a minor's account holds at most the Member level, and the two routes that issue a minor a temporary password stay within it.
+- **Session Purpose**: With SK's decision of 2026-11-17 ("under-18 account only up to member"): a minor's account holds at most the Member level, and the two routes that issue a minor a temporary password stay within it.
 - **Sections/Files Affected**: apps/ops/groups.py (`MINOR_LEVELS`, `within_minor_levels`; `assignable_groups` offers a minor only Provisional and Member; `set_groups` refuses more); apps/accounts/account.py (no Sysadmin checkbox for a minor); apps/accounts/guardian.py (`ward_password` refused for a ward holding more than Member); apps/accounts/views_members.py (conversion at 18 refused for an account holding more than Member); docs/REQUIREMENTS.md (addendum A37); tests: apps/accounts/tests/test_phase7.py (new).
 - **Nature of Contribution**: Code generation, documentation (addendum), tests. The first version bound the conversion by `may_issue_temporary_password`, which needs a capability the generic club file gives no level, so the generic advisor could no longer convert (caught by test_acting_view and T48); it is bound by the minor's level instead, as the guardian's reset is. Each part of the new test fails without its fix. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T07, T46, T47 and T48 locally; dev holds no under-18 accounts.
 - **Human Review Status**: Pending review
@@ -5189,7 +5189,7 @@ carries the actual running model ID.
 
 ## [2026-11-17 18:26 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The data-correctness bugs, private tracker 328, 299, 330, 304 and 310, with SK's decisions of 2026-11-17: the access roster lists only accounts with access; a member holding a slot cannot wait for another role in it; a callsign change drops a license override and tells whoever may set one.
+- **Session Purpose**: The data-correctness bugs, five issues, with SK's decisions of 2026-11-17: the access roster lists only accounts with access; a member holding a slot cannot wait for another role in it; a callsign change drops a license override and tells whoever may set one.
 - **Sections/Files Affected**: apps/events/services/waitlist.py (`access_removed`: off every waitlist, a held offer passed on; `offer_next` passes over anyone without access; `accept` refuses someone already in the slot or no longer eligible and passes the offer on); apps/events/services/notify.py (`access_removed` calls it, and offers each place a removed sign-up freed); apps/events/views_member.py (`waitlist_join` refused while holding the slot); apps/credentials/views_reports.py (the access roster and its CSV list accounts with access only); apps/accounts/models.py (`Invitation.is_expired`); templates/accounts/invitations.html (Expired, no link, Make a new link only; Emailed or Link only on every row); apps/accounts/services.py (`_drop_license_override` on a callsign change); apps/credentials/services.py (its comment); apps/comms/defaults.py (the `license.override_dropped` message); tests: apps/events/tests/test_bug_batch.py (two), apps/credentials/tests/test_phase4.py, test_uls.py, apps/accounts/tests/test_flows.py.
 - **Nature of Contribution**: Code generation, message text, tests. Each new test fails on the code before and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T05, T11, T12, T13, T15, T24, T36, T37, T38, T40, T44 (after its two roster checks were brought to the new rule) and T52 locally; T51 fails locally as before (its level marking), unrelated.
 - **Human Review Status**: Pending review
@@ -5197,16 +5197,16 @@ carries the actual running model ID.
 
 ## [2026-11-17 18:51 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The quick fixes, private tracker 318, 317, 316, 311 and 335, with SK's decision of 2026-11-17 for 317 (the reminder job looks further, rather than the form refusing).
-- **Sections/Files Affected**: apps/comms/defaults.py (318: the digest's subject says the next two weeks, its line on the templates page The weekly digest; an edited template is kept, as before); apps/events/services/notify.py (317: `send_reminders` looks as far ahead as the longest reminder time any event or the club default asks for); templates/accounts/invitation_invalid.html, verify_result.html (316: a sign-in link on each); apps/accounts/services.py (311: the ready-to-send text opens with who is inviting); apps/ops/jobs.py (335: `backup:nightly` is not stale where no backup recipient is set); config/env.example (335: the three backup settings, with placeholders only); tests: apps/ops/tests/test_jobs.py, apps/events/tests/test_notify.py, apps/accounts/tests/test_flows.py (two), apps/comms/tests/test_messages.py.
+- **Session Purpose**: The quick fixes, five issues, with SK's decision of 2026-11-17 for 317 (the reminder job looks further, rather than the form refusing).
+- **Sections/Files Affected**: apps/comms/defaults.py (the digest's subject says the next two weeks, its line on the templates page The weekly digest; an edited template is kept, as before); apps/events/services/notify.py (`send_reminders` looks as far ahead as the longest reminder time any event or the club default asks for); templates/accounts/invitation_invalid.html, verify_result.html (a sign-in link on each); apps/accounts/services.py (the ready-to-send text opens with who is inviting); apps/ops/jobs.py (`backup:nightly` is not stale where no backup recipient is set); config/env.example (the three backup settings, with placeholders only); tests: apps/ops/tests/test_jobs.py, apps/events/tests/test_notify.py, apps/accounts/tests/test_flows.py (two), apps/comms/tests/test_messages.py.
 - **Nature of Contribution**: Code generation, wording, tests. Each of the five new tests fails on the code before and passes after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit; scenarios T05 and T24 locally on the generic club, T34 and T42 on the W3USR club (mail on).
 - **Human Review Status**: Pending review
 - **Git Hash**: 9d741e0
 
 ## [2026-11-17 19:26 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The accessibility tickets, private tracker 337 (a roster cell at phone width loses its position) and 341 (small gaps: two status messages not announced, a group without a legend, two marks told apart by color, My schedule's Confirm after the event's link).
-- **Sections/Files Affected**: templates/events/_roster_cell.html, static/css/app.css (337: a grid cell carries its position as `r-where`, shown only once the columns stack; the header row is hidden as a 1px clipped box with no padding or border, not removed); templates/events/detail.html (341: the bulk bar's count in a polite live region; the Key's !! mark); templates/base.html, static/js/app.js (341: one polite live region, `#said`, through which Copy says Copied); templates/comms/announce.html (341: Category a fieldset with its legend); apps/events/services/roster.py (341: the within-48-hours mark !!); templates/events/my_schedule.html (341: the Actions column second, so Confirm comes before the event's link); tests: tools/a11y/test_roster_rows.py (a phone-width browser test, Chromium and WebKit), apps/events/tests/test_roster.py (Home's and My schedule's Confirm order pinned; the other gaps).
+- **Session Purpose**: Two accessibility issues: a roster cell at phone width loses its position, and small gaps (two status messages not announced, a group without a legend, two marks told apart by color, My schedule's Confirm after the event's link).
+- **Sections/Files Affected**: templates/events/_roster_cell.html, static/css/app.css (a grid cell carries its position as `r-where`, shown only once the columns stack; the header row is hidden as a 1px clipped box with no padding or border, not removed); templates/events/detail.html (the bulk bar's count in a polite live region; the Key's !! mark); templates/base.html, static/js/app.js (one polite live region, `#said`, through which Copy says Copied); templates/comms/announce.html (Category a fieldset with its legend); apps/events/services/roster.py (the within-48-hours mark !!); templates/events/my_schedule.html (the Actions column second, so Confirm comes before the event's link); tests: tools/a11y/test_roster_rows.py (a phone-width browser test, Chromium and WebKit), apps/events/tests/test_roster.py (Home's and My schedule's Confirm order pinned; the other gaps).
 - **Nature of Contribution**: Code generation, tests. The new tests fail on the code before and pass after. Verified: ruff, format, the three guards, makemigrations --check; app tests all passed; the a11y sweep in Chromium and WebKit (the member-picker test timed out once under load and passed alone); 18 scenarios locally, T12 and T17 after their checks were brought to the new header, mark and column order.
 - **Human Review Status**: Pending review
 - **Git Hash**: fececcf
@@ -5237,7 +5237,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 12:06 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: One cache the web processes share, so allauth's sign-in limits (FR-99, TR-18) count across both gunicorn workers and survive a restart (private tracker 354).
+- **Session Purpose**: One cache the web processes share, so allauth's sign-in limits (FR-99, TR-18) count across both gunicorn workers and survive a restart.
 - **Sections/Files Affected**: config/settings/base.py (CACHES: Django's database cache; a key function that HMACs each key with SECRET_KEY, so the client's IP address in allauth's rate-limit keys is not stored, REQUIREMENTS §4.2); apps/ops/migrations/0011_cache_table.py (createcachetable from migrate, so a deploy, a laptop and CI get the table with no extra step); config/settings/test.py (tests keep a per-process cache, cleared before each test as before); apps/accounts/tests/test_flows.py (a failed sign-in under the real settings is a row in the database whose key holds no address).
 - **Nature of Contribution**: Code generation, test. The database cache chosen over the file cache because allauth's lock relies on cache.add being atomic, which the database cache is under SQLite's IMMEDIATE transactions and the file cache is not. Verified: the new test and the lockout test; all 255 accounts tests under the database cache; two separate processes on one migrated database, the second's add refused while the first held the key; tools/check.sh passed but for the known local failures (WeasyPrint's library path, which passes run directly, and Firefox).
 - **Human Review Status**: Pending review
@@ -5253,7 +5253,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 13:06 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The member-picker browser test that timed out under parallel load (private tracker 355): the wait it lacked found and added.
+- **Session Purpose**: The member-picker browser test that timed out under parallel load: the wait it lacked found and added.
 - **Sections/Files Affected**: tools/a11y/test_member_pick.py (waits for the slot dialog's content, then for htmx to settle it, before typing).
 - **Nature of Contribution**: Diagnosis, test fix. htmx 2.0.11 attaches a swapped element's hx-* listeners at settle, after the swap the dialog opens on; a name typed in between sends no search. The test's to_be_hidden check also passed before the dialog's content existed. Verified: with htmx's settle delay forced to 1.5 s the old test failed every time and the new one passed (Chromium, WebKit); the a11y sweep under -n auto passed; tools/check.sh twice, the picker test passing both times, failing only on the known local items (WeasyPrint's library path, Firefox).
 - **Human Review Status**: Pending review
@@ -5261,7 +5261,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 13:15 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The application's own page for a web server's rate limit to show (TR-18; private tracker 290, whose limit is configured in the deployment).
+- **Session Purpose**: The application's own page for a web server's rate limit to show (TR-18; the limit itself is configured in the deployment).
 - **Sections/Files Affected**: apps/ops/views.py (too_many_requests: templates/429.html with status 429); config/urls.py (/too-many-requests/); apps/ops/tests/test_health_and_import.py (the page answers 429 with its heading).
 - **Nature of Contribution**: Code generation, test. Verified: the new test; tools/check.sh quick passed but for the known local WeasyPrint library path.
 - **Human Review Status**: Pending review
@@ -5269,7 +5269,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 14:05 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Production settings refuse to start without a usable FIELD_ENCRYPTION_KEY (TR-19, TR-20; private tracker 296), rather than failing the first time the shared password is saved or shown.
+- **Session Purpose**: Production settings refuse to start without a usable FIELD_ENCRYPTION_KEY (TR-19, TR-20), rather than failing the first time the shared password is saved or shown.
 - **Sections/Files Affected**: config/settings/prod.py (the key parsed as a Fernet key at start-up, a RuntimeError naming it otherwise); apps/ops/tests/test_prod_settings.py (the settings imported in a fresh process with no key, an empty one, a malformed one, and a valid one).
 - **Nature of Contribution**: Code generation, test. Verified: the test fails on the old settings and passes now; tools/check.sh quick passed but for the known local WeasyPrint library path.
 - **Human Review Status**: Pending review
@@ -5277,7 +5277,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 14:28 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: The breached-password check TR-15 names (REQUIREMENTS §2.6 Should; private tracker 292): a password found by Have I Been Pwned's range API is refused.
+- **Session Purpose**: The breached-password check TR-15 names (REQUIREMENTS §2.6 Should): a password found by Have I Been Pwned's range API is refused.
 - **Sections/Files Affected**: apps/accounts/pwned.py (PwnedPasswordValidator: the first five characters of the SHA-1 sent with Add-Padding, padding decoys of count 0 ignored; an unreachable service lets the password through and logs a warning); config/settings/base.py (last in AUTH_PASSWORD_VALIDATORS); config/settings/test.py (left out of the test suite's validators, so no test calls the service); apps/accounts/tests/test_pwned.py (refused, decoy and absent accepted, unreachable accepted and logged, the prefix and header sent, wired into the real validators).
 - **Nature of Contribution**: Code generation, test. Verified: the four new tests; tools/check.sh quick passed but for the known local WeasyPrint library path; the same lookup run with the development server's Python against the real service refused a well-known breached password and accepted a random one (replies of about 2,075 lines each, padded). From this Mac the call failed its TLS check (the python.org build has no CA certificates installed), which showed the fail-open path.
 - **Human Review Status**: Pending review
@@ -5285,7 +5285,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 14:52 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: A signature records the signer's IP address on production (FR-22; private tracker 298): behind nginx on a unix socket REMOTE_ADDR is empty, so every signature stored none.
+- **Session Purpose**: A signature records the signer's IP address on production (FR-22): behind nginx on a unix socket REMOTE_ADDR is empty, so every signature stored none.
 - **Sections/Files Affected**: apps/accounts/adapter.py (client_ip: X-Real-IP, then X-Forwarded-For, then REMOTE_ADDR, or "" when none; the adapter's get_client_ip keeps its 0.0.0.0 sentinel for allauth's limiter); apps/credentials/views.py (the sign view stores client_ip, or nothing when unknown); apps/credentials/tests/test_phase4.py (a sign POST with REMOTE_ADDR empty and X-Real-IP set records the address).
 - **Nature of Contribution**: Bug fix, test. Verified: the new test fails on the old view (None stored) and passes now; the accounts and credentials tests pass, the signed-PDF test among them with WeasyPrint's library path set.
 - **Human Review Status**: Pending review
@@ -5293,7 +5293,7 @@ carries the actual running model ID.
 
 ## [2026-11-19 15:06 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: What deleting an account clears and keeps (FR-118; private tracker 329), with SK's decisions of today recorded as addendum A39.
+- **Session Purpose**: What deleting an account clears and keeps (FR-118), with SK's decisions of today recorded as addendum A39.
 - **Sections/Files Affected**: apps/accounts/services.py (delete_account: responsible-adult rows naming them blanked to "Deleted member"; their authenticators deleted; messages to them lose addresses and text but keep date, kind and subject; invitations to their addresses or accepted by them lose the address; their notes on remaining sign-ups cleared; the audit entry counts instead of copying name, callsign and addresses; deletion_effects counts the sign-ups actually withdrawn); apps/events/services/notify.py (withdrawable_signups, shared by access_removed and the count); templates/accounts/member_edit.html (the confirmation says what is cleared and what stays); apps/accounts/tests/test_phase6.py (two new tests; the existing one now pins an audit entry without the name); docs/REQUIREMENTS.md (addendum A39; the body unchanged).
 - **Nature of Contribution**: Code generation, test, documentation. Verified: the count test fails on the old code (2 promised, 1 withdrawn); accounts and events tests 484 passed; tools/check.sh quick passed but for the known local WeasyPrint library path; the interface guard passed; T44 (deleting an account in a browser) passed locally on the W3USR club.
 - **Human Review Status**: Pending review
@@ -5309,7 +5309,7 @@ carries the actual running model ID.
 
 ## [2026-11-23 12:17 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: A guardian signed up for the same slot as their ward is named the ward's responsible adult automatically, and the designation goes when the guardian leaves (private tracker 358; SK's choices of 2026-11-23).
+- **Session Purpose**: A guardian signed up for the same slot as their ward is named the ward's responsible adult automatically, and the designation goes when the guardian leaves (SK's choices of 2026-11-23).
 - **Sections/Files Affected**: apps/events/services/adults.py (new: name_guardians_on_slot, release_guardian); apps/events/models.py (ResponsibleAdult.automatic); apps/events/migrations/0013 (the field; pairs already on a slot ahead named); apps/events/services/viability.py (an automatic designation counts only while the guardian is on the slot); the sign-up paths in apps/events/views.py, views_slots.py, services/waitlist.py, services/reshape.py (merge names, split keeps the flag) and the withdrawal paths in views.py and services/notify.py; apps/events/tests/test_guardian_on_slot.py (new, 7 tests); docs/REQUIREMENTS.md (addendum A40 and its attribution line; the body unchanged).
 - **Nature of Contribution**: Code generation, tests, documentation. Verified: 3 of the new tests fail against the previous code (the bug, the cancel, the merge); all 669 application tests, ruff, the three guards and the migration check pass; the accessibility sweep in Chromium and WebKit passes (81 passed, 2 skipped).
 - **Human Review Status**: Pending review
@@ -5325,7 +5325,7 @@ carries the actual running model ID.
 
 ## [2026-11-23 12:32 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: A minor's message says whose it is, so a guardian who is also a member can tell it from their own (private tracker 359); and, at SK's instruction, the four commits from the previous entry onward rebuilt so that addendum A40's attribution and a test docstring name no member.
+- **Session Purpose**: A minor's message says whose it is, so a guardian who is also a member can tell it from their own; and, at SK's instruction, the four commits from the previous entry onward rebuilt so that addendum A40's attribution and a test docstring name no member.
 - **Sections/Files Affected**: apps/comms/services.py (compose: for a minor with an active guardian, the subject starts [For <short name>] and a first line names the minor in full, under 18, and that it goes to the guardians; in the outbox, My messages, the push and the email alike); apps/comms/tests/test_messages.py (one test, made-up names); docs/REQUIREMENTS.md (addendum A41 and its attribution line). The rebuild: aaf247c, 742e320, 8ac70c5, 7f58b7b became dbb69dc, c2703b2, 99648ec, f03e2ea, differing only in A40's attribution line, the docstring of apps/events/tests/test_guardian_on_slot.py and the two log hashes; force-pushed to main.
 - **Nature of Contribution**: Code generation, tests, documentation, history edit. Verified: the new test fails against the previous compose(); all 670 application tests, ruff, the three guards and the migration check pass; the plain text reads cleanly (a first wording put a space before a comma after the bold name, so it was reworded). The rebuilt history was compared with the old line by line before the push.
 - **Human Review Status**: Pending review
@@ -5367,13 +5367,13 @@ carries the actual running model ID.
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: djLint for the templates (SK): the lint enforced; the formatter tried, shown to change what pages draw, and deferred at SK's choice.
 - **Sections/Files Affected**: requirements-dev.txt (djlint==1.49.10, the newest release at least two weeks old); pyproject.toml ([tool.djlint]: django profile, indent 2, 100 columns, attributes on one line, H015 and H021 off); tools/check.sh and .github/workflows/ci.yml (djlint templates --lint); 23 buttons given type="submit" (what a button without a type already does) across accounts/_addresses, accounts/entry_links, accounts/invitations, accounts/member_edit, events/_slot_body, events/adults, events/stages/publish, rules and slots; base.html and ops/components.html (an entity each written as its character); base.html and credentials/agreements.html (H025 marked off where its parser misreads); docs/TECHNICAL_REQUIREMENTS.md (addendum A19 and its attribution line).
-- **Nature of Contribution**: Configuration, template fixes, analysis, documentation. Verified: the lint reports 0 errors and fails on a probe template with an untyped button; all 670 application tests and the accessibility and layout tests (100 passed, 1 skipped) pass. The formatter was run (three passes to settle) and checked with a throwaway snapshot of every page each demo role reaches at 390 and 1280 px (computed style, boxes, visible text; two baseline runs compared to set the noise aside): 33 page views changed, from a space stripped inside {% block main_class %} (the four wide pages) and a line break inside a <summary> (a heading moved 5 px), and 13 application tests failed. The templates were put back to the linted state; formatting filed as private tracker 363.
+- **Nature of Contribution**: Configuration, template fixes, analysis, documentation. Verified: the lint reports 0 errors and fails on a probe template with an untyped button; all 670 application tests and the accessibility and layout tests (100 passed, 1 skipped) pass. The formatter was run (three passes to settle) and checked with a throwaway snapshot of every page each demo role reaches at 390 and 1280 px (computed style, boxes, visible text; two baseline runs compared to set the noise aside): 33 page views changed, from a space stripped inside {% block main_class %} (the four wide pages) and a line break inside a <summary> (a heading moved 5 px), and 13 application tests failed. The templates were put back to the linted state; formatting filed as an issue.
 - **Human Review Status**: Pending review
 - **Git Hash**: 582d2a0
 
 ## [2026-11-23 15:33 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 361 (NAF, 2026-11-21): checking in for a slot checks the member in for the whole run of back-to-back slots in the same event, with one tap.
+- **Session Purpose**: NAF, 2026-11-21: Checking in for a slot checks the member in for the whole run of back-to-back slots in the same event, with one tap.
 - **Sections/Files Affected**: apps/events/models.py (SignUp.checkin_run; SignUp.kept lets a checked-in sign-up go until its slot starts, so leaving early still drops the rest of a run); apps/events/views.py (check_in records the run, one audit row listing it, a minor's adults matched slot by slot; My schedule offers one button per run); apps/events/services/viability.py (checkin_ready); apps/ops/views.py (Home offers one button per run); apps/ops/when.py (clock_span); apps/events/templatetags/times.py (checkin_label); templates/ops/dashboard.html, templates/events/my_schedule.html, templates/events/_slot_body.html (the button names the span, e.g. "Check in, 5:00–7:00 PM (2 slots)"); apps/events/tests/test_checkin_run.py (new, 5 tests); docs/REQUIREMENTS.md (functional addendum A42, with the accepted consequence for hours and a minor's adult decided by SK, and its attribution line).
 - **Nature of Contribution**: Code generation, tests, documentation. Verified: the 5 new tests pass (a two-slot run checked in by one POST with no not-checked-in notice for the second slot, one button on My schedule and Home; a gap or a canceled slot ends the run; another event's adjacent slot is not in it; a captain checks in the run and the member can still leave a later slot; a minor's run records the adult only where named). The full tools/check.sh passed except three Firefox accessibility tests (Firefox does not launch on this machine; CI runs them) and the signed-PDF test, which passes run directly with Homebrew's libraries on the library path. A self-review raised the hours consequence, now recorded in A42, and a missing Home test, now added.
 - **Human Review Status**: Pending review
@@ -5413,7 +5413,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 15:02 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 363 (SK): the templates made safe for djLint's formatter, formatted, and shown to draw the same; djLint's format check added to tools/check.sh and CI.
+- **Session Purpose**: SK: The templates made safe for djLint's formatter, formatted, and shown to draw the same; djLint's format check added to tools/check.sh and CI.
 - **Sections/Files Affected**: templates/ (104 files reformatted by `djlint --reformat`; base.html and the four wide pages' `main_class` blocks; `events/_slot_body.html`'s summary fenced with djlint:off); pyproject.toml (`[tool.djlint]` max_line_length 1000 so a tag stays on one line; its comments); tools/check.sh and .github/workflows/ci.yml (`djlint templates --check`); tools/a11y/test_page_snapshot.py and tools/a11y/compare_snapshots.py (new, opt-in), tools/a11y/conftest.py (`--page-snapshot`); apps/events/tests/test_manage_dialogs.py and test_roster.py (two assertions no longer depend on a newline); docs/TECHNICAL_REQUIREMENTS.md (technical addendum A20 and the addendum's footer; the body unchanged).
 - **Nature of Contribution**: Code generation and edit, with verification. The snapshot was itself checked against two runs of the same code before use (sorting custom properties and stripping the server's origin were needed to make it repeatable). Verified: the snapshot before and after formatting, 0 of 354 page views different (the one page that drifted also drifts between two runs of the same code); every changed template's text identical but for whitespace and quote style inside template tags; the 908 added whitespace runs grouped by their neighbours and the 29 not at a block, table-cell or flex boundary read against the CSS; the application tests (675) pass; tools/check.sh passes but for three Firefox tests that cannot launch on this machine and the signed-PDF test, which needs Homebrew's libraries (it passes run directly). Not run: the scenario scripts over dialogs, confirmation and error states; CI's Firefox jobs.
 - **Human Review Status**: Pending review
@@ -5421,7 +5421,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 15:27 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Three small bugs from the open list (SK): a position's Remove counted sign-ups as people (private tracker 352); the hours CSV exported addresses without an audit row (private tracker 315); the privacy page had no H1, and the accessibility sweep ignored moderate problems (private tracker 336).
+- **Session Purpose**: Three small bugs from the open list (SK): a position's Remove counted sign-ups as people; the hours CSV exported addresses without an audit row; the privacy page had no H1, and the accessibility sweep ignored moderate problems.
 - **Sections/Files Affected**: apps/events/views_manage.py (the Locations step's per-position count and the refusal to remove a position count distinct people); apps/accounts/views_members.py (the hours CSV records `report.hours_exported` with the course, the row count and `contacts`); apps/ops/views_settings.py and templates/ops/privacy.html (the notice's opening H1 becomes the page's H1, the rest keeps its levels, any later H1 becomes an H2; "Privacy notice" when the notice has none); tools/a11y/test_axe.py (fails on moderate as well as serious and critical); tests in apps/events/tests/test_manage_gaps.py, apps/events/tests/test_preferred_and_hours.py and apps/ops/tests/test_settings_and_privacy.py.
 - **Nature of Contribution**: Code generation and tests. The tracker's other places for the first bug (the operating period's Remove and edit) no longer count this way or no longer exist. Verified: the two new assertions on counts and the audit row fail against the old code and pass against the new; the privacy test covers a leading H1, a later H1 and none; the Chromium and WebKit sweep passes on every page at the new threshold (Firefox cannot launch on this machine; CI runs it); tools/check.sh quick passes but for the signed-PDF test, which needs Homebrew's libraries.
 - **Human Review Status**: Pending review
@@ -5429,7 +5429,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 15:32 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 300 (SK): FR-39's operating-time limits counted every position's slots separately and ignored the minimum break.
+- **Session Purpose**: SK: FR-39's operating-time limits counted every position's slots separately and ignored the minimum break.
 - **Sections/Files Affected**: apps/events/services/slots.py (`limit_report`: a day's on-air time is the clock time any operating slot covers, positions at once counted once, and a gap shorter than the minimum break counted in; the over-limit slots follow from that); apps/events/tests/test_phase2.py (new test: a 5-minute gap under a 10-minute break, two positions over the same hours, a real break); apps/events/tests/test_manage.py (the end-to-end event's Coverage reads 24 operating hours, not 48: two positions over the same 24 hours).
 - **Nature of Contribution**: Code generation and tests. The tracker said "per person"; FR-39's words and its School Club Roundup example are the station's time, which is what this implements. Verified: the new test fails against the old code and passes; the application tests (677) pass; scenario T11 passes locally with its step 7 updated in the private repository.
 - **Human Review Status**: Pending review
@@ -5437,7 +5437,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 15:37 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 339 (SK): the roster folded open time by rows, not by A13's three hours.
+- **Session Purpose**: SK: The roster folded open time by rows, not by A13's three hours.
 - **Sections/Files Affected**: apps/events/services/roster.py (`FOLD_MIN` of three hours replaces `FOLD_MIN_ROWS`; a run of open rows folds when it covers three hours of clock time, and in the list layout, a row per slot, the run goes on while each row starts no later than the run so far ends); apps/events/tests/test_roster.py (the tracker's four cases: 20-minute slots over an hour and 30-minute slots over two do not fold; 2-hour slots over four hours and five positions over four hours do).
 - **Nature of Contribution**: Code generation and tests. Verified: the four cases fail against the old code and pass; the application tests (681) pass; scenarios T11, T12, T13, T16, T20, T38 and T40 pass locally (`--club=w3usr`).
 - **Human Review Status**: Pending review
@@ -5445,7 +5445,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 15:40 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 294 (SK): My schedule and My messages stayed readable offline after sign-out, from the service worker's cache.
+- **Session Purpose**: SK: My schedule and My messages stayed readable offline after sign-out, from the service worker's cache.
 - **Sections/Files Affected**: static/sw.js (a "signed-out" message deletes the offline pages, query strings included; a redirected response, which is the sign-in page, is not kept as the member's page); static/js/app.js (a signed-out page, `<main class="plain">`, sends the message); tools/a11y/test_offline_sign_out.py (new: signed in, both pages are cached; after Sign out both are gone, and offline neither shows the member's callsign).
 - **Nature of Contribution**: Code generation and a browser test. A first version of the test waited with async predicates that Playwright did not await, so it passed vacuously on its waits; replaced with a loop that awaits the cache check. Verified: the test fails against the old scripts ("signing out removes both": [True, True]) and passes against the new in Chromium and WebKit (Firefox cannot launch on this machine; CI runs it); tools/check.sh quick passes but for the signed-PDF test, which needs Homebrew's libraries.
 - **Human Review Status**: Pending review
@@ -5453,7 +5453,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 15:43 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 331 (SK): edge cases in re-time, split and merge (A23).
+- **Session Purpose**: SK: Edge cases in re-time, split and merge (A23).
 - **Sections/Files Affected**: apps/events/views_slots.py (re-time refuses a start that has already begun); apps/events/services/reshape.py (merging someone who is in both slots keeps a responsible adult named only on the later sign-up, and the audit row counts them); apps/events/tests/test_slot_reshape.py (the two cases, and the refusals that had no test: a started slot, a no-show, a completed or canceled event, each refusing re-time, split and merge).
 - **Nature of Contribution**: Code generation and tests. The tracker's second case (a merge across two touching periods) no longer arises: the on-air hours are stored merged, so touching ranges are one, and `held_only_by` is gone. Verified: the two new tests fail against the old code and the four refusal cases pass on both; the application tests (687) pass.
 - **Human Review Status**: Pending review
@@ -5461,7 +5461,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 16:00 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 312 (SK): FR-113's check-in window, "configurable per event", came only from the club setting, and its refusal always said 30 minutes, even after the slot had ended.
+- **Session Purpose**: SK: FR-113's check-in window, "configurable per event", came only from the club setting, and its refusal always said 30 minutes, even after the slot had ended.
 - **Sections/Files Affected**: apps/events/models.py and migration events/0015 (`Event.checkin_opens_minutes_before`, empty follows the club); apps/events/views_manage.py (the details form shows the club's value filled in and tagged Club default, as the reminder does, and stores nothing while it holds it; the Details step lists it); apps/events/services/viability.py (`checkin_opens()`: the event's minutes or the club's, 0 meaning at the start); apps/events/views.py (the refusal names the time check-in opens, or says the slot has ended); apps/events/services/manage.py (a duplicate copies it); apps/ops/views_settings.py (the setting's description: an event may set its own); apps/events/tests/test_defaults_shown.py (new test).
 - **Nature of Contribution**: Code generation and tests. Verified: the new test's refusal assertion fails against the old view; the application tests (688) pass; the migration check passes; scenarios T11 to T14 and T17 pass locally with T17's refusal check updated in the private repository.
 - **Human Review Status**: Pending review
@@ -5469,7 +5469,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 16:08 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 303 (SK): FR-25's approver could not set an agreement's expiry, and the thirty-day window for reversing a decline was only a hidden button.
+- **Session Purpose**: SK: FR-25's approver could not set an agreement's expiry, and the thirty-day window for reversing a decline was only a hidden button.
 - **Sections/Files Affected**: apps/credentials/views.py (the queue's rows and reversible declines carry the default expiry; `decide` takes `expires_on`, refuses a date of today or earlier, and refuses to reverse a decline older than `DECLINED_WINDOW_DAYS`); templates/credentials/_expiry_field.html (new: Access expires, filled in with the default and tagged Club default through the existing data-default script); templates/credentials/approvals.html (the field in the Approve form and in the reversal dialog); apps/credentials/tests/test_phase4.py (new test).
 - **Nature of Contribution**: Code generation and a test. Verified: the new test fails against the old view and template; the application tests (689) pass; the Chromium accessibility sweep passes; screenshots of the queue at 1280 and 390 px read well, and Approve and Decline stack at 1280 as they did before; scenarios T08, T22, T29, T33, T40 and T52 pass locally, with T08's dialog-label locator narrowed in the private repository.
 - **Human Review Status**: Pending review
@@ -5493,7 +5493,7 @@ carries the actual running model ID.
 
 ## [2026-11-24 16:52 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Private tracker 333, decided by SK: a captain sees the contacts of the people on their own event, as FR-67 and §2.1's matrix say, governed by the capability that until now did nothing.
+- **Session Purpose**: Decided by SK: a captain sees the contacts of the people on their own event, as FR-67 and §2.1's matrix say, governed by the capability that until now did nothing.
 - **Sections/Files Affected**: apps/events/views_slots.py (`sees_contacts`: the level holds view_participant_contacts, or the viewer captains this event); templates/events/_slot_body.html (each person's email and phone, as links, beneath their name, for those viewers); apps/events/tests/test_roster.py (new test: a member-level captain sees them once made captain, an officer through the capability, an ordinary member and another event's captain do not); docs/REQUIREMENTS.md (functional addendum A45; the body unchanged).
 - **Nature of Contribution**: Code generation, a test, and a draft. Verified: the new test fails against the old view and template; the application tests (690) pass; djLint lint and format clean; scenario T26, with a new check in the private repository, passes locally.
 - **Human Review Status**: Pending review
@@ -5509,7 +5509,7 @@ carries the actual running model ID.
 
 ## [2026-11-25 11:31 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
-- **Session Purpose**: Record TR-30's measured memory for a scheduled job and SK's decision to hold jobs to a 400 MB soft limit (private tracker 343).
+- **Session Purpose**: Record TR-30's measured memory for a scheduled job and SK's decision to hold jobs to a 400 MB soft limit.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (technical addendum A21; the drafting line; the body unchanged).
 - **Nature of Contribution**: Draft. Verified: the figures against the job's own memory reports on the development server (the weekly import at 576 MB unlimited, and at 400 MB with 218 MB in swap and 14 minutes under the limit) and against the measurements already recorded privately for production; no host name, address or server path in the entry.
 - **Human Review Status**: Pending review
@@ -5562,3 +5562,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit. Verified: no "tracker" followed by a number and no "private tracker" left in docs, code or the README; the guard passes, and refuses a test line in docs/ and a reference split across two comment lines; each rewritten sentence read in its paragraph. This log's own earlier entries, which name tracker numbers, were left as they are.
 - **Human Review Status**: Pending review
 - **Git Hash**: 32bbbfd
+
+## [2026-11-25 13:16 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: SK: this log, which is public, cites no number from the club's private issue tracker either. Every such reference in earlier entries taken out; what each entry records as done is unchanged.
+- **Sections/Files Affected**: ai/ai_usage_log.md (138 lines in 116 earlier entries: "private tracker" with a number, bare issue numbers, the private repository's name before a number, and numbers used as labels; sentences that opened on a number now open on their subject, and the few that read badly without it were reworded). Kept: ARCOps' own pull request numbers and the acceptance scenarios' labels.
+- **Nature of Contribution**: Edit, by script and then by hand. Verified: every changed line read in its finished form; the same line count as before; no private issue number left (a CSS color and a test count, which look like one, checked and kept). The map from each entry to the issues it cited is kept in the club's private records.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]
