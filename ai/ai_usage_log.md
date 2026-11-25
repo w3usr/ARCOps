@@ -5601,4 +5601,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: config/settings/base.py (`ACCOUNT_REAUTHENTICATION_METHODS`: a password and a second factor, no mailed code); apps/accounts/tests/test_reauthenticate.py (Confirm Access offers no code by mail); docs/TECHNICAL_REQUIREMENTS.md (technical addendum A27).
 - **Nature of Contribution**: Analysis, a configuration edit, a test and a draft. Verified: the new test fails without the setting and passes with it; `tools/check.sh quick` all clear. The screenshot that showed the mailed-code button read; the library's default list of methods read in its source.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 3fb1275
