@@ -5593,4 +5593,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: static/js/richtext-check.js (each editor's iframe takes its title from the field's own label; the warning, made when the editor starts, is a `role="status"` region); tools/a11y/test_heading_note.py (the iframe named by its label, the note a status region before anything is typed); docs/ACCESSIBILITY_WALK.md (row 10 checks the name too).
 - **Nature of Contribution**: Code edit, a test and a doc edit. Verified: the browser test fails against the old script ("named 'Rich Text Area', not its label 'Description'") and passes with the new one in Chromium and WebKit; the accessibility sweep 102 passed, 8 skipped; `tools/check.sh quick` all clear. Not heard with a screen reader; Firefox is CI's to confirm.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: c3fe12b
