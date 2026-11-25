@@ -1,4 +1,5 @@
-"""The rich-text editor says so when a heading level is skipped (FR-115).
+"""The rich-text editor says so when a heading level is skipped (FR-115), and a screen reader
+hears it and the editor's own name (FR-116).
 
 The editors are started by django-tinymce's script, which runs before static/js/richtext-check.js,
 so the check's listener for newly added editors heard none of them. Measured in a real browser,
@@ -18,6 +19,9 @@ def test_a_skipped_heading_level_is_noted_beneath_the_editor(live_server, engine
         sign_in(page, live_server.url, ACCOUNTS["officer"])
         page.goto(f"{live_server.url}/events/new/")
         page.wait_for_function(READY)
+        label = page.locator("label[for=id_description_html]").inner_text().strip()
+        iframe_title = page.locator("#id_description_html_ifr").get_attribute("title")
+        role_before = page.locator(".heading-note").first.get_attribute("role")
         set_content = "html => tinymce.get('id_description_html').setContent(html)"
         page.evaluate(set_content, "<h1>One</h1><h3>Three</h3>")
         skipped = page.locator(".heading-note").first.inner_text()
@@ -29,3 +33,7 @@ def test_a_skipped_heading_level_is_noted_beneath_the_editor(live_server, engine
         "Heading 1 straight to Heading 3 is noted"
     )
     assert in_order == "", "and the note clears once the levels are in order"
+    assert iframe_title == label, (
+        f"the editing area is named {iframe_title!r}, not its label {label!r}"
+    )
+    assert role_before == "status", "the note is a status region before anything is typed (FR-116)"

@@ -5586,3 +5586,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis, code edits and a draft. Verified with every merged version installed locally (allauth 65.22.1, tinymce 5.0.0, gunicorn 27.0.1, django-ninja 1.8.0, django-stubs 6.1.2, djLint 1.54.0, ruff 0.17.6, pytest 9.2.0, Playwright 1.65.2): `tools/check.sh quick` all clear (718 application tests; mypy clean; service layer 96 %); the accessibility sweep 102 passed and 8 skipped in Chromium and WebKit, the editor's pages among them. Firefox is CI's to confirm.
 - **Human Review Status**: Pending review
 - **Git Hash**: a55cd65
+
+## [2026-11-25 15:42 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-116 for the rich-text editor: a screen reader heard its editing area as "Rich Text Area", whatever the field (two on a location's page, both alike), and the skipped-heading warning appeared without being announced.
+- **Sections/Files Affected**: static/js/richtext-check.js (each editor's iframe takes its title from the field's own label; the warning, made when the editor starts, is a `role="status"` region); tools/a11y/test_heading_note.py (the iframe named by its label, the note a status region before anything is typed); docs/ACCESSIBILITY_WALK.md (row 10 checks the name too).
+- **Nature of Contribution**: Code edit, a test and a doc edit. Verified: the browser test fails against the old script ("named 'Rich Text Area', not its label 'Description'") and passes with the new one in Chromium and WebKit; the accessibility sweep 102 passed, 8 skipped; `tools/check.sh quick` all clear. Not heard with a screen reader; Firefox is CI's to confirm.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

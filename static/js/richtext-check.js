@@ -15,17 +15,30 @@
     const el = ed.getElement();
     let note = el.parentNode.querySelector(".heading-note");
     if (!note) {
+      // Made when the editor starts, empty, so a screen reader hears it when it is filled.
       note = document.createElement("p");
       note.className = "helptext heading-note";
+      note.setAttribute("role", "status");
       el.parentNode.appendChild(note);
     }
     note.textContent = skipped
       ? "A heading level is skipped (for example Heading 1 straight to Heading 3). Screen readers follow the levels; keep them in order."
       : "";
   }
+  // FR-116: the editing area is named by the field's own label, not the library's "Rich Text
+  // Area", so two editors on one page are told apart.
+  function name(ed) {
+    const label = document.querySelector(`label[for="${ed.id}"]`);
+    if (label && ed.iframeElement)
+      ed.iframeElement.title = label.textContent.trim();
+  }
   function watch(ed) {
+    ed.on("init", () => name(ed));
     ed.on("init change keyup SetContent", () => check(ed));
-    if (ed.initialized) check(ed);
+    if (ed.initialized) {
+      name(ed);
+      check(ed);
+    }
   }
   function arm() {
     if (!window.tinymce) return;

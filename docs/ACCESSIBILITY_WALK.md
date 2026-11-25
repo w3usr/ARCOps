@@ -37,7 +37,7 @@ anyone else's (FR-117).
 | 7 | Sign an agreement | The agreement text reads in order with its headings; the typed-name field, the affirmation checkbox, and the Sign button are labelled; the outcome is announced |
 | 8 | View the computer password | The reveal control is a button; the revealed password is read once and the copy control is announced |
 | 9 | Messages | My messages reads as a list; unread state is read as text; the message body's headings are in order |
-| 10 | Rich text (FR-115) | The editor (event description, announcement) is reachable and editable by keyboard; the toolbar is a toolbar with named buttons; the heading-order warning is announced |
+| 10 | Rich text (FR-115) | The editor (event description, announcement) is reachable and editable by keyboard; the editing area is announced by its field's label (Description), not "Rich Text Area"; the toolbar is a toolbar with named buttons; the heading-order warning is announced |
 
 ## Record
 
