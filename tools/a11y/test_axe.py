@@ -28,6 +28,71 @@ DISABLED_RULES = {
 }
 
 
+def anonymous_pages() -> list[tuple[str, int]]:
+    """The pages a person reaches signed out, most of them from a link in a message, each with
+    the status it should answer: a live link's page, and the page its dead or spent link shows."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.accounts import addresses, entry
+    from apps.accounts.models import EntryLink, Invitation, User
+    from apps.comms import announce
+    from apps.events.models import SignUp
+    from apps.events.services import notify
+
+    ada = User.objects.by_address("ada@example.org").get()
+    member = User.objects.by_address("cy@example.org").get()
+    former = User.objects.by_address("gus@example.org").get()
+    class_link = EntryLink.objects.filter(kind=EntryLink.Kind.CLASS).first()
+    community = entry.create_link(
+        ada,
+        label="Field Day visitors",
+        kind=EntryLink.Kind.COMMUNITY,
+        expires_at=timezone.now() + timedelta(days=30),
+    )
+    invitation = Invitation.objects.create(
+        email="new.member@example.org",
+        category="student",
+        issued_by=ada,
+        expires_at=timezone.now() + timedelta(days=14),
+    )
+    expired_link = entry.create_link(
+        ada, label="Last year's visitors", kind=EntryLink.Kind.COMMUNITY, expires_at=timezone.now()
+    )
+    expired_invitation = Invitation.objects.create(
+        email="late.member@example.org",
+        category="student",
+        issued_by=ada,
+        expires_at=timezone.now() - timedelta(days=1),
+    )
+    su = SignUp.objects.filter(user=member).first()
+    return [
+        ("/accounts/login/", 200),
+        ("/privacy/", 200),
+        ("/accounts/password/reset/", 200),
+        (f"/join/{class_link.token}/form/", 200),
+        (f"/mentors/{community.token}/", 200),
+        (f"/me/invite/{invitation.token}/", 200),
+        (f"/join/return/{entry.return_token(former, class_link)}/", 200),
+        (f"/verify/{entry.verification_token(member)}/", 200),
+        (f"/verify-address/{addresses.token(member, member.email)}/", 200),
+        (f"/events/confirm/{notify.confirm_token(su)}/", 200),
+        (f"/events/cannot/{notify.confirm_token(su, 'cannot')}/", 200),
+        (f"/unsubscribe/{announce.unsubscribe_token(member)}/", 200),
+        # The same pages from a link that no longer works.
+        (f"/join/{expired_link.token}/form/", 410),
+        (f"/mentors/{expired_link.token}/", 410),
+        (f"/me/invite/{expired_invitation.token}/", 410),
+        ("/join/return/not-a-link/", 410),
+        ("/verify/not-a-link/", 410),
+        ("/verify-address/not-a-link/", 410),
+        ("/events/confirm/not-a-link/", 410),
+        ("/unsubscribe/not-a-link/", 410),
+        ("/no-such-page/", 404),
+    ]
+
+
 def pages_for(role: str) -> list[str]:
     """Every distinct page a person of this role can reach, from the demo data."""
     from apps.accounts.models import User
@@ -204,11 +269,9 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, engine, role):
 
     base = live_server.url
     email = ACCOUNTS[role]
-    urls = (
-        ["/accounts/login/", "/privacy/", "/accounts/password/reset/"]
-        if email is None
-        else pages_for(role)
-    )
+    # A refusal page is still a page someone reads (the computer password for a member without
+    # IT access, for instance); a missing page is a broken list.
+    urls = anonymous_pages() if email is None else [(u, (200, 403)) for u in pages_for(role)]
     failures: list[str] = []
     with sync_playwright() as p:
         browser = getattr(p, engine).launch()
@@ -217,13 +280,11 @@ def test_every_page_passes_axe_and_fits_a_phone(live_server, engine, role):
             page = ctx.new_page()
             if email:
                 sign_in(page, base, email, raise_level=role == "sysadmin")
-            for url in urls:
+            for url, want in urls:
                 r = page.goto(f"{base}{url}")
-                # A refusal page is still a page someone reads (the computer password for a
-                # member without IT access, for instance); a missing page is a broken list.
-                assert r is not None and r.status in (200, 403), (
-                    f"{url} answered {r.status if r else 'nothing'} for {role}"
-                )
+                assert r is not None and r.status in (
+                    want if isinstance(want, tuple) else (want,)
+                ), f"{url} answered {r.status if r else 'nothing'} for {role}, not {want}"
                 page.wait_for_load_state("networkidle")
                 # At either width: the officer's directory fit a phone, where tables stack, and
                 # scrolled sideways at 1280px.

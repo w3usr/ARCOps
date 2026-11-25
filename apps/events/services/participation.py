@@ -19,7 +19,7 @@ def participation(event: Event) -> dict:
         .prefetch_related("signups__user", "signups__user__license", "signups__responsible_adults")
         .order_by("start")
     )
-    people = {}
+    people: dict = {}
     first_timers = set()
     for s in slots:
         for su in s.signups.all():

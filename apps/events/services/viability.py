@@ -229,7 +229,8 @@ def checkin_window_open(slot, now) -> bool:
 def checkin_ready(signups, now) -> list:
     """The sign-ups (in start order) to offer Check in for now: inside the window, not checked in,
     and not a later slot of a run an earlier one checks in with the same tap (A42)."""
-    ready, covered = [], set()
+    ready: list = []
+    covered: set = set()
     for s in signups:
         if s.pk in covered or s.checked_in_at or not checkin_window_open(s.slot, now):
             continue

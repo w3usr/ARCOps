@@ -62,7 +62,7 @@ def create_invitation(
         expires_at=timezone.now() + timedelta(days=days),
     )
     record(issuer, "invitation.created", inv, after={"email": inv.email, "category": category})
-    inv.superseded = superseded  # for the page to say so; not a stored field
+    inv.superseded = superseded  # type: ignore[attr-defined]  # for the page to say so; not a stored field
     from django.conf import settings as dj
 
     from apps.comms.services import send

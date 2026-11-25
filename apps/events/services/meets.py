@@ -105,7 +105,7 @@ def parse(text: str) -> tuple[dict, str]:
         h, m = int(at.group(4)), int(at.group(5))
     if h > 23 or m > 59:
         return {}, text
-    fields = {"meets_at": time(h, m)}
+    fields: dict[str, object] = {"meets_at": time(h, m)}
     used = [at]
     if day:
         weekday = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].index(day.group(1)[:3])

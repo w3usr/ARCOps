@@ -2,6 +2,11 @@
 pytest==9.1.1
 pytest-django==4.14.0
 pytest-xdist==3.8.0  # the suites are independent; -n runs them across cores
+pytest-cov==7.1.0  # coverage on every run; the service layer's floor is 80 % (TR-35)
+factory-boy==3.3.3  # model factories for tests (TR-35)
 ruff==0.16.7
 djlint==1.49.10
+mypy==2.4.1  # the service layer's types, non-strict (TR-37, technical A22)
+django-stubs==5.2.9
+pre-commit==4.7.0  # runs tools/check.sh quick before a commit (TR-37)
 playwright==1.63.0   # accessibility check (TR-36); `playwright install chromium` fetches the browser

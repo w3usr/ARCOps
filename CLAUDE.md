@@ -91,11 +91,11 @@ best you can"), against the decided stack in `docs/TECHNICAL_REQUIREMENTS.md`. L
 (settings, urls, generic club defaults), `apps/{ops,accounts,credentials,events,comms}/` each with
 models, services, views, and tests, `templates/`, `static/`.
 
-**Before committing, run `tools/check.sh`**: lint, format, the four repository guards, the
+**Before committing, run `tools/check.sh`**: lint, format, the four repository guards, types on the service layer (mypy), coverage, the
 migration check, the application tests and the accessibility sweep. It is everything CI runs
 and takes about two minutes, because both suites fan out across cores (`pytest-xdist`) and run at
 the same time as each other. `tools/check.sh quick` skips the browser and takes about twenty
-seconds. While iterating on one page, `pytest tools/a11y -k sysadmin` checks a single role in
+seconds. `pre-commit install`, once per clone, runs the quick check before every commit. While iterating on one page, `pytest tools/a11y -k sysadmin` checks a single role in
 about ninety seconds instead of all eight.
 
 Anything that changes a page follows [`docs/INTERFACE.md`](docs/INTERFACE.md): plain nouns for

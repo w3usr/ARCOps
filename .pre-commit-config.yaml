@@ -1,0 +1,12 @@
+# Before each commit, the quick half of tools/check.sh (lint, format, guards, types, the
+# application tests and the coverage floor; about thirty seconds). `pre-commit install` once per
+# clone. The full check, with the accessibility sweep, stays a deliberate run before a push.
+repos:
+  - repo: local
+    hooks:
+      - id: check-quick
+        name: tools/check.sh quick
+        entry: bash tools/check.sh quick
+        language: system
+        pass_filenames: false
+        always_run: true

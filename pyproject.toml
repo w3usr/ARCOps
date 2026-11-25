@@ -31,3 +31,20 @@ python_files = ["test_*.py"]
 testpaths = ["apps"]
 addopts = "-q"
 markers = ["contact_sheet: writes screenshots for review by eye, not part of the build"]
+
+# Types on the service layer (TR-37), non-strict to start (technical addendum A22): Django's own
+# types from django-stubs, and a value that may be None is not yet an error.
+[tool.mypy]
+files = ["apps/accounts/services.py", "apps/comms/services.py", "apps/credentials/services.py", "apps/events/services"]
+plugins = ["mypy_django_plugin.main"]
+ignore_missing_imports = true
+follow_imports = "silent"
+strict_optional = false
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+# Coverage measured on every run (TR-35); tools/check.sh and CI hold the service layer at 80 %.
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/tests/*", "*/migrations/*", "apps/factories.py"]

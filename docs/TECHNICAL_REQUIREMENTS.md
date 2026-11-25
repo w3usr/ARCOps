@@ -1074,7 +1074,57 @@ reads and writes, which the limit drops first. Its first runs under the limit ar
 
 **Decided by** SK on 2026-11-25, taking up private tracker 343.
 
+### A22. TR-35, TR-37: coverage, types, the commit hook and factories
+
+**Original.** TR-35: "factories for the models, coverage measured and reported; the service layer
+(TR-8) at or above 80 % line coverage". TR-37: "`ruff` (lint and format) and `djlint` for
+templates, run by pre-commit locally and by CI. Type hints on the service layer, checked with
+`mypy` in non-strict mode." Until now only ruff and djLint (A19, A20) were in place.
+
+**Decision.**
+- **Coverage is measured on every run** (`pytest-cov`), and `tools/check.sh` and CI fail when the
+  service layer, TR-8's `services` modules of each domain, falls below 80 %. At adoption it stood
+  at 96 %, and the application as a whole at 93 %. Tests, migrations and the factories are not
+  counted.
+- **mypy checks the service layer** in `tools/check.sh` and CI, with `django-stubs` for Django's own
+  types. Non-strict, as TR-37 says, and one step further for a start: a value that may be `None`
+  is not yet an error (`strict_optional = false`), since a nullable field would otherwise need a
+  guard at each use. The eleven findings at adoption were missing annotations and one dictionary
+  typed too narrowly; none was a defect.
+- **pre-commit runs `tools/check.sh quick`** before each commit, once `pre-commit install` has been
+  run in a clone. The full check, with the accessibility sweep, stays a deliberate run before a
+  push, and CI runs everything.
+- **Factories** (`factory_boy`) for the models a test most often builds: accounts, invitations and
+  entry links, and an event down to its slots, sign-ups, waitlist and captains
+  (`apps/factories.py`). A sign-up made by a factory makes everything it stands on. The tests
+  written before keep their own helpers and fixtures; a new test may use either.
+
+**Decided by** SK on 2026-11-25.
+
+### A23. TR-26: timestamps where something reads them
+
+**Original (TR-26).** "Every table has `created`/`updated` timestamps." One table, `Event`, has both.
+
+**Decision.** Not every table. Every change a person makes is already in the append-only audit log
+(TR-21) with who made it, when, and what it was before and after, which an `updated` column would
+only half say; an import or log table has no meaningful `updated` at all. A table gains
+`created` or `updated` when a page shows it or a rule needs it, with the migration that adds it.
+
+**Decided by** SK on 2026-11-25.
+
+### A24. TR-39: the requirement in the commit message
+
+**Original (TR-39).** "The requirement ID it implements is in the commit message."
+
+**Decision.** A commit that implements something new names what it implements: the FR, the TR, or
+the addendum entry. A fix, a test or a chore needs no identifier. Commits here do not cite the
+club's own issue tracker: this history is public and points only to public records, and a change is
+traced back to the report behind it through the club's own tracker and AI usage log, which stay
+with the club.
+
+**Decided by** SK on 2026-11-25.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A24), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

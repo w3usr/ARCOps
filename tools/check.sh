@@ -13,6 +13,11 @@ cd "$(dirname "$0")/.."
 PY=.venv/bin
 QUICK="${1:-}"
 fail=0
+# WeasyPrint finds Homebrew's libraries on a Mac only through this variable, and macOS drops it
+# when a script runs under /bin/bash, so it is set here rather than in the caller's shell.
+if [[ "$(uname)" == Darwin && -d /opt/homebrew/lib ]]; then
+    export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-/opt/homebrew/lib}"
+fi
 
 step() { printf '\n\033[1;35m==> %s\033[0m\n' "$1"; }
 
@@ -31,15 +36,18 @@ done
 step "The club's own words for a dependency's strings"
 $PY/python manage.py compile_locale --settings=config.settings.test || fail=1
 
+step "Types on the service layer (mypy, non-strict; technical addendum A22)"
+$PY/mypy || fail=1
+
 step "Migrations are in step with the models"
 $PY/python manage.py makemigrations --check --dry-run --settings=config.settings.test || fail=1
 
 if [[ "$QUICK" == "quick" ]]; then
     step "Application tests"
-    $PY/python -m pytest apps -q -p no:warnings -n auto || fail=1
+    $PY/python -m pytest apps -q -p no:warnings -n auto --cov --cov-report= || fail=1
 else
     step "Application tests and the accessibility sweep, together"
-    $PY/python -m pytest apps -q -p no:warnings -n auto > /tmp/arcops-apps.$$ 2>&1 &
+    $PY/python -m pytest apps -q -p no:warnings -n auto --cov --cov-report= > /tmp/arcops-apps.$$ 2>&1 &
     apps=$!
     $PY/python -m pytest tools/a11y -q -p no:warnings -n auto > /tmp/arcops-a11y.$$ 2>&1 &
     a11y=$!
@@ -48,6 +56,10 @@ else
     wait $a11y || fail=1
     tail -3 "/tmp/arcops-a11y.$$"; rm -f "/tmp/arcops-a11y.$$"
 fi
+
+step "Coverage: the service layer at 80 % or more (TR-35)"
+$PY/coverage report --include='apps/*/services.py,apps/*/services/*.py' --fail-under=80 | tail -1 || fail=1
+$PY/coverage report | tail -1
 
 if (( fail )); then printf '\n\033[1;31msomething failed\033[0m\n'; exit 1; fi
 printf '\n\033[1;32mall clear\033[0m\n'

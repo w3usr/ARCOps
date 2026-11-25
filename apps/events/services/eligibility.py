@@ -18,7 +18,9 @@ def club_default_rule(role: str) -> dict:
     rule takes: a role marked requires_license needs a valid license of any class, which a rule
     states as the license among its required credentials. The rules form starts from this, and
     a rule saved equal to it is not stored, so the event follows the club."""
-    cfg = next((r for r in (setting("slot_roles", []) or []) if r.get("key") == role), {}) or {}
+    cfg: dict = (
+        next((r for r in (setting("slot_roles", []) or []) if r.get("key") == role), {}) or {}
+    )
     return {
         "categories": [],
         "min_license_class": "",

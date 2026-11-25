@@ -1,0 +1,15 @@
+# Weekly version updates (TR-24). Security updates are on in the repository's settings and arrive
+# whenever an advisory is published, whatever this schedule says.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-tools:
+        patterns: [pytest*, ruff, djlint, playwright, mypy, coverage, factory-boy, pre-commit, django-stubs*]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

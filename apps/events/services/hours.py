@@ -18,7 +18,8 @@ def course_report(label: str) -> dict:
         .select_related("user", "slot", "slot__position", "slot__position__location__event")
         .order_by("user__last_name", "user__first_name", "slot__start")
     )
-    rows, totals = [], {}
+    rows: list = []
+    totals: dict = {}
     for su in signups:
         h = credited_hours(su)
         rows.append({"signup": su, "hours": h})
