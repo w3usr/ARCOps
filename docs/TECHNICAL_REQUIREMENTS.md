@@ -1050,7 +1050,28 @@ pages drew.
 
 **Decided by** SK on 2026-11-24, taking up private tracker 363.
 
+### A21. TR-30: a scheduled job's memory, measured, and held to 400 MB
+
+**Original (TR-30).** "A scheduled job while running: ~60–100 MB, transient", among estimates "to
+be measured in the first week and recorded".
+
+**Measured.**
+- **The daily jobs** fit the estimate: the daily FCC file imports at about 100 MB.
+- **The weekly complete FCC file does not** (TR-13): 558 MB when first imported, 623 to 627 MB at
+  its peak on production on 2026-11-03, and 576 MB on the development server on 2026-11-23, in
+  about fifteen minutes. With the web application near 300 MB, that is about 930 MB of the
+  Nanode's 956 MB, and the import touched swap. No out-of-memory kill is recorded.
+
+**Decision.** A scheduled job runs under a soft memory limit of **400 MB** (systemd `MemoryHigh`).
+Above it the kernel reclaims the job's own memory into swap, so the job is slowed rather than the
+web workers squeezed. A hard limit was not chosen: it would kill the import instead of slowing it.
+Tried on the development server on 2026-11-25 with the weekly file: 14 minutes against 15
+without the limit, 400 MB peak, 218 MB in swap. The weekly import is the one job that reaches the
+limit; the swap it fills is free again when it ends.
+
+**Decided by** SK on 2026-11-25, taking up private tracker 343.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19) and 2026-11-24 (A20), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

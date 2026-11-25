@@ -5506,3 +5506,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Research summary, code edit and doc edit. Verified: screenshots of sign-in at 1280 and 390 px and in the dark theme read well; the application tests in test_shell and test_phase4 pass; the accessibility sweep passes in Chromium and WebKit (102 passed, 8 skipped), the join-pages layout test among it; djLint and check_interface clean. Firefox does not launch on this machine and is CI's to confirm. The join and invitation forms were not looked at by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: 53ceb0f
+
+## [2026-11-25 11:31 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Record TR-30's measured memory for a scheduled job and SK's decision to hold jobs to a 400 MB soft limit (private tracker 343).
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (technical addendum A21; the drafting line; the body unchanged).
+- **Nature of Contribution**: Draft. Verified: the figures against the job's own memory reports on the development server (the weekly import at 576 MB unlimited, and at 400 MB with 218 MB in swap and 14 minutes under the limit) and against the measurements already recorded privately for production; no host name, address or server path in the entry.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]
