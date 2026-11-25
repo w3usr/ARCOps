@@ -5529,4 +5529,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A21's last sentence replaced by the backup's measured peaks; "How it grows"); docs/REQUIREMENTS.md ("How it grows"). Neither body above the addenda changed.
 - **Nature of Contribution**: Edit. Verified: the backup's figures against its own memory reports on the production server for 22 to 25 November (353 to 515 MB peak, about 32 s); no host name, address or server path in the text.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 88349c4
