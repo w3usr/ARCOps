@@ -5513,4 +5513,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (technical addendum A21; the drafting line; the body unchanged).
 - **Nature of Contribution**: Draft. Verified: the figures against the job's own memory reports on the development server (the weekly import at 576 MB unlimited, and at 400 MB with 218 MB in swap and 14 minutes under the limit) and against the measurements already recorded privately for production; no host name, address or server path in the entry.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 8769fa2
