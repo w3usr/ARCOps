@@ -519,3 +519,21 @@ def test_a_minor_s_password_reset_reaches_the_guardian_and_is_filed_without_its_
     assert set(filed.to_addresses) == {"kid@example.org", "parent@example.org"}
     assert "/accounts/password/reset/key/" not in filed.body_html + filed.body_text
     assert "/accounts/password/reset/key/" in sent.body  # the mail itself still works
+
+
+def test_a_guardian_resets_their_minor_s_password_and_nobody_else_can():
+    """§2.4: from the guardian's own account, as FR-7; the new password works and is shown once."""
+    from apps import factories as f
+
+    link = f.GuardianshipFactory()
+    minor, guardian = link.minor, link.guardian
+    c = Client()
+    c.force_login(guardian)
+    r = c.post(f"/me/wards/{minor.pk}/password/")
+    assert r.status_code == 200
+    minor.refresh_from_db()
+    shown = r.context["password"]
+    assert shown in r.content.decode() and minor.check_password(shown)
+    stranger = Client()
+    stranger.force_login(f.UserFactory())
+    assert stranger.post(f"/me/wards/{minor.pk}/password/").status_code == 404

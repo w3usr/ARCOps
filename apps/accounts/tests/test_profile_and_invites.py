@@ -98,3 +98,47 @@ def test_forced_password_change_lands_on_home_and_a_voluntary_one_on_the_profile
         },
     )
     assert r["Location"] == "/me/"
+
+
+def test_a_new_invitation_shows_its_link_and_a_ready_text_each_with_a_copy_button():
+    """FR-104: the officer can pass the invitation on themselves, by link or by text."""
+    c = Client()
+    c.force_login(_officer())
+    body = c.post(
+        "/me/invitations/", {"email": "new@example.org", "category": "student"}
+    ).content.decode()
+    inv = Invitation.objects.get(email="new@example.org")
+    link = f"/me/invite/{inv.token}/"
+    assert 'id="lnk" readonly value="' in body and link in body
+    text = body[body.index('id="txt"') : body.index("</textarea>", body.index('id="txt"'))]
+    assert link in text
+    assert 'data-copy="#lnk"' in body and 'data-copy="#txt"' in body
+
+
+def test_the_push_test_button_says_why_nothing_was_sent_or_how_many_devices_got_it(monkeypatch):
+    """FR-112: a test notification, sent now, so a member can see whether they arrive."""
+    from apps import factories as f
+    from apps.accounts.models import PushSubscription
+    from apps.comms import push
+
+    u = f.UserFactory()
+    c = Client()
+    c.force_login(u)
+
+    def said():
+        r = c.post("/me/push/test/", follow=True)
+        return [str(m) for m in r.context["messages"]]
+
+    monkeypatch.setattr(push, "configured", lambda: False)
+    assert said() == ["Browser notifications are not set up on this site yet."]
+    monkeypatch.setattr(push, "configured", lambda: True)
+    u.push_enabled = False
+    u.save(update_fields=["push_enabled"])
+    assert "are off for this account" in said()[0]
+    u.push_enabled = True
+    u.save(update_fields=["push_enabled"])
+    assert "No device has allowed notifications yet" in said()[0]
+    PushSubscription.objects.create(user=u, endpoint="https://push.example/1", p256dh="k", auth="a")
+    sent = []
+    monkeypatch.setattr(push, "send_push", lambda user, title, url: sent.append(title) or 1)
+    assert said()[0].startswith("Sent to 1 device.") and sent == ["Test notification"]

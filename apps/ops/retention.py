@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 
+from django.db.models import Q
 from django.utils import timezone
 
 from .audit import record
@@ -33,7 +34,12 @@ def apply(now=None) -> dict:
 
     # Guardian records: contact details go once the minor is converted or closed; the link stays.
     n = 0
-    for g in Guardianship.objects.filter(active=False).select_related("guardian", "minor"):
+    ended = Guardianship.objects.filter(active=False).filter(
+        Q(minor__under_18=False)
+        | Q(minor__closure_requested_at__isnull=False)
+        | Q(minor__deleted_at__isnull=False)
+    )
+    for g in ended.select_related("guardian", "minor"):
         if g.guardian.legal_hold or g.minor.legal_hold:
             continue
         if g.relationship != "":

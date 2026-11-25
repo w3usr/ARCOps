@@ -103,7 +103,8 @@ class UserAdmin(DjangoUserAdmin):
             },
         ),
     )
-    readonly_fields = ("date_joined", "public_id")
+    # Under 18 is changed only by the advisor's conversion, which ends the guardian links (FR-109).
+    readonly_fields = ("date_joined", "public_id", "under_18")
     inlines = (AddressInline,)
 
     @admin.display(description="Permission level")

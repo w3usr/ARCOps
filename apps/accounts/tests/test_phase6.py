@@ -291,3 +291,21 @@ def test_retention_keeps_member_records_and_agreements_and_sweeps_only_the_rest(
     # still swept: nothing here is a member's own record
     assert counts["invitations_deleted"] == 1
     assert AuditLog.objects.filter(action="retention.applied").exists()
+
+
+def test_an_ended_guardian_link_keeps_its_note_until_the_minor_is_converted_or_closed():
+    from apps.accounts.guardian import convert_to_adult
+    from apps.accounts.models import Guardianship
+
+    minor = _user("kid@example.org", "member", under_18=True)
+    advisor = _user("adv@example.org", "advisor")
+    link = Guardianship.objects.create(
+        minor=minor, guardian=_user("p@example.org"), relationship="parent", active=False
+    )
+    apply()
+    link.refresh_from_db()
+    assert link.relationship == "parent", "the minor is still a minor with an open account"
+    convert_to_adult(advisor, minor)
+    apply()
+    link.refresh_from_db()
+    assert link.relationship == ""

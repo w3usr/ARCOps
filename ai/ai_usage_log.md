@@ -5546,3 +5546,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. Verified: the four tests pass, among them a request to a token URL whose line names the route and not the token, and a signed-in request whose line carries the account id and neither name nor address; `tools/check.sh quick` all clear. Not yet seen in a server's journal.
 - **Human Review Status**: Pending review
 - **Git Hash**: 2cacb26
+
+## [2026-11-25 12:57 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The compliance review's small observations, each fixed, tested or decided (SK chose FR-5's and FR-34's).
+- **Sections/Files Affected**: apps/accounts/services.py (FR-5: a returning member takes the invitation's category); apps/credentials/services.py (FR-34: the rotation summary to whoever rotated and each sysadmin); apps/ops/retention.py (§4.3: an ended guardian link's note is cleared only once the minor is converted or closed); apps/credentials/admin.py (FR-21: a version's key, number, title and text read-only, none added in admin); apps/accounts/admin.py (FR-109: under 18 read-only in admin); tests: test_returning_members.py, test_phase4.py (rotation summary; the signed PDF tagged), test_phase6.py (the note kept until conversion), test_phase7.py (§2.4: a guardian resets their minor's password), test_profile_and_invites.py (FR-104: the invitation's link and text, each with a copy button; FR-112: the push test's four answers), apps/ops/tests/test_admin_readonly.py (new); docs/REQUIREMENTS.md (functional A46, FR-34); docs/TECHNICAL_REQUIREMENTS.md (technical A25: the addendum, not ADRs; no vapid_keys command). §5.9's UTC-first mail already had a test (test_roster.py).
+- **Nature of Contribution**: Code edits, tests and drafts. Verified: the FR-5, FR-34 and §4.3 tests fail against the old code and pass with the new; the tagged-PDF test fails with tagging off and passes with it on; the sysadmin query corrected from a group to superusers, which the new test caught; `tools/check.sh quick` all clear (coverage 96 % on the service layer, 94 % overall).
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

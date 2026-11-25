@@ -229,6 +229,8 @@ def admit_from_invitation(inv: Invitation, password: str, **profile) -> User:
     returning, _ = returning_account(address)
     if returning is not None:
         profile.pop("email", None)
+        # The category is the invitation's (FR-5): the officer set it for who they are now.
+        profile["category"] = inv.category
         user = bring_back(inv.issued_by or returning, returning, password, **profile)
         inv.state = Invitation.State.COMPLETED
         inv.completed_at = timezone.now()

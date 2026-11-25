@@ -3393,7 +3393,20 @@ neither. A minor's guardians and responsible adults stay as FR-64 has them.
 **Decided** by SK on 2026-11-24, taking up private tracker 333 ("yes captains see the
 participant's contact details"). *Record:* this addendum.
 
+### A46. FR-34: the rotation summary to whoever rotated and to every sysadmin
+
+**Original (FR-34).** "When the previous password's holders include people whose IT access has
+since expired, the rotation notice to the sysadmin lists them." Since FR-32's change of 2026-09-20
+an advisor rotates the password, and the summary went to whoever rotated it, so a sysadmin rarely
+saw it.
+
+**Decision.** The summary goes to whoever rotated the password and to every sysadmin, once each:
+the advisor sees what their rotation did, and the sysadmins, who act on it on the computers, see
+whom it cut off.
+
+**Decided** by SK on 2026-11-25. *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) and 2026-11-24 (A43 to A45), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) 2026-11-24 (A43 to A45) and 2026-11-25 (A46), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

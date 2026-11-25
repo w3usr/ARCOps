@@ -209,3 +209,23 @@ def test_a_bad_return_link_changes_nothing(people):
     assert Client().get("/join/return/not-a-token/").status_code == 410
     member.refresh_from_db()
     assert member.is_archived
+
+
+def test_a_returning_member_takes_the_category_the_new_invitation_sets(people):
+    officer, advisor, member = people
+    _left(advisor, member)
+    assert member.category != "community"
+    inv = create_invitation(officer, "rae@example.org", "community", False, "")
+    Client().post(
+        f"/me/invite/{inv.token}/",
+        {
+            "first_name": "Rae",
+            "last_name": "Turner",
+            "callsign": "",
+            "password1": NEW_PASSWORD,
+            "password2": NEW_PASSWORD,
+            "consent": "on",
+        },
+    )
+    member.refresh_from_db()
+    assert member.status == "active" and member.category == "community"

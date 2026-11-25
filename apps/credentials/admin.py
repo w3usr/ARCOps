@@ -34,7 +34,12 @@ class UlsLicenseAdmin(admin.ModelAdmin):
 @admin.register(AgreementTemplate)
 class AgreementTemplateAdmin(admin.ModelAdmin):
     list_display = ("key", "version", "title", "credential", "is_current", "effective_date")
-    readonly_fields = ("content_hash",)
+    # A version's words are what a member signed; a new version comes only from the club import
+    # (FR-21), so the admin shows them and cannot change or add them.
+    readonly_fields = ("key", "version", "title", "html", "content_hash")
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(SignedAgreement)

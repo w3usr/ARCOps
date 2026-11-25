@@ -540,17 +540,20 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
         for u in User.objects.filter(pk__in=previous_viewers)
         if not holds(u, "it_access", today)
     ]
-    send(
-        "password.rotation_summary",
-        actor,
-        "security",
-        {
-            "effective": effective_date,
-            "notified": len(current),
-            "cut_off": len(former),
-            "former": former,
-        },
-    )
+    # To whoever rotated it and to the sysadmins, who act on it on the computers (FR-34).
+    readers = {actor, *User.objects.filter(is_superuser=True, is_active=True)}
+    for reader in readers:
+        send(
+            "password.rotation_summary",
+            reader,
+            "security",
+            {
+                "effective": effective_date,
+                "notified": len(current),
+                "cut_off": len(former),
+                "former": former,
+            },
+        )
     return {"notified": len(current), "former": former}
 
 

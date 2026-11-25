@@ -1124,7 +1124,24 @@ with the club.
 
 **Decided by** SK on 2026-11-25.
 
+### A25. §8 and §9: this addendum, not ADRs; no `vapid_keys` command
+
+**Original.** §8: "Architecture decision records (`docs/adr/NNNN-title.md`) capture any later
+deviation from this document, with the TR it supersedes." §9: "push is disabled in dev unless a
+VAPID pair is generated with `manage.py vapid_keys`."
+
+**Decision.**
+- **This addendum is where a deviation is recorded**, with the TR it touches, and there is no
+  `docs/adr/`. One dated history beside the text it changes is read; a folder of records apart from
+  it was not kept.
+- **There is no `vapid_keys` command.** A server's deployment makes the key pair for browser
+  notifications on its first deploy and keeps it in the server's settings. On a laptop, push stays
+  off unless `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` are set by hand to an EC P-256 pair, which
+  the application tests do not need.
+
+**Decided by** SK on 2026-11-25.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A24), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A25), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

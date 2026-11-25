@@ -1227,3 +1227,52 @@ def test_one_source_says_which_domain_is_the_institutions():
     ClubSetting.objects.filter(key="trusted_email_domains").update(value=[])
     assert kind_for("cy@uni.example") == Address.Kind.INSTITUTION
     assert institution_address_ok("cy@uni.example") and institution_email_domain() == "uni.example"
+
+
+def test_the_rotation_summary_reaches_the_advisor_who_rotated_and_each_sysadmin_once(settings):
+    from cryptography.fernet import Fernet
+
+    from apps.credentials.services import rotate_shared_secret
+
+    settings.FIELD_ENCRYPTION_KEY = Fernet.generate_key().decode()
+    _setup()
+    advisor = _user("adv@example.org", "advisor", first_name="Ada", last_name="Visor")
+    sys1 = _user("s1@example.org", "sysadmin", first_name="Sy", last_name="One")
+    sys2 = _user("s2@example.org", "sysadmin", first_name="Sy", last_name="Two")
+    member = _user("m@example.org", first_name="Mo", last_name="M")
+    rotate_shared_secret(advisor, "c0rrect-horse", timezone.now().date())
+    summaries = Outbox.objects.filter(category="security", subject__contains="former holder")
+    assert sorted(o.user_id for o in summaries) == sorted([advisor.pk, sys1.pk, sys2.pk])
+    rotate_shared_secret(sys1, "battery-staple", timezone.now().date())
+    assert summaries.filter(user=sys1).count() == 2  # once per rotation, though sys1 rotated
+    assert not Outbox.objects.filter(user=member, subject__contains="former holder").exists()
+
+
+def _pdf_objects(pdf: bytes) -> bytes:
+    """The PDF's own bytes with every compressed stream inflated, so its objects can be read."""
+    import re
+    import zlib
+
+    out = [pdf]
+    for m in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", pdf, re.S):
+        try:
+            out.append(zlib.decompress(m.group(1)))
+        except zlib.error:
+            pass
+    return b"\n".join(out)
+
+
+def test_the_signed_pdf_is_tagged_for_a_screen_reader(settings, tmp_path):
+    """A signed agreement is read by people who use a screen reader too (FR-22): the PDF carries
+    its structure tree, its language, its title and the PDF/UA identifier."""
+    from apps.credentials.services import render_agreement_pdf
+
+    settings.MEDIA_ROOT = tmp_path
+    st, it, t_st, t_it = _setup()
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    c = Client()
+    c.force_login(mem)
+    c.post(f"/credentials/agreements/{t_st.pk}/sign/", {"affirm": "on", "signer_name": "Mo Member"})
+    objects = _pdf_objects(render_agreement_pdf(SignedAgreement.objects.get(user=mem)))
+    for marker in (b"/StructTreeRoot", b"/MarkInfo", b"/Lang", b"/Title", b"pdfuaid:part"):
+        assert marker in objects, marker
