@@ -220,11 +220,18 @@ class ScheduledCommand(BaseCommand):
             run.finished = timezone.now()
             run.save(update_fields=["outcome", "detail", "finished"])
             ping(spec.slug, ok=False)
-            log.exception("job %s failed", spec.name)
+            log.exception(
+                "job %s failed",
+                spec.name,
+                extra={"fields": {"job": spec.name, "outcome": "failed"}},
+            )
             raise CommandError(f"{spec.name} failed: {exc}") from exc
         run.outcome, run.detail, run.finished = "ok", detail, timezone.now()
         run.save(update_fields=["outcome", "detail", "finished"])
         pinged = ping(spec.slug, ok=True)
+        # The journal's line, in JSON (TR-33); the one below is the operator's, read by hand.
+        fields = {"job": spec.name, "outcome": "ok", "detail": detail, "pinged": pinged}
+        log.info("job %s ok", spec.name, extra={"fields": fields})
         self.stdout.write(f"{spec.name}: ok {detail}{' (pinged)' if pinged else ''}")
 
     def run_job(self, now: datetime, **options) -> dict:  # pragma: no cover - abstract

@@ -66,6 +66,7 @@ TINYMCE_JS_URL = "/static/tinymce/tinymce.min.js"
 TINYMCE_COMPRESSOR = False
 
 MIDDLEWARE = [
+    "apps.ops.middleware.RequestLogMiddleware",  # outermost, so it times and sees every answer
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     # Outermost of the app's own, so it sees every redirect, the sign-in gate's included.
@@ -251,8 +252,9 @@ EMAIL_USE_TLS = False
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"line": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"}},
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "line"}},
+    # One JSON object per line (TR-33): the journal keeps them, and each field can be searched.
+    "formatters": {"json": {"()": "config.logjson.JsonFormatter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
 

@@ -5538,3 +5538,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, configuration, tests and drafts. Verified: `tools/check.sh quick` all clear with no environment set (mypy clean on 18 files; service layer 96 %, the application 93 %); the coverage floor shown to fail at 99 %; the factory tests (14) pass; the accessibility sweep passes in Chromium and WebKit (102 passed, 8 skipped), the 21 signed-out pages among them; `pre-commit run --all-files` passes; the YAML files parse. Firefox does not launch here and is CI's to confirm; the CI workflow change runs for the first time on push.
 - **Human Review Status**: Pending review
 - **Git Hash**: 0446ffd
+
+## [2026-11-25 12:40 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: TR-33's structured logs: one JSON line per log record, per request and per job.
+- **Sections/Files Affected**: config/logjson.py (new: a standard-library JSON formatter; a call's own fields beside time, level, logger and message); config/settings/base.py (LOGGING uses it; RequestLogMiddleware outermost); apps/ops/middleware.py (RequestLogMiddleware: method, the matched route rather than the path, status, milliseconds, the account id); apps/ops/jobs.py (a JSON line per job, ok or failed, beside the operator's existing stdout line); apps/ops/tests/test_logjson.py (new: four tests).
+- **Nature of Contribution**: Code generation and tests. Verified: the four tests pass, among them a request to a token URL whose line names the route and not the token, and a signed-in request whose line carries the account id and neither name nor address; `tools/check.sh quick` all clear. Not yet seen in a server's journal.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

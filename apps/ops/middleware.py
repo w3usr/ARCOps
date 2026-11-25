@@ -8,6 +8,8 @@ becomes a full page load instead (htmx's HX-Redirect), and the flash messages, n
 are shown there.
 """
 
+import logging
+import time
 from urllib.parse import urlsplit
 
 from django.http import HttpResponse
@@ -59,3 +61,31 @@ class ViewerZoneMiddleware:
                 continue
         with timezone.override(zone):
             return self.get_response(request)
+
+
+request_log = logging.getLogger("ops.request")
+
+
+class RequestLogMiddleware:
+    """One JSON line per request (TR-33). It names the route a request matched, not its path: a
+    path can carry an invitation's or a sign-up's token, and a log line holds no more about a
+    person than their account id. A request no route matched (a static file, a stray URL) gives
+    its path, which carries no token."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        started = time.monotonic()
+        response = self.get_response(request)
+        match = getattr(request, "resolver_match", None)
+        user = getattr(request, "user", None)
+        fields = {
+            "method": request.method,
+            "route": f"/{match.route}" if match else request.path,
+            "status": response.status_code,
+            "ms": round((time.monotonic() - started) * 1000),
+            "user": user.pk if user is not None and user.is_authenticated else None,
+        }
+        request_log.info("request", extra={"fields": fields})
+        return response
