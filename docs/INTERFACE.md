@@ -37,8 +37,8 @@ notifications to signups".
 
 ## Dates and times
 
-One form for every date and time, so a reader learns it once (NAF, 2026-11-12; SK, 2026-11-16;
-private tracker 274). They are written by `apps/ops/when.py`, and `tools/check_interface.sh`
+One form for every date and time, so a reader learns it once (NAF, 2026-11-12; SK, 2026-11-16).
+They are written by `apps/ops/when.py`, and `tools/check_interface.sh`
 refuses a format written by hand.
 
 **For now, a page shows the viewer's own time only, never UTC** (functional addendum A38; NAF
@@ -432,7 +432,7 @@ squarer it is. `tools/check_interface.sh` refuses any other radius.
 | `--r-card` | 8 px | a panel, a card, a message, a banner, a dialog, a menu, a chip (an optional step) |
 | `--r-pill` | full | the navigation's entries (sidebar, rail and drawer, #145) and a switch's choices (#271) |
 
-**Space is nine steps on a 4 px grid** (SK, 2026-11-23, private tracker 362), and every margin,
+**Space is nine steps on a 4 px grid** (SK, 2026-11-23), and every margin,
 padding and gap takes one of them, `0` or `auto`; `tools/check_interface.sh` refuses anything
 else. em (space relative to the text beside it), vw and % in a `clamp()`, and `env()` for a phone's
 safe areas are allowed. The one exception is the 2 px between the coverage strip's hour marks, a

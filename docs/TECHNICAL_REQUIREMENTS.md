@@ -869,7 +869,7 @@ and keeps its breaks off the air: the club's own on-air hours, or the old period
 chosen none, clipped to the old periods. Reversing it makes one period per event; the database
 snapshot taken before a deploy is the way back for anything more.
 
-**Decided by** SK, 2026-11-16, on the recommendation in the findings for private tracker 275 (two
+**Decided by** SK, 2026-11-16, on the recommendation in the findings (two
 fields on `Event` over keeping the table with one row per event). Dev and production each held 3
 events, none with more than one period, when it was decided.
 
@@ -886,8 +886,8 @@ the system* were never written. An announcement copied to an officer's own mail 
 recorded as sent outside the system (FR-106), on the announcement. Migration `comms/0004` drops the
 column.
 
-**Decided by** SK: filed at SK's request on 2026-11-04 from the over-engineering audit (private
-tracker 185) and worked through on 2026-11-12; on production since 2026-11-16.
+**Decided by** SK: filed at SK's request on 2026-11-04 from the over-engineering audit and worked
+through on 2026-11-12; on production since 2026-11-16.
 
 ### A14. The data model: one cache in the database, for the sign-in limits
 
@@ -905,8 +905,8 @@ key is an HMAC under `SECRET_KEY`, because allauth's keys carry the visitor's ad
 address is kept only with a signature (REQUIREMENTS §4.2). The test suite keeps one cache per
 test process.
 
-**Decided by** SK on 2026-11-19, taking up private tracker 354 ("go ahead with #354") on the
-choice of the database cache set out in the issue; on production the same day.
+**Decided by** SK on 2026-11-19 ("go ahead"), on the
+choice of the database cache set out in the findings; on production the same day.
 
 ### A15. TR-15: the breached-password check when the service cannot be reached
 
@@ -923,8 +923,8 @@ when the check runs.
   warning: a member is never kept from setting a password by a third party.
 - The test suite leaves it out of the validators, and its own tests fake the network.
 
-**Decided by** SK on 2026-11-19, building private tracker 292 ("yes, build it and try it on dev")
-on the design set out to him, including both choices above; on production the same day.
+**Decided by** SK on 2026-11-19 ("yes, build it and try it on dev"),
+on the design set out for SK, including both choices above; on production the same day.
 
 ### A16. TR-5: the stylesheet as eleven files, one declaration per line
 
@@ -983,8 +983,8 @@ and gap values, 44 of them distinct, beside four little-used tokens `--s1` to `-
   the line box, and buttons 1.6 px shorter closed it. `tools/a11y/test_buttons.py` now checks that
   no two buttons stacked on a 390 px page come closer than 4 px.
 
-**Decided by** SK on 2026-11-23, choosing the 4 px grid from three measured scales (private tracker
-362), and the time column from the contact sheet.
+**Decided by** SK on 2026-11-23, choosing the 4 px grid from three measured scales, and the
+time column from the contact sheet.
 
 ### A18. TR-5: the content column centered on a wide screen
 
@@ -1005,7 +1005,7 @@ working UI needs to be centered rather than left-aligned").
 ### A19. TR-37: scripts formatted by Prettier; templates linted by djLint, not yet formatted
 
 **Original (TR-37).** "`ruff` (lint and format) and `djlint` for templates", run locally and by
-CI. Neither the scripts nor the templates had a formatter or a linter (private tracker 321).
+CI. Neither the scripts nor the templates had a formatter or a linter.
 
 **Decision.**
 - **The hand-written scripts** (`static/js/` and `static/sw.js`) are formatted by Prettier, as
@@ -1018,7 +1018,7 @@ CI. Neither the scripts nor the templates had a formatter or a linter (private t
 - **djLint's formatter is not run.** On these templates it changed what 33 page views drew: the
   four wide pages lost their layout when a leading space inside a block was stripped, and a heading
   in a `<summary>` moved 5 px. Formatting waits until the templates are safe for it and a check
-  covers dialogs, mail and the PDF as well as pages (private tracker 363).
+  covers dialogs, mail and the PDF as well as pages.
 
 **Decided by** SK on 2026-11-23, asking for Prettier on the scripts and djLint on the templates,
 and, shown what the formatter changed, choosing to lint now and format later.
@@ -1049,7 +1049,7 @@ pages drew.
   style inside template tags, with every one of the 908 places whitespace was added sorted by
   what stands either side and the 29 not at a block, table-cell or flex boundary read one by one.
 
-**Decided by** SK on 2026-11-24, taking up private tracker 363.
+**Decided by** SK on 2026-11-24.
 
 ### A21. TR-30: a scheduled job's memory, measured, and held to 400 MB
 
@@ -1072,7 +1072,7 @@ without the limit, 400 MB peak, 218 MB in swap. The swap it fills is free again 
 was set, it peaked at 353 to 515 MB, 32 seconds a night, much of it the pages of the database it
 reads and writes, which the limit drops first. Its first runs under the limit are still to be read.
 
-**Decided by** SK on 2026-11-25, taking up private tracker 343.
+**Decided by** SK on 2026-11-25.
 
 ### A22. TR-35, TR-37: coverage, types, the commit hook and factories
 

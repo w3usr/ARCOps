@@ -3,7 +3,8 @@
 # records (FR-n, TR-n, an addendum's A-n, docs/INTERFACE.md). Who decided, when, and in what
 # words belongs to the decision record, not to the code: a club that installs ARCOps reads the
 # rule, and the record keeps the reasoning. This refuses the forms an attribution takes: initials
-# or a role with a date, a dated note, a private tracker's number, a bare issue number, a test-plan scenario.
+# or a role with a date, a dated note, a private tracker's number, a bare issue number, a test-plan scenario;
+# and in docs/ and the README, a private tracker's number.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 python3 - <<'PY'
@@ -14,7 +15,7 @@ RULES = [
     ("a dated note", re.compile(
         r"\([^()]*\b20\d\d-\d\d-\d\d\)"
         r"|\b(?:[Ss]ince|[Uu]ntil|[Bb]efore|[Ff]ound|[Oo]bserved|[Rr]eported|amended) 20\d\d-\d\d-\d\d")),
-    ("a private tracker", re.compile(r"[Pp]rivate tracker")),
+    ("a private tracker", re.compile(r"[Pp]rivate tracker|\b[Tt]racker \d")),
     ("an issue number", re.compile(r"(?<![\w&#'\"])#\d{2,4}\b(?![;'\"])")),
     ("a test-plan scenario", re.compile(r"\bT[1-9]\d{0,2}(?= step|,|:| to T\d|\))")),
 ]
@@ -39,6 +40,15 @@ for root in ROOTS:
                     print(f"{rel}:{n}: {what}: {line.strip()[:110]}")
                     fail = True
                     break
+
+# The documents name people and dates by design (the addenda), but never the club's private
+# tracker: this repository points only to public records.
+TRACKER = dict(RULES)["a private tracker"]
+for path in [*sorted(pathlib.Path("docs").glob("*.md")), pathlib.Path("README.md")]:
+    for n, line in enumerate(path.read_text(errors="replace").splitlines(), 1):
+        if TRACKER.search(line):
+            print(f"{path.as_posix()}:{n}: a private tracker: {line.strip()[:110]}")
+            fail = True
 
 if fail:
     print("State the rule, and cite the FR, TR or addendum entry instead.")

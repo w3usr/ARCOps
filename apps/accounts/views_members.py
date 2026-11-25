@@ -260,9 +260,8 @@ def members(request):
         .select_related("license")
     )
     if q:
-        # A member finds others only by what they see of them, the short name (FR-67; private
-        # tracker 334): the preferred name, or the first name where there is none, and the
-        # callsign. A surname or a first name kept behind a preferred one is an officer's search.
+        # A member finds others only by what they see of them, the short name (FR-67):
+        # the preferred name, or the first name where there is none, and the callsign. A surname or a first name kept behind a preferred one is an officer's search.
         cond = (
             Q(preferred_name__icontains=q)
             | Q(preferred_name="", first_name__icontains=q)

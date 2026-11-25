@@ -73,8 +73,7 @@ def when(start, end=None, event=None, year=False):
 
 @register.filter
 def checkin_label(signup) -> str:
-    """`Check in`, or `Check in, 5:00–7:00 PM (2 slots)` when one tap checks in a run (private
-    tracker 361)."""
+    """`Check in`, or `Check in, 5:00–7:00 PM (2 slots)` when one tap checks in a run (A42)."""
     run = signup.checkin_run()
     if len(run) == 1:
         return "Check in"

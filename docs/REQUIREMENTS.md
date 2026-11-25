@@ -2970,7 +2970,7 @@ FR-70 says there is no path by which a minor is messaged without the guardian, a
 FR-107's "to that address" for a minor. An adult's reset still goes only to the address typed in.
 
 **Decided** by SK on 2026-11-12, from the choice between this and keeping the whole mail hidden
-from officers: "include the addenda and commit the fixes". *Record:* private tracker 286.
+from officers: "include the addenda and commit the fixes". *Record:* this addendum.
 
 ### A26. Section 2.6: an address is confirmed for someone else only below one's own level
 
@@ -2986,8 +2986,8 @@ sysadmin's account that way. The bound is A24's, shared by the code. An officer 
 member's address, which is the help section 2.6 meant; an advisor's or a sysadmin's address is
 confirmed by its owner or by a sysadmin. The page draws only the controls the reader may use.
 
-**Decided** by SK on 2026-11-12: "let's do 326", with this entry approved the same evening.
-*Record:* private tracker 326.
+**Decided** by SK on 2026-11-12, with this entry approved the same evening.
+*Record:* this addendum.
 
 ### A27. FR-44 and FR-74: completing an event early tells the people with slots still to come
 
@@ -3003,8 +3003,8 @@ anyone confirms, and the page after says how many were told. Completion once the
 ended tells nobody, since nobody has a slot ahead.
 
 **Decided** by SK on 2026-11-12: "let's go with your recommendation" (tell them, and say how many
-in the dialog), from the choice between that and a warning in the dialog alone. *Record:* private
-tracker 258.
+in the dialog), from the choice between that and a warning in the dialog alone. *Record:* this
+addendum.
 
 ### A28. FR-62 and FR-73: a slot that can run is Covered, with no note about one person
 
@@ -3020,7 +3020,7 @@ class* (FR-61) stays.
 
 **Decided** by NAF on 2026-11-12: "just simplify it to 'Covered'. Don't worry about backups", and
 the scope confirmed the same day: "remove it everywhere, including the captains' and slot-mates'
-warning emails". *Record:* private tracker 279.
+warning emails". *Record:* this addendum.
 
 ### A29. FR-51: a new event starts at the club station, described in Settings
 
@@ -3034,8 +3034,8 @@ club settings beside its name, and the new location carries them. A captain rena
 adds locations as before; events made earlier are left as they are; a display-only event has none.
 
 **Decided** by NAF on 2026-11-12 (the club station as the default location) and by SK on
-2026-11-16: created with the event, with the station's details as club settings. *Record:* private
-tracker 276.
+2026-11-16: created with the event, with the station's details as club settings. *Record:* this
+addendum.
 
 ### A30. FR-49: changing seats on many slots at once
 
@@ -3049,7 +3049,7 @@ have; nothing changes until it is confirmed. Everyone signed up keeps their seat
 offered to the waitlist (FR-57), and each slot changed is in the audit log.
 
 **Decided** by NAF on 2026-11-12 ("a way to make global changes to all slots, even after people
-have signed up") and by SK on 2026-11-16: set, add or remove. *Record:* private tracker 282.
+have signed up") and by SK on 2026-11-16: set, add or remove. *Record:* this addendum.
 
 ### A31. FR-58 and FR-64: a member is chosen by typing, not from a list of everyone
 
@@ -3062,7 +3062,7 @@ match. In **Sign someone up** the role comes first, and the matches leave out wh
 slot already and whoever the role's rule would refuse. Members are listed without regard to case.
 
 **Decided** by NAF on 2026-11-12 ("I don't think this is sustainable as a drop-down in the
-long-term") and by SK on 2026-11-16: the role first. *Record:* private tracker 281.
+long-term") and by SK on 2026-11-16: the role first. *Record:* this addendum.
 
 ### A32. FR-38: one start and end per event; a split contest's break is on-air hours
 
@@ -3080,9 +3080,9 @@ nothing that was off the air comes on. Once set, the start and end are edited an
 and an operating slot has to fit inside the on-air hours, so none is placed in a split contest's
 break (SK, 2026-11-16, after the findings).
 
-**Decided** by SK on 2026-11-16, from the choice NAF's ticket set out ("Operating periods" read
-as what a slot is; option (b), one span per event, over (a), words only). *Record:* private
-tracker 275.
+**Decided** by SK on 2026-11-16, from the choice NAF's report set out ("Operating periods" read
+as what a slot is; option (b), one span per event, over (a), words only). *Record:* this
+addendum.
 
 ### A33. FR-45: a regular meeting or net says when it meets in fields
 
@@ -3100,7 +3100,7 @@ could not; nothing was guessed.
 
 **Decided** by NAF on 2026-11-12 (structured times, shown only when Display only is ticked) and by
 SK on 2026-11-16: the three patterns, the note, reading the old text, and the next date. *Record:*
-private tracker 273.
+this addendum.
 
 ### A34. FR-38 and A12: one form for every date and time; UTC typed as numbers
 
@@ -3122,7 +3122,7 @@ the browser's own box, which follows the computer's locale (11/21/2026 09:00 PM 
 **Decided** by NAF on 2026-11-12 ("make sure all UTC datetimes throughout the system are
 displayed in [this] 24 hour format, not just the pickers"; "Keep the weekday"; the month as a
 word) and by SK on 2026-11-16: the year dropped in rows and lists, plain dates as `21 Nov 2026`,
-ISO kept for machines, and `2100` accepted. *Record:* private tracker 274.
+ISO kept for machines, and `2100` accepted. *Record:* this addendum.
 
 ### A35. A34: the browser's own date and time picker, in UTC or the event's own clock
 
@@ -3169,7 +3169,7 @@ covered, hours viable, people scheduled and people who checked in (FR-113), firs
 participants."
 
 **Decision.**
-- On the roster a slot that can run is **Covered** (private tracker 279). The report says the
+- On the roster a slot that can run is **Covered** (A28). The report says the
   same: **Hours covered** is the hours of slots that can run, which FR-86 called *hours viable*.
 - What FR-86 called *hours covered*, the hours of slots with anyone signed up, is **Hours with
   someone signed up**.
@@ -3194,7 +3194,7 @@ was that the report's *Hours covered* counted slots the roster marks as needing 
 - Converting a minor's account at 18 (FR-109) issues a temporary password, so it is refused, in
   the same way, for an account that holds more than Member from before this.
 
-**Decided** by SK on 2026-11-17, answering private tracker 332: "under-18 account only up to
+**Decided** by SK on 2026-11-17: "under-18 account only up to
 member". *Record:* this addendum.
 
 ### A38. §5.9, FR-38, A12, A34 and A35: for now, pages show the viewer's own time, never UTC
@@ -3257,7 +3257,7 @@ of the person's messages, invitations, notes on sign-ups, or two-step verificati
 - **The confirmation** says all of this, and its count of future sign-ups is the number actually
   withdrawn: a sign-up kept for attendance in a slot under way is neither counted nor withdrawn.
 
-**Decided** by SK on 2026-11-19, answering private tracker 329 (the outbox, invitations, notes and
+**Decided** by SK on 2026-11-19 (the outbox, invitations, notes and
 the audit entry each chosen as recommended). *Record:* this addendum.
 
 ### A40. FR-64: a guardian on the same slot is the minor's responsible adult
@@ -3284,8 +3284,8 @@ someone named them by hand, so the slot read *Needs a responsible adult* with th
 - An automatic designation still counts if the guardian link ends while both remain on the slot;
   the captain or guardian edits the designation then, as for any other.
 
-**Decided** by SK on 2026-11-23, answering private tracker 358 (a guardian's report of 2026-11-21,
-signed up for the same slot as their ward and still told a responsible adult was needed): the
+**Decided** by SK on 2026-11-23, answering a guardian's report of 2026-11-21 (they had
+signed up for the same slot as their ward and were still told a responsible adult was needed): the
 ordinary designation written automatically, rather than counted without one or offered as a
 question at sign-up, and removed when the guardian leaves. *Record:* this addendum.
 
@@ -3308,7 +3308,7 @@ slot from one about their own.
   for example) is sent as that library writes it, and its copy under My messages is unchanged.
 - A message to anyone else is unchanged.
 
-**Decided** by SK on 2026-11-23, taking up private tracker 359 (a guardian's report of 2026-11-21:
+**Decided** by SK on 2026-11-23, taking up a guardian's report of 2026-11-21 (that
 a guardian should "actually see it is for [the minor] and not for me") as proposed there, with
 the first line reworded to read true for the minor as well. *Record:* this addendum.
 
@@ -3343,7 +3343,7 @@ reported as not checked in 15 minutes into every slot after the first.
   them is designated (FR-64), matched by member or by name. The run stops at the first slot
   with none of them named; that slot is checked in on its own, and the message says so.
 
-**Decided** by NAF on 2026-11-21 (private tracker 361: "if you check in for a shift, it should
+**Decided** by NAF on 2026-11-21 ("if you check in for a shift, it should
 check you in for all consecutive shifts"), one tap rather than a second *Check in through …*
 button; built by SK on 2026-11-23. *Record:* this addendum.
 
@@ -3359,7 +3359,7 @@ My messages, whatever their query string), and a page reached by a redirect, whi
 page, is never kept as a member's own. The shell's static files stay cached; they carry nobody's
 details.
 
-**Decided** by SK on 2026-11-24, taking up private tracker 294. *Record:* this addendum.
+**Decided** by SK on 2026-11-24. *Record:* this addendum.
 
 ### A44. FR-39: on-air time is the station's
 
@@ -3371,11 +3371,11 @@ shown and never used.
 **Decision.** On-air time is the station's: the clock time any operating slot covers, so positions
 on the air together count once, and a gap shorter than the minimum break is on-air time, not a
 break. A day's hours, the event's total, the Coverage card's operating hours, and the slots
-marked *over limit* (FR-62) all follow from it. The tracker that reported it read the limit as each
+marked *over limit* (FR-62) all follow from it. The report that raised it read the limit as each
 person's; FR-39's words and its School Club Roundup example are the station's, and that reading
 stands.
 
-**Decided** by SK on 2026-11-24, taking up private tracker 300. *Record:* this addendum.
+**Decided** by SK on 2026-11-24. *Record:* this addendum.
 
 ### A45. FR-67, §2.1: a captain sees the contacts of the people on their own event
 
@@ -3390,7 +3390,7 @@ links, sit beneath their name for anyone whose level holds `view_participant_con
 captain of that event, at any level; a captain of another event, and every other member, see
 neither. A minor's guardians and responsible adults stay as FR-64 has them.
 
-**Decided** by SK on 2026-11-24, taking up private tracker 333 ("yes captains see the
+**Decided** by SK on 2026-11-24 ("yes captains see the
 participant's contact details"). *Record:* this addendum.
 
 ### A46. FR-34: the rotation summary to whoever rotated and to every sysadmin
