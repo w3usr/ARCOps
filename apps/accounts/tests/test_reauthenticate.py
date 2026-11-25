@@ -215,3 +215,12 @@ def test_the_passkey_endpoint_is_not_bounced_back_to_the_password_page(monkeypat
     assert "Use a passkey" in body
     assert "authenticator" not in body.lower()
     assert body.count("/accounts/2fa/webauthn/reauthenticate/") == 1, "the form's action, no link"
+
+
+def test_confirm_access_offers_no_code_by_mail():
+    """§2.6: a password or a passkey; the library's mailed code is not offered."""
+    from allauth.account.adapter import get_adapter
+
+    user = _member()
+    ids = [m["id"] for m in get_adapter().get_reauthentication_methods(user)]
+    assert "reauthenticate_by_code" not in ids and "reauthenticate" in ids

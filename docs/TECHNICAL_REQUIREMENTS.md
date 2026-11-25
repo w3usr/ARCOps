@@ -1154,7 +1154,25 @@ and its license. GPL-2.0-or-later is compatible with this repository's GPL-3.0-o
 
 **Decided by** SK on 2026-11-25, merging the update.
 
+### A27. TR-16, §2.6: Confirm Access after django-allauth 65.22
+
+**Original (TR-16; §2.6 of the functional requirements).** Enrolling a passkey or an authenticator
+app goes through the library's Confirm Access, which takes a password or a passkey. Until this
+update a sign-in in the last few minutes counted as the confirmation.
+
+**Decision.**
+- **Adding a second factor always asks first.** From 65.22 the library counts only a
+  confirmation, not a sign-in, as recent proof, so a member who has just signed in and goes to add
+  a passkey or an authenticator app is asked for their password (or passkey) once more. The
+  stricter rule is kept rather than worked around: it costs one step, and restoring the old one
+  would mean code against the library's internals.
+- **No code by mail.** 65.22 also offers confirming by a code sent to the member's address unless
+  told otherwise. `ACCOUNT_REAUTHENTICATION_METHODS` is set to a password and a second factor:
+  a mailed code proves the mailbox, not the person (§2.6).
+
+**Decided by** SK on 2026-11-25.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A26), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A27), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

@@ -195,6 +195,9 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "account_login"
 # allauth (TR-15, TR-16). Invitation-only: signup is closed in the adapter (FR-1).
 ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 ACCOUNT_LOGIN_METHODS = {"email"}
+# Confirm Access takes a password or a passkey (§2.6). The library also offers a code by mail
+# unless told otherwise; a mailed code proves the mailbox, not the person.
+ACCOUNT_REAUTHENTICATION_METHODS = ["password", "mfa"]
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # Addresses live in their own rows (apps.accounts.models.Address), mirrored into the library's
