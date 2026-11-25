@@ -5545,4 +5545,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: config/logjson.py (new: a standard-library JSON formatter; a call's own fields beside time, level, logger and message); config/settings/base.py (LOGGING uses it; RequestLogMiddleware outermost); apps/ops/middleware.py (RequestLogMiddleware: method, the matched route rather than the path, status, milliseconds, the account id); apps/ops/jobs.py (a JSON line per job, ok or failed, beside the operator's existing stdout line); apps/ops/tests/test_logjson.py (new: four tests).
 - **Nature of Contribution**: Code generation and tests. Verified: the four tests pass, among them a request to a token URL whose line names the route and not the token, and a signed-in request whose line carries the account id and neither name nor address; `tools/check.sh quick` all clear. Not yet seen in a server's journal.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 2cacb26
