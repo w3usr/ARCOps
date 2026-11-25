@@ -5577,4 +5577,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: config/settings/base.py (LOGGING: `django.request` at ERROR); apps/ops/tests/test_logjson.py (no log record at all, of any logger, carries the token).
 - **Nature of Contribution**: Code edit and a test. Verified: the stricter test fails against the old settings and passes with the new; the logging tests pass.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 8515b96
