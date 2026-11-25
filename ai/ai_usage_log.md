@@ -5609,4 +5609,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/credentials/tests/test_phase4.py (`_pdf_objects` keeps a carriage return that ends a compressed stream and decompresses with `decompressobj`, which leaves trailing bytes alone; a new test with such a stream).
 - **Nature of Contribution**: Diagnosis and a test fix. Found: the reader cut each stream at an optional carriage return before "endstream", so a compressed stream whose last byte is that character lost it, failed to decompress and was skipped, about one stream in 256; the PDF changes each run (it carries the signing time), so the test failed now and then. Verified: the mechanism reproduced (the old reader raises "incomplete or truncated stream" on such a stream, the new one reads it); the new test fails against the old reader and passes with the new; forty local renders all read whole; `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 8d002cd
