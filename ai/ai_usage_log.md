@@ -5570,3 +5570,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edit, by script and then by hand. Verified: every changed line read in its finished form; the same line count as before; no private issue number left (a CSS color and a test count, which look like one, checked and kept). The map from each entry to the issues it cited is kept in the club's private records.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8faedee
+
+## [2026-11-25 13:24 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Found on the development server's journal after the JSON logs went live there: Django's own request logger still wrote the full path of every 4xx answer, a link's token with it. It now reports only 5xx answers, which keep their traceback; the request line already records every status by route.
+- **Sections/Files Affected**: config/settings/base.py (LOGGING: `django.request` at ERROR); apps/ops/tests/test_logjson.py (no log record at all, of any logger, carries the token).
+- **Nature of Contribution**: Code edit and a test. Verified: the stricter test fails against the old settings and passes with the new; the logging tests pass.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

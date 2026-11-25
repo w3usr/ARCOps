@@ -256,6 +256,9 @@ LOGGING = {
     "formatters": {"json": {"()": "config.logjson.JsonFormatter"}},
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
     "root": {"handlers": ["console"], "level": "INFO"},
+    # Django's own line for a 4xx names the path, and a path can carry a token; the request line
+    # above already records the status by route. A 5xx still logs here, with its traceback.
+    "loggers": {"django.request": {"level": "ERROR"}},
 }
 
 # ------------------------------------------------------------ application ---

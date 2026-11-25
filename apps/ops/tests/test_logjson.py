@@ -33,8 +33,9 @@ def test_a_line_is_one_json_object_with_its_fields_and_any_exception():
 
 
 def test_a_request_is_logged_by_its_route_so_a_token_never_reaches_the_log(client, caplog):
-    caplog.set_level(logging.INFO, logger="ops.request")
+    caplog.set_level(logging.INFO)
     client.get("/verify/secret-token-123/")
+    assert not [r for r in caplog.records if "secret-token-123" in r.getMessage()]
     (line,) = _lines(caplog, "ops.request")
     assert line["route"] == "/verify/<str:token>/" and line["status"] == 410
     assert line["method"] == "GET" and line["user"] is None and isinstance(line["ms"], int)
