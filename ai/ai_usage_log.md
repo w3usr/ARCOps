@@ -5569,4 +5569,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: ai/ai_usage_log.md (138 lines in 116 earlier entries: "private tracker" with a number, bare issue numbers, the private repository's name before a number, and numbers used as labels; sentences that opened on a number now open on their subject, and the few that read badly without it were reworded). Kept: ARCOps' own pull request numbers and the acceptance scenarios' labels.
 - **Nature of Contribution**: Edit, by script and then by hand. Verified: every changed line read in its finished form; the same line count as before; no private issue number left (a CSS color and a test count, which look like one, checked and kept). The map from each entry to the issues it cited is kept in the club's private records.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 8faedee
