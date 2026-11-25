@@ -1,4 +1,6 @@
-# Top-level dependencies (TR-24). Pin with: pip-compile requirements.in  (or pip freeze after install)
+# Top-level dependencies (TR-24): every package the application imports itself. requirements.txt is
+# compiled from this file (pip-compile requirements.in, as Dependabot does), so a package missing
+# here is missing from the deploy.
 django>=5.2,<5.3
 django-allauth[mfa]
 django-ninja
@@ -10,6 +12,12 @@ pywebpush
 html2text
 cryptography
 argon2-cffi
+# WeasyPrint (TR-10, FR-23): tagged PDFs of signed agreements. Needs pango and fonts on the box.
 weasyprint>=70
+# django-tinymce (TR-6, FR-115): the WYSIWYG editor.
 django-tinymce==5.0.0
 tzdata  # every zone name a browser may report, old ones too (Asia/Calcutta), where the system lacks them (A38)
+phonenumbers  # Google libphonenumber, for showing a number the way its country writes it
+# polib (MIT): compiles locale/en/LC_MESSAGES/django.po to the .mo Django reads, so the club's
+# own words for a dependency's strings need no gettext on the machine (TR-45).
+polib

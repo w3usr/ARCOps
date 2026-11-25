@@ -1141,7 +1141,20 @@ VAPID pair is generated with `manage.py vapid_keys`."
 
 **Decided by** SK on 2026-11-25.
 
+### A26. TR-9: TinyMCE 7 under its GPL option
+
+**Original (TR-9).** "TinyMCE 8 under its GPL-2.0-or-later option (`license_key: 'gpl'`)." *As
+built (2026-09-15):* "`django-tinymce` 4.1.0, which bundles TinyMCE 6.8.4 under the MIT license
+(no license key)."
+
+**Decision.** `django-tinymce` 5.0.0, a Dependabot update merged on 2026-11-25, bundles **TinyMCE
+7.8.0**, which is licensed GPL-2.0-or-later and asks for `license_key: 'gpl'` in its
+configuration. The key is set, the editor's feature set is unchanged, and `NOTICE` names TinyMCE 7
+and its license. GPL-2.0-or-later is compatible with this repository's GPL-3.0-or-later.
+
+**Decided by** SK on 2026-11-25, merging the update.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A25), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A26), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

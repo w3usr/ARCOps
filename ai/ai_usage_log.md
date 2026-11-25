@@ -5578,3 +5578,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code edit and a test. Verified: the stricter test fails against the old settings and passes with the new; the logging tests pass.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8515b96
+
+## [2026-11-25 15:17 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI on main failed after SK merged the first Dependabot updates. The cause: requirements.in never named polib or phonenumbers, so the recompiled requirements.txt dropped both, and every job stopped there before any test ran. Behind it, the updates' own breaks, fixed: django-allauth 65.22.1 changed two internal functions this code calls, and django-tinymce 5.0.0 bundles TinyMCE 7.
+- **Sections/Files Affected**: requirements.in (every package the application imports, polib and phonenumbers among them, with the comments the recompile dropped); requirements.txt (the two pins; its header says it is compiled); apps/accounts/reauth.py (allauth's `did_recently_reauthenticate` and `get_authentication_records(request, user)`; the docstring says what the library now checks itself); apps/accounts/adapter.py (the lockout notice's rate-limit call passes `app`); apps/accounts/tests/test_acting_view.py, test_reauthenticate.py (records written with whose they are, as the library now requires); config/settings/base.py (TinyMCE's `license_key: "gpl"`); NOTICE (TinyMCE 7, GPL-2.0-or-later); docs/TECHNICAL_REQUIREMENTS.md (technical A26).
+- **Nature of Contribution**: Diagnosis, code edits and a draft. Verified with every merged version installed locally (allauth 65.22.1, tinymce 5.0.0, gunicorn 27.0.1, django-ninja 1.8.0, django-stubs 6.1.2, djLint 1.54.0, ruff 0.17.6, pytest 9.2.0, Playwright 1.65.2): `tools/check.sh quick` all clear (718 application tests; mypy clean; service layer 96 %); the accessibility sweep 102 passed and 8 skipped in Chromium and WebKit, the editor's pages among them. Firefox is CI's to confirm.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]

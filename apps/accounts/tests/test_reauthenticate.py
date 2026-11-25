@@ -10,7 +10,10 @@ password wrong.
 import time
 
 import pytest
-from allauth.account.internal.flows.login import AUTHENTICATION_METHODS_SESSION_KEY
+from allauth.account.internal.flows.login import (
+    _AUTHENTICATION_METHODS_USER_SESSION_KEY,
+    AUTHENTICATION_METHODS_SESSION_KEY,
+)
 from django.core.management import call_command
 from django.test import Client
 
@@ -43,6 +46,7 @@ def _sign_in_was_a_while_ago(client):
     session[AUTHENTICATION_METHODS_SESSION_KEY] = [
         {"method": "password", "at": time.time() - 24 * 60 * 60}
     ]
+    session[_AUTHENTICATION_METHODS_USER_SESSION_KEY] = session["_auth_user_id"]
     session.save()
 
 

@@ -7,7 +7,10 @@ change of view and a fresh authentication.
 import time
 
 import pytest
-from allauth.account.internal.flows.login import AUTHENTICATION_METHODS_SESSION_KEY
+from allauth.account.internal.flows.login import (
+    _AUTHENTICATION_METHODS_USER_SESSION_KEY,
+    AUTHENTICATION_METHODS_SESSION_KEY,
+)
 from django.core.management import call_command
 from django.test import Client
 
@@ -35,6 +38,15 @@ def _signed_in(user):
     return c
 
 
+def _records(client, records):
+    """Write the session's authentication records as the sign-in library does: the records, and
+    whose they are, without which the library reads none."""
+    session = client.session
+    session[AUTHENTICATION_METHODS_SESSION_KEY] = records
+    session[_AUTHENTICATION_METHODS_USER_SESSION_KEY] = session["_auth_user_id"]
+    session.save()
+
+
 def _just_confirmed(client):
     """Stamp the session the way **Confirm Access** does: a record marked `reauthenticated`.
 
@@ -42,11 +54,7 @@ def _just_confirmed(client):
     the difference that matters now: a raise wants a confirmation of its own, not merely a
     recent sign-in (apps.accounts.reauth).
     """
-    session = client.session
-    session[AUTHENTICATION_METHODS_SESSION_KEY] = [
-        {"method": "password", "at": time.time(), "reauthenticated": True}
-    ]
-    session.save()
+    _records(client, [{"method": "password", "at": time.time(), "reauthenticated": True}])
     return client
 
 
@@ -121,9 +129,7 @@ def test_every_raise_is_confirmed_on_its_own():
 def test_signing_in_is_not_a_confirmation():
     """A record left by signing in carries no `reauthenticated` mark, so it does not raise."""
     c = _signed_in(_sysadmin())
-    session = c.session
-    session[AUTHENTICATION_METHODS_SESSION_KEY] = [{"method": "password", "at": time.time()}]
-    session.save()
+    _records(c, [{"method": "password", "at": time.time()}])
     c.get("/")
     r = c.post("/me/level/", {"view": "sysadmin"})
     assert "/accounts/reauthenticate/" in r["Location"]
@@ -265,6 +271,7 @@ def test_a_forgotten_request_to_raise_the_level_does_not_fire_later():
     pending["at"] = time.time() - 3600
     session["acting_view_pending"] = pending
     session[AUTHENTICATION_METHODS_SESSION_KEY] = [{"method": "password", "at": time.time()}]
+    session[_AUTHENTICATION_METHODS_USER_SESSION_KEY] = session["_auth_user_id"]
     session.save()
 
     c.get("/me/level/")

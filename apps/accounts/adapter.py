@@ -213,7 +213,7 @@ def _guardian_addresses(user) -> list[str]:
 def _tell_the_owner(request, cache_key: str, address: str) -> None:
     """A lockout notice, once per lockout. Only the account's own limit (`/key`) locks it; the
     per-address one stops whoever is typing, whichever account they try, and tells nobody."""
-    # shortcut: allauth's internal rate-limit module (pinned 65.19.3); check it on an upgrade.
+    # shortcut: allauth's internal rate-limit module (pinned 65.22.1); check it on an upgrade.
     from allauth.core.internal import ratelimit
 
     from apps.comms.services import send
@@ -226,7 +226,12 @@ def _tell_the_owner(request, cache_key: str, address: str) -> None:
         r for r in dj.ACCOUNT_RATE_LIMITS["login_failed"].split(",") if r.endswith("/key")
     )
     if not own or ratelimit.consume(
-        request, action="login_failed", config={"login_failed": own}, key=cache_key, dry_run=True
+        request,
+        app="allauth.account",
+        action="login_failed",
+        config={"login_failed": own},
+        key=cache_key,
+        dry_run=True,
     ):
         return  # the account's own limit is not what refused
     user = User.objects.by_address(address).first() if address else None

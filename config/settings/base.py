@@ -49,6 +49,8 @@ INSTALLED_APPS = [
 # editor's H1 renders as the page's next level down (the richtext filter shifts headings). No
 # inline scripts: django-tinymce initialises from a data attribute (CSP script-src 'self').
 TINYMCE_DEFAULT_CONFIG = {
+    # TinyMCE 7 self-hosted under its GPL-2.0-or-later option (TR-9, technical addendum A26).
+    "license_key": "gpl",
     "height": 320,
     "menubar": False,
     "plugins": "lists link table",

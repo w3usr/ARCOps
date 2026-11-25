@@ -43,8 +43,9 @@ Third-party components
 - axe-core (tools/a11y/axe.min.js), Copyright Deque Systems, Inc., Mozilla Public
   License 2.0; see tools/a11y/AXE_LICENSE. Used only by the build's accessibility
   check; not served to members.
-- TinyMCE 6, Copyright Ephox Corporation DBA Tiny Technologies, Inc., MIT License,
-  bundled by the django-tinymce package and served as the rich-text editor (TR-9).
+- TinyMCE 7, Copyright Ephox Corporation DBA Tiny Technologies, Inc., GNU General Public
+  License version 2 or later, bundled by the django-tinymce package and served as the rich-text
+  editor (TR-9).
 - htmx 2.0.11 (static/js/vendor/htmx.min.js), from github.com/bigskysoftware/htmx,
   Zero-Clause BSD License; served unmodified, from the npm package checked against the
   registry's integrity hash (TR-4).
