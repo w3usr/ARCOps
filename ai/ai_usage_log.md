@@ -5561,4 +5561,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/REQUIREMENTS.md (functional A25 to A45: "Record: this addendum" for a tracker's number, and the decisions' dates, deciders and quotes kept; one quote that was only a number dropped); docs/TECHNICAL_REQUIREMENTS.md (A12 to A21 likewise; in A15 a pronoun for a person made neutral); docs/INTERFACE.md (two); code comments in apps/accounts/models.py, apps/accounts/services.py, apps/accounts/views_members.py and apps/events/templatetags/times.py (the FR or addendum entry alone); tools/check_no_attributions.sh ("tracker" followed by a number refused, as well as "private tracker", in code and now in docs/*.md and the README).
 - **Nature of Contribution**: Edit. Verified: no "tracker" followed by a number and no "private tracker" left in docs, code or the README; the guard passes, and refuses a test line in docs/ and a reference split across two comment lines; each rewritten sentence read in its paragraph. This log's own earlier entries, which name tracker numbers, were left as they are.
 - **Human Review Status**: Pending review
-- **Git Hash**: [pending]
+- **Git Hash**: 32bbbfd
