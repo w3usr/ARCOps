@@ -1253,10 +1253,13 @@ def _pdf_objects(pdf: bytes) -> bytes:
     import re
     import zlib
 
+    # The data runs to the newline before "endstream", a carriage return of its own included: a
+    # compressed stream can end on that byte, and cutting it off broke one PDF in a few hundred.
+    # decompressobj stops at the stream's own end and leaves anything after it alone.
     out = [pdf]
-    for m in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", pdf, re.S):
+    for m in re.finditer(rb"stream\r?\n(.*?)\nendstream", pdf, re.S):
         try:
-            out.append(zlib.decompress(m.group(1)))
+            out.append(zlib.decompressobj().decompress(m.group(1)))
         except zlib.error:
             pass
     return b"\n".join(out)
@@ -1276,3 +1279,16 @@ def test_the_signed_pdf_is_tagged_for_a_screen_reader(settings, tmp_path):
     objects = _pdf_objects(render_agreement_pdf(SignedAgreement.objects.get(user=mem)))
     for marker in (b"/StructTreeRoot", b"/MarkInfo", b"/Lang", b"/Title", b"pdfuaid:part"):
         assert marker in objects, marker
+
+
+def test_the_pdf_reader_keeps_a_stream_that_ends_in_a_carriage_return():
+    """A compressed stream may end on that byte; the reader above once cut it off and skipped it."""
+    import zlib
+
+    data = next(
+        d
+        for n in range(100000)
+        if (d := zlib.compress(f"<</StructTreeRoot 3 0 R>> {n}".encode())).endswith(b"\r")
+    )
+    pdf = b"1 0 obj\n<</Length %d>>\nstream\n" % len(data) + data + b"\nendstream\nendobj\n"
+    assert b"/StructTreeRoot" in _pdf_objects(pdf)

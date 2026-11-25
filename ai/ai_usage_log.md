@@ -5602,3 +5602,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Analysis, a configuration edit, a test and a draft. Verified: the new test fails without the setting and passes with it; `tools/check.sh quick` all clear. The screenshot that showed the mailed-code button read; the library's default list of methods read in its source.
 - **Human Review Status**: Pending review
 - **Git Hash**: 3fb1275
+
+## [2026-11-25 16:36 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: CI on main failed in the tagged-PDF test (written earlier today), which had passed on three earlier commits. The test's own stream reader was at fault, not the PDF.
+- **Sections/Files Affected**: apps/credentials/tests/test_phase4.py (`_pdf_objects` keeps a carriage return that ends a compressed stream and decompresses with `decompressobj`, which leaves trailing bytes alone; a new test with such a stream).
+- **Nature of Contribution**: Diagnosis and a test fix. Found: the reader cut each stream at an optional carriage return before "endstream", so a compressed stream whose last byte is that character lost it, failed to decompress and was skipped, about one stream in 256; the PDF changes each run (it carries the signing time), so the test failed now and then. Verified: the mechanism reproduced (the old reader raises "incomplete or truncated stream" on such a stream, the new one reads it); the new test fails against the old reader and passes with the new; forty local renders all read whole; `tools/check.sh quick` all clear.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]
