@@ -2490,7 +2490,8 @@ recorded here, dated, beside the requirement it touches. Each entry quotes the o
 the decision, and says who took it, when, and why. The application follows the latest entry on a
 point; where an entry and the text above disagree, the entry is the more recent word.
 
-**How it grows.** Entries are appended and never rewritten, deleted, or renumbered. A decision
+**How it grows.** Entries are appended and never deleted or renumbered; an entry found wrong in fact
+is corrected where it stands. A decision
 that changes an earlier one is a new entry naming the one it supersedes. When the advisor (W2NAF)
 confirms, revises, or rejects an entry, that is a dated line added under it, and a rejection that
 changes the code says so.

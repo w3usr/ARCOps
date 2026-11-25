@@ -622,7 +622,8 @@ here, dated, beside the TR it touches. Each entry quotes the original, states th
 says who took it, when, and why. Where an entry and the text above disagree, the entry is the
 more recent word.
 
-**How it grows.** Entries are appended and never rewritten, deleted, or renumbered. A decision
+**How it grows.** Entries are appended and never deleted or renumbered; an entry found wrong in fact
+is corrected where it stands. A decision
 that changes an earlier one is a new entry naming the one it supersedes. When the advisor (W2NAF)
 confirms, revises, or rejects an entry, that is a dated line added under it.
 
@@ -1066,8 +1067,10 @@ be measured in the first week and recorded".
 Above it the kernel reclaims the job's own memory into swap, so the job is slowed rather than the
 web workers squeezed. A hard limit was not chosen: it would kill the import instead of slowing it.
 Tried on the development server on 2026-11-25 with the weekly file: 14 minutes against 15
-without the limit, 400 MB peak, 218 MB in swap. The weekly import is the one job that reaches the
-limit; the swap it fills is free again when it ends.
+without the limit, 400 MB peak, 218 MB in swap. The swap it fills is free again when it ends.
+**The nightly backup (TR-22) also reaches the limit:** on production, 2026-11-22 to 25, before it
+was set, it peaked at 353 to 515 MB, 32 seconds a night, much of it the pages of the database it
+reads and writes, which the limit drops first. Its first runs under the limit are still to be read.
 
 **Decided by** SK on 2026-11-25, taking up private tracker 343.
 

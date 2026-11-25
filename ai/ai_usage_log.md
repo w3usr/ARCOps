@@ -5522,3 +5522,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code edit and a test. Verified: the new test fails against the old template and passes with the new one; signed out and redirected to sign-in at 1280 and 390 px in Chromium, screenshotted and read: one background color under the card and the footer, the message inside the card, the card's whole form on the first screen at 1280×800; the accessibility sweep passes in Chromium and WebKit (102 passed, 8 skipped); `tools/check.sh quick` passes but for the WeasyPrint PDF test, which passes when run with the Homebrew library path this Mac needs. Firefox does not launch here and is CI's to confirm; the dark theme was not looked at by eye.
 - **Human Review Status**: Pending review
 - **Git Hash**: c894b68
+
+## [2026-11-25 12:01 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Technical A21 corrected: it said the weekly FCC import was the one job to reach the 400 MB limit, and the nightly backup reaches it too. SK decided that an addendum entry wrong in fact is corrected where it stands, and both addenda's rule now says so.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A21's last sentence replaced by the backup's measured peaks; "How it grows"); docs/REQUIREMENTS.md ("How it grows"). Neither body above the addenda changed.
+- **Nature of Contribution**: Edit. Verified: the backup's figures against its own memory reports on the production server for 22 to 25 November (353 to 515 MB peak, about 32 s); no host name, address or server path in the text.
+- **Human Review Status**: Pending review
+- **Git Hash**: [pending]
