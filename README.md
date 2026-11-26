@@ -7,6 +7,10 @@ its institution. Free software (GPL-3.0-or-later) from **W3USR**, the amateur ra
 University of Scranton, whose installation runs at **https://ops.w3usr.org**. Any club can run it:
 see [`config/README.md`](config/README.md). The name is explained in [`docs/NAME.md`](docs/NAME.md).
 
+Scheduling is the first step of a larger plan: getting operators at many clubs on the air at short
+notice when space weather happens, for HamSCI's NASA-funded study of the ionosphere. See
+[`docs/SPACE_WEATHER.md`](docs/SPACE_WEATHER.md).
+
 > **Status: first build, 2026-09-13.** A Django application on the decided stack
 > ([`docs/TECHNICAL_REQUIREMENTS.md`](docs/TECHNICAL_REQUIREMENTS.md)) implementing the core
 > of [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md): accounts and invitations, credentials and
@@ -35,6 +39,7 @@ ARCOps/
 |-- docs/REQUIREMENTS.md      <- functional requirements; start here
 |-- docs/TECHNICAL_REQUIREMENTS.md  <- proposed stack and technical decisions
 |-- docs/JOBS.md              <- scheduled jobs: how they run, how to add one
+|-- docs/SPACE_WEATHER.md     <- where ARCOps is going: space-weather alerts for HamSCI QRV
 |-- manage.py, config/        <- Django project: settings (base/dev/test/prod), urls; club.example.yaml, assets/, agreements/
 |-- apps/                     <- ops, accounts, credentials, events, comms: models, services, views, tests
 |-- templates/, static/       <- server-rendered pages, CSS, service worker, manifest

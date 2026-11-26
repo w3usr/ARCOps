@@ -5626,3 +5626,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Edits. Verified: A21's figures read from the job's own record of 2026-11-26 and compared with the six nights before; the INTERFACE.md sentence against the stylesheet and template it describes; `tools/check.sh quick` all clear.
 - **Human Review Status**: Reviewed and verified (SK)
 - **Git Hash**: c2d3138
+
+## [2026-11-26 17:05 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Issue #22: a short overview of where ARCOps is going, from scheduling operators to getting them on the air for space weather (HamSCI QRV), from W2NAF's outline, linked from the README.
+- **Sections/Files Affected**: docs/SPACE_WEATHER.md (new: why, Phase 1, Phase 2, the acknowledgment); README.md (a sentence and the link under the opening paragraph; a row in the layout).
+- **Nature of Contribution**: Draft. Kept to the outline: the QRV gloss corrected to the Q-code's meaning; a paragraph of the drafter's own argument removed; the station-access wording taken from the README. Not verified by the drafter and left for W2NAF: that students learn space weather at the contest sessions, and the names FRC and HIDRA, not spelled out. `tools/check.sh quick` all clear.
+- **Human Review Status**: Pending review (W2NAF, as the issue asks)
+- **Git Hash**:
