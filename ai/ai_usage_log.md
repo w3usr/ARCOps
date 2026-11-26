@@ -5610,3 +5610,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Diagnosis and a test fix. Found: the reader cut each stream at an optional carriage return before "endstream", so a compressed stream whose last byte is that character lost it, failed to decompress and was skipped, about one stream in 256; the PDF changes each run (it carries the signing time), so the test failed now and then. Verified: the mechanism reproduced (the old reader raises "incomplete or truncated stream" on such a stream, the new one reads it); the new test fails against the old reader and passes with the new; forty local renders all read whole; `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review
 - **Git Hash**: 8d002cd
+
+## [2026-11-26 16:35 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Acknowledge NASA award 80NSSC25K7026 (issue #21): a footer credit on every installation, an Acknowledgments page with the award's sentence and NASA's disclaimer, and the same text in the README, NOTICE and onboarding page; recorded as functional addendum A47 (SK).
+- **Sections/Files Affected**: templates/_footer.html (the credit, linking the page); templates/ops/acknowledgments.html (new); config/urls.py (`/acknowledgments/`); apps/ops/tests/test_shell.py (the footer link; the page's sentence and disclaimer, signed out); apps/accounts/tests/test_permission_matrix.py (open to everyone); tools/a11y/test_axe.py, test_contact_sheet.py, test_page_snapshot.py (the page joins the signed-out lists); README.md (Acknowledgments, before License); NOTICE (funding acknowledgment); docs/ONBOARDING.md (a paragraph linking the README's Acknowledgments); docs/REQUIREMENTS.md (addendum A47); CLAUDE.md and .claude/rules/ai-governance.md §5 (the funder named).
+- **Nature of Contribution**: Code generation, tests and drafts. Verified: `tools/check.sh` all clear except Firefox, which is not installed locally for this Playwright version (CI runs it); the axe and wide-layout tests pass in Chromium and WebKit; the page and footer read at 390 and 1280 px from the contact sheet. The club-neutral guard refused the subaward sentence on the page, so the page leaves it out and the README carries it. The wording for W2NAF's review, as the issue asks.
+- **Human Review Status**: Reviewed and verified (SK)
+- **Git Hash**:

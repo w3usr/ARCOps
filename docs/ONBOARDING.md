@@ -46,6 +46,10 @@ This repository holds a club project: software, a document, station notes, websi
 grant application, or some mix. Its `CLAUDE.md` file describes the specific project. Read that
 next.
 
+ARCOps's development is supported by NASA under award No. 80NSSC25K7026. The README's
+[Acknowledgments](../README.md#acknowledgments) carry the full wording and its disclaimer; anything
+you publish about this work, a poster, a talk or a page, credits the award the same way.
+
 The repository also carries a set of rules in `.claude/rules/`. Claude Code reads those
 automatically when you work here. You should read them too, because you are the one who is
 responsible for the result.

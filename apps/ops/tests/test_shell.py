@@ -50,6 +50,14 @@ def test_footer_links_the_club_page_and_credits_the_product(client: Client):
     body = client.get("/accounts/login/").content.decode()
     assert '<a href="https://example.edu/radio">N0CLB Example Radio Club</a>' in body
     assert "Powered by" in body
+    assert '<a href="/acknowledgments/">NASA award 80NSSC25K7026</a>' in body
+
+
+def test_acknowledgments_carry_the_award_sentence_and_disclaimer(client: Client):
+    """A47: signed out too, since the footer that links here is on every page."""
+    body = client.get("/acknowledgments/").content.decode()
+    assert "supported by NASA under award No. 80NSSC25K7026." in body
+    assert "do not necessarily reflect the views of the National Aeronautics" in body
 
 
 def test_signed_in_pages_get_the_sidebar_with_the_current_page_marked():

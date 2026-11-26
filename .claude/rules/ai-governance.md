@@ -55,8 +55,10 @@ Applies to club work connected to an NSF-funded effort.
 - Do not submit confidential or unpublished data to AI tools
 
 ### 5. Grant Funders (ARDC and others)
-**No external funder is named for this project as of 2026-09-12.** The standing institutional
-policies above govern it.
+**Funder: NASA, award No. 80NSSC25K7026** (Heliophysics Citizen Science Investigations, ROSES
+B.21), through a subaward from the New Jersey Institute of Technology. Section 3 applies. The
+acknowledgment and disclaimer are in the README's Acknowledgments, and the footer of every
+installation links to them. The award's own AI-use terms, if any, are not recorded here yet.
 
 If the project later receives an award, name the funder and the grant number here and record
 any AI-use terms the award carries. Amateur Radio Digital Communications (ARDC) is the most

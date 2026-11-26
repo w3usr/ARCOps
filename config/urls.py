@@ -52,6 +52,12 @@ urlpatterns = [
     path("join/return/<str:token>/", views_entry.return_through, name="return_through"),
     path("verify/<str:token>/", views_entry.verify_email, name="verify_email"),
     path("privacy/", views_settings.privacy, name="privacy"),
+    # A47: the funding acknowledgment the footer links to, on every installation.
+    path(
+        "acknowledgments/",
+        TemplateView.as_view(template_name="ops/acknowledgments.html"),
+        name="acknowledgments",
+    ),
     path("verify-address/<str:token>/", verify_address, name="verify_address"),
     path("sw.js", service_worker, name="service_worker"),
     path("branding/<str:name>", branding_file, name="branding_file"),

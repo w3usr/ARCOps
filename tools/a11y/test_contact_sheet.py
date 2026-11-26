@@ -41,7 +41,7 @@ def test_write_a_contact_sheet(live_server, request):
     # synchronous query.
     by_role = {
         role: (
-            ["/accounts/login/", "/privacy/", "/accounts/password/reset/"]
+            ["/accounts/login/", "/privacy/", "/acknowledgments/", "/accounts/password/reset/"]
             if email is None
             else pages_for(role)
         )

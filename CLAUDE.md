@@ -19,7 +19,8 @@ application is built on it.
 **Faculty advisor**: Nathaniel A. Frissell, W2NAF
 **Club license trustee**: {{TBD: NAME, CALLSIGN}}
 **Other contributors**: {{TBD}}
-**Funder**: {{TBD: unfunded / club-internal unless an award is named here}}
+**Funder**: NASA, award No. 80NSSC25K7026 (Heliophysics Citizen Science Investigations, ROSES
+B.21); the University of Scranton's part is a subaward from the New Jersey Institute of Technology
 **Project period**: 2026-09-12 to {{TBD}}
 
 ## Project Goal

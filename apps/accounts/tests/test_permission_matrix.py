@@ -137,6 +137,7 @@ def _pages(world):
         ("profile", "/me/", dict.fromkeys(("anonymous", *ROLES[1:]), AWAY)),
         ("messages", "/me/messages/", {"anonymous": AWAY, **everyone_in}),
         ("privacy", "/privacy/", dict.fromkeys(("anonymous", *ROLES[1:]), OK)),
+        ("acknowledgments", "/acknowledgments/", dict.fromkeys(("anonymous", *ROLES[1:]), OK)),
         # a provisional member sees no directory and no agreements (FR-121)
         (
             "member directory",

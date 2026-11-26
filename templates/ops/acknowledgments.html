@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% comment %}A47: the software's funding acknowledgment, as NASA's award terms word it. It credits the software, so every installation shows it, whichever club runs it.{% endcomment %}
+{% block title %}Acknowledgments · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+  <h1>Acknowledgments</h1>
+  <article class="prose">
+    <p>This material is based upon work supported by NASA under award No. 80NSSC25K7026.</p>
+    <p>Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Aeronautics and Space Administration.</p>
+    <p>The award is from NASA's Heliophysics Citizen Science Investigations program: <cite>A HamSCI Investigation of the Bottomside Ionosphere During the 2023 Annular and 2024 Total Solar Eclipses</cite>.</p>
+    <p>{{ product.name }} ({{ product.long_name }}) is free software from <a href="{{ product.author_url }}">{{ product.author }}</a>; its source is at <a href="{{ product.url }}">{{ product.url }}</a>.</p>
+  </article>
+{% endblock %}

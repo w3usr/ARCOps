@@ -74,6 +74,19 @@ Two rules matter more than the rest:
 Never publish member contact details, student records, or photographs of identifiable people
 without permission. Callsigns and names are public in the FCC ULS database and are fine.
 
+## Acknowledgments
+
+This material is based upon work supported by NASA under award No. 80NSSC25K7026.
+
+Any opinions, findings, and conclusions or recommendations expressed in this material are
+those of the author(s) and do not necessarily reflect the views of the National Aeronautics
+and Space Administration.
+
+The award is from NASA's Heliophysics Citizen Science Investigations program (ROSES B.21):
+*A HamSCI Investigation of the Bottomside Ionosphere During the 2023 Annular and 2024 Total
+Solar Eclipses*. The University of Scranton's part is a subaward from the New Jersey Institute
+of Technology. Every installation's footer carries the credit and links to the same text.
+
 ## License
 
 Free software under the **GNU General Public License, version 3 or later**. See

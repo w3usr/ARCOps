@@ -22,7 +22,7 @@ from test_axe import ACCOUNTS, DESKTOP, PHONE, pages_for, sign_in
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
-SIGNED_OUT = ["/accounts/login/", "/privacy/", "/accounts/password/reset/"]
+SIGNED_OUT = ["/accounts/login/", "/privacy/", "/acknowledgments/", "/accounts/password/reset/"]
 
 # Each element: a path that names it, a hash of every computed property, and its rounded box.
 WALK = """() => {

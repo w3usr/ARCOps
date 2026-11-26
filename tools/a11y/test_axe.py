@@ -70,6 +70,7 @@ def anonymous_pages() -> list[tuple[str, int]]:
     return [
         ("/accounts/login/", 200),
         ("/privacy/", 200),
+        ("/acknowledgments/", 200),
         ("/accounts/password/reset/", 200),
         (f"/join/{class_link.token}/form/", 200),
         (f"/mentors/{community.token}/", 200),
