@@ -5618,3 +5618,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, tests and drafts. Verified: `tools/check.sh` all clear except Firefox, which is not installed locally for this Playwright version (CI runs it); the axe and wide-layout tests pass in Chromium and WebKit; the page and footer read at 390 and 1280 px from the contact sheet. The club-neutral guard refused the subaward sentence on the page, so the page leaves it out and the README carries it. The wording for W2NAF's review, as the issue asks.
 - **Human Review Status**: Reviewed and verified (SK)
 - **Git Hash**: cf2451f
+
+## [2026-11-26 16:48 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: Record the nightly backup's first run under the 400 MB limit in technical addendum A21, and add SK's two sign-in card refinements of 2026-11-25 to INTERFACE.md.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A21's last sentence: the run's time, peak and swap, corrected in place); docs/INTERFACE.md (the sign-in card: one color behind it, footer included; a message to someone signed out inside the card).
+- **Nature of Contribution**: Edits. Verified: A21's figures read from the job's own record of 2026-11-26 and compared with the six nights before; the INTERFACE.md sentence against the stylesheet and template it describes; `tools/check.sh quick` all clear.
+- **Human Review Status**: Reviewed and verified (SK)
+- **Git Hash**:

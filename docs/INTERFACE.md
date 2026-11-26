@@ -390,7 +390,10 @@ be the one a design system ships as its default still looks like itself.
   the callsign in the club's color: the page that introduces the club. It was a half-page panel
   in the club's color beside the form until SK, 2026-11-24: a centered form reads more plainly,
   and on a phone the panel pushed the fields below the first screen. Joining and accepting an
-  invitation use the same card.
+  invitation use the same card. The page behind it is one color, the footer included, so the
+  card stands on a single background; and a message to someone signed out ("You have signed
+  out.") sits inside the card under the club's name, not in a band of its own above it (SK,
+  2026-11-25).
 
 ## Type
 

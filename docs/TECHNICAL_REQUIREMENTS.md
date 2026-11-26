@@ -1070,7 +1070,8 @@ Tried on the development server on 2026-11-25 with the weekly file: 14 minutes a
 without the limit, 400 MB peak, 218 MB in swap. The swap it fills is free again when it ends.
 **The nightly backup (TR-22) also reaches the limit:** on production, 2026-11-22 to 25, before it
 was set, it peaked at 353 to 515 MB, 32 seconds a night, much of it the pages of the database it
-reads and writes, which the limit drops first. Its first runs under the limit are still to be read.
+reads and writes, which the limit drops first. Its first run under the limit, on 2026-11-26,
+finished ok in 30 seconds, held at 400 MB with 19 MB in swap: no slower than before.
 
 **Decided by** SK on 2026-11-25.
 
