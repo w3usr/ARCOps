@@ -5625,4 +5625,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A21's last sentence: the run's time, peak and swap, corrected in place); docs/INTERFACE.md (the sign-in card: one color behind it, footer included; a message to someone signed out inside the card).
 - **Nature of Contribution**: Edits. Verified: A21's figures read from the job's own record of 2026-11-26 and compared with the six nights before; the INTERFACE.md sentence against the stylesheet and template it describes; `tools/check.sh quick` all clear.
 - **Human Review Status**: Reviewed and verified (SK)
-- **Git Hash**:
+- **Git Hash**: c2d3138
