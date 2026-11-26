@@ -534,3 +534,22 @@ def test_display_only_event_has_no_roster_and_lists_as_regular():
         r.status_code == 302
         and Event.objects.filter(title="Monthly meeting", display_only=True).exists()
     )
+
+
+def test_the_slot_page_says_why_each_role_is_not_open_to_you():
+    """FR-53: the roles you cannot take are listed with the reason, before any attempt."""
+    tech = _user("tech@example.org")
+    _licensed(tech, "Technician")
+    e, slots = _event(timezone.now() + timedelta(days=4))
+    EligibilityRule.objects.create(event=e, role="mentor", min_license_class="General")
+    EligibilityRule.objects.create(event=e, role="operator", categories=["faculty"])
+    c = Client()
+    c.force_login(tech)
+    url = f"/events/{e.pk}/slot/{slots[0].pk}/"
+    body = c.get(url).content.decode()
+    shown = body[body.index("Not open to you here") :]
+    assert "Mentor needs a General or higher license" in shown
+    assert "Operator is limited to: Faculty" in shown
+    assert "Observer" not in shown, "an open role is the form's, not this list's"
+    SignUp.objects.create(slot=slots[0], user=tech, role="observer")
+    assert "Not open to you here" not in c.get(url).content.decode()

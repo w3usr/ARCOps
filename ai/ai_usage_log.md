@@ -5634,3 +5634,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Draft. Kept to the outline: the QRV gloss corrected to the Q-code's meaning; a paragraph of the drafter's own argument removed; the station-access wording taken from the README. Not verified by the drafter and left for W2NAF: that students learn space weather at the contest sessions, and the names FRC and HIDRA, not spelled out. `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review (W2NAF, as the issue asks)
 - **Git Hash**: 411a50f
+
+## [2026-11-26 18:04 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-8: check a callsign for a plausible shape on every field that takes one, with no portable suffix (functional addendum A48, SK). FR-53: the slot page lists each role you cannot take, with the reason, before any attempt.
+- **Sections/Files Affected**: apps/accounts/models.py (`validate_callsign`, on the User model's callsign); apps/accounts/migrations/0028_callsign_shape.py (the field's validator; no database change); apps/accounts/views.py (the invitation and guardian forms), apps/accounts/views_entry.py (the join form); apps/accounts/tests/test_account_form.py (accepted and refused shapes; the check on all four forms); apps/events/views_slots.py (`slot_detail` keeps the reason for each role refused); templates/events/_slot_body.html ("Not open to you here:" and the reasons); apps/events/tests/test_phase2.py (a Technician against a General-only mentor rule and a faculty-only operator rule); docs/REQUIREMENTS.md (A48).
+- **Nature of Contribution**: Code generation, tests and a draft. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; on the development server, no stored callsign the new rule refuses. The club-neutral guard refused the club's own callsign in the first test data; made-up calls used instead.
+- **Human Review Status**: Pending review
+- **Git Hash**:

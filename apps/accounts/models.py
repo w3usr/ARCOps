@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import re
 import secrets
 from uuid import uuid4
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models.functions import Lower
 from django.utils import timezone
@@ -89,6 +91,19 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra)
 
 
+# FR-8: a plausible callsign as licensed, letters and digits with at least one of each. No
+# portable suffix (/P, /M): the FCC lookup matches the callsign alone (A48).
+CALLSIGN_SHAPE = re.compile(r"(?=[A-Z0-9]*[0-9])(?=[A-Z0-9]*[A-Z])[A-Z0-9]{3,7}")
+
+
+def validate_callsign(value: str) -> None:
+    if value and not CALLSIGN_SHAPE.fullmatch(value.strip().upper()):
+        raise ValidationError(
+            "Type the callsign as licensed: 3 to 7 letters and digits, such as K1ABC, "
+            "without a suffix like /P."
+        )
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """A person with an account.
 
@@ -108,7 +123,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     # FR-16: a ULS name awaiting the member's confirmation after a callsign was added or changed:
     # {"first": ..., "last": ..., "callsign": ..., "previous": ...}. Empty when nothing is pending.
     pending_uls_name = models.JSONField(default=dict, blank=True)
-    callsign = models.CharField(max_length=12, blank=True, db_index=True)
+    callsign = models.CharField(
+        max_length=12, blank=True, db_index=True, validators=[validate_callsign]
+    )
     cell_phone = models.CharField(max_length=30, blank=True)
     push_enabled = models.BooleanField(default=True)  # FR-112: browser notifications, on by default
     # FR-59: the calendar feed's address. A key on the account rather than a signed string, so

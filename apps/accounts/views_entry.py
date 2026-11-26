@@ -26,7 +26,7 @@ from apps.ops.forms import NoColon
 from . import entry
 from .consent import PrivacyConsentMixin, consent_field
 from .forms import check_passwords, password_field
-from .models import EntryLink, User
+from .models import EntryLink, User, validate_callsign
 
 
 def _base(request) -> str:
@@ -153,6 +153,7 @@ class JoinForm(PrivacyConsentMixin, forms.Form):
     callsign = forms.CharField(
         max_length=12,
         required=False,
+        validators=[validate_callsign],
         help_text="If you hold one. Your name and license come from the FCC record.",
     )
     first_name = forms.CharField(max_length=80)

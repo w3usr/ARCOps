@@ -208,3 +208,34 @@ def test_no_template_comment_reaches_the_page():
     for url in ("/me/", "/me/edit/", f"/members/{sys_user.pk}/edit/"):
         body = c.get(url).content.decode()
         assert "{#" not in body and "editable_fields" not in body, url
+
+
+@pytest.mark.parametrize("typed", ["K1ABC", "k2xyz", " n0clb ", "K3A", "VP2EAB1", ""])
+def test_a_plausible_callsign_is_accepted(typed):
+    from apps.accounts.models import validate_callsign
+
+    validate_callsign(typed)  # raises when refused
+
+
+@pytest.mark.parametrize("typed", ["HELLO!!", "K2XYZ/P", "ABCDE", "12345", "K1", "KA1BCDEF"])
+def test_an_implausible_callsign_is_refused_in_plain_words(typed):
+    """FR-8: letters and digits, 3 to 7, at least one of each; no portable suffix (A48)."""
+    from django.core.exceptions import ValidationError
+
+    from apps.accounts.models import validate_callsign
+
+    with pytest.raises(ValidationError, match="Type the callsign as licensed"):
+        validate_callsign(typed)
+
+
+def test_every_form_that_takes_a_callsign_refuses_an_implausible_one():
+    from apps.accounts.views import AcceptForm, GuardianAcceptForm
+    from apps.accounts.views_entry import JoinForm
+
+    m = _user("mem@example.org")
+    form = AccountForm({"callsign": "HELLO!!"}, instance=m, actor=m)
+    assert not form.is_valid() and "Type the callsign as licensed" in str(form.errors["callsign"])
+    from apps.accounts.models import validate_callsign
+
+    for form_class in (AcceptForm, GuardianAcceptForm, JoinForm):
+        assert validate_callsign in form_class.base_fields["callsign"].validators, form_class

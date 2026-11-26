@@ -17,7 +17,7 @@ from apps.ops.forms import NoColon
 from .addresses import AddressInUse
 from .consent import PrivacyConsentMixin, consent_field
 from .forms import check_passwords, password_field
-from .models import Address, Invitation, User
+from .models import Address, Invitation, User, validate_callsign
 from .services import (
     admit_from_invitation,
     create_invitation,
@@ -220,7 +220,10 @@ def _invitations_page(request, form, created):
 
 class AcceptForm(PrivacyConsentMixin, forms.Form):
     callsign = forms.CharField(
-        max_length=12, required=False, help_text="Leave blank if you do not have one."
+        max_length=12,
+        required=False,
+        validators=[validate_callsign],
+        help_text="Leave blank if you do not have one.",
     )
     first_name = forms.CharField(max_length=80)
     middle_name = forms.CharField(max_length=80, required=False)
@@ -257,6 +260,7 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
         max_length=12,
         required=False,
         label="Member's callsign",
+        validators=[validate_callsign],
         help_text="Leave blank if they do not have one.",
     )
     cell_phone = forms.CharField(

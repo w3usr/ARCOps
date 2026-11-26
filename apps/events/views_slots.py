@@ -78,12 +78,15 @@ def slot_detail(request, pk, slot_id):
                 eligible_roles.append(role)
     # FR-111: roles the holder could switch to (open seat, eligible); FR-57: full roles they
     # are eligible for, to wait on.
-    switch_roles, waitable = [], []
+    # FR-53: and for someone not yet on the slot, each role they cannot take, with the reason.
+    switch_roles, waitable, not_open = [], [], []
     caps = {c.role: c.capacity for c in slot.capacities.all()}
     if data["published"] and not slot.closed:
         for role in caps:
-            ok, _ = can_sign_up(request.user, slot, role)
+            ok, reason = can_sign_up(request.user, slot, role)
             if not ok:
+                if not cell.mine:
+                    not_open.append(reason)
                 continue
             if cell.mine and role != cell.mine.role and role in cell.open_roles:
                 switch_roles.append(role)
@@ -119,6 +122,7 @@ def slot_detail(request, pk, slot_id):
         "eligible_roles": eligible_roles,
         "switch_roles": switch_roles,
         "waitable": waitable,
+        "not_open": not_open,
         "my_wait": my_wait,
         "slot_rules": slot_rules,
         "override": override,

@@ -97,6 +97,12 @@ posts: either may answer with a page asking to confirm.{% endcomment %}
 </form>
 {% elif cell.open_roles %}<p class="muted">Seats are open in this slot, but none of them in a role you are eligible for. Ask a captain if you think that is wrong.</p>
 {% else %}<p class="muted">Full.</p>{% endif %}
+{% if not_open and not minor_readonly %}
+  <div>
+    <p>Not open to you here:</p>
+    <ul class="list">{% for reason in not_open %}<li>{{ reason|capfirst }}</li>{% endfor %}</ul>
+  </div>
+{% endif %}
 {% if my_wait %}
   <p>You are on the waitlist for <strong>{{ my_wait.role|role_label }}</strong>{% if my_wait.state == "offered" %}: a place is <a href="{% url 'waitlist_accept' my_wait.pk %}">on offer to you</a> until {{ my_wait.offer_expires_at|utc_time_short }}{% endif %}.</p>
   <form method="post"{% if partial %} hx-boost="true"{% endif %} action="{% url 'waitlist_withdraw' my_wait.pk %}" class="inline">{% csrf_token %}<button type="submit" class="secondary small">Leave the waitlist</button></form>
