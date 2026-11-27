@@ -5651,7 +5651,7 @@ carries the actual running model ID.
 - **Human Review Status**: Pending review
 - **Git Hash**: 829168a
 
-## [2026-11-27 12:53 EST]
+## [2026-11-27 12:31 EST]
 - **Tool**: Claude (Anthropic), claude-opus-5-5
 - **Session Purpose**: FR-66: the roster's Coverage carries the number of sign-ups unconfirmed in the next 48 hours, the figure only the Upcoming coverage page showed.
 - **Sections/Files Affected**: apps/events/services/slots.py (`health()` counts the sign-ups starting within 48 hours that are neither confirmed nor checked in, skipping canceled slots); apps/events/views_member.py (the Upcoming coverage page reads that count instead of its own query); templates/events/health_overview.html; templates/events/detail.html (the line under the Coverage tags); apps/events/tests/test_roster.py (inside and beyond the 48 hours; gone once confirmed).
