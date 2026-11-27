@@ -5722,3 +5722,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, a test and a draft (the amendment). A first draft recorded the decision as a separate entry, A29, which left A28's sentence standing unchallenged; folded into A28 as an amendment, as the functional addendum's A12 does. A first attempt to commit this ahead of the browser-notification change failed its check and went in with that change under its title; both were taken back locally (never pushed) and committed apart. Verified: the API tests and `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review
 - **Git Hash**: 9c1da1a
+
+## [2026-11-27 15:21 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The data model's unnamed tables recorded (technical addendum A29), and the event header one row shorter on a phone.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A29: `UlsLicense`, `UlsStaging`, `CredentialDecision`, `SlotWarning`, `Waitlist` as the code names it, and Outbox's `link`; TR-26's table untouched); templates/events/_event_header.html (Announce's word in a span of its own); static/css/components.css (at phone width the actions share the state tag's line, Announce as its megaphone with the word kept for a screen reader).
+- **Nature of Contribution**: Draft (A29, checked against the models) and code generation. The header: 305 to 269 px on the Roster, 351 to 315 on Manage, at 390 px in Chromium and WebKit; desktop unchanged; Announce still found by its name. Verified: `tools/check.sh quick` all clear (its guard caught a date in the CSS comment, reworded); the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

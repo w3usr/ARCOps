@@ -23,7 +23,7 @@ header leaves its own out there.{% endcomment %}
     </div>
     {% if captain %}
       <div class="actions">
-        {% if event.state != "draft" and event.state != "cancelled" %}<a class="button secondary" href="{% url 'event_announce' event.pk %}">{% icon 'megaphone' %}Announce</a>{% endif %}
+        {% if event.state != "draft" and event.state != "cancelled" %}<a class="button secondary" href="{% url 'event_announce' event.pk %}">{% icon 'megaphone' %}<span class="label">Announce</span></a>{% endif %}
         <button type="button" class="secondary icon-only" popovertarget="event-menu" aria-label="More actions for this event">{% icon 'more' %}</button>
         <div class="menu" id="event-menu" popover>
           {% if slots %}<a href="{% url 'roster_csv' event.pk %}">{% icon 'download' 'small' %}Export the roster</a>{% endif %}

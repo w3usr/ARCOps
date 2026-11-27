@@ -1200,7 +1200,30 @@ the page's service and narrowed to the announced states, so who may see an event
 one place. **Decided by** SK, 2026-11-27, told that the API had begun to list drafts and canceled
 events to officers and captains.
 
+### A29. The data model: the tables TR-26's table does not name
+
+**Original (TR-26).** The table of tables, by app. A12 (the event's own start and end in place of
+`OperatingPeriod`; `OnAirRange`), A13 (`Outbox` has no channel) and A14 (the `cache` table) have
+recorded three changes since. The rest are recorded here, so the table and this addendum together
+name every table the application has.
+
+**Record.**
+- `credentials`: **`UlsLicense`**, the local table built from the FCC's bulk files (TR-13), one row
+  per callsign, which the join forms, the sync and the License card read; **`UlsStaging`**,
+  scratch rows for one import run, emptied at the start of every run and never read by the
+  application; **`CredentialDecision`**, every act that changed whether somebody holds access, in
+  the order they happened, which the Approvals page lists (FR-128).
+- `events`: **`SlotWarning`**, one at-risk warning sent for a slot in a given state, so the same
+  state is not warned about twice within the rate limit (FR-73); the table's `WaitlistEntry` is
+  named **`Waitlist`** in the code (FR-57).
+- `comms`: `Outbox` carries **`link`**, the page a browser notification opens (FR-112), since
+  2026-11-27 (migration `comms/0005`).
+
+No decision changes the model here; the entry records what is there.
+
+**Recorded** at SK's request on 2026-11-27, from the models as they stand at ARCOps `7135f62`.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20), 2026-11-25 (A21 to A27) and 2026-11-27 (A28, and its amendment), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20), 2026-11-25 (A21 to A27) and 2026-11-27 (A28 and its amendment, A29), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

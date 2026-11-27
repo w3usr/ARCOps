@@ -411,6 +411,43 @@ button:disabled {
   align-items: center;
   gap: var(--space-2);
 }
+/* On a phone the captain's actions share the state tag's line, Announce as its megaphone (the word
+   kept for a screen reader), so the header takes one row fewer before the tabs. */
+@media (max-width: 40rem) {
+  .event-head-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+  }
+  .event-head-main,
+  .title-line {
+    display: contents;
+  }
+  .title-line h1 {
+    grid-column: 1 / -1;
+  }
+  .title-line .tag {
+    grid-row: 2;
+    justify-self: start;
+  }
+  .event-head-row > .actions {
+    grid-row: 2;
+    grid-column: 2;
+  }
+  .event-head-row > .actions .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .facts {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+}
 /* The line is an inset shadow, painted under the tabs, so the current tab's underline covers it
    without a -1px margin: in a box that scrolls sideways that margin overflowed it by a pixel and
    drew a vertical scrollbar. */
