@@ -47,6 +47,9 @@ def test_the_callsign_brings_the_fcc_record_in_place_of_the_name_fields(off):
     inv = create_invitation(off, "new@example.org", "student")
     page = Client().get(f"/me/invite/{inv.token}/").content.decode()
     assert f'hx-get="/me/invite/{inv.token}/names/"' in page  # the callsign field asks
+    # On typing only: asking again when the field loses focus (to tick "This is me") redrew the
+    # block over the tick.
+    assert 'hx-trigger="input changed delay:500ms"' in page and "delay:500ms, change" not in page
     assert 'name="first_name"' in page and "I do not have a callsign" in page
     block = Client().get(f"/me/invite/{inv.token}/names/", {"callsign": "k1abc"}).content.decode()
     assert (

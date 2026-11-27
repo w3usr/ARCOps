@@ -53,7 +53,9 @@ class CallsignFirst:
                 "hx-include": "#names, [name=callsign], [name=no_callsign]",
             }
             self.fields["callsign"].widget.attrs.update(
-                ask | {"hx-trigger": "input changed delay:500ms, change"}
+                # On typing only, never on leaving the field: leaving it to tick "This is me" would
+                # ask again and redraw the block over the tick.
+                ask | {"hx-trigger": "input changed delay:500ms"}
             )
             self.fields["no_callsign"].widget.attrs.update(ask | {"hx-trigger": "change"})
         self.fields["is_me"].widget.attrs["required"] = True  # drawn only beside a record

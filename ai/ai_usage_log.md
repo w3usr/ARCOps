@@ -5729,4 +5729,12 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A29: `UlsLicense`, `UlsStaging`, `CredentialDecision`, `SlotWarning`, `Waitlist` as the code names it, and Outbox's `link`; TR-26's table untouched); templates/events/_event_header.html (Announce's word in a span of its own); static/css/components.css (at phone width the actions share the state tag's line, Announce as its megaphone with the word kept for a screen reader).
 - **Nature of Contribution**: Draft (A29, checked against the models) and code generation. The header: 305 to 269 px on the Roster, 351 to 315 on Manage, at 390 px in Chromium and WebKit; desktop unchanged; Announce still found by its name. Verified: `tools/check.sh quick` all clear (its guard caught a date in the CSS comment, reworded); the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI.
 - **Human Review Status**: Pending review
+- **Git Hash**: d61d518
+
+## [2026-11-27 15:21 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-4 fix: on the joining forms, ticking "This is me" no longer loses the tick.
+- **Sections/Files Affected**: apps/accounts/callsign_first.py (the callsign field asks for the name block on typing only, not also when it loses focus); apps/accounts/tests/test_callsign_first.py (the trigger).
+- **Nature of Contribution**: Code generation and a test. Found by the T3 scenario on the development server: clicking "This is me" took focus from the callsign field, whose change event asked again before the box ticked, and the answer redrew the block unticked. Reproduced in Chromium with the old trigger (two lookups, tick lost) and checked with the new one in Chromium and WebKit (one lookup, tick kept). Verified: `tools/check.sh quick` all clear.
+- **Human Review Status**: Pending review
 - **Git Hash**: [after commit]
