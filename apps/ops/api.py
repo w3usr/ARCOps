@@ -31,7 +31,10 @@ def ping(request):
 @api.get("/events", response=list[EventOut], auth=django_auth)
 def list_events(request):
     out = []
-    for e in visible_events(request.user).order_by("id"):
+    # Announced events only, whoever asks (technical addendum A28, as amended): a draft or a canceled event
+    # stays on the Events page for those who may see it there.
+    announced = visible_events(request.user).filter(state__in=["published", "locked", "completed"])
+    for e in announced.order_by("id"):
         s, en = e.start, e.end
         out.append(
             EventOut(

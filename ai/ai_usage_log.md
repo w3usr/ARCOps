@@ -5713,4 +5713,12 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/comms/models.py and apps/comms/migrations/0005_outbox_link.py (Outbox's `link`); apps/comms/services.py (`compose` and `send` take a link; a message about a slot or an event opens it; `_push` sends the stored link or My messages); apps/credentials/services.py and apps/credentials/views.py (agreement notices open Agreements or Approvals, license notices the profile, the password rotation its page); apps/events/services/notify.py (the reminder and the at-risk warning open their slot); apps/comms/tests/test_messages.py.
 - **Nature of Contribution**: Code generation and a test. A context's own `link` is never taken by itself, since some are one-use tokens that opening would spend. `push_test` already had a test. Verified: the application tests (750 passed) and `tools/check.sh quick` all clear; no page changed, so the accessibility sweep was not run.
 - **Human Review Status**: Pending review
+- **Git Hash**: 0b51183
+
+## [2026-11-27 14:31 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: TR-8, technical addendum A28 amended: the API lists announced events only, still taken through the Events page's service.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A28: an "Amended 2026-11-27" paragraph naming the sentence that no longer holds); apps/ops/api.py (`/api/v1/events` narrows the page's list to published, locked and completed events); apps/events/tests/test_flows.py (a draft and a canceled event on an officer's page, not in the API for an officer or a member).
+- **Nature of Contribution**: Code generation, a test and a draft (the amendment). A first draft recorded the decision as a separate entry, A29, which left A28's sentence standing unchallenged; folded into A28 as an amendment, as the functional addendum's A12 does. A first attempt to commit this ahead of the browser-notification change failed its check and went in with that change under its title; both were taken back locally (never pushed) and committed apart. Verified: the API tests and `tools/check.sh quick` all clear.
+- **Human Review Status**: Pending review
 - **Git Hash**: [after commit]
