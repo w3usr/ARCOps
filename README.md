@@ -79,6 +79,12 @@ Two rules matter more than the rest:
 Never publish member contact details, student records, or photographs of identifiable people
 without permission. Callsigns and names are public in the FCC ULS database and are fine.
 
+## AI use
+
+This repository contains AI-assisted work: code, pages and documents drafted or edited with
+Claude (Anthropic) and reviewed by club members. [`ai/ai_usage_log.md`](ai/ai_usage_log.md) is
+the record: each session's tool and version, what it did, and its review status.
+
 ## Acknowledgments
 
 This material is based upon work supported by NASA under award No. 80NSSC25K7026.

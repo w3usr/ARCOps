@@ -5738,3 +5738,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and a test. Found by the T3 scenario on the development server: clicking "This is me" took focus from the callsign field, whose change event asked again before the box ticked, and the answer redrew the block unticked. Reproduced in Chromium with the old trigger (two lookups, tick lost) and checked with the new one in Chromium and WebKit (one lookup, tick kept). Verified: `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review
 - **Git Hash**: 5e06dc2
+
+## [2026-11-27 16:07 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: The README states that the repository contains AI-assisted work, as the governance rules ask of code released publicly.
+- **Sections/Files Affected**: README.md (new "AI use" section, before Acknowledgments).
+- **Nature of Contribution**: Draft. Every tool named in ai/ai_usage_log.md is Claude (Anthropic); the section says so and points to the log as the record.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
