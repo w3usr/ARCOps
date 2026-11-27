@@ -1,0 +1,21 @@
+{% load times %}
+{% with record=form.fcc_record %}
+  {% if record %}
+    <p>The FCC's record for <strong>{{ record.callsign }}</strong>: <strong>{{ record.licensee }}</strong>, {{ record.class_label }}, {{ record.status_label }}{% if record.expiry_date %}, expires {{ record.expiry_date|plain_day }}{% endif %}.</p>
+    <div class="check">
+      {{ form.is_me }}<label for="{{ form.is_me.id_for_label }}">{{ form.is_me.label }}</label>{{ form.is_me.errors }}
+    </div>
+    <span class="helptext">Your name comes from this record. Not you? Check the callsign. To be known by another name in the club, fill in Preferred name.</span>
+  {% else %}
+    {% if form.missing_callsign %}
+      <p class="helptext">
+        The FCC's data has no record for <strong>{{ form.missing_callsign }}</strong> yet. If it was granted in the last few days, type your name as licensed; the license is checked when the FCC's data next arrives.
+      </p>
+    {% endif %}
+    {% for f in form %}
+      {% if f.name in form.NAMES %}
+        <div class="field">{{ f.label_tag }}{{ f }}{% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}{{ f.errors }}</div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endwith %}

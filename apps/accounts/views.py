@@ -15,6 +15,7 @@ from apps.ops.config import setting
 from apps.ops.forms import NoColon
 
 from .addresses import AddressInUse
+from .callsign_first import CallsignFirst, names_block
 from .consent import PrivacyConsentMixin, consent_field
 from .forms import check_passwords, password_field
 from .models import Address, Invitation, User, validate_callsign
@@ -218,12 +219,12 @@ def _invitations_page(request, form, created):
     )
 
 
-class AcceptForm(PrivacyConsentMixin, forms.Form):
+class AcceptForm(CallsignFirst, PrivacyConsentMixin, forms.Form):
     callsign = forms.CharField(
         max_length=12,
         required=False,
         validators=[validate_callsign],
-        help_text="Leave blank if you do not have one.",
+        help_text="If you hold one. Your name and license come from the FCC record.",
     )
     first_name = forms.CharField(max_length=80)
     middle_name = forms.CharField(max_length=80, required=False)
@@ -414,7 +415,7 @@ def accept_invitation(request, token):
         inv.opened_at = timezone.now()
         inv.save(update_fields=["opened_at"])
     if request.method == "POST":
-        form = AcceptForm(request.POST)
+        form = AcceptForm(request.POST, lookup_url=reverse("invitation_names", args=[token]))
         if form.is_valid():
             d = form.cleaned_data
             try:
@@ -456,8 +457,16 @@ def accept_invitation(request, token):
             messages.success(request, "Welcome. Your account is ready.")
             return redirect("dashboard")
     else:
-        form = AcceptForm()
+        form = AcceptForm(lookup_url=reverse("invitation_names", args=[token]))
     return render(request, "accounts/accept_invitation.html", {"form": form, "invitation": inv})
+
+
+def invitation_names(request, token):
+    """FR-4: the name block for the callsign typed so far, for an invitation still open."""
+    inv = get_object_or_404(Invitation, token=token)
+    if not inv.is_valid() or inv.is_minor:
+        raise Http404
+    return names_block(request, AcceptForm(initial=request.GET.dict()))
 
 
 @login_required

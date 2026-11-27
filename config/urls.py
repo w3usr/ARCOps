@@ -48,6 +48,7 @@ urlpatterns = [
     # Entry links (FR-119, FR-120, FR-123): public pages, gated by the link's own state.
     path("join/<str:token>/", views_entry.join, name="join"),
     path("join/<str:token>/form/", views_entry.join_form, name="join_form"),
+    path("join/<str:token>/names/", views_entry.join_names, name="join_names"),
     path("mentors/<str:token>/", views_entry.mentor_needs_page, name="mentor_needs"),
     path("join/return/<str:token>/", views_entry.return_through, name="return_through"),
     path("verify/<str:token>/", views_entry.verify_email, name="verify_email"),

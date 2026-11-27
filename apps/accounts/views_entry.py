@@ -24,6 +24,7 @@ from apps.ops.config import setting
 from apps.ops.forms import NoColon
 
 from . import entry
+from .callsign_first import CallsignFirst, names_block
 from .consent import PrivacyConsentMixin, consent_field
 from .forms import check_passwords, password_field
 from .models import EntryLink, User, validate_callsign
@@ -146,7 +147,7 @@ def entry_link_action(request, pk):
     return redirect("entry_links")
 
 
-class JoinForm(PrivacyConsentMixin, forms.Form):
+class JoinForm(CallsignFirst, PrivacyConsentMixin, forms.Form):
     """The invitation's join form plus the address, the category (class links), and the age question."""
 
     email = forms.EmailField(label="Email address")
@@ -233,6 +234,14 @@ def mentor_needs_page(request, token):
 
 
 @require_http_methods(["GET", "POST"])
+def join_names(request, token):
+    """FR-4: the name block for the callsign typed so far, for a link still open."""
+    link, closed = _link_or_page(request, token)
+    if closed:
+        raise Http404
+    return names_block(request, JoinForm(link=link, initial=request.GET.dict()))
+
+
 def join_form(request, token):
     link, closed = _link_or_page(request, token)
     if closed:
@@ -242,7 +251,7 @@ def join_form(request, token):
 
         return signed_in_elsewhere(request, "link")
     if request.method == "POST":
-        form = JoinForm(request.POST, link=link)
+        form = JoinForm(request.POST, link=link, lookup_url=reverse("join_names", args=[token]))
         if form.is_valid():
             d = form.cleaned_data
             if d.get("under_18"):
@@ -306,7 +315,7 @@ def join_form(request, token):
                 return redirect("event_list")
             return render(request, "accounts/join_sent.html", {"link": link, "email": d["email"]})
     else:
-        form = JoinForm(link=link)
+        form = JoinForm(link=link, lookup_url=reverse("join_names", args=[token]))
     return render(request, "accounts/join.html", {"form": form, "link": link})
 
 

@@ -26,4 +26,5 @@ urlpatterns = [
     path("entry-links/", views_entry.entry_links, name="entry_links"),
     path("entry-links/<int:pk>/", views_entry.entry_link_action, name="entry_link_action"),
     path("invite/<str:token>/", views.accept_invitation, name="accept_invitation"),
+    path("invite/<str:token>/names/", views.invitation_names, name="invitation_names"),
 ]

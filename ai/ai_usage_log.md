@@ -5674,3 +5674,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. A first draft reused the name of an existing constant in account.py and broke four account tests; renamed. A change made through Django's admin pages is not audited, so such a field still reads "Since joining". Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; a member's profile looked at as an officer at phone width.
 - **Human Review Status**: Pending review
 - **Git Hash**: d7f3459
+
+## [2026-11-27 13:39 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-4: the invitation and join forms look the callsign up as it is typed and show the FCC's record in place of the name fields, with "This is me" and an "I do not have a callsign" choice.
+- **Sections/Files Affected**: apps/accounts/callsign_first.py (new: the shared form behavior, the FCC row looked up from what was typed, the rules on submit, the name block for the lookup); templates/accounts/_names.html (new: the record and "This is me", or the name fields); apps/accounts/views.py (AcceptForm uses it; the invitation's lookup view; the callsign's help text); apps/accounts/views_entry.py (JoinForm uses it; the join link's lookup view); apps/accounts/urls.py, config/urls.py (the two lookup addresses, each under its own open invitation or link); templates/accounts/accept_invitation.html, templates/accounts/join.html (the name block in place of the name fields); apps/accounts/tests/test_callsign_first.py (new).
+- **Nature of Contribution**: Code generation and tests. Without JavaScript the names are typed as before, or a known callsign with no name redraws the page with the record. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI, run before the help-text change; the invitation form driven in Chromium at phone width (the callsign typed, the no-callsign box both ways, "This is me", submitted; the account took the FCC's name).
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
