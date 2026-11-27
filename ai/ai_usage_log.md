@@ -5689,4 +5689,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/callsign_first.py (the labels, the refusal and the record's help as form attributes; the callsign and the no-callsign choice placed before the names); apps/accounts/views.py (GuardianAcceptForm uses it, with "They do not have a callsign", "This is them" and its own help; the callsign's help text; the lookup answers for a minor's invitation with the guardian's words); templates/accounts/_names.html (the record's help from the form); templates/accounts/accept_invitation_guardian.html (the name block); apps/accounts/tests/test_callsign_first.py (the guardian's form).
 - **Nature of Contribution**: Code generation and a test. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; the guardian's form looked at in Chromium at phone width with a callsign typed.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 5db8424
