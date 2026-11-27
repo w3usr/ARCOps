@@ -888,3 +888,20 @@ def test_a_captain_sees_the_contacts_of_the_people_on_their_own_event(world):
     )
     Captaincy.objects.create(event=elsewhere, user=other)
     assert not sees(other), "a captain of another event"
+
+
+def test_coverage_counts_the_sign_ups_unconfirmed_in_the_next_48_hours(world):
+    """FR-66: the roster's Coverage carries the count the Upcoming coverage page shows."""
+    ev, mem = world["ev"], world["mem"]
+    officer = _as(world["off"])
+    assert "unconfirmed" not in officer.get(f"/events/{ev.pk}/").content.decode()
+    soon, later = Slot.objects.filter(position=world["run"]).order_by("start")[:2]
+    now = timezone.now()
+    for slot, hours in ((soon, 5), (later, 60)):  # one inside the 48 hours, one beyond
+        slot.start, slot.end = now + timedelta(hours=hours), now + timedelta(hours=hours + 1)
+        slot.save(update_fields=["start", "end"])
+        SignUp.objects.create(slot=slot, user=mem, role="operator")
+    body = officer.get(f"/events/{ev.pk}/").content.decode()
+    assert "1 sign-up unconfirmed</span> in the next 48 hours." in body
+    SignUp.objects.filter(slot=soon).update(confirmed_at=now)
+    assert "unconfirmed" not in officer.get(f"/events/{ev.pk}/").content.decode()

@@ -5650,3 +5650,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; the banner test fails without the BANNER change; the profile looked at in Chromium at desktop and phone width with an expiring license and agreement, as the member and as an officer.
 - **Human Review Status**: Pending review
 - **Git Hash**: 829168a
+
+## [2026-11-27 12:53 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-66: the roster's Coverage carries the number of sign-ups unconfirmed in the next 48 hours, the figure only the Upcoming coverage page showed.
+- **Sections/Files Affected**: apps/events/services/slots.py (`health()` counts the sign-ups starting within 48 hours that are neither confirmed nor checked in, skipping canceled slots); apps/events/views_member.py (the Upcoming coverage page reads that count instead of its own query); templates/events/health_overview.html; templates/events/detail.html (the line under the Coverage tags); apps/events/tests/test_roster.py (inside and beyond the 48 hours; gone once confirmed).
+- **Nature of Contribution**: Code generation and a test. Not linked to the slots: the roster's Problems only filter does not hold a covered slot with an unconfirmed sign-up. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

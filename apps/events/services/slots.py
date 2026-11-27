@@ -5,8 +5,9 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.template.defaultfilters import pluralize
+from django.utils import timezone
 
-from ..models import OnAirRange, Slot
+from ..models import OnAirRange, SignUp, Slot
 from .viability import evaluate
 
 
@@ -200,7 +201,8 @@ def set_on_air(event, spans) -> list[tuple]:
 
 
 def health(event) -> dict:
-    """FR-66: counts by status, hours against limits."""
+    """FR-66: counts by status, hours against limits, and the sign-ups in the next 48 hours that
+    are neither confirmed nor checked in."""
     counts = {"total": 0, "empty": 0, "not_viable": 0, "viable": 0}
     for slot in Slot.objects.filter(
         position__location__event=event, cancelled=False
@@ -208,8 +210,18 @@ def health(event) -> dict:
         counts["total"] += 1
         counts[evaluate(slot).status] += 1
     report = limit_report(event)
+    now = timezone.now()
+    unconfirmed = SignUp.objects.filter(
+        slot__position__location__event=event,
+        slot__cancelled=False,
+        slot__start__gte=now,
+        slot__start__lte=now + timedelta(hours=48),
+        confirmed_at__isnull=True,
+        checked_in_at__isnull=True,
+    ).count()
     return {
         "counts": counts,
+        "unconfirmed_48h": unconfirmed,
         "scheduled_hours": report["total"],
         "over_total_limit": report["over_total"],
         "limits": report,

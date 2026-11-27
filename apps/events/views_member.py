@@ -373,17 +373,7 @@ def health_overview(request):
         start, end = e.start, e.end
         if not start or start > until or (end and end < now):
             continue
-        h = health(e)
-        unconfirmed = SignUp.objects.filter(
-            slot__position__location__event=e,
-            slot__start__lte=now + timedelta(hours=48),
-            slot__start__gte=now,
-            confirmed_at__isnull=True,
-            checked_in_at__isnull=True,
-        ).count()
-        rows.append(
-            {"event": e, "start": start, "end": end, "health": h, "unconfirmed_48h": unconfirmed}
-        )
+        rows.append({"event": e, "start": start, "end": end, "health": health(e)})
     rows.sort(key=lambda r: r["start"])
     return render(
         request,

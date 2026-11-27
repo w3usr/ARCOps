@@ -42,6 +42,7 @@
         {% if roster.counts.needs %}<span class="tag warn">{{ roster.counts.needs }} need someone</span>{% endif %}
         {% if roster.counts.open %}<span class="tag open">{{ roster.counts.open }} open</span>{% endif %}
       {% if roster.counts.closed %}<span class="tag">{{ roster.counts.closed }} closed</span>{% endif %}</p>
+      {% if health.unconfirmed_48h %}<p><span class="tag warn">{{ health.unconfirmed_48h }} sign-up{{ health.unconfirmed_48h|pluralize }} unconfirmed</span> in the next 48 hours.</p>{% endif %}
       <p>{{ health.scheduled_hours|floatformat:"-1" }} operating hours{% if health.limits.total_limit %} of {{ health.limits.total_limit|floatformat:"-1" }}{% endif %}{% if health.over_total_limit %} <strong>(over the event's limit)</strong>{% endif %}
         {% for d in health.limits.days %}{% if d.limit %}{% if forloop.first %}<br><small class="muted">Per day: {% endif %}{{ d.day }} {{ d.hours|floatformat:"-1" }} h{% if d.over %} <strong>(over {{ d.limit|floatformat:"-1" }})</strong>{% endif %}{% if not forloop.last %} · {% endif %}{% if forloop.last %}</small>{% endif %}{% endif %}{% endfor %}
       </p>
