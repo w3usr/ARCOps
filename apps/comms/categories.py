@@ -59,4 +59,4 @@ def name(key: str) -> str:
 
 # Categories whose unread messages earn a Home banner (FR-108): the ones that would otherwise
 # have been a warning email.
-BANNER = ("warning", "agreement", "security", "cancellation", "moved")
+BANNER = ("warning", "agreement", "security", "cancellation", "moved", "license_expiry")

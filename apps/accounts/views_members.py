@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.http import require_http_methods
@@ -96,6 +97,20 @@ def _standing(user) -> dict:
     latest = {}
     for a in agreements:
         latest.setdefault(a.template_id, a)
+    # FR-103: inside the window the expiry notices use (FR-17's 90 days for a license, the
+    # agreement notice setting for an agreement), the profile says how long is left in words.
+    today = timezone.now().date()  # the same day the notice jobs count from
+    if lic:
+        expiry = lic.effective_expiry
+        lic.days_left = (expiry - today).days if expiry else None
+        if lic.days_left is not None and not 0 <= lic.days_left <= 90:
+            lic.days_left = None
+    notice_days = int(setting("defaults.agreement_expiry_notice_days", 30))
+    for a in latest.values():
+        a.days_left = None
+        if a.state == SignedAgreement.State.APPROVED and a.expires_on:
+            days = (a.expires_on - today).days
+            a.days_left = days if 0 <= days <= notice_days else None
     return {"license": lic, "agreements": list(latest.values())}
 
 

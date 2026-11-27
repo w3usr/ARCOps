@@ -147,3 +147,73 @@ def test_your_own_fields_are_headed_details(pair):
     body = _as(member).get("/me/edit/", follow=True).content.decode()
     assert ">Details</h2>" in body
     assert "Club position" not in body, "your own fields are not somebody else's to assign"
+
+
+def test_the_profile_counts_down_a_license_and_an_agreement_inside_their_notice_windows(pair):
+    """FR-103: the license notice is a banner on the profile, the agreement notice a countdown."""
+    import datetime as dt
+
+    from django.utils import timezone
+
+    from apps.credentials.models import (
+        AgreementTemplate,
+        CredentialType,
+        LicenseRecord,
+        SignedAgreement,
+    )
+
+    officer, member = pair
+    today = timezone.now().date()
+    lic = LicenseRecord.objects.create(
+        user=member,
+        callsign="N0MEM",
+        operator_class="G",
+        status="active",
+        expiry_date=today + dt.timedelta(days=20),
+    )
+    cred, _ = CredentialType.objects.get_or_create(
+        key="station_access", defaults={"label": "Station access", "established_by": "agreement"}
+    )
+    t = AgreementTemplate.objects.create(
+        key="sa",
+        credential=cred,
+        title="Station Agreement",
+        audience=["student"],
+        version=1,
+        content_hash="h1",
+        html="<p>Rules.</p>",
+        effective_date="2026-01-01",
+        is_current=True,
+    )
+    a = SignedAgreement.objects.create(
+        user=member,
+        template=t,
+        credential=cred,
+        signer_name="Mo Member",
+        content_hash="h1",
+        state="approved",
+        expires_on=today + dt.timedelta(days=1),
+        approved_at=timezone.now(),
+    )
+    own = _as(member).get(f"/members/{member.pk}/").content.decode()
+    assert "your license expires in 20 days; renew with the FCC." in own
+    assert "Expires in 1 day</strong>; <a" in own and "re-sign on Agreements" in own
+    theirs = _as(officer).get(f"/members/{member.pk}/").content.decode()
+    assert "their license expires in 20 days." in theirs and "re-sign on" not in theirs
+
+    # Outside the windows the page keeps to the dates alone.
+    lic.expiry_date = today + dt.timedelta(days=91)
+    lic.save()
+    a.expires_on = today + dt.timedelta(days=31)
+    a.save()
+    own = _as(member).get(f"/members/{member.pk}/").content.decode()
+    assert "license expires in" not in own and "Expires in" not in own
+
+
+def test_an_unread_license_notice_earns_the_home_banner(pair):
+    from apps.comms.services import compose
+
+    _, member = pair
+    compose(member, "license_expiry", "Your license expires soon", "<p>Renew.</p>")
+    home = _as(member).get("/").content.decode()
+    assert "1 unread message" in home.split("My next slots")[0]

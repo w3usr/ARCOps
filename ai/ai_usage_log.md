@@ -5642,3 +5642,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, tests and a draft. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; on the development server, no stored callsign the new rule refuses. The club-neutral guard refused the club's own callsign in the first test data; made-up calls used instead.
 - **Human Review Status**: Pending review
 - **Git Hash**: f92a269
+
+## [2026-11-27 12:09 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-103's table: the license notice as a banner on the member's profile and the agreement notice as an expiry countdown there; an unread license expiry notice earns the Home banner (FR-108).
+- **Sections/Files Affected**: apps/accounts/views_members.py (`_standing` works out the days left inside FR-17's 90-day window and the agreement notice setting's); templates/accounts/member_detail.html (the License section's warning, "renew with the FCC" on the member's own page; "Expires in N days" beside an agreement, with a link to re-sign on the member's own page); apps/comms/categories.py (`license_expiry` in BANNER); apps/accounts/tests/test_profile_readonly.py (inside and outside both windows, member and officer; the banner).
+- **Nature of Contribution**: Code generation and tests. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; the banner test fails without the BANNER change; the profile looked at in Chromium at desktop and phone width with an expiring license and agreement, as the member and as an officer.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

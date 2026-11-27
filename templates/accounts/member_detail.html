@@ -52,6 +52,7 @@ the edit page behind the button, so a page opened to read somebody's callsign ca
   <h2 id="lic">License</h2>
   {% if standing.license %}
     <p><strong>{{ standing.license.callsign }}</strong>: {{ standing.license.class_label }}, {{ standing.license.status_label }}{% if standing.license.effective_expiry %}, expires {{ standing.license.effective_expiry|plain_day }}{% endif %}.</p>
+    {% if standing.license.days_left is not None %}<p class="msg warning"><span class="lvl">Careful:</span> {% if is_self %}your{% else %}their{% endif %} license expires {% if standing.license.days_left == 0 %}today{% else %}in {{ standing.license.days_left }} day{{ standing.license.days_left|pluralize }}{% endif %}{% if is_self %}; renew with the FCC{% endif %}.</p>{% endif %}
     {% if standing.license.licensee %}<p>Licensed to <strong>{{ standing.license.licensee }}</strong>.</p>{% endif %}
     {% if standing.license.source_label or standing.license.has_override %}<p class="helptext">{% if standing.license.source_label %}{{ standing.license.source_label|capfirst }}.{% endif %}{% if standing.license.has_override %} By {{ standing.license.override_by.short_name|default:"a sysadmin" }}: {{ standing.license.override_reason }}{% endif %}</p>{% endif %}
   {% else %}<p class="muted">None on file.</p>{% endif %}
@@ -62,7 +63,7 @@ the edit page behind the button, so a page opened to read somebody's callsign ca
   {% if standing.agreements %}
     <dl class="dl">
       {% for a in standing.agreements %}<dt>{{ a.template.title }}</dt>
-        <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}. <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
+        <dd>{{ a.get_state_display }}{% if a.expires_on %} until {{ a.expires_on|plain_day }}{% endif %}.{% if a.days_left is not None %} <strong>Expires {% if a.days_left == 0 %}today{% else %}in {{ a.days_left }} day{{ a.days_left|pluralize }}{% endif %}</strong>{% if is_self %}; <a href="{% url 'agreements' %}">re-sign on Agreements</a>{% endif %}.{% endif %} <a href="{% url 'agreement_pdf' a.pk %}">Open the signed copy</a></dd>{% endfor %}
     </dl>
   {% else %}<p class="muted">None signed.</p>{% endif %}
 </section>
