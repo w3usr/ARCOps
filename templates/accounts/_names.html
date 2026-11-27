@@ -5,7 +5,7 @@
     <div class="check">
       {{ form.is_me }}<label for="{{ form.is_me.id_for_label }}">{{ form.is_me.label }}</label>{{ form.is_me.errors }}
     </div>
-    <span class="helptext">Your name comes from this record. Not you? Check the callsign. To be known by another name in the club, fill in Preferred name.</span>
+    <span class="helptext">{{ form.record_help }}</span>
   {% else %}
     {% if form.missing_callsign %}
       <p class="helptext">

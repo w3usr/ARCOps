@@ -24,17 +24,27 @@ class CallsignFirst:
     the callsign field asks for the name block."""
 
     NAMES = NAMES
+    # The words, addressed to whoever fills the form in; a guardian's form says "they".
+    no_callsign_label = "I do not have a callsign"
+    is_me_label = "This is me"
+    is_me_error = "Tick this if the FCC's record is yours; if it is not, check the callsign."
+    record_help = (
+        "Your name comes from this record. Not you? Check the callsign. To be known by another "
+        "name in the club, fill in Preferred name."
+    )
 
     def __init__(self, *args, lookup_url: str = "", **kwargs):
         super().__init__(*args, **kwargs)
         for name in ("first_name", "last_name"):
             self.fields[name].required = False  # the FCC's record may supply them; see clean()
         self.fields["no_callsign"] = forms.BooleanField(
-            required=False, label="I do not have a callsign"
+            required=False, label=self.no_callsign_label
         )
-        self.fields["is_me"] = forms.BooleanField(required=False, label="This is me")
-        order = [f for f in self.fields if f not in ("no_callsign", "is_me")]
-        order.insert(order.index("callsign") + 1, "no_callsign")
+        self.fields["is_me"] = forms.BooleanField(required=False, label=self.is_me_label)
+        # The callsign, and the choice not to have one, come before the names they decide.
+        order = [f for f in self.fields if f not in ("callsign", "no_callsign", "is_me")]
+        at = order.index("first_name")
+        order[at:at] = ["callsign", "no_callsign"]
         self.order_fields(order)
         if lookup_url:
             ask = {
@@ -97,10 +107,7 @@ class CallsignFirst:
             data["callsign"] = ""
         if self.fcc_record is not None:
             if not data.get("is_me"):
-                self.add_error(
-                    "is_me",
-                    "Tick this if the FCC's record is yours; if it is not, check the callsign.",
-                )
+                self.add_error("is_me", self.is_me_error)
             return data  # the name is the FCC's, applied with the callsign (FR-4)
         for name in ("first_name", "last_name"):
             if not data.get(name) and name not in self.errors:

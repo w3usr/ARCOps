@@ -241,7 +241,7 @@ class AcceptForm(CallsignFirst, PrivacyConsentMixin, forms.Form):
         return data
 
 
-class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
+class GuardianAcceptForm(CallsignFirst, PrivacyConsentMixin, forms.Form):
     """§2.4: the guardian completes a minor's application. The guardian's own details are asked
     only when no account holds their address."""
 
@@ -262,7 +262,7 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
         required=False,
         label="Member's callsign",
         validators=[validate_callsign],
-        help_text="Leave blank if they do not have one.",
+        help_text="If they hold one. Their name and license come from the FCC record.",
     )
     cell_phone = forms.CharField(
         max_length=30, required=False, label="Member's mobile number (optional)"
@@ -276,6 +276,13 @@ class GuardianAcceptForm(PrivacyConsentMixin, forms.Form):
     password2 = password_field("Member's password, again")
     consent = consent_field()
     consent_after = "and consent on the member's behalf"
+    no_callsign_label = "They do not have a callsign"
+    is_me_label = "This is them"
+    is_me_error = "Tick this if the FCC's record is theirs; if it is not, check the callsign."
+    record_help = (
+        "Their name comes from this record. Not them? Check the callsign. To have them known by "
+        "another name in the club, fill in their preferred name."
+    )
 
     def __init__(self, *args, guardian_exists: bool, guardian_email: str = "", **kwargs):
         super().__init__(*args, **kwargs)
@@ -340,6 +347,7 @@ def _accept_as_guardian(request, inv):
         guardian_exists=existing is not None,
         guardian_email=inv.guardian_email,
         initial={"minor_email": inv.email},
+        lookup_url=reverse("invitation_names", args=[inv.token]),
     )
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
@@ -464,9 +472,13 @@ def accept_invitation(request, token):
 def invitation_names(request, token):
     """FR-4: the name block for the callsign typed so far, for an invitation still open."""
     inv = get_object_or_404(Invitation, token=token)
-    if not inv.is_valid() or inv.is_minor:
+    if not inv.is_valid():
         raise Http404
-    return names_block(request, AcceptForm(initial=request.GET.dict()))
+    if inv.is_minor:  # the guardian's form, which speaks of the member as "they"
+        form = GuardianAcceptForm(initial=request.GET.dict(), guardian_exists=True)
+    else:
+        form = AcceptForm(initial=request.GET.dict())
+    return names_block(request, form)
 
 
 @login_required

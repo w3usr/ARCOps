@@ -115,3 +115,36 @@ def test_the_join_link_asks_the_same_way_and_only_while_it_is_open(off):
     assert "Sample, Pat Q" in block
     assert Client().get("/join/no-such-link/names/", {"callsign": "K1ABC"}).status_code == 404
     assert Client().get("/me/invite/no-such/names/", {"callsign": "K1ABC"}).status_code == 404
+
+
+def test_the_guardian_looks_the_members_callsign_up_the_same_way(off):
+    """FR-4 on the guardian's form (§2.4): the callsign first, the FCC's record for it, and
+    "This is them", in words addressed to the guardian."""
+    inv = create_invitation(
+        off, "kid@example.org", "student", is_minor=True, guardian_email="parent@example.org"
+    )
+    c = Client()
+    page = c.get(f"/me/invite/{inv.token}/").content.decode()
+    assert page.index('name="callsign"') < page.index('name="first_name"')  # callsign first
+    assert "They do not have a callsign" in page
+    block = c.get(f"/me/invite/{inv.token}/names/", {"callsign": "K1ABC"}).content.decode()
+    assert "Sample, Pat Q" in block and "This is them" in block and "Not them?" in block
+    form = {
+        "guardian_first_name": "Lee",
+        "guardian_last_name": "Parent",
+        "guardian_phone": "555-0100",
+        "relationship": "parent",
+        "guardian_password1": "pw-Testing-123!",
+        "guardian_password2": "pw-Testing-123!",
+        "callsign": "K1ABC",
+        "minor_email": "kid@example.org",
+        "password1": "pw-Kid-Testing-123!",
+        "password2": "pw-Kid-Testing-123!",
+        "consent": "on",
+    }
+    r = c.post(f"/me/invite/{inv.token}/", form)
+    assert r.status_code == 200 and "the FCC&#x27;s record is theirs" in r.content.decode()
+    assert c.post(f"/me/invite/{inv.token}/", {**form, "is_me": "on"}).status_code == 302
+    kid = User.objects.by_address("kid@example.org").get()
+    assert (kid.first_name, kid.last_name, kid.callsign) == ("Pat", "Sample", "K1ABC")
+    assert kid.name_from_uls and not kid.pending_uls_name

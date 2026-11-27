@@ -5682,3 +5682,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and tests. Without JavaScript the names are typed as before, or a known callsign with no name redraws the page with the record. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI, run before the help-text change; the invitation form driven in Chromium at phone width (the callsign typed, the no-callsign box both ways, "This is me", submitted; the account took the FCC's name).
 - **Human Review Status**: Pending review
 - **Git Hash**: 6a34ad4
+
+## [2026-11-27 13:49 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-4 on the guardian's form for a minor: the member's callsign first, looked up the same way, in words addressed to the guardian.
+- **Sections/Files Affected**: apps/accounts/callsign_first.py (the labels, the refusal and the record's help as form attributes; the callsign and the no-callsign choice placed before the names); apps/accounts/views.py (GuardianAcceptForm uses it, with "They do not have a callsign", "This is them" and its own help; the callsign's help text; the lookup answers for a minor's invitation with the guardian's words); templates/accounts/_names.html (the record's help from the form); templates/accounts/accept_invitation_guardian.html (the name block); apps/accounts/tests/test_callsign_first.py (the guardian's form).
+- **Nature of Contribution**: Code generation and a test. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; the guardian's form looked at in Chromium at phone width with a callsign typed.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]
