@@ -217,3 +217,77 @@ def test_an_unread_license_notice_earns_the_home_banner(pair):
     compose(member, "license_expiry", "Your license expires soon", "<p>Renew.</p>")
     home = _as(member).get("/").content.decode()
     assert "1 unread message" in home.split("My next slots")[0]
+
+
+def test_privilege_fields_say_who_set_them_and_when(pair):
+    """FR-9: category, positions and level show where the value came from and when; the license
+    its retrieval date; an approved agreement its approver. For the member and their managers."""
+    import datetime as dt
+
+    from django.utils import timezone
+
+    from apps.credentials.models import (
+        AgreementTemplate,
+        CredentialType,
+        LicenseRecord,
+        SignedAgreement,
+    )
+    from apps.ops import when
+    from apps.ops.audit import record
+    from apps.ops.groups import set_groups
+
+    officer, member = pair
+    member.category = "student"
+    member.save(update_fields=["category"])
+    today = when.day(timezone.now())
+    own = _as(member).get(f"/members/{member.pk}/").content.decode()
+    assert f"Since joining, {today}" in own  # nothing changed since the account was made
+    record(
+        officer,
+        "member.edited",
+        member,
+        before={"category": "student"},
+        after={"category": "community"},
+    )
+    set_groups(officer, member, ["officer"])
+    LicenseRecord.objects.create(
+        user=member,
+        callsign="N0MEM",
+        operator_class="G",
+        status="active",
+        source="fcc_uls_local",
+        retrieved_at=timezone.now(),
+    )
+    cred, _ = CredentialType.objects.get_or_create(
+        key="station_access", defaults={"label": "Station access", "established_by": "agreement"}
+    )
+    t = AgreementTemplate.objects.create(
+        key="sa",
+        credential=cred,
+        title="Station Agreement",
+        audience=["student"],
+        version=1,
+        content_hash="h1",
+        html="<p>Rules.</p>",
+        effective_date="2026-01-01",
+        is_current=True,
+    )
+    SignedAgreement.objects.create(
+        user=member,
+        template=t,
+        credential=cred,
+        signer_name="Mo Member",
+        content_hash="h1",
+        state="approved",
+        approver=officer,
+        approved_at=timezone.now(),
+        expires_on=timezone.now().date() + dt.timedelta(days=200),
+    )
+    for reader in (member, officer):
+        body = _as(reader).get(f"/members/{member.pk}/").content.decode()
+        assert body.count(f"Set by {officer.short_name}, {today}") == 2, reader  # category, level
+        assert f"From the FCC, retrieved {today}." in body
+        assert f"Approved by {officer.short_name} on {today}, until" in body
+    other = _user("oth@example.org", ["member"], first_name="Ot", last_name="Her")
+    body = _as(other).get(f"/members/{member.pk}/").content.decode()
+    assert "Set by" not in body and "Since joining" not in body

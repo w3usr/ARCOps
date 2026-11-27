@@ -91,7 +91,7 @@ def _standing(user) -> dict:
         lic = None  # FR-16: until "Is this you?" is answered the callsign is not their license
     agreements = (
         SignedAgreement.objects.filter(user=user)
-        .select_related("template")
+        .select_related("template", "approver")
         .order_by("template__title", "-id")
     )
     latest = {}
@@ -515,7 +515,8 @@ def member_detail(request, pk):
             "member": member,
             # The heading calls them what they are called; these are the fields as stored,
             # the name among them, because with a callsign the name is the FCC's (FR-8).
-            "rows": profile_rows(member),
+            # FR-9's "set by" lines are for the member and whoever manages them.
+            "rows": profile_rows(member, sources=is_self or may_manage(actor, member)),
             **(_preferences(member) if is_self else {}),
             "addresses": addresses.state(member),
             "standing": _standing(member),

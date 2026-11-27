@@ -511,3 +511,36 @@ def test_cannot_make_one_then_confirm_the_rest():
     r = c.get(link)
     assert b"down for 2 slots" in r.content and b"changed or ended" not in r.content
     assert SignUp.objects.filter(confirmed_at__isnull=False).count() == 2
+
+
+def test_a_minors_day_reminder_reaches_every_guardian_and_names_the_minor():
+    """FR-70 and addendum A41, for the day's reminder (A49): one message, to the minor and each
+    active guardian, saying whose it is; its confirm-all link works from the guardian's copy."""
+    import re
+
+    from django.core import mail
+
+    from apps.accounts.guardian import link_guardian
+
+    off = _user("off@example.org", "officer", first_name="Ann", last_name="Officer")
+    kid = _user("kid@example.org", first_name="Kim", last_name="Minor", under_18=True)
+    mum = _user("mum@example.org", first_name="Pat", last_name="Parent")
+    dad = _user("dad@example.org", first_name="Lee", last_name="Parent")
+    link_guardian(off, kid, mum)
+    link_guardian(off, kid, dad)
+    start = _local_morning(3)
+    e, slots = _event(start, hours=2)
+    for s in slots:
+        SignUp.objects.create(slot=s, user=kid, role="observer")
+    ClubSetting.objects.update_or_create(key="defaults.email_delivery", defaults={"value": "on"})
+    mail.outbox.clear()
+    assert notify.send_reminders(start - timedelta(hours=23))["sent"] == 1
+    m = _msgs(kid, "reminder").get()
+    assert set(m.to_addresses) == {"kid@example.org", "mum@example.org", "dad@example.org"}
+    assert m.subject.startswith("[For ") and "2 slots" in m.subject
+    assert "This message is for <strong>Kim Minor</strong> (under 18)" in m.body_html
+    sent_to = {a for msg in mail.outbox for a in msg.to}
+    assert {"mum@example.org", "dad@example.org"} <= sent_to
+    link = re.search(r'href="[^"]*(/events/confirm-all/[^"]+)"', m.body_html).group(1)
+    assert b"down for 2 slots" in Client().get(link).content
+    assert SignUp.objects.filter(user=kid, confirmed_at__isnull=False).count() == 2

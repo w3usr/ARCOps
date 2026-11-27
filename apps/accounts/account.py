@@ -261,7 +261,29 @@ def may_manage(actor: User, subject: User) -> bool:
     return any(actor.may(c) for c in MANAGING_CAPABILITIES)
 
 
-def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
+# FR-9: the rows that say where their value came from. Each one's change is recorded in the
+# audit log under its own name (member.edited for category and positions, groups.changed for
+# the level).
+SOURCED_FIELDS = ("category", "club_positions", "groups")
+
+
+def set_by(subject: User, key: str) -> str:
+    """Where a privilege field's value came from and when (FR-9): the latest audit row that
+    changed it, or, with none, the day the account was made, which set it."""
+    from apps.ops.models import AuditLog
+
+    row = (
+        AuditLog.objects.filter(subject_type="User", subject_id=str(subject.pk), after__has_key=key)
+        .select_related("actor")
+        .first()  # newest first (Meta.ordering)
+    )
+    if row is None:
+        return f"since joining, {when.day(subject.date_joined)}"
+    who = row.actor.short_name if row.actor else (row.actor_label or "the system")
+    return f"set by {who}, {when.day(row.at)}"
+
+
+def profile_rows(subject: User, skip: tuple[str, ...] = (), sources: bool = False) -> list[dict]:
     """Every account field as a line of text, whoever is reading.
 
     A profile page shows the account without a form in front of it, as a read-only view a name
@@ -278,7 +300,10 @@ def profile_rows(subject: User, skip: tuple[str, ...] = ()) -> list[dict]:
 
     def add(field: str, label: str, value) -> None:
         if field not in skip and value:
-            rows.append({"field": field, "label": label, "value": value})
+            row = {"field": field, "label": label, "value": value}
+            if sources and field in SOURCED_FIELDS:
+                row["source"] = set_by(subject, field)
+            rows.append(row)
 
     add("first_name", "First name", subject.first_name)
     add("middle_name", "Middle name", subject.middle_name)
@@ -316,4 +341,4 @@ def readonly_rows(actor: User, subject: User, skip: tuple[str, ...] = ()) -> lis
     may not. The two come from the same table, so nothing is shown twice and nothing is missed.
     """
     allowed = set(editable_fields(actor, subject))
-    return [r for r in profile_rows(subject, skip=skip) if r["field"] not in allowed]
+    return [r for r in profile_rows(subject, skip=skip, sources=True) if r["field"] not in allowed]
