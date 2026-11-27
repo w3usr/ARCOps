@@ -5737,4 +5737,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/callsign_first.py (the callsign field asks for the name block on typing only, not also when it loses focus); apps/accounts/tests/test_callsign_first.py (the trigger).
 - **Nature of Contribution**: Code generation and a test. Found by the T3 scenario on the development server: clicking "This is me" took focus from the callsign field, whose change event asked again before the box ticked, and the answer redrew the block unticked. Reproduced in Chromium with the old trigger (two lookups, tick lost) and checked with the new one in Chromium and WebKit (one lookup, tick kept). Verified: `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 5e06dc2
