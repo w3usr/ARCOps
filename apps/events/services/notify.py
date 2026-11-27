@@ -23,6 +23,7 @@ from apps.ops.audit import record
 from apps.ops.config import setting
 from apps.ops.groups import people_who_may
 from apps.ops.templatetags.labels import role_label
+from apps.ops.when import day as plain_day
 
 from ..models import Event, SignUp, Slot, SlotWarning
 from .roster import UTC, _span, display_zone
@@ -117,6 +118,37 @@ def signup_from_token(token: str, action: str = "confirm") -> SignUp | None:
     return su
 
 
+def confirm_all_token(signups: list[SignUp]) -> str:
+    """A day's reminder's one confirm link (functional addendum A49): it names each sign-up with
+    its slot's time when it was sent, so a slot moved since is left out and asks again."""
+    return signing.dumps(
+        {"ss": [[su.pk, *_when(su.slot)] for su in signups], "u": signups[0].user_id, "a": "all"},
+        salt=CONFIRM_SALT,
+    )
+
+
+def signups_from_all_token(token: str) -> tuple[list[SignUp], int] | None:
+    """The sign-ups a confirm-all token still answers for, and how many of those it named that
+    still exist but no longer match (moved or ended); None for a token that is not genuine. A
+    sign-up canceled since is simply gone: the member did that themselves, with the slot's own
+    link, so nothing is said about it."""
+    try:
+        data = signing.loads(token, salt=CONFIRM_SALT, max_age=timedelta(days=60))
+    except signing.BadSignature:
+        return None
+    if data.get("a") != "all":
+        return None
+    named = {pk: [start, end] for pk, start, end in data.get("ss", [])}
+    now = timezone.now()
+    still = list(
+        SignUp.objects.filter(pk__in=named, user_id=data.get("u"))
+        .select_related("slot__position__location__event", "user")
+        .order_by("slot__start")
+    )
+    good = [su for su in still if su.slot.end >= now and named[su.pk] == _when(su.slot)]
+    return good, len(still) - len(good)
+
+
 # ------------------------------------------------------------------- reminders ---
 
 
@@ -125,17 +157,18 @@ def reminder_hours(event: Event) -> int:
 
 
 def send_reminders(now: datetime | None = None) -> dict:
-    """FR-72: once per sign-up, when the slot is within the event's reminder window."""
+    """FR-72 as amended by functional addendum A49: one reminder per member, event and
+    club-local day, sent the event's reminder time before their first slot that day. A
+    sign-up made after its day's reminder went out is a day of its own the next run."""
     from django.db.models import Max
 
     now = now or timezone.now()
-    # As far ahead as any event asks, not a fixed 72 hours;
-    # each sign-up below is still sent at its own event's time.
+    # As far ahead as any event asks, and a day past it, so a day's later slots join its first.
     longest = max(
         int(setting("defaults.reminder_hours_before", 24)),
         Event.objects.aggregate(m=Max("reminder_hours_before"))["m"] or 0,
     )
-    horizon = now + timedelta(hours=longest)
+    horizon = now + timedelta(hours=longest + 25)
     due = (
         SignUp.objects.filter(
             reminder_sent_at__isnull=True,
@@ -147,13 +180,20 @@ def send_reminders(now: datetime | None = None) -> dict:
         .select_related("slot__position__location__event", "user")
         .order_by("slot__start")
     )
-    sent = 0
+    days: dict[tuple, list[SignUp]] = {}
     for su in due:
-        slot = su.slot
-        event = slot.event
-        if slot.start - now > timedelta(hours=reminder_hours(event)):
+        event = su.slot.event
+        local_day = su.slot.start.astimezone(display_zone(event)).date()
+        days.setdefault((su.user_id, event.pk, local_day), []).append(su)
+    sent = 0
+    for signups in days.values():
+        first = signups[0].slot
+        if first.start - now > timedelta(hours=reminder_hours(first.event)):
             continue
-        send_one_reminder(su, now)
+        if len(signups) == 1:
+            send_one_reminder(signups[0], now)
+        else:
+            send_day_reminder(signups, now)
         sent += 1
     return {"sent": sent}
 
@@ -201,25 +241,14 @@ def drop_empty_sections(html: str) -> str:
     return "".join(out)
 
 
-def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
-    now = now or timezone.now()
-    slot, event, user = su.slot, su.slot.event, su.user
-    signups = list(slot.signups.select_related("user").exclude(pk=su.pk))
-    status = evaluate(slot)
-    co = status.control_operator
-    caps = captains_of(event)
+def _slot_lines(su: SignUp) -> dict:
+    """What a reminder says about one slot of the reader's."""
+    slot = su.slot
+    co = evaluate(slot).control_operator
     place = slot.position.location
-    # The location's directions and its own notes come first, then the event's (FR-51, FR-77).
-    # The person is signed up there, so a private residence's are theirs to read.
-    directions = drop_empty_sections(place.directions_html)
-    kbyg = (
-        (f"<h2>Getting to {escape(place.name)}</h2>{directions}" if directions else "")
-        + drop_empty_sections(place.kbyg_html)
-        + drop_empty_sections(event.kbyg_html)
-    )
-    local = display_zone(event)
-    ctx = {
-        "event": event,
+    local = display_zone(slot.event)
+    others = slot.signups.select_related("user").exclude(pk=su.pk)
+    return {
         "role": role_label(su.role),
         "when_lead": when_text(slot, UTC),
         "when_local": when_text(slot, local),
@@ -227,16 +256,62 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
         "location": ", ".join(x for x in (place.name, place.address) if x),
         "position": slot.position.name,
         "control_operator": co.short_name if co else "",
-        "others": ", ".join(s.user.short_name_lettered for s in signups),
+        "others": ", ".join(s.user.short_name_lettered for s in others),
         "confirm_link": dj.SITE_URL + reverse("confirm_by_token", args=[confirm_token(su)]),
         "cannot_link": dj.SITE_URL + reverse("cannot_by_token", args=[confirm_token(su, "cannot")]),
-        "kbyg": kbyg + _contest_kbyg(event),
+    }
+
+
+def _shared_lines(event: Event, places: list) -> dict:
+    """What a reminder says once, however many slots it covers: each location's directions and
+    notes, then the event's (FR-51, FR-77), and who to contact. The person is signed up there, so
+    a private residence's are theirs to read."""
+    kbyg = ""
+    for place in places:
+        directions = drop_empty_sections(place.directions_html)
+        kbyg += (
+            f"<h2>Getting to {escape(place.name)}</h2>{directions}" if directions else ""
+        ) + drop_empty_sections(place.kbyg_html)
+    caps = captains_of(event)
+    return {
+        "kbyg": kbyg + drop_empty_sections(event.kbyg_html) + _contest_kbyg(event),
         "captains": [contact_line(c) for c in caps],
         "advisors": [contact_line(a) for a in advisors() if a not in caps],
     }
-    send("reminder", user, "reminder", ctx)
+
+
+def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
+    now = now or timezone.now()
+    event = su.slot.event
+    ctx = {
+        "event": event,
+        **_slot_lines(su),
+        **_shared_lines(event, [su.slot.position.location]),
+    }
+    send("reminder", su.user, "reminder", ctx)
     su.reminder_sent_at = now
     su.save(update_fields=["reminder_sent_at"])
+
+
+def send_day_reminder(signups: list[SignUp], now: datetime | None = None) -> None:
+    """Functional addendum A49: a member's slots in one event on one club-local day, in one
+    message; each slot keeps its own cannot-make-it link, and one link confirms them all."""
+    now = now or timezone.now()
+    event = signups[0].slot.event
+    places = list(dict.fromkeys(su.slot.position.location for su in signups))
+    slots = [_slot_lines(su) for su in signups]
+    ctx = {
+        "event": event,
+        "count": len(signups),
+        "day": plain_day(signups[0].slot.start.astimezone(display_zone(event)).date()),
+        "when_lead": slots[0]["when_lead"],
+        "slots": slots,
+        "confirm_link": dj.SITE_URL
+        + reverse("confirm_all_by_token", args=[confirm_all_token(signups)]),
+        **_shared_lines(event, places),
+    }
+    send("reminder.day", signups[0].user, "reminder", ctx)
+    SignUp.objects.filter(pk__in=[su.pk for su in signups]).update(reminder_sent_at=now)
 
 
 # -------------------------------------------------------------------- warnings ---

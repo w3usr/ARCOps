@@ -5658,3 +5658,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and a test. Not linked to the slots: the roster's Problems only filter does not hold a covered slot with an unconfirmed sign-up. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI.
 - **Human Review Status**: Pending review
 - **Git Hash**: 046606c
+
+## [2026-11-27 13:10 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-72 as amended by functional addendum A49: one reminder per member, event and club-local day, with one link that confirms them all.
+- **Sections/Files Affected**: docs/REQUIREMENTS.md (A49: the decision, NAF's request quoted); apps/events/services/notify.py (`send_reminders` groups due sign-ups by member, event and club-local day; the reminder's per-slot and shared parts split out of `send_one_reminder`; `send_day_reminder`; the confirm-all token, which names each sign-up with its slot's time); apps/comms/defaults.py (the `reminder.day` template, with a line that a slot the member cannot make is canceled first with its own link); apps/comms/views.py (a two-slot sample for the template's preview); apps/events/urls.py, apps/events/views.py, templates/events/token_confirmed_all.html (the confirm-all link and its page); apps/events/tests/test_notify.py (a day's three slots in one reminder and the next day's alone; confirm all with one slot moved; a late sign-up; one slot canceled, then the rest confirmed).
+- **Nature of Contribution**: Code generation, tests and a draft (A49). A day with one slot still sends the single reminder unchanged; warnings and cancellation notices stay one per slot. A sign-up the member canceled with its slot's own link is left out of the confirm-all page without the "changed or ended" warning, which is for a slot that moved. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI, run before the last two changes (the canceled-slot count and the mail's added line); the day reminder and the confirm-all page rendered and looked at. Not tested: a minor's guardians receiving the day reminder, which goes through the same send as every reminder.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

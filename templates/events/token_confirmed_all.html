@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load times labels %}
+{% block title %}Confirmed · {{ club.short_name }} · {{ product.name }}{% endblock %}
+{% block content %}
+  {% with first=signups.0 %}
+    <h1>{% if already %}Already confirmed{% else %}Confirmed, thank you{% endif %}</h1>
+    <p>{{ first.user.display_first }}, you are down for {{ signups|length }} slot{{ signups|length|pluralize }} in {{ first.slot.event.title }}:</p>
+    <ul class="list">{% for su in signups %}<li><span class="when">{% when su.slot.start su.slot.end su.slot.event %}</span><br><strong>{{ su.role|role_label }}</strong>, {{ su.slot.position }}</li>{% endfor %}</ul>
+    {% if left_out %}<p class="msg warning"><span class="lvl">Careful:</span> {{ left_out }} slot{{ left_out|pluralize }} from the reminder changed or ended since it was sent, so {{ left_out|pluralize:"it was,they were" }} not confirmed. Open My {{ product.sked }} to see {{ left_out|pluralize:"it,them" }}.</p>{% endif %}
+    {% if already %}<p class="muted">This link was already used; nothing changed.</p>{% endif %}
+    <p><a class="button" href="{% url 'my_schedule' %}">Open My {{ product.sked }}</a></p>
+  {% endwith %}
+{% endblock %}

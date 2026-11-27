@@ -212,6 +212,34 @@ DEFAULT_TEMPLATES: list[dict] = [
         ],
     },
     {
+        "key": "reminder.day",
+        "subject": "Tomorrow: {{ event.title }}, {{ count }} slots from {{ when_lead }}",
+        "body_html": (
+            "<p>You are signed up for {{ count }} slots in {{ event.title }} on {{ day }}.</p>"
+            "{% for s in slots %}<p><strong>When:</strong> {{ s.when_utc }}<br>{{ s.when_local }}<br>"
+            "<strong>{{ s.role }}</strong>, {{ s.location }}, {{ s.position }}"
+            "{% if s.control_operator %}<br><strong>Control operator:</strong> {{ s.control_operator }}{% endif %}"
+            "{% if s.others %}<br><strong>With you:</strong> {{ s.others }}{% endif %}"
+            '<br><a href="{{ s.cannot_link }}">I cannot make this one</a></p>{% endfor %}'
+            "<p>Cannot make one of them? Use its own link first; this button then confirms the rest.</p>"
+            '<p><a href="{{ confirm_link }}">Confirm you will be at all {{ count }}</a></p>'
+            "{% if kbyg %}<h2>Know before you go</h2>{{ kbyg|safe }}{% endif %}"
+            "<h2>Who to contact</h2><p>{% for c in captains %}{{ c }}<br>{% endfor %}"
+            "{% if advisors %}Faculty advisor: {% for a in advisors %}{{ a }}{% if not forloop.last %}; {% endif %}{% endfor %}{% endif %}</p>"
+        ),
+        "variables": [
+            "event.title",
+            "count",
+            "day",
+            "when_lead",
+            "slots",
+            "confirm_link",
+            "kbyg",
+            "captains",
+            "advisors",
+        ],
+    },
+    {
         "key": "warning.person",
         "subject": "Your slot needs help: {{ event.title }}, {{ when }}",
         "body_html": '<p>The slot you hold in {{ event.title }}, {{ when }}, {{ position }}, {{ status }}.</p><p>If you know someone who could fill it, ask them to sign up.</p><p><a href="{{ link }}">Open the slot</a></p>',
@@ -462,6 +490,7 @@ TEMPLATE_WORDS: dict[str, tuple[str, str]] = {
     "captain.member_cancelled": ("Somebody gave up a slot", "the captains"),
     "captain.access_removed": ("Somebody lost access", "the captains of events they were in"),
     "reminder": ("Your slot is tomorrow", "the member holding the slot"),
+    "reminder.day": ("Your slots tomorrow", "the member holding two or more slots that day"),
     "warning.person": ("Your slot is short of people", "the members in the slot"),
     "warning.captains": ("Slots that need attention", "the captains"),
     "captain.no_show": ("Somebody did not check in", "the captains"),

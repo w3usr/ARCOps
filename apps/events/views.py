@@ -247,6 +247,28 @@ def confirm_by_token(request, token):
     return render(request, "events/token_confirmed.html", {"signup": su, "already": already})
 
 
+def confirm_all_by_token(request, token):
+    """Functional addendum A49: a day's reminder confirms all its slots with one link. A slot
+    moved since the reminder was sent is left out, and the page says so."""
+    from .services.notify import signups_from_all_token
+
+    found = signups_from_all_token(token)
+    if not found or not found[0]:
+        return render(request, "events/token_invalid.html", status=410)
+    signups, left_out = found
+    already = all(su.confirmed_at for su in signups)
+    for su in signups:
+        if su.confirmed_at is None:
+            su.confirmed_at = timezone.now()
+            su.save(update_fields=["confirmed_at"])
+            record(su.user, "signup.confirmed", su, after={"via": "token"})
+    return render(
+        request,
+        "events/token_confirmed_all.html",
+        {"signups": signups, "left_out": left_out, "already": already},
+    )
+
+
 def cannot_by_token(request, token):
     """FR-72: the cannot-make-it link opens the cancellation flow, signed in or not, with the
     same warning a signed-in cancel gives (FR-56)."""

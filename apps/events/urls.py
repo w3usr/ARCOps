@@ -73,6 +73,7 @@ urlpatterns = [
     path("signup/<int:signup_id>/checkin/", views.check_in, name="check_in"),
     path("signup/<int:signup_id>/confirm/", views.confirm_signup, name="confirm_signup"),
     path("confirm/<str:token>/", views.confirm_by_token, name="confirm_by_token"),
+    path("confirm-all/<str:token>/", views.confirm_all_by_token, name="confirm_all_by_token"),
     path("<int:pk>/state/", views_rules.event_state, name="event_state"),
     path("<int:pk>/limits/", views_rules.limits_save, name="limits_save"),
     path("<int:pk>/eligibility/", views_rules.eligibility_save, name="eligibility_save"),

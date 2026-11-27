@@ -3437,7 +3437,33 @@ suffix like /P."
 
 **Decided** by SK on 2026-11-26. *Record:* this addendum.
 
+### A49. FR-72: one reminder per member, event and club-local day
+
+**Original (FR-72).** "Reminder: 24 hours before each slot (configurable per event), each person
+signed up receives a message with the slot time in UTC and local, the location and position,
+their role, …" One message per slot, so a member with fourteen slots in a contest got fourteen,
+each repeating the same know-before-you-go text and contacts.
+
+> Also, I think we should combine reminder notifications for a contest to be one per day
+> covering multiple slots, or something like that. If I'm signed up for 14 slots in November
+> Sweepstakes, I'd prefer one reminder showing my schedule for the whole event, rather than 14
+> individual emails. — NAF, 2026-11-21
+
+**Decision.** A member gets **one reminder per event per club-local day**, sent the event's
+reminder time before their first slot that day. It lists each slot of theirs that day with its
+own time (UTC and local), role, location and position, control operator and slot-mates, and its
+own **cannot make it** link; the know-before-you-go text and the contacts appear once; one
+**confirm** link confirms them all. A slot moved since the reminder was sent is left out of that
+confirmation and asks again. A sign-up made after the day's reminder went out gets a reminder of
+its own. A day with one slot reads as the single reminder always has. Warnings (FR-73) and
+cancellation notices (FR-74) stay one per slot, since each reports a problem with that slot.
+One per day rather than one per event, so that a multi-day event does not ask for confirmation
+days ahead, and each confirmation lands near the slots it covers.
+
+**Decided** by SK on 2026-11-27, of the two options NAF asked to have weighed (one per event, or
+one per day). *Record:* this addendum.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) 2026-11-24 (A43 to A45), 2026-11-25 (A46) and 2026-11-26 (A47, A48), from the dated decision records named
+(A1 to A4), 2026-10-22 (A5 to A8), 2026-10-26 (A9, A10), 2026-10-27 (A11), 2026-10-30 (A12), 2026-10-31 (A13, A12's amendment), 2026-11-03 (A14), 2026-11-05 (A15), 2026-11-06 (A16) and 2026-11-10 (A17, A18), and with `claude-fable-5-2` on 2026-11-11 (A19 to A23), and with `claude-opus-5-5` on 2026-11-12 (A24 to A27), 2026-11-16 (A28 to A35) and 2026-11-17 (A36, A37), 2026-11-18 (A38), 2026-11-19 (A39), 2026-11-23 (A40 to A42) 2026-11-24 (A43 to A45), 2026-11-25 (A46), 2026-11-26 (A47, A48) and 2026-11-27 (A49), from the dated decision records named
 in each entry; the requirements above are unchanged.
 <br>Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</sub>

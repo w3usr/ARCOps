@@ -421,3 +421,93 @@ def test_keep_it_from_the_reminder_says_nothing_changed_without_a_sign_in():
     assert "Open My schedule" in body  # the page's one name
     su.refresh_from_db()
     assert su.confirmed_at is None, "keeping a slot is not confirming attendance"
+
+
+def _local_morning(days_ahead: int, hour: int = 10):
+    """`hour` o'clock in the club's zone, `days_ahead` days from today there."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    ClubSetting.objects.update_or_create(
+        key="club.timezone", defaults={"value": "America/New_York"}
+    )
+    zone = ZoneInfo("America/New_York")
+    d = timezone.now().astimezone(zone).date() + timedelta(days=days_ahead)
+    return datetime(d.year, d.month, d.day, hour, tzinfo=zone)
+
+
+def test_a_days_slots_come_in_one_reminder_and_the_next_day_in_another():
+    """Functional addendum A49: one reminder per member, event and club-local day."""
+    import re
+
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    start = _local_morning(3)
+    e, slots = _event(start, hours=3, title="Sweepstakes")
+    sunday = Slot.objects.create(
+        position=slots[0].position,
+        start=start + timedelta(days=1),
+        end=start + timedelta(days=1, hours=1),
+    )
+    for s in (*slots, sunday):
+        SignUp.objects.create(slot=s, user=mem, role="operator")
+    assert notify.send_reminders(start - timedelta(hours=25))["sent"] == 0
+    assert notify.send_reminders(start - timedelta(hours=23))["sent"] == 1
+    m = _msgs(mem, "reminder").get()
+    assert "3 slots" in m.subject and m.body_html.count("I cannot make this one") == 3
+    assert m.body_html.count("Bring a headset") == 1  # the shared text once
+    assert set(
+        SignUp.objects.filter(reminder_sent_at__isnull=False).values_list("slot", flat=True)
+    ) == {s.pk for s in slots}
+    # The second day's slot is a day of its own, and alone reads as the single reminder.
+    assert notify.send_reminders(start + timedelta(hours=2))["sent"] == 1
+    assert "Confirm you will be there" in _msgs(mem, "reminder").latest("pk").body_html
+
+    # Confirm all, signed out; a slot moved since the reminder is left out and asks again.
+    slots[2].start += timedelta(minutes=30)
+    slots[2].end += timedelta(minutes=30)
+    slots[2].save()
+    link = re.search(r'href="[^"]*(/events/confirm-all/[^"]+)"', m.body_html).group(1)
+    r = Client().get(link)
+    assert r.status_code == 200 and b"Confirmed, thank you" in r.content
+    assert b"1 slot from the reminder changed" in r.content
+    confirmed = SignUp.objects.filter(confirmed_at__isnull=False).values_list("slot", flat=True)
+    assert set(confirmed) == {slots[0].pk, slots[1].pk}
+    assert b"Already confirmed" in Client().get(link).content
+    assert Client().get(link[:-3] + "xyz/").status_code == 410
+
+
+def test_a_sign_up_made_after_its_days_reminder_still_gets_one():
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    start = _local_morning(3)
+    e, slots = _event(start, hours=3)
+    SignUp.objects.create(slot=slots[0], user=mem, role="operator")
+    SignUp.objects.create(slot=slots[1], user=mem, role="operator")
+    assert notify.send_reminders(start - timedelta(hours=23))["sent"] == 1
+    SignUp.objects.create(slot=slots[2], user=mem, role="operator")
+    assert notify.send_reminders(start - timedelta(hours=22))["sent"] == 1
+    late = _msgs(mem, "reminder").latest("pk")
+    assert "Confirm you will be there" in late.body_html  # its own, for the one slot
+    assert not SignUp.objects.filter(reminder_sent_at__isnull=True).exists()
+
+
+def test_cannot_make_one_then_confirm_the_rest():
+    """A slot the member canceled with its own link is gone, and Confirm all says nothing of it:
+    the warning is for a slot that moved, which the member did not do."""
+    import re
+
+    mem = _user("mem@example.org", first_name="Mo", last_name="Member")
+    start = _local_morning(3)
+    e, slots = _event(start, hours=3)
+    for s in slots:
+        SignUp.objects.create(slot=s, user=mem, role="operator")
+    notify.send_reminders(start - timedelta(hours=23))
+    body = _msgs(mem, "reminder").get().body_html
+    cannot = re.findall(r'href="[^"]*(/events/cannot/[^"]+)"', body)
+    assert len(cannot) == 3
+    c = Client()
+    assert c.post(cannot[1]).status_code in (200, 302)
+    assert not SignUp.objects.filter(slot=slots[1]).exists()
+    link = re.search(r'href="[^"]*(/events/confirm-all/[^"]+)"', body).group(1)
+    r = c.get(link)
+    assert b"down for 2 slots" in r.content and b"changed or ended" not in r.content
+    assert SignUp.objects.filter(confirmed_at__isnull=False).count() == 2

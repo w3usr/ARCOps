@@ -89,6 +89,18 @@ SAMPLE_CONTEXT = {
         "callsign": "N0CALL",
     },
     "user": {"display_first": "Sample", "full_name": "Sample Person"},
+    # A day's reminder (functional addendum A49) previews with two slots, as it is sent.
+    "count": 2,
+    "slots": [
+        {
+            "when_utc": f"{h}:00–{h + 1}:00 UTC",
+            "role": "Operator",
+            "location": "Club station",
+            "position": "Run",
+            "cannot_link": "https://example.org/events/cannot/abc123/",
+        }
+        for h in (14, 15)
+    ],
 }
 
 
