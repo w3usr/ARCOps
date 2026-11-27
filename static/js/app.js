@@ -547,3 +547,15 @@ document.addEventListener("input", (ev) => {
     true,
   );
 })();
+
+// A "select every" box outside the roster: ticks the boxes of its form, which may sit elsewhere
+// on the page and join the form by `form=` (Approvals, FR-28).
+document.addEventListener("change", (ev) => {
+  const all = ev.target;
+  if (!all.matches("[data-check-all]") || !all.form) return;
+  [...all.form.elements]
+    .filter((b) => b.name === all.dataset.checkAll)
+    .forEach((b) => {
+      b.checked = all.checked;
+    });
+});

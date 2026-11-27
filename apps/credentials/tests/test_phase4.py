@@ -1292,3 +1292,54 @@ def test_the_pdf_reader_keeps_a_stream_that_ends_in_a_carriage_return():
     )
     pdf = b"1 0 obj\n<</Length %d>>\nstream\n" % len(data) + data + b"\nendstream\nendobj\n"
     assert b"/StructTreeRoot" in _pdf_objects(pdf)
+
+
+def test_the_re_sign_queue_is_approved_in_bulk_after_a_confirmation_naming_the_count():
+    """FR-28: tick signatures, see them listed with their expiry and the count, then approve;
+    each is its own decision (FR-128), and one FR-27 blocks is left out and named."""
+    from apps.accounts import addresses
+    from apps.credentials.models import CredentialDecision
+    from apps.ops.models import ClubSetting
+
+    call_command("club_import")
+    ClubSetting.objects.update_or_create(
+        key="trusted_email_domains", defaults={"value": ["example.edu"]}
+    )
+    st, it, t_st, t_it = _setup()
+    advisor = _user("adv6@example.org", "advisor", category="faculty")
+    signed = []
+    for n in range(3):
+        m = _user(f"m{n}@example.org", first_name="Mem", last_name=f"Ber{n}")
+        if n < 2:  # the third has no institution address, so FR-27 holds it back
+            addresses.add(
+                m, f"m{n}@example.edu", kind="institution", confirmed=True, proof="mailbox"
+            )
+        signed.append(
+            SignedAgreement.objects.create(
+                user=m, template=t_st, credential=st, signer_name=f"Mem Ber{n}"
+            )
+        )
+    c = Client()
+    c.force_login(advisor)
+    page = c.get("/credentials/approvals/").content.decode()
+    assert "Select every signature" in page
+    assert page.count('name="pick"') == 2  # no box on the row FR-27 blocks
+
+    picks = {"pick": [a.pk for a in signed]}  # a forged tick on the blocked one as well
+    r = c.post("/credentials/approvals/approve/", picks)
+    body = r.content.decode()
+    assert "Approve 2 signatures?" in body and "Mem Ber2" in body and "left out" in body
+    assert not SignedAgreement.objects.filter(state=SignedAgreement.State.APPROVED).exists()
+
+    r = c.post("/credentials/approvals/approve/", {**picks, "confirm": "yes"})
+    assert r.status_code == 302
+    states = [SignedAgreement.objects.get(pk=a.pk).state for a in signed]
+    assert states == ["approved", "approved", "signed"]
+    assert CredentialDecision.objects.filter(action=CredentialDecision.Action.APPROVED).count() == 2
+    after = c.get(r["Location"]).content.decode()
+    assert "Approved 2 signatures." in after and "Mem Ber2" in after
+
+    assert c.post("/credentials/approvals/approve/", {}).status_code == 302  # nothing ticked
+    outsider = _user("plain@example.org")
+    c.force_login(outsider)
+    assert c.post("/credentials/approvals/approve/", picks).status_code == 404

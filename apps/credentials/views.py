@@ -222,23 +222,7 @@ def approvals(request):
     # archived, deleted -- and the first two leave `is_active` alone and empty the groups
     # instead, so the test is the one the accounts manager already documents: in a group, or a
     # superuser, and able to sign in. Approving any of the four would grant access to nobody.
-    from apps.accounts.models import User
-
-    queue = SignedAgreement.objects.filter(
-        state=SignedAgreement.State.SIGNED, user__in=User.objects.with_access()
-    ).select_related("user", "template", "credential")
-    # the institution address is a row on the account now, so the page is handed it per agreement
-    rows = [
-        {
-            "a": a,
-            "institution_address": _institution_address(a.user),
-            "institution_rows": list(a.user.addresses.filter(kind="institution")),
-            "needs_institution": credential_needs_institution(a.credential)
-            and not institution_address_ok(_institution_address(a.user, proven_only=True)),
-            "expires": _expiry_default(a),
-        }
-        for a in queue
-    ]
+    rows = _queue_rows(_queue())
     if request.GET.get("format") == "csv" and request.GET.get("report") == "decisions":
         return _decisions_csv(request)
     return render(
@@ -250,6 +234,65 @@ def approvals(request):
             **_decision_log(request),
         },
     )
+
+
+def _queue():
+    """Signatures waiting for a decision from accounts that can hold access."""
+    from apps.accounts.models import User
+
+    return SignedAgreement.objects.filter(
+        state=SignedAgreement.State.SIGNED, user__in=User.objects.with_access()
+    ).select_related("user", "template", "credential")
+
+
+def _queue_rows(queue) -> list[dict]:
+    # the institution address is a row on the account now, so the page is handed it per agreement
+    return [
+        {
+            "a": a,
+            "institution_address": _institution_address(a.user),
+            "institution_rows": list(a.user.addresses.filter(kind="institution")),
+            "needs_institution": credential_needs_institution(a.credential)
+            and not institution_address_ok(_institution_address(a.user, proven_only=True)),
+            "expires": _expiry_default(a),
+        }
+        for a in queue
+    ]
+
+
+@login_required
+@require_POST
+def approve_many(request):
+    """FR-28: the re-sign queue worked through in bulk. The ticked signatures are listed with
+    their default expiry for one confirmation that names the count; each is then approved on
+    its own, recorded and told as a single approval is (FR-128). A signature FR-27 blocks is
+    left out, and the message says which."""
+    if not request.user.may("approve_agreements"):
+        raise Http404
+    rows = _queue_rows(_queue().filter(pk__in=request.POST.getlist("pick")).order_by("signed_at"))
+    if not rows:
+        messages.error(request, "Tick at least one signature first.")
+        return redirect("approvals")
+    ready = [r for r in rows if not r["needs_institution"]]
+    blocked = [r for r in rows if r["needs_institution"]]
+    if request.POST.get("confirm") != "yes":
+        return render(
+            request,
+            "credentials/approve_many.html",
+            {"ready": ready, "blocked": blocked, "institution_domain": institution_domain_label()},
+        )
+    for r in ready:
+        approve(request.user, r["a"])
+    if ready:
+        messages.success(
+            request, f"Approved {len(ready)} signature{'s' if len(ready) != 1 else ''}."
+        )
+    if blocked:
+        names = ", ".join(r["a"].user.full_name for r in blocked)
+        messages.error(
+            request, f"Not approved, still waiting for a confirmed institution address: {names}."
+        )
+    return redirect("approvals")
 
 
 def _decisions_csv(request):
