@@ -5649,4 +5649,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/accounts/views_members.py (`_standing` works out the days left inside FR-17's 90-day window and the agreement notice setting's); templates/accounts/member_detail.html (the License section's warning, "renew with the FCC" on the member's own page; "Expires in N days" beside an agreement, with a link to re-sign on the member's own page); apps/comms/categories.py (`license_expiry` in BANNER); apps/accounts/tests/test_profile_readonly.py (inside and outside both windows, member and officer; the banner).
 - **Nature of Contribution**: Code generation and tests. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; the banner test fails without the BANNER change; the profile looked at in Chromium at desktop and phone width with an expiring license and agreement, as the member and as an officer.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 829168a
