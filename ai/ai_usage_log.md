@@ -5745,4 +5745,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: README.md (new "AI use" section, before Acknowledgments).
 - **Nature of Contribution**: Draft. Every tool named in ai/ai_usage_log.md is Claude (Anthropic); the section says so and points to the log as the record.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 3ed7a6e
