@@ -418,3 +418,45 @@ def test_a_minors_message_says_whose_it_is_to_the_guardians():
     assert (
         adult.subject == "Tomorrow: Sweepstakes" and adult.body_html == "<p>You are signed up.</p>"
     )
+
+
+def test_a_browser_notification_opens_the_page_the_message_is_about(monkeypatch):
+    """FR-112: the slot, the event or Approvals; My messages when it is about none of them. A
+    context's own link is not taken, since some are one-use tokens."""
+    from datetime import timedelta
+
+    from django.conf import settings as dj
+    from django.urls import reverse
+    from django.utils import timezone
+
+    from apps.comms import push
+    from apps.comms.services import send
+    from apps.events.models import Event, Location, Position, Slot
+
+    pushed = []
+    monkeypatch.setattr(push, "push_wanted", lambda user, category: True)
+    monkeypatch.setattr(push, "send_push", lambda user, title, url: pushed.append(url) or 1)
+    u = _user()
+    ev = Event.objects.create(title="Field Day", state=Event.State.PUBLISHED)
+    pos = Position.objects.create(
+        location=Location.objects.create(event=ev, name="Club"), name="Run"
+    )
+    now = timezone.now()
+    slot = Slot.objects.create(position=pos, start=now, end=now + timedelta(hours=1))
+
+    send("event.published", u, "event_published", {"event": ev, "when": "", "link": ""})
+    send("slot.cancelled", u, "cancellation", {"event": ev, "slot": slot})
+    send(
+        "agreement.submitted",
+        u,
+        "agreement",
+        {"title": "T"},
+        link=dj.SITE_URL + "/credentials/approvals/",
+    )
+    send("account.verify_address", u, "account", {"link": dj.SITE_URL + "/verify/one-use-token/"})
+    assert pushed == [
+        dj.SITE_URL + reverse("event_detail", args=[ev.pk]),
+        dj.SITE_URL + reverse("slot_detail", args=[ev.pk, slot.pk]),
+        f"{dj.SITE_URL}/credentials/approvals/",
+        f"{dj.SITE_URL}/me/messages/",  # never the token
+    ]

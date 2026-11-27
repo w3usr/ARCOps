@@ -74,6 +74,7 @@ def compose(
     body_html: str,
     deliver_now: bool = True,
     to: list[str] | None = None,
+    link: str = "",
 ) -> Outbox:
     """Record a message for `user` (or for bare addresses `to` when there is no account yet,
     as with an invitation) and deliver it if allowed."""
@@ -86,6 +87,7 @@ def compose(
         to_addresses=to,
         category=category,
         subject=subject[:200],
+        link=link[:500],
         body_html=body_html,
         body_text=_plain_text(body_html),
     )
@@ -211,7 +213,7 @@ def _push(msg: Outbox) -> None:
     if msg.user is None or not push_wanted(msg.user, msg.category):
         return
     try:
-        send_push(msg.user, msg.subject, f"{dj.SITE_URL}/me/messages/")
+        send_push(msg.user, msg.subject, msg.link or f"{dj.SITE_URL}/me/messages/")
     except Exception as exc:  # noqa: BLE001 - never blocks the email or the copy
         import logging
 
@@ -253,12 +255,30 @@ def render_message(key: str, context: dict | None = None) -> tuple[str, str]:
     return subject, body
 
 
-def send(key: str, user, category: str, context: dict | None = None, to=None) -> Outbox:
+def send(
+    key: str, user, category: str, context: dict | None = None, to=None, link: str = ""
+) -> Outbox:
     """Render `key` for `user` and compose it in `category`. `user` is in the context as
-    `user`; pass other names in `context`."""
+    `user`; pass other names in `context`. `link` is the page a browser notification opens
+    (FR-112); without one, a message about a slot or an event opens that."""
     ctx = {"user": user, **(context or {})}
     subject, body = render_message(key, ctx)
-    return compose(user, category, subject, body, to=to)
+    return compose(user, category, subject, body, to=to, link=link or _page_of(ctx))
+
+
+def _page_of(ctx: dict) -> str:
+    """The slot or event a message is about, as a page; "" when it is about neither. A context's
+    own `link` is not read here: some are one-use tokens, which opening would spend."""
+    from django.urls import reverse
+
+    from apps.events.models import Event, Slot
+
+    slot, event = ctx.get("slot"), ctx.get("event")
+    if isinstance(slot, Slot):
+        return dj.SITE_URL + reverse("slot_detail", args=[slot.event.pk, slot.pk])
+    if isinstance(event, Event):
+        return dj.SITE_URL + reverse("event_detail", args=[event.pk])
+    return ""
 
 
 def seed_templates(reset: bool = False) -> tuple[int, int, int]:

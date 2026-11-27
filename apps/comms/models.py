@@ -39,6 +39,8 @@ class Outbox(models.Model):
         max_length=40
     )  # reminder | warning | announcement | account | agreement ...
     subject = models.CharField(max_length=200)
+    # FR-112: the page a browser notification opens, when the message is about one
+    link = models.CharField(max_length=500, blank=True)
     body_html = models.TextField()
     body_text = models.TextField(blank=True)
     state = models.CharField(max_length=10, choices=State.choices, default=State.NOT_SENT)

@@ -174,6 +174,7 @@ def sign(request, template_id):
             ap,
             "agreement",
             {"person": request.user, "title": t.title, "link": link},
+            link=link,
         )
     messages.success(request, f"Signed: {t.title}. It now awaits approval.")
     return redirect("agreements")
@@ -572,6 +573,7 @@ def decide(request, pk):
                 "reason": a.decision_reason,
                 "link": dj.SITE_URL + reverse("agreements"),
             },
+            link=dj.SITE_URL + reverse("agreements"),
         )
         messages.info(request, "Declined.")
     return redirect("approvals")

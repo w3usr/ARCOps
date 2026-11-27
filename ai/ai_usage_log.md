@@ -5706,3 +5706,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation, a test and a draft (A28). The API now lists drafts to whoever may see them on the Events page, where it listed published, locked and completed events to everybody. Verified: `tools/check.sh quick` all clear; the accessibility sweep not run again, the Events page's logic being moved, not changed.
 - **Human Review Status**: Pending review
 - **Git Hash**: d642ef2
+
+## [2026-11-27 14:31 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: FR-112: tapping a browser notification opens the page the message is about, falling back to My messages.
+- **Sections/Files Affected**: apps/comms/models.py and apps/comms/migrations/0005_outbox_link.py (Outbox's `link`); apps/comms/services.py (`compose` and `send` take a link; a message about a slot or an event opens it; `_push` sends the stored link or My messages); apps/credentials/services.py and apps/credentials/views.py (agreement notices open Agreements or Approvals, license notices the profile, the password rotation its page); apps/events/services/notify.py (the reminder and the at-risk warning open their slot); apps/comms/tests/test_messages.py.
+- **Nature of Contribution**: Code generation and a test. A context's own `link` is never taken by itself, since some are one-use tokens that opening would spend. `push_test` already had a test. Verified: the application tests (750 passed) and `tools/check.sh quick` all clear; no page changed, so the accessibility sweep was not run.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

@@ -288,7 +288,7 @@ def send_one_reminder(su: SignUp, now: datetime | None = None) -> None:
         **_slot_lines(su),
         **_shared_lines(event, [su.slot.position.location]),
     }
-    send("reminder", su.user, "reminder", ctx)
+    send("reminder", su.user, "reminder", ctx, link=slot_link(su.slot))
     su.reminder_sent_at = now
     su.save(update_fields=["reminder_sent_at"])
 
@@ -384,6 +384,7 @@ def send_warnings(now: datetime | None = None) -> dict:
                         "reasons": "; ".join(needs_from_reasons(status.reasons)),
                         "link": link,
                     },
+                    link=link,
                 )
         notes = "; ".join(
             f"{s.user.short_name}: {s.note}"

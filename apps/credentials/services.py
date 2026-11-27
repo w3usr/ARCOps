@@ -8,6 +8,7 @@ import re
 
 from cryptography.fernet import Fernet
 from django.conf import settings
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.ops import when
@@ -140,6 +141,7 @@ def approve(
             "approver": actor.full_name if actor else "an approver",
             "expires": agreement.expires_on,
         },
+        link=settings.SITE_URL + reverse("agreements"),
     )
     try:
         store_agreement_pdf(agreement)  # FR-23: the approval block joins the record
@@ -320,6 +322,7 @@ def expiry_notices(now=None) -> dict:
                 "days": max(days, 0),
                 "license_class": lic.effective_class,
             },
+            link=settings.SITE_URL + reverse("profile"),  # where the license card is (FR-112)
         )
         lic.expiry_notice_stage = stage
         lic.save(update_fields=["expiry_notice_stage", "expiry_notice_for"])
@@ -421,6 +424,7 @@ def agreement_expiry_run(now=None) -> dict:
                 "titles": [a.template.title if a.template else a.credential.label for a in items],
                 "link": link,
             },
+            link=link,
         )
         SignedAgreement.objects.filter(pk__in=[a.pk for a in items]).update(notice_30_sent_on=today)
         due_summary.append(
@@ -447,6 +451,7 @@ def agreement_expiry_run(now=None) -> dict:
                 "titles": [a.template.title if a.template else a.credential.label for a in items],
                 "link": link,
             },
+            link=link,
         )
         SignedAgreement.objects.filter(pk__in=[a.pk for a in items]).update(
             notice_expiry_sent_on=today
@@ -472,6 +477,7 @@ def agreement_expiry_run(now=None) -> dict:
                     "members": rows,
                     "link": approvals_link,
                 },
+                link=approvals_link,
             )
             summaries += 1
     return {
@@ -507,6 +513,7 @@ def revoke(actor, agreement: SignedAgreement, reason: str) -> SignedAgreement:
             "reason": reason,
             "link": dj.SITE_URL + reverse("agreements"),
         },
+        link=dj.SITE_URL + reverse("agreements"),
     )
     return agreement
 
@@ -534,7 +541,13 @@ def rotate_shared_secret(actor, plaintext: str, effective_date: dt.date) -> dict
     link = dj.SITE_URL + reverse("computer_password")
     current = [u for u in User.objects.with_access() if holds(u, "it_access", today)]
     for u in current:
-        send("password.rotated", u, "security", {"effective": effective_date, "link": link})
+        send(
+            "password.rotated",
+            u,
+            "security",
+            {"effective": effective_date, "link": link},
+            link=link,
+        )
     former = [
         u.full_name + (f" {u.callsign}" if u.callsign else "")
         for u in User.objects.filter(pk__in=previous_viewers)
