@@ -1173,7 +1173,26 @@ update a sign-in in the last few minutes counted as the confirmation.
 
 **Decided by** SK on 2026-11-25.
 
+### A28. TR-8: token authentication waits with the native client
+
+**Original (TR-8).** "Django Ninja … using session authentication for the web and token
+authentication for a future native client. Both the templates and the API call one service
+layer."
+
+**Decision.**
+- **No token authentication until FR-97 is taken up.** The native client it is for is [Later]
+  in the functional requirements and nobody has written one. A token is a credential: it would
+  have to be issued, listed, revoked and rotated, and until a client uses it, it is a way into
+  the API with no user. The API keeps session authentication alone; when FR-97 comes up, token
+  authentication comes with it.
+- **The API reads through the service layer now.** `/api/v1/events` asked the database itself,
+  with a rule of its own for which events to list. It now calls the same function as the Events
+  page, so the two cannot disagree: an officer sees every event, anybody else the published,
+  locked and completed ones and the drafts of events they captain.
+
+**Decided by** SK on 2026-11-27.
+
 <sub>Addendum drafted by Claude (Anthropic), `claude-opus-5-5`, at SK's direction on 2026-10-19
-(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20) and 2026-11-25 (A21 to A27), from the dated decision records named in each entry; the
+(A1 to A4), 2026-10-20 (A5), 2026-10-26 (A6), 2026-10-28 (A7), 2026-10-30 (A8), 2026-11-03 (A9), 2026-11-06 (A10), 2026-11-12 (A11), 2026-11-16 (A12, A13), 2026-11-19 (A14, A15), 2026-11-23 (A16 to A19), 2026-11-24 (A20), 2026-11-25 (A21 to A27) and 2026-11-27 (A28), from the dated decision records named in each entry; the
 technical requirements above are unchanged.<br>Co-Authored-By: Claude Opus 5.5
 &lt;noreply@anthropic.com&gt;</sub>

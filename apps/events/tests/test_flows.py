@@ -137,3 +137,20 @@ def test_api_events_requires_login_and_lists_published():
     c.force_login(user("api"))
     data = c.get("/api/v1/events").json()
     assert [e["title"] for e in data] == ["Test Contest"]
+
+
+def test_the_api_lists_the_events_the_events_page_does():
+    """TR-8, technical addendum A28: the API asks the same service as the page, so a draft is
+    listed for whoever may see it there, and for nobody else."""
+    from apps.events.services.lifecycle import visible_events
+
+    ev, _ = event_with_slot()
+    draft = Event.objects.create(title="Draft Night", state=Event.State.DRAFT)
+    member, officer = user("api"), user("off", groups=["officer"])
+    for who in (member, officer):
+        c = Client()
+        c.force_login(who)
+        listed = {e["title"] for e in c.get("/api/v1/events").json()}
+        assert listed == {e.title for e in visible_events(who)}
+    assert draft.title in {e.title for e in visible_events(officer)}
+    assert draft.title not in {e.title for e in visible_events(member)}

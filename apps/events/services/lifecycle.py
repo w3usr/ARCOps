@@ -16,6 +16,18 @@ from apps.ops.templatetags.labels import role_label
 from ..models import Event, Opening, Slot
 
 
+def visible_events(user):
+    """The events a person may see: everything for whoever manages events; for anybody else the
+    published, locked and completed ones, and the drafts of events they captain. The Events page
+    and the API both ask here (TR-8)."""
+    events = Event.objects.all()
+    if not user.may("manage_events"):
+        events = events.filter(state__in=["published", "locked", "completed"]) | events.filter(
+            captaincies__user=user
+        )
+    return events.distinct()
+
+
 def set_state(actor, event: Event, what: str) -> str:
     """lock | unlock | complete. Returns a message for the page; raises ValueError if the move
     is not allowed from the current state."""

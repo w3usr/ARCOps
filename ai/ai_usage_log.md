@@ -5698,3 +5698,11 @@ carries the actual running model ID.
 - **Nature of Contribution**: Code generation and a test. Bulk uses each signature's default expiry; one wanting another date is approved from its own row, which the confirmation page says. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; Approvals driven in Chromium with three signatures (select every, the confirmation naming three).
 - **Human Review Status**: Pending review
 - **Git Hash**: e3900c7
+
+## [2026-11-27 14:17 EST]
+- **Tool**: Claude (Anthropic), claude-opus-5-5
+- **Session Purpose**: TR-8: token authentication waits with FR-97 (technical addendum A28), and the API's events endpoint reads through the service layer the Events page uses.
+- **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A28); apps/events/services/lifecycle.py (`visible_events`, the rule the Events page held); apps/events/views.py (the Events page calls it); apps/ops/api.py (`/api/v1/events` calls it; the module says why there is no token authentication); apps/events/tests/test_flows.py (the API and the page list the same events for a member and an officer).
+- **Nature of Contribution**: Code generation, a test and a draft (A28). The API now lists drafts to whoever may see them on the Events page, where it listed published, locked and completed events to everybody. Verified: `tools/check.sh quick` all clear; the accessibility sweep not run again, the Events page's logic being moved, not changed.
+- **Human Review Status**: Pending review
+- **Git Hash**: [after commit]

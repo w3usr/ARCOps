@@ -1,10 +1,13 @@
-"""The JSON API (TR-8): a thin client of the same service layer as the templates."""
+"""The JSON API (TR-8): a thin client of the same service layer as the templates.
+
+Session authentication only: token authentication waits with the native client it is for
+(FR-97; technical addendum A28)."""
 
 from django.contrib.auth.decorators import login_required
 from ninja import NinjaAPI, Schema
 from ninja.security import django_auth
 
-from apps.events.models import Event
+from apps.events.services.lifecycle import visible_events
 
 api = NinjaAPI(
     title="Club Operations API", version="1", urls_namespace="api", docs_decorator=login_required
@@ -28,7 +31,7 @@ def ping(request):
 @api.get("/events", response=list[EventOut], auth=django_auth)
 def list_events(request):
     out = []
-    for e in Event.objects.filter(state__in=["published", "locked", "completed"]).order_by("id"):
+    for e in visible_events(request.user).order_by("id"):
         s, en = e.start, e.end
         out.append(
             EventOut(

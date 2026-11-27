@@ -29,14 +29,11 @@ from .views_slots import _visible, roster_or_slot
 
 @login_required
 def event_list(request):
+    from .services.lifecycle import visible_events
+
     now = timezone.now()
-    events = Event.objects.all()
-    if not request.user.may("manage_events"):
-        events = events.filter(state__in=["published", "locked", "completed"]) | events.filter(
-            captaincies__user=request.user
-        )
     upcoming, past, regular = [], [], []
-    for e in events.distinct():
+    for e in visible_events(request.user):
         if e.display_only:
             regular.append(e)  # FR-45: on the calendar, no roster
         else:
