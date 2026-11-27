@@ -5697,4 +5697,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: apps/credentials/views.py (the queue shared by the page and `approve_many`, which lists the ticked signatures with their default expiry, then approves each through `approve()`, leaving out and naming any FR-27 holds back); apps/credentials/urls.py; templates/credentials/approvals.html (a tick box on each row that can be approved; "Select every signature" and "Approve the ticked ones"); templates/credentials/approve_many.html (new: the confirmation); static/js/app.js (a "select every" box for a form whose boxes join it by `form=`); apps/credentials/tests/test_phase4.py.
 - **Nature of Contribution**: Code generation and a test. Bulk uses each signature's default expiry; one wanting another date is approved from its own row, which the confirmation page says. Verified: `tools/check.sh quick` all clear; the accessibility sweep in Chromium and WebKit (102 passed, 8 skipped), Firefox left to CI; Approvals driven in Chromium with three signatures (select every, the confirmation naming three).
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: e3900c7
