@@ -5721,4 +5721,4 @@ carries the actual running model ID.
 - **Sections/Files Affected**: docs/TECHNICAL_REQUIREMENTS.md (A28: an "Amended 2026-11-27" paragraph naming the sentence that no longer holds); apps/ops/api.py (`/api/v1/events` narrows the page's list to published, locked and completed events); apps/events/tests/test_flows.py (a draft and a canceled event on an officer's page, not in the API for an officer or a member).
 - **Nature of Contribution**: Code generation, a test and a draft (the amendment). A first draft recorded the decision as a separate entry, A29, which left A28's sentence standing unchallenged; folded into A28 as an amendment, as the functional addendum's A12 does. A first attempt to commit this ahead of the browser-notification change failed its check and went in with that change under its title; both were taken back locally (never pushed) and committed apart. Verified: the API tests and `tools/check.sh quick` all clear.
 - **Human Review Status**: Pending review
-- **Git Hash**: [after commit]
+- **Git Hash**: 9c1da1a
